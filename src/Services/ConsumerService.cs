@@ -715,7 +715,13 @@
                                 var wildPokemon = (WildPokemonProto)item.data;
                                 var timestampMs = (ulong)item.timestamp_ms;
                                 var username = item.username;
+                                var id = wildPokemon.EncounterId;
                                 var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
+                                var oldPokemon = pokemonRepository.GetByIdAsync(pokemon.Id)
+                                                                  .ConfigureAwait(false)
+                                                                  .GetAwaiter()
+                                                                  .GetResult();
+                                pokemon.Update(oldPokemon);
                                 updatedPokemon.Add(pokemon);
                                 InstanceController.Instance.GotPokemon(pokemon);
                                 // TODO: Pokemon.Save();
@@ -753,6 +759,11 @@
                                 }
                                 pokemon.Latitude = pokestop.Latitude;
                                 pokemon.Longitude = pokestop.Longitude;
+                                var oldPokemon = pokemonRepository.GetByIdAsync(pokemon.Id)
+                                                                  .ConfigureAwait(false)
+                                                                  .GetAwaiter()
+                                                                  .GetResult();
+                                pokemon.Update(oldPokemon);
                                 updatedPokemon.Add(pokemon);
                                 InstanceController.Instance.GotPokemon(pokemon);
                                 // TODO: Pokemon.Save();
@@ -809,6 +820,7 @@
                                        .ConfigureAwait(false)
                                        .GetAwaiter()
                                        .GetResult();
+                                pokemon.Update(pokemon, true);
                                 updatedPokemon.Add(pokemon);
                                 InstanceController.Instance.GotIV(pokemon);
                             }

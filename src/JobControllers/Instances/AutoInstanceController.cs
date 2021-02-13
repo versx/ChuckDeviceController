@@ -156,7 +156,7 @@
                                 _todayStopsTries.Add(stop.Id, 0);
                             }
                             var count = _todayStopsTries[stop.Id];
-                            if (!stop.QuestType.HasValue && stop.Enabled && count <= 5)
+                            if (stop.QuestType == null && stop.Enabled && count <= 5)
                             {
                                 _todayStops.Add(stop.Id, stop);
                             }
@@ -244,6 +244,25 @@
                         newLat = closest.Latitude;
                         newLon = closest.Longitude;
                         pokestop = closest;
+
+                        var nearbyPokestops = new List<Pokestop>();
+                        var pokestopCoord = new Coordinate(pokestop.Latitude, pokestop.Longitude);
+                        foreach (var (id, stop) in todayStopsC)
+                        {
+                            if (pokestopCoord.DistanceTo(new Coordinate(stop.Latitude, stop.Longitude)) <= 80)
+                            {
+                                nearbyPokestops.Add(stop);
+                            }
+                        }
+                        foreach (var stop in nearbyPokestops)
+                        {
+                            var index = _todayStops.Keys.ToList().IndexOf(stop.Id);
+                            if (index >= 0)
+                            {
+                                _todayStops.Remove(stop.Id);
+                            }
+                        }
+
                         var now = DateTime.UtcNow.ToTotalSeconds();
                         if (lastTime == 0)
                         {
@@ -317,6 +336,10 @@
                         if (_todayStops.Count == 0)
                         {
                             _logger.LogInformation($"[{Name}] Instance done");
+                            if (_lastCompletionCheck == default)
+                            {
+                                _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds();
+                            }
                             await AssignmentController.Instance.InstanceControllerDone(Name);
                         }
                     }
@@ -432,13 +455,17 @@
                         try
                         {
                             // Make sure first and last coords are the same
-                            if (polygon[0][0] != polygon[0][^1]) // NOTE: polygon[0][polygon[0].Count - 1]
+                            var first = polygon.FirstOrDefault();
+                            var last = polygon.LastOrDefault();
+                            // Make sure first and last coords are the same
+                            if (first[0] != last[0] ||
+                                first[1] != last[1])
                             {
-                                polygon[0].Add(polygon[0][0]);
+                                polygon.Add(first);
                             }
                             // Get all existing Pokestops within geofence bounds
                             var bounds = polygon.GetBoundingBox();
-                            var stops = await _pokestopRepository.GetWithin(bounds); // TODO: Updated
+                            var stops = await _pokestopRepository.GetWithin(bounds, 0);
                             foreach (var stop in stops)
                             {
                                 // Check if Pokestop is within geofence
@@ -458,7 +485,7 @@
                     _completionDate = default;
                     foreach (var stop in _allStops)
                     {
-                        if ((!stop.QuestType.HasValue || stop.QuestType == 0) && stop.Enabled)
+                        if (stop.QuestType == null && stop.Enabled)
                         {
                             if (!_todayStops.ContainsKey(stop.Id))
                             {

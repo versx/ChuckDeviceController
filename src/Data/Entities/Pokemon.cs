@@ -13,6 +13,7 @@
     using ChuckDeviceController.Data.Interfaces;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.JobControllers;
 
     [Table("pokemon")]
     public class Pokemon : BaseEntity, IAggregateRoot, IWebhook
@@ -150,6 +151,9 @@
         [NotMapped]
         public bool HasChanges { get; private set; }
 
+        [NotMapped]
+        public bool NoWeatherIVClearing { get; private set; }
+
         #endregion
 
         #region Constructor(s)
@@ -177,10 +181,10 @@
                 //IsShiny = wildPokemon.Pokemon.PokemonDisplay.Shiny;
             }
             Username = username;
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            Changed = now;
-            Updated = now;
-            FirstSeenTimestamp = now;
+            //var now = DateTime.UtcNow.ToTotalSeconds();
+            //Changed = now;
+            //Updated = now;
+            //FirstSeenTimestamp = now;
 
             HandleSpawnpoint(wildPokemon.TimeTillHiddenMs, timestampMs).ConfigureAwait(false)
                                                                        .GetAwaiter()
@@ -206,10 +210,10 @@
                 //IsShiny = wildPokemon.Pokemon.PokemonDisplay.Shiny;
             }
             Username = username;
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            Changed = now;
-            Updated = now;
-            FirstSeenTimestamp = now;
+            //var now = DateTime.UtcNow.ToTotalSeconds();
+            //Changed = now;
+            //Updated = now;
+            //FirstSeenTimestamp = now;
 
             double lat = 0;
             double lon = 0;
@@ -232,6 +236,192 @@
 
         #endregion
 
+        public void Update(Pokemon oldPokemon = null, bool updateIV = false)
+        {
+            if (oldPokemon == null)
+                return;
+
+            var setIVForWeather = false;
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (oldPokemon == null)
+            {
+                Updated = now;
+                FirstSeenTimestamp = now;
+                Changed = now;
+            }
+            else
+            {
+                if (oldPokemon.FirstSeenTimestamp == 0 && FirstSeenTimestamp == 0)
+                {
+                    FirstSeenTimestamp = now;
+                }
+                else
+                {
+                    FirstSeenTimestamp = oldPokemon.FirstSeenTimestamp;
+                }
+                if (ExpireTimestamp == 0)
+                {
+                    if (oldPokemon.ExpireTimestamp - now < DefaultTimeReseen)
+                    {
+                        ExpireTimestamp = now + DefaultTimeReseen;
+                    }
+                    else
+                    {
+                        ExpireTimestamp = oldPokemon.ExpireTimestamp;
+                    }
+                }
+                if (!IsExpireTimestampVerified && oldPokemon.IsExpireTimestampVerified)
+                {
+                    IsExpireTimestampVerified = oldPokemon.IsExpireTimestampVerified;
+                    ExpireTimestamp = oldPokemon.ExpireTimestamp;
+                }
+                if (oldPokemon.PokemonId != PokemonId)
+                {
+                    if (oldPokemon.PokemonId != DittoPokemonId)
+                    {
+                        Console.WriteLine($"[Pokemon] Pokemon {Id} changed from {oldPokemon.PokemonId} to {PokemonId}");
+                    }
+                    else if ((oldPokemon.DisplayPokemonId ?? 0) != PokemonId)
+                    {
+                        Console.WriteLine($"[Pokemon] Pokemon {Id} Ditto disguised as {oldPokemon.DisplayPokemonId} now see as {PokemonId}");
+                    }
+                }
+                if (oldPokemon.CellId > 0 && CellId == 0)
+                {
+                    CellId = oldPokemon.CellId;
+                }
+                if (oldPokemon.SpawnId != null)
+                {
+                    SpawnId = oldPokemon.SpawnId;
+                    Latitude = oldPokemon.Latitude;
+                    Longitude = oldPokemon.Longitude;
+                }
+                if (!string.IsNullOrEmpty(oldPokemon.PokestopId) && string.IsNullOrEmpty(PokestopId))
+                {
+                    PokestopId = oldPokemon.PokestopId;
+                }
+                // TODO: PVP Rankings
+                if (updateIV && oldPokemon.AttackIV == null && AttackIV != null)
+                {
+                    Changed = now;
+                }
+                else
+                {
+                    Changed = oldPokemon.Changed;
+                }
+                var weatherChanged = (oldPokemon.Weather == 0 && Weather > 0) || (Weather == 0 && oldPokemon.Weather > 0);
+                if (oldPokemon.AttackIV != null && AttackIV == null && !weatherChanged)
+                {
+                    setIVForWeather = false;
+                    AttackIV = oldPokemon.AttackIV;
+                    DefenseIV = oldPokemon.DefenseIV;
+                    StaminaIV = oldPokemon.StaminaIV;
+                    CP = oldPokemon.CP;
+                    Weight = oldPokemon.Weight;
+                    Size = oldPokemon.Size;
+                    Move1 = oldPokemon.Move1;
+                    Move2 = oldPokemon.Move2;
+                    Level = oldPokemon.Level;
+                    CaptureRate1 = oldPokemon.CaptureRate1;
+                    CaptureRate2 = oldPokemon.CaptureRate2;
+                    CaptureRate3 = oldPokemon.CaptureRate3;
+                    IsShiny = oldPokemon.IsShiny;
+                    IsDitto = IsDittoDisguised(oldPokemon);
+                    if (IsDitto)
+                    {
+                        Console.WriteLine($"[Pokemon] OldPokemon {Id} Ditto found, disguised as {PokemonId}");
+                        SetDittoAttributes(PokemonId);
+                    }
+                }
+                else if ((AttackIV != null && oldPokemon.AttackIV == null) || (CP != null && oldPokemon.CP == null) || _hasIvChanges)
+                {
+                    setIVForWeather = false;
+                    updateIV = true;
+                }
+                else if (weatherChanged && oldPokemon.AttackIV != null && !NoWeatherIVClearing)
+                {
+                    Console.WriteLine($"[Pokemon] Pokemon {Id} changed WeatherBoosted state. Clearing IVs");
+                    setIVForWeather = true;
+                    AttackIV = null;
+                    DefenseIV = null;
+                    StaminaIV = null;
+                    CP = null;
+                    Weight = null;
+                    Size = null;
+                    Move1 = null;
+                    Move2 = null;
+                    Level = null;
+                    CaptureRate1 = null;
+                    CaptureRate2 = null;
+                    CaptureRate3 = null;
+                    PvpRankingsGreatLeague = null;
+                    PvpRankingsUltraLeague = null;
+                    Console.WriteLine($"[Pokemon] WeatherBoosted state changed. Cleared IVs");
+                }
+                else
+                {
+                    setIVForWeather = false;
+                }
+
+                // TODO: Check shouldUpdate
+                if (!ShouldUpdate(oldPokemon, this))
+                    return;
+
+                if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
+                {
+                    Console.WriteLine($"[Pokemon] Pokemon {Id} Ditto changed from {oldPokemon.PokemonId} to {PokemonId}");
+                }
+
+                Updated = now;
+            }
+
+            if (oldPokemon == null)
+            {
+                // TODO: Send webhook
+                InstanceController.Instance.GotPokemon(this);
+                if (AttackIV != null)
+                {
+                    InstanceController.Instance.GotIV(this);
+                }
+                if (updateIV && (oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
+                {
+                    oldPokemon._hasIvChanges = false;
+                    // TODO: Send webhook
+                    InstanceController.Instance.GotIV(this);
+                }
+            }
+        }
+
+        public static bool ShouldUpdate(Pokemon oldPokemon, Pokemon newPokemon)
+        {
+            if (oldPokemon.HasChanges)
+            {
+                oldPokemon.HasChanges = false;
+                return true;
+            }
+            return
+                newPokemon.PokemonId != oldPokemon.PokemonId ||
+                newPokemon.SpawnId != oldPokemon.SpawnId ||
+                newPokemon.PokestopId != oldPokemon.PokestopId ||
+                newPokemon.Weather != oldPokemon.Weather ||
+                newPokemon.ExpireTimestamp != oldPokemon.ExpireTimestamp ||
+                newPokemon.AttackIV != oldPokemon.AttackIV ||
+                newPokemon.DefenseIV != oldPokemon.DefenseIV ||
+                newPokemon.StaminaIV != oldPokemon.StaminaIV ||
+                newPokemon.CP != oldPokemon.CP ||
+                newPokemon.Level != oldPokemon.Level ||
+                newPokemon.Move1 != oldPokemon.Move1 ||
+                newPokemon.Move2 != oldPokemon.Move2 ||
+                newPokemon.Gender != oldPokemon.Gender ||
+                newPokemon.Form != oldPokemon.Form ||
+                newPokemon.Costume != oldPokemon.Costume ||
+                Math.Abs((double)newPokemon.ExpireTimestamp) - oldPokemon.ExpireTimestamp > 60 ||
+                Math.Abs(newPokemon.Latitude - oldPokemon.Latitude) >= 0.000001 ||
+                Math.Abs(newPokemon.Longitude - oldPokemon.Longitude) >= 0.000001;
+        }
+
+        #region Ditto
+
         public static bool IsDittoDisguised(Pokemon pokemon) => IsDittoDisguised(
                 pokemon.PokemonId,
                 pokemon.Level ?? 0,
@@ -252,6 +442,23 @@
             var isWeatherBoosted = weather > 0;
             return isDisguised && (isUnderLevelBoosted || isUnderIvStatBoosted) && isWeatherBoosted;
         }
+
+        private void SetDittoAttributes(uint displayPokemonId)
+        {
+            var moveTransfromFast = HoloPokemonMove.TransformFast;
+            var moveStruggle = HoloPokemonId.Ditto;
+            DisplayPokemonId = displayPokemonId;
+            PokemonId = DittoPokemonId;
+            Form = 0;
+            Move1 = (uint)moveTransfromFast;
+            Move2 = (uint)moveStruggle;
+            Gender = 3;
+            Costume = 0;
+            Size = 0;
+            Weight = 0;
+        }
+
+        #endregion
 
         public async Task AddEncounter(EncounterOutProto encounter, string username)
         {
@@ -341,21 +548,6 @@
                 }
             }
             await Task.CompletedTask;
-        }
-
-        private void SetDittoAttributes(uint displayPokemonId)
-        {
-            var moveTransfromFast = HoloPokemonMove.TransformFast;
-            var moveStruggle = HoloPokemonId.Ditto;
-            DisplayPokemonId = displayPokemonId;
-            PokemonId = DittoPokemonId;
-            Form = 0;
-            Move1 = (uint)moveTransfromFast;
-            Move2 = (uint)moveStruggle;
-            Gender = 3;
-            Costume = 0;
-            Size = 0;
-            Weight = 0;
         }
 
         public async Task<Spawnpoint> HandleSpawnpoint(int timeTillHiddenMs, ulong timestampMs)

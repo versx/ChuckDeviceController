@@ -31,7 +31,7 @@
 
         private readonly PokemonRepository _pokemonRepository;
         private List<Pokemon> _pokemonQueue;
-        private readonly List<ScannedPokemon> _scannedPokemon;
+        private List<ScannedPokemon> _scannedPokemon;
         private readonly object _queueLock = new object();
         private readonly object _scannedLock = new object();
         private readonly System.Timers.Timer _timer;
@@ -261,6 +261,7 @@
                 Stop();
                 return;
             }
+            /*
             lock (_queueLock)
             {
                 for (var i = 0; i < _pokemonQueue.Count; i++)
@@ -274,6 +275,7 @@
                     }
                 }
             }
+            */
             lock (_scannedLock)
             {
                 if (_scannedPokemon.Count == 0)
@@ -284,11 +286,11 @@
                     return;
                 }
 
-                var first = _scannedPokemon.First();
+                var first = _scannedPokemon.PopFirst(out _scannedPokemon);
                 var timeSince = DateTime.UtcNow - first.Date;
                 if (timeSince.TotalSeconds < 120)
                 {
-                    // TODO: Sleep 120 - timeSince
+                    Thread.Sleep(Convert.ToInt32(120 - timeSince.TotalSeconds) * 1000);
                     if (_shouldExit)
                         return;
                 }
