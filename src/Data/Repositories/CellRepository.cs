@@ -30,17 +30,19 @@
         }
         */
 
-        // TODO: Proper await
         public async Task<IReadOnlyList<Cell>> GetByIdsAsync(List<ulong> ids, bool fromCache = true)
         {
-            if (fromCache)
-            {
-                return _dbContext.Cells.Where(x => ids.Contains(x.Id))
-                                       .FromCache()
-                                       .ToList();
-            }
-            return _dbContext.Cells.Where(x => ids.Contains(x.Id))
-                                   .ToList();
+            return await Task.Run(() =>
+                {
+                    if (fromCache)
+                    {
+                        return _dbContext.Cells.Where(x => ids.Contains(x.Id))
+                                               .FromCache()
+                                               .ToList();
+                    }
+                    return _dbContext.Cells.Where(x => ids.Contains(x.Id))
+                                           .ToList();
+                });
         }
     }
 }
