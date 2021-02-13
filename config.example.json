@@ -1,11 +1,11 @@
 {
-    "interface": "10.10.10.10",
-	"port": 5001,
+    "interface": "localhost",
+	"port": 5000,
 	"db": {
-	    "host": "127.0.0.1",
+	    "host": "localhost",
 		"port": 3306,
-		"username": "cdcuser",
-		"password": "cdcPass!",
+		"username": "root",
+		"password": "",
 		"database": "cdcdb"
 	}
 }

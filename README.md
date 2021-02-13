@@ -14,7 +14,7 @@
 1. Fill out `config.json`  
 1. Build project from root folder `~/.dotnet/dotnet build`  
 1. Run from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
-1. Visit Dashboard at http://ipaddress:5000 or https://ipaddress:5001
+1. Visit Dashboard at http://localhost:5000 or https://localhost:5001
 
 View all available routes:  
-http://ipaddress:port/swagger
+http://localhost:port/swagger
