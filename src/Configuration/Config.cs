@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Configuration
 {
-    using System;
     using System.IO;
     using System.Text.Json;
     using System.Text.Json.Serialization;

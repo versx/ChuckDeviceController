@@ -14,8 +14,6 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Factories;
-    using ChuckDeviceController.Data.Interfaces;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;

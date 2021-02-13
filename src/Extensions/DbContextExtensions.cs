@@ -5,8 +5,6 @@
 
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceController.Data.Interfaces;
-
     public static class DbContextExtensions
     {
         public static void AddOrUpdate(this DbContext ctx, object entity)

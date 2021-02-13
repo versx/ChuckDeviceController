@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Services.Models
 {
-    using System;
     using System.Collections.Generic;
 
     using POGOProtos.Rpc;

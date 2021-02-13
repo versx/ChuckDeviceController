@@ -6,8 +6,6 @@
     using System.Threading.Tasks;
 
     using Google.Common.Geometry;
-
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Data.Repositories;

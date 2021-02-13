@@ -385,7 +385,7 @@
                 {
                     InstanceController.Instance.GotIV(this);
                 }
-                if (updateIV && (oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
+                if ((updateIV && (oldPokemon.AttackIV == null && AttackIV != null)) || oldPokemon._hasIvChanges)
                 {
                     oldPokemon._hasIvChanges = false;
                     // TODO: Send webhook
@@ -560,7 +560,7 @@
                 IsExpireTimestampVerified = true;
                 var unixDate = timestampMs.FromMilliseconds();
                 var secondOfHour = unixDate.Second + unixDate.Minute * 60;
-                var spawnpoint = new Spawnpoint
+                return new Spawnpoint
                 {
                     Id = SpawnId ?? 0,
                     Latitude = Latitude,
@@ -568,7 +568,6 @@
                     Updated = Updated,
                     DespawnSecond = (ushort)secondOfHour,
                 };
-                return spawnpoint;
             }
             else
             {

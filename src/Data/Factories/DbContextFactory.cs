@@ -6,17 +6,15 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions;
 
-    class DbContextFactory
+    internal static class DbContextFactory
     {
         public static DeviceControllerContext CreateDeviceControllerContext(string connectionString)// where T : DbContext
         {
             var optionsBuilder = new DbContextOptionsBuilder<DeviceControllerContext>();
             //optionsBuilder.UseMySQL(connectionString);
-            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-
-            var context = new DeviceControllerContext(optionsBuilder.Options);
+            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));           
             //context.ChangeTracker.AutoDetectChangesEnabled = false;
-            return context;
+            return new DeviceControllerContext(optionsBuilder.Options);
         }
 
 

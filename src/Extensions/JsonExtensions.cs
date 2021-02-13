@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Extensions
 {
-    using System;
     using System.Text.Json;
 
     public static class JsonExtensions
