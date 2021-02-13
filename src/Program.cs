@@ -1,5 +1,10 @@
 namespace ChuckDeviceController
 {
+    using System;
+    using System.IO;
+
+    using ChuckDeviceController.Configuration;
+
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
 
@@ -30,6 +35,16 @@ namespace ChuckDeviceController
     {
         public static void Main(string[] args)
         {
+            var configPath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                Path.Combine("..", Strings.DefaultConfigFileName)
+            );
+            Startup.Config = Config.Load(configPath);
+            if (Startup.Config == null)
+            {
+                Console.WriteLine($"Failed to load config {configPath}");
+                return;
+            }
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -38,6 +53,8 @@ namespace ChuckDeviceController
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    //webBuilder.UseUrls("http://localhost:5000", "https://localhost:5001");
+                    webBuilder.UseUrls($"http://{Startup.Config.Interface}:{Startup.Config.Port}"); // TODO: Support for https and port + 1
                     webBuilder.UseWebRoot("../wwwroot");
                 });
     }

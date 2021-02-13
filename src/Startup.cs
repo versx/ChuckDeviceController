@@ -30,24 +30,13 @@ namespace ChuckDeviceController
 
     public class Startup
     {
-        public static Config Config { get; private set; }
+        public static Config Config { get; set; }
 
-        public static DatabaseConfig DbConfig { get; private set; }
+        public static DatabaseConfig DbConfig => Config?.Database;
 
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            var configPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                Path.Combine("..", Strings.DefaultConfigFileName)
-            );
-            Config = Config.Load(configPath);
-            if (Config == null)
-            {
-                Console.WriteLine($"Failed to load config {configPath}");
-                return;
-            }
-            DbConfig = Config.Database;
         }
 
         public IConfiguration Configuration { get; }
@@ -62,22 +51,36 @@ namespace ChuckDeviceController
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckDeviceController", Version = "v1" });
             });
+
             services.AddDbContextFactory<DeviceControllerContext>(options =>
                 options.UseMySql(DbConfig.ToString(), ServerVersion.AutoDetect(DbConfig.ToString())), ServiceLifetime.Singleton);
             services.AddDbContext<DeviceControllerContext>(options =>
                 //options.UseMySQL(DbConfig.ToString()));
                 options.UseMySql(DbConfig.ToString(), ServerVersion.AutoDetect(DbConfig.ToString())), ServiceLifetime.Scoped);
+            /*
+            services.AddDbContextPool<DeviceControllerContext>(
+                options => options.UseMySql(ServerVersion.AutoDetect(DbConfig.ToString()),
+                    mySqlOptions =>
+                    {
+                        mySqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 3,
+                            maxRetryDelay: TimeSpan.FromSeconds(5),
+                            errorNumbersToAdd: null
+                        );
+                    }
+            ), 128); // TODO: Configurable PoolSize (128=default)
+            */
 
             services.AddHealthChecks();
             services.AddScoped(typeof(IRepository<>), typeof(EfCoreRepository<,>));
             //services.AddScoped<IConsumerService, ConsumerService>();
             services.AddSingleton<IConsumerService, ConsumerService>();
             services.AddScoped<Config>();
-            //services.addhos
 
             services.AddCors(option => option.AddPolicy("Test", builder => {
-                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-
+                builder.AllowAnyOrigin()
+                       .AllowAnyHeader()
+                       .AllowAnyMethod();
             }));
 
             services.AddResponseCaching();

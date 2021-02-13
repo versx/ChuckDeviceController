@@ -43,6 +43,8 @@
         private readonly PokestopRepository _pokestopRepository;
         private readonly CellRepository _cellRepository;
 
+        // TODO: Use lock for stops list
+
         #endregion
 
         #region Properties

@@ -121,7 +121,7 @@
                     body_class = "theme-dark",
                     table_class = "table-dark",
                     current_version = "0.1.0",
-                    uuid,
+                    device_uuid = uuid,
                     instances,
                 };
                 var data = Renderer.ParseTemplate("device-assign", obj);
@@ -361,11 +361,11 @@
                 //{
                 //    case InstanceType.PokemonIV:
                         obj.pokemon_ids = instance.Data.PokemonIds == null ? null : string.Join("\n", instance.Data.PokemonIds);
-                        obj.iv_queue_limit = instance.Data.IVQueueLimit == 0 ? 100 : instance.Data.IVQueueLimit;
+                        obj.iv_queue_limit = instance.Data.IVQueueLimit > 0 ? instance.Data.IVQueueLimit : 100;
                 //        break;
                 //    case InstanceType.AutoQuest:
                         obj.timezone_offset = instance.Data.TimezoneOffset;
-                        obj.spin_limit = instance.Data.SpinLimit == 0 ? 3500 : instance.Data.SpinLimit;
+                        obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
                 //        break;
                 //}
                 if (instance.Type == InstanceType.CirclePokemon ||
@@ -510,8 +510,6 @@
                     TimezoneOffset = timezoneOffset,
                 };
                 await _instanceRepository.UpdateAsync(instance);
-                // TODO: Fix issue with reloading instance 
-                // Fetch instance again since reloading the instance the Data.Area property will fail to cast.
                 InstanceController.Instance.ReloadInstance(instance, name);
                 _logger.LogDebug($"Instance {name} was updated");
                 return Redirect("/dashboard/instances");
@@ -862,7 +860,7 @@
                 body_class = "theme-dark",
                 table_class = "table-dark",
                 current_version = "0.1.0",
-                stats
+                stats,
             };
             var data = Renderer.ParseTemplate("accounts", obj);
             var content = new ContentResult
