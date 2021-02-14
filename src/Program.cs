@@ -54,7 +54,7 @@ namespace ChuckDeviceController
                 {
                     webBuilder.UseStartup<Startup>();
                     //webBuilder.UseUrls("http://localhost:5000", "https://localhost:5001");
-                    //webBuilder.UseUrls($"http://{Startup.Config.Interface}:{Startup.Config.Port}"); // TODO: Support for https and port + 1
+                    webBuilder.UseUrls($"http://{Startup.Config.Interface}:{Startup.Config.Port}"); // TODO: Support for https and port + 1
                     webBuilder.UseWebRoot("../wwwroot");
                 });
     }

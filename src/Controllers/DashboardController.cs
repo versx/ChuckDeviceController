@@ -51,8 +51,14 @@
 
         #region Routes
 
-        [HttpGet("/dashboard")]
+        [HttpGet("/")]
         public IActionResult GetIndex()
+        {
+            return Redirect("/dashboard");
+        }
+
+        [HttpGet("/dashboard")]
+        public IActionResult GetDashboard()
         {
             var obj = new
             {
