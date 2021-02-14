@@ -60,20 +60,11 @@
         [HttpGet("/dashboard")]
         public IActionResult GetDashboard()
         {
-            var obj = new
-            {
-                started = Strings.Started,
-                title = "Chuck Device Controller",
-                locale = "en",
-                locale_new = "en",
-                body_class = "theme-dark",
-                table_class = "table-dark",
-                current_version = "0.1.0",
-                devices_count = _context.Devices.Count(),
-                instances_count = _context.Instances.Count(),
-                assignments_count = _context.Assignments.Count(),
-                accounts_count = _context.Accounts.Count(),
-            };
+            dynamic obj = BuildDefaultData();
+            obj.devices_count = _context.Devices.Count();
+            obj.instances_count = _context.Instances.Count();
+            obj.assignments_count = _context.Assignments.Count();
+            obj.accounts_count = _context.Accounts.Count();
             var data = Renderer.ParseTemplate("index", obj);
             return new ContentResult
             {
@@ -116,18 +107,9 @@
                     name = x.Name,
                     selected = string.Compare(x.Name, device.InstanceName, true) == 0
                 }).ToList();
-                var obj = new
-                {
-                    started = Strings.Started,
-                    title = "Chuck Device Controller",
-                    locale = "en",
-                    locale_new = "en",
-                    body_class = "theme-dark",
-                    table_class = "table-dark",
-                    current_version = "0.1.0",
-                    device_uuid = uuid,
-                    instances,
-                };
+                dynamic obj = BuildDefaultData();
+                obj.device_uuid = uuid;
+                obj.instances = instances;
                 var data = Renderer.ParseTemplate("device-assign", obj);
                 return new ContentResult
                 {
@@ -181,18 +163,9 @@
         {
             if (Request.Method == "GET")
             {
-                var obj = new
-                {
-                    started = Strings.Started,
-                    title = "Chuck Device Controller",
-                    locale = "en",
-                    locale_new = "en",
-                    body_class = "theme-dark",
-                    table_class = "table-dark",
-                    current_version = "0.1.0",
-                    min_level = 0,
-                    max_level = 30,
-                };
+                dynamic obj = BuildDefaultData();
+                obj.min_level = 0;
+                obj.max_level = 30;
                 var data = Renderer.ParseTemplate("instance-add", obj);
                 return new ContentResult
                 {
@@ -342,14 +315,7 @@
                 }
                 var minLevel = instance.Data.MinimumLevel;
                 var maxLevel = instance.Data.MaximumLevel;
-                dynamic obj = new ExpandoObject();
-                obj.started = Strings.Started;
-                obj.title = "Chuck Device Controller";
-                obj.locale = "en";
-                obj.locale_new = "en";
-                obj.body_class = "theme-dark";
-                obj.table_class = "table-dark";
-                obj.current_version = "0.1.0";
+                dynamic obj = BuildDefaultData();
                 obj.name = name;
                 obj.old_name = name;
                 obj.min_level = minLevel;
@@ -519,17 +485,8 @@
         [HttpGet("/dashboard/instance/ivqueue/{name}")]
         public IActionResult GetIVQueue(string name)
         {
-            var obj = new
-            {
-                started = Strings.Started,
-                title = "Chuck Device Controller",
-                locale = "en",
-                locale_new = "en",
-                body_class = "theme-dark",
-                table_class = "table-dark",
-                current_version = "0.1.0",
-                instance_name = name,
-            };
+            dynamic obj = BuildDefaultData();
+            obj.instance_name = name;
             var data = Renderer.ParseTemplate("instance-ivqueue", obj);
             return new ContentResult
             {
@@ -564,22 +521,13 @@
         {
             if (Request.Method == "GET")
             {
-                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
-                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-                var obj = new
-                {
-                    started = Strings.Started,
-                    title = "Chuck Device Controller",
-                    locale = "en",
-                    locale_new = "en",
-                    body_class = "theme-dark",
-                    table_class = "table-dark",
-                    current_version = "0.1.0",
-                    instances = instances.Select(x => new { name = x.Name, selected = false, selected_source = false }),
-                    devices = devices.Select(x => new { uuid = x.Uuid, selected = false }),
-                    nothing_selected = true,
-                    nothing_selected_source = true,
-                };
+                var instances = await _instanceRepository.GetAllAsync();
+                var devices = await _deviceRepository.GetAllAsync();
+                dynamic obj = BuildDefaultData();
+                obj.instances = instances.Select(x => new { name = x.Name, selected = false, selected_source = false });
+                obj.devices = devices.Select(x => new { uuid = x.Uuid, selected = false });
+                obj.nothing_selected = true;
+                obj.nothing_selected_source = true;
                 var data = Renderer.ParseTemplate("assignment-add", obj);
                 return new ContentResult
                 {
@@ -703,23 +651,14 @@
                     // Failed to get devices or instances from database
                 }
 
-                string formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
-                var obj = new
-                {
-                    started = Strings.Started,
-                    title = "Chuck Device Controller",
-                    locale = "en",
-                    locale_new = "en",
-                    body_class = "theme-dark",
-                    table_class = "table-dark",
-                    current_version = "0.1.0",
-                    id,
-                    date = assignment.Date,
-                    time = formattedTime,
-                    enabled = assignment.Enabled ? "checked" : "",
-                    instances = instances.Select(x => new { name = x.Name, selected = x.Name == assignment.InstanceName, selected_source = x.Name == assignment.SourceInstanceName }),
-                    devices = devices.Select(x => new { uuid = x.Uuid, selected = x.Uuid == assignment.DeviceUuid }),
-                };
+                var formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
+                dynamic obj = BuildDefaultData();
+                obj.id = id;
+                obj.date = assignment.Date;
+                obj.time = formattedTime;
+                obj.enabled = assignment.Enabled ? "checked" : "";
+                obj.instances = instances.Select(x => new { name = x.Name, selected = x.Name == assignment.InstanceName, selected_source = x.Name == assignment.SourceInstanceName });
+                obj.devices = devices.Select(x => new { uuid = x.Uuid, selected = x.Uuid == assignment.DeviceUuid });
                 var data = Renderer.ParseTemplate("assignment-edit", obj);
                 return new ContentResult
                 {
@@ -840,18 +779,9 @@
         public async Task<IActionResult> GetAccounts()
         {
             var accountsRepository = new AccountRepository(_context);
-            var stats = await accountsRepository.GetStatsAsync().ConfigureAwait(false);
-            var obj = new
-            {
-                started = Strings.Started,
-                title = "Chuck Device Controller",
-                locale = "en",
-                locale_new = "en",
-                body_class = "theme-dark",
-                table_class = "table-dark",
-                current_version = "0.1.0",
-                stats,
-            };
+            var stats = await accountsRepository.GetStatsAsync();
+            dynamic obj = BuildDefaultData();
+            obj.stats = stats;
             var data = Renderer.ParseTemplate("accounts", obj);
             return new ContentResult
             {
@@ -869,17 +799,8 @@
         {
             if (Request.Method == "GET")
             {
-                var obj = new
-                {
-                    started = Strings.Started,
-                    title = "Chuck Device Controller",
-                    locale = "en",
-                    locale_new = "en",
-                    body_class = "theme-dark",
-                    table_class = "table-dark",
-                    current_version = "0.1.0",
-                    level = 0,
-                };
+                dynamic obj = BuildDefaultData();
+                obj.level = 0;
                 var data = Renderer.ParseTemplate("accounts-add", obj);
                 return new ContentResult
                 {
@@ -964,19 +885,18 @@
 
         #region Helper Methods
 
-        private static dynamic BuildDefaultData()
+        private static ExpandoObject BuildDefaultData()
         {
-            // TODO: Locales
-            return new
-            {
-                started = Strings.Started,
-                title = "Chuck Device Controller",
-                locale = "en",
-                locale_new = "en",
-                body_class = "theme-dark",
-                table_class = "table-dark",
-                current_version = "0.1.0",
-            };
+            // TODO: Include locales
+            dynamic obj = new ExpandoObject();
+            obj.started = Strings.Started; // TODO: TimeZone
+            obj.title = "Chuck Device Controller";
+            obj.locale = "en";
+            obj.locale_new = "en";
+            obj.body_class = "theme-dark";
+            obj.table_class = "table-dark";
+            obj.current_version = "0.1.0";
+            return obj;
         }
 
         #endregion
