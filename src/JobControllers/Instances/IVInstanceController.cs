@@ -78,7 +78,7 @@
                 Interval = 1000
             };
             // TODO: Maybe no ThreadPool
-            _timer.Elapsed += (sender, e) => ThreadPool.QueueUserWorkItem(x => LoopCache());
+            _timer.Elapsed += (sender, e) => ThreadPool.QueueUserWorkItem(_ => LoopCache());
             _timer.Start();
         }
 
@@ -102,7 +102,7 @@
             var timeDiff = DateTime.UtcNow.ToTotalSeconds() - pokemon.FirstSeenTimestamp;
             if (timeDiff >= 600)
             {
-                return await GetTask(uuid, accountUsername, false);
+                return await GetTask(uuid, accountUsername, false).ConfigureAwait(false);
             }
             //lock (_scannedLock)
             //{
@@ -137,7 +137,7 @@
                 ivhString = Math.Round(ivh).ToString("N0");
             }
             var text = $"<a href='/dashboard/instance/ivqueue/{Uri.EscapeDataString(Name)}'>Queue</a>: {_pokemonQueue.Count}, IV/h: {ivhString}";
-            return await Task.FromResult(text);
+            return await Task.FromResult(text).ConfigureAwait(false);
         }
 
         public void Reload()
@@ -157,7 +157,7 @@
                 // Pokemon Id not in pokemon IV list
                 return;
             }
-            if (_pokemonQueue.FirstOrDefault(x => x.Id == pokemon.Id) != null)
+            if (_pokemonQueue.Find(x => x.Id == pokemon.Id) != null)
             {
                 // Queue already contains pokemon
                 return;
@@ -206,7 +206,7 @@
 
             lock (_queueLock)
             {
-                var pkmn = _pokemonQueue.FirstOrDefault(x => x.Id == pokemon.Id);
+                var pkmn = _pokemonQueue.Find(x => x.Id == pokemon.Id);
                 if (pkmn != null)
                 {
                     _pokemonQueue.Remove(pkmn);

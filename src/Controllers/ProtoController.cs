@@ -51,7 +51,6 @@
         //private readonly Dictionary<ulong, List<string>> _gymIdsPerCell;
         //private readonly Dictionary<ulong, List<string>> _stopIdsPerCell;
 
-
         #endregion
 
         #region Constructor
@@ -94,7 +93,7 @@
         ]
         public async Task<ProtoResponse> PostAsync(ProtoPayload payload)
         {
-            var response = await HandleProtoRequest(payload);
+            var response = await HandleProtoRequest(payload).ConfigureAwait(false);
             if (response?.Data == null)
             {
                 _logger.LogError($"[Proto] [{payload.Uuid}] null data response!");
@@ -132,17 +131,17 @@
         {
             if (payload == null)
             {
-                _logger.LogError($"Invalid proto payload received");
+                _logger.LogError("Invalid proto payload received");
                 return null;
             }
 
-            var device = await _deviceRepository.GetByIdAsync(payload.Uuid);
+            var device = await _deviceRepository.GetByIdAsync(payload.Uuid).ConfigureAwait(false);
             if (device != null)
             {
                 device.LastLatitude = payload.LatitudeTarget;
                 device.LastLongitude = payload.LongitudeTarget;
                 device.LastSeen = DateTime.UtcNow.ToTotalSeconds();
-                await _deviceRepository.UpdateAsync(device);
+                await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
             }
 
             if (!string.IsNullOrEmpty(payload.Username) && payload.Level > 0)
@@ -156,11 +155,11 @@
                     var oldLevel = _levelCache[payload.Username];
                     if (oldLevel != payload.Level)
                     {
-                        var account = await _accountRepository.GetByIdAsync(payload.Username);
+                        var account = await _accountRepository.GetByIdAsync(payload.Username).ConfigureAwait(false);
                         if (account != null)
                         {
                             account.Level = payload.Level;
-                            await _accountRepository.UpdateAsync(account);
+                            await _accountRepository.UpdateAsync(account).ConfigureAwait(false);
                         }
                         _levelCache[payload.Username] = payload.Level;
                     }
@@ -227,7 +226,7 @@
                         try
                         {
                             var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (gpr != null && gpr.Success)
+                            if (gpr?.Success == true)
                             {
                                 playerData.Add(gpr.Player);
                             }
@@ -245,7 +244,7 @@
                         try
                         {
                             var ghi = GetHoloholoInventoryOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (ghi != null && ghi.Success)
+                            if (ghi?.Success == true)
                             {
                                 if (ghi.InventoryDelta.InventoryItem?.Count > 0)
                                 {
@@ -268,7 +267,7 @@
                             var fsr = FortSearchOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (fsr != null)
                             {
-                                if (fsr.ChallengeQuest != null && fsr.ChallengeQuest.Quest != null)
+                                if (fsr.ChallengeQuest?.Quest != null)
                                 {
                                     quests.Add(fsr.ChallengeQuest.Quest);
                                 }
@@ -292,7 +291,7 @@
                             if (payload.Level >= 30)
                             {
                                 var er = EncounterOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                                if (er != null && er.Status == EncounterOutProto.Types.Status.EncounterSuccess)
+                                if (er?.Status == EncounterOutProto.Types.Status.EncounterSuccess)
                                 {
                                     encounters.Add(new
                                     {
@@ -338,7 +337,7 @@
                             {
                                 isInvalidGmo = false;
                                 var mapCellsNew = gmo.MapCell;
-                                
+
                                 if (mapCellsNew.Count == 0)
                                 {
                                     _logger.LogDebug($"[Proto] [{payload.Uuid}] Map cells are empty");
@@ -346,14 +345,11 @@
                                 }
 
                                 // Check if we're within the same cell, if so then we are within the target distance
-                                if (!inArea && targetKnown)
+                                if (!inArea && targetKnown && mapCellsNew.Select(x => x.S2CellId).Contains(targetCellId.Id))
                                 {
-                                    if (mapCellsNew.Select(x => x.S2CellId).Contains(targetCellId.Id))
-                                    {
-                                        inArea = true;
-                                    }
+                                    inArea = true;
                                 }
-                                
+
                                 foreach (var mapCell in mapCellsNew)
                                 {
                                     var tsMs = mapCell.AsOfTimeMs;
@@ -592,7 +588,7 @@
                     _logger.LogError($"[Proto] [{payload.Uuid}] Failed to queue user work item");
                 };
                 */
-                await _consumerService.AddData(consumerData);
+                await _consumerService.AddData(consumerData).ConfigureAwait(false);
             }
 
             stopwatch.Stop();

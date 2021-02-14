@@ -37,15 +37,15 @@
 
         public string Name { get; set; }
 
-        public List<Coordinate> Coordinates { get; private set; }
+        public List<Coordinate> Coordinates { get; }
 
-        public CircleType Type { get; private set; }
+        public CircleType Type { get; }
 
-        public CircleRouteType RouteType { get; private set; }
+        public CircleRouteType RouteType { get; }
 
-        public ushort MinimumLevel { get; private set; }
+        public ushort MinimumLevel { get; }
 
-        public ushort MaximumLevel { get; private set; }
+        public ushort MaximumLevel { get; }
 
         #endregion
 
@@ -109,7 +109,7 @@
                 Longitude = currentCoord.Longitude,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
-            });
+            }).ConfigureAwait(false);
         }
 
         public async Task<string> GetStatus()
@@ -123,7 +123,7 @@
                     text = $"Round Time {Math.Round(timeDiffSeconds, 2):N0}s";
                 }
             }
-            return await Task.FromResult(text);
+            return await Task.FromResult(text).ConfigureAwait(false);
         }
 
         public void Stop()
@@ -222,7 +222,6 @@
         {
             lock (_indexLock)
             {
-                Coordinate currentCoord;
                 var currentUuidIndex = _lastUuid.ContainsKey(uuid)
                     ? _lastUuid[uuid].Index
                     : Convert.ToInt32(Math.Round(Convert.ToDouble(_random.Next(ushort.MinValue, ushort.MaxValue) % Coordinates.Count)));
@@ -235,7 +234,7 @@
                     // this ensures average round time decreases by at least 10% using
                     // this approach
                     var (numDevices, distanceToNextDevice) = QueryLiveDevices(uuid, currentUuidIndex);
-                    var dist = Convert.ToInt32(numDevices * distanceToNextDevice + 0.5);
+                    var dist = Convert.ToInt32((numDevices * distanceToNextDevice) + 0.5);
                     if (dist < Coordinates.Count)
                     {
                         shouldAdvance = false;
@@ -271,8 +270,7 @@
                 }
                 _lastUuid[uuid].Index = currentUuidIndex;
                 _lastUuid[uuid].LastSeen = DateTime.UtcNow;
-                currentCoord = Coordinates[currentUuidIndex];
-                return currentCoord;
+                return Coordinates[currentUuidIndex];
             }
         }
 
@@ -281,24 +279,23 @@
         {
             lock (_indexLock)
             {
-                Coordinate currentCoord;
                 var currentUuidIndex = _lastUuid.ContainsKey(uuid)
                     ? _lastUuid[uuid].Index
                     : Convert.ToInt32(Math.Round(Convert.ToDouble(_random.Next(ushort.MinValue, ushort.MaxValue) % Coordinates.Count)));
                 _lastUuid[uuid].LastSeen = DateTime.UtcNow;
                 var shouldAdvance = true;
                 var jumpDistance = 0d;
-                if (_lastUuid.Count > 1 & _random.Next(0, 100) < 15)
+                if (_lastUuid.Count > 1 && _random.Next(0, 100) < 15)
                 {
                     var (numLiveDevices, distanceToNext) = QueryLiveDevices(uuid, currentUuidIndex);
-                    var dist = 10 * distanceToNext * numLiveDevices + 5;
+                    var dist = (10 * distanceToNext * numLiveDevices) + 5;
                     if (dist < 10 * Coordinates.Count)
                     {
                         shouldAdvance = false;
                     }
                     if (dist > 12 * Coordinates.Count)
                     {
-                        jumpDistance = distanceToNext - Coordinates.Count / numLiveDevices - 1;
+                        jumpDistance = distanceToNext - (Coordinates.Count / numLiveDevices) - 1;
                     }
                 }
                 if (currentUuidIndex == 0)
@@ -317,7 +314,7 @@
                 }
                 else
                 {
-                    currentUuidIndex -= 1;
+                    currentUuidIndex--;
                     if (currentUuidIndex < 0)
                     {
                         currentUuidIndex = Coordinates.Count - 1;
@@ -325,8 +322,7 @@
                 }
                 _logger.LogDebug($"[{uuid}] Current index: {currentUuidIndex}");
                 _lastUuid[uuid].Index = currentUuidIndex;
-                currentCoord = Coordinates[currentUuidIndex];
-                return currentCoord;
+                return Coordinates[currentUuidIndex];
             }
         }
 

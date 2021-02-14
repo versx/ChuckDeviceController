@@ -51,7 +51,7 @@
                             p.QuestType,
                         };
                     }
-                });
+                }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -61,7 +61,7 @@
 
         public async Task ClearQuestsAsync()
         {
-            await _dbContext.Pokestops.UpdateFromQueryAsync(x => new Pokestop
+            await _dbContext.Pokestops.UpdateFromQueryAsync(_ => new Pokestop
             {
                 QuestConditions = null,
                 QuestRewards = null,
@@ -69,12 +69,12 @@
                 QuestTemplate = null,
                 QuestTimestamp = null,
                 QuestType = null,
-            });
+            }).ConfigureAwait(false);
         }
 
         public async Task<List<Pokestop>> GetWithin(BoundingBox bbox, ulong updated = 0)
         {
-            var pokestops = await GetAllAsync(true);
+            var pokestops = await GetAllAsync(true).ConfigureAwait(false);
             return pokestops.Where(stop =>
                 stop.Latitude >= bbox.MinimumLatitude &&
                 stop.Latitude <= bbox.MaximumLatitude &&
@@ -89,9 +89,9 @@
         {
             if (fromCache)
             {
-                return await Task.FromResult(_dbContext.Pokestops.FromCache().ToList());
+                return await Task.FromResult(_dbContext.Pokestops.FromCache().ToList()).ConfigureAwait(false);
             }
-            return await base.GetAllAsync();
+            return await base.GetAllAsync().ConfigureAwait(false);
         }
     }
 }

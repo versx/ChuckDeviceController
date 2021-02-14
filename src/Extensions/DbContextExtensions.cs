@@ -27,7 +27,9 @@
                     //item already in db no need to do anything  
                     break;
                 default:
+#pragma warning disable CA2208 // Instancier les exceptions d'argument correctement
                     throw new ArgumentOutOfRangeException();
+#pragma warning restore CA2208 // Instancier les exceptions d'argument correctement
             }
         }
 
