@@ -16,7 +16,7 @@
         public ushort Port { get; set; }
 
         [JsonPropertyName("timezoneOffset")]
-        public short TimezoneOffset { get; set; }
+        public short TimezoneOffset { get; set; } = (short)TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalSeconds;
 
         [JsonPropertyName("db")]
         public DatabaseConfig Database { get; set; }
