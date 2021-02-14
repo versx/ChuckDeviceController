@@ -18,3 +18,26 @@
 
 View all available routes:  
 http://ipaddress:port/swagger
+
+## Configuration  
+```js
+{
+    // Change to machine IP address
+    "interface": "10.10.10.10",
+    // Listening port to receive data and control devices
+    "port": 5001,
+    // Database information
+    "db": {
+        // Database host/IP address
+        "host": "127.0.0.1",
+        // Database connection port
+        "port": 3306,
+        // Database account username
+        "username": "cdcuser",
+        // Database account password
+        "password": "cdcPass!",
+        // Database name
+        "database": "cdcdb"
+    }
+}
+```
