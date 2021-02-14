@@ -18,7 +18,7 @@
 
         public async Task<Account> GetNewAccountAsync(int minLevel, int maxLevel, List<string> inuseAccounts)
         {
-            var accounts = await GetAllAsync();
+            var accounts = await GetAllAsync().ConfigureAwait(false);
             return accounts.FirstOrDefault(x =>
                 x.Level >= minLevel &&
                 x.Level <= maxLevel &&
@@ -30,31 +30,31 @@
 
         public async Task<bool> SetLastEncounterAsync(string username, double latitude, double longitude, ulong time)
         {
-            var account = await GetByIdAsync(username);
+            var account = await GetByIdAsync(username).ConfigureAwait(false);
             if (account == null)
                 return false;
             account.LastEncounterLatitude = latitude;
             account.LastEncounterLongitude = longitude;
             account.LastEncounterTime = time;
-            await AddOrUpdateAsync(account);
+            await AddOrUpdateAsync(account).ConfigureAwait(false);
             return true;
         }
 
         public async Task<bool> SpinAsync(string username)
         {
-            var account = await GetByIdAsync(username);
+            var account = await GetByIdAsync(username).ConfigureAwait(false);
             if (account == null)
                 return false;
             account.Spins++;
-            await AddOrUpdateAsync(account);
+            await AddOrUpdateAsync(account).ConfigureAwait(false);
             return true;
         }
 
         public async Task<dynamic> GetStatsAsync()
         {
             var deviceRepository = new DeviceRepository(_dbContext);
-            var devices = await deviceRepository.GetAllAsync();
-            var accounts = await GetAllAsync();
+            var devices = await deviceRepository.GetAllAsync().ConfigureAwait(false);
+            var accounts = await GetAllAsync().ConfigureAwait(false);
             var now = DateTime.UtcNow.ToTotalSeconds();
             const uint SpinLimit = 3500;
             const uint OneDaySeconds = 86400;
@@ -69,7 +69,7 @@
                                                  x.LastEncounterLongitude == null &&
                                                  x.LastEncounterTime == null &&
                                                  x.Spins == 0),
-                in_use_count = (uint)accounts.Count(x => devices.FirstOrDefault(dev => string.Compare(dev.AccountUsername, x.Username, true) == 0) != null),
+                in_use_count = (uint)accounts.Count(x => devices.Any(dev => string.Compare(dev.AccountUsername, x.Username, true) == 0)),
                 clean_iv_count = (uint)accounts.Count(x => string.IsNullOrEmpty(x.Failed) &&
                                                       x.FailedTimestamp == null &&
                                                       x.FirstWarningTimestamp == null &&
@@ -93,7 +93,7 @@
                 {
                     level = x,
                     total = accounts.Count(z => z.Level == x),
-                    in_use = accounts.Count(z => devices.FirstOrDefault(dev => string.Compare(dev.AccountUsername, z.Username) == 0 && z.Level == x) != null),
+                    in_use = accounts.Count(z => devices.Any(dev => string.Compare(dev.AccountUsername, z.Username) == 0 && z.Level == x)),
                     good = y.Count(z => string.IsNullOrEmpty(z.Failed) && z.FailedTimestamp == null && z.FirstWarningTimestamp == null),
                     banned = y.Count(z => !string.IsNullOrEmpty(z.Failed) || z.FailedTimestamp > 0),
                     warning = y.Count(z => z.FirstWarningTimestamp > 0),

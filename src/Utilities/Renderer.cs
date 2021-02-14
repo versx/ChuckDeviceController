@@ -51,10 +51,8 @@
             {
                 throw new FileNotFoundException($"Template does not exist at path: {path}", path);
             }
-            using (var sr = new StreamReader(path))
-            {
-                return sr.ReadToEnd();
-            }
+            using var sr = new StreamReader(path);
+            return sr.ReadToEnd();
         }
 
         private static void RegisterAllTemplates()

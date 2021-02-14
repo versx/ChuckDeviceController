@@ -27,9 +27,9 @@
             for (int node = 0, altNode = (numOfPoints - 1); node < numOfPoints; altNode = node++)
             {
                 if ((lngs[node] > longitude != (lngs[altNode] > longitude))
-                    && (latitude < (lats[altNode] - lats[node])
+                    && (latitude < ((lats[altNode] - lats[node])
                                        * (longitude - lngs[node])
-                                       / (lngs[altNode] - lngs[node])
+                                       / (lngs[altNode] - lngs[node]))
                                        + lats[node]
                 )
             )

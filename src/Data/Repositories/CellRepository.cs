@@ -42,7 +42,7 @@
                     }
                     return _dbContext.Cells.Where(x => ids.Contains(x.Id))
                                            .ToList();
-                });
+                }).ConfigureAwait(false);
         }
     }
 }

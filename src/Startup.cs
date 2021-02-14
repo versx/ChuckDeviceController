@@ -44,7 +44,7 @@ namespace ChuckDeviceController
         // This method gets called by the runtime. Use this method to add services to the container.
         public async void ConfigureServices(IServiceCollection services)
         {
-            await AssignmentController.Instance.Initialize();
+            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
 
             /*
             services.AddSingleton<IConfiguration>(provider => new ConfigurationBuilder()
@@ -54,10 +54,7 @@ namespace ChuckDeviceController
             */
 
             //services.AddRazorPages();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckDeviceController", Version = "v1" });
-            });
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckDeviceController", Version = "v1" }));
 
             services.AddDbContextFactory<DeviceControllerContext>(options =>
                 options.UseMySql(DbConfig.ToString(), ServerVersion.AutoDetect(DbConfig.ToString())), ServiceLifetime.Singleton);
@@ -115,7 +112,7 @@ namespace ChuckDeviceController
                             })
                         }.ToJson();
                         context.Response.ContentType = MediaTypeNames.Application.Json;
-                        await context.Response.WriteAsync(result);
+                        await context.Response.WriteAsync(result).ConfigureAwait(false);
                     }
                 });
 

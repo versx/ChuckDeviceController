@@ -69,13 +69,12 @@
                 accounts_count = _context.Accounts.Count(),
             };
             var data = Renderer.ParseTemplate("index", obj);
-            var content = new ContentResult
+            return new ContentResult
             {
                 Content = data,
                 ContentType = "text/html",
                 StatusCode = 200,
             };
-            return content;
         }
 
         #region Devices
@@ -85,13 +84,12 @@
         {
             var obj = BuildDefaultData();
             var data = Renderer.ParseTemplate("devices", obj);
-            var content = new ContentResult
+            return new ContentResult
             {
                 Content = data,
                 ContentType = "text/html",
                 StatusCode = 200,
             };
-            return content;
         }
 
         [
@@ -100,14 +98,14 @@
         ]
         public async Task<IActionResult> AssignDevice(string uuid)
         {
-            var device = await _deviceRepository.GetByIdAsync(uuid);
+            var device = await _deviceRepository.GetByIdAsync(uuid).ConfigureAwait(false);
             if (device == null)
             {
                 // Unknown device
             }
             if (Request.Method == "GET")
             {
-                var instances = (await _instanceRepository.GetAllAsync()).Select(x => new
+                var instances = (await _instanceRepository.GetAllAsync().ConfigureAwait(false)).Select(x => new
                 {
                     name = x.Name,
                     selected = string.Compare(x.Name, device.InstanceName, true) == 0
@@ -125,13 +123,12 @@
                     instances,
                 };
                 var data = Renderer.ParseTemplate("device-assign", obj);
-                var content = new ContentResult
+                return new ContentResult
                 {
                     Content = data,
                     ContentType = "text/html",
                     StatusCode = 200,
                 };
-                return content;
             }
             else
             {
@@ -140,13 +137,13 @@
                 {
                     // Unknown instance name provided
                 }
-                var instance = await _instanceRepository.GetByIdAsync(instanceName);
+                var instance = await _instanceRepository.GetByIdAsync(instanceName).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Failed to get instance by name
                 }
                 device.InstanceName = instance.Name;
-                await _deviceRepository.UpdateAsync(device);
+                await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
                 //templateData = Renderer.ParseTemplate("devices", BuildDefaultData());
                 InstanceController.Instance.ReloadDevice(device, uuid);
                 return Redirect("/dashboard/devices");
@@ -162,13 +159,12 @@
         {
             var obj = BuildDefaultData();
             var data = Renderer.ParseTemplate("instances", obj);
-            var content = new ContentResult
+            return new ContentResult
             {
                 Content = data,
                 ContentType = "text/html",
                 StatusCode = 200,
             };
-            return content;
         }
 
         [
@@ -192,13 +188,12 @@
                     max_level = 30,
                 };
                 var data = Renderer.ParseTemplate("instance-add", obj);
-                var content = new ContentResult
+                return new ContentResult
                 {
                     Content = data,
                     ContentType = "text/html",
                     StatusCode = 200,
                 };
-                return content;
             }
             else
             {
@@ -235,12 +230,12 @@
                 //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
                 //var accountGroup = Request.Form["account_group"];
                 //var isEvent = Request.Form["is_event"];
-                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
                 }
 
-                if (await _instanceRepository.GetByIdAsync(name) != null)
+                if (await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false) != null)
                 {
                     // Instance already exists
                 }
@@ -297,7 +292,7 @@
                         }
                 }
 
-                var instance = await _instanceRepository.GetByIdAsync(name);
+                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance != null)
                 {
                     // Instance already exists
@@ -320,7 +315,7 @@
                         TimezoneOffset = timezoneOffset,
                     }
                 };
-                await _instanceRepository.AddAsync(instance);
+                await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
                 InstanceController.Instance.AddInstance(instance);
                 return Redirect("/dashboard/instances");
             }
@@ -334,7 +329,7 @@
         {
             if (Request.Method == "GET")
             {
-                var instance = await _instanceRepository.GetByIdAsync(name);
+                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Failed to get instance by name
@@ -398,23 +393,22 @@
                     obj.area = coords;
                 }
                 var data = Renderer.ParseTemplate("instance-edit", obj);
-                var content = new ContentResult
+                return new ContentResult
                 {
                     Content = data,
                     ContentType = "text/html",
                     StatusCode = 200,
                 };
-                return content;
             }
             else
             {
                 if (Request.Form.ContainsKey("delete"))
                 {
-                    var instanceToDelete = await _instanceRepository.GetByIdAsync(name);
+                    var instanceToDelete = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                     if (instanceToDelete != null)
                     {
-                        await _instanceRepository.DeleteAsync(instanceToDelete);
-                        await InstanceController.Instance.RemoveInstance(name);
+                        await _instanceRepository.DeleteAsync(instanceToDelete).ConfigureAwait(false);
+                        await InstanceController.Instance.RemoveInstance(name).ConfigureAwait(false);
                         _logger.LogDebug($"Instance {name} was deleted");
                     }
                     return Redirect("/dashboard/instances");
@@ -433,7 +427,7 @@
                 var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
                 //var accountGroup = Request.Form["account_group"];
                 //var isEvent = Request.Form["is_event"];
-                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
                 }
@@ -490,7 +484,7 @@
                         }
                 }
 
-                var instance = await _instanceRepository.GetByIdAsync(name);
+                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Instance does not exist, create?
@@ -509,7 +503,7 @@
                     PokemonIds = pokemonIds,
                     TimezoneOffset = timezoneOffset,
                 };
-                await _instanceRepository.UpdateAsync(instance);
+                await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
                 InstanceController.Instance.ReloadInstance(instance, name);
                 _logger.LogDebug($"Instance {name} was updated");
                 return Redirect("/dashboard/instances");
@@ -531,13 +525,12 @@
                 instance_name = name,
             };
             var data = Renderer.ParseTemplate("instance-ivqueue", obj);
-            var content = new ContentResult
+            return new ContentResult
             {
                 Content = data,
                 ContentType = "text/html",
                 StatusCode = 200,
             };
-            return content;
         }
 
         #endregion
@@ -549,13 +542,12 @@
         {
             var obj = BuildDefaultData();
             var data = Renderer.ParseTemplate("assignments", obj);
-            var content = new ContentResult
+            return new ContentResult
             {
                 Content = data,
                 ContentType = "text/html",
                 StatusCode = 200,
             };
-            return content;
         }
 
         [
@@ -566,8 +558,8 @@
         {
             if (Request.Method == "GET")
             {
-                var instances = await _instanceRepository.GetAllAsync();
-                var devices = await _deviceRepository.GetAllAsync();
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 var obj = new
                 {
                     started = Strings.Started, // TODO: TimeZone
@@ -583,13 +575,12 @@
                     nothing_selected_source = true,
                 };
                 var data = Renderer.ParseTemplate("assignment-add", obj);
-                var content = new ContentResult
+                return new ContentResult
                 {
                     Content = data,
                     ContentType = "text/html",
                     StatusCode = 200,
                 };
-                return content;
             }
             else
             {
@@ -601,19 +592,19 @@
                 var createOnComplete = Request.Form["oncomplete"].ToString() == "on";
                 var enabled = Request.Form["enabled"].ToString() == "on";
 
-                var instances = await _instanceRepository.GetAllAsync();
-                var devices = await _deviceRepository.GetAllAsync();
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
                 }
 
-                if (devices.FirstOrDefault(x => x.Uuid == uuid) == null)
+                if (!devices.Any(x => x.Uuid == uuid))
                 {
                     // Device does not exist
                 }
 
-                if (instances.FirstOrDefault(x => string.Compare(x.Name, destinationInstance, true) == 0) == null)
+                if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
                 {
                     // Instance does not exist
                 }
@@ -627,7 +618,7 @@
                         var hours = int.Parse(split[0]);
                         var minutes = int.Parse(split[1]);
                         var seconds = int.Parse(split[2]);
-                        var newTime = hours * 3600 + minutes * 60 + seconds;
+                        var newTime = (hours * 3600) + (minutes * 60) + seconds;
                         totalTime = newTime == 0 ? 1 : (uint)newTime;
                     }
                     else
@@ -658,7 +649,7 @@
                         Date = realDate,
                         Enabled = enabled,
                     };
-                    await _assignmentRepository.AddAsync(assignment);
+                    await _assignmentRepository.AddAsync(assignment).ConfigureAwait(false);
                     AssignmentController.Instance.AddAssignment(assignment);
                 }
                 catch (Exception ex)
@@ -677,7 +668,7 @@
                         Date = realDate,
                         Enabled = enabled,
                     };
-                    await _assignmentRepository.AddAsync(oncompleteAssignment);
+                    await _assignmentRepository.AddAsync(oncompleteAssignment).ConfigureAwait(false);
                     AssignmentController.Instance.AddAssignment(oncompleteAssignment);
                 }
 
@@ -693,26 +684,20 @@
         {
             if (Request.Method == "GET")
             {
-                var assignment = await _assignmentRepository.GetByIdAsync(id);
+                var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
                 if (assignment == null)
                 {
                     // Failed to get assignment by id, does assignment exist?
                 }
 
-                var devices = await _deviceRepository.GetAllAsync();
-                var instances = await _instanceRepository.GetAllAsync();
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
                 if (devices == null || instances == null)
                 {
                     // Failed to get devices or instances from database
                 }
 
-                string formattedTime;
-                if (assignment.Time == 0)
-                    formattedTime = "";
-                else
-                {
-                    formattedTime = $"{(assignment.Time / 3600):00}:{((assignment.Time % 3600) / 60):00}:{((assignment.Time) % 3600 % 60):00}";
-                }
+                string formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
                 var obj = new
                 {
                     started = Strings.Started, // TODO: TimeZone
@@ -730,13 +715,12 @@
                     devices = devices.Select(x => new { uuid = x.Uuid, selected = x.Uuid == assignment.DeviceUuid }),
                 };
                 var data = Renderer.ParseTemplate("assignment-edit", obj);
-                var content = new ContentResult
+                return new ContentResult
                 {
                     Content = data,
                     ContentType = "text/html",
                     StatusCode = 200,
                 };
-                return content;
             }
             else
             {
@@ -748,19 +732,19 @@
                 var createOnComplete = Request.Form["oncomplete"].ToString() == "on";
                 var enabled = Request.Form["enabled"].ToString() == "on";
 
-                var instances = await _instanceRepository.GetAllAsync();
-                var devices = await _deviceRepository.GetAllAsync();
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
                 }
 
-                if (devices.FirstOrDefault(x => x.Uuid == uuid) == null)
+                if (!devices.Any(x => x.Uuid == uuid))
                 {
                     // Device does not exist
                 }
 
-                if (instances.FirstOrDefault(x => string.Compare(x.Name, destinationInstance, true) == 0) == null)
+                if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
                 {
                     // Instance does not exist
                 }
@@ -774,7 +758,7 @@
                         var hours = int.Parse(split[0]);
                         var minutes = int.Parse(split[1]);
                         var seconds = int.Parse(split[2]);
-                        var newTime = hours * 3600 + minutes * 60 + seconds;
+                        var newTime = (hours * 3600) + (minutes * 60) + seconds;
                         totalTime = newTime == 0 ? 1 : (uint)newTime;
                     }
                     else
@@ -794,7 +778,7 @@
                     // Invalid request, uuid or instance are null
                 }
 
-                var assignment = await _assignmentRepository.GetByIdAsync(id);
+                var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
                 if (assignment == null)
                 {
                     // Failed to get assignment by id
@@ -805,7 +789,7 @@
                 assignment.Time = totalTime;
                 assignment.Date = realDate;
                 assignment.Enabled = enabled;
-                await _assignmentRepository.UpdateAsync(assignment);
+                await _assignmentRepository.UpdateAsync(assignment).ConfigureAwait(false);
                 AssignmentController.Instance.EditAssignment(assignment.Id, assignment);
                 return Redirect("/dashboard/assignments");
             }
@@ -814,31 +798,31 @@
         [HttpGet("/dashboard/assignment/start/{id}")]
         public async Task<IActionResult> StartAssignment(uint id)
         {
-            var assignment = await _assignmentRepository.GetByIdAsync(id);
+            var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
             if (assignment == null)
             {
                 // Failed to get assignment by id
             }
-            await AssignmentController.Instance.TriggerAssignment(assignment, true);
+            await AssignmentController.Instance.TriggerAssignment(assignment, true).ConfigureAwait(false);
             return Redirect("/dashboard/assignments");
         }
 
         [HttpGet("/dashboard/assignment/delete/{id}")]
         public async Task<IActionResult> DeleteAssignment(uint id)
         {
-            var assignment = await _assignmentRepository.GetByIdAsync(id);
+            var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
             if (assignment == null)
             {
                 // Failed to delete assignment by id, does it exist?
             }
-            await _assignmentRepository.DeleteAsync(assignment);
+            await _assignmentRepository.DeleteAsync(assignment).ConfigureAwait(false);
             return Redirect("/dashboard/assignments");
         }
 
         [HttpGet("/dashboard/assignments/delete_all")]
         public async Task<IActionResult> DeleteAllAssignments()
         {
-            await _assignmentRepository.DeleteAllAsync();
+            await _assignmentRepository.DeleteAllAsync().ConfigureAwait(false);
             return Redirect("/dashboard/assignments");
         }
 
@@ -850,7 +834,7 @@
         public async Task<IActionResult> GetAccounts()
         {
             var accountsRepository = new AccountRepository(_context);
-            var stats = await accountsRepository.GetStatsAsync();
+            var stats = await accountsRepository.GetStatsAsync().ConfigureAwait(false);
             var obj = new
             {
                 started = Strings.Started, // TODO: TimeZone
@@ -863,13 +847,12 @@
                 stats,
             };
             var data = Renderer.ParseTemplate("accounts", obj);
-            var content = new ContentResult
+            return new ContentResult
             {
                 Content = data,
                 ContentType = "text/html",
                 StatusCode = 200,
             };
-            return content;
         }
 
         [
@@ -892,13 +875,12 @@
                     level = 0,
                 };
                 var data = Renderer.ParseTemplate("accounts-add", obj);
-                var content = new ContentResult
+                return new ContentResult
                 {
                     Content = data,
                     ContentType = "text/html",
                     StatusCode = 200,
                 };
-                return content;
             }
             else
             {
@@ -919,12 +901,12 @@
                     }
                     list.Add(new Account
                     {
-                        Username = split[0].ToString().Trim(),
-                        Password = split[1].ToString().Trim(),
+                        Username = split[0].Trim(),
+                        Password = split[1].Trim(),
                         Level = level,
                     });
                 }
-                await _accountRepository.AddOrUpdateAsync(list);
+                await _accountRepository.AddOrUpdateAsync(list).ConfigureAwait(false);
                 return Redirect("/dashboard/accounts");
             }
         }
@@ -943,17 +925,16 @@
             {
                 var obj = BuildDefaultData();
                 var data = Renderer.ParseTemplate("clearquests", obj);
-                var content = new ContentResult
+                return new ContentResult
                 {
                     Content = data,
                     ContentType = "text/html",
                     StatusCode = 200,
                 };
-                return content;
             }
             else
             {
-                await _pokestopRepository.ClearQuestsAsync();
+                await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
                 return Redirect("/dashboard");
             }
         }
@@ -965,13 +946,12 @@
         {
             var obj = BuildDefaultData();
             var data = Renderer.ParseTemplate("settings", obj);
-            var content = new ContentResult
+            return new ContentResult
             {
                 Content = data,
                 ContentType = "text/html",
                 StatusCode = 200,
             };
-            return content;
         }
 
         #endregion
@@ -981,7 +961,7 @@
         private static dynamic BuildDefaultData()
         {
             // TODO: Locales
-            var obj = new
+            return new
             {
                 started = Strings.Started, // TODO: TimeZone
                 title = "Chuck Device Controller",
@@ -991,7 +971,6 @@
                 table_class = "table-dark",
                 current_version = "0.1.0",
             };
-            return obj;
         }
 
         #endregion

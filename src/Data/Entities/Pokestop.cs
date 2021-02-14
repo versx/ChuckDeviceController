@@ -118,7 +118,7 @@
             Updated = now;
             Deleted = false;
             IsArScanEligible = fort.IsArScanEligible;
-            if (fort.ActiveFortModifier != null && fort.ActiveFortModifier.Count > 0 &&
+            if (fort.ActiveFortModifier?.Count > 0 &&
                 (fort.ActiveFortModifier.Contains(Item.TroyDisk) ||
                  fort.ActiveFortModifier.Contains(Item.TroyDiskGlacial) ||
                  fort.ActiveFortModifier.Contains(Item.TroyDiskMagnetic) ||
@@ -136,11 +136,11 @@
                     GruntType = (uint)fort.PokestopDisplay.CharacterDisplay?.Character;
                 }
             }
-            else if (fort.PokestopDisplays != null && fort.PokestopDisplays.Count > 0)
+            else if (fort.PokestopDisplays?.Count > 0)
             {
                 var pokestopDisplay = fort.PokestopDisplays.FirstOrDefault();
                 IncidentExpireTimestamp = (ulong)Math.Floor(Convert.ToDouble(pokestopDisplay.IncidentExpirationMs / 1000));
-                if (fort.PokestopDisplays.FirstOrDefault().CharacterDisplay != null)
+                if (fort.PokestopDisplays.FirstOrDefault()?.CharacterDisplay != null)
                 {
                     PokestopDisplay = (uint?)pokestopDisplay.CharacterDisplay.Style;
                     GruntType = (uint)pokestopDisplay.CharacterDisplay.Character;
@@ -332,69 +332,66 @@
 
         public dynamic GetWebhookValues(string type)
         {
-            switch (type.ToLower())
+            return (type.ToLower()) switch
             {
-                case "quest":
-                    return new
+                "quest" => new
+                {
+                    type = "quest",
+                    message = new
                     {
-                        type = "quest",
-                        message = new
-                        {
-                            pokestop_id = Id,
-                            latitude = Latitude,
-                            longitude = Longitude,
-                            type = QuestType,
-                            target = QuestTarget,
-                            template = QuestTemplate,
-                            conditions = QuestConditions,
-                            rewards = QuestRewards,
-                            updated = QuestTimestamp,
-                            pokestop_name = string.IsNullOrEmpty(Name) ? "Unknown" : Name,
-                            pokestop_url = Url ?? "",
-                        },
-                    };
-                case "invasion":
-                    return new
+                        pokestop_id = Id,
+                        latitude = Latitude,
+                        longitude = Longitude,
+                        type = QuestType,
+                        target = QuestTarget,
+                        template = QuestTemplate,
+                        conditions = QuestConditions,
+                        rewards = QuestRewards,
+                        updated = QuestTimestamp,
+                        pokestop_name = string.IsNullOrEmpty(Name) ? "Unknown" : Name,
+                        pokestop_url = Url ?? "",
+                    },
+                },
+                "invasion" => new
+                {
+                    type = "invasion",
+                    message = new
                     {
-                        type = "invasion",
-                        message = new
-                        {
-                            pokestop_id = Id,
-                            latitude = Latitude,
-                            longitude = Longitude,
-                            name = string.IsNullOrEmpty(Name) ? "Unknown" : Name,
-                            url = Url ?? "",
-                            lure_expiration = LureExpireTimestamp ?? 0,
-                            last_modified = LastModifiedTimestamp,
-                            enabled = Enabled,
-                            lure_id = LureId,
-                            pokestop_display = PokestopDisplay,
-                            incident_expire_timestamp = IncidentExpireTimestamp,
-                            grunt_type = GruntType,
-                            updated = Updated,
-                        },
-                    };
-                default:
-                    return new
+                        pokestop_id = Id,
+                        latitude = Latitude,
+                        longitude = Longitude,
+                        name = string.IsNullOrEmpty(Name) ? "Unknown" : Name,
+                        url = Url ?? "",
+                        lure_expiration = LureExpireTimestamp ?? 0,
+                        last_modified = LastModifiedTimestamp,
+                        enabled = Enabled,
+                        lure_id = LureId,
+                        pokestop_display = PokestopDisplay,
+                        incident_expire_timestamp = IncidentExpireTimestamp,
+                        grunt_type = GruntType,
+                        updated = Updated,
+                    },
+                },
+                _ => new
+                {
+                    type = "pokestop",
+                    message = new
                     {
-                        type = "pokestop",
-                        message = new
-                        {
-                            pokestop_id = Id,
-                            latitude = Latitude,
-                            longitude = Longitude,
-                            name = string.IsNullOrEmpty(Name) ? "Unknown" : Name,
-                            url = Url ?? "",
-                            lure_expiration = LureExpireTimestamp ?? 0,
-                            last_modified = LastModifiedTimestamp,
-                            enabled = Enabled,
-                            lure_id = LureId,
-                            pokestop_display = PokestopDisplay,
-                            incident_expire_timestamp = IncidentExpireTimestamp,
-                            updated = Updated,
-                        },
-                    };
-            }
+                        pokestop_id = Id,
+                        latitude = Latitude,
+                        longitude = Longitude,
+                        name = string.IsNullOrEmpty(Name) ? "Unknown" : Name,
+                        url = Url ?? "",
+                        lure_expiration = LureExpireTimestamp ?? 0,
+                        last_modified = LastModifiedTimestamp,
+                        enabled = Enabled,
+                        lure_id = LureId,
+                        pokestop_display = PokestopDisplay,
+                        incident_expire_timestamp = IncidentExpireTimestamp,
+                        updated = Updated,
+                    },
+                },
+            };
         }
     }
 }

@@ -11,7 +11,7 @@
     public class Instance : BaseEntity, IAggregateRoot
     {
         [
-            Column("name"), 
+            Column("name"),
             Key,
             JsonPropertyName("name"),
         ]
