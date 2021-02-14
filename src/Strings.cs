@@ -8,6 +8,6 @@
         public const string ViewsFolder = "Views";
         public const string TemplateExt = ".mustache";
 
-        public static DateTime Started { get; } = DateTime.UtcNow;
+        public static TimeSpan Started { get; } = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
     }
 }

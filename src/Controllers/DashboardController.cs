@@ -62,7 +62,7 @@
         {
             var obj = new
             {
-                started = Strings.Started, // TODO: TimeZone
+                started = Strings.Started,
                 title = "Chuck Device Controller",
                 locale = "en",
                 locale_new = "en",
@@ -118,7 +118,7 @@
                 }).ToList();
                 var obj = new
                 {
-                    started = Strings.Started, // TODO: TimeZone
+                    started = Strings.Started,
                     title = "Chuck Device Controller",
                     locale = "en",
                     locale_new = "en",
@@ -183,7 +183,7 @@
             {
                 var obj = new
                 {
-                    started = Strings.Started, // TODO: TimeZone
+                    started = Strings.Started,
                     title = "Chuck Device Controller",
                     locale = "en",
                     locale_new = "en",
@@ -343,7 +343,7 @@
                 var minLevel = instance.Data.MinimumLevel;
                 var maxLevel = instance.Data.MaximumLevel;
                 dynamic obj = new ExpandoObject();
-                obj.started = Strings.Started; // TODO: TimeZone
+                obj.started = Strings.Started;
                 obj.title = "Chuck Device Controller";
                 obj.locale = "en";
                 obj.locale_new = "en";
@@ -521,7 +521,7 @@
         {
             var obj = new
             {
-                started = Strings.Started, // TODO: TimeZone
+                started = Strings.Started,
                 title = "Chuck Device Controller",
                 locale = "en",
                 locale_new = "en",
@@ -568,7 +568,7 @@
                 var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 var obj = new
                 {
-                    started = Strings.Started, // TODO: TimeZone
+                    started = Strings.Started,
                     title = "Chuck Device Controller",
                     locale = "en",
                     locale_new = "en",
@@ -706,7 +706,7 @@
                 string formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
                 var obj = new
                 {
-                    started = Strings.Started, // TODO: TimeZone
+                    started = Strings.Started,
                     title = "Chuck Device Controller",
                     locale = "en",
                     locale_new = "en",
@@ -843,7 +843,7 @@
             var stats = await accountsRepository.GetStatsAsync().ConfigureAwait(false);
             var obj = new
             {
-                started = Strings.Started, // TODO: TimeZone
+                started = Strings.Started,
                 title = "Chuck Device Controller",
                 locale = "en",
                 locale_new = "en",
@@ -871,7 +871,7 @@
             {
                 var obj = new
                 {
-                    started = Strings.Started, // TODO: TimeZone
+                    started = Strings.Started,
                     title = "Chuck Device Controller",
                     locale = "en",
                     locale_new = "en",
@@ -969,7 +969,7 @@
             // TODO: Locales
             return new
             {
-                started = Strings.Started, // TODO: TimeZone
+                started = Strings.Started,
                 title = "Chuck Device Controller",
                 locale = "en",
                 locale_new = "en",
