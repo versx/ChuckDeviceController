@@ -889,7 +889,7 @@
         {
             // TODO: Include locales
             dynamic obj = new ExpandoObject();
-            obj.started = Strings.Started; // TODO: TimeZone
+            obj.started = Strings.Started;
             obj.title = "Chuck Device Controller";
             obj.locale = "en";
             obj.locale_new = "en";
