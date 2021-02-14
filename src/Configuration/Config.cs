@@ -21,10 +21,6 @@
         [JsonPropertyName("db")]
         public DatabaseConfig Database { get; set; }
 
-        public Config()
-        {
-        }
-
         /// <summary>
         /// Save the current configuration object
         /// </summary>
