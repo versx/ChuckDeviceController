@@ -52,7 +52,7 @@
                             p.RaidSpawnTimestamp,
                         };
                     }
-                });
+                }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -64,9 +64,9 @@
         {
             if (fromCache)
             {
-                return await Task.FromResult(_dbContext.Gyms.FromCache().ToList());
+                return await Task.FromResult(_dbContext.Gyms.FromCache().ToList()).ConfigureAwait(false);
             }
-            return await base.GetAllAsync();
+            return await base.GetAllAsync().ConfigureAwait(false);
         }
     }
 }

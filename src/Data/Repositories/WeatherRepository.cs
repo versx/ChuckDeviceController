@@ -23,9 +23,9 @@
         {
             if (fromCache)
             {
-                return await Task.FromResult(_dbContext.Weather.FromCache().ToList());
+                return await Task.FromResult(_dbContext.Weather.FromCache().ToList()).ConfigureAwait(false);
             }
-            return await base.GetAllAsync();
+            return await base.GetAllAsync().ConfigureAwait(false);
         }
     }
 }

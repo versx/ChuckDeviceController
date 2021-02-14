@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController
 {
     using System;
+    using System.Globalization;
 
     public static class Strings
     {
@@ -11,6 +12,16 @@
         public const string WebRoot = "../wwwroot";
         public const string DataFolder = WebRoot + "/static/data";
 
-        public static DateTime Started { get; } = DateTime.UtcNow;
+        public static string Started
+        {
+            get
+            {
+                // Create a DateTime value.
+                var dtIn = DateTime.UtcNow.AddSeconds(TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalSeconds);
+                // Retrieve a CultureInfo object.
+                var invC = CultureInfo.InvariantCulture;
+                return dtIn.ToString("r", invC);
+            }
+        }
     }
 }

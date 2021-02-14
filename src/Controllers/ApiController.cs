@@ -34,7 +34,7 @@
         #region Constructor
 
         /// <summary>
-        /// 
+        /// Api Controller
         /// </summary>
         /// <param name="context"></param>
         /// <param name="logger"></param>
@@ -61,11 +61,11 @@
         public async Task<dynamic> GetDevices()
         {
             // TODO: Use formatted in query
-            var devices = await _deviceRepository.GetAllAsync();
+            var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
             var list = new List<dynamic>();
             foreach (var device in devices)
             {
-                var delta = (ulong)(15 * 60);
+                const ulong delta = 15 * 60;
                 var diff = DateTime.UtcNow.ToTotalSeconds() - delta;
                 var isOnline = device.LastSeen > diff ? 0 : 1;
                 var lastSeenDate = device.LastSeen.Value.FromUnix();
@@ -88,7 +88,7 @@
                         status = isOnline,
                     },
                     buttons = $"<a href='/dashboard/device/assign/{Uri.EscapeDataString(device.Uuid)}' role='button' class='btn btn-sm btn-primary'>Assign Instance</a>",
-                }); ;
+                });
             }
             return new { data = new { devices = list } };
         }
@@ -102,10 +102,10 @@
         public async Task<dynamic> GetInstances()
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var instances = await _instanceRepository.GetAllAsync();
-            var devices = await _deviceRepository.GetAllAsync();
+            var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+            var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
             var list = new List<dynamic>();
-            var delta = (ulong)(15 * 60);
+            const ulong delta = 15 * 60;
             foreach (var instance in instances)
             {
                 var instanceDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
@@ -119,7 +119,7 @@
                     type = FormatInstanceType(instance.Type),
                     count = totalCount == 0 ? "0" : $"{onlineCount}/{offlineCount} ({totalCount})",
                     area_count = areasCount,
-                    status = await InstanceController.Instance.GetInstanceStatus(instance),
+                    status = await InstanceController.Instance.GetInstanceStatus(instance).ConfigureAwait(false),
                     buttons = $"<a href='/dashboard/instance/edit/{Uri.EscapeDataString(instance.Name)}' role='button' class='btn btn-sm btn-primary'>Edit Instance</a>",
                 });
             }
@@ -134,7 +134,7 @@
         [Produces("application/json")]
         public async Task<dynamic> GetAssignments()
         {
-            var assignments = await _assignmentRepository.GetAllAsync();
+            var assignments = await _assignmentRepository.GetAllAsync().ConfigureAwait(false);
             var list = new List<dynamic>();
             foreach (var assignment in assignments)
             {
@@ -204,7 +204,7 @@
                     instance_name = name,
                     ivqueue = list
                 }
-            });
+            }).ConfigureAwait(false);
         }
 
         #endregion

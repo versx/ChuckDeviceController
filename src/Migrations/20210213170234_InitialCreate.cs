@@ -24,10 +24,7 @@ namespace ChuckDeviceController.Migrations
                     spins = table.Column<uint>(type: "int unsigned", nullable: false),
                     tutorial = table.Column<ushort>(type: "smallint unsigned", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_account", x => x.username);
-                });
+                constraints: table => table.PrimaryKey("PK_account", x => x.username));
 
             migrationBuilder.CreateTable(
                 name: "assignment",
@@ -42,10 +39,7 @@ namespace ChuckDeviceController.Migrations
                     date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     enabled = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_assignment", x => x.id);
-                });
+                constraints: table => table.PrimaryKey("PK_assignment", x => x.id));
 
             migrationBuilder.CreateTable(
                 name: "device",
@@ -59,10 +53,7 @@ namespace ChuckDeviceController.Migrations
                     last_lon = table.Column<double>(type: "double", nullable: true),
                     last_seen = table.Column<ulong>(type: "bigint unsigned", nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_device", x => x.uuid);
-                });
+                constraints: table => table.PrimaryKey("PK_device", x => x.uuid));
 
             migrationBuilder.CreateTable(
                 name: "gym",
@@ -100,10 +91,7 @@ namespace ChuckDeviceController.Migrations
                     first_seen_timestamp = table.Column<ulong>(type: "bigint unsigned", nullable: false),
                     sponsor_id = table.Column<uint>(type: "int unsigned", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_gym", x => x.id);
-                });
+                constraints: table => table.PrimaryKey("PK_gym", x => x.id));
 
             migrationBuilder.CreateTable(
                 name: "gym_defender",
@@ -132,10 +120,7 @@ namespace ChuckDeviceController.Migrations
                     npc_combat_won = table.Column<ushort>(type: "smallint unsigned", nullable: false),
                     npc_combat_total = table.Column<ushort>(type: "smallint unsigned", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_gym_defender", x => x.id);
-                });
+                constraints: table => table.PrimaryKey("PK_gym_defender", x => x.id));
 
             migrationBuilder.CreateTable(
                 name: "instance",
@@ -145,10 +130,7 @@ namespace ChuckDeviceController.Migrations
                     type = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: false),
                     data = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_instance", x => x.name);
-                });
+                constraints: table => table.PrimaryKey("PK_instance", x => x.name));
 
             migrationBuilder.CreateTable(
                 name: "pokemon",
@@ -189,10 +171,7 @@ namespace ChuckDeviceController.Migrations
                     pvp_rankings_ultra_league = table.Column<string>(type: "longtext CHARACTER SET utf8mb4", nullable: true),
                     is_event = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_pokemon", x => x.id);
-                });
+                constraints: table => table.PrimaryKey("PK_pokemon", x => x.id));
 
             migrationBuilder.CreateTable(
                 name: "pokestop",
@@ -223,10 +202,7 @@ namespace ChuckDeviceController.Migrations
                     sponsor_id = table.Column<uint>(type: "int unsigned", nullable: true),
                     ar_scan_eligible = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_pokestop", x => x.id);
-                });
+                constraints: table => table.PrimaryKey("PK_pokestop", x => x.id));
 
             migrationBuilder.CreateTable(
                 name: "s2cell",
@@ -239,10 +215,7 @@ namespace ChuckDeviceController.Migrations
                     center_lon = table.Column<double>(type: "double", nullable: false),
                     updated = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_s2cell", x => x.id);
-                });
+                constraints: table => table.PrimaryKey("PK_s2cell", x => x.id));
 
             migrationBuilder.CreateTable(
                 name: "spawnpoint",
@@ -255,10 +228,7 @@ namespace ChuckDeviceController.Migrations
                     despawn_sec = table.Column<ushort>(type: "smallint unsigned", nullable: true),
                     updated = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_spawnpoint", x => x.id);
-                });
+                constraints: table => table.PrimaryKey("PK_spawnpoint", x => x.id));
 
             migrationBuilder.CreateTable(
                 name: "trainer",
@@ -275,10 +245,7 @@ namespace ChuckDeviceController.Migrations
                     combat_rating = table.Column<double>(type: "double", nullable: false),
                     updated = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_trainer", x => x.name);
-                });
+                constraints: table => table.PrimaryKey("PK_trainer", x => x.name));
 
             migrationBuilder.CreateTable(
                 name: "weather",
@@ -301,10 +268,7 @@ namespace ChuckDeviceController.Migrations
                     warn_weather = table.Column<bool>(type: "tinyint(1)", nullable: true),
                     updated = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_weather", x => x.id);
-                });
+                constraints: table => table.PrimaryKey("PK_weather", x => x.id));
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -14,16 +14,16 @@
 1. Fill out `config.json`  
 1. Build project from root folder `~/.dotnet/dotnet build`  
 1. Run from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
-1. Visit Dashboard at http://ipaddress:5000 or https://ipaddress:5001
+1. Visit Dashboard at http://LAN_MACHINE_IP:5001
 
 View all available routes:  
-http://ipaddress:port/swagger
+http://LAN_MACHINE_IP:port/swagger
 
 ## Configuration  
 ```js
 {
     // Change to machine IP address
-    "interface": "10.10.10.10",
+    "interface": "LAN_MACHINE_IP",
     // Listening port to receive data and control devices
     "port": 5001,
     // Database information
