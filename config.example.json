@@ -1,5 +1,5 @@
 {
-    "interface": "10.10.10.10",
+    "interface": "LAN_MACHINE_IP",
 	"port": 5001,
 	"db": {
 	    "host": "127.0.0.1",
