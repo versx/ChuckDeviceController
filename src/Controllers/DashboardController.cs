@@ -521,8 +521,8 @@
         {
             if (Request.Method == "GET")
             {
-                var instances = await _instanceRepository.GetAllAsync();
-                var devices = await _deviceRepository.GetAllAsync();
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 dynamic obj = BuildDefaultData();
                 obj.instances = instances.Select(x => new { name = x.Name, selected = false, selected_source = false });
                 obj.devices = devices.Select(x => new { uuid = x.Uuid, selected = false });
@@ -779,7 +779,7 @@
         public async Task<IActionResult> GetAccounts()
         {
             var accountsRepository = new AccountRepository(_context);
-            var stats = await accountsRepository.GetStatsAsync();
+            var stats = await accountsRepository.GetStatsAsync().ConfigureAwait(false);
             dynamic obj = BuildDefaultData();
             obj.stats = stats;
             var data = Renderer.ParseTemplate("accounts", obj);
