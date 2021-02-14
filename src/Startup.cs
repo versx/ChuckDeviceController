@@ -46,6 +46,13 @@ namespace ChuckDeviceController
         {
             await AssignmentController.Instance.Initialize();
 
+            /*
+            services.AddSingleton<IConfiguration>(provider => new ConfigurationBuilder()
+                    .AddEnvironmentVariables()
+                    .AddJsonFile("config.json", optional: false, reloadOnChange: true)
+                    .Build());
+            */
+
             //services.AddRazorPages();
             services.AddSwaggerGen(c =>
             {
