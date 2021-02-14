@@ -101,7 +101,7 @@
                         Error = "Job failed",
                     };
                 default:
-                    _logger.LogWarning($"[Device] [{device.Uuid}] Unhandled request type: {payload.Type}");
+                    _logger.LogWarning($"[Device] [{device?.Uuid}] Unhandled request type: {payload.Type}");
                     return new DeviceResponse
                     {
                         Status = "error",
