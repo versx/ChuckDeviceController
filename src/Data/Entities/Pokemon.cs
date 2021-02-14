@@ -24,6 +24,9 @@
         public const ushort WeatherBoostMinLevel = 6;
         public const ushort WeatherBoostMinIvStat = 4;
 
+        private bool setIVForWeather { get; set; } = false;
+
+
         // TODO: Configurable
         private static readonly List<uint> _dittoDisguises = new List<uint>
         {
@@ -241,7 +244,6 @@
             if (oldPokemon == null)
                 return;
 
-            var setIVForWeather = false;
             var now = DateTime.UtcNow.ToTotalSeconds();
             if (oldPokemon == null)
             {
