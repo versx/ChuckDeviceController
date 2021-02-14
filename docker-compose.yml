@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  chuckdevicecontroller:
+    image: ${DOCKER_REGISTRY-}chuckdevicecontroller
+    build:
+      context: .
+      dockerfile: src/Dockerfile
