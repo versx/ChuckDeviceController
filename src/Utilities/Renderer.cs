@@ -11,7 +11,7 @@
         public static string ViewsDirectory => Path.Combine
         (
             Directory.GetCurrentDirectory(),
-            "Views"
+            Strings.ViewsFolder
         );
 
         private static readonly Dictionary<string, string> _templates;
@@ -59,7 +59,7 @@
 
         private static void RegisterAllTemplates()
         {
-            foreach (var file in Directory.GetFiles(ViewsDirectory, "*.mustache"))
+            foreach (var file in Directory.GetFiles(ViewsDirectory, "*" + Strings.TemplateExt))
             {
                 var viewName = Path.GetFileNameWithoutExtension(file);
                 var viewData = File.ReadAllText(file);
@@ -73,7 +73,7 @@
 
         public static string GetView(string name)
         {
-            var viewPath = Path.Combine(ViewsDirectory, name + ".mustache");
+            var viewPath = Path.Combine(ViewsDirectory, name + Strings.TemplateExt);
             if (!File.Exists(viewPath))
             {
                 Console.WriteLine($"View does not exist at {viewPath}");

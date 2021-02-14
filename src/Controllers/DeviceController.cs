@@ -285,8 +285,13 @@
                     Error = "Failed to get instance controller",
                 };
             }
-            ushort minLevel = instanceController.MinimumLevel;
-            ushort maxLevel = instanceController.MaximumLevel;
+            var minLevel = instanceController.MinimumLevel;
+            var maxLevel = instanceController.MaximumLevel;
+            // If account nulled out in database, fetch new one
+            if (string.IsNullOrEmpty(device.AccountUsername))
+            {
+                return CreateSwitchAccountTask(minLevel, maxLevel);
+            }
             if (!string.IsNullOrEmpty(username))
             {
                 var account = await _accountRepository.GetByIdAsync(username);

@@ -101,18 +101,23 @@
         [Produces("application/json")]
         public async Task<dynamic> GetInstances()
         {
+            var now = DateTime.UtcNow.ToTotalSeconds();
             var instances = await _instanceRepository.GetAllAsync();
             var devices = await _deviceRepository.GetAllAsync();
             var list = new List<dynamic>();
+            var delta = (ulong)(15 * 60);
             foreach (var instance in instances)
             {
-                var deviceCount = devices.Count(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
+                var instanceDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
+                var totalCount = instanceDevices.Count();
+                var onlineCount = instanceDevices.Count(device => device.LastSeen >= now - delta);
+                var offlineCount = instanceDevices.Count(device => device.LastSeen < now - delta);
                 var areasCount = instance.Data.Area.GetArrayLength();
                 list.Add(new
                 {
                     name = instance.Name,
                     type = FormatInstanceType(instance.Type),
-                    count = deviceCount,
+                    count = totalCount == 0 ? "0" : $"{onlineCount}/{offlineCount} ({totalCount})",
                     area_count = areasCount,
                     status = await InstanceController.Instance.GetInstanceStatus(instance),
                     buttons = $"<a href='/dashboard/instance/edit/{Uri.EscapeDataString(instance.Name)}' role='button' class='btn btn-sm btn-primary'>Edit Instance</a>",

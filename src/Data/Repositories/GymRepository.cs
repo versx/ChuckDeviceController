@@ -56,7 +56,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"AddOrUpdateAsync", ex);
+                Console.WriteLine($"[GymRepository] AddOrUpdateAsync: {ex}");
             }
         }
 
