@@ -14,6 +14,7 @@
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
+    using ChuckDeviceController.Services;
 
     [Table("pokemon")]
     public class Pokemon : BaseEntity, IAggregateRoot, IWebhook
@@ -156,6 +157,9 @@
 
         [NotMapped]
         public bool NoWeatherIVClearing { get; private set; }
+
+        [NotMapped]
+        public bool ProcessPvpRankings { get; set; } = true;
 
         #endregion
 
@@ -302,7 +306,8 @@
                 {
                     PokestopId = oldPokemon.PokestopId;
                 }
-                // TODO: PVP Rankings
+
+                SetPvpRankings().ConfigureAwait(false);
                 if (updateIV && oldPokemon.AttackIV == null && AttackIV != null)
                 {
                     Changed = now;
@@ -536,7 +541,8 @@
                     Console.WriteLine($"[Pokemon] Pokemon {Id} Ditto found, disguised as {PokemonId}");
                     SetDittoAttributes(PokemonId);
                 }
-                // TODO: SetPVP();
+
+                await SetPvpRankings();
 
                 SpawnId = Convert.ToUInt64(encounter.Pokemon.SpawnPointId, 16);
                 var timestampMs = DateTime.UtcNow.ToTotalSeconds();
@@ -689,6 +695,38 @@
                     is_event = IsEvent,
                 },
             };
+        }
+
+        private Task SetPvpRankings()
+        {
+            if (!ProcessPvpRankings)
+                return Task.CompletedTask;
+
+            return Task.Run(() =>
+            {
+                var ranks = PvpRankCalculator.Instance.QueryPvpRank
+                (
+                    PokemonId,
+                    Form ?? 0,
+                    Costume,
+                    AttackIV ?? 0,
+                    DefenseIV ?? 0,
+                    StaminaIV ?? 0,
+                    Level ?? 0,
+                    (PokemonGender)Gender
+                );
+                if (ranks.Count == 0)
+                    return;
+
+                if (ranks.ContainsKey("great"))
+                {
+                    PvpRankingsGreatLeague = ranks["great"];
+                }
+                if (ranks.ContainsKey("ultra"))
+                {
+                    PvpRankingsUltraLeague = ranks["ultra"];
+                }
+            });
         }
     }
 }
