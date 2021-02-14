@@ -58,7 +58,7 @@
                             //p.Updated,
                         };
                     }
-                });
+                }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

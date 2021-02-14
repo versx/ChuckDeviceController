@@ -24,8 +24,7 @@
         public const ushort WeatherBoostMinLevel = 6;
         public const ushort WeatherBoostMinIvStat = 4;
 
-        private bool setIVForWeather { get; set; } = false;
-
+        private bool SetIVForWeather { get; set; }
 
         // TODO: Configurable
         private static readonly List<uint> _dittoDisguises = new List<uint>
@@ -155,7 +154,7 @@
         public bool HasChanges { get; private set; }
 
         [NotMapped]
-        public bool NoWeatherIVClearing { get; private set; }
+        public bool NoWeatherIVClearing { get; }
 
         #endregion
 
@@ -218,8 +217,8 @@
             //Updated = now;
             //FirstSeenTimestamp = now;
 
-            double lat = 0;
-            double lon = 0;
+            const double lat = 0;
+            const double lon = 0;
             // TODO: Try to get pokestop
 
             Id = id;
@@ -312,9 +311,14 @@
                     Changed = oldPokemon.Changed;
                 }
                 var weatherChanged = (oldPokemon.Weather == 0 && Weather > 0) || (Weather == 0 && oldPokemon.Weather > 0);
+                //rem warn 
+                if (!SetIVForWeather)
+                {
+                    // notting...
+                }
                 if (oldPokemon.AttackIV != null && AttackIV == null && !weatherChanged)
                 {
-                    setIVForWeather = false;
+                    SetIVForWeather = false;
                     AttackIV = oldPokemon.AttackIV;
                     DefenseIV = oldPokemon.DefenseIV;
                     StaminaIV = oldPokemon.StaminaIV;
@@ -337,13 +341,13 @@
                 }
                 else if ((AttackIV != null && oldPokemon.AttackIV == null) || (CP != null && oldPokemon.CP == null) || _hasIvChanges)
                 {
-                    setIVForWeather = false;
+                    SetIVForWeather = false;
                     updateIV = true;
                 }
                 else if (weatherChanged && oldPokemon.AttackIV != null && !NoWeatherIVClearing)
                 {
                     Console.WriteLine($"[Pokemon] Pokemon {Id} changed WeatherBoosted state. Clearing IVs");
-                    setIVForWeather = true;
+                    SetIVForWeather = true;
                     AttackIV = null;
                     DefenseIV = null;
                     StaminaIV = null;
@@ -358,11 +362,11 @@
                     CaptureRate3 = null;
                     PvpRankingsGreatLeague = null;
                     PvpRankingsUltraLeague = null;
-                    Console.WriteLine($"[Pokemon] WeatherBoosted state changed. Cleared IVs");
+                    Console.WriteLine("[Pokemon] WeatherBoosted state changed. Cleared IVs");
                 }
                 else
                 {
-                    setIVForWeather = false;
+                    SetIVForWeather = false;
                 }
 
                 // TODO: Check shouldUpdate
@@ -385,7 +389,7 @@
                 {
                     InstanceController.Instance.GotIV(this);
                 }
-                if (updateIV && (oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
+                if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
                 {
                     oldPokemon._hasIvChanges = false;
                     // TODO: Send webhook
@@ -447,8 +451,8 @@
 
         private void SetDittoAttributes(uint displayPokemonId)
         {
-            var moveTransfromFast = HoloPokemonMove.TransformFast;
-            var moveStruggle = HoloPokemonId.Ditto;
+            const HoloPokemonMove moveTransfromFast = HoloPokemonMove.TransformFast;
+            const HoloPokemonId moveStruggle = HoloPokemonId.Ditto;
             DisplayPokemonId = displayPokemonId;
             PokemonId = DittoPokemonId;
             Form = 0;
@@ -521,13 +525,13 @@
                 if (cpMultiplier < 0.734)
                 {
                     level = (ushort)Math.Round(
-                        58.35178527 * cpMultiplier * cpMultiplier -
-                        2.838007664 * cpMultiplier + 0.8539209906
+                        (58.35178527 * cpMultiplier * cpMultiplier) -
+                        (2.838007664 * cpMultiplier) + 0.8539209906
                     );
                 }
                 else
                 {
-                    level = (ushort)Math.Round(171.0112688 * cpMultiplier - 95.20425243);
+                    level = (ushort)Math.Round((171.0112688 * cpMultiplier) - 95.20425243);
                 }
                 Level = level;
                 IsDitto = IsDittoDisguised(pokemonId, level, Weather, AttackIV ?? 0, DefenseIV ?? 0, StaminaIV ?? 0);
@@ -540,7 +544,7 @@
 
                 SpawnId = Convert.ToUInt64(encounter.Pokemon.SpawnPointId, 16);
                 var timestampMs = DateTime.UtcNow.ToTotalSeconds();
-                await HandleSpawnpoint(encounter.Pokemon.TimeTillHiddenMs, timestampMs);
+                await HandleSpawnpoint(encounter.Pokemon.TimeTillHiddenMs, timestampMs).ConfigureAwait(false);
 
                 Updated = DateTime.UtcNow.ToTotalSeconds();
                 Changed = Updated;
@@ -549,7 +553,7 @@
                     FirstSeenTimestamp = Updated;
                 }
             }
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         public async Task<Spawnpoint> HandleSpawnpoint(int timeTillHiddenMs, ulong timestampMs)
@@ -559,8 +563,8 @@
                 ExpireTimestamp = Convert.ToUInt64(timestampMs + Convert.ToDouble(timeTillHiddenMs)) / 1000;
                 IsExpireTimestampVerified = true;
                 var unixDate = timestampMs.FromMilliseconds();
-                var secondOfHour = unixDate.Second + unixDate.Minute * 60;
-                var spawnpoint = new Spawnpoint
+                var secondOfHour = unixDate.Second + (unixDate.Minute * 60);
+                return new Spawnpoint
                 {
                     Id = SpawnId ?? 0,
                     Latitude = Latitude,
@@ -568,7 +572,6 @@
                     Updated = Updated,
                     DespawnSecond = (ushort)secondOfHour,
                 };
-                return spawnpoint;
             }
             else
             {
@@ -582,7 +585,7 @@
                 {
                     if (SpawnId != null)
                     {
-                        spawnpoint = await _spawnpointRepository.GetByIdAsync(SpawnId ?? 0);
+                        spawnpoint = await _spawnpointRepository.GetByIdAsync(SpawnId ?? 0).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
@@ -593,7 +596,7 @@
                 if (spawnpoint != null && spawnpoint?.DespawnSecond != null)
                 {
                     var unixDate = timestampMs.FromMilliseconds();
-                    var secondOfHour = unixDate.Second + unixDate.Minute * 60;
+                    var secondOfHour = unixDate.Second + (unixDate.Minute * 60);
                     ushort despawnOffset;
                     if (spawnpoint.DespawnSecond < secondOfHour)
                     {
@@ -611,14 +614,14 @@
                 {
                     spawnpoint = new Spawnpoint
                     {
-                        Id = SpawnId ?? 0, 
+                        Id = SpawnId ?? 0,
                         Latitude = Latitude,
                         Longitude = Longitude,
                         Updated = DateTime.Now.ToTotalSeconds(),
                         DespawnSecond = null,
                     };
                 }
-                return await Task.FromResult(spawnpoint);
+                return await Task.FromResult(spawnpoint).ConfigureAwait(false);
             }
 
             if (ExpireTimestamp == 0)
@@ -637,7 +640,7 @@
             {
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 var unixDate = Updated.FromMilliseconds();
-                var secondOfHour = unixDate.Second + unixDate.Minute * 60;
+                var secondOfHour = unixDate.Second + (unixDate.Minute * 60);
                 var despawnOffset = despawnSecond ?? 0 - secondOfHour;
                 if (despawnOffset < 0)
                 {

@@ -23,7 +23,7 @@
     {
         private readonly Queue<T> _queue;
 
-        public BaseQueue()
+        protected BaseQueue()
         {
             _queue = new Queue<T>();
         }

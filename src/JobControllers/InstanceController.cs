@@ -38,11 +38,7 @@
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new InstanceController();
-                }
-                return _instance;
+                return _instance ??= new InstanceController();
             }
         }
 
@@ -58,7 +54,7 @@
             _instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
 
             _logger = new Logger<InstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-            _logger.LogInformation($"Starting instances...");
+            _logger.LogInformation("Starting instances...");
 
             var instances = _instanceRepository.GetAllAsync()
                                                .ConfigureAwait(false)
@@ -70,13 +66,12 @@
                                            .GetResult();
             foreach (var instance in instances)
             {
-                if (!ThreadPool.QueueUserWorkItem(x =>
+                if (!ThreadPool.QueueUserWorkItem(_ =>
                 {
                     _logger.LogInformation($"Starting {instance.Name}");
                     AddInstance(instance);
                     _logger.LogInformation($"Started {instance.Name}");
-                    var filtered = devices.AsEnumerable().Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0);
-                    foreach (var device in filtered)
+                    foreach (var device in devices.AsEnumerable().Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0))
                     {
                         AddDevice(device);
                     }
@@ -85,7 +80,7 @@
                     _logger.LogError($"Failed to start instance {instance.Name}");
                 }
             }
-            _logger.LogInformation($"Done starting instances");
+            _logger.LogInformation("Done starting instances");
         }
 
         #endregion
@@ -125,7 +120,7 @@
             {
                 var instanceController = _instances[instance.Name];
                 // TODO: Maybe no locking object
-                return await instanceController?.GetStatus();
+                return await (instanceController?.GetStatus()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -263,7 +258,7 @@
                     _devices[device.Key] = null;
                 }
             }
-            await AssignmentController.Instance.Initialize();
+            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
         }
 
         #endregion
@@ -284,7 +279,7 @@
         public async Task RemoveDevice(Device device)
         {
             RemoveDevice(device.Uuid);
-            await AssignmentController.Instance.Initialize();
+            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
         }
 
         public void RemoveDevice(string uuid)
@@ -379,9 +374,11 @@
             }
         }
 
+#pragma warning disable RCS1213 // Remove unused member declaration.
         private async Task RemoveInstance(Instance instance)
+#pragma warning restore RCS1213 // Remove unused member declaration.
         {
-            await RemoveInstance(instance.Name);
+            await RemoveInstance(instance.Name).ConfigureAwait(false);
         }
 
         #endregion
