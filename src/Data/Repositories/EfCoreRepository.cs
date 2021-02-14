@@ -30,19 +30,19 @@
         public virtual async Task<TEntity> GetByIdAsync(uint id)
         {
             var keyValues = new object[] { id };
-            return await _dbContext.Set<TEntity>().FindAsync(keyValues);
+            return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
         public virtual async Task<TEntity> GetByIdAsync(ulong id)
         {
             var keyValues = new object[] { id };
-            return await _dbContext.Set<TEntity>().FindAsync(keyValues);
+            return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
         public virtual async Task<TEntity> GetByIdAsync(string id)
         {
             var keyValues = new object[] { id };
-            return await _dbContext.Set<TEntity>().FindAsync(keyValues);
+            return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
         #endregion
@@ -54,7 +54,7 @@
             var list = new List<TEntity>();
             foreach (var id in ids)
             {
-                var item = await GetByIdAsync(id.ToString());
+                var item = await GetByIdAsync(id).ConfigureAwait(false);
                 list.Add(item);
             }
             return list;
@@ -62,7 +62,7 @@
 
         public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync()
         {
-            return await _dbContext.Set<TEntity>().ToListAsync();
+            return await _dbContext.Set<TEntity>().ToListAsync().ConfigureAwait(false);
         }
 
         #endregion
@@ -71,15 +71,15 @@
 
         public async Task<TEntity> AddAsync(TEntity entity)
         {
-            await _dbContext.Set<TEntity>().AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Set<TEntity>().AddAsync(entity).ConfigureAwait(false);
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
             return entity;
         }
 
         public virtual async Task AddRangeAsync(List<TEntity> entities)
         {
-            await _dbContext.AddRangeAsync(entities);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.AddRangeAsync(entities).ConfigureAwait(false);
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         #endregion
@@ -90,20 +90,20 @@
         {
             _dbContext.Update(entity);
             _dbContext.Entry(entity).State = EntityState.Modified;//.Detached;
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public virtual async Task UpdateRangeAsync(List<TEntity> entities)
         {
             _dbContext.UpdateRange(entities);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         #endregion
 
         public virtual async Task SaveAsync()
         {
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         #region Delete
@@ -111,19 +111,19 @@
         public virtual async Task DeleteAsync(TEntity entity)
         {
             _dbContext.Set<TEntity>().Remove(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public virtual async Task DeleteAllAsync()
         {
             _dbContext.RemoveRange(_dbContext.Set<TEntity>());
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public virtual async Task DeleteRangeAsync(List<TEntity> entities)
         {
             _dbContext.RemoveRange(entities);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         #endregion
@@ -133,11 +133,11 @@
             try
             {
                 _dbContext.SingleMerge(entity);
-                await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                LogError($"AddOrUpdateAsync", ex);
+                LogError("AddOrUpdateAsync", ex);
             }
         }
 
@@ -157,11 +157,11 @@
                     x.UseTableLock = true; // TODO: ?
                     x.AllowDuplicateKeys = true; // TODO: ?
                     //x.ColumnPrimaryKeyExpression = entity => entity.Id || entity.Uuid;
-                });
+                }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                LogError($"AddOrUpdateAsync", ex);
+                LogError("AddOrUpdateAsync", ex);
             }
         }
 

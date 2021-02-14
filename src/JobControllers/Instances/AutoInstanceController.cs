@@ -93,7 +93,7 @@
             {
                 Interval = timeLeft * 1000,
             };
-            _timer.Elapsed += async (sender, e) => await ClearQuests();
+            _timer.Elapsed += async (sender, e) => await ClearQuests().ConfigureAwait(false);
             _timer.Start();
             // TODO: Get 12am DateTime
             _logger.LogInformation($"[{Name}] Clearing Quests in {timeLeft:N0}s at 12:00 AM (Currently: {DateTime.Now}");
@@ -117,7 +117,7 @@
                 case AutoType.Quest:
                     if (_bootstrapCellIds.Count > 0)
                     {
-                        return await GetBootstrapTask();
+                        return await GetBootstrapTask().ConfigureAwait(false);
                     }
 
                     // TODO: Check InstanceController.NoRequireAccount (username == null and account == null)
@@ -135,16 +135,16 @@
                             {
                                 _completionDate = DateTime.UtcNow;
                             }
-                            await AssignmentController.Instance.InstanceControllerDone(Name);
+                            await AssignmentController.Instance.InstanceControllerDone(Name).ConfigureAwait(false);
                             return null;
                         }
                         _lastCompletionCheck = now;
 
-                        var ids = _allStops.Select(x => x.Id).ToList();
+                        var ids = _allStops.ConvertAll(x => x.Id);
                         var newStops = new List<Pokestop>();
                         try
                         {
-                            newStops = await _pokestopRepository.GetByIdsAsync(ids);
+                            newStops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
@@ -171,7 +171,7 @@
                                 _completionDate = DateTime.UtcNow;
                             }
                             _logger.LogInformation($"[{Name}] Instance done");
-                            await AssignmentController.Instance.InstanceControllerDone(Name);
+                            await AssignmentController.Instance.InstanceControllerDone(Name).ConfigureAwait(false);
                             return null;
                         }
                     }
@@ -184,7 +184,7 @@
                     {
                         if (!string.IsNullOrEmpty(accountUsername))
                         {
-                            account = await _accountRepository.GetByIdAsync(accountUsername);
+                            account = await _accountRepository.GetByIdAsync(accountUsername).ConfigureAwait(false);
                             lastLat = account.LastEncounterLatitude ?? 0;
                             lastLon = account.LastEncounterLongitude ?? 0;
                             lastTime = account.LastEncounterTime ?? 0;
@@ -296,7 +296,7 @@
                         encounterTime = DateTime.UtcNow.ToTotalSeconds();
                         _todayStops.Remove(_todayStops.Keys.FirstOrDefault());//Last());
                     }
-                    await _accountRepository.SpinAsync(accountUsername);
+                    await _accountRepository.SpinAsync(accountUsername).ConfigureAwait(false);
 
                     if (_todayStopsTries.ContainsKey(pokestop.Id))
                     {
@@ -305,7 +305,7 @@
 
                     if (!string.IsNullOrEmpty(accountUsername) && account != null)
                     {
-                        await _accountRepository.SetLastEncounterAsync(accountUsername, pokestop.Latitude, pokestop.Longitude, encounterTime);
+                        await _accountRepository.SetLastEncounterAsync(accountUsername, pokestop.Latitude, pokestop.Longitude, encounterTime).ConfigureAwait(false);
                     }
                     else
                     {
@@ -313,16 +313,16 @@
                     }
 
                     var delayT = DateTime.UtcNow.ToTotalSeconds() - encounterTime;
-                    var delay = Convert.ToDouble(delayT < 0 ? 0 : delayT + 1);
+                    var delay = Convert.ToDouble(delayT == 0 ? 0 : delayT + 1);
                     _logger.LogDebug($"[{Name}] Delaying by {delay}");
                     if (_todayStops.Count == 0)
                     {
                         _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds();
-                        var ids = _allStops.Select(x => x.Id).ToList();
+                        var ids = _allStops.ConvertAll(x => x.Id);
                         var newStops = new List<Pokestop>();
                         try
                         {
-                            newStops = await _pokestopRepository.GetByIdsAsync(ids);
+                            newStops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
@@ -342,7 +342,7 @@
                             {
                                 _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds();
                             }
-                            await AssignmentController.Instance.InstanceControllerDone(Name);
+                            await AssignmentController.Instance.InstanceControllerDone(Name).ConfigureAwait(false);
                         }
                     }
                     return new QuestTask
@@ -373,8 +373,8 @@
                             : 100d;
                         return $"Bootstrapping {count}/{totalCount} ({Math.Round(bootstrapPercentage, 2)}%)";
                     }
-                    var ids = _allStops.Select(x => x.Id).ToList();
-                    var currentCountDb = (double)await GetQuestCount(ids);
+                    var ids = _allStops.ConvertAll(x => x.Id);
+                    var currentCountDb = (double)await GetQuestCount(ids).ConfigureAwait(false);
                     var maxCount = (double)_allStops.Count;
                     var currentCount = (double)(maxCount - _todayStops.Count);
                     var percentage = maxCount > 0
@@ -390,7 +390,7 @@
 
         public async void Reload()
         {
-            await Update();
+            await Update().ConfigureAwait(false);
         }
 
         public void Stop()
@@ -425,7 +425,7 @@
                 var cells = new List<Cell>();
                 try
                 {
-                    cells = await GetCellsByIDs(cellIds);
+                    cells = await GetCellsByIDs(cellIds).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -467,7 +467,7 @@
                             }
                             // Get all existing Pokestops within geofence bounds
                             var bounds = polygon.GetBoundingBox();
-                            var stops = await _pokestopRepository.GetWithin(bounds, 0);
+                            var stops = await _pokestopRepository.GetWithin(bounds, 0).ConfigureAwait(false);
                             foreach (var stop in stops)
                             {
                                 // Check if Pokestop is within geofence
@@ -519,7 +519,7 @@
             _logger.LogInformation($"[{Name}] Clearing Quests for ids: {string.Join(",", ids)}");
             try
             {
-                await _pokestopRepository.ClearQuestsAsync();
+                await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -527,7 +527,7 @@
                 if (_shouldExit)
                     return;
             }
-            await Update();
+            await Update().ConfigureAwait(false);
         }
 
         private async Task<BootstrapTask> GetBootstrapTask()
@@ -541,7 +541,7 @@
             var point = new S2Point(center.X, center.Y, center.Z);
             var latlng = new S2LatLng(point);
             // Get all cells touching a 630 (-5m for error) circle at center
-            var radians = 0.00009799064306948; // 625m
+            const double radians = 0.00009799064306948; // 625m
             var circle = S2Cap.FromAxisHeight(center, (radians * radians) / 2);
             var coverer = new S2RegionCoverer
             {
@@ -562,7 +562,7 @@
                 // TODO: await Bootstrap();
                 if (_bootstrapCellIds.Count == 0)
                 {
-                    await Update();
+                    await Update().ConfigureAwait(false);
                 }
             }
             return new BootstrapTask
@@ -588,7 +588,7 @@
                     var start = (int)MAX_COUNT * i;
                     var end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
                     var slice = ids.Slice(start, end);
-                    var result = await GetCellsByIDs(slice);
+                    var result = await GetCellsByIDs(slice).ConfigureAwait(false);
                     if (result.Count > 0)
                     {
                         result.ForEach(x => list.Add(x));
@@ -600,7 +600,7 @@
             {
                 return new List<Cell>();
             }
-            return (List<Cell>)await _cellRepository.GetByIdsAsync(ids, true);
+            return (List<Cell>)await _cellRepository.GetByIdsAsync(ids, true).ConfigureAwait(false);
         }
 
         private async Task<ulong> GetQuestCount(List<string> ids)
@@ -615,7 +615,7 @@
                     var start = (int)MAX_COUNT * i;
                     var end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
                     var slice = ids.Slice(start, end);
-                    var qResult = await GetQuestCount(slice);
+                    var qResult = await GetQuestCount(slice).ConfigureAwait(false);
                     if (qResult > 0)
                     {
                         result += qResult;
@@ -627,11 +627,10 @@
             {
                 return 0;
             }
-            var pokestops = await _pokestopRepository.GetByIdsAsync(ids);
-            var questCount = (ulong)pokestops.Where(x => !x.Deleted &&
+            var pokestops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
+            return (ulong)pokestops.Where(x => !x.Deleted &&
                                                          x.QuestType.HasValue &&
                                                          x.QuestType != null).ToList().Count;
-            return questCount;
         }
 
         private static double GetCooldownAmount(double distanceM)

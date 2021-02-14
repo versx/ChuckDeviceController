@@ -6,7 +6,7 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions;
 
-    class DbContextFactory
+    internal static class DbContextFactory
     {
         public static DeviceControllerContext CreateDeviceControllerContext(string connectionString)// where T : DbContext
         {
@@ -14,11 +14,9 @@
             //optionsBuilder.UseMySQL(connectionString);
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
-            var context = new DeviceControllerContext(optionsBuilder.Options);
             //context.ChangeTracker.AutoDetectChangesEnabled = false;
-            return context;
+            return new DeviceControllerContext(optionsBuilder.Options);
         }
-
 
         public static ValueConverter<T, string> CreateJsonValueConverter<T>()
         {

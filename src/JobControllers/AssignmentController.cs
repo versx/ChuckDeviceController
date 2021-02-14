@@ -32,11 +32,7 @@
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new AssignmentController();
-                }
-                return _instance;
+                return _instance ??= new AssignmentController();
             }
         }
 
@@ -70,16 +66,16 @@
             }
             if (!_initialized)
             {
-                _logger.LogInformation($"Starting AssignmentController");
+                _logger.LogInformation("Starting AssignmentController");
                 _initialized = true;
                 var timer = new System.Timers.Timer
                 {
                     Interval = 5000
                 };
-                timer.Elapsed += async (sender, e) => await CheckAssignments();
+                timer.Elapsed += async (sender, e) => await CheckAssignments().ConfigureAwait(false);
                 timer.Start();
             }
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         public void AddAssignment(Assignment assignment)
@@ -108,7 +104,7 @@
         {
             lock (_assignmentsLock)
             {
-                var assignment = _assignments.FirstOrDefault(x => x.Id == id);
+                var assignment = _assignments.Find(x => x.Id == id);
                 if (assignment != null)
                 {
                     DeleteAssignment(assignment);
@@ -118,13 +114,13 @@
 
         public async Task TriggerAssignment(Assignment assignment, bool force = false)
         {
-            if (!(force || assignment.Enabled && (assignment.Date == default || assignment.Date == DateTime.UtcNow)))
+            if (!(force || (assignment.Enabled && (assignment.Date == default || assignment.Date == DateTime.UtcNow))))
                 return;
 
             Device device = null;
             try
             {
-                device = await _deviceRepository.GetByIdAsync(assignment.DeviceUuid);
+                device = await _deviceRepository.GetByIdAsync(assignment.DeviceUuid).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -133,9 +129,9 @@
             if (device != null && string.Compare(device.InstanceName, assignment.InstanceName, true) != 0)
             {
                 _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
-                await InstanceController.Instance.RemoveDevice(device);
+                await InstanceController.Instance.RemoveDevice(device).ConfigureAwait(false);
                 device.InstanceName = assignment.InstanceName;
-                await _deviceRepository.UpdateAsync(device);
+                await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
                 InstanceController.Instance.AddDevice(device);
             }
         }
@@ -147,7 +143,7 @@
                 var deviceUUIDs = InstanceController.Instance.GetDeviceUuidsInInstance(name);
                 if (assignment.Enabled && assignment.Time != 0 && deviceUUIDs.Contains(assignment.DeviceUuid))
                 {
-                    await TriggerAssignment(assignment);
+                    await TriggerAssignment(assignment).ConfigureAwait(false);
                 }
             }
         }
@@ -172,7 +168,7 @@
             {
                 if (assignment.Enabled && assignment.Time != 0 && now > assignment.Time && _lastUpdated < assignment.Time)
                 {
-                    await TriggerAssignment(assignment);
+                    await TriggerAssignment(assignment).ConfigureAwait(false);
                 }
             }
             _lastUpdated = now;
