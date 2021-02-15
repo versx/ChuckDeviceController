@@ -4,8 +4,10 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    using Microsoft.Extensions.Caching.Memory;
     using POGOProtos.Rpc;
 
+    using ChuckDeviceController.Cache;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
 
@@ -18,7 +20,7 @@
     /// </credits>
     public class PvpRankCalculator
     {
-        // TODO: Cache generated stats
+        #region Variables
 
         private static readonly List<(string, ushort)> _availableLeagues = new List<(string, ushort)>
         {
@@ -32,6 +34,10 @@
             50,
             51,
         };
+
+        private static readonly BaseMemoryCache _cache = new BaseMemoryCache();
+
+        #endregion
 
         #region Singleton
 
@@ -62,9 +68,9 @@
             {
                 baseEntry.Form = (ushort)formId;
             }
-            var results = new Dictionary<string, List<PvpRank>>();
 
-            Action<PokedexPokemon, ushort> pushAllEntries = (PokedexPokemon stats, ushort evolution) =>
+            var results = new Dictionary<string, List<PvpRank>>();
+            void pushAllEntries(PokedexPokemon stats, ushort evolution)
             {
                 Dictionary<string, Dictionary<ushort, StatCombination>> allRanks = CalculateAllRanks(stats);
                 foreach ((string leagueName, Dictionary<ushort, StatCombination> combinationIndex) in allRanks)
@@ -104,13 +110,13 @@
                         results[leagueName].Add(entry);
                     }
                 }
-            };
+            }
             pushAllEntries(masterForm.Attack.HasValue ? masterForm : masterPokemon, 0);
             var canEvolve = true;
             if (costumeId > 0)
             {
                 var costumeName = ""; // TODO: Get Pokemon costume name from protos
-                canEvolve = costumeName.EndsWith("_NOEVOLVE") || costumeName.EndsWith("_NO_EVOLVE");
+                canEvolve = !costumeName.EndsWith("_NOEVOLVE") && !costumeName.EndsWith("_NO_EVOLVE");
             }
             if (canEvolve && masterForm.Evolutions.Count > 0)
             {
@@ -118,6 +124,7 @@
                 {
                     if (evolution.GenderRequirement > 0 && gender != evolution.GenderRequirement)
                     {
+                        // Gender doesn't match
                         continue;
                     }
                     // Eventually remove this after masterfile is fixed
@@ -153,9 +160,33 @@
 
         #endregion
 
-        #region Private Methods
+        #region Public Static Methods
 
-        private PvpRank CalculatePvPStat(PokedexPokemon stats, ushort atk, ushort def, ushort sta, ushort cpCap, double levelCap)
+        public static double CalculateStatProduct(PokedexPokemon stats, ushort atk, ushort def, ushort sta, double level)
+        {
+            var multiplier = GameMaster.Instance.CpMultipliers[level];
+            var hp = Math.Floor((sta + stats.Stamina ?? 0) * multiplier);
+            if (hp < 10) hp = 10;
+            return (atk + stats.Attack ?? 0) * multiplier *
+                   (def + stats.Defense ?? 0) * multiplier *
+                   hp;
+        }
+
+        public static uint CalculateCP(PokedexPokemon stats, ushort atk, ushort def, ushort sta, double level)
+        {
+            var multiplier = GameMaster.Instance.CpMultipliers[level];
+            var attack = (double)(stats.Attack + atk);
+            var defense = (double)(stats.Defense + def);
+            var stamina = (double)(stats.Stamina + sta);
+            var cp = Math.Floor(multiplier * multiplier * attack * Math.Sqrt(defense * stamina) / 10);
+            return Convert.ToUInt32(cp < 10 ? 10 : cp);
+        }
+
+        #endregion
+
+        #region Private Static Methods
+
+        private static PvpRank CalculatePvPStat(PokedexPokemon stats, ushort atk, ushort def, ushort sta, ushort cpCap, double levelCap)
         {
             var bestCP = cpCap;
             double lowest = 1;
@@ -181,7 +212,7 @@
             };
         }
 
-        private (StatCombination, List<PvpRank>) CalculateRanks(PokedexPokemon stats, ushort cpCap, double levelCap)
+        private static (StatCombination, List<PvpRank>) CalculateRanks(PokedexPokemon stats, ushort cpCap, double levelCap)
         {
             var combinations = new StatCombination();
             var sortedRanks = new List<PvpRank>();
@@ -216,10 +247,14 @@
             return (combinations, sortedRanks);
         }
 
-        private Dictionary<string, Dictionary<ushort, StatCombination>> CalculateAllRanks(PokedexPokemon stats)
+        private static Dictionary<string, Dictionary<ushort, StatCombination>> CalculateAllRanks(PokedexPokemon stats)
         {
-            //var key = $"{stats.attack},{stats.defense},{stats.stamina}";
-            // TODO: Get key from cache
+            var key = $"{stats.Attack},{stats.Defense},{stats.Stamina}";
+            if (_cache.Cache.TryGetValue(key, out Dictionary<string, Dictionary<ushort, StatCombination>> value))
+            {
+                return value;
+            }
+
             var result = new Dictionary<string, Dictionary<ushort, StatCombination>>();
             foreach (var (leagueName, cpCap) in _availableLeagues)
             {
@@ -227,17 +262,16 @@
                 foreach (var levelCap in _availableLevelCaps)
                 {
                     if (CalculateCP(stats, 15, 15, 15, levelCap) <= cpCap)
-                    {
                         continue; // Not viable cp
-                    }
-                    (StatCombination, List<PvpRank>) rank = CalculateRanks(stats, cpCap, levelCap);
+
+                    (StatCombination combinations, List<PvpRank> _) = CalculateRanks(stats, cpCap, levelCap);
                     if (combinationIndex.ContainsKey(levelCap))
-                        combinationIndex[levelCap] = rank.Item1;
+                        combinationIndex[levelCap] = combinations;
                     else
-                        combinationIndex.Add(levelCap, rank.Item1);
+                        combinationIndex.Add(levelCap, combinations);
                     if (CalculateCP(stats, 0, 0, 0, levelCap + 0.5) > cpCap)
                     {
-                        // TODO: rank.Item1.Maxed = true;
+                        // TODO: combinations.Maxed = true;
                         break;
                     }
                 }
@@ -246,32 +280,8 @@
                 else
                     result.Add(leagueName, combinationIndex);
             }
-            // Set cache
-            return result;
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        public static double CalculateStatProduct(PokedexPokemon stats, ushort atk, ushort def, ushort sta, double level)
-        {
-            var multiplier = GameMaster.Instance.CpMultipliers[level];
-            var hp = Math.Floor((sta + stats.Stamina ?? 0) * multiplier);
-            if (hp < 10) hp = 10;
-            return (atk + stats.Attack ?? 0) * multiplier *
-                   (def + stats.Defense ?? 0) * multiplier *
-                   hp;
-        }
-
-        public static uint CalculateCP(PokedexPokemon stats, ushort atk, ushort def, ushort sta, double level)
-        {
-            var multiplier = GameMaster.Instance.CpMultipliers[level];
-            var attack = (double)(stats.Attack + atk);
-            var defense = (double)(stats.Defense + def);
-            var stamina = (double)(stats.Stamina + sta);
-            var cp = Math.Floor(multiplier * multiplier * attack * Math.Sqrt(defense * stamina) / 10);
-            return Convert.ToUInt32(cp < 10 ? 10 : cp);
+            // Set PVP ranking cache
+            return _cache.Cache.Set(key, result, TimeSpan.FromMinutes(5));
         }
 
         #endregion

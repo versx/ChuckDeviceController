@@ -603,17 +603,11 @@
                 {
                     var unixDate = timestampMs.FromMilliseconds();
                     var secondOfHour = unixDate.Second + (unixDate.Minute * 60);
-                    ushort despawnOffset;
+                    var despawnOffset = spawnpoint.DespawnSecond - secondOfHour;
                     if (spawnpoint.DespawnSecond < secondOfHour)
-                    {
-                        despawnOffset = Convert.ToUInt16(3600 + spawnpoint.DespawnSecond - secondOfHour);
-                    }
-                    else
-                    {
-                        despawnOffset = Convert.ToUInt16(spawnpoint.DespawnSecond - secondOfHour);
-                    }
+                        despawnOffset += 3600;
                     var now = DateTime.UtcNow.ToTotalSeconds();
-                    ExpireTimestamp = now + despawnOffset;
+                    ExpireTimestamp = now + (ulong)(despawnOffset ?? 0);
                     IsExpireTimestampVerified = true;
                 }
                 else
