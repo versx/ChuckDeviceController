@@ -52,7 +52,7 @@
         //private readonly List<Spawnpoint> _spawnpoints;
         private readonly List<ulong> _cells;
         private readonly List<InventoryDeltaProto> _inventory;
-        private readonly List<ClientPlayerProto> _playerData;
+        private readonly List<dynamic> _playerData;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell;
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell;
@@ -111,7 +111,7 @@
             _cells = new List<ulong>();
             //_spawnpoints = new List<Spawnpoint>();
             _inventory = new List<InventoryDeltaProto>();
-            _playerData = new List<ClientPlayerProto>();
+            _playerData = new List<dynamic>();
 
             _gymIdsPerCell = new Dictionary<ulong, List<string>>();
             _stopIdsPerCell = new Dictionary<ulong, List<string>>();
@@ -303,7 +303,7 @@
             }
             if (_playerData.Count > 0)
             {
-                // TODO: PlayerData
+                await UpdatePlayerData().ConfigureAwait(false);
             }
         }
 
@@ -432,8 +432,7 @@
                             SnowLevel = (ushort)weather.DisplayWeather.SnowLevel,
                             FogLevel = (ushort)weather.DisplayWeather.FogLevel,
                             SpecialEffectLevel = (ushort)weather.DisplayWeather.SpecialEffectLevel,
-                            //Severity = alert.Severity ?? 0,
-                            Severity = null, // TODO: Weather.Severity
+                            Severity = weather.Alerts?.Count > 0 ? (ushort)weather.Alerts?.FirstOrDefault().Severity : null,
                             WarnWeather = alert?.WarnWeather,
                             Updated = now,
                         });
@@ -477,7 +476,6 @@
                         {
                             case FortType.Gym:
                                 var gym = new Gym(cellId, fort);
-                                // TODO: gym.TriggerWebhook();
                                 updatedGyms.Add(gym);
                                 if (!_gymIdsPerCell.ContainsKey(cellId))
                                 {
@@ -487,7 +485,6 @@
                                 break;
                             case FortType.Checkpoint:
                                 var pokestop = new Pokestop(cellId, fort);
-                                // TODO: pokestop.TriggerWebhook();
                                 updatedPokestops.Add(pokestop);
                                 if (!_stopIdsPerCell.ContainsKey(cellId))
                                 {
@@ -670,6 +667,7 @@
                     await gymRepository.AddOrUpdateAsync(updatedGyms, true).ConfigureAwait(false);
                     await trainerRepository.AddOrUpdateAsync(updatedTrainers).ConfigureAwait(false);
                     await gymDefenderRepository.AddOrUpdateAsync(updatedDefenders).ConfigureAwait(false);
+                    // TODO: Webhooks
                 }
 
                 stopwatch.Stop();
@@ -861,8 +859,7 @@
                                                          .GetResult();
                         // Skip quests we don't have stops for yet
                         if (pokestop == null)
-                            return;
-                        // TODO: Pokestop.TriggerWebhook(true);
+                            continue;
                         /*
                         if (await pokestop.TriggerWebhook(true))
                         {
@@ -883,6 +880,77 @@
 
                 stopwatch.Stop();
                 _logger.LogInformation($"[ConsumerService] Quest Count: {updatedQuests.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                System.Threading.Thread.Sleep(50);
+            }
+            await Task.CompletedTask.ConfigureAwait(false);
+        }
+
+        private async Task UpdatePlayerData()
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using var ctx = dbFactory.CreateDbContext();
+                var accountRepository = new AccountRepository(ctx);
+                var stopwatch = new Stopwatch();
+                var updatedAccounts = new List<Account>();
+                stopwatch.Start();
+                lock (_playerDataLock)
+                {
+                    foreach (var item in _playerData)
+                    {
+                        var username = item.username;
+                        var playerData = (GetPlayerOutProto)item.gpr;
+                        // Get account
+                        var account = accountRepository.GetByIdAsync(username)
+                                                       .ConfigureAwait(false)
+                                                       .GetAwaiter()
+                                                       .GetResult();
+                        // Skip account if we failed to get it
+                        if (account == null)
+                            continue;
+
+                        account.CreationTimestamp = (ulong)playerData.Player.CreationTimeMs / 1000;
+                        account.Warn = playerData.Warn;
+                        var warnExpireTimestamp = (ulong)playerData.WarnExpireMs / 1000;
+                        if (warnExpireTimestamp > 0)
+                        {
+                            account.WarnExpireTimestamp = warnExpireTimestamp;
+                        }
+                        account.WarnMessageAcknowledged = playerData.WarnMessageAcknowledged;
+                        account.SuspendedMessageAcknowledged = playerData.SuspendedMessageAcknowledged;
+                        account.WasSuspended = playerData.WasSuspended;
+                        account.Banned = playerData.Banned;
+                        if (playerData.Warn && string.IsNullOrEmpty(account.Failed))
+                        {
+                            account.Failed = "GPR_RED_WARNING";
+                            if (account.FirstWarningTimestamp == null)
+                            {
+                                account.FirstWarningTimestamp = now;
+                            }
+                            account.FailedTimestamp = now;
+                            _logger.LogWarning($"[ConsumerService] Account {account.Username}|{playerData.Player.Name} - Red Warning: {playerData.Banned}");
+                        }
+                        if (playerData.Banned)
+                        {
+                            account.Failed = "GPR_BANNED";
+                            account.FailedTimestamp = now;
+                            _logger.LogWarning($"[ConsumerService] Account {account.Username}|{playerData.Player.Name} - Banned: {playerData.Banned}");
+                        }
+                        updatedAccounts.Add(account);
+                    }
+                    _playerData.Clear();
+                }
+
+                if (updatedAccounts.Count > 0)
+                {
+                    // TODO: Ignore gpr warn/ban columns if overwriting
+                    await accountRepository.AddOrUpdateAsync(updatedAccounts).ConfigureAwait(false);
+                }
+
+                stopwatch.Stop();
+                _logger.LogInformation($"[ConsumerService] Account Count: {updatedAccounts.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);

@@ -24,6 +24,10 @@
                 x.Level <= maxLevel &&
                 string.IsNullOrEmpty(x.Failed) &&
                 x.Spins < 3500 &&
+                x.FirstWarningTimestamp == null &&
+                x.Warn == null &&
+                x.WarnExpireTimestamp == null &&
+                x.Banned == null &&
                 !inuseAccounts.Contains(x.Username.ToLower())
             );
         }

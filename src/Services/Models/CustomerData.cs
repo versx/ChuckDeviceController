@@ -31,7 +31,7 @@
 
         public List<InventoryDeltaProto> Inventory { get; set; }
 
-        public List<ClientPlayerProto> PlayerData { get; set; }
+        public List<dynamic> PlayerData { get; set; }
 
         public string Username { get; set; }
 
@@ -51,7 +51,7 @@
             Cells = new List<ulong>();
             //Spawnpoints = new List<Spawnpoint>();
             Inventory = new List<InventoryDeltaProto>();
-            PlayerData = new List<ClientPlayerProto>();
+            PlayerData = new List<dynamic>();
         }
     }
 }
