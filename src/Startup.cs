@@ -87,8 +87,15 @@ namespace ChuckDeviceController
                        .AllowAnyMethod();
             }));
 
+            // Profiling
+            // The services.AddMemoryCache(); code is required - there is a bug in
+            // MiniProfiler, if we have not configured MemoryCache, it will fail.
+            services.AddMemoryCache();
+            services.AddEntityFrameworkMySql().AddDbContext<DeviceControllerContext>();
+            services.AddMiniProfiler(options => options.RouteBasePath = "/profiler").AddEntityFramework();
+
             services.AddResponseCaching();
-            //services.AddMemoryCache();
+
             //services.AddDistributedMemoryCache();
             services.AddControllers();
             services.AddControllersWithViews();
@@ -124,6 +131,8 @@ namespace ChuckDeviceController
             }
 
             //app.UseRequestResponseLogging();
+
+            app.UseMiniProfiler();
 
             //app.UseHttpsRedirection();
             app.UseDefaultFiles();

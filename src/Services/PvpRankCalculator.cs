@@ -62,12 +62,11 @@
                 return null;
             }
             var masterForm = formId > 0 ? masterPokemon.Forms[formId] ?? masterPokemon : masterPokemon;
-            var baseEntry = new PvpRank();
-            baseEntry.Pokemon = (ushort)pokemonId;
-            if (formId > 0)
+            var baseEntry = new PvpRank
             {
-                baseEntry.Form = (ushort)formId;
-            }
+                Pokemon = (ushort)pokemonId,
+                Form = formId > 0 ? (ushort)formId : 0,
+            };
 
             var results = new Dictionary<string, List<PvpRank>>();
             void pushAllEntries(PokedexPokemon stats, ushort evolution)
@@ -281,7 +280,8 @@
                     result.Add(leagueName, combinationIndex);
             }
             // Set PVP ranking cache
-            return _cache.Cache.Set(key, result, TimeSpan.FromMinutes(5));
+            // TODO: return _cache.Cache.Set(key, result);//, TimeSpan.FromMinutes(5));
+            return result;
         }
 
         #endregion

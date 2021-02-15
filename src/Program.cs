@@ -8,7 +8,6 @@ namespace ChuckDeviceController
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
 
-    // TODO: Convert Dashboard UI times to specified timezone
     // TODO: Fix IV loop adding pokemon
     // TODO: Implement cache better
     // TODO: Use Z.EntityFramework.Cache for Cells/Pokestops/Gyms/Spawnpoints/Accounts/Devices/Instances/Assignments
