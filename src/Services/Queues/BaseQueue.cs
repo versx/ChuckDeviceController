@@ -33,6 +33,13 @@
             return _queue.Dequeue();
         }
 
+        public void Enqueue(List<T> data)
+        {
+            if (data?.Count == 0)
+                return;
+            data.ForEach(Enqueue);
+        }
+
         public void Enqueue(T data)
         {
             _queue.Enqueue(data);

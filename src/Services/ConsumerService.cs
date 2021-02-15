@@ -19,6 +19,7 @@
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
+    using ChuckDeviceController.Net.Webhooks;
     using ChuckDeviceController.Services.Models;
 
     // TODO: Use Redis rpush/blpop event to send data (maybe create seperate service for db parsing)
@@ -442,6 +443,7 @@
                 if (updatedWeather.Count > 0)
                 {
                     await repo.AddOrUpdateAsync(updatedWeather).ConfigureAwait(false);
+                    WebhookController.Instance.AddWeather(updatedWeather);
                 }
 
                 stopwatch.Stop();
@@ -476,6 +478,7 @@
                         {
                             case FortType.Gym:
                                 var gym = new Gym(cellId, fort);
+                                WebhookController.Instance.AddGym(gym);
                                 updatedGyms.Add(gym);
                                 if (!_gymIdsPerCell.ContainsKey(cellId))
                                 {
@@ -485,6 +488,7 @@
                                 break;
                             case FortType.Checkpoint:
                                 var pokestop = new Pokestop(cellId, fort);
+                                WebhookController.Instance.AddPokestop(pokestop);
                                 updatedPokestops.Add(pokestop);
                                 if (!_stopIdsPerCell.ContainsKey(cellId))
                                 {
@@ -876,6 +880,7 @@
                 if (updatedQuests.Count > 0)
                 {
                     await pokestopRepository.AddOrUpdateAsync(updatedQuests, false).ConfigureAwait(false);
+                    WebhookController.Instance.AddQuests(updatedQuests);
                 }
 
                 stopwatch.Stop();

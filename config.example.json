@@ -7,5 +7,6 @@
 		"username": "cdcuser",
 		"password": "cdcPass!",
 		"database": "cdcdb"
-	}
+	},
+	"webhooks": []
 }

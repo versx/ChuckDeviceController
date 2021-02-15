@@ -14,6 +14,7 @@
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
+    using ChuckDeviceController.Net.Webhooks;
     using ChuckDeviceController.Services;
 
     [Table("pokemon")]
@@ -244,9 +245,6 @@
 
         public void Update(Pokemon oldPokemon = null, bool updateIV = false)
         {
-            if (oldPokemon == null)
-                return;
-
             var now = DateTime.UtcNow.ToTotalSeconds();
             if (oldPokemon == null)
             {
@@ -306,7 +304,11 @@
                     PokestopId = oldPokemon.PokestopId;
                 }
 
-                SetPvpRankings().ConfigureAwait(false);
+                if (AttackIV != null)
+                {
+                    SetPvpRankings().ConfigureAwait(false);
+                }
+
                 if (updateIV && oldPokemon.AttackIV == null && AttackIV != null)
                 {
                     Changed = now;
@@ -386,19 +388,22 @@
                 Updated = now;
             }
 
-            if (oldPokemon == null)
+            //if (oldPokemon == null)
             {
-                // TODO: Send webhook
+                WebhookController.Instance.AddPokemon(this);
                 InstanceController.Instance.GotPokemon(this);
                 if (AttackIV != null)
                 {
                     InstanceController.Instance.GotIV(this);
                 }
-                if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
+                if (oldPokemon != null)
                 {
-                    oldPokemon._hasIvChanges = false;
-                    // TODO: Send webhook
-                    InstanceController.Instance.GotIV(this);
+                    if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
+                    {
+                        oldPokemon._hasIvChanges = false;
+                        WebhookController.Instance.AddPokemon(this);
+                        InstanceController.Instance.GotIV(this);
+                    }
                 }
             }
         }
@@ -546,7 +551,10 @@
                     SetDittoAttributes(PokemonId);
                 }
 
-                await SetPvpRankings();
+                if (AttackIV != null)
+                {
+                    await SetPvpRankings();
+                }
 
                 SpawnId = Convert.ToUInt64(encounter.Pokemon.SpawnPointId, 16);
                 var timestampMs = DateTime.UtcNow.ToTotalSeconds();
