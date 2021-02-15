@@ -26,6 +26,7 @@ namespace ChuckDeviceController
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
+    using ChuckDeviceController.Net.Webhooks;
     using ChuckDeviceController.Services;
 
     public class Startup
@@ -99,6 +100,11 @@ namespace ChuckDeviceController
             //services.AddDistributedMemoryCache();
             services.AddControllers();
             services.AddControllersWithViews();
+
+            if (Config.Webhooks?.Count > 0)
+            {
+                WebhookController.Instance.Start();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
