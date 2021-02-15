@@ -93,7 +93,15 @@ namespace ChuckDeviceController
             // MiniProfiler, if we have not configured MemoryCache, it will fail.
             services.AddMemoryCache();
             services.AddEntityFrameworkMySql().AddDbContext<DeviceControllerContext>();
-            services.AddMiniProfiler(options => options.RouteBasePath = "/profiler").AddEntityFramework();
+            services.AddMiniProfiler(options =>
+            {
+                options.RouteBasePath = "/profiler";
+                options.EnableMvcViewProfiling = true;
+                options.EnableMvcFilterProfiling = true;
+                options.EnableServerTimingHeader = true;
+                options.ShowControls = true;
+                options.TrackConnectionOpenClose = true;
+            }).AddEntityFramework();
 
             services.AddResponseCaching();
 

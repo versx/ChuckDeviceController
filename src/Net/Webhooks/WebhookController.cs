@@ -468,7 +468,10 @@
                 }
 
                 if (events.Count == 0)
-                    return;
+                {
+                    Thread.Sleep(SleepIntervalS * 1000);
+                    continue;
+                }
 
                 foreach (var url in Startup.Config.Webhooks)
                 {
