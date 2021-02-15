@@ -181,7 +181,7 @@
             var encounters = new List<dynamic>();
             var cells = new List<ulong>();
             var inventory = new List<InventoryDeltaProto>();
-            var playerData = new List<ClientPlayerProto>();
+            var playerData = new List<dynamic>();
             //var spawnpoints = new List<Spawnpoint>();
 
             var isEmptyGmo = true;
@@ -228,7 +228,11 @@
                             var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (gpr?.Success == true)
                             {
-                                playerData.Add(gpr.Player);
+                                playerData.Add(new
+                                {
+                                    gpr = gpr,
+                                    username = payload.Username,
+                                });
                             }
                             else
                             {
