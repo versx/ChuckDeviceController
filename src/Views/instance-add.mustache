@@ -4,25 +4,36 @@
     $(document).ready(function() {
         $('.type-select').change(function() {
             switch ($(this).val()) {
+                case 'circle_pokemon':
+                    $('.circle_route_type').removeClass('d-none');
+                    $('.pokemon_ids_text').addClass('d-none');
+                    $('.iv_queue_limit_text').addClass('d-none');
+                    $('.spin_limit_text').addClass('d-none');
+                    $('.bootstrap_text').addClass('d-none');
+                    break;
                 case 'pokemon_iv':
+                    $('.circle_route_type').addClass('d-none');
                     $('.pokemon_ids_text').removeClass('d-none');
                     $('.iv_queue_limit_text').removeClass('d-none');
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
                     break;
                 case 'auto_quest':
+                    $('.circle_route_type').addClass('d-none');
                     $('.pokemon_ids_text').addClass('d-none');
                     $('.iv_queue_limit_text').addClass('d-none');
                     $('.spin_limit_text').removeClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
                     break;
                 case 'bootstrap':
+                    $('.circle_route_type').addClass('d-none');
                     $('.pokemon_ids_text').addClass('d-none');
                     $('.iv_queue_limit_text').addClass('d-none');
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').removeClass('d-none');
                     break;
                 default:
+                    $('.circle_route_type').addClass('d-none');
                     $('.pokemon_ids_text').addClass('d-none');
                     $('.iv_queue_limit_text').addClass('d-none');
                     $('.spin_limit_text').addClass('d-none');
@@ -58,6 +69,15 @@
                     <option value="auto_quest" {{#auto_quest_selected}} selected{{/auto_quest_selected}}>Auto Quest</option>
                     <option value="pokemon_iv" {{#pokemon_iv_selected}} selected{{/pokemon_iv_selected}}>Pokemon IV</option>
                     <option value="bootstrap" {{#bootstrap_selected}} selected{{/bootstrap_selected}}>Bootstrap</option>
+                </select>
+            </div>
+            <div class="form-group circle_route_type {{^circle_pokemon_selected}}d-none{{/circle_pokemon_selected}}">
+                Circle Route Type
+                <select class="form-control" name="circle_route_type">
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Circle Route Type</option>
+                    <option value="leapfrog" {{#leapfrog_selected}} selected{{/leapfrog_selected}}>Leapfrog</option>
+                    <option value="spread" {{#spread_selected}} selected{{/spread_selected}}>Spread</option>
+                    <option value="circular" {{#circular_selected}} selected{{/circular_selected}}>Circular</option>
                 </select>
             </div>
             <div class="form-group">

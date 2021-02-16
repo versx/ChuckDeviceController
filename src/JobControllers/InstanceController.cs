@@ -150,10 +150,10 @@
                         switch (instance.Type)
                         {
                             case InstanceType.CirclePokemon:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Pokemon, CircleRouteType.Split, minLevel, maxLevel);
+                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Pokemon, instance.Data.CircleRouteType, minLevel, maxLevel);
                                 break;
                             case InstanceType.CircleRaid:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Raid, CircleRouteType.Split, minLevel, maxLevel);
+                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Raid, CircleRouteType.Default, minLevel, maxLevel);
                                 break;
                             case InstanceType.SmartCircleRaid:
                                 // TODO: SmartCircleRaidInstanceController

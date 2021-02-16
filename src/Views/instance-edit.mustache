@@ -4,6 +4,13 @@
     $(document).ready(function() {
         $('.type-select').change(function() {
             switch ($(this).val()) {
+                case 'circle_pokemon':
+                    $('.circle_route_type').removeClass('d-none');
+                    $('.pokemon_ids_text').addClass('d-none');
+                    $('.iv_queue_limit_text').addClass('d-none');
+                    $('.spin_limit_text').addClass('d-none');
+                    $('.bootstrap_text').addClass('d-none');
+                    break;
                 case 'pokemon_iv':
                     $('.pokemon_ids_text').removeClass('d-none');
                     $('.scatter_pokemon_ids_text').removeClass('d-none');
@@ -68,6 +75,15 @@
                     <option value="bootstrap" {{#bootstrap_selected}} selected{{/bootstrap_selected}}>Bootstrap</option>>
                 </select>
             </div>
+            <div class="form-group circle_route_type {{^circle_pokemon_selected}}d-none{{/circle_pokemon_selected}}">
+                Circle Route Type
+                <select class="form-control" name="circle_route_type">
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Circle Route Type</option>
+                    <option value="leapfrog" {{#leapfrog_selected}} selected{{/leapfrog_selected}}>Leapfrog</option>
+                    <option value="spread" {{#spread_selected}} selected{{/spread_selected}}>Spread</option>
+                    <option value="circular" {{#circular_selected}} selected{{/circular_selected}}>Circular</option>
+                </select>
+            </div>
             <div class="form-group">
                 Timezone Offset (in seconds) from UTC
                 <input type="number" class="form-control" name="timezone_offset" value="{{timezone_offset}}" step=1 min="-43200" max="43200" required>
@@ -96,7 +112,7 @@
             </div>
             <div class="form-group bootstrap_text {{^bootstrap_selected}}d-none{{/bootstrap_selected}}">
                 Circle Size (meters, i.e `70, 500, 750, etc`)
-                <input type="number" class="form-control" name="circle_size" value="{{circle_size}}" step="20" min="20" max="1000">
+                <input type="number" class="form-control" name="circle_size" value="{{circle_size}}" step="1" min="5" max="1000">
             </div>
             <input type="hidden" name="_csrf" value="{{csrf}}">
             <button type="submit" class="btn btn-primary">Update</button>
