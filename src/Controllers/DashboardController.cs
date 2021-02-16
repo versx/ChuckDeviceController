@@ -30,6 +30,7 @@
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
         private readonly PokestopRepository _pokestopRepository;
+        private readonly GeofenceRepository _geofenceRepository;
 
         #endregion
 
@@ -45,6 +46,7 @@
             _deviceRepository = new DeviceRepository(_context);
             _instanceRepository = new InstanceRepository(_context);
             _pokestopRepository = new PokestopRepository(_context);
+            _geofenceRepository = new GeofenceRepository(_context);
         }
 
         #endregion
@@ -159,7 +161,7 @@
             HttpGet("/dashboard/instance/add"),
             HttpPost("/dashboard/instance/add"),
         ]
-        public async Task<IActionResult> CreateInstance()
+        public async Task<IActionResult> AddInstance()
         {
             if (Request.Method == "GET")
             {
@@ -335,23 +337,20 @@
                         obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
                 //        break;
                 //}
+                var coords = string.Empty;
+                var coordsArray = instance.Data.Area;
                 if (instance.Type == InstanceType.CirclePokemon ||
                     instance.Type == InstanceType.CircleRaid ||
                     instance.Type == InstanceType.SmartCircleRaid)
                 {
-                    var coords = string.Empty;
-                    var coordsArray = instance.Data.Area;
                     foreach (var coord in coordsArray.EnumerateArray())
                     {
                         coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
                     }
-                    obj.area = coords;
                 }
                 else if (instance.Type == InstanceType.AutoQuest ||
                          instance.Type == InstanceType.PokemonIV)
                 {
-                    var coords = string.Empty;
-                    var coordsArray = instance.Data.Area;
                     var index = 1;
                     foreach (var geofence in coordsArray.EnumerateArray())
                     {
@@ -362,8 +361,8 @@
                         }
                         index++;
                     }
-                    obj.area = coords;
                 }
+                obj.area = coords;
                 var data = Renderer.ParseTemplate("instance-edit", obj);
                 return new ContentResult
                 {
@@ -494,6 +493,175 @@
                 ContentType = "text/html",
                 StatusCode = 200,
             };
+        }
+
+        #endregion
+
+        #region Geofences
+
+        [HttpGet("/dashboard/geofences")]
+        public IActionResult GetGeofences()
+        {
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("geofences", obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        [
+            HttpGet("/dashboard/geofence/add"),
+            HttpPost("/dashboard/geofence/add"),
+        ]
+        public async Task<IActionResult> AddGeofence()
+        {
+            if (Request.Method == "GET")
+            {
+                dynamic obj = BuildDefaultData();
+                var data = Renderer.ParseTemplate("geofence-add", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                var name = Request.Form["name"].ToString();
+                var type = Request.Form["type"].ToString() == "circle"
+                    ? GeofenceType.Circle
+                    : GeofenceType.Geofence;
+                var area = Request.Form["area"].ToString();
+
+                var geofence = await _geofenceRepository.GetByIdAsync(name);
+                if (geofence != null)
+                {
+                    // Geofence already exists by name
+                }
+
+                dynamic newArea = null;
+                switch (type)
+                {
+                    case GeofenceType.Circle:
+                        {
+                            // Parse area
+                            var rows = area.Split('\n');
+                            var coords = new List<Coordinate>();
+                            foreach (var row in rows)
+                            {
+                                var split = row.Split(',');
+                                if (split.Length != 2)
+                                    continue;
+                                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+                            }
+                            if (coords.Count == 0)
+                            {
+                                // Invalid coordinates provided
+                            }
+                            newArea = coords;
+                            break;
+                        }
+                    case GeofenceType.Geofence:
+                        {
+                            var rows = area.Split('\n');
+                            var index = 0;
+                            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
+                            foreach (var row in rows)
+                            {
+                                var split = row.Split(',');
+                                if (split.Length == 2)
+                                {
+                                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+                                }
+                                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
+                                {
+                                    index++;
+                                    coords.Add(new List<Coordinate>());
+                                }
+                            }
+                            if (coords.Count == 0)
+                            {
+                                // Invalid coordinates provided
+                            }
+                            newArea = coords;
+                            break;
+                        }
+                }
+
+                geofence = new Geofence
+                {
+                    Name = name,
+                    Type = type,
+                    Data = new
+                    {
+                        area = newArea,
+                    }
+                };
+                await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
+                return Redirect("/dashboard/geofences");
+            }
+        }
+
+        [
+            HttpGet("/dashboard/geofence/edit/{name}"),
+            HttpPost("/dashboard/geofence/edit/{name}"),
+        ]
+        public async Task<IActionResult> EditGeofence(string name)
+        {
+            if (Request.Method == "GET")
+            {
+                dynamic obj = BuildDefaultData();
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (geofence == null)
+                {
+                    // Provided geofence name does not exist
+                    return Redirect("/dashboard/geofences");
+                }
+                obj.name = geofence.Name;
+                obj.old_name = geofence.Name;
+                obj.circle_selected = geofence.Type == GeofenceType.Circle;
+                obj.geofence_selected = geofence.Type == GeofenceType.Geofence;
+                var coords = string.Empty;
+                var coordsArray = geofence.Data.GetProperty("area");
+                if (geofence.Type == GeofenceType.Circle)
+                {
+                    foreach (var coord in coordsArray.EnumerateArray())
+                    {
+                        coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                    }
+                }
+                else if (geofence.Type == GeofenceType.Geofence)
+                {
+                    var index = 1;
+                    foreach (var fence in coordsArray.EnumerateArray())
+                    {
+                        coords += $"[Geofence {index}]\n";
+                        foreach (var coord in fence.EnumerateArray())
+                        {
+                            coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                        }
+                        index++;
+                    }
+                }
+                obj.area = coords;
+                var data = Renderer.ParseTemplate("geofence-edit", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                // TODO: Edit Geofence
+                // TODO: Delete Geofence
+                return Redirect("/dashboard/geofences");
+            }
         }
 
         #endregion

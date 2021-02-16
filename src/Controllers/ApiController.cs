@@ -24,6 +24,7 @@
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
         private readonly AssignmentRepository _assignmentRepository;
+        private readonly GeofenceRepository _geofenceRepository;
 
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
@@ -46,6 +47,7 @@
             _deviceRepository = new DeviceRepository(_context);
             _instanceRepository = new InstanceRepository(_context);
             _assignmentRepository = new AssignmentRepository(_context);
+            _geofenceRepository = new GeofenceRepository(_context);
         }
 
         #endregion
@@ -56,8 +58,10 @@
         /// Get all devices
         /// </summary>
         /// <returns>Returns a list of all device objects</returns>
-        [HttpPost("/api/devices")]
-        [Produces("application/json")]
+        [
+            HttpPost("/api/devices"),
+            Produces("application/json"),
+        ]
         public async Task<dynamic> GetDevices()
         {
             // TODO: Use formatted in query
@@ -97,8 +101,10 @@
         /// Get all instances
         /// </summary>
         /// <returns>Returns a list of all instance objects</returns>
-        [HttpPost("/api/instances")]
-        [Produces("application/json")]
+        [
+            HttpPost("/api/instances"),
+            Produces("application/json"),
+        ]
         public async Task<dynamic> GetInstances()
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
@@ -126,12 +132,35 @@
             return new { data = new { instances = list } };
         }
 
+        [
+            HttpPost("/api/geofences"),
+            Produces("application/json"),
+        ]
+        public async Task<dynamic> GetGeofences()
+        {
+            var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var geofence in geofences)
+            {
+                list.Add(new
+                {
+                    name = geofence.Name,
+                    type = geofence.Type.ToString(),
+                    count = geofence.Data.GetProperty("area").GetArrayLength(),
+                    buttons = $"<div class='btn-group' role='group'><a href='/dashboard/geofence/edit/{Uri.EscapeDataString(geofence.Name)}' role='button' class='btn btn-primary'>Edit</a>",
+                });
+            }
+            return new { data = new { geofences = list } };
+        }
+
         /// <summary>
         /// Get all device assignments
         /// </summary>
         /// <returns>Returns a list of all device assignment objects</returns>
-        [HttpPost("/api/assignments")]
-        [Produces("application/json")]
+        [
+            HttpPost("/api/assignments"),
+            Produces("application/json"),
+        ]
         public async Task<dynamic> GetAssignments()
         {
             var assignments = await _assignmentRepository.GetAllAsync().ConfigureAwait(false);
@@ -176,8 +205,10 @@
         /// </summary>
         /// <param name="name">Name of IV instance</param>
         /// <returns>Returns a list of Pokemon in specified IV instance queue</returns>
-        [HttpPost("/api/ivqueue/{name}")]
-        [Produces("application/json")]
+        [
+            HttpPost("/api/ivqueue/{name}"),
+            Produces("application/json"),
+        ]
         public async Task<dynamic> GetIVQueue(string name)
         {
             var queue = InstanceController.Instance.GetIVQueue(name);

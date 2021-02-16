@@ -24,6 +24,12 @@
         public InstanceType Type { get; set; }
 
         [
+            Column("geofence"),
+            JsonPropertyName("geofence"),
+        ]
+        public string Geofence { get; set; }
+
+        [
             Column("data"),
             JsonPropertyName("data"),
         ]

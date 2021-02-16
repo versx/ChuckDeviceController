@@ -1,0 +1,35 @@
+﻿{{> navbar}}
+
+<body class="{{body_class}}">
+    <br>
+    <div class="alert alert-danger w-75 {{^show_error}}d-none{{/show_error}}" style="float: none; margin: 0 auto;">
+        <strong>Error!</strong> {{error}}
+    </div>
+    {{#show_error}}<br>{{/show_error}}
+
+    <h1 align="center">Add a new Geofence to {{title}}!</h1>
+    <br>
+    <div class="w-75" style="float: none; margin: 0 auto;">
+        <form action="" method="post">
+            <div class="form-group">
+                Name
+                <input type="text" class="form-control" name="name" value="{{name}}" required minlength="1" maxlength="30">
+            </div>
+            <div class="form-group">
+                Geofence Type
+                <select class="form-control type-select" name="type" required>
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Geofence Type</option>
+                    <option value="circle" {{#circle_selected}} selected{{/circle_selected}}>Circle</option>
+                    <option value="geofence" {{#geofence_selected}} selected{{/geofence_selected}}>Geofence</option>
+                </select>
+            </div>
+            <div class="form-group">
+                Scan Area
+                <textarea class="form-control" rows="5" name="area" required>{{{area}}}</textarea>
+            </div>
+            <input type="hidden" name="_csrf" value="{{csrf}}">
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+    <br>
+</body> 
