@@ -13,6 +13,7 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.JobControllers;
+    using ChuckDeviceController.JobControllers.Instances;
     using ChuckDeviceController.Utilities;
 
     [Controller]
@@ -166,6 +167,11 @@
                 dynamic obj = BuildDefaultData();
                 obj.min_level = 0;
                 obj.max_level = 30;
+                obj.timezone_offset = 0;
+                obj.circle_size = 70;
+                obj.nothing_selected = true;
+                obj.iv_queue_limit = 100;
+                obj.spin_limit = 3500;
                 var data = Renderer.ParseTemplate("instance-add", obj);
                 return new ContentResult
                 {
@@ -184,16 +190,18 @@
                 var timezoneOffset = Request.Form.ContainsKey("timezone_offset")
                     ? int.Parse(Request.Form["timezone_offset"].ToString() ?? "0")
                     : 0;
+                var circleRouteType = Request.Form.ContainsKey("circle_route_type")
+                    ? StringToCircleRouteType(Request.Form["circle_route_type"])
+                    : CircleRouteType.Default;
+                var circleSize = Request.Form.ContainsKey("circle_size")
+                    ? ushort.Parse(Request.Form["circle_size"].ToString() ?? "70")
+                    : 70;
                 // TODO: Check if == '*' and generate list of ids
-                var pokemonIds = new List<uint>();
+                var pokemonIds = Request.Form["pokemon_ids"].ToString()?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
                 if (type == InstanceType.PokemonIV)
                 {
-                    if (Request.Form.ContainsKey("pokemon_ids") && Request.Form["pokemon_ids"].Count > 0)
-                    {
-                        pokemonIds = Request.Form["pokemon_ids"].ToString()?.Split('\n')?.Select(x => uint.Parse(x)).ToList();
-                    }
                     if (Request.Form.ContainsKey("iv_queue_limit"))
                     {
                         ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
@@ -245,6 +253,7 @@
                         }
                     case InstanceType.AutoQuest:
                     case InstanceType.PokemonIV:
+                    case InstanceType.Bootstrap:
                         {
                             var rows = area.Split('\n');
                             var index = 0;
@@ -292,6 +301,8 @@
                         MaximumLevel = maxLevel,
                         PokemonIds = pokemonIds,
                         TimezoneOffset = timezoneOffset,
+                        CircleRouteType = circleRouteType,
+                        CircleSize = (ushort)circleSize,
                     }
                 };
                 await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
@@ -324,16 +335,26 @@
                 obj.circle_raid_selected = instance.Type == InstanceType.CircleRaid;
                 obj.pokemon_iv_selected = instance.Type == InstanceType.PokemonIV;
                 obj.auto_quest_selected = instance.Type == InstanceType.AutoQuest;
+                obj.bootstrap_selected = instance.Type == InstanceType.Bootstrap;
+                obj.circle_route_type = CircleRouteTypeToString(instance.Data.CircleRouteType);
+                obj.leapfrog_selected = instance.Data.CircleRouteType == CircleRouteType.Default;
+                obj.spread_selected = instance.Data.CircleRouteType == CircleRouteType.Split;
+                obj.circular_selected = instance.Data.CircleRouteType == CircleRouteType.Circular;
                 //switch (instance.Type)
                 //{
+                //    case InstanceType.CirclePokemon:
+                        obj.circle_route_type = instance.Data.CircleRouteType; // TODO: ToString
+                //        break;
                 //    case InstanceType.PokemonIV:
                         obj.pokemon_ids = instance.Data.PokemonIds == null ? null : string.Join("\n", instance.Data.PokemonIds);
                         obj.iv_queue_limit = instance.Data.IVQueueLimit > 0 ? instance.Data.IVQueueLimit : 100;
                 //        break;
                 //    case InstanceType.AutoQuest:
-                        obj.timezone_offset = instance.Data.TimezoneOffset;
+                        obj.timezone_offset = instance.Data.TimezoneOffset ?? 0;
                         obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
                 //        break;
+                //    case InstanceType.Bootstrap:
+                        obj.circle_size = instance.Data.CircleSize ?? 70;
                 //}
                 if (instance.Type == InstanceType.CirclePokemon ||
                     instance.Type == InstanceType.CircleRaid ||
@@ -348,7 +369,8 @@
                     obj.area = coords;
                 }
                 else if (instance.Type == InstanceType.AutoQuest ||
-                         instance.Type == InstanceType.PokemonIV)
+                         instance.Type == InstanceType.PokemonIV ||
+                         instance.Type == InstanceType.Bootstrap)
                 {
                     var coords = string.Empty;
                     var coordsArray = instance.Data.Area;
@@ -392,8 +414,12 @@
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
                 var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
+                var circleSize = ushort.Parse(Request.Form["circle_Size"].ToString() ?? "70");
+                var circleRouteType = Request.Form.ContainsKey("circle_route_type")
+                    ? StringToCircleRouteType(Request.Form["circle_route_type"])
+                    : CircleRouteType.Default;
                 // TODO: Check if == '*' and generate list of ids
-                var pokemonIds = Request.Form["pokemon_ids"].ToString().Split('\n').Select(uint.Parse).ToList();
+                var pokemonIds = Request.Form["pokemon_ids"].ToString()?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
                 //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
                 var ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
                 var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
@@ -430,6 +456,7 @@
                         }
                     case InstanceType.AutoQuest:
                     case InstanceType.PokemonIV:
+                    case InstanceType.Bootstrap:
                         {
                             var rows = area.Split('\n');
                             var index = 0;
@@ -474,6 +501,8 @@
                     MaximumLevel = maxLevel,
                     PokemonIds = pokemonIds,
                     TimezoneOffset = timezoneOffset,
+                    CircleSize = circleSize,
+                    CircleRouteType = circleRouteType,
                 };
                 await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
                 InstanceController.Instance.ReloadInstance(instance, name);
@@ -884,6 +913,32 @@
         #endregion
 
         #region Helper Methods
+
+        private static CircleRouteType StringToCircleRouteType(string type)
+        {
+            switch (type.ToLower())
+            {
+                case "leapfrog": return CircleRouteType.Default;
+                case "spread": return CircleRouteType.Split;
+                case "circular": return CircleRouteType.Circular;
+                default: return CircleRouteType.Default;
+            }
+        }
+
+        private static string CircleRouteTypeToString(CircleRouteType type)
+        {
+            switch (type)
+            {
+                case CircleRouteType.Default:
+                    return "leapfrog";
+                case CircleRouteType.Split:
+                    return "spread";
+                case CircleRouteType.Circular:
+                    return "circular";
+                default:
+                    return "leapfrog";
+            }
+        }
 
         private static ExpandoObject BuildDefaultData()
         {
