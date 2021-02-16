@@ -10,21 +10,31 @@ CREATE TABLE `account` (
    `last_encounter_time` int(11) unsigned DEFAULT NULL,
    `spins` smallint(6) unsigned NOT NULL DEFAULT 0,
    `tutorial` tinyint(3) unsigned NOT NULL DEFAULT 0,
-   `creation_timestamp_ms` int(11) unsigned DEFAULT NULL,
+   `creation_timestamp` int(11) unsigned DEFAULT NULL,
    `warn` tinyint(1) unsigned DEFAULT NULL,
-   `warn_expire_ms` int(11) unsigned DEFAULT NULL,
+   `warn_expire_timestamp` int(11) unsigned DEFAULT NULL,
    `warn_message_acknowledged` tinyint(1) unsigned DEFAULT NULL,
    `suspended_message_acknowledged` tinyint(1) unsigned DEFAULT NULL,
    `was_suspended` tinyint(1) unsigned DEFAULT NULL,
    `banned` tinyint(1) unsigned DEFAULT NULL,
+   `last_used_timestamp` int(11) unsigned DEFAULT NULL,
    PRIMARY KEY (`username`)
 );
 
 CREATE TABLE `instance` (
    `name` varchar(30) NOT NULL,
    `type` enum('circle_pokemon','circle_raid','circle_smart_raid','auto_quest','pokemon_iv') NOT NULL,
+   `geofence` varchar(30) NOT NULL,
    `data` longtext NOT NULL,
-   PRIMARY KEY (`name`)
+   PRIMARY KEY (`name`),
+   CONSTRAINT `fk_geofence_name` FOREIGN KEY (`geofence`) REFERENCES `geofence` (`name`) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TABLE `geofence` (
+   `name` varchar(255) DEFAULT NULL,
+   `type` enum('circle','geofence') NOT NULL,
+   `data` longtext NOT NULL,
+   UNIQUE KEY `name` (`name`)
 );
 
 CREATE TABLE `device` (
