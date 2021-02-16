@@ -25,6 +25,7 @@
         private readonly IDictionary<string, IJobController> _instances;
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
+        private readonly GeofenceRepository _geofenceRepository;
 
         private readonly object _instancesLock = new object();
         private readonly object _devicesLock = new object();
@@ -34,13 +35,8 @@
         #region Singleton
 
         private static InstanceController _instance;
-        public static InstanceController Instance
-        {
-            get
-            {
-                return _instance ??= new InstanceController();
-            }
-        }
+        public static InstanceController Instance =>
+            _instance ??= new InstanceController();
 
         #endregion
 
@@ -52,6 +48,7 @@
             _instances = new Dictionary<string, IJobController>();
             _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             _instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _geofenceRepository = new GeofenceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
 
             _logger = new Logger<InstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _logger.LogInformation("Starting instances...");
@@ -129,9 +126,17 @@
             return "Error";
         }
 
-        public void AddInstance(Instance instance)
+        public async Task AddInstance(Instance instance)
         {
             IJobController instanceController = null;
+            var geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
+            if (geofence == null)
+            {
+                // TODO: Failed to get geofence for instance
+            }
+            var area = string.IsNullOrEmpty(instance.Geofence)
+                ? instance.Data.Area
+                : geofence.Data.GetProperty("area");
             switch (instance.Type)
             {
                 case InstanceType.CirclePokemon:
@@ -141,9 +146,9 @@
                     {
                         var coordsArray = (List<Coordinate>)
                         (
-                            instance.Data.Area is List<Coordinate>
-                                ? instance.Data.Area
-                                : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(instance.Data.Area))
+                            area is List<Coordinate>
+                                ? area
+                                : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
                         );
                         var minLevel = instance.Data.MinimumLevel;
                         var maxLevel = instance.Data.MaximumLevel;
@@ -162,7 +167,7 @@
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error: {ex}");
+                        _logger.LogError($"Error: {ex}");
                     }
                     break;
                 case InstanceType.AutoQuest:
@@ -171,9 +176,9 @@
                     {
                         var coordsArray = (List<List<Coordinate>>)
                         (
-                            instance.Data.Area is List<List<Coordinate>>
-                                ? instance.Data.Area
-                                : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(instance.Data.Area))
+                            area is List<List<Coordinate>>
+                                ? area
+                                : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
                         );
                         var areaArrayEmptyInner = new List<MultiPolygon>();
                         foreach (var coords in coordsArray)

@@ -2,6 +2,8 @@
 {
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.JobControllers;
+
     public class BootstrapTask : ITask
     {
         [JsonPropertyName("area")]

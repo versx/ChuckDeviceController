@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
 
     using Google.Common.Geometry;
+    using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -15,7 +16,6 @@
     using ChuckDeviceController.Geofence;
     using ChuckDeviceController.Geofence.Models;
     using ChuckDeviceController.JobControllers.Tasks;
-    using Microsoft.Extensions.Logging;
 
     public enum AutoType
     {

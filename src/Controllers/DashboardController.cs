@@ -518,6 +518,7 @@
         ]
         public async Task<IActionResult> AddGeofence()
         {
+            // TODO: Reload instances upon geofence change
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
@@ -537,7 +538,7 @@
                     : GeofenceType.Geofence;
                 var area = Request.Form["area"].ToString();
 
-                var geofence = await _geofenceRepository.GetByIdAsync(name);
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (geofence != null)
                 {
                     // Geofence already exists by name
@@ -612,6 +613,7 @@
         ]
         public async Task<IActionResult> EditGeofence(string name)
         {
+            // TODO: Reload instances upon geofence change
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
@@ -629,23 +631,11 @@
                 var coordsArray = geofence.Data.GetProperty("area");
                 if (geofence.Type == GeofenceType.Circle)
                 {
-                    foreach (var coord in coordsArray.EnumerateArray())
-                    {
-                        coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
-                    }
+                    coords = CoordinatesToAreaString(coordsArray);
                 }
                 else if (geofence.Type == GeofenceType.Geofence)
                 {
-                    var index = 1;
-                    foreach (var fence in coordsArray.EnumerateArray())
-                    {
-                        coords += $"[Geofence {index}]\n";
-                        foreach (var coord in fence.EnumerateArray())
-                        {
-                            coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
-                        }
-                        index++;
-                    }
+                    coords = MultiPolygonToAreaString(coordsArray);
                 }
                 obj.area = coords;
                 var data = Renderer.ParseTemplate("geofence-edit", obj);
@@ -658,8 +648,62 @@
             }
             else
             {
-                // TODO: Edit Geofence
-                // TODO: Delete Geofence
+                if (Request.Form.ContainsKey("delete"))
+                {
+                    var geofenceToDelete = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                    if (geofenceToDelete != null)
+                    {
+                        await _geofenceRepository.DeleteAsync(geofenceToDelete).ConfigureAwait(false);
+                        _logger.LogDebug($"Geofence {name} was deleted");
+                    }
+                    return Redirect("/dashboard/geofences");
+                }
+
+
+                var newName = Request.Form["name"].ToString();
+                var type = Request.Form["type"].ToString() == "circle"
+                    ? GeofenceType.Circle
+                    : GeofenceType.Geofence;
+                var area = Request.Form["area"].ToString();
+
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (geofence == null)
+                {
+                    // Failed to find geofence by by name
+                }
+
+                dynamic newArea = null;
+                switch (type)
+                {
+                    case GeofenceType.Circle:
+                        {
+                            // Parse area
+                            var coords = AreaStringToCoordinates(area);
+                            if (coords.Count == 0)
+                            {
+                                // Invalid coordinates provided
+                            }
+                            newArea = coords;
+                            break;
+                        }
+                    case GeofenceType.Geofence:
+                        {
+                            var coords = AreaStringToMultiPolygon(area);
+                            if (coords.Count == 0)
+                            {
+                                // Invalid coordinates provided
+                            }
+                            newArea = coords;
+                            break;
+                        }
+                }
+                geofence.Name = newName;
+                geofence.Type = type;
+                geofence.Data = new
+                {
+                    area = newArea,
+                };
+                await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
                 return Redirect("/dashboard/geofences");
             }
         }
@@ -1068,5 +1112,66 @@
         }
 
         #endregion
+
+        private static string CoordinatesToAreaString(dynamic area)
+        {
+            var coords = string.Empty;
+            foreach (var coord in area.EnumerateArray())
+            {
+                coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+            }
+            return coords;
+        }
+
+        private static string MultiPolygonToAreaString(dynamic area)
+        {
+            var index = 1;
+            var coords = string.Empty;
+            foreach (var fence in area.EnumerateArray())
+            {
+                coords += $"[Geofence {index}]\n";
+                foreach (var coord in fence.EnumerateArray())
+                {
+                    coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                }
+                index++;
+            }
+            return coords;
+        }
+
+        private static List<Coordinate> AreaStringToCoordinates(string area)
+        {
+            var rows = area.Split('\n');
+            var coords = new List<Coordinate>();
+            foreach (var row in rows)
+            {
+                var split = row.Split(',');
+                if (split.Length != 2)
+                    continue;
+                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+            }
+            return coords;
+        }
+
+        private static List<List<Coordinate>> AreaStringToMultiPolygon(string area)
+        {
+            var rows = area.Split('\n');
+            var index = 0;
+            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
+            foreach (var row in rows)
+            {
+                var split = row.Split(',');
+                if (split.Length == 2)
+                {
+                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+                }
+                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
+                {
+                    index++;
+                    coords.Add(new List<Coordinate>());
+                }
+            }
+            return coords;
+        }
     }
 }
