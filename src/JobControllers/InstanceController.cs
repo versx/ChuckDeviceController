@@ -201,8 +201,8 @@
                                 instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, pokemonList, minLevel, maxLevel, ivQueueLimit);
                                 break;
                             case InstanceType.Bootstrap:
-                                // TODO: Configurable circle size
-                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, 70);
+                                var circleSize = instance.Data.CircleSize ?? 70;
+                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize);
                                 break;
                         }
                     }

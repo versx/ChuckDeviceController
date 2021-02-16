@@ -30,6 +30,9 @@
         [JsonPropertyName("spin_limit")]
         public ushort? SpinLimit { get; set; }
 
+        [JsonPropertyName("circle_size")]
+        public ushort? CircleSize { get; set; }
+
         //[JsonPropertyName("scatter_pokemon_ids")]
         //public List<uint> ScatterPokemonIds { get; set; }
 

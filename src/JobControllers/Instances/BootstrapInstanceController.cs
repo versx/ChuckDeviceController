@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.Extensions.Logging;
@@ -19,7 +20,7 @@
 
         private readonly IReadOnlyList<Geofence> _geofences;
         private readonly RouteGenerator _routeGenerator;
-        private static readonly Random _random = new Random();
+        //private static readonly Random _random = new Random();
         private DateTime _lastCompletedTime;
         private int _lastIndex;
         private DateTime _lastLastCompletedTime;
@@ -73,6 +74,7 @@
                         _lastLastCompletedTime = _lastCompletedTime;
                         _lastCompletedTime = DateTime.UtcNow;
                         // TODO: Wait at last coord, upon complete, _lastIndex = 0;
+                        // TODO: Change instance to bootstrap instance upon complete
                     }
                     else
                     {

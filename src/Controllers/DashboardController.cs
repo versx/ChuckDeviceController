@@ -166,6 +166,8 @@
                 dynamic obj = BuildDefaultData();
                 obj.min_level = 0;
                 obj.max_level = 30;
+                obj.timezone_offset = 0;
+                obj.circle_size = 70;
                 var data = Renderer.ParseTemplate("instance-add", obj);
                 return new ContentResult
                 {
@@ -184,16 +186,15 @@
                 var timezoneOffset = Request.Form.ContainsKey("timezone_offset")
                     ? int.Parse(Request.Form["timezone_offset"].ToString() ?? "0")
                     : 0;
+                var circleSize = Request.Form.ContainsKey("circle_size")
+                    ? ushort.Parse(Request.Form["circle_size"].ToString() ?? "70")
+                    : 70;
                 // TODO: Check if == '*' and generate list of ids
-                var pokemonIds = new List<uint>();
+                var pokemonIds = Request.Form["pokemon_ids"].ToString()?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
                 if (type == InstanceType.PokemonIV)
                 {
-                    if (Request.Form.ContainsKey("pokemon_ids") && Request.Form["pokemon_ids"].Count > 0)
-                    {
-                        pokemonIds = Request.Form["pokemon_ids"].ToString()?.Split('\n')?.Select(x => uint.Parse(x)).ToList();
-                    }
                     if (Request.Form.ContainsKey("iv_queue_limit"))
                     {
                         ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
@@ -297,6 +298,7 @@
                         MaximumLevel = maxLevel,
                         PokemonIds = pokemonIds,
                         TimezoneOffset = timezoneOffset,
+                        CircleSize = (ushort)circleSize,
                     }
                 };
                 await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
@@ -337,9 +339,11 @@
                         obj.iv_queue_limit = instance.Data.IVQueueLimit > 0 ? instance.Data.IVQueueLimit : 100;
                 //        break;
                 //    case InstanceType.AutoQuest:
-                        obj.timezone_offset = instance.Data.TimezoneOffset;
+                        obj.timezone_offset = instance.Data.TimezoneOffset ?? 0;
                         obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
                 //        break;
+                //    case InstanceType.Bootstrap:
+                        obj.circle_size = instance.Data.CircleSize ?? 70;
                 //}
                 if (instance.Type == InstanceType.CirclePokemon ||
                     instance.Type == InstanceType.CircleRaid ||
@@ -399,8 +403,9 @@
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
                 var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
+                var circleSize = ushort.Parse(Request.Form["circle_Size"].ToString() ?? "70");
                 // TODO: Check if == '*' and generate list of ids
-                var pokemonIds = Request.Form["pokemon_ids"].ToString().Split('\n').Select(uint.Parse).ToList();
+                var pokemonIds = Request.Form["pokemon_ids"].ToString()?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
                 //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
                 var ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
                 var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
@@ -482,6 +487,7 @@
                     MaximumLevel = maxLevel,
                     PokemonIds = pokemonIds,
                     TimezoneOffset = timezoneOffset,
+                    CircleSize = circleSize,
                 };
                 await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
                 InstanceController.Instance.ReloadInstance(instance, name);
