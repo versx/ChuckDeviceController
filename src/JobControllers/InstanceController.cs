@@ -52,21 +52,28 @@
 
             _logger = new Logger<InstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _logger.LogInformation("Starting instances...");
+        }
 
-            var instances = _instanceRepository.GetAllAsync()
-                                               .ConfigureAwait(false)
-                                               .GetAwaiter()
-                                               .GetResult();
-            var devices = _deviceRepository.GetAllAsync()
-                                           .ConfigureAwait(false)
-                                           .GetAwaiter()
-                                           .GetResult();
+        #endregion
+
+        #region Public Methods
+
+        public async Task Start()
+        {
+            var instances = await _instanceRepository.GetAllAsync()
+                                   .ConfigureAwait(false);
+            //.GetAwaiter()
+            //.GetResult();
+            var devices = await _deviceRepository.GetAllAsync()
+                                           .ConfigureAwait(false);
+                                           //.GetAwaiter()
+                                           //.GetResult();
             foreach (var instance in instances)
             {
-                if (!ThreadPool.QueueUserWorkItem(_ =>
+                if (!ThreadPool.QueueUserWorkItem(async _ =>
                 {
                     _logger.LogInformation($"Starting {instance.Name}");
-                    AddInstance(instance);
+                    await AddInstance(instance).ConfigureAwait(false);
                     _logger.LogInformation($"Started {instance.Name}");
                     foreach (var device in devices.AsEnumerable().Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0))
                     {
@@ -79,10 +86,6 @@
             }
             _logger.LogInformation("Done starting instances");
         }
-
-        #endregion
-
-        #region Public Methods
 
         #region Instances
 
@@ -117,7 +120,10 @@
             {
                 var instanceController = _instances[instance.Name];
                 // TODO: Maybe no locking object
-                return await (instanceController?.GetStatus()).ConfigureAwait(false);
+                if (instanceController != null)
+                {
+                    return await (instanceController?.GetStatus()).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -129,14 +135,18 @@
         public async Task AddInstance(Instance instance)
         {
             IJobController instanceController = null;
-            var geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
-            if (geofence == null)
+            Geofence geofence = null;
+            if (!string.IsNullOrEmpty(instance.Geofence))
             {
-                // TODO: Failed to get geofence for instance
+                geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
+                if (geofence == null)
+                {
+                    // TODO: Failed to get geofence for instance
+                }
             }
             var area = string.IsNullOrEmpty(instance.Geofence)
                 ? instance.Data.Area
-                : geofence.Data.GetProperty("area");
+                : geofence?.Data.GetProperty("area");
             switch (instance.Type)
             {
                 case InstanceType.CirclePokemon:
@@ -218,7 +228,7 @@
             }
         }
 
-        public void ReloadInstance(Instance newInstance, string oldInstanceName)
+        public async Task ReloadInstance(Instance newInstance, string oldInstanceName)
         {
             lock (_instancesLock)
             {
@@ -237,7 +247,7 @@
                     _instances[oldInstanceName] = null;
                 }
             }
-            AddInstance(newInstance);
+            await AddInstance(newInstance).ConfigureAwait(false);
         }
 
         public void ReloadAll()
@@ -379,9 +389,7 @@
             }
         }
 
-#pragma warning disable RCS1213 // Remove unused member declaration.
         private async Task RemoveInstance(Instance instance)
-#pragma warning restore RCS1213 // Remove unused member declaration.
         {
             await RemoveInstance(instance.Name).ConfigureAwait(false);
         }

@@ -118,13 +118,12 @@
                 var totalCount = instanceDevices.Count();
                 var onlineCount = instanceDevices.Count(device => device.LastSeen >= now - delta);
                 var offlineCount = instanceDevices.Count(device => device.LastSeen < now - delta);
-                var areasCount = instance.Data.Area.GetArrayLength();
                 list.Add(new
                 {
                     name = instance.Name,
                     type = FormatInstanceType(instance.Type),
                     count = totalCount == 0 ? "0" : $"{onlineCount}/{offlineCount} ({totalCount})",
-                    area_count = areasCount,
+                    geofence = instance.Geofence,
                     status = await InstanceController.Instance.GetInstanceStatus(instance).ConfigureAwait(false),
                     buttons = $"<a href='/dashboard/instance/edit/{Uri.EscapeDataString(instance.Name)}' role='button' class='btn btn-sm btn-primary'>Edit Instance</a>",
                 });

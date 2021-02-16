@@ -45,8 +45,6 @@ namespace ChuckDeviceController
         // This method gets called by the runtime. Use this method to add services to the container.
         public async void ConfigureServices(IServiceCollection services)
         {
-            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
-
             /*
             services.AddSingleton<IConfiguration>(provider => new ConfigurationBuilder()
                     .AddEnvironmentVariables()
@@ -108,6 +106,9 @@ namespace ChuckDeviceController
             //services.AddDistributedMemoryCache();
             services.AddControllers();
             services.AddControllersWithViews();
+
+            await InstanceController.Instance.Start().ConfigureAwait(false);
+            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
 
             if (Config.Webhooks?.Count > 0)
             {

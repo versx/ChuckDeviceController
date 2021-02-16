@@ -67,6 +67,7 @@
             obj.instances_count = _context.Instances.Count();
             obj.assignments_count = _context.Assignments.Count();
             obj.accounts_count = _context.Accounts.Count();
+            obj.geofences_count = _context.Geofences.Count();
             var data = Renderer.ParseTemplate("index", obj);
             return new ContentResult
             {
@@ -168,6 +169,14 @@
                 dynamic obj = BuildDefaultData();
                 obj.min_level = 0;
                 obj.max_level = 30;
+                var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+                obj.geofences = geofences.Select(x => new
+                {
+                    name = x.Name,
+                    type = x.Type.ToString().ToLower(),
+                    selected = false,
+                });
+                obj.nothing_selected = true;
                 var data = Renderer.ParseTemplate("instance-add", obj);
                 return new ContentResult
                 {
@@ -180,6 +189,7 @@
             {
                 var name = Request.Form["name"].ToString();
                 var type = Instance.StringToInstanceType(Request.Form["type"]);
+                var geofence = Request.Form["geofence"].ToString();
                 var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
@@ -221,58 +231,6 @@
                     // Instance already exists
                 }
 
-                dynamic newArea = null;
-                switch (type)
-                {
-                    case InstanceType.CirclePokemon:
-                    case InstanceType.CircleRaid:
-                    case InstanceType.SmartCircleRaid:
-                        {
-                            // Parse area
-                            var rows = area.Split('\n');
-                            var coords = new List<Coordinate>();
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length != 2)
-                                    continue;
-                                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                            }
-                            if (coords.Count == 0)
-                            {
-                                // Invalid coordinates provided
-                            }
-                            newArea = coords;
-                            break;
-                        }
-                    case InstanceType.AutoQuest:
-                    case InstanceType.PokemonIV:
-                        {
-                            var rows = area.Split('\n');
-                            var index = 0;
-                            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length == 2)
-                                {
-                                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                                }
-                                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
-                                {
-                                    index++;
-                                    coords.Add(new List<Coordinate>());
-                                }
-                            }
-                            if (coords.Count == 0)
-                            {
-                                // Invalid coordinates provided
-                            }
-                            newArea = coords;
-                            break;
-                        }
-                }
-
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance != null)
                 {
@@ -284,10 +242,10 @@
                 {
                     Name = name,
                     Type = type,
+                    Geofence = geofence,
                     Data = new InstanceData
                     {
                         IsEvent = false,
-                        Area = newArea,
                         IVQueueLimit = ivQueueLimit,
                         SpinLimit = spinLimit,
                         MinimumLevel = minLevel,
@@ -297,7 +255,7 @@
                     }
                 };
                 await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
-                InstanceController.Instance.AddInstance(instance);
+                await InstanceController.Instance.AddInstance(instance).ConfigureAwait(false);
                 return Redirect("/dashboard/instances");
             }
         }
@@ -319,6 +277,7 @@
                 var maxLevel = instance.Data.MaximumLevel;
                 dynamic obj = BuildDefaultData();
                 obj.name = name;
+                obj.geofence = instance.Geofence;
                 obj.old_name = name;
                 obj.min_level = minLevel;
                 obj.max_level = maxLevel;
@@ -326,6 +285,14 @@
                 obj.circle_raid_selected = instance.Type == InstanceType.CircleRaid;
                 obj.pokemon_iv_selected = instance.Type == InstanceType.PokemonIV;
                 obj.auto_quest_selected = instance.Type == InstanceType.AutoQuest;
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+                obj.geofences = geofences.Select(x => new
+                {
+                    name = x.Name,
+                    type = x.Type.ToString().ToLower(),
+                    selected = string.Compare(instance.Geofence, x.Name, true) == 0,
+                });
                 //switch (instance.Type)
                 //{
                 //    case InstanceType.PokemonIV:
@@ -337,30 +304,20 @@
                         obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
                 //        break;
                 //}
+
+                // NOTE: Legacy so people can get the circles/geofences of old instances and copy to new geofence entities
                 var coords = string.Empty;
                 var coordsArray = instance.Data.Area;
                 if (instance.Type == InstanceType.CirclePokemon ||
                     instance.Type == InstanceType.CircleRaid ||
                     instance.Type == InstanceType.SmartCircleRaid)
                 {
-                    foreach (var coord in coordsArray.EnumerateArray())
-                    {
-                        coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
-                    }
+                    coords = CoordinatesToAreaString(instance.Data.Area);
                 }
                 else if (instance.Type == InstanceType.AutoQuest ||
                          instance.Type == InstanceType.PokemonIV)
                 {
-                    var index = 1;
-                    foreach (var geofence in coordsArray.EnumerateArray())
-                    {
-                        coords += $"[Geofence {index}]\n";
-                        foreach (var coord in geofence.EnumerateArray())
-                        {
-                            coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
-                        }
-                        index++;
-                    }
+                    coords = MultiPolygonToAreaString(instance.Data.Area);
                 }
                 obj.area = coords;
                 var data = Renderer.ParseTemplate("instance-edit", obj);
@@ -387,7 +344,8 @@
 
                 var newName = Request.Form["name"].ToString();
                 var type = Instance.StringToInstanceType(Request.Form["type"]);
-                var area = Request.Form["area"].ToString();
+                var geofence = Request.Form["geofence"].ToString();
+                //var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
                 var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
@@ -403,58 +361,6 @@
                     // Invalid levels
                 }
 
-                dynamic newArea = null;
-                switch (type)
-                {
-                    case InstanceType.CirclePokemon:
-                    case InstanceType.CircleRaid:
-                    case InstanceType.SmartCircleRaid:
-                        {
-                            // Parse area
-                            var rows = area.Split('\n');
-                            var coords = new List<Coordinate>();
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length != 2)
-                                    continue;
-                                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                            }
-                            if (coords.Count == 0)
-                            {
-                                // Invalid coordinates provided
-                            }
-                            newArea = coords;
-                            break;
-                        }
-                    case InstanceType.AutoQuest:
-                    case InstanceType.PokemonIV:
-                        {
-                            var rows = area.Split('\n');
-                            var index = 0;
-                            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length == 2)
-                                {
-                                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                                }
-                                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
-                                {
-                                    index++;
-                                    coords.Add(new List<Coordinate>());
-                                }
-                            }
-                            if (coords.Count == 0)
-                            {
-                                // Invalid coordinates provided
-                            }
-                            newArea = coords;
-                            break;
-                        }
-                }
-
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance == null)
                 {
@@ -463,10 +369,11 @@
 
                 instance.Name = newName;
                 instance.Type = type;
+                instance.Geofence = geofence;
                 instance.Data = new InstanceData
                 {
                     IsEvent = false,
-                    Area = newArea,
+                    //Area = newArea,
                     IVQueueLimit = ivQueueLimit,
                     SpinLimit = spinLimit,
                     MinimumLevel = minLevel,
@@ -475,7 +382,7 @@
                     TimezoneOffset = timezoneOffset,
                 };
                 await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
-                InstanceController.Instance.ReloadInstance(instance, name);
+                await InstanceController.Instance.ReloadInstance(instance, name);
                 _logger.LogDebug($"Instance {name} was updated");
                 return Redirect("/dashboard/instances");
             }

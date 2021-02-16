@@ -1,8 +1,17 @@
 {{> navbar}}
 
 <script>
-    $(document).ready(function() {
-        $('.type-select').change(function() {
+    $(document).ready(function () {
+        $('.type-select').change(function () {
+            if ($('.type-select').val() === 'pokemon_iv' ||
+                $('.type-select').val() === 'auto_quest' ||
+                $('.type-select').val() === 'bootstrap') {
+                $('.circle').addClass('d-none');
+                $('.geofence').removeClass('d-none');
+            } else {
+                $('.circle').removeClass('d-none');
+                $('.geofence').addClass('d-none');
+            }
             switch ($(this).val()) {
                 case 'pokemon_iv':
                     $('.pokemon_ids_text').removeClass('d-none');
@@ -27,7 +36,7 @@
 <body class="{{body_class}}">
     <br>
     <div class="alert alert-danger w-75 {{^show_error}}d-none{{/show_error}}" style="float: none; margin: 0 auto;">
-        <strong>Error!</strong> {{error}}</a>
+        <strong>Error!</strong> {{error}}
     </div>
     {{#show_error}}<br>{{/show_error}}
 
@@ -42,12 +51,12 @@
             <div class="form-group">
                 Scheduler Type
                 <select class="form-control type-select" name="type" required>
-                    <option value="" {{#nothing_selected}}selected{{/nothing_selected}} disabled hidden>Choose Scheduler Type</option>
-                    <option value="circle_pokemon" {{#circle_pokemon_selected}}selected{{/circle_pokemon_selected}}>Circle Pokemon</option>
-                    <option value="circle_raid" {{#circle_raid_selected}}selected{{/circle_raid_selected}}>Circle Raid</option>
-                    <option value="circle_smart_raid" {{#circle_smart_raid_selected}}selected{{/circle_smart_raid_selected}}>Circle Smart Raid</option>
-                    <option value="auto_quest" {{#auto_quest_selected}}selected{{/auto_quest_selected}}>Auto Quest</option>
-                    <option value="pokemon_iv" {{#pokemon_iv_selected}}selected{{/pokemon_iv_selected}}>Pokemon IV</option>
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Scheduler Type</option>
+                    <option value="circle_pokemon" {{#circle_pokemon_selected}} selected{{/circle_pokemon_selected}}>Circle Pokemon</option>
+                    <option value="circle_raid" {{#circle_raid_selected}} selected{{/circle_raid_selected}}>Circle Raid</option>
+                    <option value="circle_smart_raid" {{#circle_smart_raid_selected}} selected{{/circle_smart_raid_selected}}>Circle Smart Raid</option>
+                    <option value="auto_quest" {{#auto_quest_selected}} selected{{/auto_quest_selected}}>Auto Quest</option>
+                    <option value="pokemon_iv" {{#pokemon_iv_selected}} selected{{/pokemon_iv_selected}}>Pokemon IV</option>
                 </select>
             </div>
             <div class="form-group">
@@ -61,8 +70,13 @@
                 <input type="number" class="form-control" name="max_level" value="{{max_level}}" step=1 min="0" max="40" required>
             </div>
             <div class="form-group">
-                Scan Area
-                <textarea class="form-control" rows="5" name="area" required>{{{area}}}</textarea>
+                Select Scan Area
+                <select class="form-control" name="geofence" required>
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Geofence</option>
+                    {{#each geofences}}
+                    <option value="{{name}}" class="{{type}}" {{#selected}} selected{{/selected}}>{{name}}</option>
+                    {{/each}}
+                </select>
             </div>
             <div class="form-group pokemon_ids_text {{^pokemon_iv_selected}}d-none{{/pokemon_iv_selected}}">
                 Pokemon IDs (first = highest priority)
