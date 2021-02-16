@@ -8,6 +8,9 @@ namespace ChuckDeviceController
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
 
+    // TODO: Configurable route types
+    // TODO: Add bootstrap instance, generate bootstrap route based on geofences
+    // TODO: Auto bootstrap mode, add 'bootstrap_complete' property to Instance.Data
     // TODO: Fix IV loop adding pokemon
     // TODO: Implement cache better
     // TODO: Use Z.EntityFramework.Cache for Cells/Pokestops/Gyms/Spawnpoints/Accounts/Devices/Instances/Assignments

@@ -133,6 +133,8 @@
         public void Reload()
         {
             _lastIndex = 0;
+            _lastCompletedTime = default;
+            _lastLastCompletedTime = default;
         }
 
         #endregion

@@ -167,6 +167,7 @@
                     break;
                 case InstanceType.AutoQuest:
                 case InstanceType.PokemonIV:
+                case InstanceType.Bootstrap:
                     try
                     {
                         var coordsArray = (List<List<Coordinate>>)
@@ -198,6 +199,10 @@
                                 var pokemonList = instance.Data.PokemonIds;
                                 var ivQueueLimit = instance.Data.IVQueueLimit ?? 100;
                                 instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, pokemonList, minLevel, maxLevel, ivQueueLimit);
+                                break;
+                            case InstanceType.Bootstrap:
+                                // TODO: Configurable circle size
+                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, 70);
                                 break;
                         }
                     }
@@ -374,9 +379,7 @@
             }
         }
 
-#pragma warning disable RCS1213 // Remove unused member declaration.
         private async Task RemoveInstance(Instance instance)
-#pragma warning restore RCS1213 // Remove unused member declaration.
         {
             await RemoveInstance(instance.Name).ConfigureAwait(false);
         }

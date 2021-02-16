@@ -206,6 +206,10 @@
                         spinLimit = ushort.Parse(Request.Form["spin_limit"]);
                     }
                 }
+                else if (type == InstanceType.Bootstrap)
+                {
+                    // TODO: Bootstrap circle size
+                }
                 //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
                 //var accountGroup = Request.Form["account_group"];
                 //var isEvent = Request.Form["is_event"];
@@ -245,6 +249,7 @@
                         }
                     case InstanceType.AutoQuest:
                     case InstanceType.PokemonIV:
+                    case InstanceType.Bootstrap:
                         {
                             var rows = area.Split('\n');
                             var index = 0;
@@ -324,6 +329,7 @@
                 obj.circle_raid_selected = instance.Type == InstanceType.CircleRaid;
                 obj.pokemon_iv_selected = instance.Type == InstanceType.PokemonIV;
                 obj.auto_quest_selected = instance.Type == InstanceType.AutoQuest;
+                obj.bootstrap_selected = instance.Type == InstanceType.Bootstrap;
                 //switch (instance.Type)
                 //{
                 //    case InstanceType.PokemonIV:
@@ -348,7 +354,8 @@
                     obj.area = coords;
                 }
                 else if (instance.Type == InstanceType.AutoQuest ||
-                         instance.Type == InstanceType.PokemonIV)
+                         instance.Type == InstanceType.PokemonIV ||
+                         instance.Type == InstanceType.Bootstrap)
                 {
                     var coords = string.Empty;
                     var coordsArray = instance.Data.Area;
@@ -430,6 +437,7 @@
                         }
                     case InstanceType.AutoQuest:
                     case InstanceType.PokemonIV:
+                    case InstanceType.Bootstrap:
                         {
                             var rows = area.Split('\n');
                             var index = 0;
