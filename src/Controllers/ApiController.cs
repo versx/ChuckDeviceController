@@ -145,7 +145,7 @@
                 {
                     name = geofence.Name,
                     type = geofence.Type.ToString(),
-                    count = geofence.Data.GetProperty("area").GetArrayLength(),
+                    count = geofence.Data.GetProperty("area").GetArrayLength().ToString("N0"),
                     buttons = $"<div class='btn-group' role='group'><a href='/dashboard/geofence/edit/{Uri.EscapeDataString(geofence.Name)}' role='button' class='btn btn-primary'>Edit</a>",
                 });
             }

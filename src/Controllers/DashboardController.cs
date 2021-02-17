@@ -63,11 +63,11 @@
         public IActionResult GetDashboard()
         {
             dynamic obj = BuildDefaultData();
-            obj.devices_count = _context.Devices.Count();
-            obj.instances_count = _context.Instances.Count();
-            obj.assignments_count = _context.Assignments.Count();
-            obj.accounts_count = _context.Accounts.Count();
-            obj.geofences_count = _context.Geofences.Count();
+            obj.devices_count = _context.Devices.Count().ToString("N0");
+            obj.instances_count = _context.Instances.Count().ToString("N0");
+            obj.assignments_count = _context.Assignments.Count().ToString("N0");
+            obj.accounts_count = _context.Accounts.Count().ToString("N0");
+            obj.geofences_count = _context.Geofences.Count().ToString("N0");
             var data = Renderer.ParseTemplate("index", obj);
             return new ContentResult
             {
@@ -167,6 +167,7 @@
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
+                obj.timezone_offset = 0;
                 obj.min_level = 0;
                 obj.max_level = 30;
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
