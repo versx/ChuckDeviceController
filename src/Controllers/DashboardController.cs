@@ -297,7 +297,6 @@
                 obj.pokemon_iv_selected = instance.Type == InstanceType.PokemonIV;
                 obj.auto_quest_selected = instance.Type == InstanceType.AutoQuest;
                 obj.bootstrap_selected = instance.Type == InstanceType.Bootstrap;
-                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
@@ -305,6 +304,7 @@
                     type = x.Type.ToString().ToLower(),
                     selected = string.Compare(instance.Geofence, x.Name, true) == 0,
                 });
+                var geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
                 obj.circle_route_type = CircleRouteTypeToString(instance.Data.CircleRouteType);
                 obj.leapfrog_selected = instance.Data.CircleRouteType == CircleRouteType.Default;
                 obj.spread_selected = instance.Data.CircleRouteType == CircleRouteType.Split;
@@ -325,23 +325,6 @@
                 //    case InstanceType.Bootstrap:
                         obj.circle_size = instance.Data.CircleSize ?? 70;
                 //}
-
-                // NOTE: Legacy so people can get the circles/geofences of old instances and copy to new geofence entities
-                var coords = string.Empty;
-                var coordsArray = instance.Data.Area;
-                if (instance.Type == InstanceType.CirclePokemon ||
-                    instance.Type == InstanceType.CircleRaid ||
-                    instance.Type == InstanceType.SmartCircleRaid)
-                {
-                    coords = CoordinatesToAreaString(instance.Data.Area);
-                }
-                else if (instance.Type == InstanceType.AutoQuest ||
-                         instance.Type == InstanceType.PokemonIV ||
-                         instance.Type == InstanceType.Bootstrap)
-                {
-                    coords = MultiPolygonToAreaString(instance.Data.Area);
-                }
-                obj.area = coords;
                 var data = Renderer.ParseTemplate("instance-edit", obj);
                 return new ContentResult
                 {

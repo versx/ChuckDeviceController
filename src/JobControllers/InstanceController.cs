@@ -164,21 +164,13 @@
                         var area = string.IsNullOrEmpty(instance.Geofence)
                             ? instance.Data?.Area
                             : geofence?.Data?.Area;
-                        List<Coordinate> coordsArray = null;
-                        try
-                        {
-                            // TODO: Check if area is null
-                            coordsArray = (List<Coordinate>)
-                            (
-                                area is List<Coordinate>
-                                    ? area
-                                    : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"Error: {ex}");
-                        }
+                        // TODO: Check if area is null
+                        var coordsArray = (List<Coordinate>)
+                        (
+                            area is List<Coordinate>
+                                ? area
+                                : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
+                        );
                         var minLevel = instance.Data.MinimumLevel;
                         var maxLevel = instance.Data.MaximumLevel;
                         switch (instance.Type)
