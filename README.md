@@ -44,6 +44,7 @@ View profiler results:
         "password": "cdcPass!",
         // Database name
         "database": "cdcdb"
-    }
+    },
+    "webhooks": ["http://webhook-address:port"]
 }
 ```
