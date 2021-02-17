@@ -62,14 +62,8 @@
 
         public async Task Start()
         {
-            var instances = await _instanceRepository.GetAllAsync()
-                                   .ConfigureAwait(false);
-            //.GetAwaiter()
-            //.GetResult();
-            var devices = await _deviceRepository.GetAllAsync()
-                                           .ConfigureAwait(false);
-                                           //.GetAwaiter()
-                                           //.GetResult();
+            var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+            var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
             foreach (var instance in instances)
             {
                 if (!ThreadPool.QueueUserWorkItem(async _ =>
