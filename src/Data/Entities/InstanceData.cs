@@ -4,8 +4,13 @@
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.JobControllers.Instances;
+
     public class InstanceData
     {
+        [JsonPropertyName("circle_route_type")]
+        public CircleRouteType CircleRouteType { get; set; }
+
         [JsonPropertyName("is_event")]
         public bool IsEvent { get; set; }
 
@@ -30,6 +35,9 @@
         [JsonPropertyName("spin_limit")]
         public ushort? SpinLimit { get; set; }
 
+        [JsonPropertyName("circle_size")]
+        public ushort? CircleSize { get; set; }
+
         //[JsonPropertyName("scatter_pokemon_ids")]
         //public List<uint> ScatterPokemonIds { get; set; }
 
@@ -39,5 +47,9 @@
         // radius
         // store_data
         // delay_logout (GD crap?)
+        public InstanceData()
+        {
+            CircleRouteType = CircleRouteType.Default;
+        }
     }
 }

@@ -7,5 +7,6 @@
         SmartCircleRaid,
         PokemonIV,
         AutoQuest,
+        Bootstrap,
     }
 }

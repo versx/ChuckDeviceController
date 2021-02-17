@@ -165,10 +165,10 @@
                         switch (instance.Type)
                         {
                             case InstanceType.CirclePokemon:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Pokemon, CircleRouteType.Split, minLevel, maxLevel);
+                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Pokemon, instance.Data.CircleRouteType, minLevel, maxLevel);
                                 break;
                             case InstanceType.CircleRaid:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Raid, CircleRouteType.Split, minLevel, maxLevel);
+                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Raid, CircleRouteType.Default, minLevel, maxLevel);
                                 break;
                             case InstanceType.SmartCircleRaid:
                                 // TODO: SmartCircleRaidInstanceController
@@ -182,6 +182,7 @@
                     break;
                 case InstanceType.AutoQuest:
                 case InstanceType.PokemonIV:
+                case InstanceType.Bootstrap:
                     try
                     {
                         var coordsArray = (List<List<Coordinate>>)
@@ -213,6 +214,10 @@
                                 var pokemonList = instance.Data.PokemonIds;
                                 var ivQueueLimit = instance.Data.IVQueueLimit ?? 100;
                                 instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, pokemonList, minLevel, maxLevel, ivQueueLimit);
+                                break;
+                            case InstanceType.Bootstrap:
+                                var circleSize = instance.Data.CircleSize ?? 70;
+                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize);
                                 break;
                         }
                     }

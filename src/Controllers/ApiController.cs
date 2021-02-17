@@ -248,6 +248,7 @@
                 InstanceType.CircleRaid         => "Circle Raid",
                 InstanceType.SmartCircleRaid    => "Smart Raid",
                 InstanceType.PokemonIV          => "Pokemon IV",
+                InstanceType.Bootstrap          => "Bootstrap",
                 _ => type.ToString(),
             };
         }
