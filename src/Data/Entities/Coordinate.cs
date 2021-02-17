@@ -2,6 +2,7 @@
 {
     using System.Text.Json.Serialization;
 
+    // TODO: Move to Geofence.Models namespace
     public class Coordinate
     {
         [JsonPropertyName("lat")]
@@ -9,6 +10,10 @@
 
         [JsonPropertyName("lon")]
         public double Longitude { get; set; }
+
+        public Coordinate()
+        {
+        }
 
         public Coordinate(double latitude, double longitude)
         {

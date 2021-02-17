@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Configuration
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Text.Json;
     using System.Text.Json.Serialization;
@@ -20,6 +21,9 @@
 
         [JsonPropertyName("db")]
         public DatabaseConfig Database { get; set; }
+
+        [JsonPropertyName("webhooks")]
+        public IReadOnlyList<string> Webhooks { get; set; }
 
         /// <summary>
         /// Save the current configuration object

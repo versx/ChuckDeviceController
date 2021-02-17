@@ -26,6 +26,7 @@ namespace ChuckDeviceController
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
+    using ChuckDeviceController.Net.Webhooks;
     using ChuckDeviceController.Services;
 
     public class Startup
@@ -44,8 +45,6 @@ namespace ChuckDeviceController
         // This method gets called by the runtime. Use this method to add services to the container.
         public async void ConfigureServices(IServiceCollection services)
         {
-            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
-
             /*
             services.AddSingleton<IConfiguration>(provider => new ConfigurationBuilder()
                     .AddEnvironmentVariables()
@@ -87,11 +86,34 @@ namespace ChuckDeviceController
                        .AllowAnyMethod();
             }));
 
+            // Profiling
+            // The services.AddMemoryCache(); code is required - there is a bug in
+            // MiniProfiler, if we have not configured MemoryCache, it will fail.
+            services.AddMemoryCache();
+            services.AddEntityFrameworkMySql().AddDbContext<DeviceControllerContext>();
+            services.AddMiniProfiler(options =>
+            {
+                options.RouteBasePath = "/profiler";
+                options.EnableMvcViewProfiling = true;
+                options.EnableMvcFilterProfiling = true;
+                options.EnableServerTimingHeader = true;
+                options.ShowControls = true;
+                options.TrackConnectionOpenClose = true;
+            }).AddEntityFramework();
+
             services.AddResponseCaching();
-            //services.AddMemoryCache();
+
             //services.AddDistributedMemoryCache();
             services.AddControllers();
             services.AddControllersWithViews();
+
+            await InstanceController.Instance.Start().ConfigureAwait(false);
+            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
+
+            if (Config.Webhooks?.Count > 0)
+            {
+                WebhookController.Instance.Start();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -124,6 +146,8 @@ namespace ChuckDeviceController
             }
 
             //app.UseRequestResponseLogging();
+
+            app.UseMiniProfiler();
 
             //app.UseHttpsRedirection();
             app.UseDefaultFiles();

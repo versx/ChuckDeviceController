@@ -46,5 +46,31 @@
 
         [Column("tutorial")]
         public ushort Tutorial { get; set; }
+
+        [Column("creation_timestamp")]
+        public ulong? CreationTimestamp { get; set; }
+
+        [Column("warn")]
+        public bool? Warn { get; set; }
+
+        [Column("warn_expire_timestamp")]
+        public ulong? WarnExpireTimestamp { get; set; }
+
+        [Column("warn_message_acknowledged")]
+        public bool? WarnMessageAcknowledged { get; set; }
+
+        [Column("suspended_message_acknowledged")]
+        public bool? SuspendedMessageAcknowledged { get; set; }
+
+        [Column("was_suspended")]
+        public bool? WasSuspended { get; set; }
+
+        [Column("banned")]
+        public bool? Banned { get; set; }
+
+        [Column("last_used_timestamp")]
+        public ulong? LastUsedTimestamp { get; set; }
+
+        // TODO: group
     }
 }

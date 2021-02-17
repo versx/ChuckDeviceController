@@ -15,6 +15,8 @@
     using ChuckDeviceController.Geofence.Models;
     using ChuckDeviceController.JobControllers.Instances;
 
+    using Geofence = ChuckDeviceController.Data.Entities.Geofence;
+
     public class InstanceController
     {
         #region Variables
@@ -25,6 +27,7 @@
         private readonly IDictionary<string, IJobController> _instances;
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
+        private readonly GeofenceRepository _geofenceRepository;
 
         private readonly object _instancesLock = new object();
         private readonly object _devicesLock = new object();
@@ -34,13 +37,8 @@
         #region Singleton
 
         private static InstanceController _instance;
-        public static InstanceController Instance
-        {
-            get
-            {
-                return _instance ??= new InstanceController();
-            }
-        }
+        public static InstanceController Instance =>
+            _instance ??= new InstanceController();
 
         #endregion
 
@@ -52,24 +50,32 @@
             _instances = new Dictionary<string, IJobController>();
             _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             _instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _geofenceRepository = new GeofenceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
 
             _logger = new Logger<InstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _logger.LogInformation("Starting instances...");
+        }
 
-            var instances = _instanceRepository.GetAllAsync()
-                                               .ConfigureAwait(false)
-                                               .GetAwaiter()
-                                               .GetResult();
-            var devices = _deviceRepository.GetAllAsync()
-                                           .ConfigureAwait(false)
-                                           .GetAwaiter()
-                                           .GetResult();
+        #endregion
+
+        #region Public Methods
+
+        public async Task Start()
+        {
+            var instances = await _instanceRepository.GetAllAsync()
+                                   .ConfigureAwait(false);
+            //.GetAwaiter()
+            //.GetResult();
+            var devices = await _deviceRepository.GetAllAsync()
+                                           .ConfigureAwait(false);
+                                           //.GetAwaiter()
+                                           //.GetResult();
             foreach (var instance in instances)
             {
-                if (!ThreadPool.QueueUserWorkItem(_ =>
+                if (!ThreadPool.QueueUserWorkItem(async _ =>
                 {
                     _logger.LogInformation($"Starting {instance.Name}");
-                    AddInstance(instance);
+                    await AddInstance(instance).ConfigureAwait(false);
                     _logger.LogInformation($"Started {instance.Name}");
                     foreach (var device in devices.AsEnumerable().Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0))
                     {
@@ -82,10 +88,6 @@
             }
             _logger.LogInformation("Done starting instances");
         }
-
-        #endregion
-
-        #region Public Methods
 
         #region Instances
 
@@ -120,7 +122,10 @@
             {
                 var instanceController = _instances[instance.Name];
                 // TODO: Maybe no locking object
-                return await (instanceController?.GetStatus()).ConfigureAwait(false);
+                if (instanceController != null)
+                {
+                    return await (instanceController?.GetStatus()).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -129,9 +134,21 @@
             return "Error";
         }
 
-        public void AddInstance(Instance instance)
+        public async Task AddInstance(Instance instance)
         {
             IJobController instanceController = null;
+            Geofence geofence = null;
+            if (!string.IsNullOrEmpty(instance.Geofence))
+            {
+                geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
+                if (geofence == null)
+                {
+                    // TODO: Failed to get geofence for instance
+                }
+            }
+            var area = string.IsNullOrEmpty(instance.Geofence)
+                ? instance.Data.Area
+                : geofence?.Data.GetProperty("area");
             switch (instance.Type)
             {
                 case InstanceType.CirclePokemon:
@@ -141,19 +158,19 @@
                     {
                         var coordsArray = (List<Coordinate>)
                         (
-                            instance.Data.Area is List<Coordinate>
-                                ? instance.Data.Area
-                                : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(instance.Data.Area))
+                            area is List<Coordinate>
+                                ? area
+                                : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
                         );
                         var minLevel = instance.Data.MinimumLevel;
                         var maxLevel = instance.Data.MaximumLevel;
                         switch (instance.Type)
                         {
                             case InstanceType.CirclePokemon:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Pokemon, CircleRouteType.Split, minLevel, maxLevel);
+                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Pokemon, instance.Data.CircleRouteType, minLevel, maxLevel);
                                 break;
                             case InstanceType.CircleRaid:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Raid, CircleRouteType.Split, minLevel, maxLevel);
+                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Raid, CircleRouteType.Default, minLevel, maxLevel);
                                 break;
                             case InstanceType.SmartCircleRaid:
                                 // TODO: SmartCircleRaidInstanceController
@@ -162,18 +179,19 @@
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error: {ex}");
+                        _logger.LogError($"Error: {ex}");
                     }
                     break;
                 case InstanceType.AutoQuest:
                 case InstanceType.PokemonIV:
+                case InstanceType.Bootstrap:
                     try
                     {
                         var coordsArray = (List<List<Coordinate>>)
                         (
-                            instance.Data.Area is List<List<Coordinate>>
-                                ? instance.Data.Area
-                                : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(instance.Data.Area))
+                            area is List<List<Coordinate>>
+                                ? area
+                                : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
                         );
                         var areaArrayEmptyInner = new List<MultiPolygon>();
                         foreach (var coords in coordsArray)
@@ -199,6 +217,10 @@
                                 var ivQueueLimit = instance.Data.IVQueueLimit ?? 100;
                                 instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, pokemonList, minLevel, maxLevel, ivQueueLimit);
                                 break;
+                            case InstanceType.Bootstrap:
+                                var circleSize = instance.Data.CircleSize ?? 70;
+                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize);
+                                break;
                         }
                     }
                     catch (Exception ex)
@@ -213,7 +235,7 @@
             }
         }
 
-        public void ReloadInstance(Instance newInstance, string oldInstanceName)
+        public async Task ReloadInstance(Instance newInstance, string oldInstanceName)
         {
             lock (_instancesLock)
             {
@@ -232,7 +254,7 @@
                     _instances[oldInstanceName] = null;
                 }
             }
-            AddInstance(newInstance);
+            await AddInstance(newInstance).ConfigureAwait(false);
         }
 
         public void ReloadAll()
@@ -374,9 +396,7 @@
             }
         }
 
-#pragma warning disable RCS1213 // Remove unused member declaration.
         private async Task RemoveInstance(Instance instance)
-#pragma warning restore RCS1213 // Remove unused member declaration.
         {
             await RemoveInstance(instance.Name).ConfigureAwait(false);
         }

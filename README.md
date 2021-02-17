@@ -18,8 +18,12 @@
 1. Run from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
 1. Visit Dashboard at `http://LAN_MACHINE_IP:5001`
 
-View all available routes:  
-`http://LAN_MACHINE_IP:port/swagger`
+View all available API routes:  
+`http://LAN_MACHINE_IP:port/swagger`  
+
+View profiler results:  
+`http://LAN_MACHINE_IP:port/profiler/results`  
+`http://LAN_MACHINE_IP:port/profiler/results-list`  
 
 ## Configuration  
 ```js
@@ -40,6 +44,7 @@ View all available routes:
         "password": "cdcPass!",
         // Database name
         "database": "cdcdb"
-    }
+    },
+    "webhooks": ["http://webhook-address:port"]
 }
 ```

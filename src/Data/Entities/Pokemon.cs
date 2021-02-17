@@ -14,6 +14,8 @@
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
+    using ChuckDeviceController.Net.Webhooks;
+    using ChuckDeviceController.Services;
 
     [Table("pokemon")]
     public class Pokemon : BaseEntity, IAggregateRoot, IWebhook
@@ -156,6 +158,9 @@
         [NotMapped]
         public bool NoWeatherIVClearing { get; }
 
+        [NotMapped]
+        public bool ProcessPvpRankings { get; set; } = true;
+
         #endregion
 
         #region Constructor(s)
@@ -240,9 +245,6 @@
 
         public void Update(Pokemon oldPokemon = null, bool updateIV = false)
         {
-            if (oldPokemon == null)
-                return;
-
             var now = DateTime.UtcNow.ToTotalSeconds();
             if (oldPokemon == null)
             {
@@ -301,7 +303,12 @@
                 {
                     PokestopId = oldPokemon.PokestopId;
                 }
-                // TODO: PVP Rankings
+
+                if (AttackIV != null)
+                {
+                    SetPvpRankings().ConfigureAwait(false);
+                }
+
                 if (updateIV && oldPokemon.AttackIV == null && AttackIV != null)
                 {
                     Changed = now;
@@ -381,19 +388,22 @@
                 Updated = now;
             }
 
-            if (oldPokemon == null)
+            //if (oldPokemon == null)
             {
-                // TODO: Send webhook
+                WebhookController.Instance.AddPokemon(this);
                 InstanceController.Instance.GotPokemon(this);
                 if (AttackIV != null)
                 {
                     InstanceController.Instance.GotIV(this);
                 }
-                if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
+                if (oldPokemon != null)
                 {
-                    oldPokemon._hasIvChanges = false;
-                    // TODO: Send webhook
-                    InstanceController.Instance.GotIV(this);
+                    if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
+                    {
+                        oldPokemon._hasIvChanges = false;
+                        WebhookController.Instance.AddPokemon(this);
+                        InstanceController.Instance.GotIV(this);
+                    }
                 }
             }
         }
@@ -540,7 +550,11 @@
                     Console.WriteLine($"[Pokemon] Pokemon {Id} Ditto found, disguised as {PokemonId}");
                     SetDittoAttributes(PokemonId);
                 }
-                // TODO: SetPVP();
+
+                if (AttackIV != null)
+                {
+                    await SetPvpRankings();
+                }
 
                 SpawnId = Convert.ToUInt64(encounter.Pokemon.SpawnPointId, 16);
                 var timestampMs = DateTime.UtcNow.ToTotalSeconds();
@@ -597,17 +611,11 @@
                 {
                     var unixDate = timestampMs.FromMilliseconds();
                     var secondOfHour = unixDate.Second + (unixDate.Minute * 60);
-                    ushort despawnOffset;
+                    var despawnOffset = spawnpoint.DespawnSecond - secondOfHour;
                     if (spawnpoint.DespawnSecond < secondOfHour)
-                    {
-                        despawnOffset = Convert.ToUInt16(3600 + spawnpoint.DespawnSecond - secondOfHour);
-                    }
-                    else
-                    {
-                        despawnOffset = Convert.ToUInt16(spawnpoint.DespawnSecond - secondOfHour);
-                    }
+                        despawnOffset += 3600;
                     var now = DateTime.UtcNow.ToTotalSeconds();
-                    ExpireTimestamp = now + despawnOffset;
+                    ExpireTimestamp = now + (ulong)(despawnOffset ?? 0);
                     IsExpireTimestampVerified = true;
                 }
                 else
@@ -692,6 +700,38 @@
                     is_event = IsEvent,
                 },
             };
+        }
+
+        private Task SetPvpRankings()
+        {
+            if (!ProcessPvpRankings)
+                return Task.CompletedTask;
+
+            return Task.Run(() =>
+            {
+                var ranks = PvpRankCalculator.Instance.QueryPvpRank
+                (
+                    PokemonId,
+                    Form ?? 0,
+                    Costume,
+                    AttackIV ?? 0,
+                    DefenseIV ?? 0,
+                    StaminaIV ?? 0,
+                    Level ?? 0,
+                    (PokemonGender)Gender
+                );
+                if (ranks.Count == 0)
+                    return;
+
+                if (ranks.ContainsKey("great"))
+                {
+                    PvpRankingsGreatLeague = ranks["great"];
+                }
+                if (ranks.ContainsKey("ultra"))
+                {
+                    PvpRankingsUltraLeague = ranks["ultra"];
+                }
+            });
         }
     }
 }

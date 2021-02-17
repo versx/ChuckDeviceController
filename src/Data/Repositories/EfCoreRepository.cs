@@ -5,6 +5,8 @@
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Memory;
+    using Z.EntityFramework.Plus;
 
     using ChuckDeviceController.Data.Entities;
 
@@ -22,6 +24,7 @@
 
         public EfCoreRepository(TContext dbContext)
         {
+            QueryCacheManager.Cache = new MemoryCache(new MemoryCacheOptions());
             _dbContext = dbContext;
         }
 

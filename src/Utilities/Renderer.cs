@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Threading.Tasks;
 
     using HandlebarsDotNet;
 
@@ -37,22 +38,6 @@
         {
             var template = Handlebars.Compile(text);
             return template(model);
-        }
-
-        public static string ParseFile(string path, dynamic model)
-        {
-            var templateData = ReadData(path); // REVIEW: Replace with File.ReadAllText?
-            return Parse(templateData, model);
-        }
-
-        private static string ReadData(string path)
-        {
-            if (!File.Exists(path))
-            {
-                throw new FileNotFoundException($"Template does not exist at path: {path}", path);
-            }
-            using var sr = new StreamReader(path);
-            return sr.ReadToEnd();
         }
 
         private static void RegisterAllTemplates()

@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
@@ -22,6 +21,12 @@
             JsonPropertyName("type"),
         ]
         public InstanceType Type { get; set; }
+
+        [
+            Column("geofence"),
+            JsonPropertyName("geofence"),
+        ]
+        public string Geofence { get; set; }
 
         [
             Column("data"),
@@ -50,6 +55,7 @@
                 InstanceType.CircleRaid         => "circle_raid",
                 InstanceType.SmartCircleRaid    => "smart_raid",
                 InstanceType.PokemonIV          => "pokemon_iv",
+                InstanceType.Bootstrap          => "bootstrap",
                 _ => type.ToString(),
             };
         }
@@ -63,6 +69,7 @@
                 "circle_raid"       => InstanceType.CircleRaid,
                 "smart_raid"        => InstanceType.SmartCircleRaid,
                 "pokemon_iv"        => InstanceType.PokemonIV,
+                "bootstrap"         => InstanceType.Bootstrap,
                 _ => InstanceType.CirclePokemon,
             };
         }

@@ -5,7 +5,7 @@
     public class PvpRank
     {
         [JsonPropertyName("cp")]
-        public ushort CP { get; set; }
+        public uint CP { get; set; }
 
         [JsonPropertyName("rank")]
         public ushort Rank { get; set; }
@@ -16,10 +16,22 @@
         [JsonPropertyName("form")]
         public ushort Form { get; set; }
 
+        [JsonPropertyName("evolution")]
+        public ushort Evolution { get; set; }
+
         [JsonPropertyName("level")]
-        public ushort Level { get; set; }
+        public double Level { get; set; }
+
+        [JsonPropertyName("value")]
+        public double Value { get; set; }
 
         [JsonPropertyName("percentage")]
         public double Percentage { get; set; }
+
+        [JsonPropertyName("cap")]
+        public ushort LevelCap { get; set; }
+
+        [JsonIgnore]
+        public bool IsCapped { get; set; }
     }
 }

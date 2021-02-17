@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
 
     using Google.Common.Geometry;
+    using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -15,7 +16,6 @@
     using ChuckDeviceController.Geofence;
     using ChuckDeviceController.Geofence.Models;
     using ChuckDeviceController.JobControllers.Tasks;
-    using Microsoft.Extensions.Logging;
 
     public enum AutoType
     {
@@ -371,7 +371,7 @@
                         var bootstrapPercentage = totalCount > 0
                             ? count / totalCount * 100.0
                             : 100d;
-                        return $"Bootstrapping {count}/{totalCount} ({Math.Round(bootstrapPercentage, 2)}%)";
+                        return $"Bootstrapping {count:N0}/{totalCount:N0} ({Math.Round(bootstrapPercentage, 2)}%)";
                     }
                     var ids = _allStops.ConvertAll(x => x.Id);
                     var currentCountDb = (double)await GetQuestCount(ids).ConfigureAwait(false);
@@ -383,7 +383,7 @@
                     var percentageReal = maxCount > 0
                         ? currentCountDb / maxCount * 100.0
                         : 100d;
-                    return $"Status: {currentCountDb}|{currentCount}/{maxCount} ({Math.Round(percentageReal, 2)}|{Math.Round(percentage, 2)}%{(_completionDate != default ? $", Completed: @ {_completionDate}" : "")})";
+                    return $"Status: {currentCountDb:N0}|{currentCount:N0}/{maxCount:N0} ({Math.Round(percentageReal, 2)}|{Math.Round(percentage, 2)}%{(_completionDate != default ? $", Completed: @ {_completionDate}" : "")})";
             }
             return null;
         }
