@@ -8,9 +8,9 @@
     using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Geofence.Models;
     using ChuckDeviceController.JobControllers.Tasks;
     using ChuckDeviceController.Services.Routes;
+    using Geofence = ChuckDeviceController.Geofence.Models.Geofence;
 
     public class BootstrapInstanceController : IJobController
     {
@@ -73,8 +73,8 @@
                     {
                         _lastLastCompletedTime = _lastCompletedTime;
                         _lastCompletedTime = DateTime.UtcNow;
-                        // TODO: Wait at last coord, upon complete, _lastIndex = 0;
-                        // TODO: Change instance to bootstrap instance upon complete
+                        // Wait at last coord, upon complete, _lastIndex = 0;
+                        // TODO: Assugn instance to chained instance upon completion?
                     }
                     else
                     {

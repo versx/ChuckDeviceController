@@ -15,6 +15,8 @@
     using ChuckDeviceController.Geofence.Models;
     using ChuckDeviceController.JobControllers.Instances;
 
+    using Geofence = ChuckDeviceController.Data.Entities.Geofence;
+
     public class InstanceController
     {
         #region Variables

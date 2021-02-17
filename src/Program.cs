@@ -8,30 +8,23 @@ namespace ChuckDeviceController
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
 
-    // TODO: Configurable route types
-    // TODO: Add bootstrap instance, generate bootstrap route based on geofences
-    // TODO: Auto bootstrap mode, add 'bootstrap_complete' property to Instance.Data
+    // TODO: Add auto bootstrap mode, add 'bootstrap_complete' property to Instance.Data
     // TODO: Fix IV loop adding pokemon
     // TODO: Implement cache better
     // TODO: Use Z.EntityFramework.Cache for Cells/Pokestops/Gyms/Spawnpoints/Accounts/Devices/Instances/Assignments
     // TODO: Fix lures possible overwrite (unsure)
-    // TODO: Smart raid instance
-    // TODO: Configurable Interface/Port
-    // TODO: Configurable circle pokemon route type (leapfrog/spread/circular)
+    // TODO: Add Smart raid instance
     // TODO: Maybe leveling instance
-    // TODO: Dockerize
     // TODO: Fix issue with bootstrapping, possibly invalid polygons
-    // TODO: HasChanges property for each entity to see if needs updating
-    // TODO: Cache system for ASP.NET
-    // TODO: Secondary cache system with EntityFrameworkCore.Plus/Extensions
-    // TODO: Reusable Webhooks
-    // TODO: Reusable Geofences/Circles list
-    // TODO: Reusable IV lists
+    // TODO: Add HasChanges property for each entity to see if needs updating
+    // TODO: Add cache system for ASP.NET
+    // TODO: Add secondary cache system with EntityFrameworkCore.Plus/Extensions
+    // TODO: Add reusable Webhooks
+    // TODO: Add reusable IV lists
     // TODO: Redis cache incoming requests, database consumer handles redis queue
     // TODO: Add first_seen_timestamp and last_modified_timestamp to Spawnpoints
     // TODO: Add s2cell logic route
-    // TODO: Proper error responses via Dashboard UI
-    // TODO: Webhooks
+    // TODO: Add proper error responses via Dashboard UI
 
     public static class Program
     {

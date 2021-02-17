@@ -1032,28 +1032,24 @@
 
         private static CircleRouteType StringToCircleRouteType(string type)
         {
-            switch (type.ToLower())
+            return (type.ToLower()) switch
             {
-                case "leapfrog": return CircleRouteType.Default;
-                case "spread": return CircleRouteType.Split;
-                case "circular": return CircleRouteType.Circular;
-                default: return CircleRouteType.Default;
-            }
+                "leapfrog" => CircleRouteType.Default,
+                "spread"   => CircleRouteType.Split,
+                "circular" => CircleRouteType.Circular,
+                _ => CircleRouteType.Default,
+            };
         }
 
         private static string CircleRouteTypeToString(CircleRouteType type)
         {
-            switch (type)
+            return type switch
             {
-                case CircleRouteType.Default:
-                    return "leapfrog";
-                case CircleRouteType.Split:
-                    return "spread";
-                case CircleRouteType.Circular:
-                    return "circular";
-                default:
-                    return "leapfrog";
-            }
+                CircleRouteType.Default =>  "leapfrog",
+                CircleRouteType.Split =>    "spread",
+                CircleRouteType.Circular => "circular",
+                _ => "leapfrog",
+            };
         }
 
         private static ExpandoObject BuildDefaultData()
@@ -1069,8 +1065,6 @@
             obj.current_version = "0.1.0";
             return obj;
         }
-
-        #endregion
 
         private static string CoordinatesToAreaString(dynamic area)
         {
@@ -1132,5 +1126,7 @@
             }
             return coords;
         }
+
+        #endregion
     }
 }
