@@ -96,7 +96,7 @@
             _timer.Elapsed += async (sender, e) => await ClearQuests().ConfigureAwait(false);
             _timer.Start();
             // TODO: Get 12am DateTime
-            _logger.LogInformation($"[{Name}] Clearing Quests in {timeLeft:N0}s at 12:00 AM (Currently: {DateTime.Now}");
+            _logger.LogInformation($"[{Name}] Clearing Quests in {timeLeft:N0}s at 12:00 AM (Currently: {DateTime.Now})");
 
             Update().ConfigureAwait(false)
                     .GetAwaiter()

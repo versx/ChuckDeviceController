@@ -26,7 +26,7 @@
             Column("data"),
             JsonPropertyName("data"),
         ]
-        public dynamic Data { get; set; }
+        public GeofenceData Data { get; set; }
 
         public static string GeofenceTypeToString(GeofenceType type)
         {

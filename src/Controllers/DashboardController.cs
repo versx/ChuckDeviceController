@@ -399,7 +399,6 @@
                 instance.Data = new InstanceData
                 {
                     IsEvent = false,
-                    //Area = newArea,
                     IVQueueLimit = ivQueueLimit,
                     SpinLimit = spinLimit,
                     MinimumLevel = minLevel,
@@ -408,7 +407,7 @@
                     TimezoneOffset = timezoneOffset,
                 };
                 await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
-                await InstanceController.Instance.ReloadInstance(instance, name);
+                await InstanceController.Instance.ReloadInstance(instance, name).ConfigureAwait(false);
                 _logger.LogDebug($"Instance {name} was updated");
                 return Redirect("/dashboard/instances");
             }
@@ -530,9 +529,9 @@
                 {
                     Name = name,
                     Type = type,
-                    Data = new
+                    Data = new GeofenceData
                     {
-                        area = newArea,
+                        Area = newArea,
                     }
                 };
                 await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
@@ -561,7 +560,7 @@
                 obj.circle_selected = geofence.Type == GeofenceType.Circle;
                 obj.geofence_selected = geofence.Type == GeofenceType.Geofence;
                 var coords = string.Empty;
-                var coordsArray = geofence.Data.GetProperty("area");
+                var coordsArray = geofence.Data.Area;
                 if (geofence.Type == GeofenceType.Circle)
                 {
                     coords = CoordinatesToAreaString(coordsArray);
@@ -632,9 +631,9 @@
                 }
                 geofence.Name = newName;
                 geofence.Type = type;
-                geofence.Data = new
+                geofence.Data = new GeofenceData
                 {
-                    area = newArea,
+                    Area = newArea,
                 };
                 await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
                 return Redirect("/dashboard/geofences");

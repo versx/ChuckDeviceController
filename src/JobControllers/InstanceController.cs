@@ -48,9 +48,10 @@
         {
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
-            _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _geofenceRepository = new GeofenceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            var context = DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString());
+            _deviceRepository = new DeviceRepository(context);
+            _instanceRepository = new InstanceRepository(context);
+            _geofenceRepository = new GeofenceRepository(context);
 
             _logger = new Logger<InstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _logger.LogInformation("Starting instances...");
@@ -64,12 +65,13 @@
         {
             var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
             var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+            var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
             foreach (var instance in instances)
             {
                 if (!ThreadPool.QueueUserWorkItem(async _ =>
                 {
                     _logger.LogInformation($"Starting {instance.Name}");
-                    await AddInstance(instance).ConfigureAwait(false);
+                    await AddInstance(instance, geofences).ConfigureAwait(false);
                     _logger.LogInformation($"Started {instance.Name}");
                     foreach (var device in devices.AsEnumerable().Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0))
                     {
@@ -128,21 +130,30 @@
             return "Error";
         }
 
-        public async Task AddInstance(Instance instance)
+        public async Task AddInstance(Instance instance, IReadOnlyList<Geofence> geofences = null)
         {
             IJobController instanceController = null;
             Geofence geofence = null;
-            if (!string.IsNullOrEmpty(instance.Geofence))
+            //if (!string.IsNullOrEmpty(instance.Geofence))
+            if (geofences == null)
             {
-                geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
-                if (geofence == null)
+                try
                 {
-                    // TODO: Failed to get geofence for instance
+                    geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
+                    if (geofence == null)
+                    {
+                        // TODO: Failed to get geofence for instance
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error: {ex}");
                 }
             }
-            var area = string.IsNullOrEmpty(instance.Geofence)
-                ? instance.Data.Area
-                : geofence?.Data.GetProperty("area");
+            else
+            {
+                geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
+            }
             switch (instance.Type)
             {
                 case InstanceType.CirclePokemon:
@@ -150,12 +161,24 @@
                 case InstanceType.SmartCircleRaid:
                     try
                     {
-                        var coordsArray = (List<Coordinate>)
-                        (
-                            area is List<Coordinate>
-                                ? area
-                                : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
-                        );
+                        var area = string.IsNullOrEmpty(instance.Geofence)
+                            ? instance.Data?.Area
+                            : geofence?.Data?.Area;
+                        List<Coordinate> coordsArray = null;
+                        try
+                        {
+                            // TODO: Check if area is null
+                            coordsArray = (List<Coordinate>)
+                            (
+                                area is List<Coordinate>
+                                    ? area
+                                    : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"Error: {ex}");
+                        }
                         var minLevel = instance.Data.MinimumLevel;
                         var maxLevel = instance.Data.MaximumLevel;
                         switch (instance.Type)
@@ -181,6 +204,9 @@
                 case InstanceType.Bootstrap:
                     try
                     {
+                        var area = string.IsNullOrEmpty(instance.Geofence)
+                            ? instance.Data?.Area
+                            : geofence?.Data?.Area;
                         var coordsArray = (List<List<Coordinate>>)
                         (
                             area is List<List<Coordinate>>
