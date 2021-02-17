@@ -75,7 +75,7 @@ namespace ChuckDeviceController
             */
 
             services.AddHealthChecks();
-            services.AddScoped(typeof(IRepository<>), typeof(EfCoreRepository<,>));
+            services.AddScoped(typeof(IAsyncRepository<>), typeof(EfCoreRepository<,>));
             //services.AddScoped<IConsumerService, ConsumerService>();
             services.AddSingleton<IConsumerService, ConsumerService>();
             services.AddScoped<Config>();
