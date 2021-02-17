@@ -66,45 +66,45 @@
             // TODO: Use raw sql query or better alternative
             return new
             {
-                new_count = (uint)accounts.Count(x => string.IsNullOrEmpty(x.Failed) &&
+                new_count = accounts.Count(x => string.IsNullOrEmpty(x.Failed) &&
                                                  x.FailedTimestamp == null &&
                                                  x.FirstWarningTimestamp == null &&
                                                  x.LastEncounterLatitude == null &&
                                                  x.LastEncounterLongitude == null &&
                                                  x.LastEncounterTime == null &&
-                                                 x.Spins == 0),
-                in_use_count = (uint)accounts.Count(x => devices.Any(dev => string.Compare(dev.AccountUsername, x.Username, true) == 0)),
-                clean_iv_count = (uint)accounts.Count(x => string.IsNullOrEmpty(x.Failed) &&
+                                                 x.Spins == 0).ToString("N0"),
+                in_use_count = accounts.Count(x => devices.Any(dev => string.Compare(dev.AccountUsername, x.Username, true) == 0)).ToString("N0"),
+                clean_iv_count = accounts.Count(x => string.IsNullOrEmpty(x.Failed) &&
                                                       x.FailedTimestamp == null &&
                                                       x.FirstWarningTimestamp == null &&
                                                       x.LastEncounterLatitude == null &&
                                                       x.LastEncounterLongitude == null &&
                                                       x.LastEncounterTime == null &&
                                                       x.Spins == 0 &&
-                                                      x.Level >= 30),
-                total_iv_count = (uint)accounts.Count(x => x.Level >= 30),
-                total = (uint)accounts.Count,
-                failed_count = (uint)accounts.Count(x => !string.IsNullOrEmpty(x.Failed) || x.FailedTimestamp != null),
+                                                      x.Level >= 30).ToString("N0"),
+                total_iv_count = accounts.Count(x => x.Level >= 30).ToString("N0"),
+                total = accounts.Count.ToString("N0"),
+                failed_count = accounts.Count(x => !string.IsNullOrEmpty(x.Failed) || x.FailedTimestamp != null).ToString("N0"),
                 in_cooldown_count = 0, // TODO: Cooldown
-                over_spin_limit_count = (uint)accounts.Count(x => x.Spins >= SpinLimit),
-                banned_1day = (uint)accounts.Count(x => x.FailedTimestamp > 0 && now - x.FailedTimestamp > OneDaySeconds),
-                banned_7day = (uint)accounts.Count(x => x.FailedTimestamp > 0 && now - x.FailedTimestamp > SevenDaySeconds),
-                banned_total = (uint)accounts.Count(x => x.FailedTimestamp > 0),
-                warning_1day = (uint)accounts.Count(x => x.FirstWarningTimestamp > 0 && now - x.FailedTimestamp > OneDaySeconds),
-                warning_7day = (uint)accounts.Count(x => x.FirstWarningTimestamp > 0 && now - x.FailedTimestamp > SevenDaySeconds),
-                warning_total = accounts.Count(x => x.FirstWarningTimestamp > 0),
+                over_spin_limit_count = accounts.Count(x => x.Spins >= SpinLimit).ToString("N0"),
+                banned_1day = accounts.Count(x => x.FailedTimestamp > 0 && now - x.FailedTimestamp > OneDaySeconds).ToString("N0"),
+                banned_7day = accounts.Count(x => x.FailedTimestamp > 0 && now - x.FailedTimestamp > SevenDaySeconds).ToString("N0"),
+                banned_total = accounts.Count(x => x.FailedTimestamp > 0).ToString("N0"),
+                warning_1day = accounts.Count(x => x.FirstWarningTimestamp > 0 && now - x.FailedTimestamp > OneDaySeconds).ToString("N0"),
+                warning_7day = accounts.Count(x => x.FirstWarningTimestamp > 0 && now - x.FailedTimestamp > SevenDaySeconds).ToString("N0"),
+                warning_total = accounts.Count(x => x.FirstWarningTimestamp > 0).ToString("N0"),
                 all_account_stats = accounts.GroupBy(x => x.Level, (x, y) => new
                 {
                     level = x,
-                    total = accounts.Count(z => z.Level == x),
-                    in_use = accounts.Count(z => devices.Any(dev => string.Compare(dev.AccountUsername, z.Username) == 0 && z.Level == x)),
-                    good = y.Count(z => string.IsNullOrEmpty(z.Failed) && z.FailedTimestamp == null && z.FirstWarningTimestamp == null),
-                    banned = y.Count(z => !string.IsNullOrEmpty(z.Failed) || z.FailedTimestamp > 0),
-                    warning = y.Count(z => z.FirstWarningTimestamp > 0),
+                    total = accounts.Count(z => z.Level == x).ToString("N0"),
+                    in_use = accounts.Count(z => devices.Any(dev => string.Compare(dev.AccountUsername, z.Username) == 0 && z.Level == x)).ToString("N0"),
+                    good = y.Count(z => string.IsNullOrEmpty(z.Failed) && z.FailedTimestamp == null && z.FirstWarningTimestamp == null).ToString("N0"),
+                    banned = y.Count(z => !string.IsNullOrEmpty(z.Failed) || z.FailedTimestamp > 0).ToString("N0"),
+                    warning = y.Count(z => z.FirstWarningTimestamp > 0).ToString("N0"),
                     invalid = 0, // TODO: Invalid
                     other = 0, // TODO: Other
                     cooldown = 0, // TODO: Cooldown
-                    spin_limit = y.Count(z => z.Spins >= SpinLimit),
+                    spin_limit = y.Count(z => z.Spins >= SpinLimit).ToString("N0"),
                 }).ToArray(),
             };
         }

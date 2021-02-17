@@ -31,6 +31,7 @@
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
         private readonly PokestopRepository _pokestopRepository;
+        private readonly GeofenceRepository _geofenceRepository;
 
         #endregion
 
@@ -46,6 +47,7 @@
             _deviceRepository = new DeviceRepository(_context);
             _instanceRepository = new InstanceRepository(_context);
             _pokestopRepository = new PokestopRepository(_context);
+            _geofenceRepository = new GeofenceRepository(_context);
         }
 
         #endregion
@@ -62,10 +64,11 @@
         public IActionResult GetDashboard()
         {
             dynamic obj = BuildDefaultData();
-            obj.devices_count = _context.Devices.Count();
-            obj.instances_count = _context.Instances.Count();
-            obj.assignments_count = _context.Assignments.Count();
-            obj.accounts_count = _context.Accounts.Count();
+            obj.devices_count = _context.Devices.Count().ToString("N0");
+            obj.instances_count = _context.Instances.Count().ToString("N0");
+            obj.assignments_count = _context.Assignments.Count().ToString("N0");
+            obj.accounts_count = _context.Accounts.Count().ToString("N0");
+            obj.geofences_count = _context.Geofences.Count().ToString("N0");
             var data = Renderer.ParseTemplate("index", obj);
             return new ContentResult
             {
@@ -160,13 +163,22 @@
             HttpGet("/dashboard/instance/add"),
             HttpPost("/dashboard/instance/add"),
         ]
-        public async Task<IActionResult> CreateInstance()
+        public async Task<IActionResult> AddInstance()
         {
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
+                obj.timezone_offset = 0;
                 obj.min_level = 0;
                 obj.max_level = 30;
+                var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+                obj.geofences = geofences.Select(x => new
+                {
+                    name = x.Name,
+                    type = x.Type.ToString().ToLower(),
+                    selected = false,
+                });
+                obj.nothing_selected = true;
                 obj.timezone_offset = 0;
                 obj.circle_size = 70;
                 obj.nothing_selected = true;
@@ -184,6 +196,7 @@
             {
                 var name = Request.Form["name"].ToString();
                 var type = Instance.StringToInstanceType(Request.Form["type"]);
+                var geofence = Request.Form["geofence"].ToString();
                 var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
@@ -227,59 +240,6 @@
                     // Instance already exists
                 }
 
-                dynamic newArea = null;
-                switch (type)
-                {
-                    case InstanceType.CirclePokemon:
-                    case InstanceType.CircleRaid:
-                    case InstanceType.SmartCircleRaid:
-                        {
-                            // Parse area
-                            var rows = area.Split('\n');
-                            var coords = new List<Coordinate>();
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length != 2)
-                                    continue;
-                                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                            }
-                            if (coords.Count == 0)
-                            {
-                                // Invalid coordinates provided
-                            }
-                            newArea = coords;
-                            break;
-                        }
-                    case InstanceType.AutoQuest:
-                    case InstanceType.PokemonIV:
-                    case InstanceType.Bootstrap:
-                        {
-                            var rows = area.Split('\n');
-                            var index = 0;
-                            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length == 2)
-                                {
-                                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                                }
-                                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
-                                {
-                                    index++;
-                                    coords.Add(new List<Coordinate>());
-                                }
-                            }
-                            if (coords.Count == 0)
-                            {
-                                // Invalid coordinates provided
-                            }
-                            newArea = coords;
-                            break;
-                        }
-                }
-
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance != null)
                 {
@@ -291,10 +251,10 @@
                 {
                     Name = name,
                     Type = type,
+                    Geofence = geofence,
                     Data = new InstanceData
                     {
                         IsEvent = false,
-                        Area = newArea,
                         IVQueueLimit = ivQueueLimit,
                         SpinLimit = spinLimit,
                         MinimumLevel = minLevel,
@@ -306,7 +266,7 @@
                     }
                 };
                 await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
-                InstanceController.Instance.AddInstance(instance);
+                await InstanceController.Instance.AddInstance(instance).ConfigureAwait(false);
                 return Redirect("/dashboard/instances");
             }
         }
@@ -328,6 +288,7 @@
                 var maxLevel = instance.Data.MaximumLevel;
                 dynamic obj = BuildDefaultData();
                 obj.name = name;
+                obj.geofence = instance.Geofence;
                 obj.old_name = name;
                 obj.min_level = minLevel;
                 obj.max_level = maxLevel;
@@ -336,6 +297,14 @@
                 obj.pokemon_iv_selected = instance.Type == InstanceType.PokemonIV;
                 obj.auto_quest_selected = instance.Type == InstanceType.AutoQuest;
                 obj.bootstrap_selected = instance.Type == InstanceType.Bootstrap;
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+                obj.geofences = geofences.Select(x => new
+                {
+                    name = x.Name,
+                    type = x.Type.ToString().ToLower(),
+                    selected = string.Compare(instance.Geofence, x.Name, true) == 0,
+                });
                 obj.circle_route_type = CircleRouteTypeToString(instance.Data.CircleRouteType);
                 obj.leapfrog_selected = instance.Data.CircleRouteType == CircleRouteType.Default;
                 obj.spread_selected = instance.Data.CircleRouteType == CircleRouteType.Split;
@@ -356,36 +325,23 @@
                 //    case InstanceType.Bootstrap:
                         obj.circle_size = instance.Data.CircleSize ?? 70;
                 //}
+
+                // NOTE: Legacy so people can get the circles/geofences of old instances and copy to new geofence entities
+                var coords = string.Empty;
+                var coordsArray = instance.Data.Area;
                 if (instance.Type == InstanceType.CirclePokemon ||
                     instance.Type == InstanceType.CircleRaid ||
                     instance.Type == InstanceType.SmartCircleRaid)
                 {
-                    var coords = string.Empty;
-                    var coordsArray = instance.Data.Area;
-                    foreach (var coord in coordsArray.EnumerateArray())
-                    {
-                        coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
-                    }
-                    obj.area = coords;
+                    coords = CoordinatesToAreaString(instance.Data.Area);
                 }
                 else if (instance.Type == InstanceType.AutoQuest ||
                          instance.Type == InstanceType.PokemonIV ||
                          instance.Type == InstanceType.Bootstrap)
                 {
-                    var coords = string.Empty;
-                    var coordsArray = instance.Data.Area;
-                    var index = 1;
-                    foreach (var geofence in coordsArray.EnumerateArray())
-                    {
-                        coords += $"[Geofence {index}]\n";
-                        foreach (var coord in geofence.EnumerateArray())
-                        {
-                            coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
-                        }
-                        index++;
-                    }
-                    obj.area = coords;
+                    coords = MultiPolygonToAreaString(instance.Data.Area);
                 }
+                obj.area = coords;
                 var data = Renderer.ParseTemplate("instance-edit", obj);
                 return new ContentResult
                 {
@@ -410,7 +366,8 @@
 
                 var newName = Request.Form["name"].ToString();
                 var type = Instance.StringToInstanceType(Request.Form["type"]);
-                var area = Request.Form["area"].ToString();
+                var geofence = Request.Form["geofence"].ToString();
+                //var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
                 var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
@@ -430,12 +387,100 @@
                     // Invalid levels
                 }
 
+                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (instance == null)
+                {
+                    // Instance does not exist, create?
+                }
+
+                instance.Name = newName;
+                instance.Type = type;
+                instance.Geofence = geofence;
+                instance.Data = new InstanceData
+                {
+                    IsEvent = false,
+                    //Area = newArea,
+                    IVQueueLimit = ivQueueLimit,
+                    SpinLimit = spinLimit,
+                    MinimumLevel = minLevel,
+                    MaximumLevel = maxLevel,
+                    PokemonIds = pokemonIds,
+                    TimezoneOffset = timezoneOffset,
+                };
+                await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
+                await InstanceController.Instance.ReloadInstance(instance, name);
+                _logger.LogDebug($"Instance {name} was updated");
+                return Redirect("/dashboard/instances");
+            }
+        }
+
+        [HttpGet("/dashboard/instance/ivqueue/{name}")]
+        public IActionResult GetIVQueue(string name)
+        {
+            dynamic obj = BuildDefaultData();
+            obj.instance_name = name;
+            var data = Renderer.ParseTemplate("instance-ivqueue", obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        #endregion
+
+        #region Geofences
+
+        [HttpGet("/dashboard/geofences")]
+        public IActionResult GetGeofences()
+        {
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("geofences", obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        [
+            HttpGet("/dashboard/geofence/add"),
+            HttpPost("/dashboard/geofence/add"),
+        ]
+        public async Task<IActionResult> AddGeofence()
+        {
+            // TODO: Reload instances upon geofence change
+            if (Request.Method == "GET")
+            {
+                dynamic obj = BuildDefaultData();
+                var data = Renderer.ParseTemplate("geofence-add", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                var name = Request.Form["name"].ToString();
+                var type = Request.Form["type"].ToString() == "circle"
+                    ? GeofenceType.Circle
+                    : GeofenceType.Geofence;
+                var area = Request.Form["area"].ToString();
+
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (geofence != null)
+                {
+                    // Geofence already exists by name
+                }
+
                 dynamic newArea = null;
                 switch (type)
                 {
-                    case InstanceType.CirclePokemon:
-                    case InstanceType.CircleRaid:
-                    case InstanceType.SmartCircleRaid:
+                    case GeofenceType.Circle:
                         {
                             // Parse area
                             var rows = area.Split('\n');
@@ -454,9 +499,7 @@
                             newArea = coords;
                             break;
                         }
-                    case InstanceType.AutoQuest:
-                    case InstanceType.PokemonIV:
-                    case InstanceType.Bootstrap:
+                    case GeofenceType.Geofence:
                         {
                             var rows = area.Split('\n');
                             var index = 0;
@@ -483,46 +526,119 @@
                         }
                 }
 
-                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
-                if (instance == null)
+                geofence = new Geofence
                 {
-                    // Instance does not exist, create?
-                }
-
-                instance.Name = newName;
-                instance.Type = type;
-                instance.Data = new InstanceData
-                {
-                    IsEvent = false,
-                    Area = newArea,
-                    IVQueueLimit = ivQueueLimit,
-                    SpinLimit = spinLimit,
-                    MinimumLevel = minLevel,
-                    MaximumLevel = maxLevel,
-                    PokemonIds = pokemonIds,
-                    TimezoneOffset = timezoneOffset,
-                    CircleSize = circleSize,
-                    CircleRouteType = circleRouteType,
+                    Name = name,
+                    Type = type,
+                    Data = new
+                    {
+                        area = newArea,
+                    }
                 };
-                await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
-                InstanceController.Instance.ReloadInstance(instance, name);
-                _logger.LogDebug($"Instance {name} was updated");
-                return Redirect("/dashboard/instances");
+                await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
+                return Redirect("/dashboard/geofences");
             }
         }
 
-        [HttpGet("/dashboard/instance/ivqueue/{name}")]
-        public IActionResult GetIVQueue(string name)
+        [
+            HttpGet("/dashboard/geofence/edit/{name}"),
+            HttpPost("/dashboard/geofence/edit/{name}"),
+        ]
+        public async Task<IActionResult> EditGeofence(string name)
         {
-            dynamic obj = BuildDefaultData();
-            obj.instance_name = name;
-            var data = Renderer.ParseTemplate("instance-ivqueue", obj);
-            return new ContentResult
+            // TODO: Reload instances upon geofence change
+            if (Request.Method == "GET")
             {
-                Content = data,
-                ContentType = "text/html",
-                StatusCode = 200,
-            };
+                dynamic obj = BuildDefaultData();
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (geofence == null)
+                {
+                    // Provided geofence name does not exist
+                    return Redirect("/dashboard/geofences");
+                }
+                obj.name = geofence.Name;
+                obj.old_name = geofence.Name;
+                obj.circle_selected = geofence.Type == GeofenceType.Circle;
+                obj.geofence_selected = geofence.Type == GeofenceType.Geofence;
+                var coords = string.Empty;
+                var coordsArray = geofence.Data.GetProperty("area");
+                if (geofence.Type == GeofenceType.Circle)
+                {
+                    coords = CoordinatesToAreaString(coordsArray);
+                }
+                else if (geofence.Type == GeofenceType.Geofence)
+                {
+                    coords = MultiPolygonToAreaString(coordsArray);
+                }
+                obj.area = coords;
+                var data = Renderer.ParseTemplate("geofence-edit", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                if (Request.Form.ContainsKey("delete"))
+                {
+                    var geofenceToDelete = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                    if (geofenceToDelete != null)
+                    {
+                        await _geofenceRepository.DeleteAsync(geofenceToDelete).ConfigureAwait(false);
+                        _logger.LogDebug($"Geofence {name} was deleted");
+                    }
+                    return Redirect("/dashboard/geofences");
+                }
+
+
+                var newName = Request.Form["name"].ToString();
+                var type = Request.Form["type"].ToString() == "circle"
+                    ? GeofenceType.Circle
+                    : GeofenceType.Geofence;
+                var area = Request.Form["area"].ToString();
+
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (geofence == null)
+                {
+                    // Failed to find geofence by by name
+                }
+
+                dynamic newArea = null;
+                switch (type)
+                {
+                    case GeofenceType.Circle:
+                        {
+                            // Parse area
+                            var coords = AreaStringToCoordinates(area);
+                            if (coords.Count == 0)
+                            {
+                                // Invalid coordinates provided
+                            }
+                            newArea = coords;
+                            break;
+                        }
+                    case GeofenceType.Geofence:
+                        {
+                            var coords = AreaStringToMultiPolygon(area);
+                            if (coords.Count == 0)
+                            {
+                                // Invalid coordinates provided
+                            }
+                            newArea = coords;
+                            break;
+                        }
+                }
+                geofence.Name = newName;
+                geofence.Type = type;
+                geofence.Data = new
+                {
+                    area = newArea,
+                };
+                await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
+                return Redirect("/dashboard/geofences");
+            }
         }
 
         #endregion
@@ -955,5 +1071,66 @@
         }
 
         #endregion
+
+        private static string CoordinatesToAreaString(dynamic area)
+        {
+            var coords = string.Empty;
+            foreach (var coord in area.EnumerateArray())
+            {
+                coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+            }
+            return coords;
+        }
+
+        private static string MultiPolygonToAreaString(dynamic area)
+        {
+            var index = 1;
+            var coords = string.Empty;
+            foreach (var fence in area.EnumerateArray())
+            {
+                coords += $"[Geofence {index}]\n";
+                foreach (var coord in fence.EnumerateArray())
+                {
+                    coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                }
+                index++;
+            }
+            return coords;
+        }
+
+        private static List<Coordinate> AreaStringToCoordinates(string area)
+        {
+            var rows = area.Split('\n');
+            var coords = new List<Coordinate>();
+            foreach (var row in rows)
+            {
+                var split = row.Split(',');
+                if (split.Length != 2)
+                    continue;
+                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+            }
+            return coords;
+        }
+
+        private static List<List<Coordinate>> AreaStringToMultiPolygon(string area)
+        {
+            var rows = area.Split('\n');
+            var index = 0;
+            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
+            foreach (var row in rows)
+            {
+                var split = row.Split(',');
+                if (split.Length == 2)
+                {
+                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+                }
+                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
+                {
+                    index++;
+                    coords.Add(new List<Coordinate>());
+                }
+            }
+            return coords;
+        }
     }
 }

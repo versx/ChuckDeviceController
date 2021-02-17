@@ -1,8 +1,17 @@
 {{> navbar}}
 
 <script>
-    $(document).ready(function() {
-        $('.type-select').change(function() {
+    $(document).ready(function () {
+        $('.type-select').change(function () {
+            if ($('.type-select').val() === 'pokemon_iv' ||
+                $('.type-select').val() === 'auto_quest' ||
+                $('.type-select').val() === 'bootstrap') {
+                $('.circle').addClass('d-none');
+                $('.geofence').removeClass('d-none');
+            } else {
+                $('.circle').removeClass('d-none');
+                $('.geofence').addClass('d-none');
+            }
             switch ($(this).val()) {
                 case 'circle_pokemon':
                     $('.circle_route_type').removeClass('d-none');
@@ -91,8 +100,13 @@
                 <input type="number" class="form-control" name="max_level" value="{{max_level}}" step=1 min="0" max="40" required>
             </div>
             <div class="form-group">
-                Scan Area
-                <textarea class="form-control" rows="5" name="area" required>{{{area}}}</textarea>
+                Select Scan Area
+                <select class="form-control" name="geofence" required>
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Geofence</option>
+                    {{#each geofences}}
+                    <option value="{{name}}" class="{{type}}" {{#selected}} selected{{/selected}}>{{name}}</option>
+                    {{/each}}
+                </select>
             </div>
             <div class="form-group pokemon_ids_text {{^pokemon_iv_selected}}d-none{{/pokemon_iv_selected}}">
                 Pokemon IDs (first = highest priority)
