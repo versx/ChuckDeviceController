@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -103,6 +104,7 @@
             if (device == null)
             {
                 // Unknown device
+                return BuildErrorResponse("device-assign", $"Failed to retrieve device '{uuid}'");
             }
             if (Request.Method == "GET")
             {
@@ -128,11 +130,13 @@
                 if (string.IsNullOrEmpty(instanceName))
                 {
                     // Unknown instance name provided
+                    return BuildErrorResponse("device-assign", $"Instance '{instanceName}' does not exist");
                 }
                 var instance = await _instanceRepository.GetByIdAsync(instanceName).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Failed to get instance by name
+                    return BuildErrorResponse("device-assign", $"Failed to retrieve instance '{instanceName}'");
                 }
                 device.InstanceName = instance.Name;
                 await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
@@ -235,18 +239,20 @@
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
+                    return BuildErrorResponse("instance-add", $"Invalid minimum and maximum levels provided");
                 }
 
                 if (await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false) != null)
                 {
                     // Instance already exists
+                    return BuildErrorResponse("instance-add", $"Instance with name '{name}' already exists");
                 }
 
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance != null)
                 {
                     // Instance already exists
-                    return null;
+                    return BuildErrorResponse("instance-add", $"Instance with name '{name}' already exists");
                 }
 
                 instance = new Instance
@@ -285,6 +291,7 @@
                 if (instance == null)
                 {
                     // Failed to get instance by name
+                    return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist");
                 }
                 var minLevel = instance.Data.MinimumLevel;
                 var maxLevel = instance.Data.MaximumLevel;
@@ -372,12 +379,14 @@
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
+                    return BuildErrorResponse("instance-edit", $"Invalid minimum and maximum levels provided");
                 }
 
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Instance does not exist, create?
+                    return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist");
                 }
 
                 instance.Name = newName;
@@ -461,6 +470,7 @@
                 if (geofence != null)
                 {
                     // Geofence already exists by name
+                    return BuildErrorResponse("geofence-add", $"Geofence with name '{name}' already exists");
                 }
 
                 dynamic newArea = null;
@@ -540,6 +550,7 @@
                 if (geofence == null)
                 {
                     // Provided geofence name does not exist
+                    // TODO: Log error
                     return Redirect("/dashboard/geofences");
                 }
                 obj.name = geofence.Name;
@@ -588,6 +599,7 @@
                 if (geofence == null)
                 {
                     // Failed to find geofence by by name
+                    return BuildErrorResponse("geofence-edit", $"Geofence with name '{name}' does not exist");
                 }
 
                 dynamic newArea = null;
@@ -681,16 +693,19 @@
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
+                    return BuildErrorResponse("assignment-add", $"Failed to get instances or devices");
                 }
 
                 if (!devices.Any(x => x.Uuid == uuid))
                 {
                     // Device does not exist
+                    return BuildErrorResponse("assignment-add", $"Device with name '{uuid}' does not exist");
                 }
 
                 if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
                 {
                     // Instance does not exist
+                    return BuildErrorResponse("assignment-add", $"Instance with name '{destinationInstance}' does not exist");
                 }
 
                 var totalTime = 0u;
@@ -708,7 +723,7 @@
                     else
                     {
                         // Invalid time
-                        return null;
+                        return BuildErrorResponse("assignment-add", $"Invalid assignment time '{time}' provided");
                     }
                 }
                 DateTime? realDate = null;
@@ -719,7 +734,9 @@
 
                 if (string.IsNullOrEmpty(uuid) || string.IsNullOrEmpty(destinationInstance))
                 {
-                    // Invalid request, uuid or instance are null
+                    // TODO: Log error
+                    return Redirect("/dashboard/assignments");
+                    //return BuildErrorResponse("assignment-add", $"Somehow device uuid was null or destinationInstance");
                 }
 
                 try
@@ -812,16 +829,19 @@
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
+                    return BuildErrorResponse("assignment-edit", $"Failed to get instances or devices");
                 }
 
                 if (!devices.Any(x => x.Uuid == uuid))
                 {
                     // Device does not exist
+                    return BuildErrorResponse("assignment-edit", $"Device with name '{uuid}' does not exist");
                 }
 
                 if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
                 {
                     // Instance does not exist
+                    return BuildErrorResponse("assignment-edit", $"Instance with name '{destinationInstance}' does not exist");
                 }
 
                 var totalTime = 0u;
@@ -839,7 +859,7 @@
                     else
                     {
                         // Invalid time
-                        return null;
+                        return BuildErrorResponse("assignment-edit", $"Invalid assignment time '{time}' provided");
                     }
                 }
                 DateTime? realDate = null;
@@ -851,12 +871,15 @@
                 if (string.IsNullOrEmpty(uuid) || string.IsNullOrEmpty(destinationInstance))
                 {
                     // Invalid request, uuid or instance are null
+                    // TODO: Log error
+                    return Redirect("/dashboard/assignments");
                 }
 
                 var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
                 if (assignment == null)
                 {
                     // Failed to get assignment by id
+                    return BuildErrorResponse("assignment-edit", $"Assignment with id '{id}' does not exist");
                 }
                 assignment.InstanceName = destinationInstance;
                 assignment.SourceInstanceName = sourceInstance;
@@ -876,6 +899,7 @@
             var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
             if (assignment == null)
             {
+                // TODO: Log error
                 // Failed to get assignment by id
             }
             await AssignmentController.Instance.TriggerAssignment(assignment, true).ConfigureAwait(false);
@@ -888,7 +912,9 @@
             var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
             if (assignment == null)
             {
+                // TODO: Log error
                 // Failed to delete assignment by id, does it exist?
+                return BuildErrorResponse("assignment-delete", $"Assignment with id '{id}' does not exist");
             }
             await _assignmentRepository.DeleteAsync(assignment).ConfigureAwait(false);
             return Redirect("/dashboard/assignments");
@@ -1086,7 +1112,9 @@
                 var split = row.Split(',');
                 if (split.Length != 2)
                     continue;
-                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+                var latitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[0]);
+                var longitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[1]);
+                coords.Add(new Coordinate(double.Parse(latitude), double.Parse(longitude)));
             }
             return coords;
         }
@@ -1101,7 +1129,9 @@
                 var split = row.Split(',');
                 if (split.Length == 2)
                 {
-                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+                    var latitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[0]);
+                    var longitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[1]);
+                    coords[index].Add(new Coordinate(double.Parse(latitude), double.Parse(longitude)));
                 }
                 else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
                 {
@@ -1110,6 +1140,20 @@
                 }
             }
             return coords;
+        }
+
+        private static IActionResult BuildErrorResponse(string template, string message)
+        {
+            dynamic obj = BuildDefaultData();
+            obj.show_error = true;
+            obj.error = message;
+            var data = Renderer.ParseTemplate(template, obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
         }
 
         #endregion
