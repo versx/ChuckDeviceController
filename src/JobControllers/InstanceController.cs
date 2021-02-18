@@ -48,10 +48,9 @@
         {
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
-            var context = DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString());
-            _deviceRepository = new DeviceRepository(context);
-            _instanceRepository = new InstanceRepository(context);
-            _geofenceRepository = new GeofenceRepository(context);
+            _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _geofenceRepository = new GeofenceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
 
             _logger = new Logger<InstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _logger.LogInformation("Starting instances...");
