@@ -578,7 +578,6 @@
                     return Redirect("/dashboard/geofences");
                 }
 
-
                 var newName = Request.Form["name"].ToString();
                 var type = Request.Form["type"].ToString() == "circle"
                     ? GeofenceType.Circle

@@ -553,7 +553,7 @@
 
                 if (AttackIV != null)
                 {
-                    await SetPvpRankings();
+                    await SetPvpRankings().ConfigureAwait(false);
                 }
 
                 SpawnId = Convert.ToUInt64(encounter.Pokemon.SpawnPointId, 16);
