@@ -69,7 +69,7 @@
         public bool? Banned { get; set; }
 
         [Column("last_used_timestamp")]
-        public ulong? LastUsedTimestamp { get; set; }
+        public ulong? LastUsedTimestamp { get; set; } = 0;
 
         // TODO: group
     }
