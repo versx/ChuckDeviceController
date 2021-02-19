@@ -1080,13 +1080,12 @@
         private static string CoordinatesToAreaString(dynamic area)
         {
             var coords = string.Empty;
-            if (area == null)
+            if (area is List<Coordinate>)
             {
-                return coords;
-            }
-            foreach (var coord in area.EnumerateArray())
-            {
-                coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                foreach (var coord in area.EnumerateArray())
+                {
+                    coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                }
             }
             return coords;
         }
