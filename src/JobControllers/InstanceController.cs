@@ -170,7 +170,7 @@
                         }
                         else if (string.IsNullOrEmpty((area as string)))
                         {
-                            _logger.LogError($"Area value for this type {instance.Type.ToString()} == null");
+                            _logger.LogError($"Area value for this type {instance.Type} == null");
                         }
                         else
                         {

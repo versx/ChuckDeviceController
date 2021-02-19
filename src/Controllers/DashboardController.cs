@@ -1124,13 +1124,7 @@
 
         private static bool IsDoubleValue(string test)
         {
-            double price;
-            bool isDouble = Double.TryParse(test, out price);
-            if (isDouble)
-            {
-                return true;
-            }
-            return false;
+            return double.TryParse(test, out var _);
         }
 
         private static List<List<Coordinate>> AreaStringToMultiPolygon(string area)
