@@ -90,14 +90,14 @@
                 Longitude = result.Longitude,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
-            });
+            }).ConfigureAwait(false);
         }
 
         public async Task<string> GetStatus()
         {
             var percentage = Math.Round(((double)_lastIndex / (double)Coordinates.Count) * 100.00, 2);
             var text = $"{_lastIndex:N0}/{Coordinates.Count:N0} ({percentage}%)";
-            return await Task.FromResult(text);
+            return await Task.FromResult(text).ConfigureAwait(false);
         }
 
         public void Reload()

@@ -12,7 +12,7 @@
     using ChuckDeviceController.Data.Entities;
 
     /// <summary>
-    /// 
+    /// PvpRankCalculator
     /// </summary>
     /// <credits>
     /// https://github.com/WatWowMap/Chuck/blob/master/src/services/pvp.js

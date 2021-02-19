@@ -484,7 +484,7 @@
                             foreach (var row in rows)
                             {
                                 var split = row.Split(',');
-                                if (split.Length != 2)
+                                if (split.Length != 2 || !IsDoubleValue(split[0]) || !IsDoubleValue(split[1]))
                                     continue;
                                 coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
                             }
@@ -503,7 +503,7 @@
                             foreach (var row in rows)
                             {
                                 var split = row.Split(',');
-                                if (split.Length == 2)
+                                if (split.Length == 2 && IsDoubleValue(split[0]) && !IsDoubleValue(split[1]))
                                 {
                                     coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
                                 }
@@ -558,7 +558,7 @@
                 obj.circle_selected = geofence.Type == GeofenceType.Circle;
                 obj.geofence_selected = geofence.Type == GeofenceType.Geofence;
                 var coords = string.Empty;
-                var coordsArray = geofence.Data.Area;
+                var coordsArray = geofence?.Data?.Area;
                 if (geofence.Type == GeofenceType.Circle)
                 {
                     coords = CoordinatesToAreaString(coordsArray);
@@ -1080,6 +1080,10 @@
         private static string CoordinatesToAreaString(dynamic area)
         {
             var coords = string.Empty;
+            if (area == null)
+            {
+                return coords;
+            }
             foreach (var coord in area.EnumerateArray())
             {
                 coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
@@ -1110,13 +1114,24 @@
             foreach (var row in rows)
             {
                 var split = row.Split(',');
-                if (split.Length != 2)
+                if (split.Length != 2 || !IsDoubleValue(split[0]) || !IsDoubleValue(split[1]))
                     continue;
                 var latitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[0]);
                 var longitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[1]);
                 coords.Add(new Coordinate(double.Parse(latitude), double.Parse(longitude)));
             }
             return coords;
+        }
+
+        private static bool IsDoubleValue(string test)
+        {
+            double price;
+            bool isDouble = Double.TryParse(test, out price);
+            if (isDouble)
+            {
+                return true;
+            }
+            return false;
         }
 
         private static List<List<Coordinate>> AreaStringToMultiPolygon(string area)
@@ -1127,16 +1142,16 @@
             foreach (var row in rows)
             {
                 var split = row.Split(',');
-                if (split.Length == 2)
+                if (split.Length == 2 && IsDoubleValue(split[0]) && IsDoubleValue(split[1]))
                 {
                     var latitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[0]);
                     var longitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[1]);
                     coords[index].Add(new Coordinate(double.Parse(latitude), double.Parse(longitude)));
                 }
                 else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
-                {
-                    index++;
+                {                   
                     coords.Add(new List<Coordinate>());
+                    index++;
                 }
             }
             return coords;

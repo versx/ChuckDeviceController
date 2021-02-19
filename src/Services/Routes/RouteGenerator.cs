@@ -18,11 +18,7 @@
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new RouteGenerator();
-                }
-                return _instance;
+                return _instance ??= new RouteGenerator();
             }
         }
 
@@ -71,11 +67,11 @@
                     i++;
                 } while ((heading == 270 && currentLatLng.Y > endLatLng.Y) || (heading == 90 && currentLatLng.Y < startLatLng.Y));
 
-                currentLatLng = Destination(currentLatLng, 180, (yMod * circleSize * 2));
+                currentLatLng = Destination(currentLatLng, 180, yMod * circleSize * 2);
                 heading = row % 2 == 1
                     ? 270
                     : 90;
-                currentLatLng = Destination(currentLatLng, heading, (xMod * circleSize) * 3);
+                currentLatLng = Destination(currentLatLng, heading, xMod * circleSize * 3);
                 row++;
             }
             return points;

@@ -160,10 +160,14 @@
                 case InstanceType.SmartCircleRaid:
                     try
                     {
-                        var area = string.IsNullOrEmpty(instance.Geofence)
-                            ? instance.Data?.Area
+                        var area = string.IsNullOrEmpty(instance?.Geofence)
+                            ? instance?.Data?.Area
                             : geofence?.Data?.Area;
-                        // TODO: Check if area is null
+                        if (area == null)
+                        {
+                            _logger.LogError($"Area value for this type {instance.Type.ToString()} == null");
+                            break;
+                        }
                         var coordsArray = (List<Coordinate>)
                         (
                             area is List<Coordinate>
