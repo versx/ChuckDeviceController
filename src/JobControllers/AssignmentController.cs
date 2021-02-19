@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.Extensions.Logging;
@@ -22,7 +21,7 @@
         // TODO: private readonly string _timeZone;
         private bool _initialized;
         private long _lastUpdated;
-
+        private readonly System.Timers.Timer _timer;
         private readonly object _assignmentsLock = new object();
 
         #region Singleton
@@ -50,12 +49,18 @@
             _assignmentRepository = new AssignmentRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
 
-            Initialize().ConfigureAwait(false)
+            _timer = new System.Timers.Timer
+            {
+                Interval = 5000
+            };
+            _timer.Elapsed += async (sender, e) => await CheckAssignments().ConfigureAwait(false);
+
+            Start().ConfigureAwait(false)
                         .GetAwaiter()
                         .GetResult();
         }
 
-        public async Task Initialize()
+        public async Task Start()
         {
             lock (_assignmentsLock)
             {
@@ -68,14 +73,15 @@
             {
                 _logger.LogInformation("Starting AssignmentController");
                 _initialized = true;
-                var timer = new System.Timers.Timer
-                {
-                    Interval = 5000
-                };
-                timer.Elapsed += async (sender, e) => await CheckAssignments().ConfigureAwait(false);
-                timer.Start();
+                _timer.Start();
             }
             await Task.CompletedTask.ConfigureAwait(false);
+        }
+
+        public async Task Stop()
+        {
+            _timer?.Stop();
+            await Task.CompletedTask;
         }
 
         public void AddAssignment(Assignment assignment)

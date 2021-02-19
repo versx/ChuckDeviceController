@@ -86,6 +86,7 @@ namespace ChuckDeviceController
                        .AllowAnyMethod();
             }));
 
+            // TODO: Configurable
             // Profiling
             // The services.AddMemoryCache(); code is required - there is a bug in
             // MiniProfiler, if we have not configured MemoryCache, it will fail.
@@ -108,12 +109,8 @@ namespace ChuckDeviceController
             services.AddControllersWithViews();
 
             await InstanceController.Instance.Start().ConfigureAwait(false);
-            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
-
-            if (Config.Webhooks?.Count > 0)
-            {
-                WebhookController.Instance.Start();
-            }
+            await AssignmentController.Instance.Start().ConfigureAwait(false);
+            WebhookController.Instance.Start();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

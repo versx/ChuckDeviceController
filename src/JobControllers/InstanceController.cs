@@ -291,7 +291,7 @@
                     _devices[device.Key] = null;
                 }
             }
-            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
+            await AssignmentController.Instance.Start().ConfigureAwait(false);
         }
 
         #endregion
@@ -312,7 +312,7 @@
         public async Task RemoveDevice(Device device)
         {
             RemoveDevice(device.Uuid);
-            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
+            await AssignmentController.Instance.Start().ConfigureAwait(false);
         }
 
         public void RemoveDevice(string uuid)

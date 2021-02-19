@@ -3,8 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Threading;
+    using System.Threading.Tasks;
 
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Factories;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Services.Queues;
     using ChuckDeviceController.Utilities;
@@ -40,8 +43,18 @@
         private static readonly object _questLock = new object();
         private static readonly object _weatherLock = new object();
 
+        private readonly WebhookRepository _webhookRepository;
+
         private Thread _thread;
         //private readonly System.Timers.Timer _timer;
+
+        #endregion
+
+        #region Singleton
+
+        private static WebhookController _instance;
+        public static WebhookController Instance =>
+            _instance ??= new WebhookController();
 
         #endregion
 
@@ -49,14 +62,9 @@
 
         public bool IsRunning { get; set; }
 
+        public IReadOnlyList<Webhook> Webhooks { get; private set; }
+
         public ushort SleepIntervalS { get; set; }
-
-        #region Singleton
-
-        private static WebhookController _instance;
-        public static WebhookController Instance => _instance ??= new WebhookController();
-
-        #endregion
 
         #endregion
 
@@ -77,6 +85,10 @@
 
             _sentEvents = new List<dynamic>();
 
+            _webhookRepository = new WebhookRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            Reload().ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
             /*
             _timer = new System.Timers.Timer
             {
@@ -120,13 +132,23 @@
             _thread = null;
         }
 
+        public async Task Reload()
+        {
+            // Reload webhooks
+            var webhooks = await _webhookRepository.GetAllAsync();
+            if (Webhooks != webhooks)
+            {
+                Webhooks = webhooks;
+            }
+        }
+
         #region Add
 
         #region Pokemon
 
         public void AddPokemon(Pokemon pokemon)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_pokemonLock)
@@ -140,7 +162,7 @@
 
         public void AddPokemon(IEnumerable<Pokemon> pokemon)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             foreach (var pkmn in pokemon)
@@ -155,7 +177,7 @@
 
         public void AddGym(Gym gym)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_gymLock)
@@ -169,7 +191,7 @@
 
         public void AddEgg(Gym gym)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_eggLock)
@@ -183,7 +205,7 @@
 
         public void AddRaid(Gym gym)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_raidLock)
@@ -197,7 +219,7 @@
 
         public void AddGymInfo(Gym gym)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_gymInfoLock)
@@ -215,7 +237,7 @@
 
         public void AddPokestop(Pokestop pokestop)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_pokestopLock)
@@ -229,7 +251,7 @@
 
         public void AddLure(Pokestop pokestop)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_lureLock)
@@ -243,7 +265,7 @@
 
         public void AddInvasion(Pokestop pokestop)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_invasionLock)
@@ -261,7 +283,7 @@
 
         public void AddQuest(Pokestop pokestop)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_questLock)
@@ -275,7 +297,7 @@
 
         public void AddQuests(IEnumerable<Pokestop> quests)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             foreach (var quest in quests)
@@ -290,7 +312,7 @@
 
         public void AddWeather(Weather weather)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             lock (_weatherLock)
@@ -304,7 +326,7 @@
 
         public void AddWeather(IEnumerable<Weather> weather)
         {
-            if (Startup.Config.Webhooks.Count == 0)
+            if (Webhooks?.Count == 0)
                 return;
 
             foreach (var item in weather)
@@ -325,6 +347,12 @@
         {
             while (IsRunning)
             {
+                if (Webhooks?.Count == 0)
+                {
+                    Thread.Sleep(SleepIntervalS * 1000);
+                    continue;
+                }
+
                 var events = new List<dynamic>();
                 if (_pokemonQueue.Count > 0)
                 {
@@ -472,9 +500,15 @@
                     continue;
                 }
 
-                foreach (var url in Startup.Config.Webhooks)
+                //foreach (var url in Startup.Config.Webhooks)
+                // TODO: Check Webhook types
+                // TODO: Check Webhook areas
+                foreach (var webhook in Webhooks)
                 {
-                    SendEvents(url, events);
+                    if (webhook.Enabled)
+                    {
+                        SendEvents(webhook.Url, events);
+                    }
                 }
 
                 Thread.Sleep(SleepIntervalS * 1000);

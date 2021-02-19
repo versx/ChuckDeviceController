@@ -28,6 +28,8 @@
         ]
         public GeofenceData Data { get; set; }
 
+        #region Helper Methods
+
         public static string GeofenceTypeToString(GeofenceType type)
         {
             return type switch
@@ -47,6 +49,8 @@
                 _ => GeofenceType.Circle,
             };
         }
+
+        #endregion
     }
 
     // TODO: Deserialize by name

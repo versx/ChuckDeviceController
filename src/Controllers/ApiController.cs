@@ -25,6 +25,7 @@
         private readonly InstanceRepository _instanceRepository;
         private readonly AssignmentRepository _assignmentRepository;
         private readonly GeofenceRepository _geofenceRepository;
+        private readonly WebhookRepository _webhookRepository;
 
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
@@ -48,6 +49,7 @@
             _instanceRepository = new InstanceRepository(_context);
             _assignmentRepository = new AssignmentRepository(_context);
             _geofenceRepository = new GeofenceRepository(_context);
+            _webhookRepository = new WebhookRepository(_context);
         }
 
         #endregion
@@ -146,7 +148,7 @@
                     name = geofence.Name,
                     type = geofence.Type.ToString(),
                     count = geofence.Data.Area.GetArrayLength().ToString("N0"),
-                    buttons = $"<div class='btn-group' role='group'><a href='/dashboard/geofence/edit/{Uri.EscapeDataString(geofence.Name)}' role='button' class='btn btn-primary'>Edit</a>",
+                    buttons = $"<a href='/dashboard/geofence/edit/{Uri.EscapeDataString(geofence.Name)}' role='button' class='btn btn-primary'>Edit</a>",
                 });
             }
             return new { data = new { geofences = list } };
@@ -197,6 +199,34 @@
                 });
             }
             return new { data = new { assignments = list } };
+        }
+
+        /// <summary>
+        /// Get all webhook endpoint entries
+        /// </summary>
+        /// <returns>Returns a list of all webhook endpoint objects</returns>
+        [
+            HttpPost("/api/webhooks"),
+            Produces("application/json"),
+        ]
+        public async Task<dynamic> GetWebhooks()
+        {
+            var webhooks = await _webhookRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var webhook in webhooks)
+            {
+                list.Add(new
+                {
+                    name = webhook.Name,
+                    types = string.Join(", ", webhook.Types),
+                    url = webhook.Url,
+                    delay = webhook.Delay,
+                    geofence = webhook.Geofence,
+                    enabled = webhook.Enabled ? "Yes" : "No",
+                    buttons = $"<a href='/dashboard/webhook/edit/{webhook.Name}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
+                });
+            }
+            return new { data = new { webhooks = list } };
         }
 
         /// <summary>

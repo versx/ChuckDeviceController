@@ -43,6 +43,8 @@
 
         public DbSet<Weather> Weather { get; set; }
 
+        public DbSet<Webhook> Webhooks { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Instance>()
@@ -69,6 +71,12 @@
             modelBuilder.Entity<Pokestop>()
                         .Property(nameof(Pokestop.QuestRewards))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<dynamic>()); // TODO: QuestRewardProto
+            modelBuilder.Entity<Webhook>()
+                        .Property(p => p.Types)
+                        .HasConversion(x => Webhook.WebhookTypeToString(x), x => Webhook.StringToWebhookTypes(x));
+            modelBuilder.Entity<Webhook>()
+                        .Property(nameof(Webhook.Data))
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData>());
 
             base.OnModelCreating(modelBuilder);
         }

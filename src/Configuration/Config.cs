@@ -22,9 +22,6 @@
         [JsonPropertyName("db")]
         public DatabaseConfig Database { get; set; }
 
-        [JsonPropertyName("webhooks")]
-        public IReadOnlyList<string> Webhooks { get; set; }
-
         /// <summary>
         /// Save the current configuration object
         /// </summary>
