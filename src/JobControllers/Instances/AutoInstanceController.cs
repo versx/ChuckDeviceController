@@ -413,6 +413,11 @@
             {
                 var first = polygon.FirstOrDefault();
                 var last = polygon.LastOrDefault();
+                // Check null's
+                if (first == null || last == null)
+                {
+                    continue;
+                }
                 // Make sure first and last coords are the same
                 if (first[0] != last[0] ||
                     first[1] != last[1])
@@ -459,6 +464,11 @@
                             // Make sure first and last coords are the same
                             var first = polygon.FirstOrDefault();
                             var last = polygon.LastOrDefault();
+                            // Check null's
+                            if (first == null || last == null)
+                            {
+                                continue;
+                            }
                             // Make sure first and last coords are the same
                             if (first[0] != last[0] ||
                                 first[1] != last[1])
