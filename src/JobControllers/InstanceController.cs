@@ -407,9 +407,7 @@
             }
         }
 
-#pragma warning disable RCS1213 // Remove unused member declaration.
         private async Task RemoveInstance(Instance instance)
-#pragma warning restore RCS1213 // Remove unused member declaration.
         {
             await RemoveInstance(instance.Name).ConfigureAwait(false);
         }
