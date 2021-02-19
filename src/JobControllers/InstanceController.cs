@@ -168,9 +168,13 @@
                         {
                             coordsArray = (area as List<Coordinate>);
                         }
+                        else if (string.IsNullOrEmpty((area as string)))
+                        {
+                            _logger.LogError($"Area value for this type {instance.Type.ToString()} == null");
+                        }
                         else
                         {
-                            coordsArray = JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area));
+                            coordsArray = JsonSerializer.Deserialize<List<Coordinate>>((area as string));
                         }
                         var minLevel = instance.Data.MinimumLevel;
                         var maxLevel = instance.Data.MaximumLevel;
