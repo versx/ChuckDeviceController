@@ -1115,8 +1115,8 @@
                 var split = row.Split(',');
                 if (split.Length != 2 || !IsDoubleValue(split[0]) || !IsDoubleValue(split[1]))
                     continue;
-                var latitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[0]);
-                var longitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[1]);
+                var latitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[0].Trim());
+                var longitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[1].Trim());
                 coords.Add(new Coordinate(double.Parse(latitude), double.Parse(longitude)));
             }
             return coords;
@@ -1143,8 +1143,8 @@
                 var split = row.Split(',');
                 if (split.Length == 2 && IsDoubleValue(split[0]) && IsDoubleValue(split[1]))
                 {
-                    var latitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[0]);
-                    var longitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[1]);
+                    var latitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[0].Trim());
+                    var longitude = string.Format(CultureInfo.InvariantCulture, "{0:0.00000000}", split[1].Trim());
                     coords[index].Add(new Coordinate(double.Parse(latitude), double.Parse(longitude)));
                 }
                 else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
