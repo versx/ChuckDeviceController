@@ -160,16 +160,22 @@
                 case InstanceType.SmartCircleRaid:
                     try
                     {
-                        var area = string.IsNullOrEmpty(instance.Geofence)
-                            ? instance.Data?.Area
+                        List<Coordinate> coordsArray = new List<Coordinate>();
+                        dynamic area = string.IsNullOrEmpty(instance?.Geofence)
+                            ? instance?.Data?.Area
                             : geofence?.Data?.Area;
-                        // TODO: Check if area is null
-                        var coordsArray = (List<Coordinate>)
-                        (
-                            area is List<Coordinate>
-                                ? area
-                                : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
-                        );
+                        if (area is List<Coordinate>)
+                        {
+                            coordsArray = (area as List<Coordinate>);
+                        }
+                        else if (string.IsNullOrEmpty((area as string)))
+                        {
+                            _logger.LogError($"Area value for this type {instance.Type.ToString()} == null");
+                        }
+                        else
+                        {
+                            coordsArray = JsonSerializer.Deserialize<List<Coordinate>>((area as string));
+                        }
                         var minLevel = instance.Data.MinimumLevel;
                         var maxLevel = instance.Data.MaximumLevel;
                         switch (instance.Type)

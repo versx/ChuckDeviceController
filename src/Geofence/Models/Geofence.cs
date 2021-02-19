@@ -99,23 +99,19 @@
             return new Geofence(null, polygon);
         }
 
-        public static List<Geofence> FromPolygons(List<List<Coordinate>> polygons)
-        {
-            return polygons.Select(p => FromPolygon(p))
-                           .ToList();
-        }
+        public static List<Geofence> FromPolygons(List<List<Coordinate>> polygons) => polygons.ConvertAll(p => FromPolygon(p));
 
         public static Geofence FromMultiPolygon(MultiPolygon multiPolygon)
         {
             var polygon = multiPolygon.Select(x => new Coordinate(x[0], x[1]))
                                       .ToList();
-            return FromPolygon(polygon);            
+            return FromPolygon(polygon);
         }
 
         public static List<Geofence> FromMultiPolygons(List<MultiPolygon> multiPolygons)
         {
-            return multiPolygons.Select(p => FromMultiPolygon(p))
-                                .ToList();
+            return multiPolygons.ConvertAll(p => FromMultiPolygon(p))
+;
         }
     }
 }

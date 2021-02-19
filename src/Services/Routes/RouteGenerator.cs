@@ -29,19 +29,16 @@
         #region Singleton
 
         private static RouteGenerator _instance;
-        public static RouteGenerator Instance =>
-            _instance ??= new RouteGenerator();
-
-        #endregion
-
-        #region Constructor
-
-        public RouteGenerator()
+        public static RouteGenerator Instance
         {
-            _spawnpointsRepository = new SpawnpointRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _pokestopRepository = new PokestopRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _gymRepository = new GymRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _cellRepository = new CellRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new RouteGenerator();
+                }
+                return _instance;
+            }
         }
 
         #endregion
@@ -89,11 +86,11 @@
                     i++;
                 } while ((heading == 270 && currentLatLng.Y > endLatLng.Y) || (heading == 90 && currentLatLng.Y < startLatLng.Y));
 
-                currentLatLng = Destination(currentLatLng, 180, (yMod * circleSize * 2));
+                currentLatLng = Destination(currentLatLng, 180, yMod * circleSize * 2);
                 heading = row % 2 == 1
                     ? 270
                     : 90;
-                currentLatLng = Destination(currentLatLng, heading, (xMod * circleSize) * 3);
+                currentLatLng = Destination(currentLatLng, heading, xMod * circleSize * 3);
                 row++;
             }
             return points;
