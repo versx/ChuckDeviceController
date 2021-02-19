@@ -161,7 +161,7 @@
                     try
                     {
                         List<Coordinate> coordsArray = new List<Coordinate>();
-                        var area = string.IsNullOrEmpty(instance?.Geofence)
+                        dynamic area = string.IsNullOrEmpty(instance?.Geofence)
                             ? instance?.Data?.Area
                             : geofence?.Data?.Area;
                         if (area is List<Coordinate>)
