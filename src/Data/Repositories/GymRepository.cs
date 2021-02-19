@@ -9,6 +9,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Geofence.Models;
 
     public class GymRepository : EfCoreRepository<Gym, DeviceControllerContext>
     {
@@ -58,6 +59,19 @@
             {
                 Console.WriteLine($"[GymRepository] AddOrUpdateAsync: {ex}");
             }
+        }
+
+        public async Task<List<Gym>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
+        {
+            var gyms = await GetAllAsync(true).ConfigureAwait(false);
+            return gyms.Where(gym =>
+                gym.Latitude >= bbox.MinimumLatitude &&
+                gym.Latitude <= bbox.MaximumLatitude &&
+                gym.Longitude >= bbox.MinimumLongitude &&
+                gym.Longitude <= bbox.MaximumLongitude &&
+                gym.Updated >= updated &&
+                !gym.Deleted
+            ).ToList();
         }
 
         public async Task<IReadOnlyList<Gym>> GetAllAsync(bool fromCache = true)

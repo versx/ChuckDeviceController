@@ -467,7 +467,7 @@
                             }
                             // Get all existing Pokestops within geofence bounds
                             var bounds = polygon.GetBoundingBox();
-                            var stops = await _pokestopRepository.GetWithin(bounds, 0).ConfigureAwait(false);
+                            var stops = await _pokestopRepository.GetAllAsync(bounds).ConfigureAwait(false);
                             foreach (var stop in stops)
                             {
                                 // Check if Pokestop is within geofence

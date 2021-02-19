@@ -10,6 +10,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Geofence.Models;
 
     public class CellRepository : EfCoreRepository<Cell, DeviceControllerContext>
     {
@@ -19,7 +20,6 @@
             QueryCacheManager.Cache = new MemoryCache(new MemoryCacheOptions());
         }
 
-        /*
         public async Task<IReadOnlyList<Cell>> GetAllAsync(bool fromCache = true)
         {
             if (fromCache)
@@ -28,7 +28,18 @@
             }
             return await base.GetAllAsync();
         }
-        */
+
+        public async Task<List<Cell>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
+        {
+            var cells = await GetAllAsync(true).ConfigureAwait(false);
+            return cells.Where(cell =>
+                cell.Latitude >= bbox.MinimumLatitude &&
+                cell.Latitude <= bbox.MaximumLatitude &&
+                cell.Longitude >= bbox.MinimumLongitude &&
+                cell.Longitude <= bbox.MaximumLongitude &&
+                cell.Updated >= updated
+            ).ToList();
+        }
 
         public async Task<IReadOnlyList<Cell>> GetByIdsAsync(List<ulong> ids, bool fromCache = true)
         {

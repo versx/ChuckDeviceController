@@ -42,6 +42,8 @@
         /// </summary>
         public int Priority { get; set; }
 
+        public IReadOnlyList<Coordinate> Coordinates { get; set; }
+
         #endregion
 
         #region Constructor(s)
@@ -85,6 +87,7 @@
         /// <param name="coordinates">Location polygons of geofence</param>
         public Geofence(string name, List<Coordinate> coordinates) : this(name)
         {
+            Coordinates = coordinates;
             Feature = GeoUtils.LocationsToFeature(coordinates);
             BBox = Feature.Geometry.Envelope;
         }

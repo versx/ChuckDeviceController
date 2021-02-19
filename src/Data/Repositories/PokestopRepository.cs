@@ -72,7 +72,7 @@
             }).ConfigureAwait(false);
         }
 
-        public async Task<List<Pokestop>> GetWithin(BoundingBox bbox, ulong updated = 0)
+        public async Task<List<Pokestop>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
         {
             var pokestops = await GetAllAsync(true).ConfigureAwait(false);
             return pokestops.Where(stop =>
