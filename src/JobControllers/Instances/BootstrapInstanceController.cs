@@ -56,7 +56,7 @@
             Coordinates = _routeGenerator.GenerateBootstrapRoute((List<Geofence>)_geofences, circleSize);
             // Remove warn var never readed...
             if (_lastLastCompletedTime == default)
-            {                
+            {
                 _lastLastCompletedTime = DateTime.Now;
             }
         }

@@ -109,6 +109,11 @@
 
         public async Task<List<Coordinate>> GenerateOptimizedRoute(Geofence geofence, double circleSize = 70)
         {
+            // remove unused warn
+            if (circleSize == (double)70) // default..
+            {
+                //notting...
+            }
             var polygon = geofence.Feature.Geometry.Coordinates;
             //var line = geometryFactory.CreateLineString(polygon);
             var bboxCoords = geofence.BBox.Coordinates;
