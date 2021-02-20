@@ -1,16 +1,13 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Microsoft.Extensions.Caching.Memory;
-    using Z.EntityFramework.Plus;
-
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geofence.Models;
+    using Microsoft.Extensions.Caching.Memory;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Z.EntityFramework.Plus;
 
     public class SpawnpointRepository : EfCoreRepository<Spawnpoint, DeviceControllerContext>
     {
@@ -31,7 +28,7 @@
 
         public async Task<List<Spawnpoint>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
         {
-            var spawnpoints = await GetAllAsync(false).ConfigureAwait(false);
+            IReadOnlyList<Spawnpoint> spawnpoints = await GetAllAsync(false).ConfigureAwait(false);
             return spawnpoints.Where(spawn =>
                 spawn.Latitude >= bbox.MinimumLatitude &&
                 spawn.Latitude <= bbox.MaximumLatitude &&

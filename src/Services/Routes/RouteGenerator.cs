@@ -1,19 +1,15 @@
 ﻿namespace ChuckDeviceController.Services.Routes
 {
+    using ChuckDeviceController.Data.Repositories;
+    using ChuckDeviceController.Geofence;
+    using ChuckDeviceController.Geofence.Models;
+    using Google.Common.Geometry;
+    using NetTopologySuite.Geometries;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-
-    using Google.Common.Geometry;
-    using NetTopologySuite.Geometries;
-
     using Coordinate = ChuckDeviceController.Data.Entities.Coordinate;
-    using ChuckDeviceController.Data.Factories;
-    using ChuckDeviceController.Data.Repositories;
-    using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geofence.Models;
-    using ChuckDeviceController.Geofence;
 
     public class RouteGenerator
     {
@@ -46,7 +42,7 @@
 
         public List<Coordinate> GenerateBootstrapRoute(List<Geofence> geofences, double circleSize = 70)
         {
-            var list = new List<Coordinate>();
+            List<Coordinate> list = new List<Coordinate>();
             geofences.ForEach(geofence =>
                 list.AddRange(GenerateBootstrapRoute(geofence, circleSize)));
             return list;
@@ -54,31 +50,31 @@
 
         public List<Coordinate> GenerateBootstrapRoute(Geofence geofence, double circleSize = 70)
         {
-            var geometryFactory = GeometryFactory.Default;
-            var xMod = Math.Sqrt(0.75);
-            var yMod = Math.Sqrt(0.568);
-            var points = new List<Coordinate>();
+            GeometryFactory geometryFactory = GeometryFactory.Default;
+            double xMod = Math.Sqrt(0.75);
+            double yMod = Math.Sqrt(0.568);
+            List<Coordinate> points = new List<Coordinate>();
 
-            var polygon = geofence.Feature.Geometry.Coordinates;
-            var line = geometryFactory.CreateLineString(polygon);
-            var coords = geofence.BBox.Coordinates;
-            var minLat = coords.Min(x => x.X);
-            var minLon = coords.Min(x => x.Y);
-            var maxLat = coords.Max(x => x.X);
-            var maxLon = coords.Max(x => x.Y);
-            var currentLatLng = new NetTopologySuite.Geometries.Coordinate(maxLat, maxLon);
-            var lastLatLng = new NetTopologySuite.Geometries.Coordinate(minLat, minLon);
-            var startLatLng = Destination(currentLatLng, 90, circleSize * 1.5);
-            var endLatLng = Destination(Destination(lastLatLng, 270, circleSize * 1.5), 180, circleSize);
-            var row = 0;
-            var heading = 270;
-            var i = 0;
+            NetTopologySuite.Geometries.Coordinate[] polygon = geofence.Feature.Geometry.Coordinates;
+            LineString line = geometryFactory.CreateLineString(polygon);
+            NetTopologySuite.Geometries.Coordinate[] coords = geofence.BBox.Coordinates;
+            double minLat = coords.Min(x => x.X);
+            double minLon = coords.Min(x => x.Y);
+            double maxLat = coords.Max(x => x.X);
+            double maxLon = coords.Max(x => x.Y);
+            NetTopologySuite.Geometries.Coordinate currentLatLng = new NetTopologySuite.Geometries.Coordinate(maxLat, maxLon);
+            NetTopologySuite.Geometries.Coordinate lastLatLng = new NetTopologySuite.Geometries.Coordinate(minLat, minLon);
+            NetTopologySuite.Geometries.Coordinate startLatLng = Destination(currentLatLng, 90, circleSize * 1.5);
+            NetTopologySuite.Geometries.Coordinate endLatLng = Destination(Destination(lastLatLng, 270, circleSize * 1.5), 180, circleSize);
+            int row = 0;
+            int heading = 270;
+            int i = 0;
             while (currentLatLng.X > endLatLng.X)
             {
                 do
                 {
-                    var point = new Point(currentLatLng);
-                    var distance = point.Distance(line);
+                    Point point = new Point(currentLatLng);
+                    double distance = point.Distance(line);
                     if (distance <= circleSize || distance == 0 || polygon.Contains(currentLatLng))
                     {
                         points.Add(new Coordinate(currentLatLng.X, currentLatLng.Y));
@@ -99,7 +95,7 @@
 
         public List<Coordinate> GenerateRandomRoute(Geofence geofence, int maxPoints = 3000, double circleSize = 70)
         {
-            var coords = geofence.BBox.Coordinates;
+            NetTopologySuite.Geometries.Coordinate[] coords = geofence.BBox.Coordinates;
             return Calculate
             (
                 new Coordinate(coords[0].X, coords[0].Y),
@@ -113,30 +109,30 @@
 
         public async Task<List<Coordinate>> GenerateOptimizedRoute(Geofence geofence, double circleSize = 70)
         {
-            var polygon = geofence.Feature.Geometry.Coordinates;
+            NetTopologySuite.Geometries.Coordinate[] polygon = geofence.Feature.Geometry.Coordinates;
             //var line = geometryFactory.CreateLineString(polygon);
-            var bboxCoords = geofence.BBox.Coordinates;
-            var minLat = bboxCoords.Min(x => x.X);
-            var minLon = bboxCoords.Min(x => x.Y);
-            var maxLat = bboxCoords.Max(x => x.X);
-            var maxLon = bboxCoords.Max(x => x.Y);
-            var bbox = new BoundingBox
+            NetTopologySuite.Geometries.Coordinate[] bboxCoords = geofence.BBox.Coordinates;
+            double minLat = bboxCoords.Min(x => x.X);
+            double minLon = bboxCoords.Min(x => x.Y);
+            double maxLat = bboxCoords.Max(x => x.X);
+            double maxLon = bboxCoords.Max(x => x.Y);
+            BoundingBox bbox = new BoundingBox
             {
                 MinimumLatitude = minLat,
                 MinimumLongitude = minLon,
                 MaximumLatitude = maxLat,
                 MaximumLongitude = maxLon,
             };
-            var spawnpoints = (await _spawnpointsRepository.GetAllAsync()).ToList();
-            var pokestops = await _pokestopRepository.GetAllAsync(bbox);
-            var gyms = await _gymRepository.GetAllAsync(bbox);
-            var cells = await _cellRepository.GetAllAsync(bbox);
-            var list = new List<Coordinate>();
+            List<Data.Entities.Spawnpoint> spawnpoints = (await _spawnpointsRepository.GetAllAsync()).ToList();
+            List<Data.Entities.Pokestop> pokestops = await _pokestopRepository.GetAllAsync(bbox);
+            List<Data.Entities.Gym> gyms = await _gymRepository.GetAllAsync(bbox);
+            List<Data.Entities.Cell> cells = await _cellRepository.GetAllAsync(bbox);
+            List<Coordinate> list = new List<Coordinate>();
             spawnpoints.ForEach(x => list.Add(new Coordinate(x.Latitude, x.Longitude)));
             pokestops.ForEach(x => list.Add(new Coordinate(x.Latitude, x.Longitude)));
             gyms.ForEach(x => list.Add(new Coordinate(x.Latitude, x.Longitude)));
             //cells.ForEach(x => list.Add(new Coordinate(x.Latitude, x.Longitude)));
-            var s2cells = GetS2Cells(bbox);
+            List<Coordinate> s2cells = GetS2Cells(bbox);
             list.AddRange(s2cells);
             // TODO: Filter if within geofence area
             return list;
@@ -144,21 +140,21 @@
 
         private static List<Coordinate> GetS2Cells(BoundingBox bbox)
         {
-            var regionCoverer = new S2RegionCoverer
+            S2RegionCoverer regionCoverer = new S2RegionCoverer
             {
                 MinLevel = 15,
                 MaxLevel = 15,
                 //MaxCells = 100,
             };
-            var region = new S2LatLngRect(
+            S2LatLngRect region = new S2LatLngRect(
                 S2LatLng.FromDegrees(bbox.MinimumLatitude, bbox.MinimumLongitude),
                 S2LatLng.FromDegrees(bbox.MaximumLatitude, bbox.MaximumLongitude)
             );
-            var cellIds = regionCoverer.GetCovering(region);
-            var list = new List<Coordinate>();
-            foreach (var cellId in cellIds)
+            S2CellUnion cellIds = regionCoverer.GetCovering(region);
+            List<Coordinate> list = new List<Coordinate>();
+            foreach (S2CellId cellId in cellIds)
             {
-                var center = cellId.ToLatLng();
+                S2LatLng center = cellId.ToLatLng();
                 list.Add(new Coordinate(center.LatDegrees, center.LngDegrees));
             }
             // TODO: Check if point is within geofence
@@ -169,8 +165,8 @@
 
         private static List<Coordinate> FilterCoordinates(List<Coordinate> coordinates, ushort stepDistance)
         {
-            var list = new List<Coordinate>();
-            foreach (var coord in coordinates)
+            List<Coordinate> list = new List<Coordinate>();
+            foreach (Coordinate coord in coordinates)
             {
                 // Coordinate is geofenced if in one geofenced area
                 if (GeofenceService.IsPointInPolygon(coord, coordinates))
@@ -180,10 +176,10 @@
                 }
 
                 // Do a check if the radius is in the geofence even if the center is not
-                var count = _rand.Next(0, 6);
-                for (var i = 0; i < count; i++)
+                int count = _rand.Next(0, 6);
+                for (int i = 0; i < count; i++)
                 {
-                    var startLocation = GetNewCoord(coord, stepDistance, 90 + 60 * i);
+                    Coordinate startLocation = GetNewCoord(coord, stepDistance, 90 + 60 * i);
                     if (GeofenceService.IsPointInPolygon(startLocation, coordinates))
                     {
                         list.Add(coord);
@@ -202,17 +198,17 @@
 
         private static List<Coordinate> Calculate(Coordinate location1, Coordinate location2, Coordinate location3, Coordinate location4, int maxPoints = 3000, double circleSize = 70)
         {
-            var allCoords = new List<Coordinate> { location1, location2, location3, location4 };
+            List<Coordinate> allCoords = new List<Coordinate> { location1, location2, location3, location4 };
             double minLat = allCoords.Min(x => x.Latitude);
             double minLon = allCoords.Min(x => x.Longitude);
             double maxLat = allCoords.Max(x => x.Latitude);
             double maxLon = allCoords.Max(x => x.Longitude);
 
-            var r = new Random();
-            var result = new List<Coordinate>();
-            for (var i = 0; i < maxPoints; i++)
+            Random r = new Random();
+            List<Coordinate> result = new List<Coordinate>();
+            for (int i = 0; i < maxPoints; i++)
             {
-                var point = new Coordinate();
+                Coordinate point = new Coordinate();
                 do
                 {
                     //point.Latitude = r.NextDouble() * (maxLat - minLat) + minLat;
@@ -237,19 +233,19 @@
         private static NetTopologySuite.Geometries.Coordinate Destination(NetTopologySuite.Geometries.Coordinate latlng, double heading, double distance)
         {
             heading = (heading + 360) % 360;
-            var rad = Math.PI / 180;
-            var radInv = 180 / Math.PI;
-            var r = 6378137; // approximation of Earth's radius
-            var lon1 = latlng.Y * rad;
-            var lat1 = latlng.X * rad;
-            var rheading = heading * rad;
-            var sinLat1 = Math.Sin(lat1);
-            var cosLat1 = Math.Cos(lat1);
-            var cosDistR = Math.Cos(distance / r);
-            var sinDistR = Math.Sin(distance / r);
-            var lat2 = Math.Asin(sinLat1 * cosDistR + cosLat1 *
+            double rad = Math.PI / 180;
+            double radInv = 180 / Math.PI;
+            int r = 6378137; // approximation of Earth's radius
+            double lon1 = latlng.Y * rad;
+            double lat1 = latlng.X * rad;
+            double rheading = heading * rad;
+            double sinLat1 = Math.Sin(lat1);
+            double cosLat1 = Math.Cos(lat1);
+            double cosDistR = Math.Cos(distance / r);
+            double sinDistR = Math.Sin(distance / r);
+            double lat2 = Math.Asin(sinLat1 * cosDistR + cosLat1 *
                     sinDistR * Math.Cos(rheading));
-            var lon2 = lon1 + Math.Atan2(Math.Sin(rheading) * sinDistR *
+            double lon2 = lon1 + Math.Atan2(Math.Sin(rheading) * sinDistR *
                     cosLat1, cosDistR - sinLat1 * Math.Sin(lat2));
             lon2 *= radInv;
             lon2 = lon2 > 180 ? lon2 - 360 : lon2 < -180 ? lon2 + 360 : lon2;

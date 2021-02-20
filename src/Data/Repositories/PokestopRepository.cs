@@ -1,16 +1,14 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
+    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Geofence.Models;
+    using Microsoft.Extensions.Caching.Memory;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-
-    using Microsoft.Extensions.Caching.Memory;
     using Z.EntityFramework.Plus;
-
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Geofence.Models;
 
     public class PokestopRepository : EfCoreRepository<Pokestop, DeviceControllerContext>
     {
@@ -74,7 +72,7 @@
 
         public async Task<List<Pokestop>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
         {
-            var pokestops = await GetAllAsync(true).ConfigureAwait(false);
+            IReadOnlyList<Pokestop> pokestops = await GetAllAsync(true).ConfigureAwait(false);
             return pokestops.Where(stop =>
                 stop.Latitude >= bbox.MinimumLatitude &&
                 stop.Latitude <= bbox.MaximumLatitude &&

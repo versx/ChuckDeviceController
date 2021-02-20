@@ -1,10 +1,9 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
+    using ChuckDeviceController.Data.Interfaces;
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-
-    using ChuckDeviceController.Data.Interfaces;
 
     [Table("metadata")]
     public class Metadata : BaseEntity, IAggregateRoot

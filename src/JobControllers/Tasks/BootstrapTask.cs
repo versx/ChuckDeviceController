@@ -1,8 +1,7 @@
 ﻿namespace ChuckDeviceController.JobControllers.Tasks
 {
-    using System.Text.Json.Serialization;
-
     using ChuckDeviceController.JobControllers;
+    using System.Text.Json.Serialization;
 
     public class BootstrapTask : ITask
     {

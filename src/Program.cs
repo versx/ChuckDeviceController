@@ -1,12 +1,10 @@
 namespace ChuckDeviceController
 {
-    using System;
-    using System.IO;
-
     using ChuckDeviceController.Configuration;
-
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
+    using System;
+    using System.IO;
 
     // TODO: Add auto bootstrap mode, add 'bootstrap_complete' property to Instance.Data
     // TODO: Fix IV loop adding pokemon
@@ -30,7 +28,7 @@ namespace ChuckDeviceController
     {
         public static void Main(string[] args)
         {
-            var configPath = Path.Combine(
+            string configPath = Path.Combine(
                 Directory.GetCurrentDirectory(),
                 Path.Combine("..", Strings.DefaultConfigFileName)
             );
@@ -41,7 +39,7 @@ namespace ChuckDeviceController
                 return;
             }
             // Start database migrator
-            var migrator = new Data.DatabaseMigrator();
+            Data.DatabaseMigrator migrator = new Data.DatabaseMigrator();
             while (!migrator.Finished)
             {
                 System.Threading.Thread.Sleep(50);
@@ -50,14 +48,16 @@ namespace ChuckDeviceController
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                    //webBuilder.UseUrls("http://localhost:5000", "https://localhost:5001");
-                    webBuilder.UseUrls($"http://{Startup.Config.Interface}:{Startup.Config.Port}"); // TODO: Support for https and port + 1
-                    webBuilder.UseWebRoot(Strings.WebRoot);
-                });
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+.ConfigureWebHostDefaults(webBuilder =>
+{
+    webBuilder.UseStartup<Startup>();
+    //webBuilder.UseUrls("http://localhost:5000", "https://localhost:5001");
+    webBuilder.UseUrls($"http://{Startup.Config.Interface}:{Startup.Config.Port}"); // TODO: Support for https and port + 1
+    webBuilder.UseWebRoot(Strings.WebRoot);
+});
+        }
     }
 }

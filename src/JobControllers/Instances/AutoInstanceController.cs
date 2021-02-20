@@ -1,14 +1,5 @@
 ﻿namespace ChuckDeviceController.JobControllers.Instances
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Google.Common.Geometry;
-    using Microsoft.Extensions.Logging;
-
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Data.Repositories;
@@ -16,6 +7,12 @@
     using ChuckDeviceController.Geofence;
     using ChuckDeviceController.Geofence.Models;
     using ChuckDeviceController.JobControllers.Tasks;
+    using Google.Common.Geometry;
+    using Microsoft.Extensions.Logging;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     public enum AutoType
     {
@@ -88,7 +85,7 @@
             _pokestopRepository = new PokestopRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             _cellRepository = new CellRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
 
-            var timeLeft = DateTime.Now.SecondsUntilMidnight();
+            ulong timeLeft = DateTime.Now.SecondsUntilMidnight();
             _timer = new System.Timers.Timer
             {
                 Interval = timeLeft * 1000,
@@ -123,12 +120,14 @@
                     // TODO: Check InstanceController.NoRequireAccount (username == null and account == null)
 
                     if (_allStops.Count == 0)
+                    {
                         return null;
+                    }
 
                     if (_todayStops.Count == 0)
                     {
                         // Check last completed date
-                        var now = DateTime.UtcNow.ToTotalSeconds();
+                        ulong now = DateTime.UtcNow.ToTotalSeconds();
                         if (now - _lastCompletionCheck >= 600)
                         {
                             if (_completionDate == default)
@@ -140,8 +139,8 @@
                         }
                         _lastCompletionCheck = now;
 
-                        var ids = _allStops.ConvertAll(x => x.Id);
-                        var newStops = new List<Pokestop>();
+                        List<string> ids = _allStops.ConvertAll(x => x.Id);
+                        List<Pokestop> newStops = new List<Pokestop>();
                         try
                         {
                             newStops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
@@ -151,13 +150,13 @@
                             _logger.LogError($"[{Name}] Failed to get list of Pokestops with ids {string.Join(",", ids)}: {ex}");
                         }
 
-                        foreach (var stop in newStops)
+                        foreach (Pokestop stop in newStops)
                         {
                             if (!_todayStopsTries.ContainsKey(stop.Id))
                             {
                                 _todayStopsTries.Add(stop.Id, 0);
                             }
-                            var count = _todayStopsTries[stop.Id];
+                            int count = _todayStopsTries[stop.Id];
                             if (stop.QuestType == null && stop.Enabled && count <= 5)
                             {
                                 _todayStops.Add(stop.Id, stop);
@@ -223,17 +222,19 @@
                     Pokestop pokestop = null;
                     if (lastLat.HasValue && lastLon.HasValue)
                     {
-                        var current = new Coordinate(lastLat.Value, lastLon.Value);
-                        var todayStopsC = _todayStops;
+                        Coordinate current = new Coordinate(lastLat.Value, lastLon.Value);
+                        Dictionary<string, Pokestop> todayStopsC = _todayStops;
                         if (todayStopsC.Count == 0)
+                        {
                             return null;
+                        }
 
                         Pokestop closest = null;
-                        var closestDistance = 10000000000000000d;
-                        foreach (var (stopId, stop) in todayStopsC)
+                        double closestDistance = 10000000000000000d;
+                        foreach ((string stopId, Pokestop stop) in todayStopsC)
                         {
-                            var coord = new Coordinate(stop.Longitude, stop.Latitude);
-                            var dist = current.DistanceTo(coord);
+                            Coordinate coord = new Coordinate(stop.Longitude, stop.Latitude);
+                            double dist = current.DistanceTo(coord);
                             if (dist < closestDistance)
                             {
                                 closest = stop;
@@ -241,44 +242,53 @@
                             }
                         }
                         if (closest == null)
+                        {
                             return null;
+                        }
 
                         newLat = closest.Latitude;
                         newLon = closest.Longitude;
                         pokestop = closest;
 
-                        var nearbyPokestops = new List<Pokestop>();
-                        var pokestopCoord = new Coordinate(pokestop.Latitude, pokestop.Longitude);
-                        foreach (var (id, stop) in todayStopsC)
+                        List<Pokestop> nearbyPokestops = new List<Pokestop>();
+                        Coordinate pokestopCoord = new Coordinate(pokestop.Latitude, pokestop.Longitude);
+                        foreach ((string id, Pokestop stop) in todayStopsC)
                         {
                             if (pokestopCoord.DistanceTo(new Coordinate(stop.Latitude, stop.Longitude)) <= 80)
                             {
                                 nearbyPokestops.Add(stop);
                             }
                         }
-                        foreach (var stop in nearbyPokestops)
+                        foreach (Pokestop stop in nearbyPokestops)
                         {
-                            var index = _todayStops.Keys.ToList().IndexOf(stop.Id);
+                            int index = _todayStops.Keys.ToList().IndexOf(stop.Id);
                             if (index >= 0)
                             {
                                 _todayStops.Remove(stop.Id);
                             }
                         }
 
-                        var now = DateTime.UtcNow.ToTotalSeconds();
+                        ulong now = DateTime.UtcNow.ToTotalSeconds();
                         if (lastTime == 0)
                         {
                             encounterTime = now;
                         }
                         else
                         {
-                            var encounterTimeT = lastTime + GetCooldownAmount(closestDistance);
+                            double encounterTimeT = lastTime + GetCooldownAmount(closestDistance);
                             if (encounterTimeT < now)
+                            {
                                 encounterTime = now;
+                            }
                             else
+                            {
                                 encounterTime = (ulong)encounterTimeT;
+                            }
+
                             if (encounterTime - now >= 7200)
+                            {
                                 encounterTime = now + 7200;
+                            }
                         }
                         if (pokestop != null)
                         {
@@ -287,9 +297,12 @@
                     }
                     else
                     {
-                        var stop = _todayStops.FirstOrDefault().Value;
+                        Pokestop stop = _todayStops.FirstOrDefault().Value;
                         if (stop == null)
+                        {
                             return null;
+                        }
+
                         newLat = stop.Latitude;
                         newLon = stop.Longitude;
                         pokestop = stop;
@@ -312,14 +325,14 @@
                         // TODO: 
                     }
 
-                    var delayT = DateTime.UtcNow.ToTotalSeconds() - encounterTime;
-                    var delay = Convert.ToDouble(delayT == 0 ? 0 : delayT + 1);
+                    ulong delayT = DateTime.UtcNow.ToTotalSeconds() - encounterTime;
+                    double delay = Convert.ToDouble(delayT == 0 ? 0 : delayT + 1);
                     _logger.LogDebug($"[{Name}] Delaying by {delay}");
                     if (_todayStops.Count == 0)
                     {
                         _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds();
-                        var ids = _allStops.ConvertAll(x => x.Id);
-                        var newStops = new List<Pokestop>();
+                        List<string> ids = _allStops.ConvertAll(x => x.Id);
+                        List<Pokestop> newStops = new List<Pokestop>();
                         try
                         {
                             newStops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
@@ -328,7 +341,7 @@
                         {
                             _logger.LogError($"[{Name}] Failed to get list of Pokestops by ids {string.Join(",", ids)}: {ex}");
                         }
-                        foreach (var stop in newStops)
+                        foreach (Pokestop stop in newStops)
                         {
                             if (stop.QuestType == null && stop.Enabled)
                             {
@@ -366,21 +379,21 @@
                 case AutoType.Quest:
                     if (_bootstrapCellIds.Count > 0)
                     {
-                        var totalCount = (double)_bootstrapTotalCount;
-                        var count = (double)(totalCount - _bootstrapCellIds.Count);
-                        var bootstrapPercentage = totalCount > 0
+                        double totalCount = _bootstrapTotalCount;
+                        double count = (double)(totalCount - _bootstrapCellIds.Count);
+                        double bootstrapPercentage = totalCount > 0
                             ? count / totalCount * 100.0
                             : 100d;
                         return $"Bootstrapping {count:N0}/{totalCount:N0} ({Math.Round(bootstrapPercentage, 2)}%)";
                     }
-                    var ids = _allStops.ConvertAll(x => x.Id);
-                    var currentCountDb = (double)await GetQuestCount(ids).ConfigureAwait(false);
-                    var maxCount = (double)_allStops.Count;
-                    var currentCount = (double)(maxCount - _todayStops.Count);
-                    var percentage = maxCount > 0
+                    List<string> ids = _allStops.ConvertAll(x => x.Id);
+                    double currentCountDb = await GetQuestCount(ids).ConfigureAwait(false);
+                    double maxCount = _allStops.Count;
+                    double currentCount = (double)(maxCount - _todayStops.Count);
+                    double percentage = maxCount > 0
                         ? currentCount / maxCount * 100.0
                         : 100d;
-                    var percentageReal = maxCount > 0
+                    double percentageReal = maxCount > 0
                         ? currentCountDb / maxCount * 100.0
                         : 100d;
                     return $"Status: {currentCountDb:N0}|{currentCount:N0}/{maxCount:N0} ({Math.Round(percentageReal, 2)}|{Math.Round(percentage, 2)}%{(_completionDate != default ? $", Completed: @ {_completionDate}" : "")})";
@@ -406,13 +419,13 @@
         private async Task Bootstrap()
         {
             _logger.LogInformation($"[{Name}] Checking Bootstrap Status...");
-            var start = DateTime.UtcNow;
-            var totalCount = 0;
-            var missingCellIds = new List<ulong>();
-            foreach (var polygon in MultiPolygon)
+            DateTime start = DateTime.UtcNow;
+            int totalCount = 0;
+            List<ulong> missingCellIds = new List<ulong>();
+            foreach (MultiPolygon polygon in MultiPolygon)
             {
-                var first = polygon.FirstOrDefault();
-                var last = polygon.LastOrDefault();
+                Polygon first = polygon.FirstOrDefault();
+                Polygon last = polygon.LastOrDefault();
                 // Check null's
                 if (first == null || last == null)
                 {
@@ -425,9 +438,9 @@
                     polygon.Add(first);
                 }
 
-                var s2CellIds = polygon.GetS2CellIDs(15, 15, int.MaxValue);
+                List<ulong> s2CellIds = polygon.GetS2CellIDs(15, 15, int.MaxValue);
                 totalCount += s2CellIds.Count;
-                var cells = new List<Cell>();
+                List<Cell> cells = new List<Cell>();
                 try
                 {
                     cells = await GetCellsByIDs(s2CellIds).ConfigureAwait(false);
@@ -436,8 +449,8 @@
                 {
                     _logger.LogError($"[{Name}] Error: {ex}");
                 }
-                var existingCellIds = cells.Select(x => x.Id);
-                foreach (var s2cellId in s2CellIds)
+                IEnumerable<ulong> existingCellIds = cells.Select(x => x.Id);
+                foreach (ulong s2cellId in s2CellIds)
                 {
                     // If Cell Id doesn't exist, add to bootstrap list
                     if (!existingCellIds.Contains(s2cellId))
@@ -457,13 +470,13 @@
             {
                 case AutoType.Quest:
                     _allStops.Clear();
-                    foreach (var polygon in MultiPolygon)
+                    foreach (MultiPolygon polygon in MultiPolygon)
                     {
                         try
                         {
                             // Make sure first and last coords are the same
-                            var first = polygon.FirstOrDefault();
-                            var last = polygon.LastOrDefault();
+                            Polygon first = polygon.FirstOrDefault();
+                            Polygon last = polygon.LastOrDefault();
                             // Check null's
                             if (first == null || last == null)
                             {
@@ -476,9 +489,9 @@
                                 polygon.Add(first);
                             }
                             // Get all existing Pokestops within geofence bounds
-                            var bounds = polygon.GetBoundingBox();
-                            var stops = await _pokestopRepository.GetAllAsync(bounds).ConfigureAwait(false);
-                            foreach (var stop in stops)
+                            BoundingBox bounds = polygon.GetBoundingBox();
+                            List<Pokestop> stops = await _pokestopRepository.GetAllAsync(bounds).ConfigureAwait(false);
+                            foreach (Pokestop stop in stops)
                             {
                                 // Check if Pokestop is within geofence
                                 if (GeofenceService.InPolygon(polygon, stop.Latitude, stop.Longitude))
@@ -495,7 +508,7 @@
                     _todayStops.Clear();
                     _todayStopsTries.Clear();
                     _completionDate = default;
-                    foreach (var stop in _allStops)
+                    foreach (Pokestop stop in _allStops)
                     {
                         if (stop.QuestType == null && stop.Enabled)
                         {
@@ -512,12 +525,14 @@
         private async Task ClearQuests()
         {
             _timer.Stop();
-            var now = DateTime.Now.SecondsUntilMidnight();
+            ulong now = DateTime.Now.SecondsUntilMidnight();
             _timer.Interval = now == 0 ? 1000 : now * 1000;
             _timer.Start();
 
             if (_shouldExit)
+            {
                 return;
+            }
 
             if (_allStops.Count == 0)
             {
@@ -525,7 +540,7 @@
                 return;
             }
             _logger.LogDebug($"[{Name}] Getting pokestop ids");
-            var ids = _allStops.Select(x => x.Id);
+            IEnumerable<string> ids = _allStops.Select(x => x.Id);
             _logger.LogInformation($"[{Name}] Clearing Quests for ids: {string.Join(",", ids)}");
             try
             {
@@ -535,32 +550,36 @@
             {
                 _logger.LogError($"[{Name}] Failed to clear quests: {ex}");
                 if (_shouldExit)
+                {
                     return;
+                }
             }
             await Update().ConfigureAwait(false);
         }
 
         private async Task<BootstrapTask> GetBootstrapTask()
         {
-            var target = _bootstrapCellIds.PopLast(out _bootstrapCellIds);
+            ulong target = _bootstrapCellIds.PopLast(out _bootstrapCellIds);
             if (target == default)
+            {
                 return null;
+            }
 
-            var cell = new S2Cell(new S2CellId(target));
-            var center = cell.Center;
-            var point = new S2Point(center.X, center.Y, center.Z);
-            var latlng = new S2LatLng(point);
+            S2Cell cell = new S2Cell(new S2CellId(target));
+            S2Point center = cell.Center;
+            S2Point point = new S2Point(center.X, center.Y, center.Z);
+            S2LatLng latlng = new S2LatLng(point);
             // Get all cells touching a 630 (-5m for error) circle at center
             const double radians = 0.00009799064306948; // 625m
-            var circle = S2Cap.FromAxisHeight(center, (radians * radians) / 2);
-            var coverer = new S2RegionCoverer
+            S2Cap circle = S2Cap.FromAxisHeight(center, (radians * radians) / 2);
+            S2RegionCoverer coverer = new S2RegionCoverer
             {
                 MinLevel = 15,
                 MaxLevel = 15,
                 MaxCells = 100
             };
-            var cellIds = coverer.GetCovering(circle);
-            foreach (var cellId in cellIds)
+            S2CellUnion cellIds = coverer.GetCovering(circle);
+            foreach (S2CellId cellId in cellIds)
             {
                 if (_bootstrapCellIds.Contains(cellId.Id))
                 {
@@ -591,14 +610,14 @@
             const double MAX_COUNT = 10000.0;
             if (ids.Count > MAX_COUNT)
             {
-                var list = new List<Cell>();
-                var count = Math.Ceiling(ids.Count / MAX_COUNT);
-                for (var i = 0; i < count; i++)
+                List<Cell> list = new List<Cell>();
+                double count = Math.Ceiling(ids.Count / MAX_COUNT);
+                for (int i = 0; i < count; i++)
                 {
-                    var start = (int)MAX_COUNT * i;
-                    var end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
-                    var slice = ids.Slice(start, end);
-                    var result = await GetCellsByIDs(slice).ConfigureAwait(false);
+                    int start = (int)MAX_COUNT * i;
+                    int end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
+                    List<ulong> slice = ids.Slice(start, end);
+                    List<Cell> result = await GetCellsByIDs(slice).ConfigureAwait(false);
                     if (result.Count > 0)
                     {
                         result.ForEach(x => list.Add(x));
@@ -618,14 +637,14 @@
             const double MAX_COUNT = 10000.0;
             if (ids.Count > MAX_COUNT)
             {
-                var result = 0UL;
-                var count = Math.Ceiling(ids.Count / MAX_COUNT);
-                for (var i = 0; i < count; i++)
+                ulong result = 0UL;
+                double count = Math.Ceiling(ids.Count / MAX_COUNT);
+                for (int i = 0; i < count; i++)
                 {
-                    var start = (int)MAX_COUNT * i;
-                    var end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
-                    var slice = ids.Slice(start, end);
-                    var qResult = await GetQuestCount(slice).ConfigureAwait(false);
+                    int start = (int)MAX_COUNT * i;
+                    int end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
+                    List<string> slice = ids.Slice(start, end);
+                    ulong qResult = await GetQuestCount(slice).ConfigureAwait(false);
                     if (qResult > 0)
                     {
                         result += qResult;
@@ -637,7 +656,7 @@
             {
                 return 0;
             }
-            var pokestops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
+            List<Pokestop> pokestops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
             return (ulong)pokestops.Where(x => !x.Deleted &&
                                                x.QuestType.HasValue &&
                                                x.QuestType != null).ToList().Count;

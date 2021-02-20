@@ -1,14 +1,12 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
+    using ChuckDeviceController.Data.Entities;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Memory;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Caching.Memory;
     using Z.EntityFramework.Plus;
-
-    using ChuckDeviceController.Data.Entities;
 
     /// <summary>
     /// "There's some repetition here - couldn't we have some the sync methods call the async?"
@@ -32,19 +30,19 @@
 
         public virtual async Task<TEntity> GetByIdAsync(uint id)
         {
-            var keyValues = new object[] { id };
+            object[] keyValues = new object[] { id };
             return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
         public virtual async Task<TEntity> GetByIdAsync(ulong id)
         {
-            var keyValues = new object[] { id };
+            object[] keyValues = new object[] { id };
             return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
         public virtual async Task<TEntity> GetByIdAsync(string id)
         {
-            var keyValues = new object[] { id };
+            object[] keyValues = new object[] { id };
             return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
@@ -54,10 +52,10 @@
 
         public virtual async Task<List<TEntity>> GetByIdsAsync(List<string> ids)
         {
-            var list = new List<TEntity>();
-            foreach (var id in ids)
+            List<TEntity> list = new List<TEntity>();
+            foreach (string id in ids)
             {
-                var item = await GetByIdAsync(id).ConfigureAwait(false);
+                TEntity item = await GetByIdAsync(id).ConfigureAwait(false);
                 list.Add(item);
             }
             return list;

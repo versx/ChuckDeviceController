@@ -24,9 +24,9 @@
             get
             {
                 // Create a DateTime value.
-                var dtIn = DateTime.UtcNow.AddSeconds(TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalSeconds);
+                DateTime dtIn = DateTime.UtcNow.AddSeconds(TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalSeconds);
                 // Retrieve a CultureInfo object.
-                var invC = CultureInfo.InvariantCulture;
+                CultureInfo invC = CultureInfo.InvariantCulture;
                 return dtIn.ToString("r", invC);
             }
         }

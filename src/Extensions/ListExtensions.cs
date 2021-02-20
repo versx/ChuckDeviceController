@@ -12,11 +12,11 @@
         /// </summary>
         public static void Shuffle<T>(this IList<T> ts)
         {
-            var count = ts.Count;
-            for (var i = 0; i < count - 1; ++i)
+            int count = ts.Count;
+            for (int i = 0; i < count - 1; ++i)
             {
-                var r = _rand.Next(i, count);
-                var tmp = ts[i];
+                int r = _rand.Next(i, count);
+                T tmp = ts[i];
                 ts[i] = ts[r];
                 ts[r] = tmp;
             }

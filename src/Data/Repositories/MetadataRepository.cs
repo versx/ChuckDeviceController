@@ -1,11 +1,9 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
-    using System;
-
-    using Microsoft.EntityFrameworkCore;
-
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using Microsoft.EntityFrameworkCore;
+    using System;
 
     public class MetadataRepository : EfCoreRepository<Metadata, DeviceControllerContext>
     {
@@ -18,7 +16,7 @@
         {
             try
             {
-                var result = _dbContext.Database.ExecuteSqlRaw(sql);
+                int result = _dbContext.Database.ExecuteSqlRaw(sql);
                 Console.WriteLine($"[RawSql] Result: {result}");
                 return result == 0;
             }

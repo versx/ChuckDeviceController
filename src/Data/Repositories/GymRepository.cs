@@ -1,15 +1,13 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
+    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Geofence.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-
     using Z.EntityFramework.Plus;
-
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Geofence.Models;
 
     public class GymRepository : EfCoreRepository<Gym, DeviceControllerContext>
     {
@@ -63,7 +61,7 @@
 
         public async Task<List<Gym>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
         {
-            var gyms = await GetAllAsync(true).ConfigureAwait(false);
+            IReadOnlyList<Gym> gyms = await GetAllAsync(true).ConfigureAwait(false);
             return gyms.Where(gym =>
                 gym.Latitude >= bbox.MinimumLatitude &&
                 gym.Latitude <= bbox.MaximumLatitude &&

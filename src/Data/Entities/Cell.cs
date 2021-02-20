@@ -1,9 +1,8 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
+    using ChuckDeviceController.Data.Interfaces;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-
-    using ChuckDeviceController.Data.Interfaces;
 
     [Table("s2cell")]
     public class Cell : BaseEntity, IAggregateRoot

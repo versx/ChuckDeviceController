@@ -1,14 +1,11 @@
 ﻿namespace ChuckDeviceController.Data
 {
+    using ChuckDeviceController.Extensions;
+    using POGOProtos.Rpc;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Text.Json.Serialization;
-
-    using POGOProtos.Rpc;
-
-    using ChuckDeviceController.Extensions;
-
     using InvasionCharacter = POGOProtos.Rpc.EnumWrapper.Types.InvasionCharacter;
 
     public class GameMaster
@@ -50,18 +47,12 @@
         #region Singleton
 
         private static GameMaster _instance;
-        public static GameMaster Instance
-        {
-            get
-            {
-                return _instance ??= LoadInit<GameMaster>(
+        public static GameMaster Instance => _instance ??= LoadInit<GameMaster>(
                         Path.Combine(
                             Strings.DataFolder,
                             MasterFileName
                         )
                     );
-            }
-        }
 
         #endregion
 
@@ -80,11 +71,13 @@
         public static PokedexPokemon GetPokemon(uint pokemonId, uint formId)
         {
             if (!Instance.Pokedex.ContainsKey(pokemonId))
+            {
                 return null;
+            }
 
-            var pkmn = Instance.Pokedex[pokemonId];
-            var useForm = !pkmn.Attack.HasValue && formId > 0 && pkmn.Forms.ContainsKey(formId);
-            var pkmnForm = useForm ? pkmn.Forms[formId] : pkmn;
+            PokedexPokemon pkmn = Instance.Pokedex[pokemonId];
+            bool useForm = !pkmn.Attack.HasValue && formId > 0 && pkmn.Forms.ContainsKey(formId);
+            PokedexPokemon pkmnForm = useForm ? pkmn.Forms[formId] : pkmn;
             pkmnForm.Name = pkmn.Name;
             return pkmnForm;
         }
@@ -96,7 +89,7 @@
                 throw new FileNotFoundException($"{filePath} file not found.", filePath);
             }
 
-            var data = File.ReadAllText(filePath);
+            string data = File.ReadAllText(filePath);
             if (string.IsNullOrEmpty(data))
             {
                 //_logger.Error($"{filePath} database is empty.");

@@ -1,16 +1,15 @@
 ﻿namespace ChuckDeviceController.Data.Factories
 {
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
     internal static class DbContextFactory
     {
         public static DeviceControllerContext CreateDeviceControllerContext(string connectionString)// where T : DbContext
         {
-            var optionsBuilder = new DbContextOptionsBuilder<DeviceControllerContext>();
+            DbContextOptionsBuilder<DeviceControllerContext> optionsBuilder = new DbContextOptionsBuilder<DeviceControllerContext>();
             //optionsBuilder.UseMySQL(connectionString);
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 

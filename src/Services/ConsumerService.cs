@@ -1,26 +1,22 @@
 ﻿namespace ChuckDeviceController.Services
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    using Google.Common.Geometry;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
-    using POGOProtos.Rpc;
-
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Factories;
-    using ChuckDeviceController.Data.Interfaces;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Net.Webhooks;
     using ChuckDeviceController.Services.Models;
+    using Google.Common.Geometry;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+    using POGOProtos.Rpc;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     // TODO: Use Redis rpush/blpop event to send data (maybe create seperate service for db parsing)
 
@@ -312,27 +308,27 @@
         {
             // TODO: Use .Take(MaxConcurrency) instead of looping full list
 
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            using (var scope = _scopeFactory.CreateScope())
+            ulong now = DateTime.UtcNow.ToTotalSeconds();
+            using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
-                using var ctx = dbFactory.CreateDbContext();
-                var repo = new CellRepository(ctx);
-                var stopwatch = new Stopwatch();
-                var updatedCells = new List<Cell>();
+                IDbContextFactory<DeviceControllerContext> dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using DeviceControllerContext ctx = dbFactory.CreateDbContext();
+                CellRepository repo = new CellRepository(ctx);
+                Stopwatch stopwatch = new Stopwatch();
+                List<Cell> updatedCells = new List<Cell>();
                 stopwatch.Start();
                 lock (_cellsLock)
                 {
                     //_logger.LogWarning($"Cell count before: {_cells.Count}");
-                    var count = Math.Min(MaxConcurrency, _cells.Count);
-                    var cells = _cells.GetRange(0, count);
+                    int count = Math.Min(MaxConcurrency, _cells.Count);
+                    List<ulong> cells = _cells.GetRange(0, count);
                     _cells.RemoveRange(0, count);
                     //_logger.LogWarning($"Cell count after: {_cells.Count}");
-                    foreach (var cellId in cells)
+                    foreach (ulong cellId in cells)
                     {
                         // NOTE: Can't await within lock body, call awaiter synchronously
-                        var s2cell = new S2Cell(new S2CellId(cellId));
-                        var center = s2cell.RectBound.Center;
+                        S2Cell s2cell = new S2Cell(new S2CellId(cellId));
+                        S2LatLng center = s2cell.RectBound.Center;
                         updatedCells.Add(new Cell
                         {
                             Id = cellId,
@@ -403,22 +399,22 @@
 
         private async Task UpdateWeather()
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            using (var scope = _scopeFactory.CreateScope())
+            ulong now = DateTime.UtcNow.ToTotalSeconds();
+            using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
-                using var ctx = dbFactory.CreateDbContext();
-                var repo = new WeatherRepository(ctx);
-                var stopwatch = new Stopwatch();
-                var updatedWeather = new List<Weather>();
+                IDbContextFactory<DeviceControllerContext> dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using DeviceControllerContext ctx = dbFactory.CreateDbContext();
+                WeatherRepository repo = new WeatherRepository(ctx);
+                Stopwatch stopwatch = new Stopwatch();
+                List<Weather> updatedWeather = new List<Weather>();
                 stopwatch.Start();
                 lock (_weatherLock)
                 {
-                    foreach (var weather in _clientWeather)
+                    foreach (ClientWeatherProto weather in _clientWeather)
                     {
-                        var s2cell = new S2Cell(new S2CellId((ulong)weather.S2CellId));
-                        var center = s2cell.RectBound.Center;
-                        var alert = weather.Alerts?.FirstOrDefault();
+                        S2Cell s2cell = new S2Cell(new S2CellId((ulong)weather.S2CellId));
+                        S2LatLng center = s2cell.RectBound.Center;
+                        WeatherAlertProto alert = weather.Alerts?.FirstOrDefault();
                         updatedWeather.Add(new Weather
                         {
                             Id = (long)s2cell.Id.Id,
@@ -455,29 +451,29 @@
 
         private async Task UpdateForts()
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
-                using var ctx = dbFactory.CreateDbContext();
-                var pokestopRepository = new PokestopRepository(ctx);
-                var gymRepository = new GymRepository(ctx);
-                var stopwatch = new Stopwatch();
-                var updatedPokestops = new List<Pokestop>();
-                var updatedGyms = new List<Gym>();
+                IDbContextFactory<DeviceControllerContext> dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using DeviceControllerContext ctx = dbFactory.CreateDbContext();
+                PokestopRepository pokestopRepository = new PokestopRepository(ctx);
+                GymRepository gymRepository = new GymRepository(ctx);
+                Stopwatch stopwatch = new Stopwatch();
+                List<Pokestop> updatedPokestops = new List<Pokestop>();
+                List<Gym> updatedGyms = new List<Gym>();
                 stopwatch.Start();
                 lock (_fortsLock)
                 {
-                    var count = Math.Min(MaxConcurrency, _forts.Count);
-                    var forts = _forts.GetRange(0, count);
+                    int count = Math.Min(MaxConcurrency, _forts.Count);
+                    List<dynamic> forts = _forts.GetRange(0, count);
                     _forts.RemoveRange(0, count);
-                    foreach (var item in forts)
+                    foreach (dynamic item in forts)
                     {
-                        var cellId = Convert.ToUInt64(item.cell);
-                        var fort = (PokemonFortProto)item.data;
+                        dynamic cellId = Convert.ToUInt64(item.cell);
+                        PokemonFortProto fort = (PokemonFortProto)item.data;
                         switch (fort.FortType)
                         {
                             case FortType.Gym:
-                                var gym = new Gym(cellId, fort);
+                                Gym gym = new Gym(cellId, fort);
                                 WebhookController.Instance.AddGym(gym);
                                 updatedGyms.Add(gym);
                                 if (!_gymIdsPerCell.ContainsKey(cellId))
@@ -487,7 +483,7 @@
                                 _gymIdsPerCell[cellId].Add(fort.FortId);
                                 break;
                             case FortType.Checkpoint:
-                                var pokestop = new Pokestop(cellId, fort);
+                                Pokestop pokestop = new Pokestop(cellId, fort);
                                 WebhookController.Instance.AddPokestop(pokestop);
                                 updatedPokestops.Add(pokestop);
                                 if (!_stopIdsPerCell.ContainsKey(cellId))
@@ -518,25 +514,25 @@
 
         private async Task UpdateFortDetails()
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            using (var scope = _scopeFactory.CreateScope())
+            ulong now = DateTime.UtcNow.ToTotalSeconds();
+            using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
-                using var ctx = dbFactory.CreateDbContext();
-                var pokestopRepository = new PokestopRepository(ctx);
-                var gymRepository = new GymRepository(ctx);
-                var stopwatch = new Stopwatch();
-                var updatedPokestops = new List<Pokestop>();
-                var updatedGyms = new List<Gym>();
+                IDbContextFactory<DeviceControllerContext> dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using DeviceControllerContext ctx = dbFactory.CreateDbContext();
+                PokestopRepository pokestopRepository = new PokestopRepository(ctx);
+                GymRepository gymRepository = new GymRepository(ctx);
+                Stopwatch stopwatch = new Stopwatch();
+                List<Pokestop> updatedPokestops = new List<Pokestop>();
+                List<Gym> updatedGyms = new List<Gym>();
                 stopwatch.Start();
                 lock (_fortDetailsLock)
                 {
-                    foreach (var details in _fortDetails)
+                    foreach (FortDetailsOutProto details in _fortDetails)
                     {
                         switch (details.FortType)
                         {
                             case FortType.Gym:
-                                var gym = gymRepository.GetByIdAsync(details.Id)
+                                Gym gym = gymRepository.GetByIdAsync(details.Id)
                                                        .ConfigureAwait(false)
                                                        .GetAwaiter()
                                                        .GetResult();
@@ -549,7 +545,7 @@
                                 }
                                 break;
                             case FortType.Checkpoint:
-                                var pokestop = pokestopRepository.GetByIdAsync(details.Id)
+                                Pokestop pokestop = pokestopRepository.GetByIdAsync(details.Id)
                                                                  .ConfigureAwait(false)
                                                                  .GetAwaiter()
                                                                  .GetResult();
@@ -584,33 +580,33 @@
         private async Task UpdateGymGetInfo()
         {
             //var now = DateTime.UtcNow.ToTotalSeconds();
-            using (var scope = _scopeFactory.CreateScope())
+            using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
-                using var ctx = dbFactory.CreateDbContext();
-                var gymRepository = new GymRepository(ctx);
-                var trainerRepository = new TrainerRepository(ctx);
-                var gymDefenderRepository = new GymDefenderRepository(ctx);
-                var stopwatch = new Stopwatch();
-                var updatedGyms = new List<Gym>();
-                var updatedDefenders = new List<GymDefender>();
-                var updatedTrainers = new List<Trainer>();
+                IDbContextFactory<DeviceControllerContext> dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using DeviceControllerContext ctx = dbFactory.CreateDbContext();
+                GymRepository gymRepository = new GymRepository(ctx);
+                TrainerRepository trainerRepository = new TrainerRepository(ctx);
+                GymDefenderRepository gymDefenderRepository = new GymDefenderRepository(ctx);
+                Stopwatch stopwatch = new Stopwatch();
+                List<Gym> updatedGyms = new List<Gym>();
+                List<GymDefender> updatedDefenders = new List<GymDefender>();
+                List<Trainer> updatedTrainers = new List<Trainer>();
                 stopwatch.Start();
                 lock (_gymInfosLock)
                 {
-                    foreach (var gymInfo in _gymInfos)
+                    foreach (GymGetInfoOutProto gymInfo in _gymInfos)
                     {
                         if (gymInfo.GymStatusAndDefenders == null)
                         {
                             _logger.LogWarning($"[ConsumerService] Invalid GymStatusAndDefenders provided, skipping...\n: {gymInfo}");
                             continue;
                         }
-                        var id = gymInfo.GymStatusAndDefenders.PokemonFortProto.FortId;
-                        var gymDefenders = gymInfo.GymStatusAndDefenders.GymDefender;
+                        string id = gymInfo.GymStatusAndDefenders.PokemonFortProto.FortId;
+                        Google.Protobuf.Collections.RepeatedField<GymDefenderProto> gymDefenders = gymInfo.GymStatusAndDefenders.GymDefender;
 
-                        foreach (var gymDefender in gymDefenders)
+                        foreach (GymDefenderProto gymDefender in gymDefenders)
                         {
-                            var trainerProfile = gymDefender.TrainerPublicProfile;
+                            PlayerPublicProfileProto trainerProfile = gymDefender.TrainerPublicProfile;
                             updatedTrainers.Add(new Trainer
                             {
                                 Name = trainerProfile.Name,
@@ -624,7 +620,7 @@
                                 CombatRating = trainerProfile.CombatRating,
                             });
 
-                            var defenderPokemon = gymDefender.MotivatedPokemon;
+                            MotivatedPokemonProto defenderPokemon = gymDefender.MotivatedPokemon;
                             updatedDefenders.Add(new GymDefender
                             {
                                 Id = defenderPokemon.Pokemon.Id.ToString(), // TODO: Convert to ulong
@@ -654,7 +650,7 @@
                             });
                         }
 
-                        var gym = gymRepository.GetByIdAsync(id)
+                        Gym gym = gymRepository.GetByIdAsync(id)
                                                .ConfigureAwait(false)
                                                .GetAwaiter()
                                                .GetResult();
@@ -684,31 +680,31 @@
         private async Task UpdatePokemon()
         {
             //var now = DateTime.UtcNow.ToTotalSeconds();
-            using (var scope = _scopeFactory.CreateScope())
+            using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
-                using var ctx = dbFactory.CreateDbContext();
-                var pokemonRepository = new PokemonRepository(ctx);
-                var pokestopRepository = new PokestopRepository(ctx);
-                var stopwatch = new Stopwatch();
-                var updatedPokemon = new List<Pokemon>();
+                IDbContextFactory<DeviceControllerContext> dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using DeviceControllerContext ctx = dbFactory.CreateDbContext();
+                PokemonRepository pokemonRepository = new PokemonRepository(ctx);
+                PokestopRepository pokestopRepository = new PokestopRepository(ctx);
+                Stopwatch stopwatch = new Stopwatch();
+                List<Pokemon> updatedPokemon = new List<Pokemon>();
                 stopwatch.Start();
                 lock (_wildPokemonLock)
                 {
                     if (_wildPokemon.Count > 0)
                     {
-                        var count = Math.Min(MaxConcurrency, _wildPokemon.Count);
-                        var wild = _wildPokemon.GetRange(0, count);
+                        int count = Math.Min(MaxConcurrency, _wildPokemon.Count);
+                        List<dynamic> wild = _wildPokemon.GetRange(0, count);
                         _wildPokemon.RemoveRange(0, count);
-                        foreach (var item in wild)
+                        foreach (dynamic item in wild)
                         {
-                            var cell = (ulong)item.cell;
-                            var wildPokemon = (WildPokemonProto)item.data;
-                            var timestampMs = (ulong)item.timestamp_ms;
-                            var username = item.username;
-                            var id = wildPokemon.EncounterId;
-                            var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
-                            var oldPokemon = pokemonRepository.GetByIdAsync(pokemon.Id)
+                            ulong cell = (ulong)item.cell;
+                            WildPokemonProto wildPokemon = (WildPokemonProto)item.data;
+                            ulong timestampMs = (ulong)item.timestamp_ms;
+                            dynamic username = item.username;
+                            ulong id = wildPokemon.EncounterId;
+                            Pokemon pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
+                            Pokemon oldPokemon = pokemonRepository.GetByIdAsync(pokemon.Id)
                                                               .ConfigureAwait(false)
                                                               .GetAwaiter()
                                                               .GetResult();
@@ -724,22 +720,22 @@
                 {
                     if (_nearbyPokemon.Count > 0)
                     {
-                        var count = Math.Min(MaxConcurrency, _nearbyPokemon.Count);
-                        var nearby = _nearbyPokemon.GetRange(0, count);
+                        int count = Math.Min(MaxConcurrency, _nearbyPokemon.Count);
+                        List<dynamic> nearby = _nearbyPokemon.GetRange(0, count);
                         _nearbyPokemon.RemoveRange(0, count);
-                        foreach (var item in nearby)
+                        foreach (dynamic item in nearby)
                         {
-                            var cell = (ulong)item.cell;
+                            ulong cell = (ulong)item.cell;
                             // data.timestamp_ms
-                            var nearbyPokemon = (NearbyPokemonProto)item.data;
-                            var username = item.username;
-                            var pokemon = new Pokemon(nearbyPokemon, cell, username, false); // TODO: IsEvent
+                            NearbyPokemonProto nearbyPokemon = (NearbyPokemonProto)item.data;
+                            dynamic username = item.username;
+                            Pokemon pokemon = new Pokemon(nearbyPokemon, cell, username, false); // TODO: IsEvent
                             if (pokemon.Latitude == 0 && string.IsNullOrEmpty(pokemon.PokestopId))
                             {
                                 // Skip nearby pokemon without pokestop id set and no coordinate
                                 continue;
                             }
-                            var pokestop = pokestopRepository.GetByIdAsync(pokemon.PokestopId)
+                            Pokestop pokestop = pokestopRepository.GetByIdAsync(pokemon.PokestopId)
                                                              .ConfigureAwait(false)
                                                              .GetAwaiter()
                                                              .GetResult();
@@ -750,7 +746,7 @@
                             }
                             pokemon.Latitude = pokestop.Latitude;
                             pokemon.Longitude = pokestop.Longitude;
-                            var oldPokemon = pokemonRepository.GetByIdAsync(pokemon.Id)
+                            Pokemon oldPokemon = pokemonRepository.GetByIdAsync(pokemon.Id)
                                                               .ConfigureAwait(false)
                                                               .GetAwaiter()
                                                               .GetResult();
@@ -776,20 +772,20 @@
 
         private async Task UpdateEncounters()
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
-                using var ctx = dbFactory.CreateDbContext();
-                var pokemonRepository = new PokemonRepository(ctx);
-                var stopwatch = new Stopwatch();
-                var updatedPokemon = new List<Pokemon>();
+                IDbContextFactory<DeviceControllerContext> dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using DeviceControllerContext ctx = dbFactory.CreateDbContext();
+                PokemonRepository pokemonRepository = new PokemonRepository(ctx);
+                Stopwatch stopwatch = new Stopwatch();
+                List<Pokemon> updatedPokemon = new List<Pokemon>();
                 stopwatch.Start();
                 lock (_encountersLock)
                 {
-                    foreach (var item in _encounters)
+                    foreach (dynamic item in _encounters)
                     {
-                        var encounter = (EncounterOutProto)item.encounter;
-                        var username = item.username;
+                        EncounterOutProto encounter = (EncounterOutProto)item.encounter;
+                        dynamic username = item.username;
                         Pokemon pokemon;
                         try
                         {
@@ -815,10 +811,10 @@
                         }
                         else
                         {
-                            var centerCoord = new Coordinate(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude);
-                            var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(centerCoord.Latitude, centerCoord.Longitude));
-                            var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
-                            var newPokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
+                            Coordinate centerCoord = new Coordinate(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude);
+                            S2CellId cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(centerCoord.Latitude, centerCoord.Longitude));
+                            ulong timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
+                            Pokemon newPokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
                             newPokemon.AddEncounter(encounter, username)
                                       .ConfigureAwait(false)
                                       .GetAwaiter()
@@ -844,33 +840,35 @@
 
         private async Task UpdateQuests()
         {
-            using (var scope = _scopeFactory.CreateScope())
+            using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
-                using var ctx = dbFactory.CreateDbContext();
-                var pokestopRepository = new PokestopRepository(ctx);
-                var stopwatch = new Stopwatch();
-                var updatedQuests = new List<Pokestop>();
+                IDbContextFactory<DeviceControllerContext> dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using DeviceControllerContext ctx = dbFactory.CreateDbContext();
+                PokestopRepository pokestopRepository = new PokestopRepository(ctx);
+                Stopwatch stopwatch = new Stopwatch();
+                List<Pokestop> updatedQuests = new List<Pokestop>();
                 stopwatch.Start();
                 lock (_questsLock)
                 {
-                    foreach (var quest in _quests)
+                    foreach (QuestProto quest in _quests)
                     {
                         // Get existing pokestop, and add quest to it
-                        var pokestop = pokestopRepository.GetByIdAsync(quest.FortId)
+                        Pokestop pokestop = pokestopRepository.GetByIdAsync(quest.FortId)
                                                          .ConfigureAwait(false)
                                                          .GetAwaiter()
                                                          .GetResult();
                         // Skip quests we don't have stops for yet
                         if (pokestop == null)
-                            continue;
-                        /*
-                        if (await pokestop.TriggerWebhook(true))
                         {
-                            _logger.LogDebug($"[Quest] Found a quest belonging to a new stop, skipping..."); // :face_with_raised_eyebrow:
                             continue;
                         }
-                        */
+                        /*
+if (await pokestop.TriggerWebhook(true))
+{
+   _logger.LogDebug($"[Quest] Found a quest belonging to a new stop, skipping..."); // :face_with_raised_eyebrow:
+   continue;
+}
+*/
                         pokestop.AddQuest(quest);
                         updatedQuests.Add(pokestop);
                     }
@@ -892,33 +890,35 @@
 
         private async Task UpdatePlayerData()
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            using (var scope = _scopeFactory.CreateScope())
+            ulong now = DateTime.UtcNow.ToTotalSeconds();
+            using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
-                using var ctx = dbFactory.CreateDbContext();
-                var accountRepository = new AccountRepository(ctx);
-                var stopwatch = new Stopwatch();
-                var updatedAccounts = new List<Account>();
+                IDbContextFactory<DeviceControllerContext> dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
+                using DeviceControllerContext ctx = dbFactory.CreateDbContext();
+                AccountRepository accountRepository = new AccountRepository(ctx);
+                Stopwatch stopwatch = new Stopwatch();
+                List<Account> updatedAccounts = new List<Account>();
                 stopwatch.Start();
                 lock (_playerDataLock)
                 {
-                    foreach (var item in _playerData)
+                    foreach (dynamic item in _playerData)
                     {
-                        var username = item.username;
-                        var playerData = (GetPlayerOutProto)item.gpr;
+                        dynamic username = item.username;
+                        GetPlayerOutProto playerData = (GetPlayerOutProto)item.gpr;
                         // Get account
-                        var account = accountRepository.GetByIdAsync(username)
+                        dynamic account = accountRepository.GetByIdAsync(username)
                                                        .ConfigureAwait(false)
                                                        .GetAwaiter()
                                                        .GetResult();
                         // Skip account if we failed to get it
                         if (account == null)
+                        {
                             continue;
+                        }
 
                         account.CreationTimestamp = (ulong)playerData.Player.CreationTimeMs / 1000;
                         account.Warn = playerData.Warn;
-                        var warnExpireTimestamp = (ulong)playerData.WarnExpireMs / 1000;
+                        ulong warnExpireTimestamp = (ulong)playerData.WarnExpireMs / 1000;
                         if (warnExpireTimestamp > 0)
                         {
                             account.WarnExpireTimestamp = warnExpireTimestamp;

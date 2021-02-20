@@ -1,14 +1,12 @@
 ﻿namespace ChuckDeviceController.JobControllers.Instances
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using Microsoft.Extensions.Logging;
-
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers.Tasks;
+    using Microsoft.Extensions.Logging;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     public enum CircleRouteType : ushort
     {
@@ -97,7 +95,9 @@
                     break;
             }
             if (currentCoord == null)
+            {
                 return null;
+            }
 
             return await Task.FromResult(new CircleTask
             {
@@ -114,10 +114,10 @@
 
         public async Task<string> GetStatus()
         {
-            var text = "--";
+            string text = "--";
             if (_lastCompletedTime != default && _lastLastCompletedTime != default)
             {
-                var timeDiffSeconds = _lastCompletedTime.Subtract(_lastLastCompletedTime).TotalSeconds;
+                double timeDiffSeconds = _lastCompletedTime.Subtract(_lastLastCompletedTime).TotalSeconds;
                 if (timeDiffSeconds > 0)
                 {
                     text = $"Round Time {Math.Round(timeDiffSeconds, 2):N0}s";
@@ -153,22 +153,26 @@
         private (int, double) QueryLiveDevices(string uuid, int index)
         {
             // In seconds
-            var deadDeviceCutoff = DateTime.UtcNow.ToTotalSeconds() - 60;
-            var numLiveDevices = 1;
-            var distanceToNext = (double)Coordinates.Count;
-            foreach (var (oldUuid, value) in _lastUuid)
+            ulong deadDeviceCutoff = DateTime.UtcNow.ToTotalSeconds() - 60;
+            int numLiveDevices = 1;
+            double distanceToNext = Coordinates.Count;
+            foreach ((string oldUuid, DeviceIndex value) in _lastUuid)
             {
                 if (string.Compare(oldUuid, uuid, true) != 0)
+                {
                     continue;
+                }
 
                 if (value?.LastSeen == null)
+                {
                     continue;
+                }
 
-                var sec = value.LastSeen.ToTotalSeconds();
+                ulong sec = value.LastSeen.ToTotalSeconds();
                 if (sec > deadDeviceCutoff)
                 {
                     numLiveDevices++;
-                    var distance = GetRouteDistance(index, value.Index);
+                    double distance = GetRouteDistance(index, value.Index);
                     if (distance < distanceToNext)
                     {
                         distanceToNext = distance;
@@ -200,9 +204,9 @@
         {
             lock (_indexLock)
             {
-                var currentIndex = _lastIndex;
+                int currentIndex = _lastIndex;
                 _logger.LogDebug($"[{uuid}] Current index: {currentIndex}");
-                var currentCoord = Coordinates[currentIndex];
+                Coordinate currentCoord = Coordinates[currentIndex];
                 if (!startup)
                 {
                     if (_lastIndex + 1 == Coordinates.Count)
@@ -224,19 +228,19 @@
         {
             lock (_indexLock)
             {
-                var currentUuidIndex = _lastUuid.ContainsKey(uuid)
+                int currentUuidIndex = _lastUuid.ContainsKey(uuid)
                     ? _lastUuid[uuid].Index
                     : Convert.ToInt32(Math.Round(Convert.ToDouble(_random.Next(ushort.MinValue, ushort.MaxValue) % Coordinates.Count)));
                 _logger.LogDebug($"[{uuid}] Current index: {currentUuidIndex}");
-                var shouldAdvance = true;
-                var offsetValue = _random.Next(ushort.MinValue, ushort.MaxValue) % 100;
+                bool shouldAdvance = true;
+                int offsetValue = _random.Next(ushort.MinValue, ushort.MaxValue) % 100;
                 if (offsetValue < 5)
                 {
                     // Use a light hand and 25% of the time try to space out devices
                     // this ensures average round time decreases by at least 10% using
                     // this approach
-                    var (numDevices, distanceToNextDevice) = QueryLiveDevices(uuid, currentUuidIndex);
-                    var dist = Convert.ToInt32((numDevices * distanceToNextDevice) + 0.5);
+                    (int numDevices, double distanceToNextDevice) = QueryLiveDevices(uuid, currentUuidIndex);
+                    int dist = Convert.ToInt32((numDevices * distanceToNextDevice) + 0.5);
                     if (dist < Coordinates.Count)
                     {
                         shouldAdvance = false;
@@ -281,16 +285,16 @@
         {
             lock (_indexLock)
             {
-                var currentUuidIndex = _lastUuid.ContainsKey(uuid)
+                int currentUuidIndex = _lastUuid.ContainsKey(uuid)
                     ? _lastUuid[uuid].Index
                     : Convert.ToInt32(Math.Round(Convert.ToDouble(_random.Next(ushort.MinValue, ushort.MaxValue) % Coordinates.Count)));
                 _lastUuid[uuid].LastSeen = DateTime.UtcNow;
-                var shouldAdvance = true;
-                var jumpDistance = 0d;
+                bool shouldAdvance = true;
+                double jumpDistance = 0d;
                 if (_lastUuid.Count > 1 && _random.Next(0, 100) < 15)
                 {
-                    var (numLiveDevices, distanceToNext) = QueryLiveDevices(uuid, currentUuidIndex);
-                    var dist = (10 * distanceToNext * numLiveDevices) + 5;
+                    (int numLiveDevices, double distanceToNext) = QueryLiveDevices(uuid, currentUuidIndex);
+                    double dist = (10 * distanceToNext * numLiveDevices) + 5;
                     if (dist < 10 * Coordinates.Count)
                     {
                         shouldAdvance = false;

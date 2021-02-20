@@ -1,10 +1,9 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
+    using ChuckDeviceController.Data.Interfaces;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
-
-    using ChuckDeviceController.Data.Interfaces;
 
     [Table("instance")]
     public class Instance : BaseEntity, IAggregateRoot

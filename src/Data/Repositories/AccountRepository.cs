@@ -1,13 +1,12 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
+    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
 
     public class AccountRepository : EfCoreRepository<Account, DeviceControllerContext>
     {
@@ -18,7 +17,7 @@
 
         public async Task<Account> GetNewAccountAsync(int minLevel, int maxLevel, List<string> inuseAccounts)
         {
-            var accounts = await GetAllAsync().ConfigureAwait(false);
+            IReadOnlyList<Account> accounts = await GetAllAsync().ConfigureAwait(false);
             return accounts.FirstOrDefault(x =>
                 x.Level >= minLevel &&
                 x.Level <= maxLevel &&
@@ -34,9 +33,12 @@
 
         public async Task<bool> SetLastEncounterAsync(string username, double latitude, double longitude, ulong time)
         {
-            var account = await GetByIdAsync(username).ConfigureAwait(false);
+            Account account = await GetByIdAsync(username).ConfigureAwait(false);
             if (account == null)
+            {
                 return false;
+            }
+
             account.LastEncounterLatitude = latitude;
             account.LastEncounterLongitude = longitude;
             account.LastEncounterTime = time;
@@ -46,9 +48,12 @@
 
         public async Task<bool> SpinAsync(string username)
         {
-            var account = await GetByIdAsync(username).ConfigureAwait(false);
+            Account account = await GetByIdAsync(username).ConfigureAwait(false);
             if (account == null)
+            {
                 return false;
+            }
+
             account.Spins++;
             await AddOrUpdateAsync(account).ConfigureAwait(false);
             return true;
@@ -56,10 +61,10 @@
 
         public async Task<dynamic> GetStatsAsync()
         {
-            var deviceRepository = new DeviceRepository(_dbContext);
-            var devices = await deviceRepository.GetAllAsync().ConfigureAwait(false);
-            var accounts = await GetAllAsync().ConfigureAwait(false);
-            var now = DateTime.UtcNow.ToTotalSeconds();
+            DeviceRepository deviceRepository = new DeviceRepository(_dbContext);
+            IReadOnlyList<Device> devices = await deviceRepository.GetAllAsync().ConfigureAwait(false);
+            IReadOnlyList<Account> accounts = await GetAllAsync().ConfigureAwait(false);
+            ulong now = DateTime.UtcNow.ToTotalSeconds();
             const uint SpinLimit = 3500;
             const uint OneDaySeconds = 86400;
             const uint SevenDaySeconds = 7 * OneDaySeconds;

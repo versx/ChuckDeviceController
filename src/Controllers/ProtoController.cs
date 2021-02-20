@@ -1,28 +1,23 @@
 ﻿namespace ChuckDeviceController.Controllers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading.Tasks;
-
+    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
+    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Models.Requests;
+    using ChuckDeviceController.Models.Responses;
+    using ChuckDeviceController.Services;
+    using ChuckDeviceController.Services.Models;
     using Google.Common.Geometry;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
     using POGOProtos.Rpc;
-
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Factories;
-    using ChuckDeviceController.Data.Interfaces;
-    using ChuckDeviceController.Data.Repositories;
-    using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.JobControllers;
-    using ChuckDeviceController.Models.Requests;
-    using ChuckDeviceController.Models.Responses;
-    using ChuckDeviceController.Services;
-    using ChuckDeviceController.Services.Models;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     [ApiController]
     public class ProtoController : ControllerBase
@@ -84,7 +79,10 @@
         #region Routes
 
         [HttpGet("/raw")]
-        public string Get() => ":D";
+        public string Get()
+        {
+            return ":D";
+        }
 
         // Handle RDM data
         [
@@ -93,7 +91,7 @@
         ]
         public async Task<ProtoResponse> PostAsync(ProtoPayload payload)
         {
-            var response = await HandleProtoRequest(payload).ConfigureAwait(false);
+            ProtoResponse response = await HandleProtoRequest(payload).ConfigureAwait(false);
             if (response?.Data == null)
             {
                 _logger.LogError($"[Proto] [{payload.Uuid}] null data response!");
@@ -135,7 +133,7 @@
                 return null;
             }
 
-            var device = await _deviceRepository.GetByIdAsync(payload.Uuid).ConfigureAwait(false);
+            Device device = await _deviceRepository.GetByIdAsync(payload.Uuid).ConfigureAwait(false);
             if (device != null)
             {
                 device.LastLatitude = payload.LatitudeTarget;
@@ -152,10 +150,10 @@
                 }
                 else
                 {
-                    var oldLevel = _levelCache[payload.Username];
+                    ushort oldLevel = _levelCache[payload.Username];
                     if (oldLevel != payload.Level)
                     {
-                        var account = await _accountRepository.GetByIdAsync(payload.Username).ConfigureAwait(false);
+                        Account account = await _accountRepository.GetByIdAsync(payload.Username).ConfigureAwait(false);
                         if (account != null)
                         {
                             account.Level = payload.Level;
@@ -170,23 +168,23 @@
                 _logger.LogWarning($"[Proto] [{payload.Uuid}] Invalid GMO");
                 return null;
             }
-            var wildPokemon = new List<dynamic>();
-            var nearbyPokemon = new List<dynamic>();
-            var clientWeather = new List<ClientWeatherProto>();
-            var forts = new List<dynamic>();
-            var fortDetails = new List<FortDetailsOutProto>();
-            var gymInfos = new List<GymGetInfoOutProto>();
-            var quests = new List<QuestProto>();
-            var fortSearch = new List<FortSearchOutProto>();
-            var encounters = new List<dynamic>();
-            var cells = new List<ulong>();
-            var inventory = new List<InventoryDeltaProto>();
-            var playerData = new List<dynamic>();
+            List<dynamic> wildPokemon = new List<dynamic>();
+            List<dynamic> nearbyPokemon = new List<dynamic>();
+            List<ClientWeatherProto> clientWeather = new List<ClientWeatherProto>();
+            List<dynamic> forts = new List<dynamic>();
+            List<FortDetailsOutProto> fortDetails = new List<FortDetailsOutProto>();
+            List<GymGetInfoOutProto> gymInfos = new List<GymGetInfoOutProto>();
+            List<QuestProto> quests = new List<QuestProto>();
+            List<FortSearchOutProto> fortSearch = new List<FortSearchOutProto>();
+            List<dynamic> encounters = new List<dynamic>();
+            List<ulong> cells = new List<ulong>();
+            List<InventoryDeltaProto> inventory = new List<InventoryDeltaProto>();
+            List<dynamic> playerData = new List<dynamic>();
             //var spawnpoints = new List<Spawnpoint>();
 
-            var isEmptyGmo = true;
-            var isInvalidGmo = true;
-            var containsGmo = false;
+            bool isEmptyGmo = true;
+            bool isInvalidGmo = true;
+            bool containsGmo = false;
 
             if (payload.Contents == null)
             {
@@ -195,12 +193,12 @@
             }
 
             Coordinate targetCoord = null;
-            var inArea = false;
+            bool inArea = false;
             if (payload.LatitudeTarget != 0 && payload.LongitudeTarget != 0)
             {
                 targetCoord = new Coordinate(payload.LatitudeTarget, payload.LongitudeTarget);
             }
-            var targetKnown = false;
+            bool targetKnown = false;
             S2CellId targetCellId = default;
             if (targetCoord != null)
             {
@@ -211,21 +209,21 @@
             }
             //_logger.LogWarning($"[{device.Uuid}] InArea={inArea}");
 
-            foreach (var rawData in payload.Contents)
+            foreach (ProtoData rawData in payload.Contents)
             {
                 if (string.IsNullOrEmpty(rawData.Data))
                 {
                     _logger.LogWarning($"[Proto] [{payload.Uuid}] Unhandled proto {rawData.Method}: {rawData.Data}");
                     continue;
                 }
-                var data = rawData.Data;
-                var method = (Method)rawData.Method;
+                string data = rawData.Data;
+                Method method = (Method)rawData.Method;
                 switch (method)
                 {
                     case Method.GetPlayer:
                         try
                         {
-                            var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
+                            GetPlayerOutProto gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (gpr?.Success == true)
                             {
                                 playerData.Add(new
@@ -247,7 +245,7 @@
                     case Method.GetHoloholoInventory:
                         try
                         {
-                            var ghi = GetHoloholoInventoryOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
+                            GetHoloholoInventoryOutProto ghi = GetHoloholoInventoryOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (ghi?.Success == true)
                             {
                                 if (ghi.InventoryDelta.InventoryItem?.Count > 0)
@@ -268,7 +266,7 @@
                     case Method.FortSearch:
                         try
                         {
-                            var fsr = FortSearchOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
+                            FortSearchOutProto fsr = FortSearchOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (fsr != null)
                             {
                                 if (fsr.ChallengeQuest?.Quest != null)
@@ -294,7 +292,7 @@
                         {
                             if (payload.Level >= 30)
                             {
-                                var er = EncounterOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
+                                EncounterOutProto er = EncounterOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                                 if (er?.Status == EncounterOutProto.Types.Status.EncounterSuccess)
                                 {
                                     encounters.Add(new
@@ -317,7 +315,7 @@
                     case Method.FortDetails:
                         try
                         {
-                            var fdr = FortDetailsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
+                            FortDetailsOutProto fdr = FortDetailsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (fdr != null)
                             {
                                 fortDetails.Add(fdr);
@@ -336,11 +334,11 @@
                         containsGmo = true;
                         try
                         {
-                            var gmo = GetMapObjectsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
+                            GetMapObjectsOutProto gmo = GetMapObjectsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (gmo != null)
                             {
                                 isInvalidGmo = false;
-                                var mapCellsNew = gmo.MapCell;
+                                Google.Protobuf.Collections.RepeatedField<ClientMapCellProto> mapCellsNew = gmo.MapCell;
 
                                 if (mapCellsNew.Count == 0)
                                 {
@@ -354,10 +352,10 @@
                                     inArea = true;
                                 }
 
-                                foreach (var mapCell in mapCellsNew)
+                                foreach (ClientMapCellProto mapCell in mapCellsNew)
                                 {
-                                    var tsMs = mapCell.AsOfTimeMs;
-                                    foreach (var wild in mapCell.WildPokemon)
+                                    long tsMs = mapCell.AsOfTimeMs;
+                                    foreach (WildPokemonProto wild in mapCell.WildPokemon)
                                     {
                                         wildPokemon.Add(new
                                         {
@@ -367,7 +365,7 @@
                                             username = payload.Username,
                                         });
                                     }
-                                    foreach (var nearby in mapCell.NearbyPokemon)
+                                    foreach (NearbyPokemonProto nearby in mapCell.NearbyPokemon)
                                     {
                                         nearbyPokemon.Add(new
                                         {
@@ -377,7 +375,7 @@
                                             username = payload.Username,
                                         });
                                     }
-                                    foreach (var fort in mapCell.Fort)
+                                    foreach (PokemonFortProto fort in mapCell.Fort)
                                     {
                                         forts.Add(new
                                         {
@@ -387,13 +385,13 @@
                                     }
                                     cells.Add(mapCell.S2CellId);
                                 }
-                                foreach (var weather in gmo.ClientWeather)
+                                foreach (ClientWeatherProto weather in gmo.ClientWeather)
                                 {
                                     clientWeather.Add(weather);
                                 }
                                 if (wildPokemon.Count == 0 && nearbyPokemon.Count == 0 && forts.Count == 0 && quests.Count == 0)
                                 {
-                                    foreach (var cell in cells)
+                                    foreach (ulong cell in cells)
                                     {
                                         if (!_emptyCells.ContainsKey(cell))
                                         {
@@ -431,7 +429,7 @@
                     case Method.GymGetInfo:
                         try
                         {
-                            var ggi = GymGetInfoOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
+                            GymGetInfoOutProto ggi = GymGetInfoOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (ggi != null)
                             {
                                 gymInfos.Add(ggi);
@@ -558,16 +556,16 @@
             }
             */
 
-            var total = wildPokemon.Count + nearbyPokemon.Count + clientWeather.Count +
+            int total = wildPokemon.Count + nearbyPokemon.Count + clientWeather.Count +
                 forts.Count + fortDetails.Count + gymInfos.Count +
                 quests.Count + encounters.Count + cells.Count +
                 /*spawnpoints.Count +*/ inventory.Count + playerData.Count;
-            var stopwatch = new Stopwatch();
+            Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
             if (targetKnown) // TODO: && inArea)
             {
-                var consumerData = new ConsumerData
+                ConsumerData consumerData = new ConsumerData
                 {
                     WildPokemon = wildPokemon,
                     NearbyPokemon = nearbyPokemon,

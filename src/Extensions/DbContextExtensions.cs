@@ -1,17 +1,14 @@
 ﻿namespace ChuckDeviceController.Extensions
 {
+    using Microsoft.EntityFrameworkCore;
     using System;
     using System.Collections.Generic;
-
-    using Microsoft.EntityFrameworkCore;
-
-    using ChuckDeviceController.Data.Interfaces;
 
     public static class DbContextExtensions
     {
         public static void AddOrUpdate(this DbContext ctx, object entity)
         {
-            var entry = ctx.Entry(entity);
+            Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry = ctx.Entry(entity);
             switch (entry.State)
             {
                 case EntityState.Detached:
@@ -35,7 +32,7 @@
 
         public static void AddOrUpdateRange(this DbContext ctx, List<object> entities)
         {
-            foreach (var entity in entities)
+            foreach (object entity in entities)
             {
                 AddOrUpdate(ctx, entity);
             }

@@ -1,9 +1,7 @@
 ﻿namespace ChuckDeviceController.Services.Models
 {
-    using System;
-    using System.Collections.Generic;
-
     using POGOProtos.Rpc;
+    using System.Collections.Generic;
 
     public class ConsumerData
     {

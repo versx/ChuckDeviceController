@@ -1,13 +1,9 @@
 ﻿namespace ChuckDeviceController.Data.Contexts
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Microsoft.EntityFrameworkCore;
-    using POGOProtos.Rpc;
-
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
+    using Microsoft.EntityFrameworkCore;
+    using System.Collections.Generic;
 
     public class DeviceControllerContext : DbContext
     {

@@ -1,10 +1,8 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
+    using ChuckDeviceController.JobControllers.Instances;
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
-
-    using ChuckDeviceController.JobControllers.Instances;
 
     public class InstanceData
     {

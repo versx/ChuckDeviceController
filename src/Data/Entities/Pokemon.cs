@@ -1,14 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Threading.Tasks;
-
-    using POGOProtos.Rpc;
-
     using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Data.Interfaces;
     using ChuckDeviceController.Data.Repositories;
@@ -16,6 +7,13 @@
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Net.Webhooks;
     using ChuckDeviceController.Services;
+    using POGOProtos.Rpc;
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using System.Threading.Tasks;
 
     [Table("pokemon")]
     public class Pokemon : BaseEntity, IAggregateRoot, IWebhook
@@ -177,7 +175,7 @@
             PokemonId = (uint)wildPokemon.Pokemon.PokemonId;
             Latitude = wildPokemon.Latitude;
             Longitude = wildPokemon.Longitude;
-            var spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
+            ulong spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
             Gender = (ushort)wildPokemon.Pokemon.PokemonDisplay.Gender;
             Form = (ushort?)wildPokemon.Pokemon?.PokemonDisplay?.Form;
             if (wildPokemon.Pokemon.PokemonDisplay != null)
@@ -204,11 +202,11 @@
         public Pokemon(NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent) : this()
         {
             IsEvent = isEvent;
-            var id = nearbyPokemon.EncounterId.ToString();
-            var pokemonId = (uint)nearbyPokemon.PokedexNumber;
-            var pokestopId = nearbyPokemon.FortId;
-            var gender = (ushort)nearbyPokemon.PokemonDisplay.Gender;
-            var form = (ushort?)nearbyPokemon.PokemonDisplay?.Form;
+            string id = nearbyPokemon.EncounterId.ToString();
+            uint pokemonId = (uint)nearbyPokemon.PokedexNumber;
+            string pokestopId = nearbyPokemon.FortId;
+            ushort gender = (ushort)nearbyPokemon.PokemonDisplay.Gender;
+            ushort? form = (ushort?)nearbyPokemon.PokemonDisplay?.Form;
             if (nearbyPokemon.PokemonDisplay != null)
             {
                 Costume = (ushort)nearbyPokemon.PokemonDisplay.Costume;
@@ -245,7 +243,7 @@
 
         public void Update(Pokemon oldPokemon = null, bool updateIV = false)
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
+            ulong now = DateTime.UtcNow.ToTotalSeconds();
             if (oldPokemon == null)
             {
                 Updated = now;
@@ -317,7 +315,7 @@
                 {
                     Changed = oldPokemon.Changed;
                 }
-                var weatherChanged = (oldPokemon.Weather == 0 && Weather > 0) || (Weather == 0 && oldPokemon.Weather > 0);
+                bool weatherChanged = (oldPokemon.Weather == 0 && Weather > 0) || (Weather == 0 && oldPokemon.Weather > 0);
                 //rem warn 
                 if (!SetIVForWeather)
                 {
@@ -378,7 +376,9 @@
 
                 // TODO: Check shouldUpdate
                 if (!ShouldUpdate(oldPokemon, this))
+                {
                     return;
+                }
 
                 if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
                 {
@@ -438,24 +438,27 @@
 
         #region Ditto
 
-        public static bool IsDittoDisguised(Pokemon pokemon) => IsDittoDisguised(
-                pokemon.PokemonId,
-                pokemon.Level ?? 0,
-                pokemon.Weather,
-                pokemon.AttackIV ?? 0,
-                pokemon.DefenseIV ?? 0,
-                pokemon.StaminaIV ?? 0
-        );
+        public static bool IsDittoDisguised(Pokemon pokemon)
+        {
+            return IsDittoDisguised(
+pokemon.PokemonId,
+pokemon.Level ?? 0,
+pokemon.Weather,
+pokemon.AttackIV ?? 0,
+pokemon.DefenseIV ?? 0,
+pokemon.StaminaIV ?? 0
+);
+        }
 
         public static bool IsDittoDisguised(uint pokemonId, ushort level, ushort weather, ushort atkIv, ushort defIv, ushort staIv)
         {
-            var isDisguised = pokemonId == DittoPokemonId || _dittoDisguises.Contains(pokemonId);
-            var isUnderLevelBoosted = level > 0 && level < WeatherBoostMinLevel;
-            var isUnderIvStatBoosted = level > 0 &&
+            bool isDisguised = pokemonId == DittoPokemonId || _dittoDisguises.Contains(pokemonId);
+            bool isUnderLevelBoosted = level > 0 && level < WeatherBoostMinLevel;
+            bool isUnderIvStatBoosted = level > 0 &&
                 (atkIv < WeatherBoostMinIvStat ||
                 defIv < WeatherBoostMinIvStat ||
                 staIv < WeatherBoostMinIvStat);
-            var isWeatherBoosted = weather > 0;
+            bool isWeatherBoosted = weather > 0;
             return isDisguised && (isUnderLevelBoosted || isUnderIvStatBoosted) && isWeatherBoosted;
         }
 
@@ -478,18 +481,18 @@
 
         public async Task AddEncounter(EncounterOutProto encounter, string username)
         {
-            var pokemonId = (uint)encounter.Pokemon.Pokemon.PokemonId;
-            var cp = (ushort?)encounter.Pokemon.Pokemon.Cp;
-            var move1 = (uint?)encounter.Pokemon.Pokemon.Move1;
-            var move2 = (uint?)encounter.Pokemon.Pokemon.Move2;
-            var size = (double?)encounter.Pokemon.Pokemon.HeightM;
-            var weight = (double?)encounter.Pokemon.Pokemon.WeightKg;
-            var atkIV = (ushort?)encounter.Pokemon.Pokemon.IndividualAttack;
-            var defIV = (ushort?)encounter.Pokemon.Pokemon.IndividualDefense;
-            var staIV = (ushort?)encounter.Pokemon.Pokemon.IndividualStamina;
-            var costume = (ushort)encounter.Pokemon.Pokemon.PokemonDisplay.Costume;
-            var form = (ushort?)encounter.Pokemon.Pokemon.PokemonDisplay.Form;
-            var gender = (ushort)encounter.Pokemon.Pokemon.PokemonDisplay.Gender;
+            uint pokemonId = (uint)encounter.Pokemon.Pokemon.PokemonId;
+            ushort? cp = (ushort?)encounter.Pokemon.Pokemon.Cp;
+            uint? move1 = (uint?)encounter.Pokemon.Pokemon.Move1;
+            uint? move2 = (uint?)encounter.Pokemon.Pokemon.Move2;
+            double? size = encounter.Pokemon.Pokemon.HeightM;
+            double? weight = encounter.Pokemon.Pokemon.WeightKg;
+            ushort? atkIV = (ushort?)encounter.Pokemon.Pokemon.IndividualAttack;
+            ushort? defIV = (ushort?)encounter.Pokemon.Pokemon.IndividualDefense;
+            ushort? staIV = (ushort?)encounter.Pokemon.Pokemon.IndividualStamina;
+            ushort costume = (ushort)encounter.Pokemon.Pokemon.PokemonDisplay.Costume;
+            ushort? form = (ushort?)encounter.Pokemon.Pokemon.PokemonDisplay.Form;
+            ushort gender = (ushort)encounter.Pokemon.Pokemon.PokemonDisplay.Gender;
             if (PokemonId != pokemonId ||
                 CP != cp ||
                 Move1 != move1 ||
@@ -530,7 +533,7 @@
                     CaptureRate2 = Convert.ToDouble(encounter.CaptureProbability.CaptureProbability[1]);
                     CaptureRate3 = Convert.ToDouble(encounter.CaptureProbability.CaptureProbability[2]);
                 }
-                var cpMultiplier = encounter.Pokemon.Pokemon.CpMultiplier;
+                float cpMultiplier = encounter.Pokemon.Pokemon.CpMultiplier;
                 ushort level;
                 if (cpMultiplier < 0.734)
                 {
@@ -557,7 +560,7 @@
                 }
 
                 SpawnId = Convert.ToUInt64(encounter.Pokemon.SpawnPointId, 16);
-                var timestampMs = DateTime.UtcNow.ToTotalSeconds();
+                ulong timestampMs = DateTime.UtcNow.ToTotalSeconds();
                 await HandleSpawnpoint(encounter.Pokemon.TimeTillHiddenMs, timestampMs).ConfigureAwait(false);
 
                 Updated = DateTime.UtcNow.ToTotalSeconds();
@@ -576,8 +579,8 @@
             {
                 ExpireTimestamp = Convert.ToUInt64(timestampMs + Convert.ToDouble(timeTillHiddenMs)) / 1000;
                 IsExpireTimestampVerified = true;
-                var unixDate = timestampMs.FromMilliseconds();
-                var secondOfHour = unixDate.Second + (unixDate.Minute * 60);
+                DateTime unixDate = timestampMs.FromMilliseconds();
+                int secondOfHour = unixDate.Second + (unixDate.Minute * 60);
                 return new Spawnpoint
                 {
                     Id = SpawnId ?? 0,
@@ -609,12 +612,15 @@
                 }
                 if (spawnpoint != null && spawnpoint?.DespawnSecond != null)
                 {
-                    var unixDate = timestampMs.FromMilliseconds();
-                    var secondOfHour = unixDate.Second + (unixDate.Minute * 60);
-                    var despawnOffset = spawnpoint.DespawnSecond - secondOfHour;
+                    DateTime unixDate = timestampMs.FromMilliseconds();
+                    int secondOfHour = unixDate.Second + (unixDate.Minute * 60);
+                    int? despawnOffset = spawnpoint.DespawnSecond - secondOfHour;
                     if (spawnpoint.DespawnSecond < secondOfHour)
+                    {
                         despawnOffset += 3600;
-                    var now = DateTime.UtcNow.ToTotalSeconds();
+                    }
+
+                    ulong now = DateTime.UtcNow.ToTotalSeconds();
                     ExpireTimestamp = now + (ulong)(despawnOffset ?? 0);
                     IsExpireTimestampVerified = true;
                 }
@@ -643,13 +649,13 @@
 
         public ulong GetDespawnTimer(Spawnpoint spawnpoint)
         {
-            var despawnSecond = spawnpoint.DespawnSecond;
+            ushort? despawnSecond = spawnpoint.DespawnSecond;
             if (despawnSecond != null)
             {
-                var now = DateTime.UtcNow.ToTotalSeconds();
-                var unixDate = Updated.FromMilliseconds();
-                var secondOfHour = unixDate.Second + (unixDate.Minute * 60);
-                var despawnOffset = despawnSecond ?? 0 - secondOfHour;
+                ulong now = DateTime.UtcNow.ToTotalSeconds();
+                DateTime unixDate = Updated.FromMilliseconds();
+                int secondOfHour = unixDate.Second + (unixDate.Minute * 60);
+                int despawnOffset = despawnSecond ?? 0 - secondOfHour;
                 if (despawnOffset < 0)
                 {
                     despawnOffset += 3600;
@@ -705,11 +711,13 @@
         private Task SetPvpRankings()
         {
             if (!ProcessPvpRankings)
+            {
                 return Task.CompletedTask;
+            }
 
             return Task.Run(() =>
             {
-                var ranks = PvpRankCalculator.Instance.QueryPvpRank
+                Dictionary<string, List<PvpRank>> ranks = PvpRankCalculator.Instance.QueryPvpRank
                 (
                     PokemonId,
                     Form ?? 0,
@@ -721,7 +729,9 @@
                     (PokemonGender)Gender
                 );
                 if (ranks.Count == 0)
+                {
                     return;
+                }
 
                 if (ranks.ContainsKey("great"))
                 {
