@@ -512,11 +512,19 @@
 
             var cell = new S2Cell(new S2CellId(target));
             var center = cell.Center;
-            var point = new S2Point(center.X, center.Y, center.Z);
-            var latlng = new S2LatLng(point);
-            // Get all cells touching a 630 (-5m for error) circle at center
-            const double radians = 0.00009799064306948; // 625m
-            var circle = S2Cap.FromAxisHeight(center, (radians * radians) / 2);
+            var latlng = new S2LatLng(center);
+
+            double radius;
+            if (latlng.LatDegrees <= 39)
+                radius = 715;
+            else if (latlng.LatDegrees >= 69)
+                radius = 330;
+            else
+                radius = -13 * latlng.LatDegrees + 1225;
+
+            var radians = radius / 6378137;
+            var centerNormalizedPoint = latlng.Normalized.ToPoint();
+            var circle = S2Cap.FromAxisHeight(centerNormalizedPoint, (radians * radians) / 2);
             var coverer = new S2RegionCoverer
             {
                 MinLevel = 15,
