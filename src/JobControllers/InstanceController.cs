@@ -132,26 +132,12 @@
         public async Task AddInstance(Instance instance, IReadOnlyList<Geofence> geofences = null)
         {
             IJobController instanceController = null;
-            Geofence geofence = null;
-            //if (!string.IsNullOrEmpty(instance.Geofence))
-            if (geofences == null)
+            var geofence = await GetGeofence(instance, geofences).ConfigureAwait(false);
+            if (geofence == null)
             {
-                try
-                {
-                    geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
-                    if (geofence == null)
-                    {
-                        // TODO: Failed to get geofence for instance
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Error: {ex}");
-                }
-            }
-            else
-            {
-                geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
+                // Failed to get geofence, skip?
+                _logger.LogError($"[{instance.Name}] Failed to get geofence for instance, make sure it is assign one");
+                return;
             }
             switch (instance.Type)
             {
@@ -409,6 +395,32 @@
         private async Task RemoveInstance(Instance instance)
         {
             await RemoveInstance(instance.Name).ConfigureAwait(false);
+        }
+
+        private async Task<Geofence> GetGeofence(Instance instance, IReadOnlyList<Geofence> geofences = null)
+        {
+            Geofence geofence = null;
+            //if (!string.IsNullOrEmpty(instance.Geofence))
+            if (geofences == null)
+            {
+                try
+                {
+                    geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
+                    if (geofence == null)
+                    {
+                        // TODO: Failed to get geofence for instance
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error: {ex}");
+                }
+            }
+            else
+            {
+                geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
+            }
+            return geofence;
         }
 
         #endregion
