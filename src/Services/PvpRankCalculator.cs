@@ -264,14 +264,7 @@
                         continue; // Not viable cp
 
                     (StatCombination combinations, List<PvpRank> _) = CalculateRanks(stats, cpCap, levelCap);
-                    if (combinationIndex.ContainsKey(levelCap))
-                    {
-                        combinationIndex[levelCap] = combinations;
-                    }
-                    else
-                    {
-                        combinationIndex.Add(levelCap, combinations);
-                    }
+                    combinationIndex[levelCap] = combinations;
 
                     if (CalculateCP(stats, 0, 0, 0, levelCap + 0.5) > cpCap)
                     {
@@ -279,10 +272,7 @@
                         break;
                     }
                 }
-                if (result.ContainsKey(leagueName))
-                    result[leagueName] = combinationIndex;
-                else
-                    result.Add(leagueName, combinationIndex);
+                result[leagueName] = combinationIndex;
             }
             // Set PVP ranking cache
             // TODO: return _cache.Cache.Set(key, result);//, TimeSpan.FromMinutes(5));

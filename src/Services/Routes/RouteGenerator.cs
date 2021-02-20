@@ -79,7 +79,7 @@
                     {
                         points.Add(new Coordinate(currentLatLng.X, currentLatLng.Y));
                     }
-                    currentLatLng = Destination(currentLatLng, heading, (xMod * circleSize * 2));
+                    currentLatLng = Destination(currentLatLng, heading, xMod * circleSize * 2);
                     i++;
                 } while ((heading == 270 && currentLatLng.Y > endLatLng.Y) || (heading == 90 && currentLatLng.Y < startLatLng.Y));
 

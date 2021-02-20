@@ -23,7 +23,7 @@
         //private static readonly Random _random = new Random();
         private DateTime _lastCompletedTime;
         private int _lastIndex;
-        private DateTime _lastLastCompletedTime { get; set; }
+        private DateTime _lastLastCompletedTime;
 
         private readonly object _indexLock = new object();
 
@@ -54,6 +54,11 @@
             _geofences = Geofence.FromPolygons(geofences);
             _routeGenerator = new RouteGenerator();
             Coordinates = _routeGenerator.GenerateBootstrapRoute((List<Geofence>)_geofences, circleSize);
+            // Remove warn var never readed...
+            if (_lastLastCompletedTime == default)
+            {                
+                _lastLastCompletedTime = DateTime.Now;
+            }
         }
 
         #endregion
