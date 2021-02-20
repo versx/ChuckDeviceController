@@ -163,7 +163,6 @@
                         var area = string.IsNullOrEmpty(instance.Geofence)
                             ? instance.Data?.Area
                             : geofence?.Data?.Area;
-                        // TODO: Check if area is null
                         var coordsArray = (List<Coordinate>)
                         (
                             area is List<Coordinate>
@@ -195,15 +194,22 @@
                 case InstanceType.Bootstrap:
                     try
                     {
-                        var area = string.IsNullOrEmpty(instance.Geofence)
-                            ? instance.Data?.Area
+                        List<List<Coordinate>> coordsArray = new List<List<Coordinate>>();
+                        dynamic area = string.IsNullOrEmpty(instance?.Geofence)
+                            ? instance?.Data?.Area
                             : geofence?.Data?.Area;
-                        var coordsArray = (List<List<Coordinate>>)
-                        (
-                            area is List<List<Coordinate>>
-                                ? area
-                                : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
-                        );
+                        if (area is List<List<Coordinate>>)
+                        {
+                            coordsArray = (area as List<List<Coordinate>>);
+                        }
+                        else if (string.IsNullOrEmpty((area as string)))
+                        {
+                            _logger.LogError($"Area value for this type {instance.Type} == null");
+                        }
+                        else
+                        {
+                            coordsArray = JsonSerializer.Deserialize<List<List<Coordinate>>>((area as string));
+                        }
                         var areaArrayEmptyInner = new List<MultiPolygon>();
                         foreach (var coords in coordsArray)
                         {
@@ -407,9 +413,7 @@
             }
         }
 
-#pragma warning disable RCS1213 // Remove unused member declaration.
         private async Task RemoveInstance(Instance instance)
-#pragma warning restore RCS1213 // Remove unused member declaration.
         {
             await RemoveInstance(instance.Name).ConfigureAwait(false);
         }

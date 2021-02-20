@@ -13,8 +13,8 @@
 
     public class GameMaster
     {
-        const string MasterFileName = "masterfile.json";
-        const string CpMultipliersFileName = "cp_multipliers.json";
+        private const string MasterFileName = "masterfile.json";
+        private const string CpMultipliersFileName = "cp_multipliers.json";
 
         //private static readonly IEventLogger _logger = EventLogger.GetLogger("MASTER", Program.LogLevel);
 
@@ -54,16 +54,12 @@
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = LoadInit<GameMaster>(
+                return _instance ??= LoadInit<GameMaster>(
                         Path.Combine(
                             Strings.DataFolder,
                             MasterFileName
                         )
                     );
-                }
-                return _instance;
             }
         }
 
