@@ -168,7 +168,9 @@
             return list;
         }
 
+#pragma warning disable IDE0051 // Supprimer les membres privés non utilisés
         private static List<Coordinate> FilterCoordinates(List<Coordinate> coordinates, ushort stepDistance)
+#pragma warning restore IDE0051 // Supprimer les membres privés non utilisés
         {
             var list = new List<Coordinate>();
             foreach (var coord in coordinates)
@@ -184,7 +186,7 @@
                 var count = _rand.Next(0, 6);
                 for (var i = 0; i < count; i++)
                 {
-                    var startLocation = GetNewCoord(coord, stepDistance, 90 + 60 * i);
+                    var startLocation = GetNewCoord(coord, stepDistance, 90 + (60 * i));
                     if (GeofenceService.IsPointInPolygon(startLocation, coordinates))
                     {
                         list.Add(coord);
@@ -218,8 +220,8 @@
                 {
                     //point.Latitude = r.NextDouble() * (maxLat - minLat) + minLat;
                     //point.Longitude = r.NextDouble() * (maxLon - minLon) + minLon;
-                    point.Latitude = r.NextDouble() * ((maxLat - minLat) + circleSize / 270) + minLat;
-                    point.Longitude += r.NextDouble() * ((maxLon - minLon) + circleSize / 270) + minLon;
+                    point.Latitude = (r.NextDouble() * ((maxLat - minLat) + (circleSize / 270))) + minLat;
+                    point.Longitude += (r.NextDouble() * ((maxLon - minLon) + (circleSize / 270))) + minLon;
                 } while (!GeofenceService.IsPointInPolygon(point, allCoords));
                 result.Add(point);
             }
@@ -248,10 +250,10 @@
             var cosLat1 = Math.Cos(lat1);
             var cosDistR = Math.Cos(distance / r);
             var sinDistR = Math.Sin(distance / r);
-            var lat2 = Math.Asin(sinLat1 * cosDistR + cosLat1 *
-                    sinDistR * Math.Cos(rheading));
+            var lat2 = Math.Asin((sinLat1 * cosDistR) + (cosLat1 *
+                    sinDistR * Math.Cos(rheading)));
             var lon2 = lon1 + Math.Atan2(Math.Sin(rheading) * sinDistR *
-                    cosLat1, cosDistR - sinLat1 * Math.Sin(lat2));
+                    cosLat1, cosDistR - (sinLat1 * Math.Sin(lat2)));
             lon2 *= radInv;
             lon2 = lon2 > 180 ? lon2 - 360 : lon2 < -180 ? lon2 + 360 : lon2;
             return new NetTopologySuite.Geometries.Coordinate(lat2 * radInv, lon2);
