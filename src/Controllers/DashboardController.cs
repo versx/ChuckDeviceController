@@ -365,7 +365,7 @@
                 var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
                 var circleSize = ushort.Parse(Request.Form["circle_Size"].ToString() ?? "70");
                 var circleRouteType = Request.Form.ContainsKey("circle_route_type")
-                    ? StringToCircleRouteType(Request.Form["circle_route_type"])
+                    ? StringToCircleRouteType(Request.Form["circle_route_type"].ToString())
                     : CircleRouteType.Default;
                 var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
                 var pokemonIds = pokemonIdsValue == "*"
@@ -396,6 +396,8 @@
                 {
                     IsEvent = false,
                     IVQueueLimit = ivQueueLimit,
+                    CircleRouteType = circleRouteType,
+                    CircleSize = circleSize,
                     SpinLimit = spinLimit,
                     MinimumLevel = minLevel,
                     MaximumLevel = maxLevel,
