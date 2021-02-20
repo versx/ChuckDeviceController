@@ -479,15 +479,7 @@
                     case GeofenceType.Circle:
                         {
                             // Parse area
-                            var rows = area.Split('\n');
-                            var coords = new List<Coordinate>();
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length != 2)
-                                    continue;
-                                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                            }
+                            var coords = AreaStringToCoordinates(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -497,22 +489,7 @@
                         }
                     case GeofenceType.Geofence:
                         {
-                            var rows = area.Split('\n');
-                            var index = 0;
-                            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length == 2)
-                                {
-                                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                                }
-                                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
-                                {
-                                    index++;
-                                    coords.Add(new List<Coordinate>());
-                                }
-                            }
+                            var coords = AreaStringToMultiPolygon(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
