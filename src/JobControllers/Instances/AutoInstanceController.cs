@@ -425,24 +425,24 @@
                     polygon.Add(first);
                 }
 
-                var cellIds = polygon.GetS2CellIDs(15, 15, int.MaxValue);
-                totalCount += cellIds.Count;
+                var s2CellIds = polygon.GetS2CellIDs(15, 15, int.MaxValue);
+                totalCount += s2CellIds.Count;
                 var cells = new List<Cell>();
                 try
                 {
-                    cells = await GetCellsByIDs(cellIds).ConfigureAwait(false);
+                    cells = await GetCellsByIDs(s2CellIds).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError($"[{Name}] Error: {ex}");
                 }
                 var existingCellIds = cells.Select(x => x.Id);
-                foreach (var cellId in cellIds)
+                foreach (var s2cellId in s2CellIds)
                 {
                     // If Cell Id doesn't exist, add to bootstrap list
-                    if (!existingCellIds.Contains(cellId))
+                    if (!existingCellIds.Contains(s2cellId))
                     {
-                        missingCellIds.Add(cellId);
+                        missingCellIds.Add(s2cellId);
                     }
                 }
             }
@@ -639,8 +639,8 @@
             }
             var pokestops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
             return (ulong)pokestops.Where(x => !x.Deleted &&
-                                                         x.QuestType.HasValue &&
-                                                         x.QuestType != null).ToList().Count;
+                                               x.QuestType.HasValue &&
+                                               x.QuestType != null).ToList().Count;
         }
 
         private static double GetCooldownAmount(double distanceM)

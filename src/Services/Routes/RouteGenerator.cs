@@ -13,6 +13,7 @@
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geofence.Models;
+    using ChuckDeviceController.Geofence;
 
     public class RouteGenerator
     {
@@ -172,7 +173,7 @@
             foreach (var coord in coordinates)
             {
                 // Coordinate is geofenced if in one geofenced area
-                if (IsPointInPolygon(coord, coordinates))
+                if (GeofenceService.IsPointInPolygon(coord, coordinates))
                 {
                     list.Add(coord);
                     continue;
@@ -183,7 +184,7 @@
                 for (var i = 0; i < count; i++)
                 {
                     var startLocation = GetNewCoord(coord, stepDistance, 90 + 60 * i);
-                    if (IsPointInPolygon(startLocation, coordinates))
+                    if (GeofenceService.IsPointInPolygon(startLocation, coordinates))
                     {
                         list.Add(coord);
                         break;
@@ -218,39 +219,11 @@
                     //point.Longitude = r.NextDouble() * (maxLon - minLon) + minLon;
                     point.Latitude = r.NextDouble() * ((maxLat - minLat) + circleSize / 270) + minLat;
                     point.Longitude += r.NextDouble() * ((maxLon - minLon) + circleSize / 270) + minLon;
-                } while (!IsPointInPolygon(point, allCoords));
+                } while (!GeofenceService.IsPointInPolygon(point, allCoords));
                 result.Add(point);
             }
             result.Sort((a, b) => a.Latitude.CompareTo(b.Latitude));
             return result;
-        }
-
-        //took it from http://codereview.stackexchange.com/a/108903
-        //you can use your own one
-        public static bool IsPointInPolygon(Coordinate point, List<Coordinate> polygon)
-        {
-            int polygonLength = polygon.Count, i = 0;
-            bool inside = false;
-            // x, y for tested point.
-            double pointX = point.Longitude, pointY = point.Latitude;
-            // start / end point for the current polygon segment.
-            double startX, startY, endX, endY;
-            Coordinate endPoint = polygon[polygonLength - 1];
-            endX = endPoint.Longitude;
-            endY = endPoint.Latitude;
-            while (i < polygonLength)
-            {
-                startX = endX;
-                startY = endY;
-                endPoint = polygon[i++];
-                endX = endPoint.Longitude;
-                endY = endPoint.Latitude;
-                //
-                inside ^= ((endY > pointY) ^ (startY > pointY)) // ? pointY inside [startY;endY] segment ?
-                          && // if so, test if it is under the segment
-                          (pointX - endX < (pointY - endY) * (startX - endX) / (startY - endY));
-            }
-            return inside;
         }
 
         /// <summary>
