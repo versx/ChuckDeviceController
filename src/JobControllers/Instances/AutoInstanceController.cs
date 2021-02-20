@@ -374,7 +374,7 @@
                         return $"Bootstrapping {count:N0}/{totalCount:N0} ({Math.Round(bootstrapPercentage, 2)}%)";
                     }
                     var ids = _allStops.ConvertAll(x => x.Id);
-                    var currentCountDb = (double)await GetQuestCount(ids).ConfigureAwait(false);
+                    var currentCountDb = (double)await _pokestopRepository.GetQuestCount(ids).ConfigureAwait(false);
                     var maxCount = (double)_allStops.Count;
                     var currentCount = (double)(maxCount - _todayStops.Count);
                     var percentage = maxCount > 0
@@ -430,7 +430,7 @@
                 var cells = new List<Cell>();
                 try
                 {
-                    cells = await GetCellsByIDs(s2CellIds).ConfigureAwait(false);
+                    cells = await _cellRepository.GetByIdsAsync(s2CellIds).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -584,63 +584,6 @@
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
             };
-        }
-
-        private async Task<List<Cell>> GetCellsByIDs(List<ulong> ids)
-        {
-            const double MAX_COUNT = 10000.0;
-            if (ids.Count > MAX_COUNT)
-            {
-                var list = new List<Cell>();
-                var count = Math.Ceiling(ids.Count / MAX_COUNT);
-                for (var i = 0; i < count; i++)
-                {
-                    var start = (int)MAX_COUNT * i;
-                    var end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
-                    var slice = ids.Slice(start, end);
-                    var result = await GetCellsByIDs(slice).ConfigureAwait(false);
-                    if (result.Count > 0)
-                    {
-                        result.ForEach(x => list.Add(x));
-                    }
-                }
-                return list;
-            }
-            if (ids.Count == 0)
-            {
-                return new List<Cell>();
-            }
-            return (List<Cell>)await _cellRepository.GetByIdsAsync(ids, true).ConfigureAwait(false);
-        }
-
-        private async Task<ulong> GetQuestCount(List<string> ids)
-        {
-            const double MAX_COUNT = 10000.0;
-            if (ids.Count > MAX_COUNT)
-            {
-                var result = 0UL;
-                var count = Math.Ceiling(ids.Count / MAX_COUNT);
-                for (var i = 0; i < count; i++)
-                {
-                    var start = (int)MAX_COUNT * i;
-                    var end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
-                    var slice = ids.Slice(start, end);
-                    var qResult = await GetQuestCount(slice).ConfigureAwait(false);
-                    if (qResult > 0)
-                    {
-                        result += qResult;
-                    }
-                }
-                return result;
-            }
-            if (ids.Count == 0)
-            {
-                return 0;
-            }
-            var pokestops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
-            return (ulong)pokestops.Where(x => !x.Deleted &&
-                                               x.QuestType.HasValue &&
-                                               x.QuestType != null).ToList().Count;
         }
 
         private static double GetCooldownAmount(double distanceM)

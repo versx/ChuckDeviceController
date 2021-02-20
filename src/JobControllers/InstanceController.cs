@@ -119,7 +119,7 @@
                 // TODO: Maybe no locking object
                 if (instanceController != null)
                 {
-                    return await (instanceController?.GetStatus()).ConfigureAwait(false);
+                    return await instanceController.GetStatus().ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -180,22 +180,15 @@
                 case InstanceType.Bootstrap:
                     try
                     {
-                        List<List<Coordinate>> coordsArray = new List<List<Coordinate>>();
-                        dynamic area = string.IsNullOrEmpty(instance?.Geofence)
-                            ? instance?.Data?.Area
+                        var area = string.IsNullOrEmpty(instance.Geofence)
+                            ? instance.Data?.Area
                             : geofence?.Data?.Area;
-                        if (area is List<List<Coordinate>>)
-                        {
-                            coordsArray = (area as List<List<Coordinate>>);
-                        }
-                        else if (string.IsNullOrEmpty((area as string)))
-                        {
-                            _logger.LogError($"Area value for this type {instance.Type} == null");
-                        }
-                        else
-                        {
-                            coordsArray = JsonSerializer.Deserialize<List<List<Coordinate>>>((area as string));
-                        }
+                        var coordsArray = (List<List<Coordinate>>)
+                        (
+                            area is List<List<Coordinate>>
+                                ? area
+                                : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
+                        );
                         var areaArrayEmptyInner = new List<MultiPolygon>();
                         foreach (var coords in coordsArray)
                         {
