@@ -24,9 +24,9 @@
         {
             if (fromCache)
             {
-                return await Task.FromResult(_dbContext.Cells.FromCache().ToList());
+                return await Task.FromResult(_dbContext.Cells.FromCache().ToList()).ConfigureAwait(false);
             }
-            return await base.GetAllAsync();
+            return await base.GetAllAsync().ConfigureAwait(false);
         }
 
         public async Task<List<Cell>> GetAllAsync(BoundingBox bbox, ulong updated = 0)

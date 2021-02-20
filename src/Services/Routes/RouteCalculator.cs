@@ -73,10 +73,10 @@
 				var closestDistance = double.MaxValue;
 				for (var i = 0; i < pointsList.Count; i++)
 				{
-					var distanceQuick = DistanceQuick(currentPoint, pointsList[i]) + circleSize / 2;
+					var distanceQuick = DistanceQuick(currentPoint, pointsList[i]) + (circleSize / 2);
 					if (distanceQuick > closestDistance)
 						continue;
-					var distance = Distance(currentPoint, pointsList[i]) + circleSize / 2;
+					var distance = Distance(currentPoint, pointsList[i]) + (circleSize / 2);
 					if (distance < closestDistance)
 					{
 						closestPointIndex = i;

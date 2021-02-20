@@ -23,7 +23,7 @@
         //private static readonly Random _random = new Random();
         private DateTime _lastCompletedTime;
         private int _lastIndex;
-        private DateTime _lastLastCompletedTime;
+        private DateTime _lastLastCompletedTime { get; set; }
 
         private readonly object _indexLock = new object();
 

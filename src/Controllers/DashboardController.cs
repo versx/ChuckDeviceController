@@ -239,7 +239,7 @@
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
-                    return BuildErrorResponse("instance-add", $"Invalid minimum and maximum levels provided");
+                    return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided");
                 }
 
                 if (await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false) != null)
@@ -379,7 +379,7 @@
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
-                    return BuildErrorResponse("instance-edit", $"Invalid minimum and maximum levels provided");
+                    return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided");
                 }
 
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
@@ -672,7 +672,7 @@
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
-                    return BuildErrorResponse("assignment-add", $"Failed to get instances or devices");
+                    return BuildErrorResponse("assignment-add", "Failed to get instances or devices");
                 }
 
                 if (!devices.Any(x => x.Uuid == uuid))
@@ -808,7 +808,7 @@
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
-                    return BuildErrorResponse("assignment-edit", $"Failed to get instances or devices");
+                    return BuildErrorResponse("assignment-edit", "Failed to get instances or devices");
                 }
 
                 if (!devices.Any(x => x.Uuid == uuid))
@@ -1125,7 +1125,7 @@
                     coords[index].Add(new Coordinate(latitude, longitude));
                 }
                 else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
-                {                   
+                {
                     coords.Add(new List<Coordinate>());
                     index++;
                 }

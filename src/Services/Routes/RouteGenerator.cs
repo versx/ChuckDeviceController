@@ -34,11 +34,7 @@
         {
             get
             {
-                if (_instance == null)
-                {
-                    _instance = new RouteGenerator();
-                }
-                return _instance;
+                return _instance ??= new RouteGenerator();
             }
         }
 
@@ -127,10 +123,10 @@
                 MaximumLatitude = maxLat,
                 MaximumLongitude = maxLon,
             };
-            var spawnpoints = (await _spawnpointsRepository.GetAllAsync()).ToList();
-            var pokestops = await _pokestopRepository.GetAllAsync(bbox);
-            var gyms = await _gymRepository.GetAllAsync(bbox);
-            var cells = await _cellRepository.GetAllAsync(bbox);
+            var spawnpoints = (await _spawnpointsRepository.GetAllAsync().ConfigureAwait(false)).ToList();
+            var pokestops = await _pokestopRepository.GetAllAsync(bbox).ConfigureAwait(false);
+            var gyms = await _gymRepository.GetAllAsync(bbox).ConfigureAwait(false);
+            var cells = await _cellRepository.GetAllAsync(bbox).ConfigureAwait(false);
             var list = new List<Coordinate>();
             spawnpoints.ForEach(x => list.Add(new Coordinate(x.Latitude, x.Longitude)));
             pokestops.ForEach(x => list.Add(new Coordinate(x.Latitude, x.Longitude)));

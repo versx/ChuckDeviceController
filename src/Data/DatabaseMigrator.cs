@@ -75,7 +75,7 @@
             var keepChecking = true;
             while (keepChecking)
             {
-                var path = Path.Combine(MigrationsFolder, (current + 1) + ".sql");
+                var path = Path.Combine(MigrationsFolder, current + 1 + ".sql");
                 if (File.Exists(path))
                     current++;
                 else
@@ -95,7 +95,7 @@
             if (fromVersion < toVersion)
             {
                 _logger.LogInformation($"Migrating database to version {fromVersion + 1}");
-                var sqlFile = Path.Combine(MigrationsFolder, (fromVersion + 1) + ".sql");
+                var sqlFile = Path.Combine(MigrationsFolder, fromVersion + 1 + ".sql");
 
                 // Read SQL file and remove any new lines
                 var migrateSql = File.ReadAllText(sqlFile)?.Replace("\r", "").Replace("\n", "");
@@ -128,7 +128,7 @@
                 var newVersion = fromVersion + 1;
                 try
                 {
-                    await _metadataRepository.AddOrUpdateAsync(new Metadata { Key = "DB_VERSION", Value = newVersion.ToString() });
+                    await _metadataRepository.AddOrUpdateAsync(new Metadata { Key = "DB_VERSION", Value = newVersion.ToString() }).ConfigureAwait(false);
                     _logger.LogInformation("Migration successful");
                 }
                 catch (Exception ex)
@@ -136,14 +136,14 @@
                     // Failed migration
                     _logger.LogError($"Failed migration err: {ex.Message}");
                 }
-                await Migrate(newVersion, toVersion);
+                await Migrate(newVersion, toVersion).ConfigureAwait(false);
             }
             if (fromVersion == toVersion)
             {
                 _logger.LogInformation("Migration done");
                 Finished = true;
             }
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         /// <summary>
