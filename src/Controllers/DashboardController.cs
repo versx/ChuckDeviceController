@@ -1110,13 +1110,15 @@
         {
             var rows = area.Split('\n');
             var coords = new List<Coordinate>();
+            var nfi = new CultureInfo("en-US").NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var row in rows)
             {
                 var split = row.Split(',');
-                if (split.Length != 2 || !IsDoubleValue(split[0]) || !IsDoubleValue(split[1]))
+                if (split.Length != 2)
                     continue;
-                var latitude = double.Parse(split[0].Trim('\0'), CultureInfo.InvariantCulture);
-                var longitude = double.Parse(split[1].Trim('\0'), CultureInfo.InvariantCulture);
+                var latitude = double.Parse(split[0].Trim('\n'), nfi);
+                var longitude = double.Parse(split[1].Trim('\n'), nfi);
                 coords.Add(new Coordinate(latitude, longitude));
             }
             return coords;
