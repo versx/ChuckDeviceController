@@ -134,6 +134,7 @@
                 catch (Exception ex)
                 {
                     // Failed migration
+                    _logger.LogError($"Failed migration err: {ex.Message}");
                 }
                 await Migrate(newVersion, toVersion);
             }
