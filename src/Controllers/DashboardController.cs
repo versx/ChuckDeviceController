@@ -484,7 +484,7 @@
                             foreach (var row in rows)
                             {
                                 var split = row.Split(',');
-                                if (split.Length != 2 || !IsDoubleValue(split[0]) || !IsDoubleValue(split[1]))
+                                if (split.Length != 2)
                                     continue;
                                 coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
                             }
@@ -503,7 +503,7 @@
                             foreach (var row in rows)
                             {
                                 var split = row.Split(',');
-                                if (split.Length == 2 && IsDoubleValue(split[0]) && !IsDoubleValue(split[1]))
+                                if (split.Length == 2)
                                 {
                                     coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
                                 }
@@ -1080,12 +1080,9 @@
         private static string CoordinatesToAreaString(dynamic area)
         {
             var coords = string.Empty;
-            if (area is List<Coordinate>)
+            foreach (var coord in area.EnumerateArray())
             {
-                foreach (var coord in area.EnumerateArray())
-                {
-                    coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
-                }
+                coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
             }
             return coords;
         }
@@ -1110,21 +1107,18 @@
         {
             var rows = area.Split('\n');
             var coords = new List<Coordinate>();
+            var nfi = CultureInfo.InvariantCulture.NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var row in rows)
             {
                 var split = row.Split(',');
-                if (split.Length != 2 || !IsDoubleValue(split[0]) || !IsDoubleValue(split[1]))
+                if (split.Length != 2)
                     continue;
-                var latitude = double.Parse(split[0].Trim('\0'), CultureInfo.InvariantCulture);
-                var longitude = double.Parse(split[1].Trim('\0'), CultureInfo.InvariantCulture);
+                var latitude = double.Parse(split[0].Trim('\n'), nfi);
+                var longitude = double.Parse(split[1].Trim('\n'), nfi);
                 coords.Add(new Coordinate(latitude, longitude));
             }
             return coords;
-        }
-
-        private static bool IsDoubleValue(string test)
-        {
-            return double.TryParse(test, out var _);
         }
 
         private static List<List<Coordinate>> AreaStringToMultiPolygon(string area)
@@ -1132,13 +1126,15 @@
             var rows = area.Split('\n');
             var index = 0;
             var coords = new List<List<Coordinate>> { new List<Coordinate>() };
+            var nfi = CultureInfo.InvariantCulture.NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var row in rows)
             {
                 var split = row.Split(',');
-                if (split.Length == 2 && IsDoubleValue(split[0]) && IsDoubleValue(split[1]))
+                if (split.Length == 2)
                 {
-                    var latitude = double.Parse(split[0].Trim('\0'), CultureInfo.InvariantCulture);
-                    var longitude = double.Parse(split[1].Trim('\0'), CultureInfo.InvariantCulture);
+                    var latitude = double.Parse(split[0].Trim('\0'), nfi);
+                    var longitude = double.Parse(split[1].Trim('\0'), nfi);
                     coords[index].Add(new Coordinate(latitude, longitude));
                 }
                 else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
