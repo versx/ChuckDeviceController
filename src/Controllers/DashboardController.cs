@@ -1063,8 +1063,8 @@
             nfi.NumberDecimalSeparator = ".";
             foreach (var coord in area.EnumerateArray())
             {
-                var latitude = double.Parse(coord.GetProperty("lat").GetString(), nfi);
-                var longitude = double.Parse(coord.GetProperty("lon").GetString(), nfi);
+                var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
+                var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
                 coords += $"{latitude},{longitude}\n";
             }
             return coords;
@@ -1081,8 +1081,8 @@
                 coords += $"[Geofence {index}]\n";
                 foreach (var coord in fence.EnumerateArray())
                 {
-                    var latitude = double.Parse(coord.GetProperty("lat").GetString(), nfi);
-                    var longitude = double.Parse(coord.GetProperty("lon").GetString(), nfi);
+                    var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
+                    var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
                     coords += $"{latitude},{longitude}\n";
                 }
                 index++;
