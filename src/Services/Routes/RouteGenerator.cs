@@ -19,10 +19,10 @@
         #region Variables
 
         private static readonly Random _rand = new Random();
-        private readonly SpawnpointRepository _spawnpointsRepository;
-        private readonly PokestopRepository _pokestopRepository;
-        private readonly GymRepository _gymRepository;
-        private readonly CellRepository _cellRepository;
+        private readonly SpawnpointRepository _spawnpointsRepository = null;
+        private readonly PokestopRepository _pokestopRepository = null;
+        private readonly GymRepository _gymRepository = null;
+        private readonly CellRepository _cellRepository = null;
 
         #endregion
 
