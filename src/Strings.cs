@@ -11,6 +11,13 @@
 
         public const string WebRoot = "../wwwroot";
         public const string DataFolder = WebRoot + "/static/data";
+        public const string MigrationsFolder = "../migrations";
+
+        public const string SQL_CREATE_TABLE_METADATA = @"
+        CREATE TABLE IF NOT EXISTS metadata (
+            `key` VARCHAR(50) PRIMARY KEY NOT NULL,
+            `value` VARCHAR(50) DEFAULT NULL
+        );";
 
         public static string Started
         {

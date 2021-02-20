@@ -40,6 +40,13 @@ namespace ChuckDeviceController
                 Console.WriteLine($"Failed to load config {configPath}");
                 return;
             }
+            // Start database migrator
+            var migrator = new Data.DatabaseMigrator();
+            while (!migrator.Finished)
+            {
+                System.Threading.Thread.Sleep(50);
+            }
+
             CreateHostBuilder(args).Build().Run();
         }
 

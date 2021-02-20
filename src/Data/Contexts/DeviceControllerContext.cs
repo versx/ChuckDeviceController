@@ -43,6 +43,8 @@
 
         public DbSet<Weather> Weather { get; set; }
 
+        public DbSet<Metadata> Metadata { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Instance>()
