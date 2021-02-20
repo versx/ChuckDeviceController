@@ -1,19 +1,21 @@
 ﻿namespace ChuckDeviceController.Controllers
 {
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Repositories;
-    using ChuckDeviceController.JobControllers;
-    using ChuckDeviceController.JobControllers.Instances;
-    using ChuckDeviceController.Utilities;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
+
+    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
+    using ChuckDeviceController.JobControllers;
+    using ChuckDeviceController.JobControllers.Instances;
+    using ChuckDeviceController.Utilities;
 
     [Controller]
     [Route("/dashboard")]
@@ -68,7 +70,7 @@
             obj.assignments_count = _context.Assignments.Count().ToString("N0");
             obj.accounts_count = _context.Accounts.Count().ToString("N0");
             obj.geofences_count = _context.Geofences.Count().ToString("N0");
-            dynamic data = Renderer.ParseTemplate("index", obj);
+            var data = Renderer.ParseTemplate("index", obj);
             return new ContentResult
             {
                 Content = data,
@@ -82,8 +84,8 @@
         [HttpGet("/dashboard/devices")]
         public IActionResult GetDevices()
         {
-            ExpandoObject obj = BuildDefaultData();
-            string data = Renderer.ParseTemplate("devices", obj);
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("devices", obj);
             return new ContentResult
             {
                 Content = data,
@@ -98,7 +100,7 @@
         ]
         public async Task<IActionResult> AssignDevice(string uuid)
         {
-            Device device = await _deviceRepository.GetByIdAsync(uuid).ConfigureAwait(false);
+            var device = await _deviceRepository.GetByIdAsync(uuid).ConfigureAwait(false);
             if (device == null)
             {
                 // Unknown device
@@ -114,7 +116,7 @@
                 dynamic obj = BuildDefaultData();
                 obj.device_uuid = uuid;
                 obj.instances = instances;
-                dynamic data = Renderer.ParseTemplate("device-assign", obj);
+                var data = Renderer.ParseTemplate("device-assign", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -124,13 +126,13 @@
             }
             else
             {
-                Microsoft.Extensions.Primitives.StringValues instanceName = Request.Form["instance"];
+                var instanceName = Request.Form["instance"];
                 if (string.IsNullOrEmpty(instanceName))
                 {
                     // Unknown instance name provided
                     return BuildErrorResponse("device-assign", $"Instance '{instanceName}' does not exist");
                 }
-                Instance instance = await _instanceRepository.GetByIdAsync(instanceName).ConfigureAwait(false);
+                var instance = await _instanceRepository.GetByIdAsync(instanceName).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Failed to get instance by name
@@ -151,8 +153,8 @@
         [HttpGet("/dashboard/instances")]
         public IActionResult GetInstances()
         {
-            ExpandoObject obj = BuildDefaultData();
-            string data = Renderer.ParseTemplate("instances", obj);
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("instances", obj);
             return new ContentResult
             {
                 Content = data,
@@ -173,7 +175,7 @@
                 obj.timezone_offset = 0;
                 obj.min_level = 0;
                 obj.max_level = 30;
-                IReadOnlyList<Geofence> geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+                var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
                     name = x.Name,
@@ -186,7 +188,7 @@
                 obj.nothing_selected = true;
                 obj.iv_queue_limit = 100;
                 obj.spin_limit = 3500;
-                dynamic data = Renderer.ParseTemplate("instance-add", obj);
+                var data = Renderer.ParseTemplate("instance-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -196,23 +198,23 @@
             }
             else
             {
-                string name = Request.Form["name"].ToString();
-                InstanceType type = Instance.StringToInstanceType(Request.Form["type"]);
-                string geofence = Request.Form["geofence"].ToString();
-                string area = Request.Form["area"].ToString();
-                ushort minLevel = ushort.Parse(Request.Form["min_level"]);
-                ushort maxLevel = ushort.Parse(Request.Form["max_level"]);
-                int timezoneOffset = Request.Form.ContainsKey("timezone_offset")
+                var name = Request.Form["name"].ToString();
+                var type = Instance.StringToInstanceType(Request.Form["type"]);
+                var geofence = Request.Form["geofence"].ToString();
+                var area = Request.Form["area"].ToString();
+                var minLevel = ushort.Parse(Request.Form["min_level"]);
+                var maxLevel = ushort.Parse(Request.Form["max_level"]);
+                var timezoneOffset = Request.Form.ContainsKey("timezone_offset")
                     ? int.Parse(Request.Form["timezone_offset"].ToString() ?? "0")
                     : 0;
-                CircleRouteType circleRouteType = Request.Form.ContainsKey("circle_route_type")
+                var circleRouteType = Request.Form.ContainsKey("circle_route_type")
                     ? StringToCircleRouteType(Request.Form["circle_route_type"])
                     : CircleRouteType.Default;
-                int circleSize = Request.Form.ContainsKey("circle_size")
+                var circleSize = Request.Form.ContainsKey("circle_size")
                     ? ushort.Parse(Request.Form["circle_size"].ToString() ?? "70")
                     : 70;
-                string pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
-                List<uint> pokemonIds = pokemonIdsValue == "*"
+                var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
+                var pokemonIds = pokemonIdsValue == "*"
                     ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
                     : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
                 ushort ivQueueLimit = 100;
@@ -246,7 +248,7 @@
                     return BuildErrorResponse("instance-add", $"Instance with name '{name}' already exists");
                 }
 
-                Instance instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance != null)
                 {
                     // Instance already exists
@@ -285,14 +287,14 @@
         {
             if (Request.Method == "GET")
             {
-                Instance instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Failed to get instance by name
                     return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist");
                 }
-                ushort minLevel = instance.Data.MinimumLevel;
-                ushort maxLevel = instance.Data.MaximumLevel;
+                var minLevel = instance.Data.MinimumLevel;
+                var maxLevel = instance.Data.MaximumLevel;
                 dynamic obj = BuildDefaultData();
                 obj.name = name;
                 obj.geofence = instance.Geofence;
@@ -304,14 +306,14 @@
                 obj.pokemon_iv_selected = instance.Type == InstanceType.PokemonIV;
                 obj.auto_quest_selected = instance.Type == InstanceType.AutoQuest;
                 obj.bootstrap_selected = instance.Type == InstanceType.Bootstrap;
-                IReadOnlyList<Geofence> geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+                var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
                     name = x.Name,
                     type = x.Type.ToString().ToLower(),
                     selected = string.Compare(instance.Geofence, x.Name, true) == 0,
                 });
-                Geofence geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
+                var geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
                 obj.circle_route_type = CircleRouteTypeToString(instance.Data.CircleRouteType);
                 obj.leapfrog_selected = instance.Data.CircleRouteType == CircleRouteType.Default;
                 obj.spread_selected = instance.Data.CircleRouteType == CircleRouteType.Split;
@@ -332,7 +334,7 @@
                 //    case InstanceType.Bootstrap:
                         obj.circle_size = instance.Data.CircleSize ?? 70;
                 //}
-                dynamic data = Renderer.ParseTemplate("instance-edit", obj);
+                var data = Renderer.ParseTemplate("instance-edit", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -344,7 +346,7 @@
             {
                 if (Request.Form.ContainsKey("delete"))
                 {
-                    Instance instanceToDelete = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                    var instanceToDelete = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                     if (instanceToDelete != null)
                     {
                         await _instanceRepository.DeleteAsync(instanceToDelete).ConfigureAwait(false);
@@ -354,24 +356,24 @@
                     return Redirect("/dashboard/instances");
                 }
 
-                string newName = Request.Form["name"].ToString();
-                InstanceType type = Instance.StringToInstanceType(Request.Form["type"]);
-                string geofence = Request.Form["geofence"].ToString();
+                var newName = Request.Form["name"].ToString();
+                var type = Instance.StringToInstanceType(Request.Form["type"]);
+                var geofence = Request.Form["geofence"].ToString();
                 //var area = Request.Form["area"].ToString();
-                ushort minLevel = ushort.Parse(Request.Form["min_level"]);
-                ushort maxLevel = ushort.Parse(Request.Form["max_level"]);
-                int timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
-                ushort circleSize = ushort.Parse(Request.Form["circle_Size"].ToString() ?? "70");
-                CircleRouteType circleRouteType = Request.Form.ContainsKey("circle_route_type")
+                var minLevel = ushort.Parse(Request.Form["min_level"]);
+                var maxLevel = ushort.Parse(Request.Form["max_level"]);
+                var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
+                var circleSize = ushort.Parse(Request.Form["circle_Size"].ToString() ?? "70");
+                var circleRouteType = Request.Form.ContainsKey("circle_route_type")
                     ? StringToCircleRouteType(Request.Form["circle_route_type"].ToString())
                     : CircleRouteType.Default;
-                string pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
-                List<uint> pokemonIds = pokemonIdsValue == "*"
+                var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
+                var pokemonIds = pokemonIdsValue == "*"
                     ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
                     : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
                 //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
-                ushort ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
-                ushort spinLimit = ushort.Parse(Request.Form["spin_limit"]);
+                var ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
+                var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
                 //var accountGroup = Request.Form["account_group"];
                 //var isEvent = Request.Form["is_event"];
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
@@ -380,7 +382,7 @@
                     return BuildErrorResponse("instance-edit", $"Invalid minimum and maximum levels provided");
                 }
 
-                Instance instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Instance does not exist, create?
@@ -414,7 +416,7 @@
         {
             dynamic obj = BuildDefaultData();
             obj.instance_name = name;
-            dynamic data = Renderer.ParseTemplate("instance-ivqueue", obj);
+            var data = Renderer.ParseTemplate("instance-ivqueue", obj);
             return new ContentResult
             {
                 Content = data,
@@ -430,8 +432,8 @@
         [HttpGet("/dashboard/geofences")]
         public IActionResult GetGeofences()
         {
-            ExpandoObject obj = BuildDefaultData();
-            string data = Renderer.ParseTemplate("geofences", obj);
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("geofences", obj);
             return new ContentResult
             {
                 Content = data,
@@ -450,7 +452,7 @@
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
-                dynamic data = Renderer.ParseTemplate("geofence-add", obj);
+                var data = Renderer.ParseTemplate("geofence-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -460,13 +462,13 @@
             }
             else
             {
-                string name = Request.Form["name"].ToString();
-                GeofenceType type = Request.Form["type"].ToString() == "circle"
+                var name = Request.Form["name"].ToString();
+                var type = Request.Form["type"].ToString() == "circle"
                     ? GeofenceType.Circle
                     : GeofenceType.Geofence;
-                string area = Request.Form["area"].ToString();
+                var area = Request.Form["area"].ToString();
 
-                Geofence geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (geofence != null)
                 {
                     // Geofence already exists by name
@@ -479,7 +481,7 @@
                     case GeofenceType.Circle:
                         {
                             // Parse area
-                            List<Coordinate> coords = AreaStringToCoordinates(area);
+                            var coords = AreaStringToCoordinates(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -489,7 +491,7 @@
                         }
                     case GeofenceType.Geofence:
                         {
-                            List<List<Coordinate>> coords = AreaStringToMultiPolygon(area);
+                            var coords = AreaStringToMultiPolygon(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -523,7 +525,7 @@
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
-                Geofence geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (geofence == null)
                 {
                     // Provided geofence name does not exist
@@ -534,8 +536,8 @@
                 obj.old_name = geofence.Name;
                 obj.circle_selected = geofence.Type == GeofenceType.Circle;
                 obj.geofence_selected = geofence.Type == GeofenceType.Geofence;
-                string coords = string.Empty;
-                dynamic coordsArray = geofence?.Data?.Area;
+                var coords = string.Empty;
+                var coordsArray = geofence?.Data?.Area;
                 if (geofence.Type == GeofenceType.Circle)
                 {
                     coords = CoordinatesToAreaString(coordsArray);
@@ -545,7 +547,7 @@
                     coords = MultiPolygonToAreaString(coordsArray);
                 }
                 obj.area = coords;
-                dynamic data = Renderer.ParseTemplate("geofence-edit", obj);
+                var data = Renderer.ParseTemplate("geofence-edit", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -557,7 +559,7 @@
             {
                 if (Request.Form.ContainsKey("delete"))
                 {
-                    Geofence geofenceToDelete = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                    var geofenceToDelete = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
                     if (geofenceToDelete != null)
                     {
                         await _geofenceRepository.DeleteAsync(geofenceToDelete).ConfigureAwait(false);
@@ -566,13 +568,13 @@
                     return Redirect("/dashboard/geofences");
                 }
 
-                string newName = Request.Form["name"].ToString();
-                GeofenceType type = Request.Form["type"].ToString() == "circle"
+                var newName = Request.Form["name"].ToString();
+                var type = Request.Form["type"].ToString() == "circle"
                     ? GeofenceType.Circle
                     : GeofenceType.Geofence;
-                string area = Request.Form["area"].ToString();
+                var area = Request.Form["area"].ToString();
 
-                Geofence geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (geofence == null)
                 {
                     // Failed to find geofence by by name
@@ -585,7 +587,7 @@
                     case GeofenceType.Circle:
                         {
                             // Parse area
-                            List<Coordinate> coords = AreaStringToCoordinates(area);
+                            var coords = AreaStringToCoordinates(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -595,7 +597,7 @@
                         }
                     case GeofenceType.Geofence:
                         {
-                            List<List<Coordinate>> coords = AreaStringToMultiPolygon(area);
+                            var coords = AreaStringToMultiPolygon(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -622,8 +624,8 @@
         [HttpGet("/dashboard/assignments")]
         public IActionResult GetAssignments()
         {
-            ExpandoObject obj = BuildDefaultData();
-            string data = Renderer.ParseTemplate("assignments", obj);
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("assignments", obj);
             return new ContentResult
             {
                 Content = data,
@@ -640,14 +642,14 @@
         {
             if (Request.Method == "GET")
             {
-                IReadOnlyList<Instance> instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
-                IReadOnlyList<Device> devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 dynamic obj = BuildDefaultData();
                 obj.instances = instances.Select(x => new { name = x.Name, selected = false, selected_source = false });
                 obj.devices = devices.Select(x => new { uuid = x.Uuid, selected = false });
                 obj.nothing_selected = true;
                 obj.nothing_selected_source = true;
-                dynamic data = Renderer.ParseTemplate("assignment-add", obj);
+                var data = Renderer.ParseTemplate("assignment-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -657,16 +659,16 @@
             }
             else
             {
-                string uuid = Request.Form["device"].ToString();
-                string sourceInstance = Request.Form["source_instance"].ToString();
-                string destinationInstance = Request.Form["instance"].ToString();
-                string time = Request.Form["time"].ToString();
-                string date = Request.Form["date"].ToString();
-                bool createOnComplete = Request.Form["oncomplete"].ToString() == "on";
-                bool enabled = Request.Form["enabled"].ToString() == "on";
+                var uuid = Request.Form["device"].ToString();
+                var sourceInstance = Request.Form["source_instance"].ToString();
+                var destinationInstance = Request.Form["instance"].ToString();
+                var time = Request.Form["time"].ToString();
+                var date = Request.Form["date"].ToString();
+                var createOnComplete = Request.Form["oncomplete"].ToString() == "on";
+                var enabled = Request.Form["enabled"].ToString() == "on";
 
-                IReadOnlyList<Instance> instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
-                IReadOnlyList<Device> devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
@@ -685,16 +687,16 @@
                     return BuildErrorResponse("assignment-add", $"Instance with name '{destinationInstance}' does not exist");
                 }
 
-                uint totalTime = 0u;
+                var totalTime = 0u;
                 if (!string.IsNullOrEmpty(time))
                 {
-                    string[] split = time.Split(':');
+                    var split = time.Split(':');
                     if (split.Length == 3)
                     {
-                        int hours = int.Parse(split[0]);
-                        int minutes = int.Parse(split[1]);
-                        int seconds = int.Parse(split[2]);
-                        int newTime = (hours * 3600) + (minutes * 60) + seconds;
+                        var hours = int.Parse(split[0]);
+                        var minutes = int.Parse(split[1]);
+                        var seconds = int.Parse(split[2]);
+                        var newTime = (hours * 3600) + (minutes * 60) + seconds;
                         totalTime = newTime == 0 ? 1 : (uint)newTime;
                     }
                     else
@@ -718,7 +720,7 @@
 
                 try
                 {
-                    Assignment assignment = new Assignment
+                    var assignment = new Assignment
                     {
                         InstanceName = destinationInstance,
                         SourceInstanceName = sourceInstance,
@@ -737,7 +739,7 @@
 
                 if (createOnComplete)
                 {
-                    Assignment oncompleteAssignment = new Assignment
+                    var oncompleteAssignment = new Assignment
                     {
                         InstanceName = destinationInstance,
                         SourceInstanceName = sourceInstance,
@@ -762,20 +764,20 @@
         {
             if (Request.Method == "GET")
             {
-                Assignment assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
+                var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
                 if (assignment == null)
                 {
                     // Failed to get assignment by id, does assignment exist?
                 }
 
-                IReadOnlyList<Device> devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-                IReadOnlyList<Instance> instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
                 if (devices == null || instances == null)
                 {
                     // Failed to get devices or instances from database
                 }
 
-                string formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
+                var formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
                 dynamic obj = BuildDefaultData();
                 obj.id = id;
                 obj.date = assignment.Date;
@@ -783,7 +785,7 @@
                 obj.enabled = assignment.Enabled ? "checked" : "";
                 obj.instances = instances.Select(x => new { name = x.Name, selected = x.Name == assignment.InstanceName, selected_source = x.Name == assignment.SourceInstanceName });
                 obj.devices = devices.Select(x => new { uuid = x.Uuid, selected = x.Uuid == assignment.DeviceUuid });
-                dynamic data = Renderer.ParseTemplate("assignment-edit", obj);
+                var data = Renderer.ParseTemplate("assignment-edit", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -793,16 +795,16 @@
             }
             else
             {
-                string uuid = Request.Form["device"].ToString();
-                string sourceInstance = Request.Form["source_instance"].ToString();
-                string destinationInstance = Request.Form["instance"].ToString();
-                string time = Request.Form["time"].ToString();
-                string date = Request.Form["date"].ToString();
-                bool createOnComplete = Request.Form["oncomplete"].ToString() == "on";
-                bool enabled = Request.Form["enabled"].ToString() == "on";
+                var uuid = Request.Form["device"].ToString();
+                var sourceInstance = Request.Form["source_instance"].ToString();
+                var destinationInstance = Request.Form["instance"].ToString();
+                var time = Request.Form["time"].ToString();
+                var date = Request.Form["date"].ToString();
+                var createOnComplete = Request.Form["oncomplete"].ToString() == "on";
+                var enabled = Request.Form["enabled"].ToString() == "on";
 
-                IReadOnlyList<Instance> instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
-                IReadOnlyList<Device> devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
@@ -821,16 +823,16 @@
                     return BuildErrorResponse("assignment-edit", $"Instance with name '{destinationInstance}' does not exist");
                 }
 
-                uint totalTime = 0u;
+                var totalTime = 0u;
                 if (!string.IsNullOrEmpty(time))
                 {
-                    string[] split = time.Split(':');
+                    var split = time.Split(':');
                     if (split.Length == 3)
                     {
-                        int hours = int.Parse(split[0]);
-                        int minutes = int.Parse(split[1]);
-                        int seconds = int.Parse(split[2]);
-                        int newTime = (hours * 3600) + (minutes * 60) + seconds;
+                        var hours = int.Parse(split[0]);
+                        var minutes = int.Parse(split[1]);
+                        var seconds = int.Parse(split[2]);
+                        var newTime = (hours * 3600) + (minutes * 60) + seconds;
                         totalTime = newTime == 0 ? 1 : (uint)newTime;
                     }
                     else
@@ -852,7 +854,7 @@
                     return Redirect("/dashboard/assignments");
                 }
 
-                Assignment assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
+                var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
                 if (assignment == null)
                 {
                     // Failed to get assignment by id
@@ -873,7 +875,7 @@
         [HttpGet("/dashboard/assignment/start/{id}")]
         public async Task<IActionResult> StartAssignment(uint id)
         {
-            Assignment assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
+            var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
             if (assignment == null)
             {
                 // TODO: Log error
@@ -886,7 +888,7 @@
         [HttpGet("/dashboard/assignment/delete/{id}")]
         public async Task<IActionResult> DeleteAssignment(uint id)
         {
-            Assignment assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
+            var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
             if (assignment == null)
             {
                 // TODO: Log error
@@ -911,11 +913,11 @@
         [HttpGet("/dashboard/accounts")]
         public async Task<IActionResult> GetAccounts()
         {
-            AccountRepository accountsRepository = new AccountRepository(_context);
-            dynamic stats = await accountsRepository.GetStatsAsync().ConfigureAwait(false);
+            var accountsRepository = new AccountRepository(_context);
+            var stats = await accountsRepository.GetStatsAsync().ConfigureAwait(false);
             dynamic obj = BuildDefaultData();
             obj.stats = stats;
-            dynamic data = Renderer.ParseTemplate("accounts", obj);
+            var data = Renderer.ParseTemplate("accounts", obj);
             return new ContentResult
             {
                 Content = data,
@@ -934,7 +936,7 @@
             {
                 dynamic obj = BuildDefaultData();
                 obj.level = 0;
-                dynamic data = Renderer.ParseTemplate("accounts-add", obj);
+                var data = Renderer.ParseTemplate("accounts-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -945,15 +947,15 @@
             else
             {
                 // Add accounts to database
-                ushort level = ushort.Parse(Request.Form["level"].ToString());
-                string accountsToAdd = Request.Form["accounts"].ToString();
-                string[] rows = accountsToAdd.Replace(";", ",")
+                var level = ushort.Parse(Request.Form["level"].ToString());
+                var accountsToAdd = Request.Form["accounts"].ToString();
+                var rows = accountsToAdd.Replace(";", ",")
                                         .Replace(":", ",")
                                         .Split('\n');
-                List<Account> list = new List<Account>();
-                foreach (string row in rows)
+                var list = new List<Account>();
+                foreach (var row in rows)
                 {
-                    string[] split = row.Split(',');
+                    var split = row.Split(',');
                     if (split.Length != 2)
                     {
                         // Invalid account provided
@@ -983,8 +985,8 @@
         {
             if (Request.Method == "GET")
             {
-                ExpandoObject obj = BuildDefaultData();
-                string data = Renderer.ParseTemplate("clearquests", obj);
+                var obj = BuildDefaultData();
+                var data = Renderer.ParseTemplate("clearquests", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -1004,8 +1006,8 @@
         [HttpGet("/dashboard/settings")]
         public IActionResult GetSettings()
         {
-            ExpandoObject obj = BuildDefaultData();
-            string data = Renderer.ParseTemplate("settings", obj);
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("settings", obj);
             return new ContentResult
             {
                 Content = data,
@@ -1056,13 +1058,13 @@
 
         private static string CoordinatesToAreaString(dynamic area)
         {
-            string coords = string.Empty;
-            NumberFormatInfo nfi = new CultureInfo("en-US").NumberFormat;
+            var coords = string.Empty;
+            var nfi = new CultureInfo("en-US").NumberFormat;
             nfi.NumberDecimalSeparator = ".";
-            foreach (dynamic coord in area.EnumerateArray())
+            foreach (var coord in area.EnumerateArray())
             {
-                dynamic latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
-                dynamic longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
+                var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
+                var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
                 coords += $"{latitude},{longitude}\n";
             }
             return coords;
@@ -1070,17 +1072,17 @@
 
         private static string MultiPolygonToAreaString(dynamic area)
         {
-            int index = 1;
-            string coords = string.Empty;
-            NumberFormatInfo nfi = new CultureInfo("en-US").NumberFormat;
+            var index = 1;
+            var coords = string.Empty;
+            var nfi = new CultureInfo("en-US").NumberFormat;
             nfi.NumberDecimalSeparator = ".";
-            foreach (dynamic fence in area.EnumerateArray())
+            foreach (var fence in area.EnumerateArray())
             {
                 coords += $"[Geofence {index}]\n";
-                foreach (dynamic coord in fence.EnumerateArray())
+                foreach (var coord in fence.EnumerateArray())
                 {
-                    dynamic latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
-                    dynamic longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
+                    var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
+                    var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
                     coords += $"{latitude},{longitude}\n";
                 }
                 index++;
@@ -1090,20 +1092,17 @@
 
         private static List<Coordinate> AreaStringToCoordinates(string area)
         {
-            string[] rows = area.Split('\n');
-            List<Coordinate> coords = new List<Coordinate>();
-            NumberFormatInfo nfi = new CultureInfo("en-US").NumberFormat;
+            var rows = area.Split('\n');
+            var coords = new List<Coordinate>();
+            var nfi = new CultureInfo("en-US").NumberFormat;
             nfi.NumberDecimalSeparator = ".";
-            foreach (string row in rows)
+            foreach (var row in rows)
             {
-                string[] split = row.Split(',');
+                var split = row.Split(',');
                 if (split.Length != 2)
-                {
                     continue;
-                }
-
-                double latitude = double.Parse(split[0].Trim('\n'), nfi);
-                double longitude = double.Parse(split[1].Trim('\n'), nfi);
+                var latitude = double.Parse(split[0].Trim('\n'), nfi);
+                var longitude = double.Parse(split[1].Trim('\n'), nfi);
                 coords.Add(new Coordinate(latitude, longitude));
             }
             return coords;
@@ -1111,18 +1110,18 @@
 
         private static List<List<Coordinate>> AreaStringToMultiPolygon(string area)
         {
-            string[] rows = area.Split('\n');
-            int index = 0;
-            List<List<Coordinate>> coords = new List<List<Coordinate>> { new List<Coordinate>() };
-            NumberFormatInfo nfi = new CultureInfo("en-US").NumberFormat;
+            var rows = area.Split('\n');
+            var index = 0;
+            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
+            var nfi = new CultureInfo("en-US").NumberFormat;
             nfi.NumberDecimalSeparator = ".";
-            foreach (string row in rows)
+            foreach (var row in rows)
             {
-                string[] split = row.Split(',');
+                var split = row.Split(',');
                 if (split.Length == 2)
                 {
-                    double latitude = double.Parse(split[0].Trim('\0'), nfi);
-                    double longitude = double.Parse(split[1].Trim('\0'), nfi);
+                    var latitude = double.Parse(split[0].Trim('\0'), nfi);
+                    var longitude = double.Parse(split[1].Trim('\0'), nfi);
                     coords[index].Add(new Coordinate(latitude, longitude));
                 }
                 else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
@@ -1139,7 +1138,7 @@
             dynamic obj = BuildDefaultData();
             obj.show_error = true;
             obj.error = message;
-            dynamic data = Renderer.ParseTemplate(template, obj);
+            var data = Renderer.ParseTemplate(template, obj);
             return new ContentResult
             {
                 Content = data,

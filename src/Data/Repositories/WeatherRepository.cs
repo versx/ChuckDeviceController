@@ -1,12 +1,15 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
-    using Microsoft.Extensions.Caching.Memory;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using Microsoft.Extensions.Caching.Memory;
     using Z.EntityFramework.Plus;
+
+    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
 
     public class WeatherRepository : EfCoreRepository<Weather, DeviceControllerContext>
     {

@@ -1,5 +1,13 @@
 ﻿namespace ChuckDeviceController.JobControllers.Instances
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using Microsoft.Extensions.Logging;
+
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Data.Repositories;
@@ -7,12 +15,6 @@
     using ChuckDeviceController.Geofence;
     using ChuckDeviceController.Geofence.Models;
     using ChuckDeviceController.JobControllers.Tasks;
-    using Microsoft.Extensions.Logging;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
 
     public struct ScannedPokemon
     {
@@ -90,18 +92,14 @@
             lock (_queueLock)
             {
                 if (_pokemonQueue.Count == 0)
-                {
                     return null;
-                }
 
                 pokemon = _pokemonQueue.PopFirst(out _pokemonQueue);
             }
             if (pokemon == null)
-            {
                 return null;
-            }
 
-            ulong timeDiff = DateTime.UtcNow.ToTotalSeconds() - pokemon.FirstSeenTimestamp;
+            var timeDiff = DateTime.UtcNow.ToTotalSeconds() - pokemon.FirstSeenTimestamp;
             if (timeDiff >= 600)
             {
                 return await GetTask(uuid, accountUsername, false).ConfigureAwait(false);
@@ -128,17 +126,17 @@
 
         public async Task<string> GetStatus() // TODO: Formatted
         {
-            double ivh = -1d;
+            var ivh = -1d;
             if (_startDate != default)
             {
                 ivh = _count / DateTime.UtcNow.Subtract(_startDate).TotalSeconds * 3600; // TODO: :thinking:
             }
-            string ivhString = "-";
+            var ivhString = "-";
             if (ivh != -1)
             {
                 ivhString = Math.Round(ivh).ToString("N0");
             }
-            string text = $"<a href='/dashboard/instance/ivqueue/{Uri.EscapeDataString(Name)}'>Queue</a>: {_pokemonQueue.Count}, IV/h: {ivhString}";
+            var text = $"<a href='/dashboard/instance/ivqueue/{Uri.EscapeDataString(Name)}'>Queue</a>: {_pokemonQueue.Count}, IV/h: {ivhString}";
             return await Task.FromResult(text).ConfigureAwait(false);
         }
 
@@ -171,13 +169,11 @@
             }
             // Check if Pokemon is within any of the instance area geofences
             if (!GeofenceService.InMultiPolygon(MultiPolygon, pokemon.Latitude, pokemon.Longitude))
-            {
                 return;
-            }
 
             lock (_queueLock)
             {
-                int? index = LastIndexOf(pokemon.PokemonId);
+                var index = LastIndexOf(pokemon.PokemonId);
                 if (_pokemonQueue.Count >= IVQueueLimit && index == null)
                 {
                     _logger.LogInformation($"[IVController] [{Name}] Queue is full!");
@@ -206,13 +202,11 @@
         public void GotIV(Pokemon pokemon)
         {
             if (!GeofenceService.InMultiPolygon(MultiPolygon, pokemon.Latitude, pokemon.Longitude))
-            {
                 return;
-            }
 
             lock (_queueLock)
             {
-                Pokemon pkmn = _pokemonQueue.Find(x => x.Id == pokemon.Id);
+                var pkmn = _pokemonQueue.Find(x => x.Id == pokemon.Id);
                 if (pkmn != null)
                 {
                     _pokemonQueue.Remove(pkmn);
@@ -247,11 +241,11 @@
 
         private int? LastIndexOf(uint pokemonId)
         {
-            int targetPriority = PokemonList.IndexOf(pokemonId);
-            for (int i = 0; i < _pokemonQueue.Count; i++)
+            var targetPriority = PokemonList.IndexOf(pokemonId);
+            for (var i = 0; i < _pokemonQueue.Count; i++)
             {
-                Pokemon pokemon = _pokemonQueue[i];
-                int priority = PokemonList.IndexOf(pokemon.PokemonId);
+                var pokemon = _pokemonQueue[i];
+                var priority = PokemonList.IndexOf(pokemon.PokemonId);
                 if (targetPriority < priority)
                 {
                     return i;
@@ -287,22 +281,18 @@
                 if (_scannedPokemon.Count == 0)
                 {
                     if (_shouldExit)
-                    {
                         return;
-                    }
 
                     return;
                 }
 
-                ScannedPokemon first = _scannedPokemon.PopFirst(out _scannedPokemon);
-                TimeSpan timeSince = DateTime.UtcNow - first.Date;
+                var first = _scannedPokemon.PopFirst(out _scannedPokemon);
+                var timeSince = DateTime.UtcNow - first.Date;
                 if (timeSince.TotalSeconds < 120)
                 {
                     Thread.Sleep(Convert.ToInt32(120 - timeSince.TotalSeconds) * 1000);
                     if (_shouldExit)
-                    {
                         return;
-                    }
                 }
                 Pokemon pokemonReal = null;
                 try
@@ -316,9 +306,7 @@
                 {
                     _logger.LogError($"[{Name}] Error: {ex}");
                     if (_shouldExit)
-                    {
                         return;
-                    }
                 }
                 if (pokemonReal != null)
                 {

@@ -1,5 +1,25 @@
 namespace ChuckDeviceController
 {
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Net.Mime;
+
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.HttpsPolicy;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Diagnostics.HealthChecks;
+    using Microsoft.Extensions.FileProviders;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Logging;
+    using Microsoft.OpenApi.Models;
+
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Interfaces;
@@ -8,21 +28,6 @@ namespace ChuckDeviceController
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Net.Webhooks;
     using ChuckDeviceController.Services;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Diagnostics.HealthChecks;
-    using Microsoft.Extensions.FileProviders;
-    using Microsoft.Extensions.Hosting;
-    using Microsoft.OpenApi.Models;
-    using System;
-    using System.IO;
-    using System.Linq;
-    using System.Net.Mime;
 
     public class Startup
     {
@@ -119,7 +124,7 @@ namespace ChuckDeviceController
                 {
                     ResponseWriter = async (context, report) =>
                     {
-                        string result = new
+                        var result = new
                         {
                             status = report.Status.ToString(),
                             errors = report.Entries.Select(e => new

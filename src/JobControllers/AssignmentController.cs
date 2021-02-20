@@ -1,13 +1,16 @@
 ﻿namespace ChuckDeviceController.JobControllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    using Microsoft.Extensions.Logging;
+
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
-    using Microsoft.Extensions.Logging;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
 
     public class AssignmentController
     {
@@ -25,7 +28,13 @@
         #region Singleton
 
         private static AssignmentController _instance;
-        public static AssignmentController Instance => _instance ??= new AssignmentController();
+        public static AssignmentController Instance
+        {
+            get
+            {
+                return _instance ??= new AssignmentController();
+            }
+        }
 
         #endregion
 
@@ -59,7 +68,7 @@
             {
                 _logger.LogInformation("Starting AssignmentController");
                 _initialized = true;
-                System.Timers.Timer timer = new System.Timers.Timer
+                var timer = new System.Timers.Timer
                 {
                     Interval = 5000
                 };
@@ -95,7 +104,7 @@
         {
             lock (_assignmentsLock)
             {
-                Assignment assignment = _assignments.Find(x => x.Id == id);
+                var assignment = _assignments.Find(x => x.Id == id);
                 if (assignment != null)
                 {
                     DeleteAssignment(assignment);
@@ -106,9 +115,7 @@
         public async Task TriggerAssignment(Assignment assignment, bool force = false)
         {
             if (!(force || (assignment.Enabled && (assignment.Date == default || assignment.Date == DateTime.UtcNow))))
-            {
                 return;
-            }
 
             Device device = null;
             try
@@ -131,9 +138,9 @@
 
         public async Task InstanceControllerDone(string name)
         {
-            foreach (Assignment assignment in _assignments)
+            foreach (var assignment in _assignments)
             {
-                List<string> deviceUUIDs = InstanceController.Instance.GetDeviceUuidsInInstance(name);
+                var deviceUUIDs = InstanceController.Instance.GetDeviceUuidsInInstance(name);
                 if (assignment.Enabled && assignment.Time != 0 && deviceUUIDs.Contains(assignment.DeviceUuid))
                 {
                     await TriggerAssignment(assignment).ConfigureAwait(false);
@@ -143,7 +150,7 @@
 
         private async Task CheckAssignments()
         {
-            long now = (long)DateTime.UtcNow.ToTotalSeconds();
+            var now = (long)DateTime.UtcNow.ToTotalSeconds();
             if (_lastUpdated == -2)
             {
                 _lastUpdated = now;
@@ -157,7 +164,7 @@
             {
                 assignments = _assignments;
             }
-            foreach (Assignment assignment in assignments)
+            foreach (var assignment in assignments)
             {
                 if (assignment.Enabled && assignment.Time != 0 && now > assignment.Time && _lastUpdated < assignment.Time)
                 {

@@ -1,10 +1,11 @@
 ﻿namespace ChuckDeviceController.Services.Routes
 {
-    using ChuckDeviceController.Data.Entities;
-    using System;
-    using System.Collections.Generic;
+	using System;
+	using System.Collections.Generic;
 
-    public class RouteCalculator
+	using ChuckDeviceController.Data.Entities;
+
+	public class RouteCalculator
 	{
 		private readonly List<Coordinate> _destinations;
 
@@ -32,8 +33,8 @@
 			{
 				throw new InvalidOperationException("No Destinations entered");
 			}
-            Queue<Coordinate> route = new Queue<Coordinate>(_destinations.Count);
-            List<Coordinate> sorted = _destinations;
+			var route = new Queue<Coordinate>(_destinations.Count);
+			var sorted = _destinations;
 			sorted.Sort((a, b) =>
 			{
 				double d1 = Math.Pow(a.Latitude, 2) + Math.Pow(a.Longitude, 2);
@@ -61,24 +62,21 @@
 		}
 		private static List<Coordinate> OrderByDistance(List<Coordinate> points, ushort circleSize = 70)
 		{
-            List<Coordinate> pointsList = points;
-            List<Coordinate> orderedList = new List<Coordinate>();
-            Coordinate currentPoint = pointsList[0];
+			var pointsList = points;
+			var orderedList = new List<Coordinate>();
+			var currentPoint = pointsList[0];
 			while (pointsList.Count > 1)
 			{
 				orderedList.Add(currentPoint);
 				pointsList.RemoveAt(pointsList.IndexOf(currentPoint));
-                int closestPointIndex = 0;
-                double closestDistance = double.MaxValue;
-				for (int i = 0; i < pointsList.Count; i++)
+				var closestPointIndex = 0;
+				var closestDistance = double.MaxValue;
+				for (var i = 0; i < pointsList.Count; i++)
 				{
-                    double distanceQuick = DistanceQuick(currentPoint, pointsList[i]) + (circleSize / 2);
+					var distanceQuick = DistanceQuick(currentPoint, pointsList[i]) + circleSize / 2;
 					if (distanceQuick > closestDistance)
-                    {
-                        continue;
-                    }
-
-                    double distance = Distance(currentPoint, pointsList[i]) + (circleSize / 2);
+						continue;
+					var distance = Distance(currentPoint, pointsList[i]) + circleSize / 2;
 					if (distance < closestDistance)
 					{
 						closestPointIndex = i;

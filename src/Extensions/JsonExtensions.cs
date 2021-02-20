@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Extensions
 {
+    using System;
     using System.Text.Json;
 
     public static class JsonExtensions
@@ -11,14 +12,10 @@
             WriteIndented = true,
         };
 
-        public static T FromJson<T>(this string json)
-        {
-            return JsonSerializer.Deserialize<T>(json, _jsonOptions);
-        }
+        public static T FromJson<T>(this string json) =>
+            JsonSerializer.Deserialize<T>(json, _jsonOptions);
 
-        public static string ToJson<T>(this T obj)
-        {
-            return JsonSerializer.Serialize<T>(obj, _jsonOptions);
-        }
+        public static string ToJson<T>(this T obj) =>
+            JsonSerializer.Serialize<T>(obj, _jsonOptions);
     }
 }

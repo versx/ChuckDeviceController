@@ -1,30 +1,30 @@
 ﻿namespace ChuckDeviceController.Geofence
 {
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Geofence.Models;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Geofence.Models;
 
     public static class GeofenceService
     {
         public static bool InMultiPolygon(List<MultiPolygon> multiPolygon, double latitude, double longitude)
         {
-            foreach (MultiPolygon polygon in multiPolygon)
+            foreach (var polygon in multiPolygon)
             {
                 if (InPolygon(polygon, latitude, longitude))
-                {
                     return true;
-                }
             }
             return false;
         }
 
         public static bool InPolygon(MultiPolygon polygon, double latitude, double longitude)
         {
-            int numOfPoints = polygon.Count;
-            List<double> lats = polygon.Select(x => x[0]).ToList();
-            List<double> lngs = polygon.Select(x => x[1]).ToList();
-            bool polygonContainsPoint = false;
+            var numOfPoints = polygon.Count;
+            var lats = polygon.Select(x => x[0]).ToList();
+            var lngs = polygon.Select(x => x[1]).ToList();
+            var polygonContainsPoint = false;
             for (int node = 0, altNode = (numOfPoints - 1); node < numOfPoints; altNode = node++)
             {
                 if ((lngs[node] > longitude != (lngs[altNode] > longitude))

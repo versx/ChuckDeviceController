@@ -1,5 +1,13 @@
 ﻿namespace ChuckDeviceController.Controllers
 {
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging;
+
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Repositories;
@@ -8,12 +16,6 @@
     using ChuckDeviceController.JobControllers.Tasks;
     using ChuckDeviceController.Models.Requests;
     using ChuckDeviceController.Models.Responses;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.Extensions.Logging;
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
 
     [ApiController]
     public class DeviceController : ControllerBase
@@ -45,10 +47,7 @@
 
         [HttpGet("/controler")]
         [HttpGet("/controller")]
-        public string Get()
-        {
-            return ":D";
-        }
+        public string Get() => ":D";
 
         [
             HttpPost("/controler"),
@@ -57,7 +56,7 @@
         ]
         public async Task<DeviceResponse> PostAsync(DevicePayload payload)
         {
-            DeviceResponse response = await HandleControllerRequest(payload).ConfigureAwait(false);
+            var response = await HandleControllerRequest(payload).ConfigureAwait(false);
             if (response == null)
             {
                 _logger.LogError($"[Device] [{payload.Uuid}] null data response!");
@@ -75,7 +74,7 @@
         {
             _logger.LogInformation($"[Device] [{payload.Uuid}] Received control request: {payload.Type}");
 
-            Device device = await _deviceRepository.GetByIdAsync(payload.Uuid).ConfigureAwait(false);
+            var device = await _deviceRepository.GetByIdAsync(payload.Uuid).ConfigureAwait(false);
             switch (payload.Type.ToLower())
             {
                 case "init":
@@ -120,14 +119,14 @@
             ulong? firstWarningTimestamp = null;
             if (!string.IsNullOrEmpty(device?.AccountUsername))
             {
-                Account account = await _accountRepository.GetByIdAsync(device.AccountUsername).ConfigureAwait(false);
+                var account = await _accountRepository.GetByIdAsync(device.AccountUsername).ConfigureAwait(false);
                 firstWarningTimestamp = account?.FirstWarningTimestamp;
             }
             if (device is Device)
             {
                 // Device is already registered
                 _logger.LogDebug($"[Device] [{device.Uuid}] Device already registered");
-                bool assignedInstance = !string.IsNullOrEmpty(device.InstanceName);
+                var assignedInstance = !string.IsNullOrEmpty(device.InstanceName);
                 if (!assignedInstance)
                 {
                     _logger.LogWarning($"[Device] [{device.Uuid}] Device is not assigned to an instance!");
@@ -167,13 +166,13 @@
 
         private async Task<DeviceResponse> HandleHeartbeat(string uuid)
         {
-            Device device = await _deviceRepository.GetByIdAsync(uuid).ConfigureAwait(false);
+            var device = await _deviceRepository.GetByIdAsync(uuid).ConfigureAwait(false);
             if (device != null)
             {
-                string cfHeader = Request.Headers["cf-connecting-ip"].ToString();
-                string forwardedfor = Request.Headers["x-forwarded-for"].ToString()?.Split(",").FirstOrDefault();
-                string remoteIp = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-                string localIp = Request.HttpContext.Connection.LocalIpAddress?.ToString();
+                var cfHeader = Request.Headers["cf-connecting-ip"].ToString();
+                var forwardedfor = Request.Headers["x-forwarded-for"].ToString()?.Split(",").FirstOrDefault();
+                var remoteIp = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+                var localIp = Request.HttpContext.Connection.LocalIpAddress?.ToString();
                 device.LastHost = !string.IsNullOrEmpty(cfHeader)
                     ? cfHeader
                     : !string.IsNullOrEmpty(forwardedfor)
@@ -198,7 +197,7 @@
 
             if (device != null)
             {
-                IJobController instanceController = InstanceController.Instance.GetInstanceController(device.Uuid);
+                var instanceController = InstanceController.Instance.GetInstanceController(device.Uuid);
                 if (instanceController != null)
                 {
                     minLevel = instanceController.MinimumLevel;
@@ -211,8 +210,8 @@
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
                 // Device not assigned an account, fetch a new one
-                System.Collections.Generic.IReadOnlyList<Device> devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-                System.Collections.Generic.List<string> inuseAccounts = devices.Where(x => !string.IsNullOrEmpty(x.AccountUsername))
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+                var inuseAccounts = devices.Where(x => !string.IsNullOrEmpty(x.AccountUsername))
                                            .Select(y => y.AccountUsername.ToLower())
                                            .ToList();
                 account = await _accountRepository.GetNewAccountAsync(minLevel, maxLevel, inuseAccounts).ConfigureAwait(false);
@@ -275,7 +274,7 @@
 
         private async Task<DeviceResponse> HandleGetJob(Device device, string username)
         {
-            IJobController instanceController = InstanceController.Instance.GetInstanceController(device.Uuid);
+            var instanceController = InstanceController.Instance.GetInstanceController(device.Uuid);
             if (instanceController == null)
             {
                 _logger.LogError($"[Device] [{device.Uuid}] Failed to get instance controller.");
@@ -285,8 +284,8 @@
                     Error = "Failed to get instance controller",
                 };
             }
-            ushort minLevel = instanceController.MinimumLevel;
-            ushort maxLevel = instanceController.MaximumLevel;
+            var minLevel = instanceController.MinimumLevel;
+            var maxLevel = instanceController.MaximumLevel;
             // If account nulled out in database, fetch new one
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
@@ -294,7 +293,7 @@
             }
             if (!string.IsNullOrEmpty(username))
             {
-                Account account = await _accountRepository.GetByIdAsync(username).ConfigureAwait(false);
+                var account = await _accountRepository.GetByIdAsync(username).ConfigureAwait(false);
                 if (account == null)
                 {
                     account = await _accountRepository.GetByIdAsync(device.AccountUsername).ConfigureAwait(false);
@@ -313,7 +312,7 @@
                 }
             }
 
-            ITask task = await instanceController.GetTask(device.Uuid, device.AccountUsername, false).ConfigureAwait(false);
+            var task = await instanceController.GetTask(device.Uuid, device.AccountUsername, false).ConfigureAwait(false);
             if (task == null)
             {
                 _logger.LogWarning($"[Device] [{device.Uuid}] No tasks avaialable yet");
@@ -333,8 +332,8 @@
 
         private async Task<DeviceResponse> HandleAccountStatus(Device device, string type)
         {
-            ulong now = DateTime.UtcNow.ToTotalSeconds();
-            Account account = await _accountRepository.GetByIdAsync(device.AccountUsername).ConfigureAwait(false);
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var account = await _accountRepository.GetByIdAsync(device.AccountUsername).ConfigureAwait(false);
             if (account == null)
             {
                 return new DeviceResponse
@@ -377,8 +376,8 @@
 
         private async Task<DeviceResponse> HandleTutorialStatus(Device device)
         {
-            string username = device.AccountUsername;
-            Account account = await _accountRepository.GetByIdAsync(username).ConfigureAwait(false);
+            var username = device.AccountUsername;
+            var account = await _accountRepository.GetByIdAsync(username).ConfigureAwait(false);
             if (device == null || string.IsNullOrEmpty(username) || account == null)
             {
                 return new DeviceResponse

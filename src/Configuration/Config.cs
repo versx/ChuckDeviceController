@@ -1,11 +1,12 @@
 ﻿namespace ChuckDeviceController.Configuration
 {
-    using ChuckDeviceController.Extensions;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Text.Json;
     using System.Text.Json.Serialization;
+
+    using ChuckDeviceController.Extensions;
 
     public class Config
     {
@@ -30,7 +31,7 @@
         /// <param name="filePath">Path to save the configuration file</param>
         public void Save(string filePath)
         {
-            JsonSerializerOptions options = new JsonSerializerOptions
+            var options = new JsonSerializerOptions
             {
                 AllowTrailingCommas = true,
                 WriteIndented = true,
@@ -39,7 +40,7 @@
                     new JsonStringEnumConverter()
                 }
             };
-            string data = JsonSerializer.Serialize(this, options);
+            var data = JsonSerializer.Serialize(this, options);
             File.WriteAllText(filePath, data);
         }
 

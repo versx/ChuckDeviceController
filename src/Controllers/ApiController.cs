@@ -1,16 +1,18 @@
 ﻿namespace ChuckDeviceController.Controllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
+
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
 
     [ApiController]
     [Route("/api")]
@@ -63,14 +65,14 @@
         public async Task<dynamic> GetDevices()
         {
             // TODO: Use formatted in query
-            IReadOnlyList<Device> devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-            List<dynamic> list = new List<dynamic>();
-            foreach (Device device in devices)
+            var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var device in devices)
             {
                 const ulong delta = 15 * 60;
-                ulong diff = DateTime.UtcNow.ToTotalSeconds() - delta;
-                int isOnline = device.LastSeen > diff ? 0 : 1;
-                DateTime lastSeenDate = device.LastSeen.Value.FromUnix();
+                var diff = DateTime.UtcNow.ToTotalSeconds() - delta;
+                var isOnline = device.LastSeen > diff ? 0 : 1;
+                var lastSeenDate = device.LastSeen.Value.FromUnix();
                 lastSeenDate = lastSeenDate.Add(TimeSpan.FromHours(Startup.Config.TimezoneOffset));
                 list.Add(new
                 {
@@ -105,17 +107,17 @@
         ]
         public async Task<dynamic> GetInstances()
         {
-            ulong now = DateTime.UtcNow.ToTotalSeconds();
-            IReadOnlyList<Instance> instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
-            IReadOnlyList<Device> devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-            List<dynamic> list = new List<dynamic>();
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+            var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
             const ulong delta = 15 * 60;
-            foreach (Instance instance in instances)
+            foreach (var instance in instances)
             {
-                IEnumerable<Device> instanceDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
-                int totalCount = instanceDevices.Count();
-                int onlineCount = instanceDevices.Count(device => device.LastSeen >= now - delta);
-                int offlineCount = instanceDevices.Count(device => device.LastSeen < now - delta);
+                var instanceDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
+                var totalCount = instanceDevices.Count();
+                var onlineCount = instanceDevices.Count(device => device.LastSeen >= now - delta);
+                var offlineCount = instanceDevices.Count(device => device.LastSeen < now - delta);
                 list.Add(new
                 {
                     name = instance.Name,
@@ -135,9 +137,9 @@
         ]
         public async Task<dynamic> GetGeofences()
         {
-            IReadOnlyList<Geofence> geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
-            List<dynamic> list = new List<dynamic>();
-            foreach (Geofence geofence in geofences)
+            var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var geofence in geofences)
             {
                 list.Add(new
                 {
@@ -160,12 +162,12 @@
         ]
         public async Task<dynamic> GetAssignments()
         {
-            IReadOnlyList<Assignment> assignments = await _assignmentRepository.GetAllAsync().ConfigureAwait(false);
-            List<dynamic> list = new List<dynamic>();
-            foreach (Assignment assignment in assignments)
+            var assignments = await _assignmentRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var assignment in assignments)
             {
-                TimeSpan times = TimeSpan.FromSeconds(assignment.Time);
-                string time = assignment.Time == 0
+                var times = TimeSpan.FromSeconds(assignment.Time);
+                var time = assignment.Time == 0
                     ? "On Complete"
                     : $"{times.Hours:00}:{times.Minutes:00}:{times.Seconds:00}";
                 list.Add(new
@@ -208,11 +210,11 @@
         ]
         public async Task<dynamic> GetIVQueue(string name)
         {
-            List<Pokemon> queue = InstanceController.Instance.GetIVQueue(name);
-            List<dynamic> list = new List<dynamic>();
-            for (int i = 0; i < queue.Count; i++)
+            var queue = InstanceController.Instance.GetIVQueue(name);
+            var list = new List<dynamic>();
+            for (var i = 0; i < queue.Count; i++)
             {
-                Pokemon pokemon = queue[i];
+                var pokemon = queue[i];
                 list.Add(new
                 {
                     id = i + 1,

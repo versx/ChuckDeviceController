@@ -1,17 +1,20 @@
 ﻿namespace ChuckDeviceController.JobControllers
 {
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Factories;
-    using ChuckDeviceController.Data.Repositories;
-    using ChuckDeviceController.Geofence.Models;
-    using ChuckDeviceController.JobControllers.Instances;
-    using Microsoft.Extensions.Logging;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Microsoft.Extensions.Logging;
+
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Factories;
+    using ChuckDeviceController.Data.Repositories;
+    using ChuckDeviceController.Geofence.Models;
+    using ChuckDeviceController.JobControllers.Instances;
+
     using Geofence = ChuckDeviceController.Data.Entities.Geofence;
 
     public class InstanceController
@@ -59,17 +62,17 @@
 
         public async Task Start()
         {
-            IReadOnlyList<Instance> instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
-            IReadOnlyList<Device> devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-            IReadOnlyList<Geofence> geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
-            foreach (Instance instance in instances)
+            var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+            var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+            var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+            foreach (var instance in instances)
             {
                 if (!ThreadPool.QueueUserWorkItem(async _ =>
                 {
                     _logger.LogInformation($"Starting {instance.Name}");
                     await AddInstance(instance, geofences).ConfigureAwait(false);
                     _logger.LogInformation($"Started {instance.Name}");
-                    foreach (Device device in devices.AsEnumerable().Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0))
+                    foreach (var device in devices.AsEnumerable().Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0))
                     {
                         AddDevice(device);
                     }
@@ -93,12 +96,10 @@
                     return null;
                 }
 
-                Device device = _devices[uuid];
-                string instanceName = device.InstanceName;
+                var device = _devices[uuid];
+                var instanceName = device.InstanceName;
                 if (device == null && string.IsNullOrEmpty(instanceName))
-                {
                     return null;
-                }
 
                 return GetInstanceControllerByName(instanceName);
             }
@@ -114,7 +115,7 @@
             }
             try
             {
-                IJobController instanceController = _instances[instance.Name];
+                var instanceController = _instances[instance.Name];
                 // TODO: Maybe no locking object
                 if (instanceController != null)
                 {
@@ -131,7 +132,7 @@
         public async Task AddInstance(Instance instance, IReadOnlyList<Geofence> geofences = null)
         {
             IJobController instanceController = null;
-            Geofence geofence = await GetGeofence(instance, geofences).ConfigureAwait(false);
+            var geofence = await GetGeofence(instance, geofences).ConfigureAwait(false);
             if (geofence == null)
             {
                 // Failed to get geofence, skip?
@@ -145,17 +146,17 @@
                 case InstanceType.SmartCircleRaid:
                     try
                     {
-                        dynamic area = string.IsNullOrEmpty(instance.Geofence)
+                        var area = string.IsNullOrEmpty(instance.Geofence)
                             ? instance.Data?.Area
                             : geofence?.Data?.Area;
-                        List<Coordinate> coordsArray = (List<Coordinate>)
+                        var coordsArray = (List<Coordinate>)
                         (
                             area is List<Coordinate>
                                 ? area
                                 : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
                         );
-                        ushort minLevel = instance.Data.MinimumLevel;
-                        ushort maxLevel = instance.Data.MaximumLevel;
+                        var minLevel = instance.Data.MinimumLevel;
+                        var maxLevel = instance.Data.MaximumLevel;
                         switch (instance.Type)
                         {
                             case InstanceType.CirclePokemon:
@@ -179,41 +180,41 @@
                 case InstanceType.Bootstrap:
                     try
                     {
-                        dynamic area = string.IsNullOrEmpty(instance.Geofence)
+                        var area = string.IsNullOrEmpty(instance.Geofence)
                             ? instance.Data?.Area
                             : geofence?.Data?.Area;
-                        List<List<Coordinate>> coordsArray = (List<List<Coordinate>>)
+                        var coordsArray = (List<List<Coordinate>>)
                         (
                             area is List<List<Coordinate>>
                                 ? area
                                 : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
                         );
-                        List<MultiPolygon> areaArrayEmptyInner = new List<MultiPolygon>();
-                        foreach (List<Coordinate> coords in coordsArray)
+                        var areaArrayEmptyInner = new List<MultiPolygon>();
+                        foreach (var coords in coordsArray)
                         {
-                            MultiPolygon multiPolygon = new MultiPolygon();
-                            foreach (Coordinate coord in coords)
+                            var multiPolygon = new MultiPolygon();
+                            foreach (var coord in coords)
                             {
                                 multiPolygon.Add(new Polygon { coord.Latitude, coord.Longitude });
                             }
                             areaArrayEmptyInner.Add(multiPolygon);
                         }
-                        ushort minLevel = instance.Data.MinimumLevel;
-                        ushort maxLevel = instance.Data.MaximumLevel;
+                        var minLevel = instance.Data.MinimumLevel;
+                        var maxLevel = instance.Data.MaximumLevel;
                         switch (instance.Type)
                         {
                             case InstanceType.AutoQuest:
-                                int timezoneOffset = instance.Data.TimezoneOffset ?? 0;
-                                ushort spinLimit = instance.Data.SpinLimit ?? 3500;
+                                var timezoneOffset = instance.Data.TimezoneOffset ?? 0;
+                                var spinLimit = instance.Data.SpinLimit ?? 3500;
                                 instanceController = new AutoInstanceController(instance.Name, areaArrayEmptyInner, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit);
                                 break;
                             case InstanceType.PokemonIV:
-                                List<uint> pokemonList = instance.Data.PokemonIds;
-                                ushort ivQueueLimit = instance.Data.IVQueueLimit ?? 100;
+                                var pokemonList = instance.Data.PokemonIds;
+                                var ivQueueLimit = instance.Data.IVQueueLimit ?? 100;
                                 instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, pokemonList, minLevel, maxLevel, ivQueueLimit);
                                 break;
                             case InstanceType.Bootstrap:
-                                ushort circleSize = instance.Data.CircleSize ?? 70;
+                                var circleSize = instance.Data.CircleSize ?? 70;
                                 instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize);
                                 break;
                         }
@@ -234,10 +235,10 @@
         {
             lock (_instancesLock)
             {
-                IJobController oldInstance = _instances[oldInstanceName];
+                var oldInstance = _instances[oldInstanceName];
                 if (oldInstance != null)
                 {
-                    foreach ((string uuid, Device device) in _devices)
+                    foreach (var (uuid, device) in _devices)
                     {
                         if (string.Compare(device.InstanceName, oldInstance.Name, true) == 0)
                         {
@@ -256,7 +257,7 @@
         {
             lock (_instancesLock)
             {
-                foreach ((string _, IJobController instanceController) in _instances)
+                foreach (var (_, instanceController) in _instances)
                 {
                     instanceController.Reload();
                 }
@@ -269,8 +270,8 @@
             {
                 _instances[instanceName].Stop();
                 _instances[instanceName] = null;
-                IEnumerable<KeyValuePair<string, Device>> devices = _devices.Where(d => string.Compare(d.Value.InstanceName, instanceName, true) == 0);
-                foreach (KeyValuePair<string, Device> device in devices)
+                var devices = _devices.Where(d => string.Compare(d.Value.InstanceName, instanceName, true) == 0);
+                foreach (var device in devices)
                 {
                     _devices[device.Key] = null;
                 }
@@ -320,8 +321,8 @@
         {
             lock (_devicesLock)
             {
-                List<string> uuids = new List<string>();
-                foreach ((string uuid, Device device) in _devices)
+                var uuids = new List<string>();
+                foreach (var (uuid, device) in _devices)
                 {
                     if (string.Compare(device.InstanceName, instanceName, true) == 0)
                     {
@@ -340,11 +341,9 @@
             {
                 if (_instances.ContainsKey(name))
                 {
-                    IJobController instance = _instances[name];
+                    var instance = _instances[name];
                     if (instance is IVInstanceController iv)
-                    {
                         return iv.GetQueue();
-                    }
                 }
                 return new List<Pokemon>();
             }
@@ -354,7 +353,7 @@
         {
             lock (_instancesLock)
             {
-                foreach ((string _, IJobController instanceController) in _instances)
+                foreach (var (_, instanceController) in _instances)
                 {
                     if (instanceController is IVInstanceController iv)
                     {
@@ -368,7 +367,7 @@
         {
             lock (_instancesLock)
             {
-                foreach ((string _, IJobController instanceController) in _instances)
+                foreach (var (_, instanceController) in _instances)
                 {
                     if (instanceController is IVInstanceController iv)
                     {
@@ -387,9 +386,7 @@
             lock (_instancesLock)
             {
                 if (!_instances.ContainsKey(name))
-                {
                     return null;
-                }
 
                 return _instances[name];
             }

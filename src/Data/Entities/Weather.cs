@@ -1,10 +1,13 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using ChuckDeviceController.Data.Interfaces;
-    using ChuckDeviceController.Geofence.Models;
-    using Google.Common.Geometry;
+    using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+
+    using ChuckDeviceController.Data.Interfaces;
+    using ChuckDeviceController.Geofence.Models;
+
+    using Google.Common.Geometry;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
     [Table("weather")]
@@ -60,12 +63,12 @@
 
         public dynamic GetWebhookValues(string type)
         {
-            S2Cell s2cell = new S2Cell(new S2CellId((ulong)Id));
-            MultiPolygon _polygon = new MultiPolygon();
-            for (int i = 0; i <= 3; i++)
+            var s2cell = new S2Cell(new S2CellId((ulong)Id));
+            var _polygon = new MultiPolygon();
+            for (var i = 0; i <= 3; i++)
             {
-                S2Point vertex = s2cell.GetVertex(i);
-                S2LatLng coord = new S2LatLng(vertex);
+                var vertex = s2cell.GetVertex(i);
+                var coord = new S2LatLng(vertex);
                 _polygon.Add(new Polygon
                 {
                     coord.LatDegrees,

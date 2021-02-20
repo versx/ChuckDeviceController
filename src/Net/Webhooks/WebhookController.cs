@@ -1,12 +1,13 @@
 ﻿namespace ChuckDeviceController.Net.Webhooks
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Services.Queues;
     using ChuckDeviceController.Utilities;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
 
     public class WebhookController
     {
@@ -109,9 +110,7 @@
             //_timer.Stop();
             IsRunning = false;
             if (_thread == null)
-            {
                 return;
-            }
 
             _thread.Interrupt();
             if (!_thread.Join(2000))
@@ -128,9 +127,7 @@
         public void AddPokemon(Pokemon pokemon)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_pokemonLock)
             {
@@ -144,11 +141,9 @@
         public void AddPokemon(IEnumerable<Pokemon> pokemon)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
-            foreach (Pokemon pkmn in pokemon)
+            foreach (var pkmn in pokemon)
             {
                 AddPokemon(pkmn);
             }
@@ -161,9 +156,7 @@
         public void AddGym(Gym gym)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_gymLock)
             {
@@ -177,9 +170,7 @@
         public void AddEgg(Gym gym)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_eggLock)
             {
@@ -193,9 +184,7 @@
         public void AddRaid(Gym gym)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_raidLock)
             {
@@ -209,9 +198,7 @@
         public void AddGymInfo(Gym gym)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_gymInfoLock)
             {
@@ -229,9 +216,7 @@
         public void AddPokestop(Pokestop pokestop)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_pokestopLock)
             {
@@ -245,9 +230,7 @@
         public void AddLure(Pokestop pokestop)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_lureLock)
             {
@@ -261,9 +244,7 @@
         public void AddInvasion(Pokestop pokestop)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_invasionLock)
             {
@@ -281,9 +262,7 @@
         public void AddQuest(Pokestop pokestop)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_questLock)
             {
@@ -297,11 +276,9 @@
         public void AddQuests(IEnumerable<Pokestop> quests)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
-            foreach (Pokestop quest in quests)
+            foreach (var quest in quests)
             {
                 AddQuest(quest);
             }
@@ -314,9 +291,7 @@
         public void AddWeather(Weather weather)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
             lock (_weatherLock)
             {
@@ -330,11 +305,9 @@
         public void AddWeather(IEnumerable<Weather> weather)
         {
             if (Startup.Config.Webhooks.Count == 0)
-            {
                 return;
-            }
 
-            foreach (Weather item in weather)
+            foreach (var item in weather)
             {
                 AddWeather(item);
             }
@@ -352,14 +325,14 @@
         {
             while (IsRunning)
             {
-                List<dynamic> events = new List<dynamic>();
+                var events = new List<dynamic>();
                 if (_pokemonQueue.Count > 0)
                 {
                     lock (_pokemonLock)
                     {
-                        for (int i = 0; i < _pokemonQueue.Count; i++)
+                        for (var i = 0; i < _pokemonQueue.Count; i++)
                         {
-                            Pokemon item = _pokemonQueue.Dequeue();
+                            var item = _pokemonQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("pokemon"));
                             Thread.Sleep(5);
@@ -371,9 +344,9 @@
                 {
                     lock (_gymLock)
                     {
-                        for (int i = 0; i < _gymQueue.Count; i++)
+                        for (var i = 0; i < _gymQueue.Count; i++)
                         {
-                            Gym item = _gymQueue.Dequeue();
+                            var item = _gymQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("gym"));
                             Thread.Sleep(5);
@@ -385,9 +358,9 @@
                 {
                     lock (_gymInfoLock)
                     {
-                        for (int i = 0; i < _gymInfoQueue.Count; i++)
+                        for (var i = 0; i < _gymInfoQueue.Count; i++)
                         {
-                            Gym item = _gymInfoQueue.Dequeue();
+                            var item = _gymInfoQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("gym-info"));
                             Thread.Sleep(5);
@@ -399,9 +372,9 @@
                 {
                     lock (_eggLock)
                     {
-                        for (int i = 0; i < _eggQueue.Count; i++)
+                        for (var i = 0; i < _eggQueue.Count; i++)
                         {
-                            Gym item = _eggQueue.Dequeue();
+                            var item = _eggQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("egg"));
                             Thread.Sleep(5);
@@ -413,9 +386,9 @@
                 {
                     lock (_raidLock)
                     {
-                        for (int i = 0; i < _raidQueue.Count; i++)
+                        for (var i = 0; i < _raidQueue.Count; i++)
                         {
-                            Gym item = _raidQueue.Dequeue();
+                            var item = _raidQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("raid"));
                             Thread.Sleep(5);
@@ -427,9 +400,9 @@
                 {
                     lock (_pokestopLock)
                     {
-                        for (int i = 0; i < _pokestopQueue.Count; i++)
+                        for (var i = 0; i < _pokestopQueue.Count; i++)
                         {
-                            Pokestop item = _pokestopQueue.Dequeue();
+                            var item = _pokestopQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("pokestop"));
                             Thread.Sleep(5);
@@ -441,9 +414,9 @@
                 {
                     lock (_lureLock)
                     {
-                        for (int i = 0; i < _lureQueue.Count; i++)
+                        for (var i = 0; i < _lureQueue.Count; i++)
                         {
-                            Pokestop item = _lureQueue.Dequeue();
+                            var item = _lureQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("lure"));
                             Thread.Sleep(5);
@@ -455,9 +428,9 @@
                 {
                     lock (_invasionLock)
                     {
-                        for (int i = 0; i < _invasionQueue.Count; i++)
+                        for (var i = 0; i < _invasionQueue.Count; i++)
                         {
-                            Pokestop item = _invasionQueue.Dequeue();
+                            var item = _invasionQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("invasion"));
                             Thread.Sleep(5);
@@ -469,9 +442,9 @@
                 {
                     lock (_questLock)
                     {
-                        for (int i = 0; i < _questQueue.Count; i++)
+                        for (var i = 0; i < _questQueue.Count; i++)
                         {
-                            Pokestop item = _questQueue.Dequeue();
+                            var item = _questQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("quest"));
                             Thread.Sleep(5);
@@ -483,9 +456,9 @@
                 {
                     lock (_weatherLock)
                     {
-                        for (int i = 0; i < _weatherQueue.Count; i++)
+                        for (var i = 0; i < _weatherQueue.Count; i++)
                         {
-                            Weather item = _weatherQueue.Dequeue();
+                            var item = _weatherQueue.Dequeue();
                             _sentEvents.Add(item);
                             events.Add(item.GetWebhookValues("weather"));
                             Thread.Sleep(5);
@@ -499,7 +472,7 @@
                     continue;
                 }
 
-                foreach (string url in Startup.Config.Webhooks)
+                foreach (var url in Startup.Config.Webhooks)
                 {
                     SendEvents(url, events);
                 }
@@ -511,9 +484,7 @@
         private static bool SendEvents(string url, List<dynamic> events, ushort retryCount = 0)
         {
             if (events == null || events.Count == 0)
-            {
                 return false;
-            }
 
             NetUtil.SendWebhook(url, events.ToJson(), retryCount);
             Console.WriteLine($"[WebhookController] Sent {events.Count} webhook events to {url}");

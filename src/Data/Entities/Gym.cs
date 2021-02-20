@@ -1,12 +1,14 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using ChuckDeviceController.Data.Interfaces;
-    using ChuckDeviceController.Extensions;
-    using POGOProtos.Rpc;
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
+
+    using POGOProtos.Rpc;
+
+    using ChuckDeviceController.Data.Interfaces;
+    using ChuckDeviceController.Extensions;
 
     [Table("gym")]
     public class Gym : BaseEntity, IAggregateRoot, IWebhook
@@ -113,7 +115,7 @@
 
         public Gym(ulong cellId, PokemonFortProto fort)
         {
-            ulong now = DateTime.UtcNow.ToTotalSeconds();
+            var now = DateTime.UtcNow.ToTotalSeconds();
             Id = fort.FortId;
             Latitude = fort.Latitude;
             Longitude = fort.Longitude;
@@ -162,7 +164,7 @@
             }
             if (fortDetails.ImageUrl.Count > 0)
             {
-                string url = fortDetails.ImageUrl.FirstOrDefault();
+                var url = fortDetails.ImageUrl.FirstOrDefault();
                 // Check if url changed
                 if (string.Compare(Url, url, true) != 0)
                 {

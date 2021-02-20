@@ -1,13 +1,15 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using ChuckDeviceController.Data.Interfaces;
-    using ChuckDeviceController.Extensions;
-    using POGOProtos.Rpc;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
+
+    using POGOProtos.Rpc;
+
+    using ChuckDeviceController.Data.Interfaces;
+    using ChuckDeviceController.Extensions;
 
     [Table("pokestop")]
     public class Pokestop : BaseEntity, IAggregateRoot, IWebhook
@@ -104,7 +106,7 @@
 
         public Pokestop(ulong cellId, PokemonFortProto fort)
         {
-            ulong now = DateTime.UtcNow.ToTotalSeconds();
+            var now = DateTime.UtcNow.ToTotalSeconds();
             Id = fort.FortId;
             Latitude = fort.Latitude;
             Longitude = fort.Longitude;
@@ -136,7 +138,7 @@
             }
             else if (fort.PokestopDisplays?.Count > 0)
             {
-                PokestopIncidentDisplayProto pokestopDisplay = fort.PokestopDisplays.FirstOrDefault();
+                var pokestopDisplay = fort.PokestopDisplays.FirstOrDefault();
                 IncidentExpireTimestamp = (ulong)Math.Floor(Convert.ToDouble(pokestopDisplay.IncidentExpirationMs / 1000));
                 if (fort.PokestopDisplays.FirstOrDefault()?.CharacterDisplay != null)
                 {
@@ -153,7 +155,7 @@
             Longitude = fortDetails.Longitude;
             if (fortDetails.ImageUrl.Count > 0)
             {
-                string url = fortDetails.ImageUrl.FirstOrDefault();
+                var url = fortDetails.ImageUrl.FirstOrDefault();
                 // Check if url changed
                 if (string.Compare(Url, url, true) != 0)
                 {
@@ -161,7 +163,7 @@
                     Url = url;
                 }
             }
-            string name = fortDetails.Name;
+            var name = fortDetails.Name;
             if (string.Compare(Name, name, true) != 0)
             {
                 // HasChanges = true;
@@ -172,19 +174,19 @@
 
         public void AddQuest(QuestProto quest)
         {
-            List<dynamic> conditions = new List<dynamic>();
-            List<dynamic> rewards = new List<dynamic>();
-            foreach (QuestConditionProto condition in quest.Goal.Condition)
+            var conditions = new List<dynamic>();
+            var rewards = new List<dynamic>();
+            foreach (var condition in quest.Goal.Condition)
             {
-                Dictionary<string, dynamic> conditionData = new Dictionary<string, dynamic>();
-                Dictionary<string, dynamic> infoData = new Dictionary<string, dynamic>();
+                var conditionData = new Dictionary<string, dynamic>();
+                var infoData = new Dictionary<string, dynamic>();
                 conditionData.Add("type", condition.Type);
                 switch (condition.Type)
                 {
                     case QuestConditionProto.Types.ConditionType.WithBadgeType:
                         infoData.Add("amount", condition.WithBadgeType.Amount);
                         infoData.Add("badge_rank", condition.WithBadgeType.BadgeRank);
-                        List<uint> badgeTypesById = new List<uint>();
+                        var badgeTypesById = new List<uint>();
                         condition.WithBadgeType.BadgeType?.ToList()?.ForEach(x => badgeTypesById.Add((uint)x));
                         infoData.Add("badge_types", condition.WithBadgeType.BadgeRank);
                         break;
@@ -195,12 +197,12 @@
                         }
                         break;
                     case QuestConditionProto.Types.ConditionType.WithRaidLevel:
-                        List<ushort> raidLevelsById = new List<ushort>();
+                        var raidLevelsById = new List<ushort>();
                         condition.WithRaidLevel.RaidLevel?.ToList()?.ForEach(x => raidLevelsById.Add((ushort)x));
                         infoData.Add("raid_levels", raidLevelsById);
                         break;
                     case QuestConditionProto.Types.ConditionType.WithPokemonType:
-                        List<HoloPokemonType> pokemonTypesById = new List<HoloPokemonType>();
+                        var pokemonTypesById = new List<HoloPokemonType>();
                         condition.WithPokemonType.PokemonType?.ToList()?.ForEach(x => pokemonTypesById.Add(x));
                         infoData.Add("pokemon_type_ids", pokemonTypesById);
                         break;
@@ -265,10 +267,10 @@
                 conditionData.Add("info", infoData);
                 conditions.Add(conditionData);
             }
-            foreach (QuestRewardProto reward in quest.QuestRewards)
+            foreach (var reward in quest.QuestRewards)
             {
-                Dictionary<string, dynamic> rewardData = new Dictionary<string, dynamic>();
-                Dictionary<string, dynamic> infoData = new Dictionary<string, dynamic>();
+                var rewardData = new Dictionary<string, dynamic>();
+                var infoData = new Dictionary<string, dynamic>();
                 rewardData.Add("type", reward.Type);
                 switch (reward.Type)
                 {
@@ -314,7 +316,7 @@
                 rewardData.Add("info", infoData);
                 rewards.Add(rewardData);
             }
-            ulong now = DateTime.UtcNow.ToTotalSeconds();
+            var now = DateTime.UtcNow.ToTotalSeconds();
             Id = quest.FortId;
             QuestType = quest.QuestType;
             QuestTarget = (uint?)quest.Goal.Target;

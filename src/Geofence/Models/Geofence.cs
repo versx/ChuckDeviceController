@@ -1,12 +1,14 @@
 ﻿namespace ChuckDeviceController.Geofence.Models
 {
-    using ChuckDeviceController.Utilities;
-    using NetTopologySuite.Features;
-    using NetTopologySuite.Geometries;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
+    using NetTopologySuite.Features;
+    using NetTopologySuite.Geometries;
+
     using Coordinate = ChuckDeviceController.Data.Entities.Coordinate;
+    using ChuckDeviceController.Utilities;
 
     public class Geofence
     {
@@ -97,14 +99,11 @@
             return new Geofence(null, polygon);
         }
 
-        public static List<Geofence> FromPolygons(List<List<Coordinate>> polygons)
-        {
-            return polygons.ConvertAll(p => FromPolygon(p));
-        }
+        public static List<Geofence> FromPolygons(List<List<Coordinate>> polygons) => polygons.ConvertAll(p => FromPolygon(p));
 
         public static Geofence FromMultiPolygon(MultiPolygon multiPolygon)
         {
-            List<Coordinate> polygon = multiPolygon.Select(x => new Coordinate(x[0], x[1]))
+            var polygon = multiPolygon.Select(x => new Coordinate(x[0], x[1]))
                                       .ToList();
             return FromPolygon(polygon);
         }

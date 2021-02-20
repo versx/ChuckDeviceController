@@ -1,13 +1,16 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Geofence.Models;
-    using Microsoft.Extensions.Caching.Memory;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+
+    using Microsoft.Extensions.Caching.Memory;
     using Z.EntityFramework.Plus;
+
+    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Geofence.Models;
 
     public class CellRepository : EfCoreRepository<Cell, DeviceControllerContext>
     {
@@ -21,14 +24,14 @@
         {
             if (fromCache)
             {
-                return await Task.FromResult(_dbContext.Cells.FromCache().ToList()).ConfigureAwait(false);
+                return await Task.FromResult(_dbContext.Cells.FromCache().ToList());
             }
-            return await base.GetAllAsync().ConfigureAwait(false);
+            return await base.GetAllAsync();
         }
 
         public async Task<List<Cell>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
         {
-            IReadOnlyList<Cell> cells = await GetAllAsync(true).ConfigureAwait(false);
+            var cells = await GetAllAsync(true).ConfigureAwait(false);
             return cells.Where(cell =>
                 cell.Latitude >= bbox.MinimumLatitude &&
                 cell.Latitude <= bbox.MaximumLatitude &&

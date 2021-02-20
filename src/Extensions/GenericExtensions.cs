@@ -11,7 +11,7 @@
     {
         public static T PopFirst<T>(this List<T> list, out List<T> newList)
         {
-            T item = list.FirstOrDefault();
+            var item = list.FirstOrDefault();
             list.Remove(item);
             newList = list;
             return item;
@@ -19,7 +19,7 @@
 
         public static T PopLast<T>(this List<T> list, out List<T> newList)
         {
-            T item = list.LastOrDefault();
+            var item = list.LastOrDefault();
             list.Remove(item);
             newList = list;
             return item;
@@ -33,13 +33,11 @@
         {
             // Handles negative ends.
             if (end < 0)
-            {
                 end = source.Count + end;
-            }
 
-            int len = end - start;
-            List<T> list = new List<T>(len);
-            for (int i = 0; i < len; i++)
+            var len = end - start;
+            var list = new List<T>(len);
+            for (var i = 0; i < len; i++)
             {
                 list[i] = source[i + start];
             }
@@ -53,14 +51,14 @@
                 throw new FileNotFoundException($"{filePath} file not found.", filePath);
             }
 
-            string data = File.ReadAllText(filePath);
+            var data = File.ReadAllText(filePath);
             if (string.IsNullOrEmpty(data))
             {
                 Console.Error.WriteLine($"{filePath} file is empty.");
                 return default;
             }
 
-            JsonSerializerOptions options = new JsonSerializerOptions
+            var options = new JsonSerializerOptions
             {
                 AllowTrailingCommas = true,
                 WriteIndented = true,

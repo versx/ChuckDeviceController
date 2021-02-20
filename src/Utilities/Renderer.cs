@@ -1,9 +1,11 @@
 ﻿namespace ChuckDeviceController.Utilities
 {
-    using HandlebarsDotNet;
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Threading.Tasks;
+
+    using HandlebarsDotNet;
 
     public static class Renderer
     {
@@ -34,16 +36,16 @@
 
         public static string Parse(string text, dynamic model)
         {
-            HandlebarsTemplate<object, object> template = Handlebars.Compile(text);
+            var template = Handlebars.Compile(text);
             return template(model);
         }
 
         private static void RegisterAllTemplates()
         {
-            foreach (string file in Directory.GetFiles(ViewsDirectory, "*" + Strings.TemplateExt))
+            foreach (var file in Directory.GetFiles(ViewsDirectory, "*" + Strings.TemplateExt))
             {
-                string viewName = Path.GetFileNameWithoutExtension(file);
-                string viewData = File.ReadAllText(file);
+                var viewName = Path.GetFileNameWithoutExtension(file);
+                var viewData = File.ReadAllText(file);
                 Handlebars.RegisterTemplate(viewName, viewData);
                 if (!_templates.ContainsKey(viewName))
                 {
@@ -54,7 +56,7 @@
 
         public static string GetView(string name)
         {
-            string viewPath = Path.Combine(ViewsDirectory, name + Strings.TemplateExt);
+            var viewPath = Path.Combine(ViewsDirectory, name + Strings.TemplateExt);
             if (!File.Exists(viewPath))
             {
                 Console.WriteLine($"View does not exist at {viewPath}");

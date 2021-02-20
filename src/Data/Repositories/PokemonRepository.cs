@@ -1,10 +1,11 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+
+    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
 
     public class PokemonRepository : EfCoreRepository<Pokemon, DeviceControllerContext>
     {

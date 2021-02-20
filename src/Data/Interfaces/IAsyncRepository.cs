@@ -1,9 +1,11 @@
 ﻿namespace ChuckDeviceController.Data.Interfaces
 {
-    using ChuckDeviceController.Data.Entities;
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using ChuckDeviceController.Data.Entities;
 
     public interface IAsyncRepository<T> where T : BaseEntity, IAggregateRoot
     {

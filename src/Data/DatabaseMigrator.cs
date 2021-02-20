@@ -1,13 +1,15 @@
 ﻿namespace ChuckDeviceController.Data
 {
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Factories;
-    using ChuckDeviceController.Data.Repositories;
-    using Microsoft.Extensions.Logging;
     using System;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Microsoft.Extensions.Logging;
+
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
+    using ChuckDeviceController.Data.Factories;
 
     /// <summary>
     /// Database migration class
@@ -43,13 +45,13 @@
             _metadataRepository.ExecuteSql(Strings.SQL_CREATE_TABLE_METADATA);
 
             // Get current version from metadata table
-            Metadata dbVersion = GetMetadata("DB_VERSION").ConfigureAwait(false)
+            var dbVersion = GetMetadata("DB_VERSION").ConfigureAwait(false)
                                                      .GetAwaiter()
                                                      .GetResult();
-            int currentVersion = int.Parse(dbVersion?.Value ?? "0");
+            var currentVersion = int.Parse(dbVersion?.Value ?? "0");
 
             // Get newest version from migration files
-            int newestVersion = GetNewestDbVersion();
+            var newestVersion = GetNewestDbVersion();
             _logger.LogInformation($"Current: {currentVersion}, Latest: {newestVersion}");
 
             // Attempt to migrate the database
@@ -69,19 +71,15 @@
         /// <returns>Returns the latest version number</returns>
         private int GetNewestDbVersion()
         {
-            int current = 0;
-            bool keepChecking = true;
+            var current = 0;
+            var keepChecking = true;
             while (keepChecking)
             {
-                string path = Path.Combine(MigrationsFolder, (current + 1) + ".sql");
+                var path = Path.Combine(MigrationsFolder, (current + 1) + ".sql");
                 if (File.Exists(path))
-                {
                     current++;
-                }
                 else
-                {
                     keepChecking = false;
-                }
             }
             return current;
         }
@@ -97,25 +95,23 @@
             if (fromVersion < toVersion)
             {
                 _logger.LogInformation($"Migrating database to version {fromVersion + 1}");
-                string sqlFile = Path.Combine(MigrationsFolder, (fromVersion + 1) + ".sql");
+                var sqlFile = Path.Combine(MigrationsFolder, (fromVersion + 1) + ".sql");
 
                 // Read SQL file and remove any new lines
-                string migrateSql = File.ReadAllText(sqlFile)?.Replace("\r", "").Replace("\n", "");
+                var migrateSql = File.ReadAllText(sqlFile)?.Replace("\r", "").Replace("\n", "");
 
                 // If the migration file contains multiple queries, split them up
-                string[] sqlSplit = migrateSql.Split(';');
+                var sqlSplit = migrateSql.Split(';');
 
                 // Loop through the migration queries
-                foreach (string sql in sqlSplit)
+                foreach (var sql in sqlSplit)
                 {
                     // If the SQL query is null, skip...
                     if (string.IsNullOrEmpty(sql))
-                    {
                         continue;
-                    }
 
                     // Execute the SQL query
-                    bool result = _metadataRepository.ExecuteSql(sql);
+                    var result = _metadataRepository.ExecuteSql(sql);
                     if (!result)
                     {
                         // Failed to execute query
@@ -129,7 +125,7 @@
                 Thread.Sleep(2000);
 
                 // Build query to update metadata table version key
-                int newVersion = fromVersion + 1;
+                var newVersion = fromVersion + 1;
                 try
                 {
                     await _metadataRepository.AddOrUpdateAsync(new Metadata { Key = "DB_VERSION", Value = newVersion.ToString() });

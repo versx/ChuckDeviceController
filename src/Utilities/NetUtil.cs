@@ -16,29 +16,25 @@
         public static void SendWebhook(string webhookUrl, string json, ushort sleep = 50, ushort retryCount = 0)
         {
             if (retryCount >= MaxRetryCount)
-            {
                 return;
-            }
 
-            using WebClient wc = new WebClient();
+            using var wc = new WebClient();
             wc.Headers.Add(HttpRequestHeader.ContentType, "application/json");
             try
             {
-                string resp = wc.UploadString(webhookUrl, json);
+                var resp = wc.UploadString(webhookUrl, json);
                 Thread.Sleep(sleep);
             }
             catch (WebException ex)
             {
-                HttpWebResponse resp = (HttpWebResponse)ex.Response;
+                var resp = (HttpWebResponse)ex.Response;
                 switch ((int)resp.StatusCode)
                 {
                     case 429:
                         Console.WriteLine("RATE LIMITED");
-                        string retryAfter = resp.Headers["Retry-After"];
-                        if (!int.TryParse(retryAfter, out int retry))
-                        {
+                        var retryAfter = resp.Headers["Retry-After"];
+                        if (!int.TryParse(retryAfter, out var retry))
                             return;
-                        }
 
                         Thread.Sleep(retry);
                         retryCount++;

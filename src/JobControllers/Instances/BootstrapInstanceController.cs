@@ -1,12 +1,15 @@
 ﻿namespace ChuckDeviceController.JobControllers.Instances
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    using Microsoft.Extensions.Logging;
+
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.JobControllers.Tasks;
     using ChuckDeviceController.Services.Routes;
-    using Microsoft.Extensions.Logging;
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
     using Geofence = ChuckDeviceController.Geofence.Models.Geofence;
 
     public class BootstrapInstanceController : IJobController
@@ -61,9 +64,9 @@
             Coordinate result;
             lock (_indexLock)
             {
-                int currentIndex = _lastIndex;
+                var currentIndex = _lastIndex;
                 _logger.LogDebug($"[{uuid}] Current index: {currentIndex}");
-                Coordinate currentCoord = Coordinates[currentIndex];
+                var currentCoord = Coordinates[currentIndex];
                 if (!startup)
                 {
                     if (_lastIndex + 1 == Coordinates.Count)
@@ -92,8 +95,8 @@
 
         public async Task<string> GetStatus()
         {
-            double percentage = Math.Round((_lastIndex / (double)Coordinates.Count) * 100.00, 2);
-            string text = $"{_lastIndex:N0}/{Coordinates.Count:N0} ({percentage}%)";
+            var percentage = Math.Round(((double)_lastIndex / (double)Coordinates.Count) * 100.00, 2);
+            var text = $"{_lastIndex:N0}/{Coordinates.Count:N0} ({percentage}%)";
             return await Task.FromResult(text).ConfigureAwait(false);
         }
 

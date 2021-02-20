@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Models.Requests
 {
+    using System;
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
 
