@@ -69,11 +69,7 @@
             {
                 var vertex = s2cell.GetVertex(i);
                 var coord = new S2LatLng(vertex);
-                _polygon.Add(new Polygon
-                {
-                    coord.LatDegrees,
-                    coord.LngDegrees,
-                });
+                _polygon.Add(new Polygon(coord.LatDegrees, coord.LngDegrees));
             }
             return new
             {

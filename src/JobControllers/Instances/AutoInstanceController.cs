@@ -411,31 +411,9 @@
             var missingCellIds = new List<ulong>();
             foreach (var polygon in MultiPolygon)
             {
-                var first = polygon.FirstOrDefault();
-                var last = polygon.LastOrDefault();
-                // Check null's
-                if (first == null || last == null)
-                {
-                    continue;
-                }
-                // Make sure first and last coords are the same
-                if (first[0] != last[0] ||
-                    first[1] != last[1])
-                {
-                    polygon.Add(first);
-                }
-
                 var s2CellIds = polygon.GetS2CellIDs(15, 15, int.MaxValue);
                 totalCount += s2CellIds.Count;
-                var cells = new List<Cell>();
-                try
-                {
-                    cells = await _cellRepository.GetByIdsAsync(s2CellIds).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"[{Name}] Error: {ex}");
-                }
+                var cells = await _cellRepository.GetByIdsAsync(s2CellIds).ConfigureAwait(false);
                 var existingCellIds = cells.Select(x => x.Id);
                 foreach (var s2cellId in s2CellIds)
                 {
@@ -461,20 +439,6 @@
                     {
                         try
                         {
-                            // Make sure first and last coords are the same
-                            var first = polygon.FirstOrDefault();
-                            var last = polygon.LastOrDefault();
-                            // Check null's
-                            if (first == null || last == null)
-                            {
-                                continue;
-                            }
-                            // Make sure first and last coords are the same
-                            if (first[0] != last[0] ||
-                                first[1] != last[1])
-                            {
-                                polygon.Add(first);
-                            }
                             // Get all existing Pokestops within geofence bounds
                             var bounds = polygon.GetBoundingBox();
                             var stops = await _pokestopRepository.GetAllAsync(bounds).ConfigureAwait(false);

@@ -195,7 +195,7 @@
                             var multiPolygon = new MultiPolygon();
                             foreach (var coord in coords)
                             {
-                                multiPolygon.Add(new Polygon { coord.Latitude, coord.Longitude });
+                                multiPolygon.Add(new Polygon(coord.Latitude, coord.Longitude));
                             }
                             areaArrayEmptyInner.Add(multiPolygon);
                         }
