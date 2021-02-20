@@ -30,10 +30,7 @@ namespace ChuckDeviceController
     {
         public static void Main(string[] args)
         {
-            var configPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                Path.Combine("..", Strings.DefaultConfigFileName)
-            );
+            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Strings.DefaultConfigFileName);
             Startup.Config = Config.Load(configPath);
             if (Startup.Config == null)
             {
