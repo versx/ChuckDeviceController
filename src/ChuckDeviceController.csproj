@@ -47,4 +47,10 @@
     <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.1.19" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="config.example.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
