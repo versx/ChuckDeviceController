@@ -1059,9 +1059,13 @@
         private static string CoordinatesToAreaString(dynamic area)
         {
             var coords = string.Empty;
+            var nfi = new CultureInfo("en-US").NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var coord in area.EnumerateArray())
             {
-                coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                var latitude = double.Parse(coord.GetProperty("lat").GetString(), nfi);
+                var longitude = double.Parse(coord.GetProperty("lon").GetString(), nfi);
+                coords += $"{latitude},{longitude}\n";
             }
             return coords;
         }
@@ -1070,12 +1074,16 @@
         {
             var index = 1;
             var coords = string.Empty;
+            var nfi = new CultureInfo("en-US").NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var fence in area.EnumerateArray())
             {
                 coords += $"[Geofence {index}]\n";
                 foreach (var coord in fence.EnumerateArray())
                 {
-                    coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                    var latitude = double.Parse(coord.GetProperty("lat").GetString(), nfi);
+                    var longitude = double.Parse(coord.GetProperty("lon").GetString(), nfi);
+                    coords += $"{latitude},{longitude}\n";
                 }
                 index++;
             }
