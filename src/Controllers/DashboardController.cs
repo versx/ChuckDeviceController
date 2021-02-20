@@ -1107,6 +1107,8 @@
         {
             var rows = area.Split('\n');
             var coords = new List<Coordinate>();
+            var nfi = new CultureInfo("en-US").NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var row in rows)
             {
                 var split = row.Split(',');
@@ -1124,7 +1126,7 @@
             var rows = area.Split('\n');
             var index = 0;
             var coords = new List<List<Coordinate>> { new List<Coordinate>() };
-            var nfi = CultureInfo.InvariantCulture.NumberFormat;
+            var nfi = new CultureInfo("en-US").NumberFormat;
             nfi.NumberDecimalSeparator = ".";
             foreach (var row in rows)
             {
