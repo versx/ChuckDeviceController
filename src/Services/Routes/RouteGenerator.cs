@@ -168,9 +168,7 @@
             return list;
         }
 
-#pragma warning disable IDE0051 // Supprimer les membres privés non utilisés
         private static List<Coordinate> FilterCoordinates(List<Coordinate> coordinates, ushort stepDistance)
-#pragma warning restore IDE0051 // Supprimer les membres privés non utilisés
         {
             var list = new List<Coordinate>();
             foreach (var coord in coordinates)
@@ -240,9 +238,9 @@
         private static NetTopologySuite.Geometries.Coordinate Destination(NetTopologySuite.Geometries.Coordinate latlng, double heading, double distance)
         {
             heading = (heading + 360) % 360;
-            var rad = Math.PI / 180;
-            var radInv = 180 / Math.PI;
-            var r = 6378137; // approximation of Earth's radius
+            const double rad = Math.PI / 180;
+            const double radInv = 180 / Math.PI;
+            const int r = 6378137; // approximation of Earth's radius
             var lon1 = latlng.Y * rad;
             var lat1 = latlng.X * rad;
             var rheading = heading * rad;

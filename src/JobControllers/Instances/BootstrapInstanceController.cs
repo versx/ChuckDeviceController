@@ -24,7 +24,6 @@
         private DateTime _lastCompletedTime;
         private int _lastIndex;
         private DateTime _lastLastCompletedTime;
-
         private readonly object _indexLock = new object();
 
         #endregion
