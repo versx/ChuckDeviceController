@@ -6,7 +6,7 @@
     <IsOSX Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsOSX>
     <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
     <!-- Disable "Thread.Abort is obsolete" warnings for entire project. -->
-    <NoWarn>$(NoWarn);SYSLIB0006;RCS1093;IDE0051;IDE0060</NoWarn>
+    <NoWarn>$(NoWarn);SYSLIB0006;RCS1093;RCS1163;RCS1213;IDE0051;IDE0060</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(IsWindows)'=='true'">
     <DefineConstants>Windows</DefineConstants>
