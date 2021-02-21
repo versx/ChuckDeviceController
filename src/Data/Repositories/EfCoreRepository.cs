@@ -66,7 +66,7 @@
 
         public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync()
         {
-            return await _dbContext.Set<TEntity>().ToListAsync().ConfigureAwait(false);
+            return await _dbContext.Set<TEntity>().AsNoTracking().ToListAsync().ConfigureAwait(false);
         }
 
         #endregion

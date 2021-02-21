@@ -4,8 +4,10 @@ namespace ChuckDeviceController
     using System.IO;
     using System.Reflection;
     using System.Text;
+    using System.Threading;
 
     using ChuckDeviceController.Configuration;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Extensions;
 
     using Microsoft.AspNetCore.Hosting;
@@ -56,10 +58,10 @@ namespace ChuckDeviceController
                 return;
             }
             // Start database migrator
-            var migrator = new Data.DatabaseMigrator();
+            var migrator = new DatabaseMigrator();
             while (!migrator.Finished)
             {
-                System.Threading.Thread.Sleep(50);
+                Thread.Sleep(50);
             }
 
             CreateHostBuilder(args).Build().Run();
