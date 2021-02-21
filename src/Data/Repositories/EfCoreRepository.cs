@@ -44,18 +44,8 @@
 
         public virtual async Task<TEntity> GetByIdAsync(string id)
         {
-            try
-            {
-                var keyValues = new object[] { id };
-                return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("\nPress one key to exit...");
-                Console.ReadKey();
-                Environment.Exit(-1);
-                return null;
-            }
+            var keyValues = new object[] { id };
+            return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
         #endregion
