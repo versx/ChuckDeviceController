@@ -9,6 +9,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geofence.Models;
 
     public class GymRepository : EfCoreRepository<Gym, DeviceControllerContext>
@@ -57,7 +58,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GymRepository] AddOrUpdateAsync: {ex}");
+                ConsoleExt.WriteError($"[GymRepository] AddOrUpdateAsync: {ex}");
             }
         }
 

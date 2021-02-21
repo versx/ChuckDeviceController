@@ -487,7 +487,7 @@
                 return false;
 
             NetUtil.SendWebhook(url, events.ToJson(), retryCount);
-            Console.WriteLine($"[WebhookController] Sent {events.Count} webhook events to {url}");
+            ConsoleExt.WriteInfo($"[WebhookController] Sent {events.Count} webhook events to {url}");
             return true;
         }
 

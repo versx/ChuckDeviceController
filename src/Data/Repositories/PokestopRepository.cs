@@ -56,7 +56,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PokestopRepository] AddOrUpdateAsync: {ex}");
+                ConsoleExt.WriteError($"[PokestopRepository] AddOrUpdateAsync: {ex}");
             }
         }
 

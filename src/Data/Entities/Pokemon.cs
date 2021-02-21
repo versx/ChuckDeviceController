@@ -282,11 +282,11 @@
                 {
                     if (oldPokemon.PokemonId != DittoPokemonId)
                     {
-                        Console.WriteLine($"[Pokemon] Pokemon {Id} changed from {oldPokemon.PokemonId} to {PokemonId}");
+                        ConsoleExt.WriteInfo($"[Pokemon] Pokemon {Id} changed from {oldPokemon.PokemonId} to {PokemonId}");
                     }
                     else if ((oldPokemon.DisplayPokemonId ?? 0) != PokemonId)
                     {
-                        Console.WriteLine($"[Pokemon] Pokemon {Id} Ditto disguised as {oldPokemon.DisplayPokemonId} now see as {PokemonId}");
+                        ConsoleExt.WriteInfo($"[Pokemon] Pokemon {Id} Ditto disguised as {oldPokemon.DisplayPokemonId} now see as {PokemonId}");
                     }
                 }
                 if (oldPokemon.CellId > 0 && CellId == 0)
@@ -342,7 +342,7 @@
                     IsDitto = IsDittoDisguised(oldPokemon);
                     if (IsDitto)
                     {
-                        Console.WriteLine($"[Pokemon] OldPokemon {Id} Ditto found, disguised as {PokemonId}");
+                        ConsoleExt.WriteInfo($"[Pokemon] OldPokemon {Id} Ditto found, disguised as {PokemonId}");
                         SetDittoAttributes(PokemonId);
                     }
                 }
@@ -353,7 +353,7 @@
                 }
                 else if (weatherChanged && oldPokemon.AttackIV != null && !NoWeatherIVClearing)
                 {
-                    Console.WriteLine($"[Pokemon] Pokemon {Id} changed WeatherBoosted state. Clearing IVs");
+                    ConsoleExt.WriteInfo($"[Pokemon] Pokemon {Id} changed WeatherBoosted state. Clearing IVs");
                     SetIVForWeather = true;
                     AttackIV = null;
                     DefenseIV = null;
@@ -369,7 +369,7 @@
                     CaptureRate3 = null;
                     PvpRankingsGreatLeague = null;
                     PvpRankingsUltraLeague = null;
-                    Console.WriteLine("[Pokemon] WeatherBoosted state changed. Cleared IVs");
+                    ConsoleExt.WriteInfo("[Pokemon] WeatherBoosted state changed. Cleared IVs");
                 }
                 else
                 {
@@ -382,7 +382,7 @@
 
                 if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
                 {
-                    Console.WriteLine($"[Pokemon] Pokemon {Id} Ditto changed from {oldPokemon.PokemonId} to {PokemonId}");
+                    ConsoleExt.WriteInfo($"[Pokemon] Pokemon {Id} Ditto changed from {oldPokemon.PokemonId} to {PokemonId}");
                 }
 
                 Updated = now;
@@ -547,7 +547,7 @@
                 IsDitto = IsDittoDisguised(pokemonId, level, Weather, AttackIV ?? 0, DefenseIV ?? 0, StaminaIV ?? 0);
                 if (IsDitto)
                 {
-                    Console.WriteLine($"[Pokemon] Pokemon {Id} Ditto found, disguised as {PokemonId}");
+                    ConsoleExt.WriteInfo($"[Pokemon] Pokemon {Id} Ditto found, disguised as {PokemonId}");
                     SetDittoAttributes(PokemonId);
                 }
 
@@ -604,7 +604,7 @@
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[Pokemon] Error: {ex}");
+                    ConsoleExt.WriteError($"[Pokemon] Error: {ex}");
                     spawnpoint = null;
                 }
                 if (spawnpoint != null && spawnpoint?.DespawnSecond != null)

@@ -6,6 +6,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     public class PokemonRepository : EfCoreRepository<Pokemon, DeviceControllerContext>
     {
@@ -62,7 +63,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PokemonRepository] AddOrUpdateAsync: {ex}");
+                ConsoleExt.WriteError($"[PokemonRepository] AddOrUpdateAsync: {ex}");
             }
         }
     }

@@ -3,9 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Threading.Tasks;
-
+    
     using HandlebarsDotNet;
+
+    using ChuckDeviceController.Extensions;
 
     public static class Renderer
     {
@@ -28,7 +29,7 @@
         {
             if (!_templates.ContainsKey(name))
             {
-                Console.WriteLine($"Template is not registered {name}");
+                ConsoleExt.WriteWarn($"Template is not registered {name}");
                 return null;
             }
             return Parse(_templates[name], model);
@@ -59,7 +60,7 @@
             var viewPath = Path.Combine(ViewsDirectory, name + Strings.TemplateExt);
             if (!File.Exists(viewPath))
             {
-                Console.WriteLine($"View does not exist at {viewPath}");
+                ConsoleExt.WriteError($"View does not exist at {viewPath}");
                 return null;
             }
             //return await File.ReadAllTextAsync(viewPath);

@@ -6,11 +6,12 @@ namespace ChuckDeviceController
     using System.Text;
 
     using ChuckDeviceController.Configuration;
+    using ChuckDeviceController.Extensions;
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
 
-    // TODO: Add auto bootstrap mode, add 'bootstrap_complete' property to Instance.Data
+    // TODO: Add 'bootstrap_complete' property to Instance.Data for bootstrap instance, add auto_complete_instance property
     // TODO: Fix IV loop adding pokemon
     // TODO: Implement cache better
     // TODO: Use Z.EntityFramework.Cache for Cells/Pokestops/Gyms/Spawnpoints/Accounts/Devices/Instances/Assignments
@@ -21,23 +22,19 @@ namespace ChuckDeviceController
     // TODO: Add HasChanges property for each entity to see if needs updating
     // TODO: Add cache system for ASP.NET
     // TODO: Add secondary cache system with EntityFrameworkCore.Plus/Extensions
-    // TODO: Add reusable Webhooks
     // TODO: Add reusable IV lists
     // TODO: Redis cache incoming requests, database consumer handles redis queue
     // TODO: Add first_seen_timestamp and last_modified_timestamp to Spawnpoints
     // TODO: Add s2cell logic route
-    // TODO: Add proper error responses via Dashboard UI
 
     public static class Program
     {
         public static void Main(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
+            ConsoleExt.WriteDebug($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
+            ConsoleExt.WriteInfo("\tCopyright © 2021 - versx project's\n");
             ConsoleColor org = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("\tCopyright © 2021 - versx protect's\n");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("Starting ...");
             Console.ForegroundColor = org;
@@ -54,9 +51,7 @@ namespace ChuckDeviceController
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Config {ex.Message}");
-                Console.ForegroundColor = org;
+                ConsoleExt.WriteError($"Config: {ex}");
                 Console.ReadKey();
                 return;
             }

@@ -261,7 +261,7 @@
                         infoData.Add("raid_pokemon_evolutions", condition.WithTempEvoId.MegaForm);
                         break;
                     default:
-                        Console.WriteLine($"[Pokestop] Unrecognized condition type: {condition.Type}");
+                        ConsoleExt.WriteWarn($"[Pokestop] Unrecognized condition type: {condition.Type}");
                         break;
                 }
                 conditionData.Add("info", infoData);
@@ -310,7 +310,7 @@
                         infoData.Add("pokemon_id", reward.MegaResource.PokemonId);
                         break;
                     default:
-                        Console.WriteLine($"[Pokestop] Unrecognized reward type: {reward.Type}");
+                        ConsoleExt.WriteWarn($"[Pokestop] Unrecognized reward type: {reward.Type}");
                         break;
                 }
                 rewardData.Add("info", infoData);
