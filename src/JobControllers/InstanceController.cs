@@ -119,7 +119,7 @@
                 // TODO: Maybe no locking object
                 if (instanceController != null)
                 {
-                    return await (instanceController?.GetStatus()).ConfigureAwait(false);
+                    return await instanceController.GetStatus().ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -195,7 +195,7 @@
                             var multiPolygon = new MultiPolygon();
                             foreach (var coord in coords)
                             {
-                                multiPolygon.Add(new Polygon { coord.Latitude, coord.Longitude });
+                                multiPolygon.Add(new Polygon(coord.Latitude, coord.Longitude));
                             }
                             areaArrayEmptyInner.Add(multiPolygon);
                         }

@@ -607,6 +607,8 @@
                         }
                         var id = gymInfo.GymStatusAndDefenders.PokemonFortProto.FortId;
                         var gymDefenders = gymInfo.GymStatusAndDefenders.GymDefender;
+                        if (gymDefenders == null)
+                            continue;
 
                         foreach (var gymDefender in gymDefenders)
                         {
@@ -616,12 +618,12 @@
                                 Name = trainerProfile.Name,
                                 Level = (ushort)trainerProfile.Level,
                                 TeamId = (ushort)trainerProfile.Team,
-                                BattlesWon = (uint)trainerProfile.BattlesWon,
-                                KmWalked = trainerProfile.KmWalked,
-                                PokemonCaught = (ulong)trainerProfile.CaughtPokemon,
-                                Experience = (ulong)trainerProfile.Experience,
-                                CombatRank = (ulong)trainerProfile.CombatRank,
-                                CombatRating = trainerProfile.CombatRating,
+                                BattlesWon = (uint)(trainerProfile?.BattlesWon ?? 0),
+                                KmWalked = trainerProfile?.KmWalked ?? 0,
+                                PokemonCaught = (ulong)(trainerProfile?.CaughtPokemon ?? 0),
+                                Experience = (ulong)(trainerProfile?.Experience ?? 0),
+                                CombatRank = (ulong)(trainerProfile?.CombatRank ?? 0),
+                                CombatRating = trainerProfile?.CombatRating ?? 0,
                             });
 
                             var defenderPokemon = gymDefender.MotivatedPokemon;
@@ -647,10 +649,10 @@
                                 Gender = (ushort)defenderPokemon.Pokemon.PokemonDisplay.Gender,
                                 // form
                                 HatchedFromEgg = defenderPokemon.Pokemon.HatchedFromEgg,
-                                PvpCombatWon = (ushort)defenderPokemon.Pokemon.PvpCombatStats.NumWon,
-                                PvpCombatTotal = (ushort)defenderPokemon.Pokemon.PvpCombatStats.NumTotal,
-                                NpcCombatWon = (ushort)defenderPokemon.Pokemon.NpcCombatStats.NumWon,
-                                NpcCombatTotal = (ushort)defenderPokemon.Pokemon.NpcCombatStats.NumTotal,
+                                PvpCombatWon = (ushort)defenderPokemon.Pokemon.PvpCombatStats?.NumWon,
+                                PvpCombatTotal = (ushort)defenderPokemon.Pokemon.PvpCombatStats?.NumTotal,
+                                NpcCombatWon = (ushort)defenderPokemon.Pokemon.NpcCombatStats?.NumWon,
+                                NpcCombatTotal = (ushort)defenderPokemon.Pokemon.NpcCombatStats?.NumTotal,
                             });
                         }
 
