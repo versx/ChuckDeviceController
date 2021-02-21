@@ -10,6 +10,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geofence.Models;
 
     public class PokestopRepository : EfCoreRepository<Pokestop, DeviceControllerContext>
@@ -72,7 +73,7 @@
             }).ConfigureAwait(false);
         }
 
-        public async Task<List<Pokestop>> GetWithin(BoundingBox bbox, ulong updated = 0)
+        public async Task<List<Pokestop>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
         {
             var pokestops = await GetAllAsync(true).ConfigureAwait(false);
             return pokestops.Where(stop =>
@@ -92,6 +93,36 @@
                 return await Task.FromResult(_dbContext.Pokestops.FromCache().ToList()).ConfigureAwait(false);
             }
             return await base.GetAllAsync().ConfigureAwait(false);
+        }
+
+        public async Task<ulong> GetQuestCount(List<string> ids)
+        {
+            const double MAX_COUNT = 10000.0;
+            if (ids.Count > MAX_COUNT)
+            {
+                var result = 0UL;
+                var count = Math.Ceiling(ids.Count / MAX_COUNT);
+                for (var i = 0; i < count; i++)
+                {
+                    var start = (int)MAX_COUNT * i;
+                    var end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
+                    var slice = ids.Slice(start, end);
+                    var qResult = await GetQuestCount(slice).ConfigureAwait(false);
+                    if (qResult > 0)
+                    {
+                        result += qResult;
+                    }
+                }
+                return result;
+            }
+            if (ids.Count == 0)
+            {
+                return 0;
+            }
+            var pokestops = await GetByIdsAsync(ids).ConfigureAwait(false);
+            return (ulong)pokestops.Where(x => !x.Deleted &&
+                                               x.QuestType.HasValue &&
+                                               x.QuestType != null).ToList().Count;
         }
     }
 }

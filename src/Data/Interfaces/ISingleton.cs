@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Data.Interfaces
 {
-    public class ISingleton
+    public interface ISingleton<T>
     {
+        static T Instance { get; }
     }
 }

@@ -97,7 +97,7 @@
             IsRunning = true;
             if (_thread == null)
             {
-                _thread = new Thread(x => OnTimeElapsed())
+                _thread = new Thread(_ => OnTimeElapsed())
                 {
                     IsBackground = true,
                 };
@@ -224,7 +224,6 @@
                 {
                     _pokestopQueue.Enqueue(pokestop);
                 }
-
             }
         }
 

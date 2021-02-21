@@ -50,6 +50,6 @@
             Column("last_seen"),
             JsonPropertyName("last_seen"),
         ]
-        public ulong? LastSeen { get; set; }
+        public ulong? LastSeen { get; set; } = 0;
     }
 }

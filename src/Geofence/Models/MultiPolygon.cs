@@ -17,10 +17,16 @@
                 MaxLevel = maxLevel,
                 MaxCells = maxCells,
             };
+            var region = new S2LatLngRect(
+                S2LatLng.FromDegrees(bbox.MinimumLatitude, bbox.MinimumLongitude),
+                S2LatLng.FromDegrees(bbox.MaximumLatitude, bbox.MaximumLongitude)
+            );
+            /*
             var region = S2LatLngRect.FromPointPair(
                 S2LatLng.FromDegrees(bbox.MinimumLatitude, bbox.MinimumLongitude),//bbox[1], bbox[0]),
                 S2LatLng.FromDegrees(bbox.MaximumLatitude, bbox.MaximumLongitude)//bbox[3], bbox[2])
             );
+            */
             var cellIDsBBox = regionCoverer.GetInteriorCovering(region);
             var cellIDs = new List<ulong>();
             foreach (var cellId in cellIDsBBox)
@@ -35,9 +41,9 @@
                 var coord2 = new S2LatLng(new S2Point(vertex2.X, vertex2.Y, vertex2.Z));
                 var coord3 = new S2LatLng(new S2Point(vertex3.X, vertex3.Y, vertex3.Z));
                 if (GeofenceService.InPolygon(this, coord0.LatDegrees, coord0.LngDegrees) ||
-                    GeofenceService.InPolygon(this, coord1.LatDegrees, coord0.LngDegrees) ||
-                    GeofenceService.InPolygon(this, coord2.LatDegrees, coord0.LngDegrees) ||
-                    GeofenceService.InPolygon(this, coord3.LatDegrees, coord0.LngDegrees))
+                    GeofenceService.InPolygon(this, coord1.LatDegrees, coord1.LngDegrees) ||
+                    GeofenceService.InPolygon(this, coord2.LatDegrees, coord2.LngDegrees) ||
+                    GeofenceService.InPolygon(this, coord3.LatDegrees, coord3.LngDegrees))
                 {
                     cellIDs.Add(cellId.Id);
                 }

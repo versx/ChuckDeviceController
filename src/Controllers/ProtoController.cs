@@ -230,7 +230,7 @@
                             {
                                 playerData.Add(new
                                 {
-                                    gpr = gpr,
+                                    gpr,
                                     username = payload.Username,
                                 });
                             }

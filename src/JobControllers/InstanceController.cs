@@ -62,20 +62,15 @@
 
         public async Task Start()
         {
-            var instances = await _instanceRepository.GetAllAsync()
-                                   .ConfigureAwait(false);
-            //.GetAwaiter()
-            //.GetResult();
-            var devices = await _deviceRepository.GetAllAsync()
-                                           .ConfigureAwait(false);
-                                           //.GetAwaiter()
-                                           //.GetResult();
+            var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+            var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+            var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
             foreach (var instance in instances)
             {
                 if (!ThreadPool.QueueUserWorkItem(async _ =>
                 {
                     _logger.LogInformation($"Starting {instance.Name}");
-                    await AddInstance(instance).ConfigureAwait(false);
+                    await AddInstance(instance, geofences).ConfigureAwait(false);
                     _logger.LogInformation($"Started {instance.Name}");
                     foreach (var device in devices.AsEnumerable().Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0))
                     {
@@ -124,7 +119,7 @@
                 // TODO: Maybe no locking object
                 if (instanceController != null)
                 {
-                    return await (instanceController?.GetStatus()).ConfigureAwait(false);
+                    return await instanceController.GetStatus().ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -134,21 +129,16 @@
             return "Error";
         }
 
-        public async Task AddInstance(Instance instance)
+        public async Task AddInstance(Instance instance, IReadOnlyList<Geofence> geofences = null)
         {
             IJobController instanceController = null;
-            Geofence geofence = null;
-            if (!string.IsNullOrEmpty(instance.Geofence))
+            var geofence = await GetGeofence(instance, geofences).ConfigureAwait(false);
+            if (geofence == null)
             {
-                geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
-                if (geofence == null)
-                {
-                    // TODO: Failed to get geofence for instance
-                }
+                // Failed to get geofence, skip?
+                _logger.LogError($"[{instance.Name}] Failed to get geofence for instance, make sure it is assign one");
+                return;
             }
-            var area = string.IsNullOrEmpty(instance.Geofence)
-                ? instance.Data.Area
-                : geofence?.Data.GetProperty("area");
             switch (instance.Type)
             {
                 case InstanceType.CirclePokemon:
@@ -156,6 +146,9 @@
                 case InstanceType.SmartCircleRaid:
                     try
                     {
+                        var area = string.IsNullOrEmpty(instance.Geofence)
+                            ? instance.Data?.Area
+                            : geofence?.Data?.Area;
                         var coordsArray = (List<Coordinate>)
                         (
                             area is List<Coordinate>
@@ -187,6 +180,9 @@
                 case InstanceType.Bootstrap:
                     try
                     {
+                        var area = string.IsNullOrEmpty(instance.Geofence)
+                            ? instance.Data?.Area
+                            : geofence?.Data?.Area;
                         var coordsArray = (List<List<Coordinate>>)
                         (
                             area is List<List<Coordinate>>
@@ -199,7 +195,7 @@
                             var multiPolygon = new MultiPolygon();
                             foreach (var coord in coords)
                             {
-                                multiPolygon.Add(new Polygon { coord.Latitude, coord.Longitude });
+                                multiPolygon.Add(new Polygon(coord.Latitude, coord.Longitude));
                             }
                             areaArrayEmptyInner.Add(multiPolygon);
                         }
@@ -399,6 +395,32 @@
         private async Task RemoveInstance(Instance instance)
         {
             await RemoveInstance(instance.Name).ConfigureAwait(false);
+        }
+
+        private async Task<Geofence> GetGeofence(Instance instance, IReadOnlyList<Geofence> geofences = null)
+        {
+            Geofence geofence = null;
+            //if (!string.IsNullOrEmpty(instance.Geofence))
+            if (geofences == null)
+            {
+                try
+                {
+                    geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
+                    if (geofence == null)
+                    {
+                        // TODO: Failed to get geofence for instance
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error: {ex}");
+                }
+            }
+            else
+            {
+                geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
+            }
+            return geofence;
         }
 
         #endregion

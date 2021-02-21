@@ -5,6 +5,8 @@
     <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
     <IsOSX Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsOSX>
     <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
+    <!-- Disable "Thread.Abort is obsolete" warnings for entire project. -->
+    <NoWarn>$(NoWarn);SYSLIB0006;RCS1093;RCS1163;RCS1213;IDE0051;IDE0060</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(IsWindows)'=='true'">
     <DefineConstants>Windows</DefineConstants>
@@ -21,6 +23,17 @@
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
     <UserSecretsId>837774c1-1c11-4133-af07-e644c27a78d4</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <ApplicationIcon>Ressources\chuck.ico</ApplicationIcon>
+    <Authors>versx projects</Authors>
+    <Description />
+    <Copyright>Copyright © 2021</Copyright>
+    <Version>1.0.0.1</Version>
+    <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>chuck.png</PackageIcon>
+    <AssemblyVersion>0.2.0.1</AssemblyVersion>
+    <FileVersion>0.2.0.1</FileVersion>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -43,9 +56,22 @@
     <PackageReference Include="POGOProtos.Core" Version="2.53.7" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-alpha.2" />
     <PackageReference Include="S2Geometry" Version="1.0.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.5" />
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="5.1.18" />
-    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.1.17" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.7" />
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="5.1.20" />
+    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.1.19" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="config.example.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\wwwroot\static\favicons\chuck.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

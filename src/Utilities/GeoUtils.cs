@@ -20,9 +20,11 @@
             if (coordinateList.Count < 3)
                 throw new ArgumentException("At least three locations are required", nameof(locations));
 
-            if (!coordinateList.First().Equals2D(coordinateList.Last(), double.Epsilon))
+            if (!coordinateList[0].Equals2D(coordinateList.Last(), double.Epsilon))
+            {
                 // A closed linear ring requires the same point at the start and end of the list
-                coordinateList.Add(coordinateList.First());
+                coordinateList.Add(coordinateList[0]);
+            }
 
             var polygonRing = GeometryFactory.Default.CreateLinearRing(coordinateList.ToArray());
             var polygon = new Polygon(polygonRing);

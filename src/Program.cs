@@ -2,6 +2,8 @@ namespace ChuckDeviceController
 {
     using System;
     using System.IO;
+    using System.Reflection;
+    using System.Text;
 
     using ChuckDeviceController.Configuration;
 
@@ -30,16 +32,41 @@ namespace ChuckDeviceController
     {
         public static void Main(string[] args)
         {
-            var configPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                Path.Combine("..", Strings.DefaultConfigFileName)
-            );
-            Startup.Config = Config.Load(configPath);
-            if (Startup.Config == null)
+            Console.OutputEncoding = Encoding.UTF8;
+            ConsoleColor org = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("\tCopyright © 2021 - versx protect's\n");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine("Starting ...");
+            Console.ForegroundColor = org;
+            
+            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Strings.DefaultConfigFileName);
+            try
             {
-                Console.WriteLine($"Failed to load config {configPath}");
+                Startup.Config = Config.Load(configPath);
+                if (Startup.Config == null)
+                {
+                    Console.WriteLine($"Failed to load config {configPath}");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Config {ex.Message}");
+                Console.ForegroundColor = org;
+                Console.ReadKey();
                 return;
             }
+            // Start database migrator
+            var migrator = new Data.DatabaseMigrator();
+            while (!migrator.Finished)
+            {
+                System.Threading.Thread.Sleep(50);
+            }
+
             CreateHostBuilder(args).Build().Run();
         }
 

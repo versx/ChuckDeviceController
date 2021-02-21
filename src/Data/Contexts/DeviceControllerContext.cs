@@ -43,6 +43,8 @@
 
         public DbSet<Weather> Weather { get; set; }
 
+        public DbSet<Metadata> Metadata { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Instance>()
@@ -51,13 +53,12 @@
             modelBuilder.Entity<Instance>()
                         .Property(nameof(Instance.Data))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData>());
-                        //.HasConversion(DbContextFactory.CreateJsonValueConverter<dynamic>());
-            modelBuilder.Entity<Geofence>()
-                        .Property(p => p.Data)
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<dynamic>()); // TODO: Use actual class
             modelBuilder.Entity<Geofence>()
                         .Property(p => p.Type)
                         .HasConversion(x => Geofence.GeofenceTypeToString(x), x => Geofence.StringToGeofenceType(x));
+            modelBuilder.Entity<Geofence>()
+                        .Property(p => p.Data)
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData>());
             modelBuilder.Entity<Pokemon>()
                         .Property(p => p.PvpRankingsGreatLeague)
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<PvpRank>>());

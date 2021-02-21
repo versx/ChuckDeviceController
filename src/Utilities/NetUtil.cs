@@ -18,30 +18,28 @@
             if (retryCount >= MaxRetryCount)
                 return;
 
-            using (var wc = new WebClient())
+            using var wc = new WebClient();
+            wc.Headers.Add(HttpRequestHeader.ContentType, "application/json");
+            try
             {
-                wc.Headers.Add(HttpRequestHeader.ContentType, "application/json");
-                try
+                var resp = wc.UploadString(webhookUrl, json);
+                Thread.Sleep(sleep);
+            }
+            catch (WebException ex)
+            {
+                var resp = (HttpWebResponse)ex.Response;
+                switch ((int)resp.StatusCode)
                 {
-                    var resp = wc.UploadString(webhookUrl, json);
-                    Thread.Sleep(sleep);
-                }
-                catch (WebException ex)
-                {
-                    var resp = (HttpWebResponse)ex.Response;
-                    switch ((int)resp.StatusCode)
-                    {
-                        case 429:
-                            Console.WriteLine("RATE LIMITED");
-                            var retryAfter = resp.Headers["Retry-After"];
-                            if (!int.TryParse(retryAfter, out var retry))
-                                return;
+                    case 429:
+                        Console.WriteLine("RATE LIMITED");
+                        var retryAfter = resp.Headers["Retry-After"];
+                        if (!int.TryParse(retryAfter, out var retry))
+                            return;
 
-                            Thread.Sleep(retry);
-                            retryCount++;
-                            SendWebhook(webhookUrl, json, sleep, retryCount);
-                            break;
-                    }
+                        Thread.Sleep(retry);
+                        retryCount++;
+                        SendWebhook(webhookUrl, json, sleep, retryCount);
+                        break;
                 }
             }
         }

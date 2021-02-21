@@ -21,20 +21,29 @@ CREATE TABLE `account` (
    PRIMARY KEY (`username`)
 );
 
+CREATE VIEW `accounts_dashboard` AS
+    SELECT 
+        `account`.`username` AS `username`,
+        `account`.`level` AS `level`
+    FROM
+        `account`;
+
+
+CREATE TABLE `geofence` (
+   `name` varchar(255) NOT NULL,
+   `type` enum('circle','geofence') NOT NULL,
+   `data` longtext NOT NULL,
+   PRIMARY KEY (`name`),
+   UNIQUE KEY `name` (`name`)
+);
+
 CREATE TABLE `instance` (
    `name` varchar(30) NOT NULL,
-   `type` enum('circle_pokemon','circle_raid','circle_smart_raid','auto_quest','pokemon_iv') NOT NULL,
-   `geofence` varchar(30) NOT NULL,
+   `type` enum('circle_pokemon','circle_raid','circle_smart_raid','auto_quest','pokemon_iv','bootstrap') NOT NULL,
+   `geofence` varchar(30) DEFAULT NULL,
    `data` longtext NOT NULL,
    PRIMARY KEY (`name`),
    CONSTRAINT `fk_geofence_name` FOREIGN KEY (`geofence`) REFERENCES `geofence` (`name`) ON DELETE SET NULL ON UPDATE CASCADE
-);
-
-CREATE TABLE `geofence` (
-   `name` varchar(255) DEFAULT NULL,
-   `type` enum('circle','geofence') NOT NULL,
-   `data` longtext NOT NULL,
-   UNIQUE KEY `name` (`name`)
 );
 
 CREATE TABLE `device` (

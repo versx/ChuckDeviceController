@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -103,6 +104,7 @@
             if (device == null)
             {
                 // Unknown device
+                return BuildErrorResponse("device-assign", $"Failed to retrieve device '{uuid}'");
             }
             if (Request.Method == "GET")
             {
@@ -128,11 +130,13 @@
                 if (string.IsNullOrEmpty(instanceName))
                 {
                     // Unknown instance name provided
+                    return BuildErrorResponse("device-assign", $"Instance '{instanceName}' does not exist");
                 }
                 var instance = await _instanceRepository.GetByIdAsync(instanceName).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Failed to get instance by name
+                    return BuildErrorResponse("device-assign", $"Failed to retrieve instance '{instanceName}'");
                 }
                 device.InstanceName = instance.Name;
                 await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
@@ -209,8 +213,10 @@
                 var circleSize = Request.Form.ContainsKey("circle_size")
                     ? ushort.Parse(Request.Form["circle_size"].ToString() ?? "70")
                     : 70;
-                // TODO: Check if == '*' and generate list of ids
-                var pokemonIds = Request.Form["pokemon_ids"].ToString()?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
+                var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
+                var pokemonIds = pokemonIdsValue == "*"
+                    ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
+                    : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
                 if (type == InstanceType.PokemonIV)
@@ -233,18 +239,20 @@
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
+                    return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided");
                 }
 
                 if (await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false) != null)
                 {
                     // Instance already exists
+                    return BuildErrorResponse("instance-add", $"Instance with name '{name}' already exists");
                 }
 
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance != null)
                 {
                     // Instance already exists
-                    return null;
+                    return BuildErrorResponse("instance-add", $"Instance with name '{name}' already exists");
                 }
 
                 instance = new Instance
@@ -283,6 +291,7 @@
                 if (instance == null)
                 {
                     // Failed to get instance by name
+                    return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist");
                 }
                 var minLevel = instance.Data.MinimumLevel;
                 var maxLevel = instance.Data.MaximumLevel;
@@ -297,7 +306,6 @@
                 obj.pokemon_iv_selected = instance.Type == InstanceType.PokemonIV;
                 obj.auto_quest_selected = instance.Type == InstanceType.AutoQuest;
                 obj.bootstrap_selected = instance.Type == InstanceType.Bootstrap;
-                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
@@ -305,6 +313,7 @@
                     type = x.Type.ToString().ToLower(),
                     selected = string.Compare(instance.Geofence, x.Name, true) == 0,
                 });
+                var geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
                 obj.circle_route_type = CircleRouteTypeToString(instance.Data.CircleRouteType);
                 obj.leapfrog_selected = instance.Data.CircleRouteType == CircleRouteType.Default;
                 obj.spread_selected = instance.Data.CircleRouteType == CircleRouteType.Split;
@@ -325,23 +334,6 @@
                 //    case InstanceType.Bootstrap:
                         obj.circle_size = instance.Data.CircleSize ?? 70;
                 //}
-
-                // NOTE: Legacy so people can get the circles/geofences of old instances and copy to new geofence entities
-                var coords = string.Empty;
-                var coordsArray = instance.Data.Area;
-                if (instance.Type == InstanceType.CirclePokemon ||
-                    instance.Type == InstanceType.CircleRaid ||
-                    instance.Type == InstanceType.SmartCircleRaid)
-                {
-                    coords = CoordinatesToAreaString(instance.Data.Area);
-                }
-                else if (instance.Type == InstanceType.AutoQuest ||
-                         instance.Type == InstanceType.PokemonIV ||
-                         instance.Type == InstanceType.Bootstrap)
-                {
-                    coords = MultiPolygonToAreaString(instance.Data.Area);
-                }
-                obj.area = coords;
                 var data = Renderer.ParseTemplate("instance-edit", obj);
                 return new ContentResult
                 {
@@ -373,10 +365,12 @@
                 var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
                 var circleSize = ushort.Parse(Request.Form["circle_Size"].ToString() ?? "70");
                 var circleRouteType = Request.Form.ContainsKey("circle_route_type")
-                    ? StringToCircleRouteType(Request.Form["circle_route_type"])
+                    ? StringToCircleRouteType(Request.Form["circle_route_type"].ToString())
                     : CircleRouteType.Default;
-                // TODO: Check if == '*' and generate list of ids
-                var pokemonIds = Request.Form["pokemon_ids"].ToString()?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
+                var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
+                var pokemonIds = pokemonIdsValue == "*"
+                    ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
+                    : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
                 //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
                 var ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
                 var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
@@ -385,12 +379,14 @@
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
+                    return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided");
                 }
 
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Instance does not exist, create?
+                    return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist");
                 }
 
                 instance.Name = newName;
@@ -399,8 +395,9 @@
                 instance.Data = new InstanceData
                 {
                     IsEvent = false,
-                    //Area = newArea,
                     IVQueueLimit = ivQueueLimit,
+                    CircleRouteType = circleRouteType,
+                    CircleSize = circleSize,
                     SpinLimit = spinLimit,
                     MinimumLevel = minLevel,
                     MaximumLevel = maxLevel,
@@ -408,7 +405,7 @@
                     TimezoneOffset = timezoneOffset,
                 };
                 await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
-                await InstanceController.Instance.ReloadInstance(instance, name);
+                await InstanceController.Instance.ReloadInstance(instance, name).ConfigureAwait(false);
                 _logger.LogDebug($"Instance {name} was updated");
                 return Redirect("/dashboard/instances");
             }
@@ -475,6 +472,7 @@
                 if (geofence != null)
                 {
                     // Geofence already exists by name
+                    return BuildErrorResponse("geofence-add", $"Geofence with name '{name}' already exists");
                 }
 
                 dynamic newArea = null;
@@ -483,15 +481,7 @@
                     case GeofenceType.Circle:
                         {
                             // Parse area
-                            var rows = area.Split('\n');
-                            var coords = new List<Coordinate>();
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length != 2)
-                                    continue;
-                                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                            }
+                            var coords = AreaStringToCoordinates(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -501,22 +491,7 @@
                         }
                     case GeofenceType.Geofence:
                         {
-                            var rows = area.Split('\n');
-                            var index = 0;
-                            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
-                            foreach (var row in rows)
-                            {
-                                var split = row.Split(',');
-                                if (split.Length == 2)
-                                {
-                                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
-                                }
-                                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
-                                {
-                                    index++;
-                                    coords.Add(new List<Coordinate>());
-                                }
-                            }
+                            var coords = AreaStringToMultiPolygon(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -530,9 +505,9 @@
                 {
                     Name = name,
                     Type = type,
-                    Data = new
+                    Data = new GeofenceData
                     {
-                        area = newArea,
+                        Area = newArea,
                     }
                 };
                 await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
@@ -554,6 +529,7 @@
                 if (geofence == null)
                 {
                     // Provided geofence name does not exist
+                    // TODO: Log error
                     return Redirect("/dashboard/geofences");
                 }
                 obj.name = geofence.Name;
@@ -561,7 +537,7 @@
                 obj.circle_selected = geofence.Type == GeofenceType.Circle;
                 obj.geofence_selected = geofence.Type == GeofenceType.Geofence;
                 var coords = string.Empty;
-                var coordsArray = geofence.Data.GetProperty("area");
+                var coordsArray = geofence?.Data?.Area;
                 if (geofence.Type == GeofenceType.Circle)
                 {
                     coords = CoordinatesToAreaString(coordsArray);
@@ -592,7 +568,6 @@
                     return Redirect("/dashboard/geofences");
                 }
 
-
                 var newName = Request.Form["name"].ToString();
                 var type = Request.Form["type"].ToString() == "circle"
                     ? GeofenceType.Circle
@@ -603,6 +578,7 @@
                 if (geofence == null)
                 {
                     // Failed to find geofence by by name
+                    return BuildErrorResponse("geofence-edit", $"Geofence with name '{name}' does not exist");
                 }
 
                 dynamic newArea = null;
@@ -632,9 +608,9 @@
                 }
                 geofence.Name = newName;
                 geofence.Type = type;
-                geofence.Data = new
+                geofence.Data = new GeofenceData
                 {
-                    area = newArea,
+                    Area = newArea,
                 };
                 await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
                 return Redirect("/dashboard/geofences");
@@ -696,16 +672,19 @@
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
+                    return BuildErrorResponse("assignment-add", "Failed to get instances or devices");
                 }
 
                 if (!devices.Any(x => x.Uuid == uuid))
                 {
                     // Device does not exist
+                    return BuildErrorResponse("assignment-add", $"Device with name '{uuid}' does not exist");
                 }
 
                 if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
                 {
                     // Instance does not exist
+                    return BuildErrorResponse("assignment-add", $"Instance with name '{destinationInstance}' does not exist");
                 }
 
                 var totalTime = 0u;
@@ -723,7 +702,7 @@
                     else
                     {
                         // Invalid time
-                        return null;
+                        return BuildErrorResponse("assignment-add", $"Invalid assignment time '{time}' provided");
                     }
                 }
                 DateTime? realDate = null;
@@ -734,7 +713,9 @@
 
                 if (string.IsNullOrEmpty(uuid) || string.IsNullOrEmpty(destinationInstance))
                 {
-                    // Invalid request, uuid or instance are null
+                    // TODO: Log error
+                    return Redirect("/dashboard/assignments");
+                    //return BuildErrorResponse("assignment-add", $"Somehow device uuid was null or destinationInstance");
                 }
 
                 try
@@ -827,16 +808,19 @@
                 if (instances == null || devices == null)
                 {
                     // Failed to get instances and/or devices, or no instances or devices in database
+                    return BuildErrorResponse("assignment-edit", "Failed to get instances or devices");
                 }
 
                 if (!devices.Any(x => x.Uuid == uuid))
                 {
                     // Device does not exist
+                    return BuildErrorResponse("assignment-edit", $"Device with name '{uuid}' does not exist");
                 }
 
                 if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
                 {
                     // Instance does not exist
+                    return BuildErrorResponse("assignment-edit", $"Instance with name '{destinationInstance}' does not exist");
                 }
 
                 var totalTime = 0u;
@@ -854,7 +838,7 @@
                     else
                     {
                         // Invalid time
-                        return null;
+                        return BuildErrorResponse("assignment-edit", $"Invalid assignment time '{time}' provided");
                     }
                 }
                 DateTime? realDate = null;
@@ -866,12 +850,15 @@
                 if (string.IsNullOrEmpty(uuid) || string.IsNullOrEmpty(destinationInstance))
                 {
                     // Invalid request, uuid or instance are null
+                    // TODO: Log error
+                    return Redirect("/dashboard/assignments");
                 }
 
                 var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
                 if (assignment == null)
                 {
                     // Failed to get assignment by id
+                    return BuildErrorResponse("assignment-edit", $"Assignment with id '{id}' does not exist");
                 }
                 assignment.InstanceName = destinationInstance;
                 assignment.SourceInstanceName = sourceInstance;
@@ -891,6 +878,7 @@
             var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
             if (assignment == null)
             {
+                // TODO: Log error
                 // Failed to get assignment by id
             }
             await AssignmentController.Instance.TriggerAssignment(assignment, true).ConfigureAwait(false);
@@ -903,7 +891,9 @@
             var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
             if (assignment == null)
             {
+                // TODO: Log error
                 // Failed to delete assignment by id, does it exist?
+                return BuildErrorResponse("assignment-delete", $"Assignment with id '{id}' does not exist");
             }
             await _assignmentRepository.DeleteAsync(assignment).ConfigureAwait(false);
             return Redirect("/dashboard/assignments");
@@ -1069,9 +1059,13 @@
         private static string CoordinatesToAreaString(dynamic area)
         {
             var coords = string.Empty;
+            var nfi = new CultureInfo("en-US").NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var coord in area.EnumerateArray())
             {
-                coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
+                var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
+                coords += $"{latitude},{longitude}\n";
             }
             return coords;
         }
@@ -1080,12 +1074,16 @@
         {
             var index = 1;
             var coords = string.Empty;
+            var nfi = new CultureInfo("en-US").NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var fence in area.EnumerateArray())
             {
                 coords += $"[Geofence {index}]\n";
                 foreach (var coord in fence.EnumerateArray())
                 {
-                    coords += $"{coord.GetProperty("lat").GetDouble()},{coord.GetProperty("lon").GetDouble()}\n";
+                    var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
+                    var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
+                    coords += $"{latitude},{longitude}\n";
                 }
                 index++;
             }
@@ -1096,12 +1094,16 @@
         {
             var rows = area.Split('\n');
             var coords = new List<Coordinate>();
+            var nfi = new CultureInfo("en-US").NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var row in rows)
             {
                 var split = row.Split(',');
                 if (split.Length != 2)
                     continue;
-                coords.Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+                var latitude = double.Parse(split[0].Trim('\n'), nfi);
+                var longitude = double.Parse(split[1].Trim('\n'), nfi);
+                coords.Add(new Coordinate(latitude, longitude));
             }
             return coords;
         }
@@ -1111,20 +1113,38 @@
             var rows = area.Split('\n');
             var index = 0;
             var coords = new List<List<Coordinate>> { new List<Coordinate>() };
+            var nfi = new CultureInfo("en-US").NumberFormat;
+            nfi.NumberDecimalSeparator = ".";
             foreach (var row in rows)
             {
                 var split = row.Split(',');
                 if (split.Length == 2)
                 {
-                    coords[index].Add(new Coordinate(double.Parse(split[0]), double.Parse(split[1])));
+                    var latitude = double.Parse(split[0].Trim('\0'), nfi);
+                    var longitude = double.Parse(split[1].Trim('\0'), nfi);
+                    coords[index].Add(new Coordinate(latitude, longitude));
                 }
                 else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
                 {
-                    index++;
                     coords.Add(new List<Coordinate>());
+                    index++;
                 }
             }
             return coords;
+        }
+
+        private static IActionResult BuildErrorResponse(string template, string message)
+        {
+            dynamic obj = BuildDefaultData();
+            obj.show_error = true;
+            obj.error = message;
+            var data = Renderer.ParseTemplate(template, obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
         }
 
         #endregion

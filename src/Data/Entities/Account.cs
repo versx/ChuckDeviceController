@@ -1,9 +1,11 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
+    using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
     using ChuckDeviceController.Data.Interfaces;
+    using ChuckDeviceController.Extensions;
 
     [Table("account")]
     public class Account : BaseEntity, IAggregateRoot
@@ -69,8 +71,20 @@
         public bool? Banned { get; set; }
 
         [Column("last_used_timestamp")]
-        public ulong? LastUsedTimestamp { get; set; }
+        public ulong? LastUsedTimestamp { get; set; } = 0;
 
         // TODO: group
+
+        public bool IsValid(bool ignoreWarning = false) // TODO: group
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            return string.IsNullOrEmpty(Failed) || (
+                    Failed == "GPR_RED_WARNING" &&
+                    (ignoreWarning || (WarnExpireTimestamp ?? ulong.MaxValue) <= now)
+                ) || (
+                    Failed == "suspended" &&
+                    (FailedTimestamp ?? ulong.MaxValue) <= now - 2592000
+            );
+        }
     }
 }

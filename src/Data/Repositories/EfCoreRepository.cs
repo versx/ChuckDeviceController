@@ -9,6 +9,7 @@
     using Z.EntityFramework.Plus;
 
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     /// <summary>
     /// "There's some repetition here - couldn't we have some the sync methods call the async?"
@@ -140,7 +141,7 @@
             }
             catch (Exception ex)
             {
-                LogError("AddOrUpdateAsync", ex);
+                ConsoleExt.WriteError($"AddOrUpdateAsync: {ex}");
             }
         }
 
@@ -164,15 +165,8 @@
             }
             catch (Exception ex)
             {
-                LogError("AddOrUpdateAsync", ex);
+                ConsoleExt.WriteError($"AddOrUpdateAsync: {ex}");
             }
-        }
-
-        private static void LogError(string method, Exception error)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"[EfCoreRepository] [{typeof(TEntity)}] [{method}] Error: {error.Message}");
-            Console.ResetColor();
         }
     }
 }

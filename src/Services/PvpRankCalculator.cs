@@ -12,7 +12,7 @@
     using ChuckDeviceController.Data.Entities;
 
     /// <summary>
-    /// 
+    /// PvpRankCalculator
     /// </summary>
     /// <credits>
     /// https://github.com/WatWowMap/Chuck/blob/master/src/services/pvp.js
@@ -114,7 +114,7 @@
             var canEvolve = true;
             if (costumeId > 0)
             {
-                var costumeName = ""; // TODO: Get Pokemon costume name from protos
+                const string costumeName = ""; // TODO: Get Pokemon costume name from protos
                 canEvolve = !costumeName.EndsWith("_NOEVOLVE") && !costumeName.EndsWith("_NO_EVOLVE");
             }
             if (canEvolve && masterForm.Evolutions.Count > 0)
@@ -232,7 +232,7 @@
                 combinations.Add(atkStats);
             }
             sortedRanks.Sort((a, b) => Convert.ToInt32(b.Value - a.Value));
-            var best = sortedRanks.FirstOrDefault().Value;
+            var best = sortedRanks.FirstOrDefault()?.Value;
             for (int i = 0, j = 0; i < sortedRanks.Count; i++)
             {
                 var entry = sortedRanks[i];
@@ -264,20 +264,15 @@
                         continue; // Not viable cp
 
                     (StatCombination combinations, List<PvpRank> _) = CalculateRanks(stats, cpCap, levelCap);
-                    if (combinationIndex.ContainsKey(levelCap))
-                        combinationIndex[levelCap] = combinations;
-                    else
-                        combinationIndex.Add(levelCap, combinations);
+                    combinationIndex[levelCap] = combinations;
+
                     if (CalculateCP(stats, 0, 0, 0, levelCap + 0.5) > cpCap)
                     {
                         // TODO: combinations.Maxed = true;
                         break;
                     }
                 }
-                if (result.ContainsKey(leagueName))
-                    result[leagueName] = combinationIndex;
-                else
-                    result.Add(leagueName, combinationIndex);
+                result[leagueName] = combinationIndex;
             }
             // Set PVP ranking cache
             // TODO: return _cache.Cache.Set(key, result);//, TimeSpan.FromMinutes(5));

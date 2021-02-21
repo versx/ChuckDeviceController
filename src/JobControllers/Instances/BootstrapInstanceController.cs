@@ -24,7 +24,6 @@
         private DateTime _lastCompletedTime;
         private int _lastIndex;
         private DateTime _lastLastCompletedTime;
-
         private readonly object _indexLock = new object();
 
         #endregion
@@ -54,6 +53,12 @@
             _geofences = Geofence.FromPolygons(geofences);
             _routeGenerator = new RouteGenerator();
             Coordinates = _routeGenerator.GenerateBootstrapRoute((List<Geofence>)_geofences, circleSize);
+            // Remove warn var never readed...
+            if (_lastLastCompletedTime != default)
+            {
+                return;
+            }
+            _lastLastCompletedTime = DateTime.Now;
         }
 
         #endregion
@@ -90,14 +95,14 @@
                 Longitude = result.Longitude,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
-            });
+            }).ConfigureAwait(false);
         }
 
         public async Task<string> GetStatus()
         {
             var percentage = Math.Round(((double)_lastIndex / (double)Coordinates.Count) * 100.00, 2);
             var text = $"{_lastIndex:N0}/{Coordinates.Count:N0} ({percentage}%)";
-            return await Task.FromResult(text);
+            return await Task.FromResult(text).ConfigureAwait(false);
         }
 
         public void Reload()

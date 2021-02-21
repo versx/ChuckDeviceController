@@ -96,7 +96,7 @@
             _timer.Elapsed += async (sender, e) => await ClearQuests().ConfigureAwait(false);
             _timer.Start();
             // TODO: Get 12am DateTime
-            _logger.LogInformation($"[{Name}] Clearing Quests in {timeLeft:N0}s at 12:00 AM (Currently: {DateTime.Now}");
+            _logger.LogInformation($"[{Name}] Clearing Quests in {timeLeft:N0}s at 12:00 AM (Currently: {DateTime.Now})");
 
             Update().ConfigureAwait(false)
                     .GetAwaiter()
@@ -374,7 +374,7 @@
                         return $"Bootstrapping {count:N0}/{totalCount:N0} ({Math.Round(bootstrapPercentage, 2)}%)";
                     }
                     var ids = _allStops.ConvertAll(x => x.Id);
-                    var currentCountDb = (double)await GetQuestCount(ids).ConfigureAwait(false);
+                    var currentCountDb = (double)await _pokestopRepository.GetQuestCount(ids).ConfigureAwait(false);
                     var maxCount = (double)_allStops.Count;
                     var currentCount = (double)(maxCount - _todayStops.Count);
                     var percentage = maxCount > 0
@@ -411,33 +411,16 @@
             var missingCellIds = new List<ulong>();
             foreach (var polygon in MultiPolygon)
             {
-                var first = polygon.FirstOrDefault();
-                var last = polygon.LastOrDefault();
-                // Make sure first and last coords are the same
-                if (first[0] != last[0] ||
-                    first[1] != last[1])
-                {
-                    polygon.Add(first);
-                }
-
-                var cellIds = polygon.GetS2CellIDs(15, 15, int.MaxValue);
-                totalCount += cellIds.Count;
-                var cells = new List<Cell>();
-                try
-                {
-                    cells = await GetCellsByIDs(cellIds).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"[{Name}] Error: {ex}");
-                }
+                var s2CellIds = polygon.GetS2CellIDs(15, 15, int.MaxValue);
+                totalCount += s2CellIds.Count;
+                var cells = await _cellRepository.GetByIdsAsync(s2CellIds).ConfigureAwait(false);
                 var existingCellIds = cells.Select(x => x.Id);
-                foreach (var cellId in cellIds)
+                foreach (var s2cellId in s2CellIds)
                 {
                     // If Cell Id doesn't exist, add to bootstrap list
-                    if (!existingCellIds.Contains(cellId))
+                    if (!existingCellIds.Contains(s2cellId))
                     {
-                        missingCellIds.Add(cellId);
+                        missingCellIds.Add(s2cellId);
                     }
                 }
             }
@@ -456,18 +439,9 @@
                     {
                         try
                         {
-                            // Make sure first and last coords are the same
-                            var first = polygon.FirstOrDefault();
-                            var last = polygon.LastOrDefault();
-                            // Make sure first and last coords are the same
-                            if (first[0] != last[0] ||
-                                first[1] != last[1])
-                            {
-                                polygon.Add(first);
-                            }
                             // Get all existing Pokestops within geofence bounds
                             var bounds = polygon.GetBoundingBox();
-                            var stops = await _pokestopRepository.GetWithin(bounds, 0).ConfigureAwait(false);
+                            var stops = await _pokestopRepository.GetAllAsync(bounds).ConfigureAwait(false);
                             foreach (var stop in stops)
                             {
                                 // Check if Pokestop is within geofence
@@ -538,11 +512,19 @@
 
             var cell = new S2Cell(new S2CellId(target));
             var center = cell.Center;
-            var point = new S2Point(center.X, center.Y, center.Z);
-            var latlng = new S2LatLng(point);
-            // Get all cells touching a 630 (-5m for error) circle at center
-            const double radians = 0.00009799064306948; // 625m
-            var circle = S2Cap.FromAxisHeight(center, (radians * radians) / 2);
+            var latlng = new S2LatLng(center);
+
+            double radius;
+            if (latlng.LatDegrees <= 39)
+                radius = 715;
+            else if (latlng.LatDegrees >= 69)
+                radius = 330;
+            else
+                radius = -13 * latlng.LatDegrees + 1225;
+
+            var radians = radius / 6378137;
+            var centerNormalizedPoint = latlng.Normalized.ToPoint();
+            var circle = S2Cap.FromAxisHeight(centerNormalizedPoint, (radians * radians) / 2);
             var coverer = new S2RegionCoverer
             {
                 MinLevel = 15,
@@ -574,63 +556,6 @@
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
             };
-        }
-
-        private async Task<List<Cell>> GetCellsByIDs(List<ulong> ids)
-        {
-            const double MAX_COUNT = 10000.0;
-            if (ids.Count > MAX_COUNT)
-            {
-                var list = new List<Cell>();
-                var count = Math.Ceiling(ids.Count / MAX_COUNT);
-                for (var i = 0; i < count; i++)
-                {
-                    var start = (int)MAX_COUNT * i;
-                    var end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
-                    var slice = ids.Slice(start, end);
-                    var result = await GetCellsByIDs(slice).ConfigureAwait(false);
-                    if (result.Count > 0)
-                    {
-                        result.ForEach(x => list.Add(x));
-                    }
-                }
-                return list;
-            }
-            if (ids.Count == 0)
-            {
-                return new List<Cell>();
-            }
-            return (List<Cell>)await _cellRepository.GetByIdsAsync(ids, true).ConfigureAwait(false);
-        }
-
-        private async Task<ulong> GetQuestCount(List<string> ids)
-        {
-            const double MAX_COUNT = 10000.0;
-            if (ids.Count > MAX_COUNT)
-            {
-                var result = 0UL;
-                var count = Math.Ceiling(ids.Count / MAX_COUNT);
-                for (var i = 0; i < count; i++)
-                {
-                    var start = (int)MAX_COUNT * i;
-                    var end = (int)Math.Min(MAX_COUNT * (i + 1), ids.Count - 1);
-                    var slice = ids.Slice(start, end);
-                    var qResult = await GetQuestCount(slice).ConfigureAwait(false);
-                    if (qResult > 0)
-                    {
-                        result += qResult;
-                    }
-                }
-                return result;
-            }
-            if (ids.Count == 0)
-            {
-                return 0;
-            }
-            var pokestops = await _pokestopRepository.GetByIdsAsync(ids).ConfigureAwait(false);
-            return (ulong)pokestops.Where(x => !x.Deleted &&
-                                                         x.QuestType.HasValue &&
-                                                         x.QuestType != null).ToList().Count;
         }
 
         private static double GetCooldownAmount(double distanceM)
