@@ -23,8 +23,12 @@
     <ApplicationIcon>Ressources\chuck.ico</ApplicationIcon>
     <Authors>versx projects</Authors>
     <Description />
-    <Copyright>Copyright ©  2021</Copyright>
+    <Copyright>Copyright © 2021</Copyright>
     <Version>1.0.0.1</Version>
+    <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>chuck.png</PackageIcon>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -55,6 +59,13 @@
     <Content Update="config.example.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\wwwroot\static\favicons\chuck.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
