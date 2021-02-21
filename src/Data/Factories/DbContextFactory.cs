@@ -22,7 +22,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error DeviceControllerContext: {ex.Message}");
+                Console.WriteLine($"[RawSql] Result: Error DeviceControllerContext: {ex.Message}");
                 return null;
             }
         }

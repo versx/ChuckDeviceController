@@ -19,6 +19,10 @@
             try
             {
                 var result = _dbContext?.Database.ExecuteSqlRaw(sql);
+                if (string.IsNullOrEmpty(result.ToString()) || result != 0)
+                {
+                    return false;
+                }
                 Console.WriteLine($"[RawSql] Result: {result}");
                 return result == 0;
             }
