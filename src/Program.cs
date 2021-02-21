@@ -40,7 +40,7 @@ namespace ChuckDeviceController
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("Starting ...");
             Console.ForegroundColor = org;
-            
+
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Strings.DefaultConfigFileName);
             try
             {
@@ -75,6 +75,8 @@ namespace ChuckDeviceController
                     //webBuilder.UseUrls("http://localhost:5000", "https://localhost:5001");
                     webBuilder.UseUrls($"http://{Startup.Config.Interface}:{Startup.Config.Port}"); // TODO: Support for https and port + 1
                     webBuilder.UseWebRoot(Strings.WebRoot);
+                    //copy Views and wwwroot to output dir
+                    //webBuilder.UseContentRoot(AppDomain.CurrentDomain.BaseDirectory);
                 });
     }
 }
