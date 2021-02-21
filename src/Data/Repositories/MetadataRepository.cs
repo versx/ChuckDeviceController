@@ -23,7 +23,7 @@
                 {
                     return false;
                 }
-                Console.WriteLine($"[RawSql] Result: {result}");
+                Console.WriteLine("[RawSql] Result: OK");
                 return true;
             }
             catch (Exception ex)
