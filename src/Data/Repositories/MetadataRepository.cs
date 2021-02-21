@@ -24,7 +24,7 @@
                     return false;
                 }
                 Console.WriteLine($"[RawSql] Result: {result}");
-                return result == 0;
+                return true;
             }
             catch (Exception ex)
             {

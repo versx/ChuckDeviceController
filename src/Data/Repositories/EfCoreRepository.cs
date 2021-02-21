@@ -49,9 +49,11 @@
                 var keyValues = new object[] { id };
                 return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
             }
-            catch
+            catch (Exception)
             {
-                // log in first call
+                Console.WriteLine("\nPress one key to exit...");
+                Console.ReadKey();
+                Environment.Exit(0);
                 return null;
             }
         }
