@@ -53,7 +53,7 @@
             {
                 Console.WriteLine("\nPress one key to exit...");
                 Console.ReadKey();
-                Environment.Exit(0);
+                Environment.Exit(-1);
                 return null;
             }
         }
