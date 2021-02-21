@@ -23,12 +23,18 @@
                 {
                     return false;
                 }
-                Console.WriteLine("[RawSql] Result: OK");
+                ConsoleColor org = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("info: RawSql Result -> OK");
+                Console.ForegroundColor = org;
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[RawSql] Error: {ex}, Sql: {sql}");
+                ConsoleColor org = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error RawSql Result: {ex}, Sql: {sql}");
+                Console.ForegroundColor = org;
                 return false;
             }
         }

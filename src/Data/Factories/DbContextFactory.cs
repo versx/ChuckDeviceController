@@ -22,7 +22,10 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[RawSql] Result: Error DeviceControllerContext: {ex.Message}");
+                ConsoleColor org = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error RawSql Result: {ex.Message}");
+                Console.ForegroundColor = org;
                 return null;
             }
         }
