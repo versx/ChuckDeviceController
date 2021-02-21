@@ -24,8 +24,8 @@
                     return false;
                 }
                 ConsoleColor org = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("info: RawSql Result -> OK");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("sql : RawSql Result -> OK");
                 Console.ForegroundColor = org;
                 return true;
             }

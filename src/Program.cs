@@ -2,6 +2,7 @@ namespace ChuckDeviceController
 {
     using System;
     using System.IO;
+    using System.Reflection;
 
     using ChuckDeviceController.Configuration;
 
@@ -30,6 +31,13 @@ namespace ChuckDeviceController
     {
         public static void Main(string[] args)
         {
+            ConsoleColor org = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("\tCopyright 2021 - versx protect's\n");
+            Console.ForegroundColor = org;
+            
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Strings.DefaultConfigFileName);
             Startup.Config = Config.Load(configPath);
             if (Startup.Config == null)
