@@ -10,6 +10,7 @@
 
     using ChuckDeviceController.Data.Interfaces;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Net.Webhooks;
 
     [Table("pokestop")]
     public class Pokestop : BaseEntity, IAggregateRoot, IWebhook
@@ -100,6 +101,12 @@
         [Column("ar_scan_eligible")]
         public bool IsArScanEligible { get; set; }
 
+        [NotMapped]
+        public bool HasChanges { get; set; }
+
+        [NotMapped]
+        public bool HasQuestChanges { get; set; }
+
         public Pokestop()
         {
         }
@@ -148,6 +155,100 @@
             }
         }
 
+        public bool Update(Pokestop oldPokestop = null, bool updateQuest = false)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            Updated = now;
+            if (oldPokestop != null)
+            {
+                if (oldPokestop.CellId > 0 && CellId == 0)
+                {
+                    CellId = oldPokestop.CellId;
+                }
+                if (!string.IsNullOrEmpty(oldPokestop.Name) && string.IsNullOrEmpty(Name))
+                {
+                    Name = oldPokestop.Name;
+                }
+                if (!string.IsNullOrEmpty(oldPokestop.Url) && string.IsNullOrEmpty(Url))
+                {
+                    Url = oldPokestop.Url;
+                }
+                if (updateQuest && oldPokestop.QuestType != null && QuestType == null)
+                {
+                    QuestType = oldPokestop.QuestType;
+                    QuestTarget = oldPokestop.QuestTarget;
+                    QuestConditions = oldPokestop.QuestConditions;
+                    QuestRewards = oldPokestop.QuestRewards;
+                    QuestTimestamp = oldPokestop.QuestTimestamp;
+                    QuestTemplate = oldPokestop.QuestTemplate;
+                }
+                if (oldPokestop.LureId > 0 && LureId == 0)
+                {
+                    LureId = oldPokestop.LureId;
+                }
+                if (!ShouldUpdate(oldPokestop, this))
+                {
+                    return false;
+                }
+                if ((oldPokestop.LureExpireTimestamp ?? 0) < (LureExpireTimestamp ?? 0))
+                {
+                    WebhookController.Instance.AddLure(this);
+                    return true;
+                }
+                if ((oldPokestop.IncidentExpireTimestamp ?? 0) < (IncidentExpireTimestamp ?? 0))
+                {
+                    WebhookController.Instance.AddInvasion(this);
+                    return true;
+                }
+                if (updateQuest && (QuestTimestamp ?? 0) > (oldPokestop.QuestTimestamp ?? 0))
+                {
+                    WebhookController.Instance.AddQuest(this);
+                    return true;
+                }
+            }
+
+            if (oldPokestop == null)
+            {
+                WebhookController.Instance.AddPokestop(this);
+                return true;
+                if (LureExpireTimestamp > 0)
+                {
+                    WebhookController.Instance.AddLure(this);
+                    return true;
+                }
+                if (QuestTimestamp > 0)
+                {
+                    WebhookController.Instance.AddQuest(this);
+                    return true;
+                }
+                if (IncidentExpireTimestamp > 0)
+                {
+                    WebhookController.Instance.AddInvasion(this);
+                    return true;
+                }
+            }
+            else
+            {
+                if (oldPokestop.LureExpireTimestamp < LureExpireTimestamp)
+                {
+                    WebhookController.Instance.AddLure(this);
+                    return true;
+                }
+                if (oldPokestop.IncidentExpireTimestamp < IncidentExpireTimestamp)
+                {
+                    WebhookController.Instance.AddInvasion(this);
+                    return true;
+                }
+                if (updateQuest && (HasQuestChanges || QuestTimestamp > oldPokestop.QuestTimestamp))
+                {
+                    HasQuestChanges = false;
+                    WebhookController.Instance.AddQuest(this);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public void AddDetails(FortDetailsOutProto fortDetails)
         {
             Id = fortDetails.Id;
@@ -159,14 +260,14 @@
                 // Check if url changed
                 if (string.Compare(Url, url, true) != 0)
                 {
-                    // HasChanges = true
+                    HasChanges = true;
                     Url = url;
                 }
             }
             var name = fortDetails.Name;
             if (string.Compare(Name, name, true) != 0)
             {
-                // HasChanges = true;
+                HasChanges = true;
                 Name = name;
             }
             Updated = DateTime.UtcNow.ToTotalSeconds();
@@ -176,6 +277,8 @@
         {
             var conditions = new List<dynamic>();
             var rewards = new List<dynamic>();
+            HasChanges = true;
+            HasQuestChanges = true;
             foreach (var condition in quest.Goal.Condition)
             {
                 var conditionData = new Dictionary<string, dynamic>();
@@ -392,6 +495,29 @@
                     },
                 },
             };
+        }
+
+        public static bool ShouldUpdate(Pokestop oldPokestop, Pokestop newPokestop)
+        {
+            if (oldPokestop.HasChanges)
+            {
+                oldPokestop.HasChanges = false;
+                return true;
+            }
+            return
+                oldPokestop.LastModifiedTimestamp != newPokestop.LastModifiedTimestamp ||
+                oldPokestop.LureExpireTimestamp != newPokestop.LureExpireTimestamp ||
+                oldPokestop.LureId != newPokestop.LureId ||
+                oldPokestop.IncidentExpireTimestamp != newPokestop.IncidentExpireTimestamp ||
+                oldPokestop.GruntType != newPokestop.GruntType ||
+                oldPokestop.PokestopDisplay != newPokestop.PokestopDisplay ||
+                oldPokestop.Name != newPokestop.Name ||
+                oldPokestop.Url != newPokestop.Url ||
+                oldPokestop.QuestTemplate != newPokestop.QuestTemplate ||
+                oldPokestop.Enabled != newPokestop.Enabled ||
+                oldPokestop.SponsorId != newPokestop.SponsorId ||
+                Math.Abs(oldPokestop.Latitude - newPokestop.Latitude) >= 0.000001 ||
+                Math.Abs(oldPokestop.Longitude - newPokestop.Longitude) >= 0.000001;
         }
     }
 }

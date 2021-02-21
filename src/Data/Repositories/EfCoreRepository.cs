@@ -37,6 +37,12 @@
             return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
+        public virtual async Task<TEntity> GetByIdAsync(long id)
+        {
+            var keyValues = new object[] { id };
+            return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
+        }
+
         public virtual async Task<TEntity> GetByIdAsync(ulong id)
         {
             var keyValues = new object[] { id };

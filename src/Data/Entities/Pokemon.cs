@@ -26,7 +26,6 @@
         public const ushort WeatherBoostMinLevel = 6;
         public const ushort WeatherBoostMinIvStat = 4;
 
-        private bool SetIVForWeather { get; set; }
 
         // TODO: Configurable
         private static readonly List<uint> _dittoDisguises = new List<uint>
@@ -243,9 +242,10 @@
 
         #endregion
 
-        public void Update(Pokemon oldPokemon = null, bool updateIV = false)
+        public bool Update(Pokemon oldPokemon = null, bool updateIV = false)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
+            var setIVForWeather = false;
             if (oldPokemon == null)
             {
                 Updated = now;
@@ -303,12 +303,14 @@
                 {
                     PokestopId = oldPokemon.PokestopId;
                 }
-
-                if (AttackIV != null)
+                if (oldPokemon.PvpRankingsGreatLeague != null && PvpRankingsGreatLeague == null)
                 {
-                    SetPvpRankings().ConfigureAwait(false);
+                    PvpRankingsGreatLeague = oldPokemon.PvpRankingsGreatLeague;
                 }
-
+                if (oldPokemon.PvpRankingsUltraLeague != null && PvpRankingsUltraLeague == null)
+                {
+                    PvpRankingsUltraLeague = oldPokemon.PvpRankingsUltraLeague;
+                }
                 if (updateIV && oldPokemon.AttackIV == null && AttackIV != null)
                 {
                     Changed = now;
@@ -318,14 +320,9 @@
                     Changed = oldPokemon.Changed;
                 }
                 var weatherChanged = (oldPokemon.Weather == 0 && Weather > 0) || (Weather == 0 && oldPokemon.Weather > 0);
-                //rem warn 
-                if (!SetIVForWeather)
-                {
-                    // notting...
-                }
                 if (oldPokemon.AttackIV != null && AttackIV == null && !weatherChanged)
                 {
-                    SetIVForWeather = false;
+                    setIVForWeather = false;
                     AttackIV = oldPokemon.AttackIV;
                     DefenseIV = oldPokemon.DefenseIV;
                     StaminaIV = oldPokemon.StaminaIV;
@@ -348,13 +345,13 @@
                 }
                 else if ((AttackIV != null && oldPokemon.AttackIV == null) || (CP != null && oldPokemon.CP == null) || _hasIvChanges)
                 {
-                    SetIVForWeather = false;
+                    setIVForWeather = false;
                     updateIV = true;
                 }
                 else if (weatherChanged && oldPokemon.AttackIV != null && !NoWeatherIVClearing)
                 {
                     ConsoleExt.WriteInfo($"[Pokemon] Pokemon {Id} changed WeatherBoosted state. Clearing IVs");
-                    SetIVForWeather = true;
+                    setIVForWeather = true;
                     AttackIV = null;
                     DefenseIV = null;
                     StaminaIV = null;
@@ -373,12 +370,12 @@
                 }
                 else
                 {
-                    SetIVForWeather = false;
+                    setIVForWeather = false;
                 }
 
-                // TODO: Check shouldUpdate
+                // Check shouldUpdate
                 if (!ShouldUpdate(oldPokemon, this))
-                    return;
+                    return false;
 
                 if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
                 {
@@ -388,7 +385,12 @@
                 Updated = now;
             }
 
-            //if (oldPokemon == null)
+            if (setIVForWeather)
+            {
+                WebhookController.Instance.AddPokemon(this);
+                InstanceController.Instance.GotPokemon(this);
+            }
+            else if (oldPokemon == null)
             {
                 WebhookController.Instance.AddPokemon(this);
                 InstanceController.Instance.GotPokemon(this);
@@ -396,16 +398,14 @@
                 {
                     InstanceController.Instance.GotIV(this);
                 }
-                if (oldPokemon != null)
-                {
-                    if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
-                    {
-                        oldPokemon._hasIvChanges = false;
-                        WebhookController.Instance.AddPokemon(this);
-                        InstanceController.Instance.GotIV(this);
-                    }
-                }
             }
+            else if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
+            {
+                oldPokemon._hasIvChanges = false;
+                WebhookController.Instance.AddPokemon(this);
+                InstanceController.Instance.GotIV(this);
+            }
+            return true;
         }
 
         public static bool ShouldUpdate(Pokemon oldPokemon, Pokemon newPokemon)

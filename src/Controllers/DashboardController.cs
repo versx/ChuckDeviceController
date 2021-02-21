@@ -5,10 +5,13 @@
     using System.Dynamic;
     using System.Globalization;
     using System.Linq;
+    using System.Reflection;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
+    using Z.EntityFramework.Plus;
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -16,7 +19,6 @@
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.JobControllers.Instances;
     using ChuckDeviceController.Utilities;
-    using System.Reflection;
 
     [Controller]
     [Route("/dashboard")]
@@ -63,14 +65,14 @@
         }
 
         [HttpGet("/dashboard")]
-        public IActionResult GetDashboard()
+        public async Task<IActionResult> GetDashboard()
         {
             dynamic obj = BuildDefaultData();
-            obj.devices_count = _context.Devices.Count().ToString("N0");
-            obj.instances_count = _context.Instances.Count().ToString("N0");
-            obj.assignments_count = _context.Assignments.Count().ToString("N0");
-            obj.accounts_count = _context.Accounts.Count().ToString("N0");
-            obj.geofences_count = _context.Geofences.Count().ToString("N0");
+            obj.devices_count = (await _context.Devices.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
+            obj.instances_count = (await _context.Instances.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
+            obj.assignments_count = (await _context.Assignments.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
+            obj.accounts_count = (await _context.Accounts.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
+            obj.geofences_count = (await _context.Geofences.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
             var data = Renderer.ParseTemplate("index", obj);
             return new ContentResult
             {

@@ -408,7 +408,7 @@
             {
                 var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
                 using var ctx = dbFactory.CreateDbContext();
-                var repo = new WeatherRepository(ctx);
+                var weatherRepository = new WeatherRepository(ctx);
                 var stopwatch = new Stopwatch();
                 var updatedWeather = new List<Weather>();
                 stopwatch.Start();
@@ -416,10 +416,14 @@
                 {
                     foreach (var weather in _clientWeather)
                     {
+                        var oldWeather = weatherRepository.GetByIdAsync(weather.S2CellId)
+                                                          .ConfigureAwait(false)
+                                                          .GetAwaiter()
+                                                          .GetResult();
                         var s2cell = new S2Cell(new S2CellId((ulong)weather.S2CellId));
                         var center = s2cell.RectBound.Center;
                         var alert = weather.Alerts?.FirstOrDefault();
-                        updatedWeather.Add(new Weather
+                        var newWeather = new Weather
                         {
                             Id = (long)s2cell.Id.Id,
                             Level = s2cell.Level,
@@ -436,14 +440,17 @@
                             Severity = weather.Alerts?.Count > 0 ? (ushort)weather.Alerts?.FirstOrDefault().Severity : null,
                             WarnWeather = alert?.WarnWeather,
                             Updated = now,
-                        });
+                        };
+                        if (newWeather.Update(oldWeather))
+                        {
+                            updatedWeather.Add(newWeather);
+                        }
                     }
                     _clientWeather.Clear();
                 }
                 if (updatedWeather.Count > 0)
                 {
-                    await repo.AddOrUpdateAsync(updatedWeather).ConfigureAwait(false);
-                    WebhookController.Instance.AddWeather(updatedWeather);
+                    await weatherRepository.AddOrUpdateAsync(updatedWeather).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
@@ -477,9 +484,12 @@
                         switch (fort.FortType)
                         {
                             case FortType.Gym:
+                                var oldGym = gymRepository.GetByIdAsync(fort.FortId).ConfigureAwait(false).GetAwaiter().GetResult();
                                 var gym = new Gym(cellId, fort);
-                                WebhookController.Instance.AddGym(gym);
-                                updatedGyms.Add(gym);
+                                if (gym.Update(oldGym)) // TODO: Check HasChanges property
+                                {
+                                    updatedGyms.Add(gym);
+                                }
                                 if (!_gymIdsPerCell.ContainsKey(cellId))
                                 {
                                     _gymIdsPerCell.Add(cellId, new List<string>());
@@ -487,9 +497,12 @@
                                 _gymIdsPerCell[cellId].Add(fort.FortId);
                                 break;
                             case FortType.Checkpoint:
+                                var oldPokestop = pokestopRepository.GetByIdAsync(fort.FortId).ConfigureAwait(false).GetAwaiter().GetResult();
                                 var pokestop = new Pokestop(cellId, fort);
-                                WebhookController.Instance.AddPokestop(pokestop);
-                                updatedPokestops.Add(pokestop);
+                                if (pokestop.Update(oldPokestop)) // TODO: Check HasChanges property
+                                {
+                                    updatedPokestops.Add(pokestop);
+                                }
                                 if (!_stopIdsPerCell.ContainsKey(cellId))
                                 {
                                     _stopIdsPerCell.Add(cellId, new List<string>());
@@ -543,9 +556,10 @@
                                 if (gym != null)
                                 {
                                     gym.AddDetails(details);
-                                    gym.Updated = now;
-                                    //FirstSeenTimestamp = now,
-                                    updatedGyms.Add(gym);
+                                    if (gym.Update(gym))
+                                    {
+                                        updatedGyms.Add(gym);
+                                    }
                                 }
                                 break;
                             case FortType.Checkpoint:
@@ -556,9 +570,10 @@
                                 if (pokestop != null)
                                 {
                                     pokestop.AddDetails(details);
-                                    pokestop.Updated = now;
-                                    //FirstSeenTimestamp = now,
-                                    updatedPokestops.Add(pokestop);
+                                    if (pokestop.Update(pokestop))
+                                    {
+                                        updatedPokestops.Add(pokestop);
+                                    }
                                 }
                                 break;
                         }
@@ -663,7 +678,10 @@
                         if (gym != null)
                         {
                             gym.AddDetails(gymInfo);
-                            updatedGyms.Add(gym);
+                            if (gym.Update(gym)) // TODO: Check HasChanges property
+                            {
+                                updatedGyms.Add(gym);
+                            }
                         }
                     }
                     _fortDetails.Clear();
@@ -673,7 +691,7 @@
                     await gymRepository.AddOrUpdateAsync(updatedGyms, true).ConfigureAwait(false);
                     await trainerRepository.AddOrUpdateAsync(updatedTrainers).ConfigureAwait(false);
                     await gymDefenderRepository.AddOrUpdateAsync(updatedDefenders).ConfigureAwait(false);
-                    // TODO: Webhooks
+                    // TODO: Webhooks for Trainers and GymDefenders
                 }
 
                 stopwatch.Stop();
@@ -714,10 +732,10 @@
                                                               .ConfigureAwait(false)
                                                               .GetAwaiter()
                                                               .GetResult();
-                            pokemon.Update(oldPokemon);
-                            updatedPokemon.Add(pokemon);
-                            InstanceController.Instance.GotPokemon(pokemon);
-                            // TODO: Pokemon.Save();
+                            if (pokemon.Update(oldPokemon)) // TODO: Check HasChanges property
+                            {
+                                updatedPokemon.Add(pokemon);
+                            }
                         }
                         //_wildPokemon.Clear();
                     }
@@ -756,10 +774,10 @@
                                                               .ConfigureAwait(false)
                                                               .GetAwaiter()
                                                               .GetResult();
-                            pokemon.Update(oldPokemon);
-                            updatedPokemon.Add(pokemon);
-                            InstanceController.Instance.GotPokemon(pokemon);
-                            // TODO: Pokemon.Save();
+                            if (pokemon.Update(oldPokemon)) // TODO: Check HasChanges property
+                            {
+                                updatedPokemon.Add(pokemon);
+                            }
                         }
                         //_nearbyPokemon.Clear();
                     }
@@ -811,9 +829,10 @@
                                    .ConfigureAwait(false)
                                    .GetAwaiter()
                                    .GetResult();
-                            pokemon.Update(pokemon, true);
-                            updatedPokemon.Add(pokemon);
-                            InstanceController.Instance.GotIV(pokemon);
+                            if (pokemon.Update(pokemon, true))
+                            {
+                                updatedPokemon.Add(pokemon);
+                            }
                         }
                         else
                         {
@@ -825,8 +844,10 @@
                                       .ConfigureAwait(false)
                                       .GetAwaiter()
                                       .GetResult();
-                            updatedPokemon.Add(newPokemon);
-                            InstanceController.Instance.GotIV(newPokemon);
+                            if (newPokemon.Update(null, true))
+                            {
+                                updatedPokemon.Add(newPokemon);
+                            }
                         }
                     }
                     _encounters.Clear();
@@ -874,7 +895,10 @@
                         }
                         */
                         pokestop.AddQuest(quest);
-                        updatedQuests.Add(pokestop);
+                        if (pokestop.Update(pokestop)) // TODO: Check HasChanges property
+                        {
+                            updatedQuests.Add(pokestop);
+                        }
                     }
                     _quests.Clear();
                 }
