@@ -16,6 +16,7 @@
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.JobControllers.Instances;
     using ChuckDeviceController.Utilities;
+    using System.Reflection;
 
     [Controller]
     [Route("/dashboard")]
@@ -1052,7 +1053,7 @@
             obj.locale_new = "en";
             obj.body_class = "theme-dark";
             obj.table_class = "table-dark";
-            obj.current_version = "0.1.0";
+            obj.current_version = Assembly.GetExecutingAssembly().GetName().Version;
             return obj;
         }
 
