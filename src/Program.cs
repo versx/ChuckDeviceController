@@ -38,13 +38,26 @@ namespace ChuckDeviceController
             Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("\tCopyright © 2021 - versx protect's\n");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine("Starting ...");
             Console.ForegroundColor = org;
             
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Strings.DefaultConfigFileName);
-            Startup.Config = Config.Load(configPath);
-            if (Startup.Config == null)
+            try
             {
-                Console.WriteLine($"Failed to load config {configPath}");
+                Startup.Config = Config.Load(configPath);
+                if (Startup.Config == null)
+                {
+                    Console.WriteLine($"Failed to load config {configPath}");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Config {ex.Message}");
+                Console.ForegroundColor = org;
+                Console.ReadKey();
                 return;
             }
             // Start database migrator
