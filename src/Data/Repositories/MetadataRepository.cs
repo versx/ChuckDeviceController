@@ -6,6 +6,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     public class MetadataRepository : EfCoreRepository<Metadata, DeviceControllerContext>
     {
@@ -23,18 +24,12 @@
                 {
                     return false;
                 }
-                ConsoleColor org = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("sql : RawSql Result -> OK");
-                Console.ForegroundColor = org;
+                ConsoleExt.WriteInfo($"[RawSql] Result -> OK");
                 return true;
             }
             catch (Exception ex)
             {
-                ConsoleColor org = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error RawSql Result: {ex}, Sql: {sql}");
-                Console.ForegroundColor = org;
+                ConsoleExt.WriteError($"[RawSql] Result: {ex}, Sql: {sql}");
                 return false;
             }
         }

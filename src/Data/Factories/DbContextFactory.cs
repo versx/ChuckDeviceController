@@ -1,11 +1,12 @@
 ﻿namespace ChuckDeviceController.Data.Factories
 {
+    using System;
+
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions;
-    using System;
 
     internal static class DbContextFactory
     {
@@ -22,10 +23,7 @@
             }
             catch (Exception ex)
             {
-                ConsoleColor org = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Error RawSql Result: {ex.Message}");
-                Console.ForegroundColor = org;
+                ConsoleExt.WriteError($"[RawSql] Result: {ex}");
                 return null;
             }
         }
