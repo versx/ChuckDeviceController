@@ -3,6 +3,7 @@ namespace ChuckDeviceController
     using System;
     using System.IO;
     using System.Reflection;
+    using System.Text;
 
     using ChuckDeviceController.Configuration;
 
@@ -31,6 +32,7 @@ namespace ChuckDeviceController
     {
         public static void Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
             ConsoleColor org = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
