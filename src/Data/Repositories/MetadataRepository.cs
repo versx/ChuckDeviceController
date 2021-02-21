@@ -18,7 +18,7 @@
         {
             try
             {
-                var result = _dbContext.Database.ExecuteSqlRaw(sql);
+                var result = _dbContext?.Database.ExecuteSqlRaw(sql);
                 Console.WriteLine($"[RawSql] Result: {result}");
                 return result == 0;
             }

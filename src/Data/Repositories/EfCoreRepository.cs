@@ -44,8 +44,16 @@
 
         public virtual async Task<TEntity> GetByIdAsync(string id)
         {
-            var keyValues = new object[] { id };
-            return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
+            try
+            {
+                var keyValues = new object[] { id };
+                return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
+            }
+            catch
+            {
+                // log in first call
+                return null;
+            }
         }
 
         #endregion
