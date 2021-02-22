@@ -19,8 +19,8 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <ApplicationIcon>Ressources\chuck.ico</ApplicationIcon>
-    <Authors>versx projects</Authors>
-    <Description />
+    <Authors>versx project's</Authors>
+    <Description></Description>
     <Copyright>Copyright © 2021</Copyright>
     <Version>0.2.0.1</Version>
     <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
@@ -29,6 +29,9 @@
     <PackageIcon>chuck.png</PackageIcon>
     <AssemblyVersion>0.2.0.1</AssemblyVersion>
     <FileVersion>0.2.0.1</FileVersion>
+    <PackageId>Chuck Device Controller</PackageId>
+    <Product>Chuck Device Controller</Product>
+    <Company>versx project''s</Company>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -43,6 +46,10 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <None Include="wwwroot\static\favicons\chuck.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
     <None Include="wwwroot\views\accounts-add.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
