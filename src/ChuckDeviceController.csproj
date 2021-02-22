@@ -43,70 +43,70 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <None Include="wwwroot\Views\accounts-add.mustache">
+    <None Include="wwwroot\views\accounts-add.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\accounts.mustache">
+    <None Include="wwwroot\views\accounts.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\assignment-add.mustache">
+    <None Include="wwwroot\views\assignment-add.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\assignment-delete.mustache">
+    <None Include="wwwroot\views\assignment-delete.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\assignment-edit.mustache">
+    <None Include="wwwroot\views\assignment-edit.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\assignment-start.mustache">
+    <None Include="wwwroot\views\assignment-start.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\assignments-delete-all.mustache">
+    <None Include="wwwroot\views\assignments-delete-all.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\assignments.mustache">
+    <None Include="wwwroot\views\assignments.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\clearquests.mustache">
+    <None Include="wwwroot\views\clearquests.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\device-assign.mustache">
+    <None Include="wwwroot\views\device-assign.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\devices.mustache">
+    <None Include="wwwroot\views\devices.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\geofence-add.mustache">
+    <None Include="wwwroot\views\geofence-add.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\geofence-edit.mustache">
+    <None Include="wwwroot\views\geofence-edit.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\geofences.mustache">
+    <None Include="wwwroot\views\geofences.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\header.mustache">
+    <None Include="wwwroot\views\header.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\index.mustache">
+    <None Include="wwwroot\views\index.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\instance-add.mustache">
+    <None Include="wwwroot\views\instance-add.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\instance-edit.mustache">
+    <None Include="wwwroot\views\instance-edit.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\instance-ivqueue.mustache">
+    <None Include="wwwroot\views\instance-ivqueue.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\instances.mustache">
+    <None Include="wwwroot\views\instances.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\navbar.mustache">
+    <None Include="wwwroot\views\navbar.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="wwwroot\Views\settings.mustache">
+    <None Include="wwwroot\views\settings.mustache">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
