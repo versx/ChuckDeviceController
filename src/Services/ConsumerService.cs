@@ -799,7 +799,14 @@
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerService] Wild/Nearby Pokemon Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedPokemon.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Wild/Nearby Pokemon Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Spawnpoint Count: {updatedSpawnpoints.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);
@@ -880,7 +887,14 @@
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerService] Encounter Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedPokemon.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Encounter Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Spawnpoint Count: {updatedSpawnpoints.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);

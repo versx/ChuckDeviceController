@@ -22,12 +22,8 @@
         private readonly ILogger<SpawnpointFinderInstanceController> _logger;
         private readonly SpawnpointRepository _spawnpointRepository;
 
-        private readonly Dictionary<string, DeviceIndex> _lastUuid;
-        private static readonly Random _random = new Random();
         private DateTime _lastCompletedTime;
         private int _lastIndex;
-        private DateTime _lastLastCompletedTime;
-        private readonly List<Coordinate> _coordinates;
 
         private readonly object _indexLock = new object();
 
@@ -41,7 +37,9 @@
 
         public ushort MaximumLevel { get; set; }
 
-        public List<List<Coordinate>> Geofences { get; }
+        public IReadOnlyList<List<Coordinate>> Geofences { get; }
+
+        public IReadOnlyList<Coordinate> SpawnpointCoordinates { get; private set; }
 
         #endregion
 
@@ -49,13 +47,13 @@
 
         public SpawnpointFinderInstanceController()
         {
-            _coordinates = new List<Coordinate>();
             _spawnpointRepository = new SpawnpointRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             _logger = new Logger<SpawnpointFinderInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 
             _lastCompletedTime = DateTime.UtcNow;
-            _lastUuid = new Dictionary<string, DeviceIndex>();
             _lastIndex = 0;
+
+            SpawnpointCoordinates = new List<Coordinate>();
         }
 
         public SpawnpointFinderInstanceController(string name, List<List<Coordinate>> geofences, ushort minLevel, ushort maxLevel) : this()
@@ -65,7 +63,7 @@
             MinimumLevel = minLevel;
             MaximumLevel = maxLevel;
 
-            _coordinates = Task.Run(async () => await Bootstrap())
+            SpawnpointCoordinates = Task.Run(async () => await Bootstrap())
                                .ConfigureAwait(false)
                                .GetAwaiter()
                                .GetResult();
@@ -77,7 +75,7 @@
 
         public async Task<ITask> GetTask(string uuid, string accountUsername, bool startup)
         {
-            if (_coordinates.Count == 0)
+            if (SpawnpointCoordinates.Count == 0)
             {
                 _logger.LogWarning($"[{uuid}] No spawnpoints available to find TTH!");
                 return null;
@@ -87,14 +85,21 @@
             {
                 var currentIndex = _lastIndex;
                 _logger.LogDebug($"[{uuid}] Current index: {currentIndex}");
-                currentCoord = _coordinates[currentIndex];
+                currentCoord = SpawnpointCoordinates[currentIndex];
                 if (!startup)
                 {
-                    if (_lastIndex + 1 == _coordinates.Count)
+                    if (_lastIndex + 1 == SpawnpointCoordinates.Count)
                     {
-                        _lastLastCompletedTime = _lastCompletedTime;
+                        SpawnpointCoordinates = Bootstrap().ConfigureAwait(false)
+                                                           .GetAwaiter()
+                                                           .GetResult();
                         _lastCompletedTime = DateTime.UtcNow;
                         _lastIndex = 0;
+                        if (SpawnpointCoordinates.Count == 0)
+                        {
+                            _logger.LogWarning($"[{uuid}] No unknown spawnpoints to check, sending 0,0");
+                            currentCoord = new Coordinate();
+                        }
                     }
                     else
                     {
@@ -116,12 +121,12 @@
         public async Task<string> GetStatus()
         {
             // TODO: Show amount found/remaining/total
-            if (_coordinates.Count == 0)
+            if (SpawnpointCoordinates.Count == 0)
             {
                 return $"No Unknown Spawnpoints";
             }
-            var percentage = Math.Round(((double)_lastIndex / (double)_coordinates.Count) * 100.00, 2);
-            var text = $"Spawnpoints {_lastIndex:N0}/{_coordinates.Count:N0} ({percentage}%)";
+            var percentage = Math.Round(((double)_lastIndex / (double)SpawnpointCoordinates.Count) * 100.00, 2);
+            var text = $"Spawnpoints {_lastIndex:N0}/{SpawnpointCoordinates.Count:N0} ({percentage}%)";
             return await Task.FromResult(text).ConfigureAwait(false);
         }
 
@@ -129,7 +134,6 @@
         {
             _lastIndex = 0;
             _lastCompletedTime = default;
-            _lastLastCompletedTime = default;
         }
 
         public void Stop()
