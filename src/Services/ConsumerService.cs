@@ -710,8 +710,10 @@
                 using var ctx = dbFactory.CreateDbContext();
                 var pokemonRepository = new PokemonRepository(ctx);
                 var pokestopRepository = new PokestopRepository(ctx);
+                var spawnpointRepository = new SpawnpointRepository(ctx);
                 var stopwatch = new Stopwatch();
                 var updatedPokemon = new List<Pokemon>();
+                var updatedSpawnpoints = new List<Spawnpoint>();
                 stopwatch.Start();
                 lock (_wildPokemonLock)
                 {
@@ -736,6 +738,11 @@
                             {
                                 updatedPokemon.Add(pokemon);
                             }
+                            var spawnpoint = pokemon.HandleSpawnpoint(wildPokemon.TimeTillHiddenMs, timestampMs)
+                                                    .ConfigureAwait(false)
+                                                    .GetAwaiter()
+                                                    .GetResult();
+                            updatedSpawnpoints.Add(spawnpoint);
                         }
                         //_wildPokemon.Clear();
                     }
@@ -782,6 +789,10 @@
                         //_nearbyPokemon.Clear();
                     }
                 }
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    await spawnpointRepository.AddOrUpdateAsync(updatedSpawnpoints).ConfigureAwait(false);
+                }
                 if (updatedPokemon.Count > 0)
                 {
                     await pokemonRepository.AddOrUpdateAsync(updatedPokemon, false, true).ConfigureAwait(false);
@@ -801,8 +812,10 @@
                 var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
                 using var ctx = dbFactory.CreateDbContext();
                 var pokemonRepository = new PokemonRepository(ctx);
+                var spawnpointRepository = new SpawnpointRepository(ctx);
                 var stopwatch = new Stopwatch();
                 var updatedPokemon = new List<Pokemon>();
+                var updatedSpawnpoints = new List<Spawnpoint>();
                 stopwatch.Start();
                 lock (_encountersLock)
                 {
@@ -848,11 +861,19 @@
                             {
                                 updatedPokemon.Add(newPokemon);
                             }
+                            var spawnpoint = newPokemon.HandleSpawnpoint(encounter.Pokemon.TimeTillHiddenMs, timestampMs)
+                                                       .ConfigureAwait(false)
+                                                       .GetAwaiter()
+                                                       .GetResult();
+                            updatedSpawnpoints.Add(spawnpoint);
                         }
                     }
                     _encounters.Clear();
                 }
-
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    await spawnpointRepository.AddOrUpdateAsync(updatedSpawnpoints).ConfigureAwait(false);
+                }
                 if (updatedPokemon.Count > 0)
                 {
                     await pokemonRepository.AddOrUpdateAsync(updatedPokemon, false, true).ConfigureAwait(false);

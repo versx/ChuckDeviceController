@@ -8,5 +8,6 @@
         PokemonIV,
         AutoQuest,
         Bootstrap,
+        FindTTH,
     }
 }
