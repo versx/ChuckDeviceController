@@ -154,10 +154,13 @@
             }
         }
 
+        // TODO: Add ShouldUpdate method
+
         public bool Update(Gym oldGym = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
+            var result = false;
             if (oldGym == null)
             {
                 WebhookController.Instance.AddGym(this);
@@ -168,12 +171,12 @@
                 if (raidBattleTime > now && RaidLevel > 0)
                 {
                     WebhookController.Instance.AddRaid(this);
-                    return true;
+                    result = true;
                 }
                 else if (raidEndTime > now && RaidPokemonId > 0)
                 {
                     WebhookController.Instance.AddRaid(this);
-                    return true;
+                    result = true;
                 }
             }
             else
@@ -189,12 +192,12 @@
                     if (raidBattleTime > now && RaidLevel > 0)
                     {
                         WebhookController.Instance.AddEgg(this);
-                        return true;
+                        result = true;
                     }
                     else if (raidEndTime > now && RaidPokemonId > 0)
                     {
                         WebhookController.Instance.AddRaid(this);
-                        return true;
+                        result = true;
                     }
                 }
                 if (oldGym.AvailableSlots != AvailableSlots ||
@@ -202,10 +205,10 @@
                     oldGym.InBattle != InBattle)
                 {
                     WebhookController.Instance.AddGymInfo(this);
-                    return true;
+                    result = true;
                 }
             }
-            return false;
+            return result;
         }
 
         public void AddDetails(FortDetailsOutProto fortDetails)

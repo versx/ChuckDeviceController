@@ -67,18 +67,19 @@
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
+            var result = false;
             if (oldWeather == null)
             {
                 WebhookController.Instance.AddWeather(this);
-                return true;
+                result = true;
             }
             else if (oldWeather.GameplayCondition != GameplayCondition ||
                 oldWeather.WarnWeather != WarnWeather)
             {
                 WebhookController.Instance.AddWeather(this);
-                return true;
+                result = true;
             }
-            return false;
+            return result;
         }
 
         public dynamic GetWebhookValues(string type)

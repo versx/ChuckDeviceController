@@ -246,6 +246,7 @@
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var setIVForWeather = false;
+            var result = false;
             if (oldPokemon == null)
             {
                 Updated = now;
@@ -389,6 +390,7 @@
             {
                 WebhookController.Instance.AddPokemon(this);
                 InstanceController.Instance.GotPokemon(this);
+                result = true;
             }
             else if (oldPokemon == null)
             {
@@ -398,14 +400,16 @@
                 {
                     InstanceController.Instance.GotIV(this);
                 }
+                result = true;
             }
             else if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
             {
                 oldPokemon._hasIvChanges = false;
                 WebhookController.Instance.AddPokemon(this);
                 InstanceController.Instance.GotIV(this);
+                result = true;
             }
-            return true;
+            return result;
         }
 
         public static bool ShouldUpdate(Pokemon oldPokemon, Pokemon newPokemon)

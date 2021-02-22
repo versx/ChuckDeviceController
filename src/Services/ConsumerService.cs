@@ -531,7 +531,7 @@
 
         private async Task UpdateFortDetails()
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
+            //var now = DateTime.UtcNow.ToTotalSeconds();
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
@@ -895,7 +895,7 @@
                         }
                         */
                         pokestop.AddQuest(quest);
-                        if (pokestop.Update(pokestop)) // TODO: Check HasChanges property
+                        if (pokestop.Update(pokestop, true)) // TODO: Check HasChanges property
                         {
                             updatedQuests.Add(pokestop);
                         }

@@ -159,6 +159,7 @@
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
+            var result = false;
             if (oldPokestop != null)
             {
                 if (oldPokestop.CellId > 0 && CellId == 0)
@@ -193,38 +194,38 @@
                 if ((oldPokestop.LureExpireTimestamp ?? 0) < (LureExpireTimestamp ?? 0))
                 {
                     WebhookController.Instance.AddLure(this);
-                    return true;
+                    result = true;
                 }
                 if ((oldPokestop.IncidentExpireTimestamp ?? 0) < (IncidentExpireTimestamp ?? 0))
                 {
                     WebhookController.Instance.AddInvasion(this);
-                    return true;
+                    result = true;
                 }
                 if (updateQuest && (QuestTimestamp ?? 0) > (oldPokestop.QuestTimestamp ?? 0))
                 {
                     WebhookController.Instance.AddQuest(this);
-                    return true;
+                    result = true;
                 }
             }
 
             if (oldPokestop == null)
             {
                 WebhookController.Instance.AddPokestop(this);
-                return true;
+                result = true;
                 if (LureExpireTimestamp > 0)
                 {
                     WebhookController.Instance.AddLure(this);
-                    return true;
+                    result = true;
                 }
                 if (QuestTimestamp > 0)
                 {
                     WebhookController.Instance.AddQuest(this);
-                    return true;
+                    result = true;
                 }
                 if (IncidentExpireTimestamp > 0)
                 {
                     WebhookController.Instance.AddInvasion(this);
-                    return true;
+                    result = true;
                 }
             }
             else
@@ -232,21 +233,21 @@
                 if (oldPokestop.LureExpireTimestamp < LureExpireTimestamp)
                 {
                     WebhookController.Instance.AddLure(this);
-                    return true;
+                    result = true;
                 }
                 if (oldPokestop.IncidentExpireTimestamp < IncidentExpireTimestamp)
                 {
                     WebhookController.Instance.AddInvasion(this);
-                    return true;
+                    result = true;
                 }
                 if (updateQuest && (HasQuestChanges || QuestTimestamp > oldPokestop.QuestTimestamp))
                 {
                     HasQuestChanges = false;
                     WebhookController.Instance.AddQuest(this);
-                    return true;
+                    result = true;
                 }
             }
-            return false;
+            return result;
         }
 
         public void AddDetails(FortDetailsOutProto fortDetails)
