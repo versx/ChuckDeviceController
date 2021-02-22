@@ -38,15 +38,18 @@
 
         public IReadOnlyList<Coordinate> Coordinates { get; }
 
+        public bool FastBootstrapMode { get; set; }
+
         #endregion
 
         #region Constructor
 
-        public BootstrapInstanceController(string name, List<List<Coordinate>> geofences, ushort minLevel, ushort maxLevel, ushort circleSize = 70)
+        public BootstrapInstanceController(string name, List<List<Coordinate>> geofences, ushort minLevel, ushort maxLevel, ushort circleSize = 70, bool fastBootstrapMode = false)
         {
             Name = name;
             MinimumLevel = minLevel;
             MaximumLevel = maxLevel;
+            FastBootstrapMode = fastBootstrapMode;
 
             _logger = new Logger<BootstrapInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 
@@ -91,6 +94,9 @@
             return await Task.FromResult(new BootstrapTask
             {
                 Area = Name,
+                Action = FastBootstrapMode
+                    ? ActionType.ScanRaid
+                    : ActionType.ScanPokemon,
                 Latitude = result.Latitude,
                 Longitude = result.Longitude,
                 MinimumLevel = MinimumLevel,

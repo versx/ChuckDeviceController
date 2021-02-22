@@ -124,6 +124,10 @@
                 Circle Size (meters, i.e `70, 500, 750, etc`)
                 <input type="number" class="form-control" name="circle_size" value="{{circle_size}}" step="1" min="5" max="1000">
             </div>
+            <div class="form-check bootstrap_text {{^bootstrap_selected}}d-none{{/bootstrap_selected}}">
+                <input type="checkbox" class="form-check-input" name="fast_bootstrap_mode" checked>
+                <label class="form-check-label" for="fast_bootstrap_mode">Fast Bootstrap Mode (5 seconds vs 10 seconds)</label>
+            </div>
             <input type="hidden" name="_csrf" value="{{csrf}}">
             <button type="submit" class="btn btn-primary">Create</button>
         </form>

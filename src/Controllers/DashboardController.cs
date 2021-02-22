@@ -220,6 +220,7 @@
                 var pokemonIds = pokemonIdsValue == "*"
                     ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
                     : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
+                var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
                 if (type == InstanceType.PokemonIV)
@@ -245,12 +246,6 @@
                     return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided");
                 }
 
-                if (await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false) != null)
-                {
-                    // Instance already exists
-                    return BuildErrorResponse("instance-add", $"Instance with name '{name}' already exists");
-                }
-
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance != null)
                 {
@@ -274,6 +269,7 @@
                         TimezoneOffset = timezoneOffset,
                         CircleRouteType = circleRouteType,
                         CircleSize = (ushort)circleSize,
+                        FastBootstrapMode = fastBootstrapMode,
                     }
                 };
                 await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
@@ -336,6 +332,7 @@
                 //        break;
                 //    case InstanceType.Bootstrap:
                         obj.circle_size = instance.Data.CircleSize ?? 70;
+                        obj.fast_bootstrap_mode = instance.Data.FastBootstrapMode;
                 //}
                 var data = Renderer.ParseTemplate("instance-edit", obj);
                 return new ContentResult
@@ -377,6 +374,7 @@
                 //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
                 var ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
                 var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
+                var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
                 //var accountGroup = Request.Form["account_group"];
                 //var isEvent = Request.Form["is_event"];
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
@@ -406,6 +404,7 @@
                     MaximumLevel = maxLevel,
                     PokemonIds = pokemonIds,
                     TimezoneOffset = timezoneOffset,
+                    FastBootstrapMode = fastBootstrapMode,
                 };
                 await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
                 await InstanceController.Instance.ReloadInstance(instance, name).ConfigureAwait(false);
