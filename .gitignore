@@ -331,6 +331,3 @@ ASALocalRun/
 .mfractor/
 
 .leu
-
-# No config files
-config.json

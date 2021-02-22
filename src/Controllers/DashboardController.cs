@@ -68,11 +68,11 @@
         public async Task<IActionResult> GetDashboard()
         {
             dynamic obj = BuildDefaultData();
-            obj.devices_count = (await _context.Devices.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
-            obj.instances_count = (await _context.Instances.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
-            obj.assignments_count = (await _context.Assignments.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
-            obj.accounts_count = (await _context.Accounts.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
-            obj.geofences_count = (await _context.Geofences.AsNoTracking().DeferredCount().FromCacheAsync()).ToString("N0");
+            obj.devices_count = (await _context.Devices.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.instances_count = (await _context.Instances.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.assignments_count = (await _context.Assignments.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.accounts_count = (await _context.Accounts.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.geofences_count = (await _context.Geofences.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             var data = Renderer.ParseTemplate("index", obj);
             return new ContentResult
             {
