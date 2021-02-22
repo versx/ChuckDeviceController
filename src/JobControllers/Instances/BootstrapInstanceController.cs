@@ -78,7 +78,7 @@
                     {
                         _lastLastCompletedTime = _lastCompletedTime;
                         _lastCompletedTime = DateTime.UtcNow;
-                        // Wait at last coord, upon complete, _lastIndex = 0;
+                        Reload();
                         // TODO: Assugn instance to chained instance upon completion?
                     }
                     else
