@@ -115,10 +115,10 @@
 
         public async Task<string> GetStatus()
         {
-            // TODO: Show amount found/left/total
+            // TODO: Show amount found/remaining/total
             if (_coordinates.Count == 0)
             {
-                return $"Spawnpoints 0";
+                return $"No Unknown Spawnpoints";
             }
             var percentage = Math.Round(((double)_lastIndex / (double)_coordinates.Count) * 100.00, 2);
             var text = $"Spawnpoints {_lastIndex:N0}/{_coordinates.Count:N0} ({percentage}%)";
