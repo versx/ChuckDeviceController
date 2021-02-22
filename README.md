@@ -15,7 +15,7 @@
 1. Copy config `cp config.example.json` `config.json`  
 1. Fill out `config.json`  
 1. Build project from root folder `~/.dotnet/dotnet build`  
-1. Run from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
+1. Run from `bin/[debug|release]` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
 1. Visit Dashboard at `http://LAN_MACHINE_IP:5001`
 
 View all available API routes:  
