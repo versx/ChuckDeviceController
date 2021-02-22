@@ -116,7 +116,7 @@
             _thread.Interrupt();
             if (!_thread.Join(2000))
             {
-                ConsoleExt.WriteError($"[WebhookController] Failed to abort webhook thread");
+                ConsoleExt.WriteError("[WebhookController] Failed to abort webhook thread");
             }
             _thread = null;
         }

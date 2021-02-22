@@ -24,7 +24,7 @@
                 {
                     return false;
                 }
-                ConsoleExt.WriteInfo($"[RawSql] Result -> OK");
+                ConsoleExt.WriteInfo("[RawSql] Result -> OK");
                 return true;
             }
             catch (Exception ex)
