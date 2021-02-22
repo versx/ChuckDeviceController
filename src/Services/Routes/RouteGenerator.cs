@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Services.Routes
 {
+    /*
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -257,6 +258,7 @@
             return new NetTopologySuite.Geometries.Coordinate(lat2 * radInv, lon2);
         }
     }
+    */
 
     /*
     public class RouteOptimizer

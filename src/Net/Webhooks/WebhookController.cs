@@ -54,7 +54,8 @@
         #region Singleton
 
         private static WebhookController _instance;
-        public static WebhookController Instance => _instance ??= new WebhookController();
+        public static WebhookController Instance =>
+            _instance ??= new WebhookController();
 
         #endregion
 
@@ -115,7 +116,7 @@
             _thread.Interrupt();
             if (!_thread.Join(2000))
             {
-                _thread.Abort();
+                ConsoleExt.WriteError($"[WebhookController] Failed to abort webhook thread");
             }
             _thread = null;
         }
