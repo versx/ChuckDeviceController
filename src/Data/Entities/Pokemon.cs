@@ -245,7 +245,6 @@
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var setIVForWeather = false;
-            const bool result = false;
             if (oldPokemon == null)
             {
                 Updated = now;
@@ -408,7 +407,7 @@
                 InstanceController.Instance.GotIV(this);
                 return true;
             }
-            return result;
+            return false;
         }
 
         public static bool ShouldUpdate(Pokemon oldPokemon, Pokemon newPokemon)
