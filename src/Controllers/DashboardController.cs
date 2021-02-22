@@ -333,6 +333,7 @@
                 //    case InstanceType.Bootstrap:
                         obj.circle_size = instance.Data.CircleSize ?? 70;
                         obj.fast_bootstrap_mode = instance.Data.FastBootstrapMode;
+                //        break;
                 //}
                 var data = Renderer.ParseTemplate("instance-edit", obj);
                 return new ContentResult
