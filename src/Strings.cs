@@ -7,7 +7,7 @@
     {
         public const string DefaultConfigFileName = "config.json";
         public static readonly string WebRoot = $"{AppDomain.CurrentDomain.BaseDirectory}/wwwroot";
-        public static readonly string ViewsFolder = WebRoot +"/Views";
+        public static readonly string ViewsFolder = WebRoot +"/views";
         public const string TemplateExt = ".mustache";
         public static readonly string DataFolder = WebRoot + "/static/data";
         public static readonly string MigrationsFolder = WebRoot + "/migrations";
