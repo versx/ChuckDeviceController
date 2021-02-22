@@ -215,7 +215,8 @@
                                 break;
                             case InstanceType.Bootstrap:
                                 var circleSize = instance.Data.CircleSize ?? 70;
-                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize);
+                                var fastBootstrapMode = instance.Data.FastBootstrapMode;
+                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize, fastBootstrapMode);
                                 break;
                         }
                     }
