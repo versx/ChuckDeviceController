@@ -6,13 +6,11 @@
     public static class Strings
     {
         public const string DefaultConfigFileName = "config.json";
-        public static readonly string ViewsFolder = $"{AppDomain.CurrentDomain.BaseDirectory}/Views";
-        public const string TemplateExt = ".mustache";
-
         public static readonly string WebRoot = $"{AppDomain.CurrentDomain.BaseDirectory}/wwwroot";
+        public static readonly string ViewsFolder = WebRoot +"/Views";
+        public const string TemplateExt = ".mustache";
         public static readonly string DataFolder = WebRoot + "/static/data";
         public static readonly string MigrationsFolder = WebRoot + "/migrations";
-
         public const string SQL_CREATE_TABLE_METADATA = @"
         CREATE TABLE IF NOT EXISTS metadata (
             `key` VARCHAR(50) PRIMARY KEY NOT NULL,
