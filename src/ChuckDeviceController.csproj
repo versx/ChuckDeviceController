@@ -33,7 +33,7 @@
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>../bin/debug</OutputPath>
-    <WarningsAsErrors>;NU1605;RCS1213</WarningsAsErrors>
+    <WarningsAsErrors>;NU1605</WarningsAsErrors>
     <NoWarn>1701;1702;RCS1213;RCS1093</NoWarn>
   </PropertyGroup>
   
