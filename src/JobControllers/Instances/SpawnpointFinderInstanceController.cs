@@ -22,7 +22,6 @@
         private readonly ILogger<SpawnpointFinderInstanceController> _logger;
         private readonly SpawnpointRepository _spawnpointRepository;
 
-        private DateTime _lastCompletedTime;
         private int _lastIndex;
 
         private readonly object _indexLock = new object();
@@ -49,8 +48,6 @@
         {
             _spawnpointRepository = new SpawnpointRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             _logger = new Logger<SpawnpointFinderInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-
-            _lastCompletedTime = DateTime.UtcNow;
             _lastIndex = 0;
 
             SpawnpointCoordinates = new List<Coordinate>();
@@ -64,9 +61,9 @@
             MaximumLevel = maxLevel;
 
             SpawnpointCoordinates = Task.Run(async () => await Bootstrap())
-                               .ConfigureAwait(false)
-                               .GetAwaiter()
-                               .GetResult();
+                                        .ConfigureAwait(false)
+                                        .GetAwaiter()
+                                        .GetResult();
         }
 
         #endregion
@@ -93,7 +90,6 @@
                         SpawnpointCoordinates = Bootstrap().ConfigureAwait(false)
                                                            .GetAwaiter()
                                                            .GetResult();
-                        _lastCompletedTime = DateTime.UtcNow;
                         _lastIndex = 0;
                         if (SpawnpointCoordinates.Count == 0)
                         {
@@ -133,7 +129,6 @@
         public void Reload()
         {
             _lastIndex = 0;
-            _lastCompletedTime = default;
         }
 
         public void Stop()

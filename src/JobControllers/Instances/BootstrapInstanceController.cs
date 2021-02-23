@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.Extensions.Logging;
@@ -21,9 +20,8 @@
         private readonly IReadOnlyList<Geofence> _geofences;
         private readonly RouteGenerator _routeGenerator;
         //private static readonly Random _random = new Random();
-        private DateTime _lastCompletedTime;
+        //private DateTime _lastCompletedTime;
         private int _lastIndex;
-        private DateTime _lastLastCompletedTime;
         private readonly object _indexLock = new object();
 
         #endregion
@@ -56,12 +54,6 @@
             _geofences = Geofence.FromPolygons(geofences);
             _routeGenerator = new RouteGenerator();
             Coordinates = _routeGenerator.GenerateBootstrapRoute((List<Geofence>)_geofences, circleSize);
-            // Remove warn var never readed...
-            if (_lastLastCompletedTime != default)
-            {
-                return;
-            }
-            _lastLastCompletedTime = DateTime.Now;
         }
 
         #endregion
@@ -79,10 +71,9 @@
                 {
                     if (_lastIndex + 1 == Coordinates.Count)
                     {
-                        _lastLastCompletedTime = _lastCompletedTime;
-                        _lastCompletedTime = DateTime.UtcNow;
+                        //_lastCompletedTime = DateTime.UtcNow;
                         Reload();
-                        // TODO: Assugn instance to chained instance upon completion?
+                        // TODO: Assign instance to chained instance upon completion?
                     }
                     else
                     {
@@ -114,8 +105,7 @@
         public void Reload()
         {
             _lastIndex = 0;
-            _lastCompletedTime = default;
-            _lastLastCompletedTime = default;
+            //_lastCompletedTime = default;
         }
 
         public void Stop()

@@ -128,7 +128,7 @@
             Team = fort.Team;
             AvailableSlots = (ushort)(fort.GymDisplay?.SlotsAvailable ?? 0);
             InBattle = fort.IsInBattle;
-            TotalCP = fort.GymDisplay.TotalGymCp;
+            TotalCP = fort.GymDisplay?.TotalGymCp ?? 0;
             CellId = cellId;
             FirstSeenTimestamp = now;
             Updated = now;
