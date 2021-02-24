@@ -5,6 +5,7 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
+    using System.Transactions;
 
     using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
@@ -764,7 +765,7 @@
                                                               .ConfigureAwait(false)
                                                               .GetAwaiter()
                                                               .GetResult();
-                            if (pokemon.Update(oldPokemon)) // TODO: Check HasChanges property
+                            if (pokemon.Update(oldPokemon, true)) // TODO: Check HasChanges property
                             {
                                 updatedPokemon.Add(pokemon);
                             }
@@ -844,6 +845,12 @@
 
         private async Task UpdateEncounters()
         {
+            /*
+            using (var scope = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {  IsolationLevel = IsolationLevel.Snapshot }))
+            {
+                scope.Complete();
+            }
+            */
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();

@@ -30,7 +30,7 @@
         // TODO: Configurable
         private static readonly List<uint> _dittoDisguises = new List<uint>
         {
-            46, 163, 167, 187, 223, 293, 316, 322, 399, 590,
+            163, 167, 187, 223, 293, 316, 322, 399, 590,
         };
         private readonly SpawnpointRepository _spawnpointRepository;
         private bool _hasIvChanges;
