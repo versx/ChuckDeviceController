@@ -25,5 +25,8 @@
 
         [Column("updated")]
         public ulong Updated { get; set; }
+
+        [Column("first_seen_timestamp")]
+        public ulong FirstSeenTimestamp { get; set; }
     }
 }

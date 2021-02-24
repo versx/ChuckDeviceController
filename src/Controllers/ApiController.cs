@@ -249,6 +249,7 @@
                 InstanceType.SmartCircleRaid    => "Smart Raid",
                 InstanceType.PokemonIV          => "Pokemon IV",
                 InstanceType.Bootstrap          => "Bootstrap",
+                InstanceType.FindTTH            => "Spawnpoint TTH Finder",
                 _ => type.ToString(),
             };
         }

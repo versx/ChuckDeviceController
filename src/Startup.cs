@@ -76,8 +76,8 @@ namespace ChuckDeviceController
 
             services.AddHealthChecks();
             services.AddScoped(typeof(IAsyncRepository<>), typeof(EfCoreRepository<,>));
-            //services.AddScoped<IConsumerService, ConsumerService>();
             services.AddSingleton<IConsumerService, ConsumerService>();
+            //services.AddSingleton(typeof(IConsumerService), new ConsumerService());
             services.AddScoped<Config>();
 
             services.AddCors(option => option.AddPolicy("Test", builder => {
@@ -138,12 +138,9 @@ namespace ChuckDeviceController
                     }
                 });
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ChuckDeviceController v1"));
-            }
+            app.UseDeveloperExceptionPage();
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ChuckDeviceController v1"));
 
             //app.UseRequestResponseLogging();
 

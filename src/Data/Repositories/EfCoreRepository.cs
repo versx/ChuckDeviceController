@@ -77,6 +77,11 @@
 
         #endregion
 
+        public virtual async Task<bool> ContainsAsync(TEntity entity)
+        {
+            return await _dbContext.Set<TEntity>().ContainsAsync(entity).ConfigureAwait(false);
+        }
+
         #region Add
 
         public async Task<TEntity> AddAsync(TEntity entity)

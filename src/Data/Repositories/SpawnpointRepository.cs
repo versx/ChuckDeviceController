@@ -29,7 +29,7 @@
             return await base.GetAllAsync().ConfigureAwait(false);
         }
 
-        public async Task<List<Spawnpoint>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
+        public async Task<List<Spawnpoint>> GetAllAsync(BoundingBox bbox, bool onlyUnknown, ulong updated = 0)
         {
             var spawnpoints = await GetAllAsync(false).ConfigureAwait(false);
             return spawnpoints.Where(spawn =>
@@ -37,6 +37,7 @@
                 spawn.Latitude <= bbox.MaximumLatitude &&
                 spawn.Longitude >= bbox.MinimumLongitude &&
                 spawn.Longitude <= bbox.MaximumLongitude &&
+                (spawn.DespawnSecond == null && onlyUnknown) &&
                 spawn.Updated >= updated
             ).ToList();
         }
