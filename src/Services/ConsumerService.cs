@@ -5,6 +5,7 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
+    using System.Transactions;
 
     using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
@@ -358,7 +359,10 @@
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerService] S2Cell Count: {updatedCells.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedCells.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] S2Cell Count: {updatedCells.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);
@@ -454,7 +458,10 @@
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerService] Weather Count: {updatedWeather.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedWeather.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Weather Count: {updatedWeather.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);
@@ -523,7 +530,10 @@
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerService] Forts Count: {updatedGyms.Count + updatedPokestops.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedGyms.Count > 0 || updatedPokestops.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Forts Count: {updatedGyms.Count + updatedPokestops.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);
@@ -590,7 +600,10 @@
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerServer] FortDetails Count: {updatedGyms.Count + updatedPokestops.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedGyms.Count > 0 || updatedPokestops.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerServer] FortDetails Count: {updatedGyms.Count + updatedPokestops.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);
@@ -689,13 +702,31 @@
                 if (updatedGyms.Count > 0)
                 {
                     await gymRepository.AddOrUpdateAsync(updatedGyms, true).ConfigureAwait(false);
+                }
+                if (updatedTrainers.Count > 0)
+                {
                     await trainerRepository.AddOrUpdateAsync(updatedTrainers).ConfigureAwait(false);
+                    // TODO: Webhooks for Trainers
+                }
+                if (updatedDefenders.Count > 0)
+                {
                     await gymDefenderRepository.AddOrUpdateAsync(updatedDefenders).ConfigureAwait(false);
-                    // TODO: Webhooks for Trainers and GymDefenders
+                    // TODO: Webhooks for GymDefenders
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerServer] GymInfo Count: {updatedGyms.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedGyms.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerServer] GymInfo Count: {updatedGyms.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedTrainers.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerServer] GymTrainers Count: {updatedTrainers.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedDefenders.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerServer] GymDefenders Count: {updatedDefenders.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);
@@ -710,8 +741,10 @@
                 using var ctx = dbFactory.CreateDbContext();
                 var pokemonRepository = new PokemonRepository(ctx);
                 var pokestopRepository = new PokestopRepository(ctx);
+                var spawnpointRepository = new SpawnpointRepository(ctx);
                 var stopwatch = new Stopwatch();
                 var updatedPokemon = new List<Pokemon>();
+                var updatedSpawnpoints = new List<Spawnpoint>();
                 stopwatch.Start();
                 lock (_wildPokemonLock)
                 {
@@ -732,10 +765,15 @@
                                                               .ConfigureAwait(false)
                                                               .GetAwaiter()
                                                               .GetResult();
-                            if (pokemon.Update(oldPokemon)) // TODO: Check HasChanges property
+                            if (pokemon.Update(oldPokemon, true)) // TODO: Check HasChanges property
                             {
                                 updatedPokemon.Add(pokemon);
                             }
+                            var spawnpoint = pokemon.HandleSpawnpoint(wildPokemon.TimeTillHiddenMs, timestampMs)
+                                                    .ConfigureAwait(false)
+                                                    .GetAwaiter()
+                                                    .GetResult();
+                            updatedSpawnpoints.Add(spawnpoint);
                         }
                         //_wildPokemon.Clear();
                     }
@@ -782,13 +820,24 @@
                         //_nearbyPokemon.Clear();
                     }
                 }
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    await spawnpointRepository.AddOrUpdateAsync(updatedSpawnpoints).ConfigureAwait(false);
+                }
                 if (updatedPokemon.Count > 0)
                 {
                     await pokemonRepository.AddOrUpdateAsync(updatedPokemon, false, true).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerService] Wild/Nearby Pokemon Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Spawnpoint Count: {updatedSpawnpoints.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedPokemon.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Wild/Nearby Pokemon Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);
@@ -796,13 +845,21 @@
 
         private async Task UpdateEncounters()
         {
+            /*
+            using (var scope = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions {  IsolationLevel = IsolationLevel.Snapshot }))
+            {
+                scope.Complete();
+            }
+            */
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<DeviceControllerContext>>();
                 using var ctx = dbFactory.CreateDbContext();
                 var pokemonRepository = new PokemonRepository(ctx);
+                var spawnpointRepository = new SpawnpointRepository(ctx);
                 var stopwatch = new Stopwatch();
                 var updatedPokemon = new List<Pokemon>();
+                var updatedSpawnpoints = new List<Spawnpoint>();
                 stopwatch.Start();
                 lock (_encountersLock)
                 {
@@ -848,18 +905,33 @@
                             {
                                 updatedPokemon.Add(newPokemon);
                             }
+                            var spawnpoint = newPokemon.HandleSpawnpoint(encounter.Pokemon.TimeTillHiddenMs, timestampMs)
+                                                       .ConfigureAwait(false)
+                                                       .GetAwaiter()
+                                                       .GetResult();
+                            updatedSpawnpoints.Add(spawnpoint);
                         }
                     }
                     _encounters.Clear();
                 }
-
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    await spawnpointRepository.AddOrUpdateAsync(updatedSpawnpoints).ConfigureAwait(false);
+                }
                 if (updatedPokemon.Count > 0)
                 {
                     await pokemonRepository.AddOrUpdateAsync(updatedPokemon, false, true).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerService] Encounter Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Spawnpoint Count: {updatedSpawnpoints.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedPokemon.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Encounter Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);
@@ -910,7 +982,10 @@
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerService] Quest Count: {updatedQuests.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedQuests.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Quest Count: {updatedQuests.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);
@@ -981,7 +1056,10 @@
                 }
 
                 stopwatch.Stop();
-                _logger.LogInformation($"[ConsumerService] Account Count: {updatedAccounts.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedAccounts.Count > 0)
+                {
+                    _logger.LogInformation($"[ConsumerService] Account Count: {updatedAccounts.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
                 System.Threading.Thread.Sleep(50);
             }
             await Task.CompletedTask.ConfigureAwait(false);

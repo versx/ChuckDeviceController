@@ -178,6 +178,7 @@
                 case InstanceType.AutoQuest:
                 case InstanceType.PokemonIV:
                 case InstanceType.Bootstrap:
+                case InstanceType.FindTTH:
                     try
                     {
                         var area = string.IsNullOrEmpty(instance.Geofence)
@@ -218,6 +219,9 @@
                                 var fastBootstrapMode = instance.Data.FastBootstrapMode;
                                 instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize, fastBootstrapMode);
                                 break;
+                            case InstanceType.FindTTH:
+                                instanceController = new SpawnpointFinderInstanceController(instance.Name, coordsArray, minLevel, maxLevel);
+                                break;
                         }
                     }
                     catch (Exception ex)
@@ -247,7 +251,7 @@
                             _devices[uuid] = device;
                         }
                     }
-                    _instances[oldInstanceName].Stop();
+                    _instances[oldInstanceName]?.Stop();
                     _instances[oldInstanceName] = null;
                 }
             }
@@ -269,7 +273,7 @@
         {
             lock (_instancesLock)
             {
-                _instances[instanceName].Stop();
+                _instances[instanceName]?.Stop();
                 _instances[instanceName] = null;
                 var devices = _devices.Where(d => string.Compare(d.Value.InstanceName, instanceName, true) == 0);
                 foreach (var device in devices)
@@ -401,16 +405,11 @@
         private async Task<Geofence> GetGeofence(Instance instance, IReadOnlyList<Geofence> geofences = null)
         {
             Geofence geofence = null;
-            //if (!string.IsNullOrEmpty(instance.Geofence))
             if (geofences == null)
             {
                 try
                 {
                     geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
-                    if (geofence == null)
-                    {
-                        // TODO: Failed to get geofence for instance
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -420,6 +419,11 @@
             else
             {
                 geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
+            }
+            if (geofence == null)
+            {
+                // Failed to get geofence for instance
+                _logger.LogWarning($"[{instance.Name}] Failed to get geofence for instance, are you sure it's assigned one?");
             }
             return geofence;
         }

@@ -56,6 +56,7 @@
                 InstanceType.SmartCircleRaid    => "smart_raid",
                 InstanceType.PokemonIV          => "pokemon_iv",
                 InstanceType.Bootstrap          => "bootstrap",
+                InstanceType.FindTTH            => "find_tth",
                 _ => type.ToString(),
             };
         }
@@ -70,6 +71,7 @@
                 "smart_raid"        => InstanceType.SmartCircleRaid,
                 "pokemon_iv"        => InstanceType.PokemonIV,
                 "bootstrap"         => InstanceType.Bootstrap,
+                "find_tth"          => InstanceType.FindTTH,
                 _ => InstanceType.CirclePokemon,
             };
         }

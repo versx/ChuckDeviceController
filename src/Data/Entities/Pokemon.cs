@@ -29,7 +29,7 @@
         // TODO: Configurable
         private static readonly List<uint> _dittoDisguises = new List<uint>
         {
-            46, 163, 167, 187, 223, 293, 316, 322, 399, 590,
+            163, 167, 187, 223, 293, 316, 322, 399, 590,
         };
         private readonly SpawnpointRepository _spawnpointRepository;
         private bool _hasIvChanges;
@@ -574,6 +574,7 @@
 
         public async Task<Spawnpoint> HandleSpawnpoint(int timeTillHiddenMs, ulong timestampMs)
         {
+            var now = DateTime.UtcNow.ToTotalSeconds();
             if (timeTillHiddenMs <= 90000 && timeTillHiddenMs > 0)
             {
                 ExpireTimestamp = Convert.ToUInt64(timestampMs + Convert.ToDouble(timeTillHiddenMs)) / 1000;
@@ -585,8 +586,9 @@
                     Id = SpawnId ?? 0,
                     Latitude = Latitude,
                     Longitude = Longitude,
-                    Updated = Updated,
+                    Updated = now,
                     DespawnSecond = (ushort)secondOfHour,
+                    FirstSeenTimestamp = now,
                 };
             }
             else
@@ -616,7 +618,6 @@
                     var despawnOffset = spawnpoint.DespawnSecond - secondOfHour;
                     if (spawnpoint.DespawnSecond < secondOfHour)
                         despawnOffset += 3600;
-                    var now = DateTime.UtcNow.ToTotalSeconds();
                     ExpireTimestamp = now + (ulong)(despawnOffset ?? 0);
                     IsExpireTimestampVerified = true;
                 }
@@ -627,8 +628,9 @@
                         Id = SpawnId ?? 0,
                         Latitude = Latitude,
                         Longitude = Longitude,
-                        Updated = DateTime.Now.ToTotalSeconds(),
+                        Updated = now,
                         DespawnSecond = null,
+                        FirstSeenTimestamp = now,
                     };
                 }
                 return await Task.FromResult(spawnpoint).ConfigureAwait(false);

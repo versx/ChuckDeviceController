@@ -31,14 +31,14 @@
 
         private readonly AccountRepository _accountRepository;
         private readonly DeviceRepository _deviceRepository;
-        //private readonly GymRepository _gymRepository;
-        //private readonly GymDefenderRepository _gymDefenderRepository;
-        //private readonly TrainerRepository _trainerRepository;
-        //private readonly PokemonRepository _pokemonRepository;
-        //private readonly PokestopRepository _pokestopRepository;
-        //private readonly SpawnpointRepository _spawnpointRepository;
-        //private readonly CellRepository _cellRepository;
-        //private readonly WeatherRepository _weatherRepository;
+        private readonly GymRepository _gymRepository;
+        private readonly GymDefenderRepository _gymDefenderRepository;
+        private readonly TrainerRepository _trainerRepository;
+        private readonly PokemonRepository _pokemonRepository;
+        private readonly PokestopRepository _pokestopRepository;
+        private readonly SpawnpointRepository _spawnpointRepository;
+        private readonly CellRepository _cellRepository;
+        private readonly WeatherRepository _weatherRepository;
 
         //private readonly DeviceControllerContext _context;
         //private readonly IDbContextFactory<DeviceControllerContext> _dbFactory;
@@ -48,8 +48,8 @@
         private readonly Dictionary<ulong, int> _emptyCells;
         private readonly Dictionary<string, ushort> _levelCache;
 
-        //private readonly Dictionary<ulong, List<string>> _gymIdsPerCell;
-        //private readonly Dictionary<ulong, List<string>> _stopIdsPerCell;
+        private readonly Dictionary<ulong, List<string>> _gymIdsPerCell;
+        private readonly Dictionary<ulong, List<string>> _stopIdsPerCell;
 
         #endregion
 
@@ -64,19 +64,19 @@
 
             _accountRepository = new AccountRepository(dbFactory.CreateDbContext());
             _deviceRepository = new DeviceRepository(dbFactory.CreateDbContext());
-            //_gymRepository = new GymRepository(dbFactory.CreateDbContext());
-            //_gymDefenderRepository = new GymDefenderRepository(dbFactory.CreateDbContext());
-            //_trainerRepository = new TrainerRepository(dbFactory.CreateDbContext());
-            //_pokemonRepository = new PokemonRepository(dbFactory.CreateDbContext());
-            //_pokestopRepository = new PokestopRepository(dbFactory.CreateDbContext());
-            //_cellRepository = new CellRepository(dbFactory.CreateDbContext());
-            //_weatherRepository = new WeatherRepository(dbFactory.CreateDbContext());
-            //_spawnpointRepository = new SpawnpointRepository(dbFactory.CreateDbContext());
+            _gymRepository = new GymRepository(dbFactory.CreateDbContext());
+            _gymDefenderRepository = new GymDefenderRepository(dbFactory.CreateDbContext());
+            _trainerRepository = new TrainerRepository(dbFactory.CreateDbContext());
+            _pokemonRepository = new PokemonRepository(dbFactory.CreateDbContext());
+            _pokestopRepository = new PokestopRepository(dbFactory.CreateDbContext());
+            _cellRepository = new CellRepository(dbFactory.CreateDbContext());
+            _weatherRepository = new WeatherRepository(dbFactory.CreateDbContext());
+            _spawnpointRepository = new SpawnpointRepository(dbFactory.CreateDbContext());
 
             _emptyCells = new Dictionary<ulong, int>();
             _levelCache = new Dictionary<string, ushort>();
-            //_gymIdsPerCell = new Dictionary<ulong, List<string>>();
-            //_stopIdsPerCell = new Dictionary<ulong, List<string>>();
+            _gymIdsPerCell = new Dictionary<ulong, List<string>>();
+            _stopIdsPerCell = new Dictionary<ulong, List<string>>();
         }
 
         #endregion
@@ -586,13 +586,13 @@
                     Uuid = payload.Uuid,
                 };
                 /*if (!ThreadPool.QueueUserWorkItem(async (x) =>*/
-                //await HandleConsumables(consumerData);
+                await HandleConsumables(consumerData);
                 /*
                 {
                     _logger.LogError($"[Proto] [{payload.Uuid}] Failed to queue user work item");
                 };
                 */
-                await _consumerService.AddData(consumerData).ConfigureAwait(false);
+                //await _consumerService.AddData(consumerData).ConfigureAwait(false);
             }
 
             stopwatch.Stop();
@@ -625,7 +625,6 @@
             };
         }
 
-        /*
         private async Task HandleConsumables(ConsumerData data)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
@@ -636,7 +635,6 @@
                 stopwatch.Start();
                 foreach (var cellId in data.Cells)
                 {
-                    // NOTE: Can't await within lock body, call awaiter synchronously
                     var s2cell = new S2Cell(new S2CellId(cellId));
                     var center = s2cell.RectBound.Center;
                     updatedCells.Add(new Cell
@@ -658,11 +656,25 @@
                 }
                 if (updatedCells.Count > 0)
                 {
-                    await _cellRepository.AddOrUpdateAsync(updatedCells);
+                    //await _cellRepository.AddOrUpdateAsync(updatedCells).ConfigureAwait(false);
+                    foreach (var cell in updatedCells)
+                    {
+                        if (!await _cellRepository.ContainsAsync(cell))
+                        {
+                            await _cellRepository.AddAsync(cell).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await _cellRepository.UpdateAsync(cell).ConfigureAwait(false);
+                        }
+                    }
                 }
 
                 stopwatch.Stop();
-                //_logger.LogInformation($"[Proto] [{data.Uuid}] S2Cell Count: {data.Cells.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedCells.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] S2Cell Count: {updatedCells.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
             }
 
             if (data.ClientWeather.Count > 0)
@@ -681,7 +693,7 @@
                         Level = s2cell.Level,
                         Latitude = center.LatDegrees,
                         Longitude = center.LngDegrees,
-                        GameplayCondition = 0, // TODO: (GameplayWeatherProto.Types.WeatherCondition)weather.GameplayWeather,
+                        GameplayCondition = weather.GameplayWeather.GameplayCondition,
                         WindDirection = (ushort)weather.DisplayWeather.WindDirection,
                         CloudLevel = (ushort)weather.DisplayWeather.CloudLevel,
                         RainLevel = (ushort)weather.DisplayWeather.RainLevel,
@@ -689,19 +701,21 @@
                         SnowLevel = (ushort)weather.DisplayWeather.SnowLevel,
                         FogLevel = (ushort)weather.DisplayWeather.FogLevel,
                         SpecialEffectLevel = (ushort)weather.DisplayWeather.SpecialEffectLevel,
-                        //Severity = alert.Severity ?? 0,
-                        Severity = null, // TODO: Weather.Severity
-                        WarnWeather = alert?.WarnWeather ?? null,
+                        Severity = weather.Alerts?.Count > 0 ? (ushort)weather.Alerts?.FirstOrDefault().Severity : null,
+                        WarnWeather = alert?.WarnWeather,
                         Updated = now,
                     });
                 }
                 if (updatedWeather.Count > 0)
                 {
-                    await _weatherRepository.AddOrUpdateAsync(updatedWeather);
+                    await _weatherRepository.AddOrUpdateAsync(updatedWeather).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
-                //_logger.LogInformation($"[Proto] [{data.Uuid}] Weather Count: {data.ClientWeather.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedWeather.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] Weather Count: {updatedWeather.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
             }
 
             if (data.Forts.Count > 0)
@@ -717,9 +731,12 @@
                     switch (fort.FortType)
                     {
                         case FortType.Gym:
+                            var oldGym = await _gymRepository.GetByIdAsync(fort.FortId).ConfigureAwait(false);
                             var gym = new Gym(cellId, fort);
-                            // TODO: gym.TriggerWebhook();
-                            updatedGyms.Add(gym);
+                            if (gym.Update(oldGym)) // TODO: Check HasChanges property
+                            {
+                                updatedGyms.Add(gym);
+                            }
                             if (!_gymIdsPerCell.ContainsKey(cellId))
                             {
                                 _gymIdsPerCell.Add(cellId, new List<string>());
@@ -727,9 +744,12 @@
                             _gymIdsPerCell[cellId].Add(fort.FortId);
                             break;
                         case FortType.Checkpoint:
+                            var oldPokestop = await _pokestopRepository.GetByIdAsync(fort.FortId).ConfigureAwait(false);
                             var pokestop = new Pokestop(cellId, fort);
-                            // TODO: pokestop.TriggerWebhook();
-                            updatedPokestops.Add(pokestop);
+                            if (pokestop.Update(oldPokestop)) // TODO: Check HasChanges property
+                            {
+                                updatedPokestops.Add(pokestop);
+                            }
                             if (!_stopIdsPerCell.ContainsKey(cellId))
                             {
                                 _stopIdsPerCell.Add(cellId, new List<string>());
@@ -740,15 +760,18 @@
                 }
                 if (updatedGyms.Count > 0)
                 {
-                    await _gymRepository.AddOrUpdateAsync(updatedGyms);
+                    await _gymRepository.AddOrUpdateAsync(updatedGyms).ConfigureAwait(false);
                 }
                 if (updatedPokestops.Count > 0)
                 {
-                    await _pokestopRepository.AddOrUpdateAsync(updatedPokestops);
+                    await _pokestopRepository.AddOrUpdateAsync(updatedPokestops).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
-                //_logger.LogInformation($"[Proto] [{data.Uuid}] Fort Count: {data.Forts.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedGyms.Count > 0 || updatedPokestops.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] Fort Count: {updatedGyms.Count + updatedPokestops.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
             }
 
             if (data.FortDetails.Count > 0)
@@ -762,32 +785,43 @@
                     switch (details.FortType)
                     {
                         case FortType.Gym:
-                            var gym = await _gymRepository.GetByIdAsync(details.Id);
-                            gym.AddDetails(details);
-                            gym.Updated = now;
-                            //FirstSeenTimestamp = now,
-                            updatedGyms.Add(gym);
+                            var gym = await _gymRepository.GetByIdAsync(details.Id).ConfigureAwait(false);
+                            if (gym != null)
+                            {
+                                gym.AddDetails(details);
+                                if (gym.Update(gym))
+                                {
+                                    updatedGyms.Add(gym);
+                                }
+                            }
                             break;
                         case FortType.Checkpoint:
-                            var pokestop = await _pokestopRepository.GetByIdAsync(details.Id);
-                            pokestop.AddDetails(details);
-                            pokestop.Updated = now;
-                            //FirstSeenTimestamp = now,
-                            updatedPokestops.Add(pokestop);
+                            var pokestop = await _pokestopRepository.GetByIdAsync(details.Id).ConfigureAwait(false);
+                            if (pokestop != null)
+                            {
+                                pokestop.AddDetails(details);
+                                if (pokestop.Update(pokestop))
+                                {
+                                    updatedPokestops.Add(pokestop);
+                                }
+                            }
                             break;
                     }
                 }
                 if (updatedGyms.Count > 0)
                 {
-                    await _gymRepository.AddOrUpdateAsync(updatedGyms);
+                    await _gymRepository.AddOrUpdateAsync(updatedGyms).ConfigureAwait(false);
                 }
                 if (updatedPokestops.Count > 0)
                 {
-                    await _pokestopRepository.AddOrUpdateAsync(updatedPokestops);
+                    await _pokestopRepository.AddOrUpdateAsync(updatedPokestops).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
-                //_logger.LogInformation($"[Proto] [{data.Uuid}] FortDetails Count: {data.FortDetails.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedGyms.Count > 0 || updatedPokestops.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] FortDetails Count: {updatedGyms.Count + updatedPokestops.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
             }
 
             if (data.FortSearch.Count > 0)
@@ -806,11 +840,13 @@
                 {
                     if (gymInfo.GymStatusAndDefenders == null)
                     {
-                        _logger.LogWarning($"[Proto] [{data.Uuid}] Invalid GymStatusAndDefenders provided, skipping...\n: {gymInfo}");
+                        _logger.LogWarning($"[ConsumerService] Invalid GymStatusAndDefenders provided, skipping...\n: {gymInfo}");
                         continue;
                     }
                     var id = gymInfo.GymStatusAndDefenders.PokemonFortProto.FortId;
                     var gymDefenders = gymInfo.GymStatusAndDefenders.GymDefender;
+                    if (gymDefenders == null)
+                        continue;
 
                     foreach (var gymDefender in gymDefenders)
                     {
@@ -820,12 +856,12 @@
                             Name = trainerProfile.Name,
                             Level = (ushort)trainerProfile.Level,
                             TeamId = (ushort)trainerProfile.Team,
-                            BattlesWon = (uint)trainerProfile.BattlesWon,
-                            KmWalked = trainerProfile.KmWalked,
-                            PokemonCaught = (ulong)trainerProfile.CaughtPokemon,
-                            Experience = (ulong)trainerProfile.Experience,
-                            CombatRank = (ulong)trainerProfile.CombatRank,
-                            CombatRating = trainerProfile.CombatRating,
+                            BattlesWon = (uint)(trainerProfile?.BattlesWon ?? 0),
+                            KmWalked = trainerProfile?.KmWalked ?? 0,
+                            PokemonCaught = (ulong)(trainerProfile?.CaughtPokemon ?? 0),
+                            Experience = (ulong)(trainerProfile?.Experience ?? 0),
+                            CombatRank = (ulong)(trainerProfile?.CombatRank ?? 0),
+                            CombatRating = trainerProfile?.CombatRating ?? 0,
                         });
 
                         var defenderPokemon = gymDefender.MotivatedPokemon;
@@ -851,36 +887,57 @@
                             Gender = (ushort)defenderPokemon.Pokemon.PokemonDisplay.Gender,
                             // form
                             HatchedFromEgg = defenderPokemon.Pokemon.HatchedFromEgg,
-                            PvpCombatWon = (ushort)defenderPokemon.Pokemon.PvpCombatStats.NumWon,
-                            PvpCombatTotal = (ushort)defenderPokemon.Pokemon.PvpCombatStats.NumTotal,
-                            NpcCombatWon = (ushort)defenderPokemon.Pokemon.NpcCombatStats.NumWon,
-                            NpcCombatTotal = (ushort)defenderPokemon.Pokemon.NpcCombatStats.NumTotal,
+                            PvpCombatWon = (ushort)defenderPokemon.Pokemon.PvpCombatStats?.NumWon,
+                            PvpCombatTotal = (ushort)defenderPokemon.Pokemon.PvpCombatStats?.NumTotal,
+                            NpcCombatWon = (ushort)defenderPokemon.Pokemon.NpcCombatStats?.NumWon,
+                            NpcCombatTotal = (ushort)defenderPokemon.Pokemon.NpcCombatStats?.NumTotal,
                         });
                     }
 
-                    var gym = await _gymRepository.GetByIdAsync(id);
+                    var gym = await _gymRepository.GetByIdAsync(id).ConfigureAwait(false);
                     if (gym != null)
                     {
                         gym.AddDetails(gymInfo);
-                        updatedGyms.Add(gym);
+                        if (gym.Update(gym)) // TODO: Check HasChanges property
+                        {
+                            updatedGyms.Add(gym);
+                        }
                     }
                 }
 
                 if (updatedGyms.Count > 0)
                 {
-                    await _gymRepository.AddOrUpdateAsync(updatedGyms);
-                    await _trainerRepository.AddOrUpdateAsync(updatedTrainers);
-                    await _gymDefenderRepository.AddOrUpdateAsync(updatedDefenders);
+                    await _gymRepository.AddOrUpdateAsync(updatedGyms).ConfigureAwait(false);
+                }
+                if (updatedTrainers.Count > 0)
+                {
+                    await _trainerRepository.AddOrUpdateAsync(updatedTrainers).ConfigureAwait(false);
+                }
+                if (updatedDefenders.Count > 0)
+                {
+                    await _gymDefenderRepository.AddOrUpdateAsync(updatedDefenders).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
-                //_logger.LogInformation($"[Proto] [{data.Uuid}] GymGetInfo Count: {data.GymInfo.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedGyms.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] GymGetInfo Count: {updatedGyms.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedTrainers.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] Gym Trainer Count: {updatedTrainers.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedDefenders.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] Gym Defender Count: {updatedDefenders.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
             }
 
             if (data.WildPokemon.Count > 0 || data.NearbyPokemon.Count > 0)
             {
                 var stopwatch = new Stopwatch();
                 var updatedPokemon = new List<Pokemon>();
+                var updatedSpawnpoints = new List<Spawnpoint>();
                 stopwatch.Start();
                 if (data.WildPokemon.Count > 0)
                 {
@@ -889,11 +946,23 @@
                         var cell = (ulong)item.cell;
                         var wildPokemon = (WildPokemonProto)item.data;
                         var timestampMs = (ulong)item.timestamp_ms;
-                        // TODO: HandleSpawnpoint(wildPokemon.LastModifiedMs, timestampMs);
-                        var pokemon = new Pokemon(wildPokemon, cell, timestampMs, data.Username, false); // TODO: IsEvent
-                        updatedPokemon.Add(pokemon);
-                        InstanceController.Instance.GotPokemon(pokemon);
-                        // TODO: Pokemon.Save();
+                        var username = item.username;
+                        //var id = wildPokemon.EncounterId;
+                        var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
+                        var oldPokemon = await _pokemonRepository.GetByIdAsync(pokemon.Id).ConfigureAwait(false);
+                        if (pokemon.Update(oldPokemon, true)) // TODO: Check HasChanges property
+                        {
+                            updatedPokemon.Add(pokemon);
+                        }
+                        if (pokemon.CellId == 0)
+                        {
+                            Console.WriteLine($"Pokemon: {pokemon}");
+                        }
+                        var spawnpoint = pokemon.HandleSpawnpoint(wildPokemon.TimeTillHiddenMs, timestampMs)
+                                                .ConfigureAwait(false)
+                                                .GetAwaiter()
+                                                .GetResult();
+                        updatedSpawnpoints.Add(spawnpoint);
                     }
                 }
                 if (data.NearbyPokemon.Count > 0)
@@ -903,13 +972,14 @@
                         var cell = (ulong)item.cell;
                         // data.timestamp_ms
                         var nearbyPokemon = (NearbyPokemonProto)item.data;
-                        var pokemon = new Pokemon(nearbyPokemon, cell, data.Username, false); // TODO: IsEvent
+                        var username = item.username;
+                        var pokemon = new Pokemon(nearbyPokemon, cell, username, false); // TODO: IsEvent
                         if (pokemon.Latitude == 0 && string.IsNullOrEmpty(pokemon.PokestopId))
                         {
                             // Skip nearby pokemon without pokestop id set and no coordinate
                             continue;
                         }
-                        var pokestop = await _pokestopRepository.GetByIdAsync(pokemon.PokestopId);
+                        var pokestop = await _pokestopRepository.GetByIdAsync(pokemon.PokestopId).ConfigureAwait(false);
                         if (pokestop == null)
                         {
                             // Unknown stop, skip pokemon
@@ -917,32 +987,54 @@
                         }
                         pokemon.Latitude = pokestop.Latitude;
                         pokemon.Longitude = pokestop.Longitude;
-                        updatedPokemon.Add(pokemon);
-                        InstanceController.Instance.GotPokemon(pokemon);
-                        // TODO: Pokemon.Save();
+                        var oldPokemon = _pokemonRepository.GetByIdAsync(pokemon.Id)
+                                                          .ConfigureAwait(false)
+                                                          .GetAwaiter()
+                                                          .GetResult();
+                        if (pokemon.Update(oldPokemon)) // TODO: Check HasChanges property
+                        {
+                            updatedPokemon.Add(pokemon);
+                        }
+                        if (pokemon.CellId == 0)
+                        {
+                            Console.WriteLine($"Pokemon: {pokemon}");
+                        }
                     }
+                }
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    await _spawnpointRepository.AddOrUpdateAsync(updatedSpawnpoints).ConfigureAwait(false);
                 }
                 if (updatedPokemon.Count > 0)
                 {
-                    await _pokemonRepository.AddOrUpdateAsync(updatedPokemon);
+                    await _pokemonRepository.AddOrUpdateAsync(updatedPokemon).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
-                //_logger.LogInformation($"[Proto] [{data.Uuid}] WildPokemon Count: {data.WildPokemon.Count} NearbyPokemon Count: {data.NearbyPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] Spawnpoint Count: {updatedSpawnpoints.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedPokemon.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] WildPokemon Count: {data.WildPokemon.Count} NearbyPokemon Count: {data.NearbyPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
             }
 
             if (data.Encounters.Count > 0)
             {
                 var stopwatch = new Stopwatch();
                 var updatedPokemon = new List<Pokemon>();
+                var updatedSpawnpoints = new List<Spawnpoint>();
                 stopwatch.Start();
-                foreach (var encounter in data.Encounters)
+                foreach (var item in data.Encounters)
                 {
+                    var encounter = (EncounterOutProto)item.encounter;
+                    var username = item.username;
                     Pokemon pokemon;
                     try
                     {
-                        pokemon = await _pokemonRepository.GetByIdAsync(encounter.Pokemon.EncounterId.ToString()); // TODO: is_event
-
+                        pokemon = await _pokemonRepository.GetByIdAsync(encounter.Pokemon.EncounterId.ToString()).ConfigureAwait(false); // TODO: is_event
                     }
                     catch (Exception ex)
                     {
@@ -951,71 +1043,155 @@
                     }
                     if (pokemon != null)
                     {
-                        await pokemon.AddEncounter(encounter, data.Username);
-                        updatedPokemon.Add(pokemon);
+                        await pokemon.AddEncounter(encounter, username).ConfigureAwait(false);
+                        if (pokemon.Update(pokemon, true))
+                        {
+                            updatedPokemon.Add(pokemon);
+                        }
+                        if (pokemon.CellId == 0)
+                        {
+                            Console.WriteLine($"Pokemon: {pokemon}");
+                        }
                     }
                     else
                     {
                         var centerCoord = new Coordinate(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude);
                         var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(centerCoord.Latitude, centerCoord.Longitude));
                         var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
-                        var newPokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, data.Username, false); // TODO: IsEvent
-                        await newPokemon.AddEncounter(encounter, data.Username);
-                        updatedPokemon.Add(newPokemon);
+                        var newPokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
+                        await newPokemon.AddEncounter(encounter, username).ConfigureAwait(false);
+                        if (newPokemon.Update(null, true))
+                        {
+                            updatedPokemon.Add(newPokemon);
+                        }
+                        if (newPokemon.CellId == 0)
+                        {
+                            Console.WriteLine($"Pokemon: {newPokemon}");
+                        }
+                        var spawnpoint = await newPokemon.HandleSpawnpoint(encounter.Pokemon.TimeTillHiddenMs, timestampMs).ConfigureAwait(false);
+                        updatedSpawnpoints.Add(spawnpoint);
                     }
-                    InstanceController.Instance.GotIV(pokemon);
                 }
 
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    await _spawnpointRepository.AddOrUpdateAsync(updatedSpawnpoints).ConfigureAwait(false);
+                }
                 if (updatedPokemon.Count > 0)
                 {
-                    await _pokemonRepository.AddOrUpdateAsync(updatedPokemon);
+                    await _pokemonRepository.AddOrUpdateAsync(updatedPokemon).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
-                //_logger.LogInformation($"[Proto] [{data.Uuid}] Encounter Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedSpawnpoints.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] Spawnpoint Count: {updatedSpawnpoints.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
+                if (updatedPokemon.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] Encounter Count: {updatedPokemon.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
             }
 
             if (data.Quests.Count > 0)
             {
                 var stopwatch = new Stopwatch();
-                var updatedPokestops = new List<Pokestop>();
+                var updatedQuests = new List<Pokestop>();
                 stopwatch.Start();
                 foreach (var quest in data.Quests)
                 {
                     // Get existing pokestop, and add quest to it
-                    var pokestop = await _pokestopRepository.GetByIdAsync(quest.FortId);//new Pokestop(quest);
+                    var pokestop = await _pokestopRepository.GetByIdAsync(quest.FortId).ConfigureAwait(false);
                     // Skip quests we don't have stops for yet
                     if (pokestop == null)
-                        return;
-                    // TODO: Pokestop.TriggerWebhook(true);
-                    //
-                    //if (await pokestop.TriggerWebhook(true))
-                    //{
-                    //    _logger.LogDebug($"[Quest] Found a quest belonging to a new stop, skipping..."); // :face_with_raised_eyebrow:
-                    //    continue;
-                    //}
-                    //
+                        continue;
+                    /*
+                    if (await pokestop.TriggerWebhook(true))
+                    {
+                        _logger.LogDebug($"[Quest] Found a quest belonging to a new stop, skipping..."); // :face_with_raised_eyebrow:
+                        continue;
+                    }
+                    */
                     pokestop.AddQuest(quest);
-                    updatedPokestops.Add(pokestop);
+                    if (pokestop.Update(pokestop, true)) // TODO: Check HasChanges property
+                    {
+                        updatedQuests.Add(pokestop);
+                    }
                 }
-                if (updatedPokestops.Count > 0)
+                if (updatedQuests.Count > 0)
                 {
-                    await _pokestopRepository.AddOrUpdateAsync(updatedPokestops, false);
+                    await _pokestopRepository.AddOrUpdateAsync(updatedQuests, false).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
-                //_logger.LogInformation($"[Proto] [{data.Uuid}] Quest Count: {data.Quests.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                if (updatedQuests.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] Quest Count: {updatedQuests.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
             }
 
             if (data.PlayerData.Count > 0)
             {
-                // TODO: Save PlayerData
+                var stopwatch = new Stopwatch();
+                var updatedAccounts = new List<Account>();
+                stopwatch.Start();
+                foreach (var item in data.PlayerData)
+                {
+                    var username = item.username;
+                    var playerData = (GetPlayerOutProto)item.gpr;
+                    // Get account
+                    var account = await _accountRepository.GetByIdAsync(username).ConfigureAwait(false);
+                    // Skip account if we failed to get it
+                    if (account == null)
+                        continue;
+
+                    account.CreationTimestamp = (ulong)playerData.Player.CreationTimeMs / 1000;
+                    account.Warn = playerData.Warn;
+                    var warnExpireTimestamp = (ulong)playerData.WarnExpireMs / 1000;
+                    if (warnExpireTimestamp > 0)
+                    {
+                        account.WarnExpireTimestamp = warnExpireTimestamp;
+                    }
+                    account.WarnMessageAcknowledged = playerData.WarnMessageAcknowledged;
+                    account.SuspendedMessageAcknowledged = playerData.SuspendedMessageAcknowledged;
+                    account.WasSuspended = playerData.WasSuspended;
+                    account.Banned = playerData.Banned;
+                    if (playerData.Warn && string.IsNullOrEmpty(account.Failed))
+                    {
+                        account.Failed = "GPR_RED_WARNING";
+                        if (account.FirstWarningTimestamp == null)
+                        {
+                            account.FirstWarningTimestamp = now;
+                        }
+                        account.FailedTimestamp = now;
+                        _logger.LogWarning($"[ConsumerService] Account {account.Username}|{playerData.Player.Name} - Red Warning: {playerData.Banned}");
+                    }
+                    if (playerData.Banned)
+                    {
+                        account.Failed = "GPR_BANNED";
+                        account.FailedTimestamp = now;
+                        _logger.LogWarning($"[ConsumerService] Account {account.Username}|{playerData.Player.Name} - Banned: {playerData.Banned}");
+                    }
+                    updatedAccounts.Add(account);
+                }
+                if (updatedAccounts.Count > 0)
+                {
+                    // TODO: Ignore gpr warn/ban columns if overwriting
+                    await _accountRepository.AddOrUpdateAsync(updatedAccounts).ConfigureAwait(false);
+                }
+
+                stopwatch.Stop();
+                if (updatedAccounts.Count > 0)
+                {
+                    _logger.LogInformation($"[Proto] [{data.Uuid}] Quest Count: {updatedAccounts.Count} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                }
             }
 
             // TODO: Enable Clearing
             await Task.CompletedTask;
         }
 
+        /*
         private async Task<(bool, ulong, Spawnpoint)> HandleSpawnpoint(ulong? spawnId, double latitude, double longitude, int timeTillHiddenMs, ulong timestampMs)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
@@ -1096,6 +1272,7 @@
             return (verifiedTimer, expireTimestamp, null);
         }
         */
+
         #endregion
     }
 }
