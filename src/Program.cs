@@ -33,10 +33,13 @@ namespace ChuckDeviceController
     {
         public static void Main(string[] args)
         {
+            //head app cant not uses consoleex
             Console.OutputEncoding = Encoding.UTF8;
-            ConsoleExt.WriteDebug($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
-            ConsoleExt.WriteInfo("\tCopyright © 2021 - versx project's\n");
             ConsoleColor org = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("\tCopyright © 2021 - versx project's\n");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("Starting ...");
             Console.ForegroundColor = org;
