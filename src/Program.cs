@@ -35,7 +35,7 @@ namespace ChuckDeviceController
         {
             Console.OutputEncoding = Encoding.UTF8;
             ConsoleExt.WriteDebug($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
-            ConsoleExt.WriteInfo("\tCopyright © 2021 - versx project's\n");
+            ConsoleExt.WriteInfo("\tCopyright © 2021 - versx's Projects\n");
             ConsoleColor org = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("Starting ...");
