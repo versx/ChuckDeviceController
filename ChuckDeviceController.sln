@@ -4,16 +4,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController", "src\ChuckDeviceController\ChuckDeviceController.csproj", "{500922A4-9CA2-4CAC-B9A4-6EF7004FD9AA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{A5308B7A-9B88-4411-BC2E-E438846681B7} = {A5308B7A-9B88-4411-BC2E-E438846681B7}
-		{3C8DB8CD-8835-4397-BA53-C8ED48B59904} = {3C8DB8CD-8835-4397-BA53-C8ED48B59904}
-	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataConsumer", "src\DataConsumer\DataConsumer.csproj", "{3C8DB8CD-8835-4397-BA53-C8ED48B59904}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataConsumer", "src\DataConsumer\DataConsumer.csproj", "{3C8DB8CD-8835-4397-BA53-C8ED48B59904}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebhookProcessor", "src\WebhookProcessor\WebhookProcessor.csproj", "{A5308B7A-9B88-4411-BC2E-E438846681B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebhookProcessor", "src\WebhookProcessor\WebhookProcessor.csproj", "{A5308B7A-9B88-4411-BC2E-E438846681B7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Infrastructure", "src\Chuck.Infrastructure\Chuck.Infrastructure.csproj", "{E461AC4F-F4EF-436F-92C2-96EEE280ABBF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Infrastructure", "src\Chuck.Infrastructure\Chuck.Infrastructure.csproj", "{E461AC4F-F4EF-436F-92C2-96EEE280ABBF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
