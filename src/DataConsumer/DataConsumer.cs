@@ -134,6 +134,10 @@
 
         public void Start()
         {
+            if (!_shouldExit)
+            {
+                return;
+            }
             _shouldExit = false;
 
             // Register to redis queue
