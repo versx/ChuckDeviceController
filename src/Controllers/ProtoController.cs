@@ -586,7 +586,7 @@
                     Uuid = payload.Uuid,
                 };
                 /*if (!ThreadPool.QueueUserWorkItem(async (x) =>*/
-                await HandleConsumables(consumerData);
+                await HandleConsumables(consumerData).ConfigureAwait(false);
                 /*
                 {
                     _logger.LogError($"[Proto] [{payload.Uuid}] Failed to queue user work item");
@@ -659,7 +659,7 @@
                     //await _cellRepository.AddOrUpdateAsync(updatedCells).ConfigureAwait(false);
                     foreach (var cell in updatedCells)
                     {
-                        if (!await _cellRepository.ContainsAsync(cell))
+                        if (!await _cellRepository.ContainsAsync(cell).ConfigureAwait(false))
                         {
                             await _cellRepository.AddAsync(cell).ConfigureAwait(false);
                         }
@@ -1188,7 +1188,7 @@
             }
 
             // TODO: Enable Clearing
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         /*

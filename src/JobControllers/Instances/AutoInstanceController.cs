@@ -520,7 +520,7 @@
             else if (latlng.LatDegrees >= 69)
                 radius = 330;
             else
-                radius = -13 * latlng.LatDegrees + 1225;
+                radius = (-13 * latlng.LatDegrees) + 1225;
 
             var radians = radius / 6378137;
             var centerNormalizedPoint = latlng.Normalized.ToPoint();
