@@ -79,7 +79,10 @@ namespace ChuckDeviceController
             services.AddSingleton<IConsumerService, ConsumerService>();
             //services.AddSingleton(typeof(IConsumerService), new ConsumerService());
             services.AddScoped<Config>();
-            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("127.0.0.1")); // TODO: Config
+            if (Config.Redis.Enabled)
+            {
+                services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect($"{Config.Redis.Host}")); // TODO: Config
+            }
 
             services.AddCors(option => option.AddPolicy("Test", builder => {
                 builder.AllowAnyOrigin()

@@ -8,6 +8,12 @@
     public class RedisConfig
     {
         /// <summary>
+        /// MySQL host enabled
+        /// </summary>
+        [JsonPropertyName("enabled")]
+        public bool Enabled { get; set; }
+
+        /// <summary>
         /// MySQL host address
         /// </summary>
         [JsonPropertyName("host")]
