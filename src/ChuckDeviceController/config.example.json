@@ -2,15 +2,15 @@
     "interface": "LAN_MACHINE_IP",
 	"port": 5001,
 	"db": {
-	    "host": "127.0.0.1",
+	  "host": "127.0.0.1",
 		"port": 3306,
 		"username": "cdcuser",
 		"password": "cdcPass!",
 		"database": "cdcdb"
 	},
 	"redis": {
-        "enabled": false,
-	    "host": "127.0.0.1",
+    "enabled": false,
+	  "host": "127.0.0.1",
 		"port": 6379,
 		"password": "",
 		"databaseNum": -1

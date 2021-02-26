@@ -5,7 +5,7 @@
 
     public static class Strings
     {
-        public const string DefaultConfigFileName = "config.json";
+        public static readonly string DefaultConfigFileName = $"{AppDomain.CurrentDomain.BaseDirectory}/config.json";
         public static readonly string WebRoot = $"{AppDomain.CurrentDomain.BaseDirectory}/wwwroot";
         public static readonly string ViewsFolder = WebRoot + "/views";
         public const string TemplateExt = ".mustache";
