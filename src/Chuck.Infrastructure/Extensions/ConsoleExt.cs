@@ -6,22 +6,22 @@
     {
         public static void WriteInfo(string format, params object[] args)
         {
-            WriteLine(ConsoleColor.White, format, args);
+            WriteLine(ConsoleColor.White, $"info: {format}", args);
         }
 
         public static void WriteDebug(string format, params object[] args)
         {
-            WriteLine(ConsoleColor.Cyan, format, args);
+            WriteLine(ConsoleColor.Cyan, $"dbug: {format}", args);
         }
 
         public static void WriteWarn(string format, params object[] args)
         {
-            WriteLine(ConsoleColor.Yellow, format, args);
+            WriteLine(ConsoleColor.Yellow, $"warn: {format}", args);
         }
 
         public static void WriteError(string format, params object[] args)
         {
-            WriteLine(ConsoleColor.Red, format, args);
+            WriteLine(ConsoleColor.Red, $"fail: {format}", args);
         }
 
         public static void WriteError(Exception exception)
