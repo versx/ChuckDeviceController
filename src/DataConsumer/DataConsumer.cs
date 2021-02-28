@@ -150,9 +150,9 @@
             // Start database ingester
             DataIngester();
 
-            var consumerTimer = new System.Timers.Timer(5 * 1000);
-            consumerTimer.Elapsed += (sender, e) => DataIngester();
-            consumerTimer.Start();
+            //var consumerTimer = new System.Timers.Timer(5 * 1000);
+            //consumerTimer.Elapsed += (sender, e) => DataIngester();
+            //consumerTimer.Start();
 
             var timer = new System.Timers.Timer(10 * 1000);
             timer.Elapsed += async (sender, e) =>
@@ -394,128 +394,7 @@
                         }
                     case RedisChannels.ProtoGymInfo:
                         {
-                            var data = JsonSerializer.Deserialize<GymInfoFound>(message);
-                            if (data == null) return;
-
-                            var gymInfo = GymGetInfoOutProto.Parser.ParseFrom(Convert.FromBase64String(data.Raw));
-                            if (gymInfo == null) return;
-
-                            if (gymInfo.GymStatusAndDefenders == null)
-                            {
-                                ConsoleExt.WriteWarn($"[DataConsumer] Invalid GymStatusAndDefenders provided, skipping...\n: {gymInfo}");
-                                return;
-                            }
-                            var id = gymInfo.GymStatusAndDefenders.PokemonFortProto.FortId;
-                            var gymDefenders = gymInfo.GymStatusAndDefenders.GymDefender;
-                            if (gymDefenders == null)
-                                return;
-
-                            foreach (var gymDefender in gymDefenders)
-                            {
-                                var trainerProfile = gymDefender.TrainerPublicProfile;
-                                if (trainerProfile != null)
-                                {
-                                    lock (_gymTrainersLock)
-                                    {
-                                        _gymTrainers.Add(new Trainer
-                                        {
-                                            Name = trainerProfile.Name,
-                                            Level = (ushort)trainerProfile.Level,
-                                            TeamId = (ushort)trainerProfile.Team,
-                                            BattlesWon = (uint)(trainerProfile?.BattlesWon ?? 0),
-                                            KmWalked = trainerProfile?.KmWalked ?? 0,
-                                            PokemonCaught = (ulong)(trainerProfile?.CaughtPokemon ?? 0),
-                                            Experience = (ulong)(trainerProfile?.Experience ?? 0),
-                                            CombatRank = (ulong)(trainerProfile?.CombatRank ?? 0),
-                                            CombatRating = trainerProfile?.CombatRating ?? 0,
-                                        });
-                                        // TODO: New gym trainer properties
-                                        //trainerProfile.GymBadgeType (gym badge type)
-                                        //trainerProfile.HasSharedExPass (invited to ex raid)
-                                    }
-                                }
-
-                                var defenderPokemon = gymDefender.MotivatedPokemon;
-                                if (defenderPokemon != null)
-                                {
-                                    lock (_gymDefendersLock)
-                                    {
-                                        var defender = new GymDefender();
-                                        defender.Id = defenderPokemon.Pokemon.Id.ToString(); // TODO: Convert to ulong
-                                        defender.PokemonId = (ushort)defenderPokemon.Pokemon.PokemonId;
-                                        defender.CpWhenDeployed = (uint)defenderPokemon.CpWhenDeployed;
-                                        defender.CpNow = (uint)defenderPokemon.CpNow;
-                                        defender.BerryValue = defenderPokemon.BerryValue;
-                                        defender.TimesFed = (ushort)gymDefender.DeploymentTotals?.TimesFed;
-                                        defender.DeploymentDuration = (uint)gymDefender.DeploymentTotals?.DeploymentDurationMs / 1000;
-                                        defender.TrainerName = defenderPokemon.Pokemon.OwnerName;
-                                        defender.FortId = id;
-                                        defender.AttackIV = (ushort)defenderPokemon.Pokemon?.IndividualAttack;
-                                        defender.DefenseIV = (ushort)defenderPokemon.Pokemon?.IndividualDefense;
-                                        defender.StaminaIV = (ushort)defenderPokemon.Pokemon?.IndividualStamina;
-                                        defender.Move1 = (ushort)defenderPokemon.Pokemon?.Move1;
-                                        defender.Move2 = (ushort)defenderPokemon.Pokemon?.Move2;
-                                        defender.BattlesAttacked = (ushort)defenderPokemon.Pokemon.BattlesAttacked;
-                                        defender.BattlesDefended = (ushort)defenderPokemon.Pokemon.BattlesDefended;
-                                        defender.Gender = (ushort)defenderPokemon.Pokemon.PokemonDisplay.Gender;
-                                        defender.HatchedFromEgg = defenderPokemon.Pokemon.HatchedFromEgg;
-                                        defender.PvpCombatWon = (ushort)(defenderPokemon.Pokemon.PvpCombatStats?.NumWon ?? 0);
-                                        defender.PvpCombatTotal = (ushort)(defenderPokemon.Pokemon.PvpCombatStats?.NumTotal ?? 0);
-                                        defender.NpcCombatWon = (ushort)(defenderPokemon.Pokemon.NpcCombatStats?.NumWon ?? 0);
-                                        defender.NpcCombatTotal = (ushort)(defenderPokemon.Pokemon.NpcCombatStats?.NumTotal ?? 0);
-                                        _gymDefenders.Add(defender);
-                                        /*
-                                        _gymDefenders.Add(new GymDefender
-                                        {
-                                            Id = defenderPokemon.Pokemon.Id.ToString(), // TODO: Convert to ulong
-                                            PokemonId = (ushort)defenderPokemon.Pokemon.PokemonId,
-                                            CpWhenDeployed = (uint)defenderPokemon.CpWhenDeployed,
-                                            CpNow = (uint)defenderPokemon.CpNow,
-                                            BerryValue = defenderPokemon.BerryValue,
-                                            TimesFed = (ushort)gymDefender.DeploymentTotals?.TimesFed,
-                                            DeploymentDuration = (uint)gymDefender.DeploymentTotals?.DeploymentDurationMs / 1000,
-                                            TrainerName = defenderPokemon.Pokemon.OwnerName,
-                                            FortId = id,
-                                            AttackIV = (ushort)defenderPokemon.Pokemon?.IndividualAttack,
-                                            DefenseIV = (ushort)defenderPokemon.Pokemon?.IndividualDefense,
-                                            StaminaIV = (ushort)defenderPokemon.Pokemon?.IndividualStamina,
-                                            Move1 = (ushort)defenderPokemon.Pokemon?.Move1,
-                                            Move2 = (ushort)defenderPokemon.Pokemon?.Move2,
-                                            BattlesAttacked = (ushort)defenderPokemon.Pokemon.BattlesAttacked,
-                                            BattlesDefended = (ushort)defenderPokemon.Pokemon.BattlesDefended,
-                                            Gender = (ushort)defenderPokemon.Pokemon.PokemonDisplay.Gender,
-                                            HatchedFromEgg = defenderPokemon.Pokemon.HatchedFromEgg,
-                                            PvpCombatWon = (ushort)defenderPokemon.Pokemon.PvpCombatStats?.NumWon,
-                                            PvpCombatTotal = (ushort)defenderPokemon.Pokemon.PvpCombatStats?.NumTotal,
-                                            NpcCombatWon = (ushort)defenderPokemon.Pokemon.NpcCombatStats?.NumWon,
-                                            NpcCombatTotal = (ushort)defenderPokemon.Pokemon.NpcCombatStats?.NumTotal,
-                                        });
-                                        */
-                                        // TODO: New gym defender properties
-                                        //BuddyCandyAwarded
-                                        //BuddyKmWalked
-                                        //DisplayPokemonId
-                                        //Favorite
-                                        //Form
-                                        //EvolutionQuestInfo ??
-                                        //HasMegaEvolved
-                                        //HeightM
-                                        //IsBad
-                                        //IsEgg
-                                        //IsLucky
-                                        //Move3
-                                        //Nickname
-                                        //OriginDetail
-                                        //OriginalOwnerNickname,
-                                        //Pokeball
-                                        //PokemonDisplay.Form
-                                        //PokemonDisplay.Costume
-                                        //TradedTimeMs
-                                        //WeightKg
-                                    }
-                                }
-                            }
-
+                            /*
                             var gym = GetEntity<Gym>(id, "gym").ConfigureAwait(false)
                                                                .GetAwaiter()
                                                                .GetResult();
@@ -526,6 +405,29 @@
                                 {
                                     _gymInfo.Add(gym);
                                 }
+                            }
+                            */
+                            break;
+                        }
+                    case RedisChannels.ProtoGymDefender:
+                        {
+                            var defender = JsonSerializer.Deserialize<GymDefender>(message);
+                            if (defender == null) return;
+
+                            lock (_gymDefendersLock)
+                            {
+                                _gymDefenders.Add(defender);
+                            }
+                            break;
+                        }
+                    case RedisChannels.ProtoGymTrainer:
+                        {
+                            var trainer = JsonSerializer.Deserialize<Trainer>(message);
+                            if (trainer == null) return;
+
+                            lock (_gymTrainersLock)
+                            {
+                                _gymTrainers.Add(trainer);
                             }
                             break;
                         }
@@ -639,33 +541,36 @@
                 {
                     //BenchmarkMethod(() => UpdateCells(), "S2Cells");
                     UpdateCells();
-                    var updatePokemon = true;
-                    try
+                    new Thread(() =>
                     {
-                        //BenchmarkMethod(() => UpdateSpawnpoints(), "Spawnpoints");
-                        UpdateSpawnpoints();
-                    }
-                    catch (Exception ex)
-                    {
-                        updatePokemon = false;
-                        ConsoleExt.WriteError($"Failed to update spawnpoints, skipping Pokemon: {ex}");
-                    }
-                    //BenchmarkMethod(() => UpdateWeather(), "Weather");
-                    //BenchmarkMethod(() => UpdatePokestops(), "Pokestops");
-                    UpdateWeather();
-                    UpdatePokestops();
-                    if (updatePokemon)
-                    {
-                        //BenchmarkMethod(() => UpdatePokemon(), "Pokemon");
-                        UpdatePokemon();
-                    }
-                    UpdateQuests();
-                    //BenchmarkMethod(() => UpdateGyms(), "Gyms");
-                    UpdateGyms();
-                    // TODO: UpdateGymInfo
-                    UpdateGymTrainers();
-                    UpdateGymDefenders();
-                    UpdateAccounts();
+                        var updatePokemon = true;
+                        try
+                        {
+                            //BenchmarkMethod(() => UpdateSpawnpoints(), "Spawnpoints");
+                            UpdateSpawnpoints();
+                        }
+                        catch (Exception ex)
+                        {
+                            updatePokemon = false;
+                            ConsoleExt.WriteError($"Failed to update spawnpoints, skipping Pokemon: {ex}");
+                        }
+                        //BenchmarkMethod(() => UpdateWeather(), "Weather");
+                        //BenchmarkMethod(() => UpdatePokestops(), "Pokestops");
+                        UpdateWeather();
+                        UpdatePokestops();
+                        if (updatePokemon)
+                        {
+                            //BenchmarkMethod(() => UpdatePokemon(), "Pokemon");
+                            UpdatePokemon();
+                        }
+                        UpdateQuests();
+                        //BenchmarkMethod(() => UpdateGyms(), "Gyms");
+                        UpdateGyms();
+                        // TODO: UpdateGymInfo
+                        UpdateGymTrainers();
+                        UpdateGymDefenders();
+                        UpdateAccounts();
+                    }) { IsBackground = true }.Start();
 
                     // Consume data every x seconds
                     Thread.Sleep(ConsumeIntervalS * 1000);
@@ -679,35 +584,35 @@
             //var cells = _cells.GetRange(0, _cells.Count);
             //var count = (int)Math.Min(MaxConcurrency, cells.Count);
             //_cells.RemoveRange(0, count);
-            try
+            lock (_cellsLock)
             {
-                lock (_cellsLock)
-                {
-                    if (_cells.Count == 0)
-                        return;
+                if (_cells.Count == 0)
+                    return;
 
-                    var stopwatch = new Stopwatch();
-                    stopwatch.Start();
-                    var cellsCount = 0;
-                    var cells = _cells;
-                    ConsoleExt.WriteInfo($"[DataConsumer] Inserting {cells.Count:N0} S2Cells");
-                    using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                var cellsCount = 0;
+                var cells = _cells;
+                ConsoleExt.WriteInfo($"[DataConsumer] Inserting {cells.Count:N0} S2Cells");
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                {
+                    try
                     {
                         var cellRepository = new CellRepository(ctx);
                         cellRepository.InsertOrUpdate(cells)
                                       .ConfigureAwait(false)
                                       .GetAwaiter()
                                       .GetResult();
-                        cellsCount = cells.Count;
                     }
-                    _cells.Clear();
-                    stopwatch.Stop();
-                    ConsoleExt.WriteInfo($"[DataConsumer] S2Cells Count: {cellsCount:N0} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                    catch (MySqlConnector.MySqlException ex)
+                    {
+                        ConsoleExt.WriteError($"[DataConsumer] UpdateCells: {ex.Message}");
+                    }
+                    cellsCount = cells.Count;
                 }
-            }
-            catch (Exception ex)
-            {
-                ConsoleExt.WriteError($"[DataConsumer] UpdateCells: {ex}");
+                _cells.Clear();
+                stopwatch.Stop();
+                ConsoleExt.WriteInfo($"[DataConsumer] S2Cells Count: {cellsCount:N0} parsed in {stopwatch.Elapsed.TotalSeconds}s");
             }
         }
 
@@ -725,11 +630,18 @@
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {spawnpoints.Count:N0} Spawnpoints");
                 using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
                 {
-                    var spawnpointRepository = new SpawnpointRepository(ctx);
-                    spawnpointRepository.InsertOrUpdate(spawnpoints)
-                                        .ConfigureAwait(false)
-                                        .GetAwaiter()
-                                        .GetResult();
+                    try
+                    {
+                        var spawnpointRepository = new SpawnpointRepository(ctx);
+                        spawnpointRepository.InsertOrUpdate(spawnpoints)
+                                            .ConfigureAwait(false)
+                                            .GetAwaiter()
+                                            .GetResult();
+                    }
+                    catch (MySqlConnector.MySqlException ex)
+                    {
+                        ConsoleExt.WriteError($"[DataConsumer] UpdateSpawnpoints: {ex.Message}");
+                    }
                     spawnpointsCount = spawnpoints.Count;
                 }
                 _spawnpoints.Clear();
@@ -752,11 +664,18 @@
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {weather.Count:N0} Weather");
                 using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
                 {
-                    var weatherRepository = new WeatherRepository(ctx);
-                    weatherRepository.InsertOrUpdate(weather)
-                                     .ConfigureAwait(false)
-                                     .GetAwaiter()
-                                     .GetResult();
+                    try
+                    {
+                        var weatherRepository = new WeatherRepository(ctx);
+                        weatherRepository.InsertOrUpdate(weather)
+                                         .ConfigureAwait(false)
+                                         .GetAwaiter()
+                                         .GetResult();
+                    }
+                    catch (MySqlConnector.MySqlException ex)
+                    {
+                        ConsoleExt.WriteError($"[DataConsumer] UpdateWeather: {ex.Message}");
+                    }
                     weatherCount = weather.Count;
                 }
                 _weather.Clear();
@@ -779,9 +698,9 @@
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {gyms.Count:N0} Gyms");
                 using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
                 {
-                    var gymRepository = new GymRepository(ctx);
                     try
                     {
+                        var gymRepository = new GymRepository(ctx);
                         gymRepository.InsertOrUpdate(gyms)
                                      .ConfigureAwait(false)
                                      .GetAwaiter()
@@ -813,9 +732,9 @@
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {gymDefenders.Count:N0} Gym Defenders");
                 using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
                 {
-                    var defenderRepository = new GymDefenderRepository(ctx);
                     try
                     {
+                        var defenderRepository = new GymDefenderRepository(ctx);
                         defenderRepository.InsertOrUpdate(gymDefenders)
                                           .ConfigureAwait(false)
                                           .GetAwaiter()
@@ -847,9 +766,9 @@
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {gymTrainers.Count:N0} Gym Trainers");
                 using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
                 {
-                    var trainerRepository = new GymTrainerRepository(ctx);
                     try
                     {
+                        var trainerRepository = new GymTrainerRepository(ctx);
                         trainerRepository.InsertOrUpdate(gymTrainers)
                                          .ConfigureAwait(false)
                                          .GetAwaiter()
@@ -881,9 +800,9 @@
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {pokestops.Count:N0} Pokestops");
                 using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
                 {
-                    var pokestopRepository = new PokestopRepository(ctx);
                     try
                     {
+                        var pokestopRepository = new PokestopRepository(ctx);
                         pokestopRepository.InsertOrUpdate(pokestops)
                                           .ConfigureAwait(false)
                                           .GetAwaiter()
@@ -965,9 +884,9 @@
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {quests.Count:N0} Quests");
                 using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
                 {
-                    var pokestopRepository = new PokestopRepository(ctx);
                     try
                     {
+                        var pokestopRepository = new PokestopRepository(ctx);
                         pokestopRepository.InsertOrUpdate(quests)
                                           .ConfigureAwait(false)
                                           .GetAwaiter()
@@ -999,9 +918,9 @@
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {accounts.Count:N0} Account Data");
                 using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
                 {
-                    var accountRepository = new AccountRepository(ctx);
                     try
                     {
+                        var accountRepository = new AccountRepository(ctx);
                         accountRepository.InsertOrUpdate(accounts)
                                          .ConfigureAwait(false)
                                          .GetAwaiter()

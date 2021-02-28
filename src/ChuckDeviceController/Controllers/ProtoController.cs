@@ -149,18 +149,17 @@
                 _logger.LogWarning($"[Proto] [{payload.Uuid}] Invalid GMO");
                 return null;
             }
-            var wildPokemon = 0;//new List<dynamic>();
-            var nearbyPokemon = 0;//new List<dynamic>();
+            var wildPokemon = 0;
+            var nearbyPokemon = 0;
             var clientWeather = 0;
             var forts = 0;
             var fortDetails = new List<FortDetailsOutProto>();
-            var gymInfos = 0;
-            var quests = 0;//new List<QuestProto>();
-            var fortSearch = 0;//new List<FortSearchOutProto>();
-            var encounters = 0;//new List<dynamic>();
+            var quests = 0;
+            var fortSearch = 0;
+            var encounters = 0;
             var cells = new List<ulong>();
             var inventory = new List<InventoryDeltaProto>();
-            var playerData = 0;//new List<dynamic>();
+            var playerData = 0;
             //var spawnpoints = new List<Spawnpoint>();
 
             var isEmptyGmo = true;
@@ -207,7 +206,6 @@
                             var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (gpr?.Success == true)
                             {
-                                //playerData.Add(new
                                 await PublishData(RedisChannels.ProtoAccount, new
                                 {
                                     gpr,
@@ -255,7 +253,6 @@
                             {
                                 if (fsr.ChallengeQuest?.Quest != null)
                                 {
-                                    //quests.Add(fsr.ChallengeQuest.Quest);
                                     await PublishData(RedisChannels.ProtoQuest, new
                                     {
                                         raw = data,
@@ -355,7 +352,6 @@
                                     var tsMs = mapCell.AsOfTimeMs;
                                     foreach (var wild in mapCell.WildPokemon)
                                     {
-                                        //wildPokemon.Add(new
                                         await PublishData(RedisChannels.ProtoWildPokemon, new
                                         {
                                             cell = mapCell.S2CellId,
@@ -367,7 +363,6 @@
                                     }
                                     foreach (var nearby in mapCell.NearbyPokemon)
                                     {
-                                        //nearbyPokemon.Add(new
                                         await PublishData(RedisChannels.ProtoNearbyPokemon, new
                                         {
                                             cell = mapCell.S2CellId,
@@ -379,7 +374,6 @@
                                     }
                                     foreach (var fort in mapCell.Fort)
                                     {
-                                        //forts.Add(new
                                         await PublishData(RedisChannels.ProtoFort, new
                                         {
                                             cell = mapCell.S2CellId,
@@ -390,7 +384,6 @@
                                 }
                                 foreach (var weather in gmo.ClientWeather)
                                 {
-                                    //clientWeather.Add(weather);
                                     await PublishData(RedisChannels.ProtoWeather, weather);
                                     clientWeather++;
                                 }
@@ -438,11 +431,27 @@
                             if (ggi != null)
                             {
                                 //gymInfos.Add(ggi);
-                                await PublishData(RedisChannels.ProtoGymInfo, new
+                                if (ggi.GymStatusAndDefenders == null)
                                 {
-                                    raw = data,
-                                });
-                                // TODO: Parse gym defenders 
+                                    ConsoleExt.WriteWarn($"[DataConsumer] Invalid GymStatusAndDefenders provided, skipping...\n: {ggi}");
+                                    continue;
+                                }
+                                var fortId = ggi.GymStatusAndDefenders.PokemonFortProto.FortId;
+                                var gymDefenders = ggi.GymStatusAndDefenders.GymDefender;
+                                if (gymDefenders == null)
+                                    continue;
+
+                                foreach (var gymDefender in gymDefenders)
+                                {
+                                    if (gymDefender.TrainerPublicProfile != null)
+                                    {
+                                        await PublishData(RedisChannels.ProtoGymTrainer, Trainer.FromProto(gymDefender));
+                                    }
+                                    if (gymDefender.MotivatedPokemon != null)
+                                    {
+                                        await PublishData(RedisChannels.ProtoGymDefender, GymDefender.FromProto(fortId, gymDefender));
+                                    }
+                                }
                             }
                             else
                             {
@@ -563,12 +572,6 @@
                 if (spawnpoint == null)
                     continue;
                 spawnpoints.Add(spawnpoint);
-            }
-            */
-
-            /*
-            if (targetKnown) // TODO: && inArea)
-            {
             }
             */
             return new ProtoResponse
