@@ -90,10 +90,7 @@
             _cellRepository = new CellRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
 
             var timeLeft = DateTime.Now.SecondsUntilMidnight();
-            _timer = new System.Timers.Timer
-            {
-                Interval = timeLeft * 1000,
-            };
+            _timer = new System.Timers.Timer(timeLeft * 1000);
             _timer.Elapsed += async (sender, e) => await ClearQuests().ConfigureAwait(false);
             _timer.Start();
             // TODO: Get 12am DateTime
@@ -352,7 +349,7 @@
                         Action = ActionType.ScanQuest,
                         Latitude = newLat,
                         Longitude = newLon,
-                        Delay = delay,
+                        Delay = 1, // TODO: delay,
                         MinimumLevel = MinimumLevel,
                         MaximumLevel = MaximumLevel,
                     };
@@ -410,21 +407,30 @@
             var start = DateTime.UtcNow;
             var totalCount = 0;
             var missingCellIds = new List<ulong>();
+            // Loop all geofences and get s2cells within each
             foreach (var polygon in MultiPolygon)
             {
-                var s2CellIds = polygon.GetS2CellIDs(15, 15, int.MaxValue);
+                // Get max amount of s2 level 15 cells within this geofence
+                var s2Cells = polygon.GetS2CellIDs(15, 15, int.MaxValue);
+                var s2CellIds = s2Cells.Select(x => x.Id).ToList();
                 totalCount += s2CellIds.Count;
-                var cells = await _cellRepository.GetByIdsAsync(s2CellIds).ConfigureAwait(false);
-                var existingCellIds = cells.Select(x => x.Id);
+                // Get all known cells from the database
+                var cells = await _cellRepository.GetByIdsAsync(s2CellIds, false).ConfigureAwait(false);
+                // Map to just s2cell ids
+                var existingCellIds = cells.Select(x => x.Id).ToList();
+                // Loop all s2cells within geofence and check if any are missing
                 foreach (var s2cellId in s2CellIds)
                 {
-                    // If Cell Id doesn't exist, add to bootstrap list
+                    // Check if we don't have the s2cell in the database
+                    // TODO: REVERT REVERT REVERT
                     if (!existingCellIds.Contains(s2cellId))
                     {
+                        // Add to bootstrap s2cell list
                         missingCellIds.Add(s2cellId);
                     }
                 }
             }
+            missingCellIds.Sort();
             _logger.LogInformation($"[{Name}] Bootstrap Status: {totalCount - missingCellIds.Count}/{totalCount} after {DateTime.UtcNow.Subtract(start).TotalSeconds:N0} seconds");
             _bootstrapCellIds = missingCellIds;
             _bootstrapTotalCount = totalCount;
@@ -462,8 +468,10 @@
                     _completionDate = default;
                     foreach (var stop in _allStops)
                     {
+                        // Check that stop does not have quest and is enabled
                         if (stop.QuestType == null && stop.Enabled)
                         {
+                            // Add stop if it's not already in the dictionary
                             if (!_todayStops.ContainsKey(stop.Id))
                             {
                                 _todayStops.Add(stop.Id, stop);
@@ -489,9 +497,9 @@
                 _logger.LogWarning($"[{Name}] Tried clearing quests but no pokestops.");
                 return;
             }
-            _logger.LogDebug($"[{Name}] Getting pokestop ids");
-            var ids = _allStops.Select(x => x.Id);
-            _logger.LogInformation($"[{Name}] Clearing Quests for ids: {string.Join(",", ids)}");
+            //_logger.LogDebug($"[{Name}] Getting pokestop ids");
+            //var ids = _allStops.Select(x => x.Id);
+            _logger.LogInformation($"[{Name}] Clearing Quests");// for ids: {string.Join(",", ids)}");
             try
             {
                 await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
@@ -507,13 +515,14 @@
 
         private async Task<BootstrapTask> GetBootstrapTask()
         {
-            var target = _bootstrapCellIds.PopLast(out _bootstrapCellIds);
+            //var target = _bootstrapCellIds.PopLast(out _bootstrapCellIds);
+            var target = _bootstrapCellIds.LastOrDefault();
             if (target == default)
                 return null;
+            _bootstrapCellIds.Remove(target);
 
             var cell = new S2Cell(new S2CellId(target));
-            var center = cell.Center;
-            var latlng = new S2LatLng(center);
+            var latlng = new S2LatLng(cell.Center);
 
             double radius;
             if (latlng.LatDegrees <= 39)
@@ -532,14 +541,9 @@
                 MaxLevel = 15,
                 MaxCells = 100
             };
-            var cellIds = coverer.GetCovering(circle);
-            foreach (var cellId in cellIds)
-            {
-                if (_bootstrapCellIds.Contains(cellId.Id))
-                {
-                    _bootstrapCellIds.Remove(cellId.Id);
-                }
-            }
+            var cellIds = coverer.GetCovering(circle).Select(x => x.Id);
+            _bootstrapCellIds.RemoveAll(cell => cellIds.Contains(cell));
+
             if (_bootstrapCellIds.Count == 0)
             {
                 // TODO: await Bootstrap();

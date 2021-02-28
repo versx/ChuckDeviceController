@@ -67,10 +67,10 @@
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<PvpRank>>());
             modelBuilder.Entity<Pokestop>()
                         .Property(nameof(Pokestop.QuestConditions))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<dynamic>()); // TODO: QuestConditionProto
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<dynamic>>()); // TODO: QuestConditionProto
             modelBuilder.Entity<Pokestop>()
                         .Property(nameof(Pokestop.QuestRewards))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<dynamic>()); // TODO: QuestRewardProto
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<dynamic>>()); // TODO: QuestRewardProto
 
             base.OnModelCreating(modelBuilder);
         }

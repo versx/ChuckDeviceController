@@ -15,10 +15,8 @@
             try
             {
                 var optionsBuilder = new DbContextOptionsBuilder<DeviceControllerContext>();
-                //optionsBuilder.UseMySQL(connectionString);
                 optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
-                //context.ChangeTracker.AutoDetectChangesEnabled = false;
                 var ctx = new DeviceControllerContext(optionsBuilder.Options);
                 ctx.ChangeTracker.AutoDetectChangesEnabled = false;
                 return ctx;

@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    using Microsoft.EntityFrameworkCore;
     using Z.EntityFramework.Plus;
 
     using Chuck.Infrastructure.Data.Contexts;
@@ -16,6 +17,54 @@
         public AccountRepository(DeviceControllerContext context)
             : base(context)
         {
+        }
+
+        public async Task<int> InsertOrUpdate(Account account)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            return await _dbContext.Accounts
+                .Upsert(account)
+                .On(p => p.Username)
+                .WhenMatched((cDb, cIns) => new Account
+                {
+                    Level = cDb.Level != cIns.Level ? cIns.Level : cDb.Level,
+                    Banned = cIns.Banned ?? cDb.Banned,
+                    Warn = cIns.Warn ?? cDb.Warn,
+                    SuspendedMessageAcknowledged = cIns.SuspendedMessageAcknowledged ?? cDb.SuspendedMessageAcknowledged,
+                    WarnMessageAcknowledged = cIns.WarnMessageAcknowledged ?? cDb.WarnMessageAcknowledged,
+                    CreationTimestamp = cIns.CreationTimestamp ?? cDb.CreationTimestamp,
+                    FirstWarningTimestamp = cIns.FirstWarningTimestamp ?? cDb.FirstWarningTimestamp,
+                    Failed = cIns.Failed ?? cDb.Failed,
+                    FailedTimestamp = cIns.FailedTimestamp ?? cDb.FailedTimestamp,
+                    WarnExpireTimestamp = cIns.WarnExpireTimestamp ?? cDb.WarnExpireTimestamp,
+                    WasSuspended = cIns.WasSuspended ?? cDb.WasSuspended,
+                    LastUsedTimestamp = cIns.LastUsedTimestamp ?? cDb.LastUsedTimestamp,
+                })
+                .RunAsync().ConfigureAwait(false);
+        }
+
+        public async Task<int> InsertOrUpdate(List<Account> accounts)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            return await _dbContext.Accounts
+                .UpsertRange(accounts)
+                .On(p => p.Username)
+                .WhenMatched((cDb, cIns) => new Account
+                {
+                    Level = cDb.Level != cIns.Level ? cIns.Level : cDb.Level,
+                    Banned = cIns.Banned ?? cDb.Banned,
+                    Warn = cIns.Warn ?? cDb.Warn,
+                    SuspendedMessageAcknowledged = cIns.SuspendedMessageAcknowledged ?? cDb.SuspendedMessageAcknowledged,
+                    WarnMessageAcknowledged = cIns.WarnMessageAcknowledged ?? cDb.WarnMessageAcknowledged,
+                    CreationTimestamp = cIns.CreationTimestamp ?? cDb.CreationTimestamp,
+                    FirstWarningTimestamp = cIns.FirstWarningTimestamp ?? cDb.FirstWarningTimestamp,
+                    Failed = cIns.Failed ?? cDb.Failed,
+                    FailedTimestamp = cIns.FailedTimestamp ?? cDb.FailedTimestamp,
+                    WarnExpireTimestamp = cIns.WarnExpireTimestamp ?? cDb.WarnExpireTimestamp,
+                    WasSuspended = cIns.WasSuspended ?? cDb.WasSuspended,
+                    LastUsedTimestamp = cIns.LastUsedTimestamp ?? cDb.LastUsedTimestamp,
+                })
+                .RunAsync().ConfigureAwait(false);
         }
 
         public async Task<IReadOnlyList<Account>> GetAllAsync(bool fromCache = true)

@@ -3,6 +3,7 @@
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Text.Json.Serialization;
 
     using POGOProtos.Rpc;
 
@@ -15,22 +16,39 @@
         [
             Column("id"),
             Key,
+            DatabaseGenerated(DatabaseGeneratedOption.None),
+            JsonPropertyName("id"),
         ]
         public ulong Id { get; set; }
 
-        [Column("lat")]
+        [
+            Column("lat"),
+            JsonPropertyName("lat"),
+        ]
         public double Latitude { get; set; }
 
-        [Column("lon")]
+        [
+            Column("lon"),
+            JsonPropertyName("lon"),
+        ]
         public double Longitude { get; set; }
 
-        [Column("despawn_sec")]
+        [
+            Column("despawn_sec"),
+            JsonPropertyName("despawn_sec"),
+        ]
         public ushort? DespawnSecond { get; set; }
 
-        [Column("updated")]
+        [
+            Column("updated"),
+            JsonPropertyName("updated"),
+        ]
         public ulong Updated { get; set; }
 
-        [Column("first_seen_timestamp")]
+        [
+            Column("first_seen_timestamp"),
+            JsonPropertyName("first_seen_timestamp"),
+        ]
         public ulong FirstSeenTimestamp { get; set; }
 
         public static Spawnpoint FromPokemon(WildPokemonProto wild)

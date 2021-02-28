@@ -82,6 +82,44 @@
             return await _dbContext.Set<TEntity>().ContainsAsync(entity).ConfigureAwait(false);
         }
 
+        public virtual bool ExistsAsync(TEntity entity)
+        {
+            return _dbContext.Entry(entity).IsKeySet;
+        }
+
+        /*
+        public virtual Task InsertOrUpdate(TEntity entity)
+        {
+            _dbContext.Entry(entity).Upsert(entity)
+                .On(p => p)
+                .WhenMatched(c => new TEntity
+                {
+                });
+            //
+            var existings = await _dbContext.FindAsync(typeof(TEntity), entity);
+            if (existings == null)
+            {
+                _dbContext.Add(entity);
+            }
+            else
+            {
+                _dbContext.Entry(existings).CurrentValues.SetValues(entity);
+            }
+            //
+            _dbContext.Update(entity);
+            return _dbContext.SaveChangesAsync();
+        }
+        */
+
+        /*
+        public virtual Task InsertOrUpdate(List<TEntity> entities)
+        {
+            //entities.ForEach(async entity => await InsertOrUpdate(entity));
+            _dbContext.UpdateRange(entities);
+            return _dbContext.SaveChangesAsync();
+        }
+        */
+
         #region Add
 
         public async Task<TEntity> AddAsync(TEntity entity)

@@ -21,6 +21,7 @@
         [
             Column("id"),
             Key,
+            DatabaseGenerated(DatabaseGeneratedOption.None),
         ]
         public long Id { get; set; }
 

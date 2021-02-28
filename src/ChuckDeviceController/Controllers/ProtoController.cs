@@ -237,7 +237,8 @@
                             var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (gpr?.Success == true)
                             {
-                                playerData.Add(new
+                                //playerData.Add(new
+                                await PublishData(RedisChannels.ProtoAccount, new
                                 {
                                     gpr,
                                     username = payload.Username,
@@ -261,6 +262,7 @@
                             {
                                 if (ghi.InventoryDelta.InventoryItem?.Count > 0)
                                 {
+                                    // TODO: Publish with redis
                                     inventory.Add(ghi.InventoryDelta);
                                 }
                             }
@@ -283,7 +285,10 @@
                                 if (fsr.ChallengeQuest?.Quest != null)
                                 {
                                     //quests.Add(fsr.ChallengeQuest.Quest);
-                                    await PublishData(RedisChannels.ProtoQuest, fsr.ChallengeQuest.Quest);
+                                    await PublishData(RedisChannels.ProtoQuest, new
+                                    {
+                                        raw = data,
+                                    });
                                 }
                                 fortSearch.Add(fsr);
                             }
@@ -332,6 +337,7 @@
                             if (fdr != null)
                             {
                                 fortDetails.Add(fdr);
+                                // TODO: Publish with redis
                                 //await PublishData(RedisChannels.Fort, fdr);
                             }
                             else
@@ -410,6 +416,7 @@
                                     //clientWeather.Add(weather);
                                     await PublishData(RedisChannels.ProtoWeather, weather);
                                 }
+                                /*
                                 if (wildPokemon.Count == 0 && nearbyPokemon.Count == 0 && forts.Count == 0 && quests.Count == 0)
                                 {
                                     foreach (var cellId in cells)
@@ -437,6 +444,7 @@
                                     cells.ForEach(cellId => _emptyCells[cellId] = 0);
                                     isEmptyGmo = false;
                                 }
+                                */
                             }
                             else
                             {
@@ -454,6 +462,7 @@
                             var ggi = GymGetInfoOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (ggi != null)
                             {
+                                // TODO: Publish with redis
                                 gymInfos.Add(ggi);
                             }
                             else
@@ -618,7 +627,7 @@
             stopwatch.Stop();
             if (total > 0)
             {
-                _logger.LogInformation($"[Proto] [{payload.Uuid}] Update count: {total} parsed in {stopwatch.Elapsed.TotalSeconds}s");
+                //_logger.LogInformation($"[Proto] [{payload.Uuid}] Update count: {total} parsed in {stopwatch.Elapsed.TotalSeconds}s");
             }
             return new ProtoResponse
             {
@@ -1210,88 +1219,6 @@
             // TODO: Enable Clearing
             await Task.CompletedTask;
         }
-
-        /*
-        private async Task<(bool, ulong, Spawnpoint)> HandleSpawnpoint(ulong? spawnId, double latitude, double longitude, int timeTillHiddenMs, ulong timestampMs)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            bool verifiedTimer;
-            ulong expireTimestamp = 0;
-            if (timeTillHiddenMs <= 90000 && timeTillHiddenMs > 0)
-            {
-                expireTimestamp = Convert.ToUInt64(timestampMs + Convert.ToDouble(timeTillHiddenMs)) / 1000;
-                verifiedTimer = true;
-                var unixDate = timestampMs.FromMilliseconds();
-                var secondOfHour = unixDate.Second + unixDate.Minute * 60;
-                var spawnpoint = new Spawnpoint
-                {
-                    Id = spawnId ?? 0,
-                    Latitude = latitude,
-                    Longitude = longitude,
-                    Updated = now,
-                    DespawnSecond = (ushort)secondOfHour,
-                };
-                return (verifiedTimer, expireTimestamp, spawnpoint);
-            }
-            else
-            {
-                verifiedTimer = false;
-            }
-
-            if (!verifiedTimer && spawnId != null)
-            {
-                Spawnpoint spawnpoint = null;
-                try
-                {
-                    if (spawnId != null)
-                    {
-                        spawnpoint = await _spawnpointRepository.GetByIdAsync(spawnId ?? 0);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[Pokemon] Error: {ex}");
-                    spawnpoint = null;
-                }
-                if (spawnpoint != null && spawnpoint?.DespawnSecond != null)
-                {
-                    var unixDate = timestampMs.FromMilliseconds();
-                    var secondOfHour = unixDate.Second + unixDate.Minute * 60;
-                    ushort despawnOffset;
-                    if (spawnpoint.DespawnSecond < secondOfHour)
-                    {
-                        despawnOffset = Convert.ToUInt16(3600 + spawnpoint.DespawnSecond - secondOfHour);
-                    }
-                    else
-                    {
-                        despawnOffset = Convert.ToUInt16(spawnpoint.DespawnSecond - secondOfHour);
-                    }
-                    expireTimestamp = now + despawnOffset;
-                    verifiedTimer = true;
-                }
-                else
-                {
-                    spawnpoint = new Spawnpoint
-                    {
-                        Id = spawnId ?? 0,
-                        Latitude = latitude,
-                        Longitude = longitude,
-                        Updated = DateTime.Now.ToTotalSeconds(),
-                        DespawnSecond = null,
-                    };
-                }
-                return (verifiedTimer, expireTimestamp, spawnpoint);
-            }
-
-            if (expireTimestamp == 0)
-            {
-                //Console.WriteLine($"[Pokemon] ExpireTimestamp == 0");
-                expireTimestamp = DateTime.UtcNow.ToTotalSeconds();
-                verifiedTimer = false;
-            }
-            return (verifiedTimer, expireTimestamp, null);
-        }
-        */
 
         #endregion
 

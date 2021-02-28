@@ -4,7 +4,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
-    using System.Threading.Tasks;
+    using System.Text.Json.Serialization;
 
     using POGOProtos.Rpc;
 
@@ -18,97 +18,189 @@
         [
             Column("id"),
             Key,
+            DatabaseGenerated(DatabaseGeneratedOption.None),
+            JsonPropertyName("id"),
         ]
         public string Id { get; set; }
 
-        [Column("lat")]
+        [
+            Column("lat"),
+            JsonPropertyName("lat"),
+        ]
         public double Latitude { get; set; }
 
-        [Column("lon")]
+        [
+            Column("lon"),
+            JsonPropertyName("lon"),
+        ]
         public double Longitude { get; set; }
 
-        [Column("name")]
+        [
+            Column("name"),
+            JsonPropertyName("name"),
+        ]
         public string Name { get; set; }
 
-        [Column("url")]
+        [
+            Column("url"),
+            JsonPropertyName("url"),
+        ]
         public string Url { get; set; }
 
-        [Column("last_modified_timestamp")]
+        [
+            Column("last_modified_timestamp"),
+            JsonPropertyName("last_modified_timestamp"),
+        ]
         public ulong LastModifiedTimestamp { get; set; }
 
-        [Column("raid_end_timestamp")]
+        [
+            Column("raid_end_timestamp"),
+            JsonPropertyName("raid_end_timestamp"),
+        ]
         public ulong? RaidEndTimestamp { get; set; }
 
-        [Column("raid_spawn_timestamp")]
+        [
+            Column("raid_spawn_timestamp"),
+            JsonPropertyName("raid_spawn_timestamp"),
+        ]
         public ulong? RaidSpawnTimestamp { get; set; }
 
-        [Column("raid_battle_timestamp")]
+        [
+            Column("raid_battle_timestamp"),
+            JsonPropertyName("raid_battle_timestamp"),
+        ]
         public ulong? RaidBattleTimestamp { get; set; }
 
-        [Column("updated")]
+        [
+            Column("updated"),
+            JsonPropertyName("updated"),
+        ]
         public ulong Updated { get; set; }
 
-        [Column("raid_pokemon_id")]
+        [
+            Column("raid_pokemon_id"),
+            JsonPropertyName("raid_pokemon_id"),
+        ]
         public uint? RaidPokemonId { get; set; }
 
-        [Column("guarding_pokemon_id")]
+        [
+            Column("guarding_pokemon_id"),
+            JsonPropertyName("guarding_pokemon_id"),
+        ]
         public uint GuardingPokemonId { get; set; }
 
-        [Column("availble_slots")] // I cringe every time
+        [
+            Column("availble_slots"), // I cringe every time
+            JsonPropertyName("available_slots"),
+        ] 
         public ushort AvailableSlots { get; set; }
 
-        [Column("team_id")]
+        [
+            Column("team_id"),
+            JsonPropertyName("team_id"),
+        ]
         public Team Team { get; set; }
 
-        [Column("raid_level")]
+        [
+            Column("raid_level"),
+            JsonPropertyName("raid_level"),
+        ]
         public ushort RaidLevel { get; set; }
 
-        [Column("enabled")]
+        [
+            Column("enabled"),
+            JsonPropertyName("enabled"),
+        ]
         public bool Enabled { get; set; }
 
-        [Column("ex_raid_eligible")]
+        [
+            Column("ex_raid_eligible"),
+            JsonPropertyName("ex_raid_eligible"),
+        ]
         public bool ExRaidEligible { get; set; }
 
-        [Column("in_battle")]
+        [
+            Column("in_battle"),
+            JsonPropertyName("in_battle"),
+        ]
         public bool InBattle { get; set; }
 
-        [Column("raid_pokemon_move_1")]
+        [
+            Column("raid_pokemon_move_1"),
+            JsonPropertyName("raid_pokemon_move_1"),
+        ]
         public uint? RaidPokemonMove1 { get; set; }
 
-        [Column("raid_pokemon_move_2")]
+        [
+            Column("raid_pokemon_move_2"),
+            JsonPropertyName("raid_pokemon_move_2"),
+        ]
         public uint? RaidPokemonMove2 { get; set; }
 
-        [Column("raid_pokemon_form")]
+        [
+            Column("raid_pokemon_form"),
+            JsonPropertyName("raid_pokemon_form"),
+        ]
         public uint? RaidPokemonForm { get; set; }
 
-        [Column("raid_pokemon_costume")]
+        [
+            Column("raid_pokemon_costume"),
+            JsonPropertyName("raid_pokemon_costume"),
+        ]
         public uint RaidPokemonCostume { get; set; }
 
-        [Column("raid_pokemon_evolution")]
+        [
+            Column("raid_pokemon_evolution"),
+            JsonPropertyName("raid_pokemon_evolution"),
+        ]
         public uint RaidPokemonEvolution { get; set; }
 
-        [Column("raid_pokemon_gender")]
+        [
+            Column("raid_pokemon_gender"),
+            JsonPropertyName("raid_pokemon_gender"),
+        ]
         public ushort? RaidPokemonGender { get; set; }
 
-        [Column("raid_pokemon_cp")]
+        [
+            Column("raid_pokemon_cp"),
+            JsonPropertyName("raid_pokemon_cp"),
+        ]
         public uint? RaidPokemonCP { get; set; }
 
-        [Column("raid_is_exclusive")]
+        [
+            Column("raid_is_exclusive"),
+            JsonPropertyName("raid_is_exclusive"),
+        ]
         public bool RaidIsExclusive { get; set; }
 
-        [Column("cell_id")]
+        [
+            Column("cell_id"),
+            JsonPropertyName("cell_id"),
+        ]
         public ulong CellId { get; set; }
 
-        [Column("deleted")]
+        [
+            Column("deleted"),
+            JsonPropertyName("deleted"),
+        ]
         public bool Deleted { get; set; }
 
-        [Column("total_cp")]
+        [
+            Column("total_cp"),
+            JsonPropertyName("total_cp"),
+        ]
         public int TotalCP { get; set; }
 
-        [Column("first_seen_timestamp")]
+        [
+            Column("first_seen_timestamp"),
+            JsonPropertyName("first_seen_timestamp"),
+        ]
         public ulong FirstSeenTimestamp { get; set; }
 
-        [Column("sponsor_id")]
+        [
+            Column("sponsor_id"),
+            JsonPropertyName("sponsor_id"),
+        ]
         public uint SponsorId { get; set; }
 
         public Gym()
@@ -130,7 +222,7 @@
             InBattle = fort.IsInBattle;
             TotalCP = fort.GymDisplay?.TotalGymCp ?? 0;
             CellId = cellId;
-            FirstSeenTimestamp = now;
+            //FirstSeenTimestamp = now;
             Updated = now;
             Deleted = false;
             if (fort.RaidInfo != null)
@@ -351,6 +443,7 @@
                 Url = fort.ImageUrl,
                 GuardingPokemonId = (uint)fort.GuardPokemonId,
                 AvailableSlots = (ushort?)fort.GymDisplay?.SlotsAvailable ?? 0,
+                LastModifiedTimestamp = (ulong)fort.LastModifiedMs / 1000,
                 Team = fort.Team,
                 Enabled = fort.Enabled,
                 ExRaidEligible = fort.IsExRaidEligible,

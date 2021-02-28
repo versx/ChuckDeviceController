@@ -5,6 +5,7 @@
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
 
     using Google.Common.Geometry;
@@ -37,124 +38,237 @@
         [
             Column("id"),
             Key,
+            DatabaseGenerated(DatabaseGeneratedOption.None),
+            JsonPropertyName("id"),
         ]
         public string Id { get; set; }
 
-        [Column("pokestop_id")]
+        [
+            Column("pokestop_id"),
+            JsonPropertyName("pokestop_id"),
+        ]
         public string PokestopId { get; set; }
 
-        [Column("spawn_id")]
+        [
+            Column("spawn_id"),
+            JsonPropertyName("spawn_id"),
+        ]
         public ulong? SpawnId { get; set; }
 
-        [Column("lat")]
+        [
+            Column("lat"),
+            JsonPropertyName("lat"),
+        ]
         public double Latitude { get; set; }
 
-        [Column("lon")]
+        [
+            Column("lon"),
+            JsonPropertyName("lon"),
+        ]
         public double Longitude { get; set; }
 
-        [Column("weight")]
+        [
+            Column("weight"),
+            JsonPropertyName("weight"),
+        ]
         public double? Weight { get; set; }
 
-        [Column("size")]
+        [
+            Column("size"),
+            JsonPropertyName("size"),
+        ]
         public double? Size { get; set; }
 
-        [Column("expire_timestamp")]
+        [
+            Column("expire_timestamp"),
+            JsonPropertyName("expire_timestamp"),
+        ]
         public ulong ExpireTimestamp { get; set; }
 
         [
             Column("updated"),
             DefaultValue(1),
+            JsonPropertyName("updated"),
         ]
         public ulong Updated { get; set; }
 
-        [Column("pokemon_id")]
+        [
+            Column("pokemon_id"),
+            JsonPropertyName("pokemon_id"),
+        ]
         public uint PokemonId { get; set; }
 
-        [Column("move_1")]
+        [
+            Column("move_1"),
+            JsonPropertyName("move_1"),
+        ]
         public uint? Move1 { get; set; }
 
-        [Column("move_2")]
+        [
+            Column("move_2"),
+            JsonPropertyName("move_2"),
+        ]
         public uint? Move2 { get; set; }
 
-        [Column("gender")]
+        [
+            Column("gender"),
+            JsonPropertyName("gender"),
+        ]
         public ushort Gender { get; set; }
 
-        [Column("cp")]
+        [
+            Column("cp"),
+            JsonPropertyName("cp"),
+        ]
         public ushort? CP { get; set; }
 
-        [Column("atk_iv")]
+        [
+            Column("atk_iv"),
+            JsonPropertyName("atk_iv"),
+        ]
         public ushort? AttackIV { get; set; }
 
-        [Column("def_iv")]
+        [
+            Column("def_iv"),
+            JsonPropertyName("def_iv"),
+        ]
         public ushort? DefenseIV { get; set; }
 
-        [Column("sta_iv")]
+        [
+            Column("sta_iv"),
+            JsonPropertyName("sta_iv"),
+        ]
         public ushort? StaminaIV { get; set; }
 
-        [Column("form")]
+        [
+            Column("form"),
+            JsonPropertyName("form"),
+        ]
         public ushort? Form { get; set; }
 
-        [Column("level")]
+        [
+            Column("level"),
+            JsonPropertyName("level"),
+        ]
         public ushort? Level { get; set; }
 
-        [Column("weather")]
+        [
+            Column("weather"),
+            JsonPropertyName("weather"),
+        ]
         public ushort Weather { get; set; }
 
-        [Column("costume")]
+        [
+            Column("costume"),
+            JsonPropertyName("costume"),
+        ]
         public ushort Costume { get; set; }
 
-        [Column("first_seen_timestamp")]
+        [
+            Column("first_seen_timestamp"),
+            JsonPropertyName("first_seen_timestamp"),
+        ]
         public ulong FirstSeenTimestamp { get; set; }
 
-        [Column("changed")]
+        [
+            Column("changed"),
+            JsonPropertyName("changed"),
+        ]
         public ulong Changed { get; set; }
 
-        [Column("iv")]
-        public double? IV { get; }
+        [
+            Column("iv"),
+            JsonPropertyName("iv"),
+        ]
+        public double? IV { get; } // Virtual column
 
-        [Column("cell_id")]
+        [
+            Column("cell_id"),
+            JsonPropertyName("cell_id"),
+        ]
         public ulong CellId { get; set; }
 
-        [Column("expire_timestamp_verified")]
+        [
+            Column("expire_timestamp_verified"),
+            JsonPropertyName("expire_timestamp_verified"),
+        ]
         public bool IsExpireTimestampVerified { get; set; }
 
-        [Column("shiny")]
+        [
+            Column("shiny"),
+            JsonPropertyName("shiny"),
+        ]
         public bool? IsShiny { get; set; }
 
-        [Column("username")]
+        [
+            Column("username"),
+            JsonPropertyName("username"),
+        ]
         public string Username { get; set; }
 
-        [Column("display_pokemon_id")]
+        [
+            Column("display_pokemon_id"),
+            JsonPropertyName("display_pokemon_id"),
+        ]
         public uint? DisplayPokemonId { get; set; }
 
-        [Column("capture_1")]
+        [
+            Column("capture_1"),
+            JsonPropertyName("capture_1"),
+        ]
         public double? CaptureRate1 { get; set; }
 
-        [Column("capture_2")]
+        [
+            Column("capture_2"),
+            JsonPropertyName("capture_2"),]
         public double? CaptureRate2 { get; set; }
 
-        [Column("capture_3")]
+        [
+            Column("capture_3"),
+            JsonPropertyName("capture_3"),
+        ]
         public double? CaptureRate3 { get; set; }
 
-        [Column("pvp_rankings_great_league")]
+        [
+            Column("pvp_rankings_great_league"),
+            JsonPropertyName("pvp_rankings_great_league"),
+        ]
         public List<PvpRank> PvpRankingsGreatLeague { get; set; }
 
-        [Column("pvp_rankings_ultra_league")]
+        [
+            Column("pvp_rankings_ultra_league"),
+            JsonPropertyName("pvp_rankings_ultra_league"),
+        ]
         public List<PvpRank> PvpRankingsUltraLeague { get; set; }
 
-        [Column("is_event")]
+        [
+            Column("is_event"),
+            JsonPropertyName("is_event"),
+        ]
         public bool IsEvent { get; set; }
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonIgnore,
+        ]
         public bool IsDitto { get; private set; }
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonIgnore,
+        ]
         public bool HasChanges { get; private set; }
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonIgnore,
+        ]
         public bool NoWeatherIVClearing { get; }
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonIgnore,
+        ]
         public bool ProcessPvpRankings { get; set; } = true;
 
         #endregion
@@ -238,11 +352,12 @@
             if (oldPokemon == null)
             {
                 Updated = now;
-                FirstSeenTimestamp = now;
+                //FirstSeenTimestamp = now;
                 Changed = now;
             }
             else
             {
+                /*
                 if (oldPokemon.FirstSeenTimestamp == 0 && FirstSeenTimestamp == 0)
                 {
                     FirstSeenTimestamp = now;
@@ -251,6 +366,7 @@
                 {
                     FirstSeenTimestamp = oldPokemon.FirstSeenTimestamp;
                 }
+                */
                 if (ExpireTimestamp == 0)
                 {
                     if (oldPokemon.ExpireTimestamp - now < DefaultTimeReseen)

@@ -8,7 +8,7 @@
 
     public class MultiPolygon : List<Polygon>
     {
-        public List<ulong> GetS2CellIDs(ushort minLevel, ushort maxLevel, int maxCells)
+        public List<S2CellId> GetS2CellIDs(ushort minLevel, ushort maxLevel, int maxCells)
         {
             var bbox = GetBoundingBox();
             var regionCoverer = new S2RegionCoverer
@@ -21,14 +21,8 @@
                 S2LatLng.FromDegrees(bbox.MinimumLatitude, bbox.MinimumLongitude),
                 S2LatLng.FromDegrees(bbox.MaximumLatitude, bbox.MaximumLongitude)
             );
-            /*
-            var region = S2LatLngRect.FromPointPair(
-                S2LatLng.FromDegrees(bbox.MinimumLatitude, bbox.MinimumLongitude),//bbox[1], bbox[0]),
-                S2LatLng.FromDegrees(bbox.MaximumLatitude, bbox.MaximumLongitude)//bbox[3], bbox[2])
-            );
-            */
             var cellIDsBBox = regionCoverer.GetInteriorCovering(region);
-            var cellIDs = new List<ulong>();
+            var cellIDs = new List<S2CellId>();
             foreach (var cellId in cellIDsBBox)
             {
                 var cell = new S2Cell(cellId);
@@ -45,7 +39,7 @@
                     GeofenceService.InPolygon(this, coord2.LatDegrees, coord2.LngDegrees) ||
                     GeofenceService.InPolygon(this, coord3.LatDegrees, coord3.LngDegrees))
                 {
-                    cellIDs.Add(cellId.Id);
+                    cellIDs.Add(cellId);
                 }
             }
             return cellIDs;
@@ -59,14 +53,13 @@
             var minY = this.Min(p => p[1]);
             var maxX = this.Max(p => p[0]);
             var maxY = this.Max(p => p[1]);
-
             return new BoundingBox
             {
                 MinimumLatitude = minX,
                 MaximumLatitude = maxX,
                 MinimumLongitude = minY,
                 MaximumLongitude = maxY,
-            };//(new Point(minX, minY), new Size(maxX - minX, maxY - minY));
+            };
         }
     }
 }

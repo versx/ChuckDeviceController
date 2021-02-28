@@ -5,6 +5,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
+    using System.Text.Json.Serialization;
 
     using POGOProtos.Rpc;
 
@@ -20,91 +21,176 @@
         [
             Column("id"),
             Key,
+            DatabaseGenerated(DatabaseGeneratedOption.None),
+            JsonPropertyName("id"),
         ]
         public string Id { get; set; }
 
-        [Column("lat")]
+        [
+            Column("lat"),
+            JsonPropertyName("lat"),
+        ]
         public double Latitude { get; set; }
 
-        [Column("lon")]
+        [
+            Column("lon"),
+            JsonPropertyName("lon"),
+        ]
         public double Longitude { get; set; }
 
-        [Column("name")]
+        [
+            Column("name"),
+            JsonPropertyName("name"),
+        ]
         public string Name { get; set; }
 
-        [Column("url")]
+        [
+            Column("url"),
+            JsonPropertyName("url"),
+        ]
         public string Url { get; set; }
 
-        [Column("lure_expire_timestamp")]
+        [
+            Column("lure_expire_timestamp"),
+            JsonPropertyName("lure_expire_timestamp"),
+        ]
         public ulong? LureExpireTimestamp { get; set; }
 
-        [Column("last_modified_timestamp")]
+        [
+            Column("last_modified_timestamp"),
+            JsonPropertyName("last_modified_timestamp"),
+        ]
         public ulong LastModifiedTimestamp { get; set; }
 
-        [Column("updated")]
+        [
+            Column("updated"),
+            JsonPropertyName("updated"),
+        ]
         public ulong Updated { get; set; }
 
-        [Column("enabled")]
+        [
+            Column("enabled"),
+            JsonPropertyName("enabled"),
+        ]
         public bool Enabled { get; set; }
 
-        [Column("quest_type")]
+        [
+            Column("quest_type"),
+            JsonPropertyName("quest_type"),
+        ]
         public QuestType? QuestType { get; set; }
 
-        [Column("quest_timestamp")]
+        [
+            Column("quest_timestamp"),
+            JsonPropertyName("quest_timestamp"),
+        ]
         public ulong? QuestTimestamp { get; set; }
 
-        [Column("quest_target")]
+        [
+            Column("quest_target"),
+            JsonPropertyName("quest_target"),
+        ]
         public uint? QuestTarget { get; set; }
 
-        [Column("quest_conditions")]
-        public dynamic QuestConditions { get; set; } // TODO: QuestConditionProto
+        [
+            Column("quest_conditions"),
+            JsonPropertyName("quest_conditions"),
+        ]
+        public List<dynamic> QuestConditions { get; set; } // TODO: QuestConditionProto
 
-        [Column("quest_rewards")]
-        public dynamic QuestRewards { get; set; } // TODO: QuestConditionProto
+        [
+            Column("quest_rewards"),
+            JsonPropertyName("quest_rewards"),
+        ]
+        public List<dynamic> QuestRewards { get; set; } // TODO: QuestConditionProto
 
-        [Column("quest_template")]
+        [
+            Column("quest_template"),
+            JsonPropertyName("quest_template"),
+        ]
         public string QuestTemplate { get; set; }
 
-        [Column("quest_pokemon_id")]
+        [
+            Column("quest_pokemon_id"),
+            JsonPropertyName("quest_pokemon_id"),]
         public uint? QuestPokemonId { get; } // Virtual column
 
-        [Column("quest_reward_type")]
+        [
+            Column("quest_reward_type"),
+            JsonPropertyName("quest_reward_type"),
+        ]
         public uint? QuestRewardType { get; } // Virtual column
 
-        [Column("quest_item_id")]
+        [
+            Column("quest_item_id"),
+            JsonPropertyName("quest_item_id"),
+        ]
         public uint? QuestItemId { get; } // Virtual column
 
-        [Column("cell_id")]
+        [
+            Column("cell_id"),
+            JsonPropertyName("cell_id"),
+        ]
         public ulong CellId { get; set; }
 
-        [Column("deleted")]
+        [
+            Column("deleted"),
+            JsonPropertyName("deleted"),
+        ]
         public bool Deleted { get; set; }
 
-        [Column("lure_id")]
+        [
+            Column("lure_id"),
+            JsonPropertyName("lure_id"),
+        ]
         public uint LureId { get; set; }
 
-        [Column("pokestop_display")]
+        [
+            Column("pokestop_display"),
+            JsonPropertyName("pokestop_display"),
+        ]
         public uint? PokestopDisplay { get; set; }
 
-        [Column("incident_expire_timestamp")]
+        [
+            Column("incident_expire_timestamp"),
+            JsonPropertyName("incident_expire_timestamp"),
+        ]
         public ulong? IncidentExpireTimestamp { get; set; }
 
-        [Column("first_seen_timestamp")]
+        [
+            Column("first_seen_timestamp"),
+            JsonPropertyName("first_seen_timestamp"),
+        ]
         public ulong FirstSeenTimestamp { get; set; }
 
-        [Column("grunt_type")]
+        [
+            Column("grunt_type"),
+            JsonPropertyName("grunt_type"),
+        ]
         public uint? GruntType { get; set; }
 
-        [Column("sponsor_id")]
+        [
+            Column("sponsor_id"),
+            JsonPropertyName("sponsor_id"),
+        ]
         public uint? SponsorId { get; set; }
 
-        [Column("ar_scan_eligible")]
+        [
+            Column("ar_scan_eligible"),
+            JsonPropertyName("ar_scan_eligible"),
+        ]
         public bool IsArScanEligible { get; set; }
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonIgnore,
+        ]
         public bool HasChanges { get; set; }
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonIgnore,
+        ]
         public bool HasQuestChanges { get; set; }
 
         public Pokestop()
@@ -119,7 +205,7 @@
             Longitude = fort.Longitude;
             SponsorId = (uint)fort?.Sponsor;
             Enabled = fort.Enabled;
-            LastModifiedTimestamp = (ulong)(fort.LastModifiedMs / 1000);
+            LastModifiedTimestamp = (ulong)fort.LastModifiedMs / 1000;
             CellId = cellId;
             FirstSeenTimestamp = now;
             Updated = now;
@@ -149,8 +235,8 @@
                 IncidentExpireTimestamp = (ulong)Math.Floor(Convert.ToDouble(pokestopDisplay.IncidentExpirationMs / 1000));
                 if (fort.PokestopDisplays.FirstOrDefault()?.CharacterDisplay != null)
                 {
-                    PokestopDisplay = (uint?)pokestopDisplay.CharacterDisplay.Style;
-                    GruntType = (uint)pokestopDisplay.CharacterDisplay.Character;
+                    PokestopDisplay = (uint?)pokestopDisplay.CharacterDisplay?.Style;
+                    GruntType = (uint)pokestopDisplay.CharacterDisplay?.Character;
                 }
             }
         }
@@ -174,7 +260,7 @@
                 {
                     Url = oldPokestop.Url;
                 }
-                if (updateQuest && oldPokestop.QuestType != null && QuestType == null)
+                if (updateQuest)// && oldPokestop.QuestType != null && QuestType == null)
                 {
                     QuestType = oldPokestop.QuestType;
                     QuestTarget = oldPokestop.QuestTarget;
@@ -276,13 +362,14 @@
 
         public void AddQuest(QuestProto quest)
         {
-            var conditions = new List<dynamic>();
-            var rewards = new List<dynamic>();
+            var conditions = new List<dynamic>();//QuestCondition<QuestConditionInfo>>();
+            var rewards = new List<dynamic>();//QuestReward<QuestRewardInfo>>();
             HasChanges = true;
             HasQuestChanges = true;
             foreach (var condition in quest.Goal.Condition)
             {
                 var conditionData = new Dictionary<string, dynamic>();
+                //var conditionData = new QuestCondition<QuestConditionInfo>();
                 var infoData = new Dictionary<string, dynamic>();
                 conditionData.Add("type", condition.Type);
                 switch (condition.Type)
@@ -291,7 +378,7 @@
                         infoData.Add("amount", condition.WithBadgeType.Amount);
                         infoData.Add("badge_rank", condition.WithBadgeType.BadgeRank);
                         var badgeTypesById = new List<uint>();
-                        condition.WithBadgeType.BadgeType?.ToList()?.ForEach(x => badgeTypesById.Add((uint)x));
+                        //condition.WithBadgeType.BadgeType?.ToList()?.ForEach(x => badgeTypesById.Add((uint)x));
                         infoData.Add("badge_types", condition.WithBadgeType.BadgeRank);
                         break;
                     case QuestConditionProto.Types.ConditionType.WithItem:
@@ -311,7 +398,7 @@
                         infoData.Add("pokemon_type_ids", pokemonTypesById);
                         break;
                     case QuestConditionProto.Types.ConditionType.WithPokemonCategory:
-                        if (!string.IsNullOrEmpty(condition.WithPokemonCategory.CategoryName))
+                        if (!string.IsNullOrEmpty(condition.WithPokemonCategory?.CategoryName))
                         {
                             infoData.Add("category_name", condition.WithPokemonCategory.CategoryName);
                         }
@@ -364,6 +451,9 @@
                     case QuestConditionProto.Types.ConditionType.WithTempEvoPokemon:
                         infoData.Add("raid_pokemon_evolutions", condition.WithTempEvoId.MegaForm);
                         break;
+                    case QuestConditionProto.Types.ConditionType.WithUniquePokemon:
+                    case QuestConditionProto.Types.ConditionType.WithUniquePokemonTeam:
+                    case QuestConditionProto.Types.ConditionType.WithUniquePokestop:
                     default:
                         ConsoleExt.WriteWarn($"[Pokestop] Unrecognized condition type: {condition.Type}");
                         break;
@@ -581,4 +671,145 @@
             return pokestop;
         }
     }
+
+    public class QuestReward<T>
+    {
+        [JsonPropertyName("type")]
+        public uint Type { get; set; } // TODO: Use proto
+
+        [JsonPropertyName("info")]
+        public T Info { get; set; }
+    }
+
+    public class QuestRewardInfo
+    {
+        //
+        [JsonPropertyName("form_id")]
+        public ushort FormId { get; set; }
+
+        [JsonPropertyName("shiny")]
+        public bool IsShiny { get; set; }
+
+        [JsonPropertyName("gender")]
+        public PokemonGender Gender { get; set; }
+
+        [JsonPropertyName("costume_id")]
+        public ushort CostumeId { get; set; }
+
+        [JsonPropertyName("pokemon_id")]
+        public ushort PokemonId { get; set; }
+        //
+
+        //
+        [JsonPropertyName("item")]
+        public Item ItemId { get; set; }
+
+        [JsonPropertyName("amount")]
+        public uint Amount { get; set; }
+        //
+    }
+
+    /*
+    public class QuestRewardPokemonInfo
+    {
+        [JsonPropertyName("form_id")]
+        public ushort FormId { get; set; }
+
+        [JsonPropertyName("shiny")]
+        public bool IsShiny { get; set; }
+
+        [JsonPropertyName("gender")]
+        public PokemonGender Gender { get; set; }
+
+        [JsonPropertyName("costume_id")]
+        public ushort CostumeId { get; set; }
+
+        [JsonPropertyName("pokemon_id")]
+        public ushort PokemonId { get; set; }
+    }
+
+    public class QuestRewardItemInfo
+    {
+        [JsonPropertyName("item")]
+        public Item ItemId { get; set; }
+
+        [JsonPropertyName("amount")]
+        public uint Amount { get; set; }
+    }
+
+    public class QuestRewardStardustInfo
+    {
+        [JsonPropertyName("amount")]
+        public uint Amount { get; set; }
+    }
+    */
+
+
+    public class QuestCondition<T>
+    {
+        [JsonPropertyName("type")]
+        public uint Type { get; set; } // TODO: Use proto
+
+        [JsonPropertyName("info")]
+        public T Info { get; set; }
+    }
+
+    public class QuestConditionInfo
+    {
+        //
+        [JsonPropertyName("throw_type_id")]
+        public WithThrowTypeProto.ThrowOneofCase ThrowTypeId { get; set; }
+
+        [JsonPropertyName("hit")]
+        public bool Hit { get; set; }
+        //
+
+        //
+        [JsonPropertyName("combat_type")]
+        public ushort CombatType { get; set; } // TODO: Use proto enum
+                                               //
+
+        //
+        [JsonPropertyName("raid_levels")]
+        public List<ushort> Levels { get; set; }
+        //
+
+        //
+        [JsonPropertyName("pokemon_type_ids")]
+        public List<HoloPokemonType> Types { get; set; }
+        //
+
+        //
+        // chategory_ids
+        //
+    }
+
+    /*
+    public class QuestConditionThrow
+    {
+        [JsonPropertyName("throw_type_id")]
+        public WithThrowTypeProto.ThrowOneofCase ThrowTypeId { get; set; }
+
+        [JsonPropertyName("hit")]
+        public bool Hit { get; set; }
+    }
+
+    public class QuestConditionGymBattle // TODO: Gym or PVP?
+    {
+        [JsonPropertyName("combat_type")]
+        public ushort CombatType { get; set; } // TODO: Use proto enum
+    }
+
+    public class QuestConditionRaidBattle
+    {
+        [JsonPropertyName("raid_levels")]
+        public List<ushort> Levels { get; set; }
+    }
+
+    public class QuestConditionPokemonType
+    {
+        [JsonPropertyName("pokemon_type_ids")]
+        public List<HoloPokemonType> Types { get; set; }
+    }
+    */
 }

@@ -1,9 +1,9 @@
 ﻿namespace Chuck.Infrastructure.Data.Entities
 {
     using System;
-    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Text.Json.Serialization;
 
     using Google.Common.Geometry;
 
@@ -16,19 +16,33 @@
         [
             Column("id"),
             Key,
+            DatabaseGenerated(DatabaseGeneratedOption.None),
+            JsonPropertyName("id"),
         ]
         public ulong Id { get; set; }
 
-        [Column("level")]
+        [
+            Column("level"),
+            JsonPropertyName("level"),
+        ]
         public ushort Level { get; set; }
 
-        [Column("center_lat")]
+        [
+            Column("center_lat"),
+            JsonPropertyName("center_lat"),
+        ]
         public double Latitude { get; set; }
 
-        [Column("center_lon")]
+        [
+            Column("center_lon"),
+            JsonPropertyName("center_lon"),
+        ]
         public double Longitude { get; set; }
 
-        [Column("updated")]
+        [
+            Column("updated"),
+            JsonPropertyName("updated"),
+        ]
         public ulong Updated { get; set; }
 
         public static Cell FromId(ulong cellId)

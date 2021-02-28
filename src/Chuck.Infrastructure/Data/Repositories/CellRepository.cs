@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
     using Z.EntityFramework.Plus;
 
@@ -19,6 +20,45 @@
             : base(context)
         {
             QueryCacheManager.Cache = new MemoryCache(new MemoryCacheOptions());
+        }
+
+        public async Task<int> InsertOrUpdate(Cell cell)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            return await _dbContext.Cells
+                .Upsert(cell)
+                .On(p => p.Id)
+                .WhenMatched(c => new Cell
+                {
+                    Updated = now,
+                })
+                .RunAsync().ConfigureAwait(false);
+            /*
+            var existings = await _dbContext.FindAsync(typeof(TEntity), entity);
+            if (existings == null)
+            {
+                _dbContext.Add(entity);
+            }
+            else
+            {
+                _dbContext.Entry(existings).CurrentValues.SetValues(entity);
+            }
+            */
+            //_dbContext.Update(entity);
+            //return _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<int> InsertOrUpdate(List<Cell> cells)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            return await _dbContext.Cells
+                .UpsertRange(cells)
+                .On(p => p.Id)
+                .WhenMatched(c => new Cell
+                {
+                    Updated = now,
+                })
+                .RunAsync().ConfigureAwait(false);
         }
 
         public async Task<IReadOnlyList<Cell>> GetAllAsync(bool fromCache = true)

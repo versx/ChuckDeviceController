@@ -29,7 +29,7 @@
             }
             catch (Exception ex)
             {
-                ConsoleExt.WriteError($"[RawSql] Result: {ex}, Sql: {sql}");
+                ConsoleExt.WriteError($"[RawSql] Result: {ex}, SQL: {sql}");
                 return false;
             }
         }

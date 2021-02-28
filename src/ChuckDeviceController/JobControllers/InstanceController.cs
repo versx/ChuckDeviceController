@@ -196,9 +196,20 @@
                         foreach (var coords in coordsArray)
                         {
                             var multiPolygon = new MultiPolygon();
-                            foreach (var coord in coords)
+                            Coordinate first = null;
+                            for (var i = 0; i < coords.Count; i++)
+                            //foreach (var coord in coords)
                             {
+                                var coord = coords[i];
+                                if (i == 0)
+                                {
+                                    first = coord;
+                                }
                                 multiPolygon.Add(new Polygon(coord.Latitude, coord.Longitude));
+                            }
+                            if (first != null)
+                            {
+                                multiPolygon.Add(new Polygon(first.Latitude, first.Longitude));
                             }
                             areaArrayEmptyInner.Add(multiPolygon);
                         }
