@@ -63,7 +63,15 @@
             }
             catch (Exception ex)
             {
-                ConsoleExt.WriteError($"[PokemonRepository] AddOrUpdateAsync: {ex.Message}");
+                if (ex.Message.Contains("foreign key constraint fails"))
+                {
+                    // noting..
+                    //ConsoleExt.WriteError($"[PokemonRepository] AddOrUpdateAsync: {ex.Message}");
+                }
+                else
+                {
+                    ConsoleExt.WriteError($"[PokemonRepository] AddOrUpdateAsync: {ex.Message}");
+                }
             }
         }
     }
