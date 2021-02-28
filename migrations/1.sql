@@ -289,14 +289,14 @@ CREATE TABLE `pokemon` (
    KEY `ix_coords` (`lat`,`lon`),
    KEY `ix_pokemon_id` (`pokemon_id`),
    KEY `ix_updated` (`updated`),
-   KEY `fk_spawn_id` (`spawn_id`),
+   /*KEY `fk_spawn_id` (`spawn_id`),*/
    KEY `fk_pokestop_id` (`pokestop_id`),
    KEY `ix_atk_iv` (`atk_iv`),
    KEY `ix_def_iv` (`def_iv`),
    KEY `ix_sta_iv` (`sta_iv`),
    KEY `ix_changed` (`changed`),
    KEY `ix_level` (`level`),
-   KEY `fk_pokemon_cell_id` (`cell_id`),
+   /*KEY `fk_pokemon_cell_id` (`cell_id`),*/
    KEY `ix_expire_timestamp` (`expire_timestamp`),
    KEY `ix_iv` (`iv`),
    /*
