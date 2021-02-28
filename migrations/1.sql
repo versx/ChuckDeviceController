@@ -289,17 +289,19 @@ CREATE TABLE `pokemon` (
    KEY `ix_coords` (`lat`,`lon`),
    KEY `ix_pokemon_id` (`pokemon_id`),
    KEY `ix_updated` (`updated`),
-   KEY `fk_spawn_id` (`spawn_id`),
+   /*KEY `fk_spawn_id` (`spawn_id`),*/
    KEY `fk_pokestop_id` (`pokestop_id`),
    KEY `ix_atk_iv` (`atk_iv`),
    KEY `ix_def_iv` (`def_iv`),
    KEY `ix_sta_iv` (`sta_iv`),
    KEY `ix_changed` (`changed`),
    KEY `ix_level` (`level`),
-   KEY `fk_pokemon_cell_id` (`cell_id`),
+   /*KEY `fk_pokemon_cell_id` (`cell_id`),*/
    KEY `ix_expire_timestamp` (`expire_timestamp`),
    KEY `ix_iv` (`iv`),
+   /*
    CONSTRAINT `fk_pokemon_cell_id` FOREIGN KEY (`cell_id`) REFERENCES `s2cell` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-   CONSTRAINT `fk_pokestop_id` FOREIGN KEY (`pokestop_id`) REFERENCES `pokestop` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-   CONSTRAINT `fk_spawn_id` FOREIGN KEY (`spawn_id`) REFERENCES `spawnpoint` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+   CONSTRAINT `fk_spawn_id` FOREIGN KEY (`spawn_id`) REFERENCES `spawnpoint` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+   */
+   CONSTRAINT `fk_pokestop_id` FOREIGN KEY (`pokestop_id`) REFERENCES `pokestop` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 );
