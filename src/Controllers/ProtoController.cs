@@ -1061,7 +1061,9 @@
                         await newPokemon.AddEncounter(encounter, username).ConfigureAwait(false);
                         if (newPokemon.Update(null, true))
                         {
-                            updatedPokemon.Add(newPokemon);
+                            //this get bug:
+                            //PokemonRepository] AddOrUpdateAsync: Cannot add or update a child row: a foreign key constraint fails (`cdcdb`.`pokemon`, CONSTRAINT `fk_pokemon_cell_id` FOREIGN KEY (`cell_id`) REFERENCES `s2cell` (`id`) ON DELETE CASCADE ON UPDATE CASCADE)
+                            //updatedPokemon.Add(newPokemon);
                         }
                         if (newPokemon.CellId == 0)
                         {
@@ -1078,9 +1080,7 @@
                 }
                 if (updatedPokemon.Count > 0)
                 {
-                    //this get bug:
-                    //PokemonRepository] AddOrUpdateAsync: Cannot add or update a child row: a foreign key constraint fails (`cdcdb`.`pokemon`, CONSTRAINT `fk_pokemon_cell_id` FOREIGN KEY (`cell_id`) REFERENCES `s2cell` (`id`) ON DELETE CASCADE ON UPDATE CASCADE)
-                    //await _pokemonRepository.AddOrUpdateAsync(updatedPokemon).ConfigureAwait(false);
+                    await _pokemonRepository.AddOrUpdateAsync(updatedPokemon).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();
