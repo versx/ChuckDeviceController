@@ -11,7 +11,7 @@
 
         public static void WriteDebug(string format, params object[] args)
         {
-            WriteLine(ConsoleColor.Cyan, $"dbug: {format}", args);
+            WriteLine(ConsoleColor.Gray, $"dbug: {format}", args);
         }
 
         public static void WriteWarn(string format, params object[] args)
