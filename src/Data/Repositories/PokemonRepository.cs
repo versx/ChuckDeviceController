@@ -66,7 +66,6 @@
                 if (ex.Message.Contains("foreign key constraint fails"))
                 {
                     // TODO: noting ??
-                    ConsoleExt.WriteDebug("[PokemonRepository] AddOrUpdateAsync: foreign key constraint fails...");
                 }
                 else
                 {
