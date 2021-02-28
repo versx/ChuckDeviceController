@@ -1055,8 +1055,7 @@
                     }
                     else
                     {
-                        var centerCoord = new Coordinate(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude);
-                        var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(centerCoord.Latitude, centerCoord.Longitude));
+                        var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude));
                         var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
                         var newPokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
                         await newPokemon.AddEncounter(encounter, username).ConfigureAwait(false);
@@ -1079,7 +1078,9 @@
                 }
                 if (updatedPokemon.Count > 0)
                 {
-                    await _pokemonRepository.AddOrUpdateAsync(updatedPokemon).ConfigureAwait(false);
+                    //this get bug:
+                    //PokemonRepository] AddOrUpdateAsync: Cannot add or update a child row: a foreign key constraint fails (`cdcdb`.`pokemon`, CONSTRAINT `fk_pokemon_cell_id` FOREIGN KEY (`cell_id`) REFERENCES `s2cell` (`id`) ON DELETE CASCADE ON UPDATE CASCADE)
+                    //await _pokemonRepository.AddOrUpdateAsync(updatedPokemon).ConfigureAwait(false);
                 }
 
                 stopwatch.Stop();

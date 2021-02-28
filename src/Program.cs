@@ -39,7 +39,7 @@ namespace ChuckDeviceController
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("\tCopyright © 2021 - versx project's\n");
+            Console.WriteLine("\tCopyright © 2021 - versx's Projects\n");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("Starting ...");
             Console.ForegroundColor = org;
