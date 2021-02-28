@@ -956,7 +956,7 @@
                         }
                         if (pokemon.CellId == 0)
                         {
-                            Console.WriteLine($"Pokemon: {pokemon}");
+                            _logger.LogDebug($"Pokemon: {pokemon}");
                         }
                         var spawnpoint = pokemon.HandleSpawnpoint(wildPokemon.TimeTillHiddenMs, timestampMs)
                                                 .ConfigureAwait(false)
@@ -997,7 +997,7 @@
                         }
                         if (pokemon.CellId == 0)
                         {
-                            Console.WriteLine($"Pokemon: {pokemon}");
+                            _logger.LogDebug($"Pokemon: {pokemon}");
                         }
                     }
                 }
@@ -1050,7 +1050,7 @@
                         }
                         if (pokemon.CellId == 0)
                         {
-                            Console.WriteLine($"Pokemon: {pokemon}");
+                            _logger.LogDebug($"Pokemon: {pokemon}");
                         }
                     }
                     else
@@ -1065,7 +1065,7 @@
                         }
                         if (newPokemon.CellId == 0)
                         {
-                            Console.WriteLine($"Pokemon: {newPokemon}");
+                            _logger.LogDebug($"Pokemon: {newPokemon}");
                         }
                         var spawnpoint = await newPokemon.HandleSpawnpoint(encounter.Pokemon.TimeTillHiddenMs, timestampMs).ConfigureAwait(false);
                         updatedSpawnpoints.Add(spawnpoint);
