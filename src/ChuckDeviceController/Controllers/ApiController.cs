@@ -122,7 +122,7 @@
                 {
                     name = instance.Name,
                     type = FormatInstanceType(instance.Type),
-                    count = totalCount == 0 ? "0" : $"{onlineCount}/{offlineCount} ({totalCount})",
+                    count = totalCount == 0 ? "0" : $"{totalCount} ({onlineCount}/{offlineCount})",
                     geofence = instance.Geofence,
                     status = await InstanceController.Instance.GetInstanceStatus(instance).ConfigureAwait(false),
                     buttons = $"<a href='/dashboard/instance/edit/{Uri.EscapeDataString(instance.Name)}' role='button' class='btn btn-sm btn-primary'>Edit Instance</a>",

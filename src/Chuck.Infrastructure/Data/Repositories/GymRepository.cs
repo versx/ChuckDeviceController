@@ -104,49 +104,6 @@
                 .RunAsync().ConfigureAwait(false);
         }
 
-        public async Task AddOrUpdateAsync(List<Gym> entities, bool ignoreRaidFields) // = true
-        {
-            try
-            {
-                await _dbContext.BulkMergeAsync(entities, x =>
-                {
-                    x.AutoMap = Z.BulkOperations.AutoMapType.ByIndexerName;
-                    x.BatchSize = 100;
-                    //x.BatchTimeout = 10 * 1000; // TODO: Seconds or ms?
-                    x.InsertIfNotExists = true;
-                    x.InsertKeepIdentity = true;
-                    x.MergeKeepIdentity = true;
-                    x.Resolution = Z.BulkOperations.ResolutionType.Smart;
-                    x.UseTableLock = true; // TODO: ?
-                    x.AllowDuplicateKeys = true; // TODO: ?
-                    x.ColumnPrimaryKeyExpression = entity => entity.Id;
-                    if (ignoreRaidFields)
-                    {
-                        x.IgnoreOnMergeUpdateExpression = p => new
-                        {
-                            p.RaidBattleTimestamp,
-                            p.RaidEndTimestamp,
-                            p.RaidIsExclusive,
-                            p.RaidLevel,
-                            p.RaidPokemonCostume,
-                            p.RaidPokemonCP,
-                            p.RaidPokemonEvolution,
-                            p.RaidPokemonForm,
-                            p.RaidPokemonGender,
-                            p.RaidPokemonId,
-                            p.RaidPokemonMove1,
-                            p.RaidPokemonMove2,
-                            p.RaidSpawnTimestamp,
-                        };
-                    }
-                }).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                ConsoleExt.WriteError($"[GymRepository] AddOrUpdateAsync: {ex}");
-            }
-        }
-
         public async Task<List<Gym>> GetAllAsync(BoundingBox bbox, ulong updated = 0)
         {
             var gyms = await GetAllAsync(true).ConfigureAwait(false);

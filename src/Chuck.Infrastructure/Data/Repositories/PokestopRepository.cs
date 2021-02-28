@@ -32,37 +32,7 @@
                 {
                     Latitude = cIns.Latitude != cDb.Latitude ? cIns.Latitude : cDb.Latitude,
                     Longitude = cIns.Longitude != cDb.Longitude ? cIns.Longitude : cDb.Longitude,
-                    Name = cIns.Name != null ? cIns.Name : cDb.Name,
-                    Url = cIns.Url != null ? cIns.Name : cDb.Name,
-                    Enabled = cIns.Enabled != cDb.Enabled ? cIns.Enabled : cDb.Enabled,
-                    LureExpireTimestamp = cIns.LureExpireTimestamp != null ? cIns.LureExpireTimestamp : cDb.LureExpireTimestamp,
-                    LureId = cIns.LureId != null ? cIns.LureId : cDb.LureId,
-                    PokestopDisplay = cIns.PokestopDisplay != null ? cIns.PokestopDisplay : cDb.PokestopDisplay,
-                    IncidentExpireTimestamp = cIns.IncidentExpireTimestamp != null ? cIns.IncidentExpireTimestamp : cDb.IncidentExpireTimestamp,
-                    GruntType = cIns.GruntType != null ? cIns.GruntType : cDb.GruntType,
-                    QuestType = cIns.QuestType != null ? cIns.QuestType : cDb.QuestType,
-                    QuestTimestamp = cIns.QuestTimestamp != null ? cIns.QuestTimestamp : cDb.QuestTimestamp,
-                    QuestTarget = cIns.QuestTarget != null ? cIns.QuestTarget : cDb.QuestTarget,
-                    QuestTemplate = cIns.QuestTemplate != null ? cIns.QuestTemplate : cDb.QuestTemplate,
-                    QuestConditions = cIns.QuestConditions, // TODO: QuestCondtions
-                    QuestRewards = cIns.QuestRewards, // TODO: QuestRewards
-                    Updated = now,
-                    FirstSeenTimestamp = cDb.FirstSeenTimestamp == 0 ? now : cDb.FirstSeenTimestamp,
-                })
-                .RunAsync().ConfigureAwait(false);
-        }
-
-        public async Task<int> InsertOrUpdate(List<Pokestop> pokestops)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            return await _dbContext.Pokestops
-                .UpsertRange(pokestops)
-                .On(p => p.Id)
-                .WhenMatched((cDb, cIns) => new Pokestop
-                {
-                    Latitude = cIns.Latitude != cDb.Latitude ? cIns.Latitude : cDb.Latitude,
-                    Longitude = cIns.Longitude != cDb.Longitude ? cIns.Longitude : cDb.Longitude,
-                    Name = cIns.Name != null ? cIns.Name : cDb.Name,
+                    Name = cIns.Name ?? cDb.Name,
                     Url = cIns.Url != null ? cIns.Name : cDb.Name,
                     Enabled = cIns.Enabled != cDb.Enabled ? cIns.Enabled : cDb.Enabled,
                     LureExpireTimestamp = cIns.LureExpireTimestamp != null ? cIns.LureExpireTimestamp : cDb.LureExpireTimestamp,
@@ -82,43 +52,34 @@
                 .RunAsync().ConfigureAwait(false);
         }
 
-        public async Task AddOrUpdateAsync(List<Pokestop> entities, bool ignoreQuestFields = true)
+        public async Task<int> InsertOrUpdate(List<Pokestop> pokestops)
         {
-            try
-            {
-                await _dbContext.BulkMergeAsync(entities, x =>
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            return await _dbContext.Pokestops
+                .UpsertRange(pokestops)
+                .On(p => p.Id)
+                .WhenMatched((cDb, cIns) => new Pokestop
                 {
-                    x.AutoMap = Z.BulkOperations.AutoMapType.ByIndexerName;
-                    x.BatchSize = 100;
-                    //x.BatchTimeout = 10 * 1000; // TODO: Seconds or ms?
-                    x.InsertIfNotExists = true;
-                    x.InsertKeepIdentity = true;
-                    x.MergeKeepIdentity = true;
-                    x.Resolution = Z.BulkOperations.ResolutionType.Smart;
-                    x.UseTableLock = true; // TODO: ?
-                    x.AllowDuplicateKeys = true; // TODO: ?
-                    x.ColumnPrimaryKeyExpression = entity => entity.Id;
-                    if (ignoreQuestFields)
-                    {
-                        x.IgnoreOnMergeUpdateExpression = p => new
-                        {
-                            p.QuestConditions,
-                            p.QuestItemId,
-                            p.QuestPokemonId,
-                            p.QuestRewards,
-                            p.QuestRewardType,
-                            p.QuestTarget,
-                            p.QuestTemplate,
-                            p.QuestTimestamp,
-                            p.QuestType,
-                        };
-                    }
-                }).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                ConsoleExt.WriteError($"[PokestopRepository] AddOrUpdateAsync: {ex}");
-            }
+                    Latitude = cIns.Latitude != cDb.Latitude ? cIns.Latitude : cDb.Latitude,
+                    Longitude = cIns.Longitude != cDb.Longitude ? cIns.Longitude : cDb.Longitude,
+                    Name = cIns.Name ?? cDb.Name,
+                    Url = cIns.Url != null ? cIns.Name : cDb.Name,
+                    Enabled = cIns.Enabled != cDb.Enabled ? cIns.Enabled : cDb.Enabled,
+                    LureExpireTimestamp = cIns.LureExpireTimestamp != null ? cIns.LureExpireTimestamp : cDb.LureExpireTimestamp,
+                    LureId = cIns.LureId != 0 ? cIns.LureId : cDb.LureId,
+                    PokestopDisplay = cIns.PokestopDisplay != null ? cIns.PokestopDisplay : cDb.PokestopDisplay,
+                    IncidentExpireTimestamp = cIns.IncidentExpireTimestamp != null ? cIns.IncidentExpireTimestamp : cDb.IncidentExpireTimestamp,
+                    GruntType = cIns.GruntType != null ? cIns.GruntType : cDb.GruntType,
+                    QuestType = cIns.QuestType != null ? cIns.QuestType : cDb.QuestType,
+                    QuestTimestamp = cIns.QuestTimestamp != null ? cIns.QuestTimestamp : cDb.QuestTimestamp,
+                    QuestTarget = cIns.QuestTarget != null ? cIns.QuestTarget : cDb.QuestTarget,
+                    QuestTemplate = cIns.QuestTemplate ?? cDb.QuestTemplate,
+                    QuestConditions = cIns.QuestConditions, // TODO: QuestCondtions
+                    QuestRewards = cIns.QuestRewards, // TODO: QuestRewards
+                    Updated = now,
+                    FirstSeenTimestamp = cDb.FirstSeenTimestamp == 0 ? now : cDb.FirstSeenTimestamp,
+                })
+                .RunAsync().ConfigureAwait(false);
         }
 
         public async Task ClearQuestsAsync()

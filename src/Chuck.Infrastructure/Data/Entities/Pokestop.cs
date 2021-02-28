@@ -454,6 +454,7 @@
                     case QuestConditionProto.Types.ConditionType.WithUniquePokemon:
                     case QuestConditionProto.Types.ConditionType.WithUniquePokemonTeam:
                     case QuestConditionProto.Types.ConditionType.WithUniquePokestop:
+                    case QuestConditionProto.Types.ConditionType.WithCurveBall:
                     default:
                         ConsoleExt.WriteWarn($"[Pokestop] Unrecognized condition type: {condition.Type}");
                         break;

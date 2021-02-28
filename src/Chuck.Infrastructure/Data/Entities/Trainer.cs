@@ -11,6 +11,7 @@
         [
             Column("name"),
             Key,
+            DatabaseGenerated(DatabaseGeneratedOption.None),
         ]
         public string Name { get; set; }
 

@@ -7,8 +7,9 @@
         public const string ProtoNearbyPokemon = "proto:nearby_pokemon";
         public const string ProtoEncounter = "proto:encounter";
         public const string ProtoFort = "proto:fort";
-        public const string ProtoGymDefender = "proto:gym_defender";
-        public const string ProtoGymTrainer = "proto:gym_trainer";
+        public const string ProtoGymInfo = "proto:gym_info";
+        //public const string ProtoGymDefender = "proto:gym_defender";
+        //public const string ProtoGymTrainer = "proto:gym_trainer";
         public const string ProtoQuest = "proto:quest";
         public const string ProtoCell = "proto:weather";
         public const string ProtoWeather = "proto:cell";
