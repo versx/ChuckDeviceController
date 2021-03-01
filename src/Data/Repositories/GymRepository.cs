@@ -58,7 +58,15 @@
             }
             catch (Exception ex)
             {
-                ConsoleExt.WriteError($"[GymRepository] AddOrUpdateAsync: {ex}");
+                if (ex.Message.Contains("foreign key constraint fails"))
+                {
+                    // TODO: noting ??
+                    ConsoleExt.WriteInfo("[GymRepository] AddOrUpdateAsync: Fort not needs update.");
+                }
+                else
+                {
+                    ConsoleExt.WriteError($"[GymRepository] AddOrUpdateAsync: {ex.Message}");
+                }
             }
         }
 
