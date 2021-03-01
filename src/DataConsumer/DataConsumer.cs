@@ -190,8 +190,8 @@
                         continue;
                     }
                     var obj = JsonSerializer.Deserialize<dynamic>(data.ToString());
-                    string channel = obj.channel;
-                    dynamic message = obj.data;
+                    string channel = Convert.ToString(obj.GetProperty("channel"));
+                    string message = Convert.ToString(obj.GetProperty("data"));
                     await SubscriptionHandler(channel, message);
                     Thread.Sleep(1);
                 }

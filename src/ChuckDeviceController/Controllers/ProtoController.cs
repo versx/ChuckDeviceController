@@ -611,7 +611,7 @@
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            InstanceController.Instance.GotPokemon(pokemon);
+                            Task.Run(() => InstanceController.Instance.GotPokemon(pokemon));
                         }
                         break;
                     }
@@ -620,7 +620,7 @@
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            InstanceController.Instance.GotIV(pokemon);
+                            Task.Run(() => InstanceController.Instance.GotIV(pokemon));
                         }
                         break;
                     }
