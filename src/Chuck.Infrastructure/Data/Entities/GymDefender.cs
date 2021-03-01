@@ -153,34 +153,31 @@
         ]
         public ulong Updated { get; set; }
 
-        public static GymDefender FromProto(string fortId, GymDefenderProto proto)
+        public GymDefender(string fortId, GymDefenderProto proto)
         {
-            return new GymDefender
-            {
-                Id = proto.MotivatedPokemon.Pokemon.Id.ToString(), // TODO: Convert to ulong
-                PokemonId = (ushort)proto.MotivatedPokemon.Pokemon.PokemonId,
-                CpWhenDeployed = (uint)proto.MotivatedPokemon.CpWhenDeployed,
-                CpNow = (uint)proto.MotivatedPokemon.CpNow,
-                BerryValue = proto.MotivatedPokemon.BerryValue,
-                TimesFed = (ushort)proto.DeploymentTotals?.TimesFed,
-                DeploymentDuration = (uint)proto.DeploymentTotals?.DeploymentDurationMs / 1000,
-                TrainerName = proto.MotivatedPokemon.Pokemon.OwnerName,
-                FortId = fortId,
-                AttackIV = (ushort)proto.MotivatedPokemon.Pokemon?.IndividualAttack,
-                DefenseIV = (ushort)proto.MotivatedPokemon.Pokemon?.IndividualDefense,
-                StaminaIV = (ushort)proto.MotivatedPokemon.Pokemon?.IndividualStamina,
-                Move1 = (ushort)proto.MotivatedPokemon.Pokemon?.Move1,
-                Move2 = (ushort)proto.MotivatedPokemon.Pokemon?.Move2,
-                BattlesAttacked = (ushort)proto.MotivatedPokemon.Pokemon.BattlesAttacked,
-                BattlesDefended = (ushort)proto.MotivatedPokemon.Pokemon.BattlesDefended,
-                Gender = (ushort)proto.MotivatedPokemon.Pokemon.PokemonDisplay.Gender,
-                HatchedFromEgg = proto.MotivatedPokemon.Pokemon.HatchedFromEgg,
-                PvpCombatWon = (ushort)(proto.MotivatedPokemon.Pokemon.PvpCombatStats?.NumWon ?? 0),
-                PvpCombatTotal = (ushort)(proto.MotivatedPokemon.Pokemon.PvpCombatStats?.NumTotal ?? 0),
-                NpcCombatWon = (ushort)(proto.MotivatedPokemon.Pokemon.NpcCombatStats?.NumWon ?? 0),
-                NpcCombatTotal = (ushort)(proto.MotivatedPokemon.Pokemon.NpcCombatStats?.NumTotal ?? 0),
-                Updated = DateTime.UtcNow.ToTotalSeconds(),
-            };
+            Id = proto.MotivatedPokemon.Pokemon.Id.ToString(); // TODO: Convert to ulong
+            PokemonId = (ushort)proto.MotivatedPokemon.Pokemon.PokemonId;
+            CpWhenDeployed = (uint)proto.MotivatedPokemon.CpWhenDeployed;
+            CpNow = (uint)proto.MotivatedPokemon.CpNow;
+            BerryValue = proto.MotivatedPokemon.BerryValue;
+            TimesFed = (ushort)proto.DeploymentTotals?.TimesFed;
+            DeploymentDuration = (uint)proto.DeploymentTotals?.DeploymentDurationMs / 1000;
+            TrainerName = proto.MotivatedPokemon.Pokemon.OwnerName;
+            FortId = fortId;
+            AttackIV = (ushort)proto.MotivatedPokemon.Pokemon?.IndividualAttack;
+            DefenseIV = (ushort)proto.MotivatedPokemon.Pokemon?.IndividualDefense;
+            StaminaIV = (ushort)proto.MotivatedPokemon.Pokemon?.IndividualStamina;
+            Move1 = (ushort)proto.MotivatedPokemon.Pokemon?.Move1;
+            Move2 = (ushort)proto.MotivatedPokemon.Pokemon?.Move2;
+            BattlesAttacked = (ushort)proto.MotivatedPokemon.Pokemon.BattlesAttacked;
+            BattlesDefended = (ushort)proto.MotivatedPokemon.Pokemon.BattlesDefended;
+            Gender = (ushort)proto.MotivatedPokemon.Pokemon.PokemonDisplay.Gender;
+            HatchedFromEgg = proto.MotivatedPokemon.Pokemon.HatchedFromEgg;
+            PvpCombatWon = (ushort)(proto.MotivatedPokemon.Pokemon.PvpCombatStats?.NumWon ?? 0);
+            PvpCombatTotal = (ushort)(proto.MotivatedPokemon.Pokemon.PvpCombatStats?.NumTotal ?? 0);
+            NpcCombatWon = (ushort)(proto.MotivatedPokemon.Pokemon.NpcCombatStats?.NumWon ?? 0);
+            NpcCombatTotal = (ushort)(proto.MotivatedPokemon.Pokemon.NpcCombatStats?.NumTotal ?? 0);
+            Updated = DateTime.UtcNow.ToTotalSeconds();
 
             // TODO: New gym defender properties
             //BuddyCandyAwarded

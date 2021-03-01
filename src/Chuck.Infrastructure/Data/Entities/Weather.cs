@@ -69,6 +69,29 @@
 
         #endregion
 
+        public Weather(ClientWeatherProto proto)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var s2cell = new S2Cell(new S2CellId((ulong)proto.S2CellId));
+            var center = s2cell.RectBound.Center;
+            var alert = proto.Alerts?.FirstOrDefault();
+            Id = proto.S2CellId;
+            Level = s2cell.Level;
+            Latitude = center.LatDegrees;
+            Longitude = center.LngDegrees;
+            GameplayCondition = proto.GameplayWeather.GameplayCondition;
+            WindDirection = (ushort)proto.DisplayWeather.WindDirection;
+            CloudLevel = (ushort)proto.DisplayWeather.CloudLevel;
+            RainLevel = (ushort)proto.DisplayWeather.RainLevel;
+            WindLevel = (ushort)proto.DisplayWeather.WindLevel;
+            SnowLevel = (ushort)proto.DisplayWeather.SnowLevel;
+            FogLevel = (ushort)proto.DisplayWeather.FogLevel;
+            SpecialEffectLevel = (ushort)proto.DisplayWeather.SpecialEffectLevel;
+            Severity = (ushort?)proto.Alerts?.FirstOrDefault()?.Severity ?? null;
+            WarnWeather = alert?.WarnWeather;
+            Updated = now;
+        }
+
         public bool Update(Weather oldWeather = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
@@ -119,32 +142,6 @@
                     warn_weather = WarnWeather,
                     updated = Updated,
                 },
-            };
-        }
-
-        public static Weather FromProto(ClientWeatherProto proto)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var s2cell = new S2Cell(new S2CellId((ulong)proto.S2CellId));
-            var center = s2cell.RectBound.Center;
-            var alert = proto.Alerts?.FirstOrDefault();
-            return new Weather
-            {
-                Id = proto.S2CellId,
-                Level = s2cell.Level,
-                Latitude = center.LatDegrees,
-                Longitude = center.LngDegrees,
-                GameplayCondition = proto.GameplayWeather.GameplayCondition,
-                WindDirection = (ushort)proto.DisplayWeather.WindDirection,
-                CloudLevel = (ushort)proto.DisplayWeather.CloudLevel,
-                RainLevel = (ushort)proto.DisplayWeather.RainLevel,
-                WindLevel = (ushort)proto.DisplayWeather.WindLevel,
-                SnowLevel = (ushort)proto.DisplayWeather.SnowLevel,
-                FogLevel = (ushort)proto.DisplayWeather.FogLevel,
-                SpecialEffectLevel = (ushort)proto.DisplayWeather.SpecialEffectLevel,
-                Severity = (ushort?)proto.Alerts?.FirstOrDefault()?.Severity ?? null,
-                WarnWeather = alert?.WarnWeather,
-                Updated = now,
             };
         }
     }

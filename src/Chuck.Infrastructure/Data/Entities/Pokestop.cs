@@ -207,10 +207,14 @@
             Enabled = fort.Enabled;
             LastModifiedTimestamp = (ulong)fort.LastModifiedMs / 1000;
             CellId = cellId;
-            FirstSeenTimestamp = now;
             Updated = now;
             Deleted = false;
             IsArScanEligible = fort.IsArScanEligible;
+            if (!string.IsNullOrEmpty(fort.ImageUrl))
+            {
+                //pokestop.Name = fort.Name;
+                Url = fort.ImageUrl;
+            }
             if (fort.ActiveFortModifier?.Count > 0 &&
                 (fort.ActiveFortModifier.Contains(Item.TroyDisk) ||
                  fort.ActiveFortModifier.Contains(Item.TroyDiskGlacial) ||
@@ -610,66 +614,6 @@
                 oldPokestop.SponsorId != newPokestop.SponsorId ||
                 Math.Abs(oldPokestop.Latitude - newPokestop.Latitude) >= 0.000001 ||
                 Math.Abs(oldPokestop.Longitude - newPokestop.Longitude) >= 0.000001;
-        }
-
-        public static Pokestop FromProto(ulong cellId, PokemonFortProto fort)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var pokestop = new Pokestop
-            {
-                Id = fort.FortId,
-                Latitude = fort.Latitude,
-                Longitude = fort.Longitude,
-                LastModifiedTimestamp = Convert.ToUInt64(fort.LastModifiedMs / 1000),
-                SponsorId = (uint)fort?.Sponsor,
-                Enabled = fort.Enabled,
-                FirstSeenTimestamp = now, // TODO: Fix
-                Updated = now,
-                Deleted = false,
-                IsArScanEligible = fort.IsArScanEligible,
-                CellId = cellId,
-            };
-            if (fort.LastModifiedMs > 0)
-            {
-                pokestop.Enabled = true;
-            }
-            if (!string.IsNullOrEmpty(fort.ImageUrl))
-            {
-                //pokestop.Name = fort.Name;
-                if (!string.IsNullOrEmpty(fort.ImageUrl))
-                {
-                    pokestop.Url = fort.ImageUrl;
-                }
-            }
-            if (fort.ActiveFortModifier?.Count > 0 &&
-                (fort.ActiveFortModifier.Contains(Item.TroyDisk) ||
-                 fort.ActiveFortModifier.Contains(Item.TroyDiskGlacial) ||
-                 fort.ActiveFortModifier.Contains(Item.TroyDiskMagnetic) ||
-                 fort.ActiveFortModifier.Contains(Item.TroyDiskMossy)))
-            {
-                pokestop.LureExpireTimestamp = (ulong)Math.Floor(Convert.ToDouble(pokestop.LastModifiedTimestamp + LureTime));
-                pokestop.LureId = (uint)fort.ActiveFortModifier.FirstOrDefault();
-            }
-            if (fort.PokestopDisplay != null)
-            {
-                pokestop.IncidentExpireTimestamp = (ulong)Math.Floor(Convert.ToDouble(fort.PokestopDisplay.IncidentExpirationMs / 1000));
-                if (fort.PokestopDisplay?.CharacterDisplay != null)
-                {
-                    pokestop.PokestopDisplay = (uint?)fort.PokestopDisplay.CharacterDisplay?.Style;
-                    pokestop.GruntType = (uint)fort.PokestopDisplay.CharacterDisplay?.Character;
-                }
-            }
-            else if (fort.PokestopDisplays?.Count > 0)
-            {
-                var pokestopDisplay = fort.PokestopDisplays.FirstOrDefault();
-                pokestop.IncidentExpireTimestamp = (ulong)Math.Floor(Convert.ToDouble(pokestopDisplay.IncidentExpirationMs / 1000));
-                if (fort.PokestopDisplays.FirstOrDefault()?.CharacterDisplay != null)
-                {
-                    pokestop.PokestopDisplay = (uint?)pokestopDisplay.CharacterDisplay.Style;
-                    pokestop.GruntType = (uint)pokestopDisplay.CharacterDisplay.Character;
-                }
-            }
-            return pokestop;
         }
     }
 

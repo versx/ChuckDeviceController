@@ -213,18 +213,21 @@
             Id = fort.FortId;
             Latitude = fort.Latitude;
             Longitude = fort.Longitude;
-            SponsorId = fort.Sponsor > 0 ? (uint)fort.Sponsor : 0;
-            Enabled = fort.Enabled;
-            LastModifiedTimestamp = (ulong)(fort.LastModifiedMs / 1000);
+            //Name = fort.Name;
+            Url = fort.ImageUrl;
             GuardingPokemonId = (uint)fort.GuardPokemonId;
+            AvailableSlots = (ushort?)fort.GymDisplay?.SlotsAvailable ?? 0;
+            LastModifiedTimestamp = (ulong)fort.LastModifiedMs / 1000;
             Team = fort.Team;
-            AvailableSlots = (ushort)(fort.GymDisplay?.SlotsAvailable ?? 0);
+            Enabled = fort.Enabled;
+            ExRaidEligible = fort.IsExRaidEligible;
             InBattle = fort.IsInBattle;
-            TotalCP = fort.GymDisplay?.TotalGymCp ?? 0;
+            TotalCP = fort.GymDisplay.TotalGymCp;
             CellId = cellId;
-            //FirstSeenTimestamp = now;
+            SponsorId = (uint)fort.Sponsor;
             Updated = now;
             Deleted = false;
+            //IsArScanEligible = fort.IsArScanEligible;
             if (fort.RaidInfo != null)
             {
                 Url = fort.ImageUrl;
@@ -430,47 +433,6 @@
                 type = realType,
                 message = data,
             };
-        }
-
-        public static Gym FromProto(ulong cellId, PokemonFortProto fort)
-        {
-            var gym = new Gym
-            {
-                Id = fort.FortId,
-                Latitude = fort.Latitude,
-                Longitude = fort.Longitude,
-                //Name = fort.Name,
-                Url = fort.ImageUrl,
-                GuardingPokemonId = (uint)fort.GuardPokemonId,
-                AvailableSlots = (ushort?)fort.GymDisplay?.SlotsAvailable ?? 0,
-                LastModifiedTimestamp = (ulong)fort.LastModifiedMs / 1000,
-                Team = fort.Team,
-                Enabled = fort.Enabled,
-                ExRaidEligible = fort.IsExRaidEligible,
-                InBattle = fort.IsInBattle,
-                TotalCP = fort.GymDisplay.TotalGymCp,
-                CellId = cellId,
-            };
-            if (fort.RaidInfo != null)
-            {
-                gym.Url = fort.ImageUrl;
-                gym.RaidEndTimestamp = Convert.ToUInt64(fort.RaidInfo.RaidEndMs / 1000);
-                gym.RaidSpawnTimestamp = Convert.ToUInt64(fort.RaidInfo.RaidSpawnMs / 1000);
-                gym.RaidBattleTimestamp = Convert.ToUInt64(fort.RaidInfo.RaidBattleMs / 1000);
-                gym.RaidLevel = (ushort)fort.RaidInfo.RaidLevel;
-                gym.RaidIsExclusive = fort.RaidInfo.IsExclusive;
-                if (fort.RaidInfo.RaidPokemon != null)
-                {
-                    gym.RaidPokemonId = (uint?)fort.RaidInfo.RaidPokemon.PokemonId;
-                    gym.RaidPokemonMove1 = (uint?)fort.RaidInfo.RaidPokemon.Move1;
-                    gym.RaidPokemonMove2 = (uint?)fort.RaidInfo.RaidPokemon.Move2;
-                    gym.RaidPokemonCP = (uint?)fort.RaidInfo.RaidPokemon.Cp;
-                    gym.RaidPokemonForm = (uint?)fort.RaidInfo.RaidPokemon.PokemonDisplay.Form;
-                    gym.RaidPokemonGender = (ushort)fort.RaidInfo.RaidPokemon.PokemonDisplay.Gender;
-                    gym.RaidPokemonEvolution = (uint)fort.RaidInfo.RaidPokemon.PokemonDisplay.CurrentTempEvolution;
-                }
-            }
-            return gym;
         }
     }
 }

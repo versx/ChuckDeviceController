@@ -3,32 +3,38 @@
     using System.Text.Json.Serialization;
 
     /// <summary>
-    /// MySQL database configuration class.
+    /// Redis client configuration class.
     /// </summary>
     public class RedisConfig
     {
         /// <summary>
-        /// MySQL host address
+        /// Redis server address
         /// </summary>
         [JsonPropertyName("host")]
         public string Host { get; set; }
 
         /// <summary>
-        /// MySQL listening port
+        /// Redis server listening port
         /// </summary>
         [JsonPropertyName("port")]
         public ushort Port { get; set; }
 
         /// <summary>
-        /// MySQL password
+        /// Redis server secret/password
         /// </summary>
         [JsonPropertyName("password")]
         public string Password { get; set; }
 
         /// <summary>
-        /// MySQL database name
+        /// Redis database number
         /// </summary>
         [JsonPropertyName("databaseNum")]
         public int DatabaseNum { get; set; }
+
+        /// <summary>
+        /// Redis queue/list name to use
+        /// </summary>
+        [JsonPropertyName("queueName")]
+        public string QueueName { get; set; }
     }
 }

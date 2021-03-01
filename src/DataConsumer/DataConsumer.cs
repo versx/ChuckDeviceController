@@ -28,13 +28,12 @@
 
     class DataConsumer
     {
-        private const string RedisQueueName = "*"; // TODO: Eventually change from wildcard
         //private const uint MaxConcurrency = 100;
 
         #region Variables
 
         private readonly IConnectionMultiplexer _redis;
-        private readonly ISubscriber _subscriber;
+        //private readonly ISubscriber _subscriber;
         private readonly IDatabaseAsync _redisDatabase;
         private readonly Config _config;
 
@@ -113,7 +112,7 @@
             _redis.InternalError += RedisOnInternalError;
             if (_redis.IsConnected)
             {
-                _subscriber = _redis.GetSubscriber();
+                //_subscriber = _redis.GetSubscriber();
                 _redisDatabase = _redis.GetDatabase(_config.Redis.DatabaseNum);
             }
         }
@@ -146,7 +145,7 @@
             _shouldExit = false;
 
             // Register to redis queue
-            RegisterQueueSubscriber();
+            StartQueueListener();
             // Start database ingester
             DataIngester();
 
@@ -162,7 +161,7 @@
                     ConsoleExt.WriteWarn($"[DataConsumer] Not connected to redis server");
                     return;
                 }
-                var length = await _redisDatabase.ListLengthAsync(RedisQueueName);
+                var length = await _redisDatabase.ListLengthAsync(_config.Redis.QueueName);
                 if (length > 1000)
                 {
                     ConsoleExt.WriteWarn($"[DataConsumer] Queue is current {length}");
@@ -181,9 +180,25 @@
 
         #endregion
 
-        private void RegisterQueueSubscriber()
+        private void StartQueueListener()
         {
-            _subscriber.Subscribe(RedisQueueName, async (channel, message) => await SubscriptionHandler(channel, message));
+            new Thread(async () =>
+            {
+                while (!_shouldExit)
+                {
+                    var data = await GetData(_config.Redis.QueueName);
+                    if (data == default)
+                    {
+                        Thread.Sleep(1);
+                        continue;
+                    }
+                    var obj = (dynamic)data;
+                    await SubscriptionHandler(obj.channel, obj.data);
+                    Thread.Sleep(1);
+                }
+            })
+            { IsBackground = true }.Start();
+            //_subscriber.Subscribe(RedisQueueName, async (channel, message) => await SubscriptionHandler(channel, message));
         }
 
         private async Task SubscriptionHandler(RedisChannel channel, RedisValue message)
@@ -342,8 +357,8 @@
                             switch (fort.FortType)
                             {
                                 case FortType.Gym:
-                                    var oldGym = await GetCacheData<Gym>($"gym_{fort.FortId}");//gymRepository.GetByIdAsync(fort.FortId).ConfigureAwait(false).GetAwaiter().GetResult();
-                                    var gym = Gym.FromProto(cellId, fort);// new Gym(cellId, fort);
+                                    var oldGym = await GetEntity<Gym>(fort.FortId, "gym");
+                                    var gym = new Gym(cellId, fort);
                                     if (gym.Update(oldGym)) // TODO: Check HasChanges property
                                     {
                                         // TODO: Webhook
@@ -367,7 +382,7 @@
                                     break;
                                 case FortType.Checkpoint:
                                     var oldPokestop = await GetEntity<Pokestop>(fort.FortId, "pokestop");
-                                    var pokestop = Pokestop.FromProto(cellId, fort);//new Pokestop(cellId, fort);
+                                    var pokestop = new Pokestop(cellId, fort);
                                     if (pokestop.Update(oldPokestop)) // TODO: Check HasChanges property
                                     {
                                         // TODO: Webhook
@@ -472,12 +487,12 @@
                         }
                     case RedisChannels.ProtoWeather:
                         {
-                            var weather = JsonSerializer.Deserialize<ClientWeatherProto>(message);
+                            var weather = JsonSerializer.Deserialize<Weather>(message);
                             if (weather == null) return;
 
                             lock (_weatherLock)
                             {
-                                _weather.Add(Weather.FromProto(weather));
+                                _weather.Add(weather);
                             }
                             break;
                         }
@@ -940,6 +955,8 @@
 
         #endregion
 
+        #region Cache Helpers
+
         private async Task<T> GetEntity<T>(string id, string prefix) where T : BaseEntity
         {
             var oldEntity = await GetCacheData<T>(prefix + "_" + id).ConfigureAwait(false);
@@ -953,8 +970,6 @@
             }
             return oldEntity;
         }
-
-        #region Cache Helpers
 
         private async Task<T> GetCacheData<T>(string key)
         {
@@ -992,21 +1007,20 @@
             }
         }
 
-        private Task PublishData<T>(string channel, T data)
+        private Task<RedisValue> GetData(string key)
         {
             try
             {
-                if (data == null)
+                if (_redis.IsConnected)
                 {
-                    return Task.CompletedTask;
+                    return _redisDatabase.ListLeftPopAsync(key);
                 }
-                _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
             }
             catch (Exception ex)
             {
                 ConsoleExt.WriteError(ex);
             }
-            return Task.CompletedTask;
+            return default;
         }
     }
 

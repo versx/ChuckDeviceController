@@ -26,7 +26,8 @@
         #region Variables
 
         private readonly IConnectionMultiplexer _redis;
-        private readonly ISubscriber _subscriber;
+        //private readonly ISubscriber _subscriber;
+        private readonly IDatabaseAsync _redisDatabase;
         private readonly ILogger<ProtoController> _logger;
 
         private readonly AccountRepository _accountRepository;
@@ -45,7 +46,8 @@
         public ProtoController(IDbContextFactory<DeviceControllerContext> dbFactory, IConnectionMultiplexer connectionMultiplexer, ILogger<ProtoController> logger)
         {
             _redis = connectionMultiplexer;
-            _subscriber = _redis.GetSubscriber();
+            _redisDatabase = _redis.GetDatabase(Startup.Config.Redis.DatabaseNum);
+            //_subscriber = _redis.GetSubscriber();
             _logger = logger;
 
             _accountRepository = new AccountRepository(dbFactory.CreateDbContext());
@@ -384,7 +386,7 @@
                                 }
                                 foreach (var weather in gmo.ClientWeather)
                                 {
-                                    await PublishData(RedisChannels.ProtoWeather, weather);
+                                    await PublishData(RedisChannels.ProtoWeather, new Weather(weather));
                                     clientWeather++;
                                 }
                                 if (wildPokemon == 0 && nearbyPokemon == 0 && forts == 0 && quests == 0)
@@ -430,7 +432,6 @@
                             var ggi = GymGetInfoOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (ggi != null)
                             {
-                                //gymInfos.Add(ggi);
                                 if (ggi.GymStatusAndDefenders == null)
                                 {
                                     ConsoleExt.WriteWarn($"[DataConsumer] Invalid GymStatusAndDefenders provided, skipping...\n: {ggi}");
@@ -445,11 +446,11 @@
                                 {
                                     if (gymDefender.TrainerPublicProfile != null)
                                     {
-                                        await PublishData(RedisChannels.ProtoGymTrainer, Trainer.FromProto(gymDefender));
+                                        await PublishData(RedisChannels.ProtoGymTrainer, new Trainer(gymDefender));
                                     }
                                     if (gymDefender.MotivatedPokemon != null)
                                     {
-                                        await PublishData(RedisChannels.ProtoGymDefender, GymDefender.FromProto(fortId, gymDefender));
+                                        await PublishData(RedisChannels.ProtoGymDefender, new GymDefender(fortId, gymDefender));
                                     }
                                 }
                             }
@@ -609,7 +610,9 @@
                 {
                     return Task.CompletedTask;
                 }
-                _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
+                //_subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
+                // TODO: Redis Queue Name
+                _redisDatabase.ListRightPushAsync(Startup.Config.Redis.QueueName, new { channel, data, }.ToJson());
             }
             catch (Exception ex)
             {

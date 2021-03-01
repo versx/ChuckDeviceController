@@ -75,21 +75,18 @@
         ]
         public ulong Updated { get; set; }
 
-        public static Trainer FromProto(GymDefenderProto proto)
+        public Trainer(GymDefenderProto proto)
         {
-            return new Trainer
-            {
-                Name = proto.TrainerPublicProfile.Name,
-                Level = (ushort)proto.TrainerPublicProfile.Level,
-                TeamId = (ushort)proto.TrainerPublicProfile.Team,
-                BattlesWon = (uint)(proto.TrainerPublicProfile?.BattlesWon ?? 0),
-                KmWalked = proto.TrainerPublicProfile?.KmWalked ?? 0,
-                PokemonCaught = (ulong)(proto.TrainerPublicProfile?.CaughtPokemon ?? 0),
-                Experience = (ulong)(proto.TrainerPublicProfile?.Experience ?? 0),
-                CombatRank = (ulong)(proto.TrainerPublicProfile?.CombatRank ?? 0),
-                CombatRating = proto.TrainerPublicProfile?.CombatRating ?? 0,
-                Updated = DateTime.UtcNow.ToTotalSeconds(),
-            };
+            Name = proto.TrainerPublicProfile.Name;
+            Level = (ushort)proto.TrainerPublicProfile.Level;
+            TeamId = (ushort)proto.TrainerPublicProfile.Team;
+            BattlesWon = (uint)(proto.TrainerPublicProfile?.BattlesWon ?? 0);
+            KmWalked = proto.TrainerPublicProfile?.KmWalked ?? 0;
+            PokemonCaught = (ulong)(proto.TrainerPublicProfile?.CaughtPokemon ?? 0);
+            Experience = (ulong)(proto.TrainerPublicProfile?.Experience ?? 0);
+            CombatRank = (ulong)(proto.TrainerPublicProfile?.CombatRank ?? 0);
+            CombatRating = proto.TrainerPublicProfile?.CombatRating ?? 0;
+            Updated = DateTime.UtcNow.ToTotalSeconds();
 
             // TODO: New gym trainer properties
             //trainerProfile.GymBadgeType (gym badge type)
