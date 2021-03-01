@@ -61,8 +61,7 @@
             MinimumLevel = minLevel;
             MaximumLevel = maxLevel;
 
-            SpawnpointCoordinates = Task.Run(async () => await Bootstrap())
-                                        .ConfigureAwait(false)
+            SpawnpointCoordinates = Task.Run(async () => await Bootstrap().ConfigureAwait(false))
                                         .GetAwaiter()
                                         .GetResult();
         }
@@ -120,7 +119,7 @@
             // TODO: Show amount found/remaining/total
             if (SpawnpointCoordinates.Count == 0)
             {
-                return $"No Unknown Spawnpoints";
+                return "No Unknown Spawnpoints";
             }
             var percentage = Math.Round(((double)_lastIndex / (double)SpawnpointCoordinates.Count) * 100.00, 2);
             var text = $"Spawnpoints {_lastIndex:N0}/{SpawnpointCoordinates.Count:N0} ({percentage}%)";
