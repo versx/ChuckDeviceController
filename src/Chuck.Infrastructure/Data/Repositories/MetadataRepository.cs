@@ -29,7 +29,8 @@
             }
             catch (Exception ex)
             {
-                ConsoleExt.WriteError($"[RawSql] Result: {ex}, SQL: {sql}");
+                //this log not needed because log says warn.
+                //ConsoleExt.WriteError($"[RawSql] Result: {ex}, SQL: {sql}");
                 return false;
             }
         }
