@@ -20,11 +20,12 @@
 
     // TODO: Load all gyms/stops/cells/spawnpoints in mysql to redis
     // TODO: Only cache found pokemon to redis
-    // TODO: If entity not in redis, check mysql
     // TODO: Flush redis database of expired Pokemon
     // TODO: Change table `pokemon`.`id` type to ulong instead of string
     // TODO: Check if still connected to redis, if not, reconnect
     // TODO: Webhooks via redis event queue
+
+    // TODO: On Pokemon updated send redis event/add to queue so InstanceController can AddPokemon/GotIV for IV instances
 
     class DataConsumer
     {

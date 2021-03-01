@@ -26,7 +26,7 @@
         #region Variables
 
         private readonly IConnectionMultiplexer _redis;
-        //private readonly ISubscriber _subscriber;
+        private readonly ISubscriber _subscriber;
         private readonly IDatabaseAsync _redisDatabase;
         private readonly ILogger<ProtoController> _logger;
 
@@ -47,7 +47,8 @@
         {
             _redis = connectionMultiplexer;
             _redisDatabase = _redis.GetDatabase(Startup.Config.Redis.DatabaseNum);
-            //_subscriber = _redis.GetSubscriber();
+            _subscriber = _redis.GetSubscriber();
+            _subscriber.Subscribe("*", async (channel, message) => await PokemonSubscriptionHandler(channel, message));
             _logger = logger;
 
             _accountRepository = new AccountRepository(dbFactory.CreateDbContext());
@@ -601,6 +602,20 @@
         }
 
         #endregion
+
+        private async Task PokemonSubscriptionHandler(RedisChannel channel, RedisValue message)
+        {
+            switch (channel)
+            {
+                case RedisChannels.PokemonAdded:
+                    // TODO: InstanceController.Instance.AddPokemon(pokemon);
+                    break;
+                case RedisChannels.PokemonUpdated:
+                    // TODO: InstanceController.Instance.GotIV(pokemon);
+                    break;
+            }
+            await Task.CompletedTask;
+        }
 
         private Task PublishData<T>(string channel, T data)
         {

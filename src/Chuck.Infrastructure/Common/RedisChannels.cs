@@ -29,5 +29,8 @@
         public const string WebhookCell = "webhook:weather";
         public const string WebhookWeather = "webhook:cell";
         public const string WebhookAccount = "webhook:account";
+
+        public const string PokemonAdded = "pokemon:added";
+        public const string PokemonUpdated = "pokemon:updated";
     }
 }

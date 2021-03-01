@@ -1,21 +1,15 @@
 ﻿namespace WebhookProcessor
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Text.Json;
 
     using StackExchange.Redis;
 
-    using Chuck.Infrastructure.Common;
     using Chuck.Infrastructure.Configuration;
-    using Chuck.Infrastructure.Data.Entities;
     using Chuck.Infrastructure.Extensions;
 
     class Program
     {
-        private const string RedisQueueName = "*"; // TODO: Eventually change from wildcard
-
         static IConnectionMultiplexer _redis;
         static ISubscriber _subscriber;
         static Config _config;
@@ -47,7 +41,7 @@
                 if (_redis.IsConnected)
                 {
                     _subscriber = _redis.GetSubscriber();
-                    _subscriber.Subscribe(RedisQueueName, SubscriptionHandler);
+                    _subscriber.Subscribe(_config.Redis.QueueName, SubscriptionHandler);
                     //_redisDatabase = _redis.GetDatabase(_config.Redis.DatabaseNum);
                 }
 
@@ -84,66 +78,14 @@
 
         #endregion
 
-        // TODO: Send object as json string and just add to webhook queue
         static void SubscriptionHandler(RedisChannel channel, RedisValue message)
         {
             if (string.IsNullOrEmpty(message)) return;
 
-            switch (channel)
-            {
-                case RedisChannels.WebhookPokemon:
-                    var pokemon = JsonSerializer.Deserialize<Pokemon>(message);
-                    if (pokemon == null) return;
-                    WebhookController.Instance.AddPokemon(pokemon);
-                    break;
-                case RedisChannels.WebhookRaid:
-                    var raid = JsonSerializer.Deserialize<Gym>(message);
-                    if (raid == null) return;
-                    WebhookController.Instance.AddRaid(raid);
-                    break;
-                case RedisChannels.WebhookEgg:
-                    var egg = JsonSerializer.Deserialize<Gym>(message);
-                    if (egg == null) return;
-                    WebhookController.Instance.AddEgg(egg);
-                    break;
-                case RedisChannels.WebhookGym:
-                    var gym = JsonSerializer.Deserialize<Gym>(message);
-                    if (gym == null) return;
-                    WebhookController.Instance.AddGym(gym);
-                    break;
-                case RedisChannels.WebhookGymDefender:
-                case RedisChannels.WebhookGymTrainer:
-                    // TODO: Gym defenders and trainers
-                    break;
-                case RedisChannels.WebhookLure:
-                    var lure = JsonSerializer.Deserialize<Pokestop>(message);
-                    if (lure == null) return;
-                    WebhookController.Instance.AddLure(lure);
-                    break;
-                case RedisChannels.WebhookInvasion:
-                    var invasion = JsonSerializer.Deserialize<Pokestop>(message);
-                    if (invasion == null) return;
-                    WebhookController.Instance.AddInvasion(invasion);
-                    break;
-                case RedisChannels.WebhookPokestop:
-                    var pokestop = JsonSerializer.Deserialize<Pokestop>(message);
-                    if (pokestop == null) return;
-                    WebhookController.Instance.AddPokestop(pokestop);
-                    break;
-                case RedisChannels.WebhookQuest:
-                    var quest = JsonSerializer.Deserialize<Pokestop>(message);
-                    if (quest == null) return;
-                    WebhookController.Instance.AddQuest(quest);
-                    break;
-                case RedisChannels.WebhookWeather:
-                    var weather = JsonSerializer.Deserialize<Weather>(message);
-                    if (weather == null) return;
-                    WebhookController.Instance.AddWeather(weather);
-                    break;
-                case RedisChannels.WebhookAccount:
-                    // TODO: Account bans and warnings
-                    break;
-            }
+            var payload = (dynamic)message;
+            if (payload == null) return;
+
+            WebhookController.Instance.Add(payload);
         }
     }
 }

@@ -69,6 +69,10 @@
 
         #endregion
 
+        public Weather()
+        {
+        }
+
         public Weather(ClientWeatherProto proto)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();

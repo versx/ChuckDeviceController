@@ -5,7 +5,7 @@
 
     using Chuck.Infrastructure.Data.Entities;
 
-    public abstract class BaseQueue<T> : IQueue<T> where T : BaseEntity
+    public abstract class BaseQueue<T> : IQueue<T>// where T : BaseEntity
     {
         private readonly Queue<T> _queue;
 
