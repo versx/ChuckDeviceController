@@ -344,11 +344,11 @@
 
         #endregion
 
-        public bool Update(Pokemon oldPokemon = null, bool updateIV = false)
+        public PokemonResult Update(Pokemon oldPokemon = null, bool updateIV = false)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var setIVForWeather = false;
-            var result = false;
+            var result = new PokemonResult();
             if (oldPokemon == null)
             {
                 Updated = now;
@@ -478,9 +478,9 @@
                     setIVForWeather = false;
                 }
 
-                // Check shouldUpdate
+                // Check if we should update the pokemon or not
                 if (!ShouldUpdate(oldPokemon, this))
-                    return false;
+                    return result;
 
                 if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
                 {
@@ -494,24 +494,28 @@
             {
                 // TODO: WebhookController.Instance.AddPokemon(this);
                 // TODO: InstanceController.Instance.GotPokemon(this);
-                result = true;
+                result.IsNewOrHasChanges = true;
+                result.Webhook = true;
             }
             else if (oldPokemon == null)
             {
                 // TODO: WebhookController.Instance.AddPokemon(this);
                 // TODO: InstanceController.Instance.GotPokemon(this);
+                result.IsNewOrHasChanges = true;
+                result.Webhook = true;
                 if (AttackIV != null)
                 {
+                    result.GotIV = true;
                     // TODO: InstanceController.Instance.GotIV(this);
                 }
-                result = true;
             }
             else if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
             {
                 oldPokemon._hasIvChanges = false;
                 // TODO: WebhookController.Instance.AddPokemon(this);
                 // TODO: InstanceController.Instance.GotIV(this);
-                result = true;
+                result.Webhook = true;
+                result.GotIV = true;
             }
             return result;
         }
@@ -927,5 +931,14 @@
             pokemon.CellId = cell.Id;
             return pokemon;
         }
+    }
+
+    public class PokemonResult
+    {
+        public bool IsNewOrHasChanges { get; set; }
+
+        public bool GotIV { get; set; }
+
+        public bool Webhook { get; set; }
     }
 }

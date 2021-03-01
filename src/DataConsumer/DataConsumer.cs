@@ -19,13 +19,10 @@
     using Chuck.Infrastructure.Extensions;
 
     // TODO: Load all gyms/stops/cells/spawnpoints in mysql to redis
-    // TODO: Only cache found pokemon to redis
     // TODO: Flush redis database of expired Pokemon
     // TODO: Change table `pokemon`.`id` type to ulong instead of string
     // TODO: Check if still connected to redis, if not, reconnect
     // TODO: Webhooks via redis event queue
-
-    // TODO: On Pokemon updated send redis event/add to queue so InstanceController can AddPokemon/GotIV for IV instances
 
     class DataConsumer
     {
@@ -34,7 +31,7 @@
         #region Variables
 
         private readonly IConnectionMultiplexer _redis;
-        //private readonly ISubscriber _subscriber;
+        private readonly ISubscriber _subscriber;
         private readonly IDatabaseAsync _redisDatabase;
         private readonly Config _config;
 
@@ -113,7 +110,7 @@
             _redis.InternalError += RedisOnInternalError;
             if (_redis.IsConnected)
             {
-                //_subscriber = _redis.GetSubscriber();
+                _subscriber = _redis.GetSubscriber();
                 _redisDatabase = _redis.GetDatabase(_config.Redis.DatabaseNum);
             }
         }
@@ -234,15 +231,35 @@
                             var pokemon = Pokemon.ParseFromWild(wildPokemon, spawnpoint);
                             pokemon.Username = username;
                             var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
-                            if (pokemon.Update(oldPokemon, true)) // TODO: Check HasChanges property
+                            var changesResult = pokemon.Update(oldPokemon);
+                            if (changesResult.IsNewOrHasChanges)
                             {
-                                // TODO: Webhook
-                                // TODO: await PublishData(RedisChannels.WebhookPokemon, pokemon);
+                                // TODO: Send pokemon_added event for InstanceController.Instance.GotPokemon();
+                                await PublishData(RedisChannels.PokemonAdded, pokemon);
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
                                 }
                             }
+                            if (changesResult.GotIV)
+                            {
+                                // TODO: Send pokemon_updated event for InstanceController.Instance.GotIV();
+                                await PublishData(RedisChannels.PokemonUpdated, pokemon);
+                                lock (_pokemonLock)
+                                {
+                                    _pokemon.Add(pokemon);
+                                }
+                            }
+                            // TODO: Send webhook event
+                            /*
+                            if (pokemon.Update(oldPokemon, true)) // TODO: Check HasChanges property
+                            {
+                                lock (_pokemonLock)
+                                {
+                                    _pokemon.Add(pokemon);
+                                }
+                            }
+                            */
                             await SetCacheData($"pokemon_{pokemon.Id}", pokemon);
                             break;
                         }
@@ -275,15 +292,25 @@
                             pokemon.Latitude = pokestop.Latitude;
                             pokemon.Longitude = pokestop.Longitude;
                             var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
-                            if (pokemon.Update(oldPokemon)) // TODO: Check HasChanges property
+                            var changesResult = pokemon.Update(oldPokemon);
+                            if (changesResult.IsNewOrHasChanges)
                             {
-                                // TODO: Webhook
+                                // TODO: Send pokemon_added event for InstanceController.Instance.GotPokemon();
+                                await PublishData(RedisChannels.PokemonAdded, pokemon);
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
                                 }
                             }
-                            //_pokemon.Add(pokemon);
+                            if (changesResult.GotIV)
+                            {
+                                // TODO: Send pokemon_updated event for InstanceController.Instance.GotIV();
+                                await PublishData(RedisChannels.PokemonUpdated, pokemon);
+                                lock (_pokemonLock)
+                                {
+                                    _pokemon.Add(pokemon);
+                                }
+                            }
                             await SetCacheData($"pokemon_{pokemon.Id}", pokemon);
                             break;
                         }
@@ -338,6 +365,8 @@
                                 //    _pokemon.Add(pokemon);
                                 //}
                             }
+
+                            await PublishData(RedisChannels.PokemonUpdated, pokemon);
                             //if (pokemon.Update(pokemon, true))
                             lock (_pokemonLock)
                             {
@@ -958,6 +987,22 @@
 
         #region Cache Helpers
 
+        private Task<RedisValue> GetData(string key)
+        {
+            try
+            {
+                if (_redis.IsConnected)
+                {
+                    return _redisDatabase.ListLeftPopAsync(key);
+                }
+            }
+            catch (Exception ex)
+            {
+                ConsoleExt.WriteError(ex);
+            }
+            return default;
+        }
+
         private async Task<T> GetEntity<T>(string id, string prefix) where T : BaseEntity
         {
             var oldEntity = await GetCacheData<T>(prefix + "_" + id).ConfigureAwait(false);
@@ -996,7 +1041,26 @@
 
         #endregion
 
-        private void BenchmarkMethod(Func<int> method, string type)
+        private Task PublishData<T>(string channel, T data)
+        {
+            try
+            {
+                if (data == null)
+                {
+                    return Task.CompletedTask;
+                }
+                _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
+            }
+            catch (Exception ex)
+            {
+                ConsoleExt.WriteError(ex);
+            }
+            return Task.CompletedTask;
+        }
+
+        //private async Task SendWebhook
+
+        private static void BenchmarkMethod(Func<int> method, string type)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -1006,22 +1070,6 @@
             {
                 ConsoleExt.WriteInfo($"[DataConsumer] {type} Count: {count:N0} parsed in {stopwatch.Elapsed.TotalSeconds}s");
             }
-        }
-
-        private Task<RedisValue> GetData(string key)
-        {
-            try
-            {
-                if (_redis.IsConnected)
-                {
-                    return _redisDatabase.ListLeftPopAsync(key);
-                }
-            }
-            catch (Exception ex)
-            {
-                ConsoleExt.WriteError(ex);
-            }
-            return default;
         }
     }
 
@@ -1050,12 +1098,6 @@
     }
 
     public class QuestFound
-    {
-        [JsonPropertyName("raw")]
-        public string Raw { get; set; }
-    }
-
-    public class GymInfoFound
     {
         [JsonPropertyName("raw")]
         public string Raw { get; set; }

@@ -17,6 +17,7 @@
     using Chuck.Infrastructure.Data.Entities;
     using Chuck.Infrastructure.Data.Repositories;
     using Chuck.Infrastructure.Extensions;
+    using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Models.Requests;
     using ChuckDeviceController.Models.Responses;
 
@@ -48,7 +49,7 @@
             _redis = connectionMultiplexer;
             _redisDatabase = _redis.GetDatabase(Startup.Config.Redis.DatabaseNum);
             _subscriber = _redis.GetSubscriber();
-            _subscriber.Subscribe("*", async (channel, message) => await PokemonSubscriptionHandler(channel, message));
+            _subscriber.Subscribe("*", PokemonSubscriptionHandler);
             _logger = logger;
 
             _accountRepository = new AccountRepository(dbFactory.CreateDbContext());
@@ -209,7 +210,7 @@
                             var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (gpr?.Success == true)
                             {
-                                await PublishData(RedisChannels.ProtoAccount, new
+                                await PushData(RedisChannels.ProtoAccount, new
                                 {
                                     gpr,
                                     username = payload.Username,
@@ -256,7 +257,7 @@
                             {
                                 if (fsr.ChallengeQuest?.Quest != null)
                                 {
-                                    await PublishData(RedisChannels.ProtoQuest, new
+                                    await PushData(RedisChannels.ProtoQuest, new
                                     {
                                         raw = data,
                                     });
@@ -286,7 +287,7 @@
                                 if (er?.Status == EncounterOutProto.Types.Status.EncounterSuccess)
                                 {
                                     //encounters.Add(new
-                                    await PublishData(RedisChannels.ProtoEncounter, new
+                                    await PushData(RedisChannels.ProtoEncounter, new
                                     {
                                         data = er,
                                         username = payload.Username,
@@ -350,12 +351,12 @@
                                 foreach (var mapCell in mapCellsNew)
                                 {
                                     cells.Add(mapCell.S2CellId);
-                                    await PublishData(RedisChannels.ProtoCell, mapCell.S2CellId);
+                                    await PushData(RedisChannels.ProtoCell, mapCell.S2CellId);
 
                                     var tsMs = mapCell.AsOfTimeMs;
                                     foreach (var wild in mapCell.WildPokemon)
                                     {
-                                        await PublishData(RedisChannels.ProtoWildPokemon, new
+                                        await PushData(RedisChannels.ProtoWildPokemon, new
                                         {
                                             cell = mapCell.S2CellId,
                                             data = wild,
@@ -366,7 +367,7 @@
                                     }
                                     foreach (var nearby in mapCell.NearbyPokemon)
                                     {
-                                        await PublishData(RedisChannels.ProtoNearbyPokemon, new
+                                        await PushData(RedisChannels.ProtoNearbyPokemon, new
                                         {
                                             cell = mapCell.S2CellId,
                                             data = nearby,
@@ -377,7 +378,7 @@
                                     }
                                     foreach (var fort in mapCell.Fort)
                                     {
-                                        await PublishData(RedisChannels.ProtoFort, new
+                                        await PushData(RedisChannels.ProtoFort, new
                                         {
                                             cell = mapCell.S2CellId,
                                             data = fort,
@@ -387,7 +388,7 @@
                                 }
                                 foreach (var weather in gmo.ClientWeather)
                                 {
-                                    await PublishData(RedisChannels.ProtoWeather, new Weather(weather));
+                                    await PushData(RedisChannels.ProtoWeather, new Weather(weather));
                                     clientWeather++;
                                 }
                                 if (wildPokemon == 0 && nearbyPokemon == 0 && forts == 0 && quests == 0)
@@ -405,7 +406,7 @@
                                         if (_emptyCells[cellId] == 3)
                                         {
                                             _logger.LogWarning($"[Proto] [{payload.Uuid}] Cell {cellId} was empty 3 times in a row, assuming empty...");
-                                            await PublishData(RedisChannels.ProtoCell, cellId);
+                                            await PushData(RedisChannels.ProtoCell, cellId);
                                         }
                                     }
                                     _logger.LogDebug($"[Proto] [{payload.Uuid}] GMO is empty");
@@ -447,11 +448,11 @@
                                 {
                                     if (gymDefender.TrainerPublicProfile != null)
                                     {
-                                        await PublishData(RedisChannels.ProtoGymTrainer, new Trainer(gymDefender));
+                                        await PushData(RedisChannels.ProtoGymTrainer, new Trainer(gymDefender));
                                     }
                                     if (gymDefender.MotivatedPokemon != null)
                                     {
-                                        await PublishData(RedisChannels.ProtoGymDefender, new GymDefender(fortId, gymDefender));
+                                        await PushData(RedisChannels.ProtoGymDefender, new GymDefender(fortId, gymDefender));
                                     }
                                 }
                             }
@@ -601,23 +602,34 @@
             };
         }
 
-        #endregion
-
-        private async Task PokemonSubscriptionHandler(RedisChannel channel, RedisValue message)
+        private void PokemonSubscriptionHandler(RedisChannel channel, RedisValue message)
         {
             switch (channel)
             {
                 case RedisChannels.PokemonAdded:
-                    // TODO: InstanceController.Instance.AddPokemon(pokemon);
-                    break;
+                    {
+                        var pokemon = message.ToString().FromJson<Pokemon>();
+                        if (pokemon != null)
+                        {
+                            InstanceController.Instance.GotPokemon(pokemon);
+                        }
+                        break;
+                    }
                 case RedisChannels.PokemonUpdated:
-                    // TODO: InstanceController.Instance.GotIV(pokemon);
-                    break;
+                    {
+                        var pokemon = message.ToString().FromJson<Pokemon>();
+                        if (pokemon != null)
+                        {
+                            InstanceController.Instance.GotIV(pokemon);
+                        }
+                        break;
+                    }
             }
-            await Task.CompletedTask;
         }
 
-        private Task PublishData<T>(string channel, T data)
+        #endregion
+
+        private Task PushData<T>(string channel, T data)
         {
             try
             {
