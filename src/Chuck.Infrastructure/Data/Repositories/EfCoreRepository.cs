@@ -214,16 +214,7 @@
             }
             catch (Exception ex)
             {
-
-                if (ex.Message.Contains("foreign key constraint fails"))
-                {
-                    // TODO: noting ??
-                    ConsoleExt.WriteInfo("[EfCoreRepository] AddOrUpdateAsync: This not needs update.");
-                }
-                else
-                {
-                    ConsoleExt.WriteError($"[EfCoreRepository] AddOrUpdateAsync: {ex.Message}");
-                }
+                ConsoleExt.WriteError($"[EfCoreRepository] AddOrUpdateAsync: {ex.Message}");
             }
         }
     }
