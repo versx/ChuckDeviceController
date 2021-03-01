@@ -56,7 +56,7 @@ namespace ChuckDeviceController
             }
             catch (Exception ex)
             {
-                ConsoleExt.WriteError($"Config: {ex}");
+                ConsoleExt.WriteError($"Config: {ex.Message}");
                 Console.ReadKey();
                 return;
             }
