@@ -13,8 +13,6 @@
 
     using Chuck.Infrastructure.Data.Interfaces;
     using Chuck.Infrastructure.Extensions;
-    //using Chuck.Infrastructure.Net.Webhooks;
-    //using Chuck.Infrastructure.Services;
 
     [Table("pokemon")]
     public class Pokemon : BaseEntity, IAggregateRoot, IWebhook
@@ -492,28 +490,21 @@
 
             if (setIVForWeather)
             {
-                // TODO: WebhookController.Instance.AddPokemon(this);
-                // TODO: InstanceController.Instance.GotPokemon(this);
                 result.IsNewOrHasChanges = true;
                 result.Webhook = true;
             }
             else if (oldPokemon == null)
             {
-                // TODO: WebhookController.Instance.AddPokemon(this);
-                // TODO: InstanceController.Instance.GotPokemon(this);
                 result.IsNewOrHasChanges = true;
                 result.Webhook = true;
                 if (AttackIV != null)
                 {
                     result.GotIV = true;
-                    // TODO: InstanceController.Instance.GotIV(this);
                 }
             }
             else if ((updateIV && oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon._hasIvChanges)
             {
                 oldPokemon._hasIvChanges = false;
-                // TODO: WebhookController.Instance.AddPokemon(this);
-                // TODO: InstanceController.Instance.GotIV(this);
                 result.Webhook = true;
                 result.GotIV = true;
             }

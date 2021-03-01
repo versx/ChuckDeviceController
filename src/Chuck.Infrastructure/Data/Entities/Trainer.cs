@@ -75,6 +75,10 @@
         ]
         public ulong Updated { get; set; }
 
+        public Trainer()
+        {
+        }
+
         public Trainer(GymDefenderProto proto)
         {
             Name = proto.TrainerPublicProfile.Name;

@@ -153,6 +153,10 @@
         ]
         public ulong Updated { get; set; }
 
+        public GymDefender()
+        {
+        }
+
         public GymDefender(string fortId, GymDefenderProto proto)
         {
             Id = proto.MotivatedPokemon.Pokemon.Id.ToString(); // TODO: Convert to ulong

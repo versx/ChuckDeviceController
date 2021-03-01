@@ -18,11 +18,10 @@
     using Chuck.Infrastructure.Data.Repositories;
     using Chuck.Infrastructure.Extensions;
 
-    // TODO: Load all gyms/stops/cells/spawnpoints in mysql to redis
+    // TODO: Load all gyms/stops/cells/spawnpoints from mysql to redis
     // TODO: Flush redis database of expired Pokemon
     // TODO: Change table `pokemon`.`id` type to ulong instead of string
     // TODO: Check if still connected to redis, if not, reconnect
-    // TODO: Webhooks via redis event queue
 
     class DataConsumer
     {
@@ -190,8 +189,10 @@
                         Thread.Sleep(1);
                         continue;
                     }
-                    var obj = (dynamic)data;
-                    await SubscriptionHandler(obj.channel, obj.data);
+                    var obj = JsonSerializer.Deserialize<dynamic>(data.ToString());
+                    string channel = obj.channel;
+                    dynamic message = obj.data;
+                    await SubscriptionHandler(channel, message);
                     Thread.Sleep(1);
                 }
             })
@@ -234,8 +235,9 @@
                             var changesResult = pokemon.Update(oldPokemon);
                             if (changesResult.IsNewOrHasChanges)
                             {
-                                // TODO: Send pokemon_added event for InstanceController.Instance.GotPokemon();
+                                // Send pokemon_added event for InstanceController.Instance.GotPokemon();
                                 await PublishData(RedisChannels.PokemonAdded, pokemon);
+                                await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
@@ -243,8 +245,9 @@
                             }
                             if (changesResult.GotIV)
                             {
-                                // TODO: Send pokemon_updated event for InstanceController.Instance.GotIV();
+                                // Send pokemon_updated event for InstanceController.Instance.GotIV();
                                 await PublishData(RedisChannels.PokemonUpdated, pokemon);
+                                await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
@@ -295,8 +298,9 @@
                             var changesResult = pokemon.Update(oldPokemon);
                             if (changesResult.IsNewOrHasChanges)
                             {
-                                // TODO: Send pokemon_added event for InstanceController.Instance.GotPokemon();
+                                // Send pokemon_added event for InstanceController.Instance.GotPokemon();
                                 await PublishData(RedisChannels.PokemonAdded, pokemon);
+                                await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
@@ -304,8 +308,9 @@
                             }
                             if (changesResult.GotIV)
                             {
-                                // TODO: Send pokemon_updated event for InstanceController.Instance.GotIV();
+                                // Send pokemon_updated event for InstanceController.Instance.GotIV();
                                 await PublishData(RedisChannels.PokemonUpdated, pokemon);
+                                await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
@@ -367,6 +372,8 @@
                             }
 
                             await PublishData(RedisChannels.PokemonUpdated, pokemon);
+                            // TODO: Check for changes
+                            await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
                             //if (pokemon.Update(pokemon, true))
                             lock (_pokemonLock)
                             {
@@ -391,7 +398,7 @@
                                     var gym = new Gym(cellId, fort);
                                     if (gym.Update(oldGym)) // TODO: Check HasChanges property
                                     {
-                                        // TODO: Webhook
+                                        await PublishData(RedisChannels.WebhookGym, gym.GetWebhookValues("gym"));
                                         lock (_gymsLock)
                                         {
                                             _gyms.Add(gym);
@@ -415,7 +422,8 @@
                                     var pokestop = new Pokestop(cellId, fort);
                                     if (pokestop.Update(oldPokestop)) // TODO: Check HasChanges property
                                     {
-                                        // TODO: Webhook
+                                        // TODO: Check for lure/invasion etc
+                                        await PublishData(RedisChannels.WebhookPokestop, pokestop.GetWebhookValues("pokestop"));
                                         lock (_pokestopsLock)
                                         {
                                             _pokestops.Add(pokestop);
@@ -498,8 +506,11 @@
                             pokestop.AddQuest(fs.ChallengeQuest.Quest);
                             if (pokestop.Update(pokestop, true)) // TODO: Check HasChanges property
                             {
-                                // TODO: Webhook
-                                _quests.Add(pokestop);
+                                await PublishData(RedisChannels.WebhookQuest, pokestop.GetWebhookValues("quest"));
+                                lock (_questsLock)
+                                {
+                                    _quests.Add(pokestop);
+                                }
                             }
                             await SetCacheData($"pokestop_{pokestop.Id}", pokestop);
                             break;
@@ -520,6 +531,8 @@
                             var weather = JsonSerializer.Deserialize<Weather>(message);
                             if (weather == null) return;
 
+                            // TODO: Check for changes
+                            await PublishData(RedisChannels.WebhookWeather, weather.GetWebhookValues("weather"));
                             lock (_weatherLock)
                             {
                                 _weather.Add(weather);
@@ -564,6 +577,7 @@
                                 account.FailedTimestamp = now;
                                 ConsoleExt.WriteWarn($"[ConsumerService] Account {account.Username}|{playerData.Player.Player.Name} - Banned: {playerData.Player.Banned}");
                             }
+                            // TODO: Webhooks
                             _playerData.Add(account);
                             break;
                         }
@@ -1057,8 +1071,6 @@
             }
             return Task.CompletedTask;
         }
-
-        //private async Task SendWebhook
 
         private static void BenchmarkMethod(Func<int> method, string type)
         {
