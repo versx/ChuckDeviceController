@@ -1,11 +1,19 @@
 {
-    "interface": "LAN_MACHINE_IP",
+	"interface": "LAN_MACHINE_IP",
 	"port": 5001,
+	"timezoneOffset": -3,
 	"db": {
-	    "host": "127.0.0.1",
+		"host": "127.0.0.1",
 		"port": 3306,
 		"username": "cdcuser",
 		"password": "cdcPass!",
 		"database": "cdcdb"
+	},
+	"redis": {
+		"host": "127.0.0.1",
+		"port": 6379,
+		"password": "",
+		"databaseNum": -1,
+		"queueName": "cdc"
 	}
 }
