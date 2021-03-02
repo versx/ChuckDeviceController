@@ -1,0 +1,110 @@
+﻿{{> navbar}}
+
+<script>
+    $(document).ready(function() {
+        $('.types-select').change(function() {
+            $(this).val().indexOf("Pokemon") >= 0 ?
+                $('.pokemon_ids_text').removeClass('d-none') :
+                $('.pokemon_ids_text').addClass('d-none');
+            $(this).val().indexOf("Raids") >= 0 ?
+                $('.raid_ids_text').removeClass('d-none') :
+                $('.raid_ids_text').addClass('d-none');
+            $(this).val().indexOf("Eggs") >= 0 ?
+                $('.egg_ids_text').removeClass('d-none') :
+                $('.egg_ids_text').addClass('d-none');
+            $(this).val().indexOf("Lures") >= 0 ?
+                $('.lure_ids_text').removeClass('d-none') :
+                $('.lure_ids_text').addClass('d-none');
+            $(this).val().indexOf("Invasions") >= 0 ?
+                $('.invasion_ids_text').removeClass('d-none') :
+                $('.invasion_ids_text').addClass('d-none');
+            $(this).val().indexOf("Gyms") >= 0 ?
+                $('.gym_ids_text').removeClass('d-none') :
+                $('.gym_ids_text').addClass('d-none');
+            $(this).val().indexOf("Weather") >= 0 ?
+                $('.weather_ids_text').removeClass('d-none') :
+                $('.weather_ids_text').addClass('d-none');
+        });
+    })
+</script>
+
+<body class="{{body_class}}">
+    <br>
+    <div class="alert alert-danger w-75 {{^show_error}}d-none{{/show_error}}" style="float: none; margin: 0 auto;">
+        <strong>Error!</strong> {{error}}
+    </div>
+    {{#show_error}}<br>{{/show_error}}
+
+    <h1 align="center">Add a new Webhook to {{title}}!</h1>
+    <br>
+    <div class="w-75" style="float: none; margin: 0 auto;">
+        <form action="" method="post">
+            <div class="form-group">
+                Name
+                <input type="text" class="form-control" name="name" value="{{name}}" required minlength="1" maxlength="30">
+            </div>
+            <div class="form-group">
+                Url Address
+                <input type="text" class="form-control" name="url" value="" required minlength="1" maxlength="256" placeholder="http://127.0.0.1:4000">
+            </div>
+            <div class="form-group">
+                Delay (Default 5 seconds)
+                <input type="number" class="form-control" name="delay" value="5.0" step=0.1 min="1.0" max="60.0" minlength="1" maxlength="8" placeholder="5.0" required>
+            </div>
+            <div class="form-group">
+                Type(s)
+                <select class="form-control types-select" style="height: 100px" name="types" multiple required>
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Webhook types(s)</option>
+                    {{#types}}
+                    <option value="{{name}}" {{#selected}} selected{{/selected}}>{{name}}</option>
+                    {{/types}}
+                </select>
+            </div>
+            <div class="form-group pokemon_ids_text d-none">
+                Pokemon IDs (Blacklist, "*" for all)
+                <textarea class="form-control" rows="5" name="pokemon_ids">{{{pokemon_ids}}}</textarea>
+            </div>
+            <div class="form-group raid_ids_text d-none">
+                Raid Pokemon IDs (Blacklist, "*" for all)
+                <textarea class="form-control" rows="5" name="raid_ids">{{{raid_ids}}}</textarea>
+            </div>
+            <div class="form-group egg_ids_text d-none">
+                Egg Levels (Blacklist, "*" for all)
+                <textarea class="form-control" rows="5" name="egg_ids">{{{egg_ids}}}</textarea>
+            </div>
+            <div class="form-group lure_ids_text d-none">
+                Lure Module IDs (Blacklist, "*" for all)
+                <textarea class="form-control" rows="5" name="lure_ids">{{{lure_ids}}}</textarea>
+            </div>
+            <div class="form-group invasion_ids_text d-none">
+                Team Rocket Invasion Grunt Type IDs (Blacklist, "*" for all)
+                <textarea class="form-control" rows="5" name="invasion_ids">{{{invasion_ids}}}</textarea>
+            </div>
+            <div class="form-group gym_ids_text d-none">
+                Gym Team IDs (Blacklist, "*" for all)
+                <textarea class="form-control" rows="5" name="gym_ids">{{{gym_ids}}}</textarea>
+            </div>
+            <div class="form-group weather_ids_text d-none">
+                Weather IDs (Blacklist, "*" for all)
+                <textarea class="form-control" rows="5" name="weather_ids">{{{weather_ids}}}</textarea>
+            </div>
+            <div class="form-group">
+                Select Scan Area (Empty Includes Everything)
+                <select class="form-control" name="geofence" required>
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Geofence</option>
+                    {{#each geofences}}
+                    <option value="{{name}}" class="{{type}}" {{#selected}} selected{{/selected}}>{{name}}</option>
+                    {{/each}}
+                </select>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" name="enabled" checked>
+                <label class="form-check-label" for="enabled">Enable Webhook</label>
+            </div>
+            <br>
+            <input type="hidden" name="_csrf" value="{{csrf}}">
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+    <br>
+</body>

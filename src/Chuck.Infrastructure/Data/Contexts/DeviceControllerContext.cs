@@ -72,7 +72,7 @@
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<dynamic>>()); // TODO: QuestConditionProto
             modelBuilder.Entity<Pokestop>()
                         .Property(nameof(Pokestop.QuestRewards))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<dynamic>()); // TODO: QuestRewardProto
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<dynamic>>()); // TODO: QuestRewardProto
             modelBuilder.Entity<Webhook>()
                         .Property(p => p.Types)
                         .HasConversion(x => Webhook.WebhookTypeToString(x), x => Webhook.StringToWebhookTypes(x));
