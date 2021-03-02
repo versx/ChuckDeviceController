@@ -15,7 +15,6 @@
     using ChuckDeviceController.JobControllers;
 
     [ApiController]
-    [Route("/api")]
     public class ApiController : ControllerBase
     {
         #region Variables

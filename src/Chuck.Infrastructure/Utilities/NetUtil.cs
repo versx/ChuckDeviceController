@@ -25,7 +25,7 @@
             try
             {
                 var resp = wc.UploadString(webhookUrl, json);
-                Thread.Sleep(sleep);
+                Thread.Sleep(Convert.ToInt32(delay * 1000));
             }
             catch (WebException ex)
             {
@@ -47,7 +47,7 @@
 
                         Thread.Sleep(retry);
                         retryCount++;
-                        SendWebhook(webhookUrl, json, sleep, retryCount);
+                        SendWebhook(webhookUrl, json, delay * 1000, retryCount);
                         break;
                 }
             }

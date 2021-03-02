@@ -46,7 +46,8 @@
                 }
 
                 WebhookController.Instance.SleepIntervalS = 5;
-                WebhookController.Instance.Webhooks = _config.Webhooks;
+                // TODO: WebhookController.Instance.Webhooks = _config.Webhooks;
+                // TODO: Load webhooks from database
                 WebhookController.Instance.Start();
             }
             catch (Exception ex)
