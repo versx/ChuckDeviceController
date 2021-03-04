@@ -36,6 +36,15 @@
                             onclick="return confirm('Are you sure that you want to delete {{stale_pokestops}} stale Pokestops that haven\'t been seen in the last 25 hours?');">
                         Delete Stale Pokestops {{#stale_pokestops}}({{stale_pokestops}} Not seen last 24 hours){{/stale_pokestops}}
                     </button>
+                    <button type="submit" name="action" value="clear_warnings" class="list-group-item list-group-item-action list-group-item-warning"
+                            onclick="return confirm('Are you sure that you want to delete {{will_remove_rw}} Warning with more than 7 days?');">
+                        Delete Warnings {{#warnings}}({{warnings}} with more than 7 days){{/warnings}}
+                    </button>
+                    <button type="submit" name="action" value="clear_bans" class="list-group-item list-group-item-action list-group-item-danger"
+                            onclick="return confirm('Are you sure that you want to delete {{will_remove_ban}} Bans with more than 30 days?');">
+                        Delete Bans {{#bans}}({{bans}} with more than 30 days){{/bans}}
+                    </button>
+
                     <button type="submit" name="action" value="flush_redis" class="list-group-item list-group-item-action list-group-item-warning"
                             onclick="return confirm('Are you sure that you want to flush the Redis database?');">
                         Flush Redis Database

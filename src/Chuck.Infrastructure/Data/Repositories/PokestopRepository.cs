@@ -151,7 +151,7 @@
         {
             var staleTime = DateTime.UtcNow.Subtract(TimeSpan.FromHours(24)).ToTotalSeconds();
             return await _dbContext.Pokestops.AsNoTracking()
-                                             .DeferredCount(x => x.Updated >= staleTime)
+                                             .DeferredCount(x => x.Updated <= staleTime)
                                              .FromCacheAsync()
                                              .ConfigureAwait(false);
         }
@@ -159,7 +159,7 @@
         public async Task<int> DeleteStalePokestops()
         {
             var staleTime = DateTime.UtcNow.Subtract(TimeSpan.FromHours(24)).ToTotalSeconds();
-            var stalePokestops = _dbContext.Pokestops.Where(x => x.Updated >= staleTime).ToList();
+            var stalePokestops = _dbContext.Pokestops.Where(x => x.Updated <= staleTime).ToList();
             await DeleteRangeAsync(stalePokestops);
             return stalePokestops.Count;
         }

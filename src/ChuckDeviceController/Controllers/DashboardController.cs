@@ -1264,6 +1264,8 @@
                 dynamic obj = BuildDefaultData();
                 obj.stale_pokestops = (await _pokestopRepository.GetStalePokestopsCount().ConfigureAwait(false)).ToString("N0");
                 obj.convertible_pokestops = (await _pokestopRepository.GetConvertiblePokestopsCount().ConfigureAwait(false)).ToString("N0");
+                obj.warnings = (await _accountRepository.GetExpiredWarningsCount().ConfigureAwait(false)).ToString("N0");
+                obj.bans = (await _accountRepository.GetExpiredBansCount().ConfigureAwait(false)).ToString("N0");
                 var data = Renderer.ParseTemplate("utilities", obj);
                 return new ContentResult
                 {
@@ -1278,12 +1280,14 @@
                 switch (type)
                 {
                     case "delete_stale_pokestops":
-                        var stopsDeleted = await _pokestopRepository.DeleteStalePokestops();
-                        // TODO: Pass data through to view
+                        var stopsDeleted = await _pokestopRepository.DeleteStalePokestops().ConfigureAwait(false);
                         return BuildSuccessResponse("utilities", $"<b>{stopsDeleted}</b> Stale Pokestops deleted");
                     case "clear_expired_bans":
+                        var bansCleared = await _accountRepository.ClearExpiredBans().ConfigureAwait(false);
+                        return BuildSuccessResponse("utilities", $"<b>{bansCleared}</b> Expired bans cleared");
                     case "clear_expired_warnings":
-                        break;
+                        var warningsCleared = await _accountRepository.ClearExpiredWarnings().ConfigureAwait(false);
+                        return BuildSuccessResponse("utilities", $"<b>{warningsCleared}</b> Expired warnings cleared");
                     case "truncate_pokemon":
                         await _pokemonRepository.Truncate().ConfigureAwait(false);
                         return BuildSuccessResponse("utilities", "Pokemon table successfully truncated");

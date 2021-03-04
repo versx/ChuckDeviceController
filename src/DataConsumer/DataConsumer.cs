@@ -159,10 +159,17 @@
                     ConsoleExt.WriteWarn($"[DataConsumer] Not connected to redis server");
                     return;
                 }
-                var length = await _redisDatabase.ListLengthAsync(_config.Redis.QueueName);
-                if (length > 1000)
+                try
                 {
-                    ConsoleExt.WriteWarn($"[DataConsumer] Queue is current {length}");
+                    var length = await _redisDatabase.ListLengthAsync(_config.Redis.QueueName);
+                    if (length > 1000)
+                    {
+                        ConsoleExt.WriteWarn($"[DataConsumer] Queue is current {length}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ConsoleExt.WriteError(ex);
                 }
             };
             timer.Start();

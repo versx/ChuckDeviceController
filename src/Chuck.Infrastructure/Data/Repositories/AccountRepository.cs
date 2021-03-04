@@ -169,5 +169,51 @@
                 }).ToArray(),
             };
         }
+
+        public async Task<int> GetExpiredWarningsCount()
+        {
+            var expireTime = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7)).ToTotalSeconds();
+            var accounts = _dbContext.Accounts.Count(x => (x.FirstWarningTimestamp > 0 || x.Failed == "GPR_RED_WARNING") && x.FirstWarningTimestamp < expireTime);
+            return await Task.FromResult(accounts).ConfigureAwait(false);
+        }
+
+        public async Task<int> GetExpiredBansCount()
+        {
+            var expireTime = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7)).ToTotalSeconds();
+            var accounts = _dbContext.Accounts.Count(x => (x.Failed == "banned" || x.Failed == "GPR_BANNED") && x.FailedTimestamp < expireTime);
+            return await Task.FromResult(accounts).ConfigureAwait(false);
+        }
+
+        public async Task<int> ClearExpiredWarnings()
+        {
+            var expireTime = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7)).ToTotalSeconds();
+            var accounts = await _dbContext.Accounts.Where(x =>
+                (x.FirstWarningTimestamp > 0 || x.WarnExpireTimestamp > 0 || x.Failed == "GPR_RED_WARNING") &&
+                (x.FirstWarningTimestamp < expireTime || x.WarnExpireTimestamp < expireTime)
+            ).ToListAsync().ConfigureAwait(false);
+            accounts.ForEach(account =>
+            {
+                account.Warn = null;
+                account.WarnExpireTimestamp = null;
+                account.Failed = null;
+                account.FirstWarningTimestamp = null;
+            });
+            return await InsertOrUpdate(accounts).ConfigureAwait(false);
+        }
+
+        public async Task<int> ClearExpiredBans()
+        {
+            var expireTime = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7)).ToTotalSeconds();
+            var accounts = await _dbContext.Accounts.Where(x =>
+                (x.Failed == "banned" || x.Failed == "GPR_BANNED") && x.FailedTimestamp < expireTime
+            ).ToListAsync().ConfigureAwait(false);
+            accounts.ForEach(account =>
+            {
+                account.Banned = null;
+                account.Failed = null;
+                account.FailedTimestamp = null;
+            });
+            return await InsertOrUpdate(accounts).ConfigureAwait(false);
+        }
     }
 }
