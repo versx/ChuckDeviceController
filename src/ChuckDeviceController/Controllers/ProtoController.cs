@@ -548,35 +548,6 @@
             }
             */
 
-            // Loop encounters/wild pokemon, parse spawnpoints, add to list, include in ConsumerData
-            /*
-            foreach (var item in wildPokemon)
-            {
-                var wild = (WildPokemonProto)item.data;
-                var spawnId = Convert.ToUInt64(wild.SpawnPointId, 16);
-                var timestampMs = (ulong)item.timestamp_ms;
-                var (verifiedExpireTimestamp, expireTimestamp, spawnpoint) = await HandleSpawnpoint(
-                    spawnId, wild.Latitude, wild.Longitude,
-                    wild.TimeTillHiddenMs, timestampMs
-                );
-                if (spawnpoint == null)
-                    continue;
-                spawnpoints.Add(spawnpoint);
-            }
-            foreach (var item in encounters)
-            {
-                var encounter = item.encounter;
-                var spawnId = Convert.ToUInt64(encounter.Pokemon.SpawnPointId, 16);
-                var timestampMs = DateTime.UtcNow.ToTotalSeconds();
-                var (verifiedExpireTimestamp, expireTimestamp, spawnpoint) = await HandleSpawnpoint(
-                    spawnId, encounter.Pokemon.Latitude, encounter.Pokemon.Longitude,
-                    encounter.Pokemon.TimeTillHiddenMs, timestampMs
-                );
-                if (spawnpoint == null)
-                    continue;
-                spawnpoints.Add(spawnpoint);
-            }
-            */
             return new ProtoResponse
             {
                 Status = "ok",

@@ -146,5 +146,33 @@
                                                x.QuestType.HasValue &&
                                                x.QuestType != null);
         }
+
+        public async Task<int> GetStalePokestopsCount()
+        {
+            var staleTime = DateTime.UtcNow.Subtract(TimeSpan.FromHours(24)).ToTotalSeconds();
+            return await _dbContext.Pokestops.AsNoTracking()
+                                             .DeferredCount(x => x.Updated >= staleTime)
+                                             .FromCacheAsync()
+                                             .ConfigureAwait(false);
+        }
+
+        public async Task<int> DeleteStalePokestops()
+        {
+            var staleTime = DateTime.UtcNow.Subtract(TimeSpan.FromHours(24)).ToTotalSeconds();
+            var stalePokestops = _dbContext.Pokestops.Where(x => x.Updated >= staleTime).ToList();
+            await DeleteRangeAsync(stalePokestops);
+            return stalePokestops.Count;
+        }
+
+        public async Task<int> GetConvertiblePokestopsCount()
+        {
+            var gymRepository = new GymRepository(_dbContext);
+            var gyms = await gymRepository.GetAllAsync().ConfigureAwait(false);
+            var gymIds = gyms.Select(x => x.Id);
+            return await _dbContext.Pokestops.AsNoTracking()
+                                             .DeferredCount(x => gymIds.Contains(x.Id))
+                                             .FromCacheAsync()
+                                             .ConfigureAwait(false);
+        }
     }
 }

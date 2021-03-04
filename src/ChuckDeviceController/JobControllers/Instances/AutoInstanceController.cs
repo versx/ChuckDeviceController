@@ -437,6 +437,7 @@
                 }
             }
             missingCellIds = missingCellIds.Distinct().ToList();
+            missingCellIds.Sort();
             _logger.LogInformation($"[{Name}] Bootstrap Status: {totalCount - missingCellIds.Count}/{totalCount} after {DateTime.UtcNow.Subtract(start).TotalSeconds:N0} seconds");
             lock (_bootstrapLock)
             {

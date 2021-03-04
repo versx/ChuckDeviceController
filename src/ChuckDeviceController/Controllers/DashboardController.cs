@@ -40,6 +40,7 @@
         private readonly AssignmentRepository _assignmentRepository;
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
+        private readonly PokemonRepository _pokemonRepository;
         private readonly PokestopRepository _pokestopRepository;
         private readonly GeofenceRepository _geofenceRepository;
         private readonly WebhookRepository _webhookRepository;
@@ -60,6 +61,7 @@
             _deviceRepository = new DeviceRepository(_context);
             _instanceRepository = new InstanceRepository(_context);
             _pokestopRepository = new PokestopRepository(_context);
+            _pokemonRepository = new PokemonRepository(_context);
             _geofenceRepository = new GeofenceRepository(_context);
             _webhookRepository = new WebhookRepository(_context);
         }
@@ -1213,15 +1215,17 @@
         #region Utilities
 
         [
-            HttpGet("/dashboard/clearquests"),
-            HttpPost("/dashboard/clearquests"),
+            HttpGet("/dashboard/utilities"),
+            HttpPost("/dashboard/utilities"),
         ]
-        public async Task<IActionResult> ClearQuests()
+        public async Task<IActionResult> Utilities()
         {
             if (Request.Method == "GET")
             {
-                var obj = BuildDefaultData();
-                var data = Renderer.ParseTemplate("clearquests", obj);
+                dynamic obj = BuildDefaultData();
+                obj.stale_pokestops = (await _pokestopRepository.GetStalePokestopsCount().ConfigureAwait(false)).ToString("N0");
+                obj.convertible_pokestops = (await _pokestopRepository.GetConvertiblePokestopsCount().ConfigureAwait(false)).ToString("N0");
+                var data = Renderer.ParseTemplate("utilities", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -1231,8 +1235,35 @@
             }
             else
             {
-                await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
-                return Redirect("/dashboard");
+                var type = Request.Form["type"].ToString();
+                switch (type)
+                {
+                    case "delete_stale_pokestops":
+                        var stopsDeleted = await _pokestopRepository.DeleteStalePokestops();
+                        // TODO: Pass data through to view
+                        break;
+                    case "clear_expired_bans":
+                    case "clear_expired_warnings":
+                        break;
+                    case "truncate_pokemon":
+                        await _pokemonRepository.Truncate().ConfigureAwait(false);
+                        break;
+                    case "convert_pokestops":
+                        // TODO: Update gyms with pokestop names and urls if set
+                        var staleStopsDeleted = await _pokestopRepository.DeleteStalePokestops().ConfigureAwait(false);
+                        // TODO: Pass data through to view
+                        break;
+                    case "force_logout_all_devices":
+                        // TODO: Set device usernames to null
+                        break;
+                    case "clear_quests":
+                        await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
+                        break;
+                    case "clear_iv_queues":
+                    case "flush_redis":
+                        break;
+                }
+                return Redirect("/dashboard/utilities");
             }
         }
 
