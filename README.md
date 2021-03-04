@@ -10,6 +10,8 @@
 - MariaDB 10.5
 
 ## Installation
+1. Install [Redis](https://redis.io/topics/quickstart)  
+1. Start Redis  
 1. Install [.NET 5 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)  
 1. Clone repository `git clone https://github.com/versx/ChuckDeviceController`  
 1. Copy config `cp config.example.json` `config.json`  
@@ -45,6 +47,13 @@ View profiler results:
         // Database name
         "database": "cdcdb"
     },
-    "webhooks": ["http://webhook-address:port"]
+    // Redis information
+	"redis": {
+		"host": "127.0.0.1",
+		"port": 6379,
+		"password": "",
+		"databaseNum": -1,
+		"queueName": "cdc"
+	}
 }
 ```
