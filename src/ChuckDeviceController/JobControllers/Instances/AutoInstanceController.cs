@@ -375,7 +375,7 @@
                     {
                         var bootstrapCount = totalBootstrapCount - count;
                         var bootstrapPercentage = totalBootstrapCount > 0
-                            ? Convert.ToDouble(bootstrapCount / totalBootstrapCount) * 100.0
+                            ? Convert.ToDouble((double)bootstrapCount / totalBootstrapCount) * 100.0
                             : 100d;
                         return $"Bootstrapping {bootstrapCount:N0}/{totalBootstrapCount:N0} ({Math.Round(bootstrapPercentage, 2)}%)";
                     }
@@ -383,7 +383,7 @@
                     var currentCountDb = await _pokestopRepository.GetQuestCount(ids).ConfigureAwait(false);
                     var currentCount = _allStops.Count - _todayStops.Count;
                     var percentage = _allStops.Count > 0
-                        ? Convert.ToDouble(currentCount / _allStops.Count) * 100.0
+                        ? Convert.ToDouble((double)currentCount / _allStops.Count) * 100.0
                         : 100d;
                     var percentageReal = _allStops.Count > 0
                         ? Convert.ToDouble((double)currentCountDb / _allStops.Count) * 100.0

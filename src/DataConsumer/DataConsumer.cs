@@ -188,14 +188,14 @@
                     var data = await GetData(_config.Redis.QueueName);
                     if (data == default)
                     {
-                        Thread.Sleep(1);
+                        Thread.Sleep(10);
                         continue;
                     }
                     var obj = JsonSerializer.Deserialize<dynamic>(data.ToString());
                     string channel = Convert.ToString(obj.GetProperty("channel"));
                     string message = Convert.ToString(obj.GetProperty("data"));
                     await SubscriptionHandler(channel, message);
-                    Thread.Sleep(1);
+                    Thread.Sleep(10);
                 }
             })
             { IsBackground = true }.Start();
@@ -908,7 +908,6 @@
                     }
                     catch (MySqlConnector.MySqlException ex)
                     {
-                        var noCellId = pokemon.Any(x => x.CellId == 0);
                         ConsoleExt.WriteError($"[DataConsumer] UpdatePokemon: {ex.Message}");
                     }
                     /*
