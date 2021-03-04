@@ -1298,8 +1298,8 @@
                         // TODO: Pass data through to view
                         return BuildSuccessResponse("utilities", $"<b>0</b> Pokestops converted to Gyms");
                     case "force_logout_all_devices":
-                        // TODO: Set device usernames to null
-                        break;
+                        await _deviceRepository.ClearAllAccounts().ConfigureAwait(false);
+                        return BuildSuccessResponse("utilities", $"All devices forced to logout");
                     case "clear_quests":
                         await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
                         return BuildSuccessResponse("utilities", "All Pokestop quests have been cleared");

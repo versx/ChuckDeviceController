@@ -33,7 +33,7 @@
                         Convert Pokestops to Gyms {{#convertible_pokestops}}({{convertible_pokestops}}){{/convertible_pokestops}}
                     </button>
                     <button type="submit" name="action" value="delete_stale_pokestops" class="list-group-item list-group-item-action list-group-item-danger"
-                            onclick="return confirm('Are you sure that you want to delete {{stale_pokestops}} stale Pokestops that haven\'t been seen in the last 25 hours?');">
+                            onclick="return confirm('Are you sure that you want to delete {{stale_pokestops}} stale Pokestops that haven\'t been seen in the last 24 hours?');">
                         Delete Stale Pokestops {{#stale_pokestops}}({{stale_pokestops}} Not seen last 24 hours){{/stale_pokestops}}
                     </button>
                     <button type="submit" name="action" value="clear_warnings" class="list-group-item list-group-item-action list-group-item-warning"
@@ -44,10 +44,13 @@
                             onclick="return confirm('Are you sure that you want to delete {{will_remove_ban}} Bans with more than 30 days?');">
                         Delete Bans {{#bans}}({{bans}} with more than 30 days){{/bans}}
                     </button>
-
-                    <button type="submit" name="action" value="flush_redis" class="list-group-item list-group-item-action list-group-item-warning"
+                    <button type="submit" name="action" value="flush_redis" class="list-group-item list-group-item-action list-group-item-danger"
                             onclick="return confirm('Are you sure that you want to flush the Redis database?');">
                         Flush Redis Database
+                    </button>
+                    <button type="submit" name="action" value="force_logout_all_devices" class="list-group-item list-group-item-action list-group-item-warning"
+                            onclick="return confirm('Are you sure that you want to for logout all devices?');">
+                        Force Logout All Devices
                     </button>
                     <input type="hidden" name="_csrf" value="{{csrf}}">
                 </form>
