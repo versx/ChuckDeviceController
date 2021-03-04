@@ -14,12 +14,14 @@
     using POGOProtos.Rpc;
     using InvasionCharacter = POGOProtos.Rpc.EnumWrapper.Types.InvasionCharacter;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
+    using StackExchange.Redis;
     using Z.EntityFramework.Plus;
 
     using Chuck.Infrastructure.Common;
     using Chuck.Infrastructure.Data.Contexts;
     using Chuck.Infrastructure.Data.Entities;
     using Chuck.Infrastructure.Data.Repositories;
+    using Chuck.Infrastructure.Extensions;
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Utilities;
 
@@ -30,6 +32,8 @@
 
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
+        private readonly IConnectionMultiplexer _redis;
+        private readonly ISubscriber _subscriber;
         private readonly ILogger<DeviceController> _logger;
 
         private readonly AccountRepository _accountRepository;
@@ -44,9 +48,11 @@
 
         #region Constructor
 
-        public DashboardController(DeviceControllerContext context, ILogger<DeviceController> logger)
+        public DashboardController(DeviceControllerContext context, IConnectionMultiplexer connectionMultiplexer, ILogger<DeviceController> logger)
         {
             _context = context;
+            _redis = connectionMultiplexer;
+            _subscriber = _redis.GetSubscriber();
             _logger = logger;
 
             _accountRepository = new AccountRepository(_context);
@@ -1013,8 +1019,9 @@
                     },
                 };
                 await _webhookRepository.AddAsync(webhook).ConfigureAwait(false);
-                // TODO: await WebhookController.Instance.Reload().ConfigureAwait(false);
-                // TODO: Send redis webhook:reload event
+                // Send redis webhook:reload event
+                var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
+                await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
                 return Redirect("/dashboard/webhooks");
             }
         }
@@ -1072,8 +1079,9 @@
                     if (webhookToDelete != null)
                     {
                         await _webhookRepository.DeleteAsync(webhookToDelete).ConfigureAwait(false);
-                        // TODO: await WebhookController.Instance.Reload().ConfigureAwait(false);
-                        // TODO: Send redis webhook:reload event
+                        // Send redis webhook:reload event
+                        var reloadWebhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
+                        await PublishData(RedisChannels.WebhookReload, reloadWebhooks).ConfigureAwait(false);
                         _logger.LogDebug($"Webhook {name} was deleted");
                     }
                     return Redirect("/dashboard/webhooks");
@@ -1127,8 +1135,9 @@
                     WeatherConditionIds = weatherIds,
                 };
                 await _webhookRepository.UpdateAsync(webhook).ConfigureAwait(false);
-                // TODO: await WebhookController.Instance.Reload().ConfigureAwait(false);
-                // TODO: // TODO: Send redis webhook:reload event
+                // Send redis webhook:reload event
+                var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
+                await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
                 return Redirect("/dashboard/webhooks");
             }
         }
@@ -1392,7 +1401,23 @@
                 return (List<T>)Enumerable.Range(min, max);
             }
             return (List<T>)ids.Split('\n').Select(int.Parse);
+        }
 
+        private Task PublishData<T>(string channel, T data)
+        {
+            try
+            {
+                if (data == null)
+                {
+                    return Task.CompletedTask;
+                }
+                _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"PublishData: {ex}");
+            }
+            return Task.CompletedTask;
         }
 
         #endregion

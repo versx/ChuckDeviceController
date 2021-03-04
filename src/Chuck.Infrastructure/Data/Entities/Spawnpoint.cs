@@ -60,17 +60,15 @@
                 Latitude = wild.Latitude,
                 Longitude = wild.Longitude,
                 Updated = now,
-                FirstSeenTimestamp = now, // TODO: Check if exists already before setting
             };
             var tthMs = wild.TimeTillHiddenMs;
             if (tthMs > 0 && tthMs <= 90000)
             {
+                //wild.LastModifiedMs
                 var unixDate = DateTime.UtcNow;
                 var secondsOfHour = unixDate.Minute * 60 + unixDate.Second;
                 var despawnSec = (int)Math.Round(tthMs / 1000.0);
-                var offset = despawnSec < secondsOfHour
-                    ? despawnSec - secondsOfHour
-                    : 3600 - secondsOfHour + despawnSec;
+                var offset = secondsOfHour + despawnSec;
                 if (offset > 3600)
                 {
                     offset -= 3600;

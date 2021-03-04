@@ -1,11 +1,15 @@
 ﻿namespace WebhookProcessor
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Threading;
 
     using StackExchange.Redis;
 
+    using Chuck.Infrastructure.Common;
     using Chuck.Infrastructure.Configuration;
+    using Chuck.Infrastructure.Data.Entities;
     using Chuck.Infrastructure.Extensions;
 
     class Program
@@ -83,10 +87,32 @@
         {
             if (string.IsNullOrEmpty(message)) return;
 
-            var payload = (dynamic)message;
-            if (payload == null) return;
+            switch (channel)
+            {
+                case RedisChannels.WebhookAccount:
+                case RedisChannels.WebhookEgg:
+                case RedisChannels.WebhookGym:
+                case RedisChannels.WebhookGymDefender:
+                case RedisChannels.WebhookGymTrainer:
+                case RedisChannels.WebhookInvasion:
+                case RedisChannels.WebhookLure:
+                case RedisChannels.WebhookPokemon:
+                case RedisChannels.WebhookPokestop:
+                case RedisChannels.WebhookQuest:
+                case RedisChannels.WebhookRaid:
+                case RedisChannels.WebhookWeather:
+                    var payload = (dynamic)message;
+                    if (payload == null) return;
 
-            WebhookController.Instance.Add(payload);
+                    ThreadPool.QueueUserWorkItem(_ => WebhookController.Instance.Add(payload));
+                    break;
+                case RedisChannels.WebhookReload:
+                    var webhooks = message.ToString().FromJson<List<Webhook>>();
+                    if (webhooks == null) return;
+
+                    WebhookController.Instance.SetWebhooks(webhooks);
+                    break;
+            }
         }
     }
 }

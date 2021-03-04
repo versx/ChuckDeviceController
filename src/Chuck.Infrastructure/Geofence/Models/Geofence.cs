@@ -94,6 +94,16 @@
 
         #endregion
 
+        public bool Intersects(double lat, double lon)
+        {
+            var coord = new NetTopologySuite.Geometries.Coordinate(lat, lon);
+            var point = GeometryFactory.Default.CreatePoint(coord);
+            return Feature.Geometry.Contains(point);/* ||
+                   point.Touches(Feature.Geometry) ||
+                   point.Within(Feature.Geometry) ||
+                   point.CoveredBy(Feature.Geometry);*/
+        }
+
         public static Geofence FromPolygon(List<Coordinate> polygon)
         {
             return new Geofence(null, polygon);
@@ -110,8 +120,7 @@
 
         public static List<Geofence> FromMultiPolygons(List<MultiPolygon> multiPolygons)
         {
-            return multiPolygons.ConvertAll(p => FromMultiPolygon(p))
-;
+            return multiPolygons.ConvertAll(p => FromMultiPolygon(p));
         }
     }
 }

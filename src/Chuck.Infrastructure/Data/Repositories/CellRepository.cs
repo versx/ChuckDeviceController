@@ -85,16 +85,16 @@
         public async Task<IReadOnlyList<Cell>> GetByIdsAsync(List<ulong> ids, bool fromCache = true)
         {
             return await Task.Run(() =>
+            {
+                if (fromCache)
                 {
-                    if (fromCache)
-                    {
-                        return _dbContext.Cells.Where(x => ids.Contains(x.Id))
-                                               .FromCache()
-                                               .ToList();
-                    }
                     return _dbContext.Cells.Where(x => ids.Contains(x.Id))
+                                           .FromCache()
                                            .ToList();
-                }).ConfigureAwait(false);
+                }
+                return _dbContext.Cells.Where(x => ids.Contains(x.Id))
+                                       .ToList();
+            }).ConfigureAwait(false);
         }
 
         public async Task<List<Cell>> GetByIdsAsync(List<ulong> ids)
@@ -121,7 +121,7 @@
             {
                 return new List<Cell>();
             }
-            return (List<Cell>)await GetByIdsAsync(ids, true).ConfigureAwait(false);
+            return (List<Cell>)await GetByIdsAsync(ids, false).ConfigureAwait(false);
         }
     }
 }

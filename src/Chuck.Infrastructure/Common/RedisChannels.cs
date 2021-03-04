@@ -11,8 +11,8 @@
         public const string ProtoGymDefender = "proto:gym_defender";
         public const string ProtoGymTrainer = "proto:gym_trainer";
         public const string ProtoQuest = "proto:quest";
-        public const string ProtoCell = "proto:weather";
-        public const string ProtoWeather = "proto:cell";
+        public const string ProtoCell = "proto:cell";
+        public const string ProtoWeather = "proto:weather";
         public const string ProtoAccount = "proto:account";
 
         // Webhook channels
@@ -26,9 +26,10 @@
         public const string WebhookGymDefender = "webhook:gym_defender";
         public const string WebhookGymTrainer = "webhook:gym_trainer";
         public const string WebhookQuest = "webhook:quest";
-        public const string WebhookCell = "webhook:weather";
-        public const string WebhookWeather = "webhook:cell";
+        //public const string WebhookCell = "webhook:cell";
+        public const string WebhookWeather = "webhook:weather";
         public const string WebhookAccount = "webhook:account";
+        public const string WebhookReload = "webhook:reload";
 
         public const string PokemonAdded = "pokemon:added";
         public const string PokemonUpdated = "pokemon:updated";
