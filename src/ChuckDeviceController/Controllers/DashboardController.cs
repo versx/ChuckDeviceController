@@ -197,6 +197,13 @@
                 });
                 obj.nothing_selected = true;
                 obj.timezone_offset = 0;
+                var timezones = Data.GameMaster.Instance.Timezones.Keys.ToList();
+                timezones.Sort();
+                obj.timezones = timezones.Select(x => new
+                {
+                    name = x,
+                    selected = false,
+                });
                 obj.circle_size = 70;
                 obj.nothing_selected = true;
                 obj.iv_queue_limit = 100;
@@ -217,9 +224,22 @@
                 var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
+                /*
                 var timezoneOffset = Request.Form.ContainsKey("timezone_offset")
                     ? int.Parse(Request.Form["timezone_offset"].ToString() ?? "0")
                     : 0;
+                */
+                var timezoneOffset = 0;
+                var timezone = Request.Form["timezone"].ToString();
+                if (!string.IsNullOrEmpty(timezone))
+                {
+                    if (Data.GameMaster.Instance.Timezones.ContainsKey(timezone))
+                    {
+                        // TODO: Add DTS option
+                        timezoneOffset = Data.GameMaster.Instance.Timezones[timezone].Dts;
+                        timezoneOffset *= 3600;
+                    }
+                }
                 var circleRouteType = Request.Form.ContainsKey("circle_route_type")
                     ? StringToCircleRouteType(Request.Form["circle_route_type"])
                     : CircleRouteType.Default;
@@ -316,6 +336,14 @@
                 obj.auto_quest_selected = instance.Type == InstanceType.AutoQuest;
                 obj.bootstrap_selected = instance.Type == InstanceType.Bootstrap;
                 obj.find_tth_selected = instance.Type == InstanceType.FindTTH;
+                var timezones = Data.GameMaster.Instance.Timezones.Keys.ToList();
+                timezones.Sort();
+                obj.timezones = timezones.Select(x => new
+                {
+                    name = x,
+                    // TODO: Save timezone name instead of offset so we can edit it later if needed
+                    selected = Data.GameMaster.Instance.Timezones[x].Dts == instance.Data.TimezoneOffset,
+                });
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
@@ -374,7 +402,18 @@
                 //var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
-                var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
+                //var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
+                var timezoneOffset = 0;
+                var timezone = Request.Form["timezone"].ToString();
+                if (!string.IsNullOrEmpty(timezone))
+                {
+                    if (Data.GameMaster.Instance.Timezones.ContainsKey(timezone))
+                    {
+                        // TODO: Add DTS option
+                        timezoneOffset = Data.GameMaster.Instance.Timezones[timezone].Dts;
+                        timezoneOffset *= 3600;
+                    }
+                }
                 var circleSize = ushort.Parse(Request.Form["circle_Size"].ToString() ?? "70");
                 var circleRouteType = Request.Form.ContainsKey("circle_route_type")
                     ? StringToCircleRouteType(Request.Form["circle_route_type"].ToString())

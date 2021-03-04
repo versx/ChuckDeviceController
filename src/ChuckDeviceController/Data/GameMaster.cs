@@ -15,8 +15,25 @@
     {
         private const string MasterFileName = "masterfile.json";
         private const string CpMultipliersFileName = "cp_multipliers.json";
+        private const string TimezonesFileName = "timezones.json";
 
-        //private static readonly IEventLogger _logger = EventLogger.GetLogger("MASTER", Program.LogLevel);
+        #region Singleton
+
+        private static GameMaster _instance;
+        public static GameMaster Instance
+        {
+            get
+            {
+                return _instance ??= LoadInit<GameMaster>(
+                        Path.Combine(
+                            Strings.DataFolder,
+                            MasterFileName
+                        )
+                    );
+            }
+        }
+
+        #endregion
 
         #region Properties
 
@@ -47,23 +64,8 @@
         [JsonIgnore]
         public IReadOnlyDictionary<double, double> CpMultipliers { get; }
 
-        #region Singleton
-
-        private static GameMaster _instance;
-        public static GameMaster Instance
-        {
-            get
-            {
-                return _instance ??= LoadInit<GameMaster>(
-                        Path.Combine(
-                            Strings.DataFolder,
-                            MasterFileName
-                        )
-                    );
-            }
-        }
-
-        #endregion
+        [JsonIgnore]
+        public IReadOnlyDictionary<string, TimezoneOffsetData> Timezones { get; set; }
 
         #endregion
 
@@ -73,6 +75,12 @@
                 Path.Combine(
                     Strings.DataFolder,
                     CpMultipliersFileName
+                )
+            );
+            Timezones = LoadInit<Dictionary<string, TimezoneOffsetData>>(
+                Path.Combine(
+                    Strings.DataFolder,
+                    TimezonesFileName
                 )
             );
         }
@@ -106,6 +114,13 @@
 
             return data.FromJson<T>();
         }
+    }
+
+    public class TimezoneOffsetData
+    {
+        public short Utc { get; set; }
+
+        public short Dts { get; set; }
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]

@@ -229,9 +229,9 @@
                             var timestampMs = data.TimestampMs;
                             var username = data.Username;
                             //var id = wildPokemon.EncounterId;
-                            //var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
-                            var pokemon = Pokemon.ParseFromWild(wildPokemon, spawnpoint);
-                            pokemon.Username = username;
+                            var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
+                            //var pokemon = Pokemon.ParseFromWild(wildPokemon, spawnpoint);
+                            //pokemon.Username = username;
                             var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
                             var changesResult = pokemon.Update(oldPokemon);
                             if (changesResult.IsNewOrHasChanges)
