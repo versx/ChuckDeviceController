@@ -233,22 +233,7 @@
                 var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
-                /*
-                var timezoneOffset = Request.Form.ContainsKey("timezone_offset")
-                    ? int.Parse(Request.Form["timezone_offset"].ToString() ?? "0")
-                    : 0;
-                */
-                var timezoneOffset = 0;
                 var timezone = Request.Form["timezone"].ToString();
-                if (!string.IsNullOrEmpty(timezone))
-                {
-                    if (Data.GameMaster.Instance.Timezones.ContainsKey(timezone))
-                    {
-                        // TODO: Add DTS option
-                        timezoneOffset = Data.GameMaster.Instance.Timezones[timezone].Dts;
-                        timezoneOffset *= 3600;
-                    }
-                }
                 var circleRouteType = Request.Form.ContainsKey("circle_route_type")
                     ? StringToCircleRouteType(Request.Form["circle_route_type"])
                     : CircleRouteType.Default;
@@ -305,7 +290,7 @@
                         MinimumLevel = minLevel,
                         MaximumLevel = maxLevel,
                         PokemonIds = pokemonIds,
-                        TimezoneOffset = timezoneOffset,
+                        Timezone = timezone,
                         CircleRouteType = circleRouteType,
                         CircleSize = (ushort)circleSize,
                         FastBootstrapMode = fastBootstrapMode,
@@ -350,8 +335,7 @@
                 obj.timezones = timezones.Select(x => new
                 {
                     name = x,
-                    // TODO: Save timezone name instead of offset so we can edit it later if needed
-                    selected = Data.GameMaster.Instance.Timezones[x].Dts == instance.Data.TimezoneOffset,
+                    selected = x == instance.Data.Timezone,
                 });
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
@@ -375,7 +359,6 @@
                 obj.iv_queue_limit = instance.Data.IVQueueLimit > 0 ? instance.Data.IVQueueLimit : 100;
                 //        break;
                 //    case InstanceType.AutoQuest:
-                obj.timezone_offset = instance.Data.TimezoneOffset ?? 0;
                 obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
                 //        break;
                 //    case InstanceType.Bootstrap:
@@ -411,18 +394,7 @@
                 //var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
-                //var timezoneOffset = int.Parse(Request.Form["timezone_offset"].ToString() ?? "0");
-                var timezoneOffset = 0;
                 var timezone = Request.Form["timezone"].ToString();
-                if (!string.IsNullOrEmpty(timezone))
-                {
-                    if (Data.GameMaster.Instance.Timezones.ContainsKey(timezone))
-                    {
-                        // TODO: Add DTS option
-                        timezoneOffset = Data.GameMaster.Instance.Timezones[timezone].Dts;
-                        timezoneOffset *= 3600;
-                    }
-                }
                 var circleSize = ushort.Parse(Request.Form["circle_Size"].ToString() ?? "70");
                 var circleRouteType = Request.Form.ContainsKey("circle_route_type")
                     ? StringToCircleRouteType(Request.Form["circle_route_type"].ToString())
@@ -463,7 +435,7 @@
                     MinimumLevel = minLevel,
                     MaximumLevel = maxLevel,
                     PokemonIds = pokemonIds,
-                    TimezoneOffset = timezoneOffset,
+                    Timezone = timezone,
                     FastBootstrapMode = fastBootstrapMode,
                 };
                 await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);

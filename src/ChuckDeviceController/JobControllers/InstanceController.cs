@@ -198,7 +198,6 @@
                             var multiPolygon = new MultiPolygon();
                             Coordinate first = null;
                             for (var i = 0; i < coords.Count; i++)
-                            //foreach (var coord in coords)
                             {
                                 var coord = coords[i];
                                 if (i == 0)
@@ -218,7 +217,20 @@
                         switch (instance.Type)
                         {
                             case InstanceType.AutoQuest:
-                                var timezoneOffset = instance.Data.TimezoneOffset ?? 0;
+                                var timezone = instance.Data.Timezone;
+                                var timezoneOffset = 0;
+                                if (!string.IsNullOrEmpty(timezone))
+                                {
+                                    var tz = Data.GameMaster.Instance.Timezones.ContainsKey(timezone) ? Data.GameMaster.Instance.Timezones[timezone] : null;
+                                    if (tz != null)
+                                    {
+                                        var tzData = Data.GameMaster.Instance.Timezones[timezone];
+                                        // TODO: Check if dts is enabled
+                                        timezoneOffset = false
+                                            ? tzData.Dts * 3600
+                                            : tzData.Utc * 3600;
+                                    }
+                                }
                                 var spinLimit = instance.Data.SpinLimit ?? 3500;
                                 instanceController = new AutoInstanceController(instance.Name, areaArrayEmptyInner, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit);
                                 break;

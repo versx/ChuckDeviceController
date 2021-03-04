@@ -20,8 +20,8 @@
         [JsonPropertyName("max_level")]
         public ushort MaximumLevel { get; set; }
 
-        [JsonPropertyName("timezone_offset")]
-        public int? TimezoneOffset { get; set; }
+        [JsonPropertyName("timezone")]
+        public string Timezone { get; set; }
 
         [JsonPropertyName("area")]
         public dynamic Area { get; set; }
