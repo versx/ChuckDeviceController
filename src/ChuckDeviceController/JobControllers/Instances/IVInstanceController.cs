@@ -100,23 +100,26 @@
             if (pokemon == null)
                 return null;
 
+            if (pokemon.FirstSeenTimestamp == 0)
+                pokemon.FirstSeenTimestamp = DateTime.UtcNow.ToTotalSeconds();
             var timeDiff = DateTime.UtcNow.ToTotalSeconds() - pokemon.FirstSeenTimestamp;
             if (timeDiff >= 600)
             {
                 return await GetTask(uuid, accountUsername, false).ConfigureAwait(false);
             }
-            //lock (_scannedLock)
-            //{
+            lock (_scannedLock)
+            {
                 _scannedPokemon.Add(new ScannedPokemon
                 {
                     Date = DateTime.UtcNow,
                     Pokemon = pokemon,
                 });
-            //}
+            }
             return new IVTask
             {
                 Area = Name,
                 Action = ActionType.ScanIV,
+                EncounterId = pokemon.Id,
                 Latitude = pokemon.Latitude,
                 Longitude = pokemon.Longitude,
                 IsSpawnpoint = pokemon.SpawnId != null,
@@ -158,10 +161,13 @@
                 // Pokemon Id not in pokemon IV list
                 return;
             }
-            if (_pokemonQueue.Find(x => x.Id == pokemon.Id) != null)
+            lock (_queueLock)
             {
-                // Queue already contains pokemon
-                return;
+                if (_pokemonQueue.Find(x => x.Id == pokemon.Id) != null)
+                {
+                    // Queue already contains pokemon
+                    return;
+                }
             }
             if (pokemon.ExpireTimestamp <= DateTime.UtcNow.ToTotalSeconds())
             {
@@ -212,19 +218,19 @@
                 {
                     _pokemonQueue.Remove(pkmn);
                 }
-                if (_startDate == default)
-                {
-                    _startDate = DateTime.UtcNow;
-                }
-                if (_count == int.MaxValue)
-                {
-                    _count = 0;
-                    _startDate = DateTime.UtcNow;
-                }
-                else
-                {
-                    _count++;
-                }
+            }
+            if (_startDate == default)
+            {
+                _startDate = DateTime.UtcNow;
+            }
+            if (_count == int.MaxValue)
+            {
+                _count = 0;
+                _startDate = DateTime.UtcNow;
+            }
+            else
+            {
+                _count++;
             }
         }
 
@@ -243,13 +249,16 @@
         private int? LastIndexOf(uint pokemonId)
         {
             var targetPriority = PokemonList.IndexOf(pokemonId);
-            for (var i = 0; i < _pokemonQueue.Count; i++)
+            lock (_queueLock)
             {
-                var pokemon = _pokemonQueue[i];
-                var priority = PokemonList.IndexOf(pokemon.PokemonId);
-                if (targetPriority < priority)
+                for (var i = 0; i < _pokemonQueue.Count; i++)
                 {
-                    return i;
+                    var pokemon = _pokemonQueue[i];
+                    var priority = PokemonList.IndexOf(pokemon.PokemonId);
+                    if (targetPriority < priority)
+                    {
+                        return i;
+                    }
                 }
             }
             return null;

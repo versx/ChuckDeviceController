@@ -344,9 +344,9 @@
                             }
                             try
                             {
-                                var oldPokemon = await GetEntity<Pokemon>(encounter.Pokemon.EncounterId.ToString(), "pokemon").ConfigureAwait(false); // TODO: is_event
-                                pokemon = Pokemon.ParseFromEncounter(encounter.Pokemon, spawnpoint);
-                                pokemon.Username = username;
+                                pokemon = await GetEntity<Pokemon>(encounter.Pokemon.EncounterId.ToString(), "pokemon").ConfigureAwait(false); // TODO: is_event
+                                //pokemon = Pokemon.ParseFromEncounter(encounter.Pokemon, spawnpoint);
+                                //pokemon.Username = username;
                             }
                             catch (Exception ex)
                             {
@@ -355,36 +355,27 @@
                             }
                             if (pokemon != null)
                             {
-                                // TODO: Pokemon from encounter
-                                //await pokemon.AddEncounter(encounter, username).ConfigureAwait(false);
+                                await pokemon.AddEncounter(encounter, username).ConfigureAwait(false);
                             }
                             else
                             {
-                                //var centerCoord = new Coordinate(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude);
-                                //var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(centerCoord.Latitude, centerCoord.Longitude));
-                                //var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
+                                var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude));
+                                var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
                                 //pokemon = Pokemon.ParseFromEncounter(encounter.Pokemon, spawnpoint);
-                                /*
-                                var newPokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
-                                newPokemon.AddEncounter(encounter, username)
+                                pokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
+                                pokemon.AddEncounter(encounter, username)
                                           .ConfigureAwait(false)
                                           .GetAwaiter()
                                           .GetResult();
-                                */
-                                //if (pokemon.Update(null, true))
-                                //{
-                                //    _pokemon.Add(pokemon);
-                                //}
                             }
 
                             await PublishData(RedisChannels.PokemonUpdated, pokemon);
-                            // TODO: Check for changes
                             await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
+                            // TODO: Check for changes
                             //if (pokemon.Update(pokemon, true))
                             lock (_pokemonLock)
                             {
                                 // TODO: Webhook
-                                // TODO: await PublishData(RedisChannels.WebhookPokemon, pokemon);
                                 _pokemon.Add(pokemon);
                             }
                             await SetCacheData($"pokemon_{pokemon.Id}", pokemon);
