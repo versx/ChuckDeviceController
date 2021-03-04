@@ -65,7 +65,7 @@
             var baseEntry = new PvpRank
             {
                 Pokemon = (ushort)pokemonId,
-                Form = formId > 0 ? (ushort)formId : 0,
+                Form = Convert.ToUInt16(formId > 0 ? formId : 0),
             };
 
             var results = new Dictionary<string, List<PvpRank>>();
