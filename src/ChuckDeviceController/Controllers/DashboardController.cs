@@ -33,6 +33,7 @@
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
         private readonly IConnectionMultiplexer _redis;
+        private readonly IDatabaseAsync _redisDatabase;
         private readonly ISubscriber _subscriber;
         private readonly ILogger<DeviceController> _logger;
 
@@ -53,6 +54,7 @@
         {
             _context = context;
             _redis = connectionMultiplexer;
+            _redisDatabase = _redis.GetDatabase(Startup.Config.Redis.DatabaseNum);
             _subscriber = _redis.GetSubscriber();
             _logger = logger;
 
@@ -1276,7 +1278,7 @@
             }
             else
             {
-                var type = Request.Form["type"].ToString();
+                var type = Request.Form["action"].ToString();
                 switch (type)
                 {
                     case "delete_stale_pokestops":
@@ -1304,8 +1306,12 @@
                         await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
                         return BuildSuccessResponse("utilities", "All Pokestop quests have been cleared");
                     case "clear_iv_queues":
-                    case "flush_redis":
                         break;
+                    case "flush_redis":
+                        var result = await _redisDatabase.ExecuteAsync("FLUSHDB").ConfigureAwait(false);
+                        if (string.Compare(result.ToString(), "OK", true) == 0)
+                            return BuildSuccessResponse("utilities", "Redis database successfully flushed");
+                        return BuildErrorResponse("utilities", $"Failed to flush Redis database: {result?.Type}");
                 }
                 return Redirect("/dashboard/utilities");
             }
