@@ -4,9 +4,13 @@
     using System.Collections.Generic;
     using System.Threading;
 
+    using Chuck.Infrastructure.Data.Entities;
     using Chuck.Infrastructure.Extensions;
     using Chuck.Infrastructure.Queues;
     using Chuck.Infrastructure.Utilities;
+
+    // TODO: Filter webhooks by area
+    // TODO: Filter webhooks by blacklists
 
     public class WebhookController
     {
@@ -14,7 +18,8 @@
 
         private readonly List<dynamic> _sentEvents;
         private readonly IQueue<dynamic> _queue;
-        private static readonly object _lock = new object();
+        private readonly object _webhooksLock = new object();
+        private readonly object _lock = new object();
 
         private Thread _thread;
         //private readonly System.Timers.Timer _timer;
@@ -35,7 +40,7 @@
 
         public ushort SleepIntervalS { get; set; }
 
-        public IReadOnlyList<string> Webhooks { get; set; }
+        public IReadOnlyList<Webhook> Webhooks { get; set; }
 
         #endregion
 
@@ -93,13 +98,18 @@
             if (Webhooks?.Count == 0)
                 return;
 
-            lock (_lock)
+            if (!_sentEvents.Contains(payload))
             {
-                if (!_sentEvents.Contains(payload))
+                lock (_lock)
                 {
                     _queue.Enqueue(payload);
                 }
             }
+        }
+
+        public void SetWebhooks(List<Webhook> webhooks)
+        {
+            Webhooks = webhooks;
         }
 
         #endregion
@@ -131,9 +141,9 @@
                     continue;
                 }
 
-                foreach (var url in Webhooks)
+                foreach (var webhook in Webhooks)
                 {
-                    SendEvents(url, events);
+                    SendEvents(webhook.Url, events);
                 }
                 _sentEvents.AddRange(events);
 

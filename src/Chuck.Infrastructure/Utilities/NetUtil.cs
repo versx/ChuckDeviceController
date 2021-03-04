@@ -15,7 +15,7 @@
         /// </summary>
         /// <param name="webhookUrl"></param>
         /// <param name="json"></param>
-        public static void SendWebhook(string webhookUrl, string json, ushort sleep = 50, ushort retryCount = 0)
+        public static void SendWebhook(string webhookUrl, string json, double delay = 5, ushort retryCount = 0)
         {
             if (retryCount >= MaxRetryCount)
                 return;
@@ -25,11 +25,18 @@
             try
             {
                 var resp = wc.UploadString(webhookUrl, json);
-                Thread.Sleep(sleep);
+                Thread.Sleep(Convert.ToInt32(delay * 1000));
             }
             catch (WebException ex)
             {
                 var resp = (HttpWebResponse)ex.Response;
+                if (resp == null)
+                {
+                    Thread.Sleep(retryCount);
+                    retryCount++;
+                    SendWebhook(webhookUrl, json, delay, retryCount);
+                    return;
+                }
                 switch ((int)resp.StatusCode)
                 {
                     case 429:
@@ -40,7 +47,7 @@
 
                         Thread.Sleep(retry);
                         retryCount++;
-                        SendWebhook(webhookUrl, json, sleep, retryCount);
+                        SendWebhook(webhookUrl, json, delay * 1000, retryCount);
                         break;
                 }
             }

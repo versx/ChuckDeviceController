@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Google.Common.Geometry;
@@ -286,7 +287,6 @@
                                 var er = EncounterOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                                 if (er?.Status == EncounterOutProto.Types.Status.EncounterSuccess)
                                 {
-                                    //encounters.Add(new
                                     await PushData(RedisChannels.ProtoEncounter, new
                                     {
                                         data = er,
@@ -611,7 +611,7 @@
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            Task.Run(() => InstanceController.Instance.GotPokemon(pokemon));
+                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotPokemon(pokemon));
                         }
                         break;
                     }
@@ -620,7 +620,7 @@
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            Task.Run(() => InstanceController.Instance.GotIV(pokemon));
+                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotIV(pokemon));
                         }
                         break;
                     }
@@ -638,7 +638,6 @@
                     return Task.CompletedTask;
                 }
                 //_subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
-                // TODO: Redis Queue Name
                 _redisDatabase.ListRightPushAsync(Startup.Config.Redis.QueueName, new { channel, data, }.ToJson());
             }
             catch (Exception ex)

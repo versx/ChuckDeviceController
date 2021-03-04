@@ -177,7 +177,7 @@
                 var index = LastIndexOf(pokemon.PokemonId);
                 if (_pokemonQueue.Count >= IVQueueLimit && index == null)
                 {
-                    _logger.LogInformation($"[IVController] [{Name}] Queue is full!");
+                    _logger.LogDebug($"[IVController] [{Name}] Queue is full!");
                 }
                 else if (_pokemonQueue.Count >= IVQueueLimit)
                 {

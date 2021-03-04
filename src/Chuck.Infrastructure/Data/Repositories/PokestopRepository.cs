@@ -142,9 +142,9 @@
                 return 0;
             }
             var pokestops = await GetByIdsAsync(ids).ConfigureAwait(false);
-            return (ulong)pokestops.Where(x => !x.Deleted &&
+            return (ulong)pokestops.Count(x => !x.Deleted &&
                                                x.QuestType.HasValue &&
-                                               x.QuestType != null).ToList().Count;
+                                               x.QuestType != null);
         }
     }
 }

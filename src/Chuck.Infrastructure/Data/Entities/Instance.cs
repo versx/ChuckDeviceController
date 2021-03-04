@@ -46,6 +46,8 @@
         ]
         public int AreaCount { get; set; }
 
+        #region Helper Methods
+
         public static string InstanceTypeToString(InstanceType type)
         {
             return type switch
@@ -75,5 +77,7 @@
                 _ => InstanceType.CirclePokemon,
             };
         }
+
+        #endregion
     }
 }

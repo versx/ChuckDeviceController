@@ -1,11 +1,11 @@
-{{> navbar}}
+﻿{{> navbar}}
 
 <script>
     $(document).ready(function() {
-        const table = $('#table').DataTable( {
+        const table = $('#table').DataTable({
             "ajax": {
-                "url": "/api/instances",
-                "dataSrc": "data.instances",
+                "url": "/api/webhooks",
+                "dataSrc": "data.webhooks",
                 "type": "POST",
                 "_csrf": "{{csrf}}"
             },
@@ -28,51 +28,52 @@
             ],
             "colReorder": true,
             "stateSave": true,
-            "paging":   true,
-            "lengthMenu": [[25, 50, 100, 200, -1], [25, 50, 100, 200, "All"]],
+            "paging": true,
+            "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
             "pageLength": 100,
+            "lengthChange": false,
             "columns": [
                 { "data": "name" },
-                { "data": "type" },
-                { "data": "status" },
+                { "data": "delay" },
+                { "data": "types" },
                 { "data": "geofence" },
-                { "data": "count" },
+                { "data": "enabled" },
                 { "data": "buttons" }
             ],
-            "info":     true,
+            "info":     false,
             "order": [[ 0, "asc" ]],
-            "search.caseInsensitive": true,
             "columnDefs": [ {
                 "targets": [5],
                 "orderable": false
             }],
+            "search.caseInsensitive": true,
             "responsive": true
         });
         $('#table').on('draw.dt', function () {
             setTimeout(function () {
                 table.ajax.reload(null, false);
-            }, 15 * 1000);
+            }, 30 * 1000);
         });
     });
 </script>
 
 <body class="{{body_class}}">
     <br>
-    <h1 align="center">Configure {{title}}'s Instances!</h1>
+    <h1 align="center">Configure {{title}}'s Webhooks!</h1>
     <br>
     <div style="width:90%; margin-left:calc(5%);">
-        <a href="/dashboard/instance/add" role="button" style="float: right;" class="btn btn-sm btn-success">Add New Instance</a>
+        <a href="/dashboard/webhook/add" role="button" style="float: right;" class="btn btn-success">Add New Webhook</a>
         <br><br>
-        <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
+        <table id="table" class="table  {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
             <thead>
-            <tr>
-                <th class="all">Name</th>
-                <th class="min-desktop">Type</th>
-                <th class="all">Status</th>
-                <th class="min-desktop">Geofence</th>
-                <th class="min-desktop">Devices</th>
-                <th class="all" width="5%"></th>
-            </tr>
+                <tr>
+                    <th class="all">Name</th>
+                    <th class="min-desktop">Delay</th>
+                    <th class="min-desktop">Type(s)</th>
+                    <th class="all">Geofence</th>
+                    <th class="all">Enabled</th>
+                    <th class="all" width="5%"></th>
+                </tr>
             </thead>
             <tbody>
             </tbody>

@@ -18,7 +18,7 @@
                 optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
                 var ctx = new DeviceControllerContext(optionsBuilder.Options);
-                ctx.ChangeTracker.AutoDetectChangesEnabled = false;
+                //ctx.ChangeTracker.AutoDetectChangesEnabled = false;
                 return ctx;
             }
             catch (Exception ex)

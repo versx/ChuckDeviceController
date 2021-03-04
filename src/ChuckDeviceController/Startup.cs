@@ -27,7 +27,6 @@ namespace ChuckDeviceController
     using Chuck.Infrastructure.Data.Repositories;
     using Chuck.Infrastructure.Extensions;
     using ChuckDeviceController.JobControllers;
-    using ChuckDeviceController.Services;
 
     public class Startup
     {
@@ -94,6 +93,7 @@ namespace ChuckDeviceController
                        .AllowAnyMethod();
             }));
 
+            // TODO: Configurable
             // Profiling
             // The services.AddMemoryCache(); code is required - there is a bug in
             // MiniProfiler, if we have not configured MemoryCache, it will fail.
@@ -116,7 +116,7 @@ namespace ChuckDeviceController
             services.AddControllersWithViews();
 
             await InstanceController.Instance.Start().ConfigureAwait(false);
-            await AssignmentController.Instance.Initialize().ConfigureAwait(false);
+            await AssignmentController.Instance.Start().ConfigureAwait(false);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

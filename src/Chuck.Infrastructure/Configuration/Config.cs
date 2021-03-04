@@ -1,7 +1,6 @@
 ﻿namespace Chuck.Infrastructure.Configuration
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Text.Json;
     using System.Text.Json.Serialization;
@@ -24,9 +23,6 @@
 
         [JsonPropertyName("redis")]
         public RedisConfig Redis { get; set; }
-
-        [JsonPropertyName("webhooks")]
-        public IReadOnlyList<string> Webhooks { get; set; }
 
         /// <summary>
         /// Save the current configuration object

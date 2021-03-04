@@ -20,13 +20,9 @@ namespace ChuckDeviceController
     // TODO: Fix lures possible overwrite (unsure)
     // TODO: Add Smart raid instance
     // TODO: Maybe leveling instance
-    // TODO: Fix issue with bootstrapping, possibly invalid polygons
     // TODO: Add HasChanges property for each entity to see if needs updating
     // TODO: Add cache system for ASP.NET
-    // TODO: Add secondary cache system with EntityFrameworkCore.Plus/Extensions
     // TODO: Add reusable IV lists
-    // TODO: Redis cache incoming requests, database consumer handles redis queue
-    // TODO: Add first_seen_timestamp and last_modified_timestamp to Spawnpoints
     // TODO: Add s2cell logic route
 
     public static class Program
@@ -35,7 +31,7 @@ namespace ChuckDeviceController
         {
             //head app cant not uses consoleex
             Console.OutputEncoding = Encoding.UTF8;
-            ConsoleColor org = Console.ForegroundColor;
+            var org = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
             Console.ForegroundColor = ConsoleColor.Cyan;

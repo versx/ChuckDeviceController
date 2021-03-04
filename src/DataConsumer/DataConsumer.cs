@@ -3,11 +3,13 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Text.Json;
     using System.Text.Json.Serialization;
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Google.Common.Geometry;
     using POGOProtos.Rpc;
     using StackExchange.Redis;
 
@@ -218,12 +220,12 @@
                             {
                                 _spawnpoints.Add(spawnpoint);
                             }
-                            lock (_cellsLock)
-                            {
-                                _cells.Add(Cell.FromId(data.CellId));
-                            }
 
                             var cell = data.CellId;
+                            lock (_cellsLock)
+                            {
+                                _cells.Add(Cell.FromId(cell));
+                            }
                             var wildPokemon = data.Pokemon;
                             var timestampMs = data.TimestampMs;
                             var username = data.Username;
@@ -271,10 +273,12 @@
                             var data = JsonSerializer.Deserialize<PokemonFound<NearbyPokemonProto>>(message);
                             if (data == null) return;
 
+                            /*
                             lock (_cellsLock)
                             {
                                 _cells.Add(Cell.FromId(data.CellId));
                             }
+                            */
 
                             var cell = data.CellId;
                             // data.timestamp_ms
@@ -334,7 +338,9 @@
                             Pokemon pokemon;
                             lock (_cellsLock)
                             {
-                                _cells.Add(Cell.FromId((ulong)encounter.Pokemon.Pokemon.CapturedS2CellId));
+                                var cellId = S2CellIdFromLatLng(data.Pokemon.Pokemon.Latitude, data.Pokemon.Pokemon.Longitude);
+                                var cell = Cell.FromId(cellId.Id);
+                                _cells.Add(cell);
                             }
                             try
                             {
@@ -396,7 +402,8 @@
                                 case FortType.Gym:
                                     var oldGym = await GetEntity<Gym>(fort.FortId, "gym");
                                     var gym = new Gym(cellId, fort);
-                                    if (gym.Update(oldGym)) // TODO: Check HasChanges property
+                                    //if (gym.Update(oldGym)) // TODO: Check HasChanges property
+                                    gym.Update(oldGym);
                                     {
                                         await PublishData(RedisChannels.WebhookGym, gym.GetWebhookValues("gym"));
                                         lock (_gymsLock)
@@ -420,7 +427,8 @@
                                 case FortType.Checkpoint:
                                     var oldPokestop = await GetEntity<Pokestop>(fort.FortId, "pokestop");
                                     var pokestop = new Pokestop(cellId, fort);
-                                    if (pokestop.Update(oldPokestop)) // TODO: Check HasChanges property
+                                    //if (pokestop.Update(oldPokestop)) // TODO: Check HasChanges property
+                                    pokestop.Update(oldPokestop);
                                     {
                                         // TODO: Check for lure/invasion etc
                                         await PublishData(RedisChannels.WebhookPokestop, pokestop.GetWebhookValues("pokestop"));
@@ -504,14 +512,14 @@
                             }
                             */
                             pokestop.AddQuest(fs.ChallengeQuest.Quest);
-                            if (pokestop.Update(pokestop, true)) // TODO: Check HasChanges property
-                            {
+                            //if (pokestop.Update(pokestop, true)) // TODO: Check HasChanges property
+                            //{
                                 await PublishData(RedisChannels.WebhookQuest, pokestop.GetWebhookValues("quest"));
                                 lock (_questsLock)
                                 {
                                     _quests.Add(pokestop);
                                 }
-                            }
+                            //}
                             await SetCacheData($"pokestop_{pokestop.Id}", pokestop);
                             break;
                         }
@@ -600,36 +608,33 @@
                 {
                     //BenchmarkMethod(() => UpdateCells(), "S2Cells");
                     UpdateCells();
-                    new Thread(() =>
+                    var updatePokemon = true;
+                    try
                     {
-                        var updatePokemon = true;
-                        try
-                        {
-                            //BenchmarkMethod(() => UpdateSpawnpoints(), "Spawnpoints");
-                            UpdateSpawnpoints();
-                        }
-                        catch (Exception ex)
-                        {
-                            updatePokemon = false;
-                            ConsoleExt.WriteError($"Failed to update spawnpoints, skipping Pokemon: {ex}");
-                        }
-                        //BenchmarkMethod(() => UpdateWeather(), "Weather");
-                        //BenchmarkMethod(() => UpdatePokestops(), "Pokestops");
-                        UpdateWeather();
-                        UpdatePokestops();
-                        if (updatePokemon)
-                        {
-                            //BenchmarkMethod(() => UpdatePokemon(), "Pokemon");
-                            UpdatePokemon();
-                        }
-                        UpdateQuests();
-                        //BenchmarkMethod(() => UpdateGyms(), "Gyms");
-                        UpdateGyms();
-                        // TODO: UpdateGymInfo
-                        UpdateGymTrainers();
-                        UpdateGymDefenders();
-                        UpdateAccounts();
-                    }) { IsBackground = true }.Start();
+                        //BenchmarkMethod(() => UpdateSpawnpoints(), "Spawnpoints");
+                        UpdateSpawnpoints();
+                    }
+                    catch (Exception ex)
+                    {
+                        updatePokemon = false;
+                        ConsoleExt.WriteError($"Failed to update spawnpoints, skipping Pokemon: {ex}");
+                    }
+                    //BenchmarkMethod(() => UpdateWeather(), "Weather");
+                    //BenchmarkMethod(() => UpdatePokestops(), "Pokestops");
+                    UpdateWeather();
+                    UpdatePokestops();
+                    if (updatePokemon)
+                    {
+                        //BenchmarkMethod(() => UpdatePokemon(), "Pokemon");
+                        UpdatePokemon();
+                    }
+                    UpdateQuests();
+                    //BenchmarkMethod(() => UpdateGyms(), "Gyms");
+                    UpdateGyms();
+                    // TODO: UpdateGymInfo
+                    UpdateGymTrainers();
+                    UpdateGymDefenders();
+                    UpdateAccounts();
 
                     // Consume data every x seconds
                     Thread.Sleep(ConsumeIntervalS * 1000);
@@ -903,6 +908,7 @@
                     }
                     catch (MySqlConnector.MySqlException ex)
                     {
+                        var noCellId = pokemon.Any(x => x.CellId == 0);
                         ConsoleExt.WriteError($"[DataConsumer] UpdatePokemon: {ex.Message}");
                     }
                     /*
@@ -1054,6 +1060,11 @@
         }
 
         #endregion
+
+        private static S2CellId S2CellIdFromLatLng(double latitude, double longitude)
+        {
+            return S2CellId.FromLatLng(S2LatLng.FromDegrees(latitude, longitude));
+        }
 
         private Task PublishData<T>(string channel, T data)
         {

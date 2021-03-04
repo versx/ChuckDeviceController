@@ -11,23 +11,29 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
+    using POGOProtos.Rpc;
+    using InvasionCharacter = POGOProtos.Rpc.EnumWrapper.Types.InvasionCharacter;
+    using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
+    using StackExchange.Redis;
     using Z.EntityFramework.Plus;
 
     using Chuck.Infrastructure.Common;
     using Chuck.Infrastructure.Data.Contexts;
     using Chuck.Infrastructure.Data.Entities;
     using Chuck.Infrastructure.Data.Repositories;
+    using Chuck.Infrastructure.Extensions;
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Utilities;
 
     [Controller]
-    [Route("/dashboard")]
     public class DashboardController : Controller
     {
         #region Variables
 
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
+        private readonly IConnectionMultiplexer _redis;
+        private readonly ISubscriber _subscriber;
         private readonly ILogger<DeviceController> _logger;
 
         private readonly AccountRepository _accountRepository;
@@ -36,14 +42,17 @@
         private readonly InstanceRepository _instanceRepository;
         private readonly PokestopRepository _pokestopRepository;
         private readonly GeofenceRepository _geofenceRepository;
+        private readonly WebhookRepository _webhookRepository;
 
         #endregion
 
         #region Constructor
 
-        public DashboardController(DeviceControllerContext context, ILogger<DeviceController> logger)
+        public DashboardController(DeviceControllerContext context, IConnectionMultiplexer connectionMultiplexer, ILogger<DeviceController> logger)
         {
             _context = context;
+            _redis = connectionMultiplexer;
+            _subscriber = _redis.GetSubscriber();
             _logger = logger;
 
             _accountRepository = new AccountRepository(_context);
@@ -52,6 +61,7 @@
             _instanceRepository = new InstanceRepository(_context);
             _pokestopRepository = new PokestopRepository(_context);
             _geofenceRepository = new GeofenceRepository(_context);
+            _webhookRepository = new WebhookRepository(_context);
         }
 
         #endregion
@@ -59,10 +69,7 @@
         #region Routes
 
         [HttpGet("/")]
-        public IActionResult GetIndex()
-        {
-            return Redirect("/dashboard");
-        }
+        public IActionResult GetIndex() => Redirect("/dashboard");
 
         [HttpGet("/dashboard")]
         public async Task<IActionResult> GetDashboard()
@@ -73,6 +80,7 @@
             obj.assignments_count = (await _context.Assignments.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.accounts_count = (await _context.Accounts.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.geofences_count = (await _context.Geofences.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.webhooks_count = (await _context.Webhooks.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             var data = Renderer.ParseTemplate("index", obj);
             return new ContentResult
             {
@@ -321,19 +329,19 @@
                 //switch (instance.Type)
                 //{
                 //    case InstanceType.CirclePokemon:
-                        obj.circle_route_type = instance.Data.CircleRouteType; // TODO: ToString
-                //        break;
-                //    case InstanceType.PokemonIV:
-                        obj.pokemon_ids = instance.Data.PokemonIds == null ? null : string.Join("\n", instance.Data.PokemonIds);
-                        obj.iv_queue_limit = instance.Data.IVQueueLimit > 0 ? instance.Data.IVQueueLimit : 100;
+                obj.circle_route_type = instance.Data.CircleRouteType; // TODO: ToString
+                                                                       //        break;
+                                                                       //    case InstanceType.PokemonIV:
+                obj.pokemon_ids = instance.Data.PokemonIds == null ? null : string.Join("\n", instance.Data.PokemonIds);
+                obj.iv_queue_limit = instance.Data.IVQueueLimit > 0 ? instance.Data.IVQueueLimit : 100;
                 //        break;
                 //    case InstanceType.AutoQuest:
-                        obj.timezone_offset = instance.Data.TimezoneOffset ?? 0;
-                        obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
+                obj.timezone_offset = instance.Data.TimezoneOffset ?? 0;
+                obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
                 //        break;
                 //    case InstanceType.Bootstrap:
-                        obj.circle_size = instance.Data.CircleSize ?? 70;
-                        obj.fast_bootstrap_mode = instance.Data.FastBootstrapMode;
+                obj.circle_size = instance.Data.CircleSize ?? 70;
+                obj.fast_bootstrap_mode = instance.Data.FastBootstrapMode;
                 //        break;
                 //}
                 var data = Renderer.ParseTemplate("instance-edit", obj);
@@ -912,13 +920,236 @@
 
         #endregion
 
+        #region Webhooks
+
+        [HttpGet("/dashboard/webhooks")]
+        public IActionResult GetWebhooks()
+        {
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("webhooks", obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        [
+            HttpGet("/dashboard/webhook/add"),
+            HttpPost("/dashboard/webhook/add"),
+        ]
+        public async Task<IActionResult> AddWebhook()
+        {
+            if (Request.Method == "GET")
+            {
+                var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+                dynamic obj = BuildDefaultData();
+                obj.delay = 5;
+                obj.types = Enum.GetValues(typeof(WebhookType)).Cast<WebhookType>().ToList().Select(x => new
+                {
+                    name = x.ToString(),
+                    selected = false,
+                });
+                obj.geofences = geofences.Where(x => x.Type == GeofenceType.Geofence)
+                                         .Select(x => new
+                                         {
+                                             name = x.Name,
+                                             type = x.Type.ToString().ToLower(),
+                                             selected = false,
+                                         });
+                var data = Renderer.ParseTemplate("webhook-add", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                var name = Request.Form["name"].ToString();
+                var types = Webhook.StringToWebhookTypes(Request.Form["types"]);
+                var url = Request.Form["url"].ToString();
+                var delay = double.Parse(Request.Form["delay"].ToString() ?? "5");
+                var geofence = Request.Form["geofence"].ToString();
+                var enabled = Request.Form["enabled"].ToString() == "on";
+                var pokemonIds = GenerateRange<uint>(Request.Form["pokemon_ids"].ToString(), 1, 999);
+                var pokestopIds = Request.Form["pokestop_ids"].ToString()?.Split("\n").ToList();
+                var raidIds = GenerateRange<uint>(Request.Form["raid_ids"].ToString(), 1, 999);
+                var eggLevels = GenerateRange<ushort>(Request.Form["egg_ids"].ToString(), 1, 6);
+                var lureIds = GenerateRange<Item>(Request.Form["lure_ids"].ToString(), 501, 504);
+                var invasionIds = GenerateRange<InvasionCharacter>(Request.Form["invasion_ids"].ToString(), 1, 50);
+                var gymIds = GenerateRange<Team>(Request.Form["gym_ids"].ToString(), 0, 3);
+                var weatherIds = GenerateRange<WeatherCondition>(Request.Form["weather_ids"].ToString(), 0, 7);
+
+                if (types.Count == 0)
+                {
+                    // No webhook type selected (forgot if this is needed, double check lol)
+                    return BuildErrorResponse("webhook-add", $"At least one webhook type needs to be selected");
+                }
+
+                // TODO: Make sure geofence exists
+
+                var webhook = await _webhookRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (webhook != null)
+                {
+                    // Webhook already exists
+                    return BuildErrorResponse("webhook-add", $"Webhook with name '{name}' already exists");
+                }
+
+                webhook = new Webhook
+                {
+                    Name = name,
+                    Types = types,
+                    Url = url,
+                    Delay = delay,
+                    Geofence = geofence,
+                    Enabled = enabled,
+                    Data = new WebhookData
+                    {
+                        PokemonIds = pokemonIds,
+                        PokestopIds = pokestopIds,
+                        RaidPokemonIds = raidIds,
+                        EggLevels = eggLevels,
+                        LureIds = lureIds,
+                        InvasionIds = invasionIds,
+                        GymTeamIds = gymIds,
+                        WeatherConditionIds = weatherIds,
+                    },
+                };
+                await _webhookRepository.AddAsync(webhook).ConfigureAwait(false);
+                // Send redis webhook:reload event
+                var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
+                await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
+                return Redirect("/dashboard/webhooks");
+            }
+        }
+
+        [
+            HttpGet("/dashboard/webhook/edit/{name}"),
+            HttpPost("/dashboard/webhook/edit/{name}"),
+        ]
+        public async Task<IActionResult> EditWebhook(string name)
+        {
+            if (Request.Method == "GET")
+            {
+                var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
+                var webhook = await _webhookRepository.GetByIdAsync(name).ConfigureAwait(false);
+                dynamic obj = BuildDefaultData();
+                obj.name = webhook.Name;
+                obj.old_name = webhook.Name;
+                obj.url = webhook.Url;
+                obj.delay = webhook.Delay;
+                obj.types = Enum.GetValues(typeof(WebhookType)).Cast<WebhookType>().ToList().Select(x => new
+                {
+                    name = x.ToString(),
+                    selected = webhook.Types.Contains(x),
+                });
+                obj.geofences = geofences.Where(x => x.Type == GeofenceType.Geofence)
+                                         .Select(x => new
+                                         {
+                                             name = x.Name,
+                                             type = x.Type.ToString().ToLower(),
+                                             selected = false,
+                                         });
+                // TODO: Pokemon/raid/egg/etc ids
+                obj.pokemon_ids = string.Join("\n", webhook.Data.PokemonIds ?? new List<uint>());
+                obj.pokestop_ids = string.Join("\n", webhook.Data.PokestopIds ?? new List<string>());
+                obj.raid_ids = string.Join("\n", webhook.Data.RaidPokemonIds ?? new List<uint>());
+                obj.egg_ids = string.Join("\n", webhook.Data.EggLevels ?? new List<ushort>());
+                obj.lure_ids = string.Join("\n", webhook.Data.LureIds ?? new List<Item>());
+                obj.invasion_ids = string.Join("\n", webhook.Data.InvasionIds ?? new List<InvasionCharacter>());
+                obj.gym_ids = string.Join("\n", webhook.Data.GymTeamIds ?? new List<Team>());
+                obj.weather_ids = string.Join("\n", webhook.Data.WeatherConditionIds ?? new List<WeatherCondition>());
+                obj.enabled = webhook.Enabled ? "checked" : "";
+                var data = Renderer.ParseTemplate("webhook-edit", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                if (Request.Form.ContainsKey("delete"))
+                {
+                    var webhookToDelete = await _webhookRepository.GetByIdAsync(name).ConfigureAwait(false);
+                    if (webhookToDelete != null)
+                    {
+                        await _webhookRepository.DeleteAsync(webhookToDelete).ConfigureAwait(false);
+                        // Send redis webhook:reload event
+                        var reloadWebhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
+                        await PublishData(RedisChannels.WebhookReload, reloadWebhooks).ConfigureAwait(false);
+                        _logger.LogDebug($"Webhook {name} was deleted");
+                    }
+                    return Redirect("/dashboard/webhooks");
+                }
+
+                var newName = Request.Form["name"].ToString();
+                var types = Webhook.StringToWebhookTypes(Request.Form["types"]);
+                var url = Request.Form["url"].ToString();
+                var delay = double.Parse(Request.Form["delay"].ToString() ?? "5");
+                var geofence = Request.Form["geofence"].ToString();
+                var enabled = Request.Form["enabled"].ToString() == "on";
+                var pokemonIds = GenerateRange<uint>(Request.Form["pokemon_ids"].ToString(), 1, 999);
+                var pokestopIds = Request.Form["pokestop_ids"].ToString()?.Split("\n").ToList();
+                var raidIds = GenerateRange<uint>(Request.Form["raid_ids"].ToString(), 1, 999);
+                var eggLevels = GenerateRange<ushort>(Request.Form["egg_ids"].ToString(), 1, 6);
+                var lureIds = GenerateRange<Item>(Request.Form["lure_ids"].ToString(), 501, 504);
+                var invasionIds = GenerateRange<InvasionCharacter>(Request.Form["invasion_ids"].ToString(), 1, 50);
+                var gymIds = GenerateRange<Team>(Request.Form["gym_ids"].ToString(), 0, 3);
+                var weatherIds = GenerateRange<WeatherCondition>(Request.Form["weather_ids"].ToString(), 0, 7);
+
+                if (types.Count == 0)
+                {
+                    // No webhook type selected (forgot if this is needed, double check lol)
+                    return BuildErrorResponse("webhook-edit", $"At least one webhook type needs to be selected");
+                }
+
+                // TODO: Make sure geofence exists
+
+                var webhook = await _webhookRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (webhook == null)
+                {
+                    // Webhook does not exist
+                    return BuildErrorResponse("webhook-edit", $"Webhook with name '{name}' does not exist");
+                }
+
+                webhook.Name = name;
+                webhook.Types = types;
+                webhook.Url = url;
+                webhook.Delay = delay;
+                webhook.Geofence = geofence;
+                webhook.Enabled = enabled;
+                webhook.Data = new WebhookData
+                {
+                    PokemonIds = pokemonIds,
+                    PokestopIds = pokestopIds,
+                    RaidPokemonIds = raidIds,
+                    EggLevels = eggLevels,
+                    LureIds = lureIds,
+                    InvasionIds = invasionIds,
+                    GymTeamIds = gymIds,
+                    WeatherConditionIds = weatherIds,
+                };
+                await _webhookRepository.UpdateAsync(webhook).ConfigureAwait(false);
+                // Send redis webhook:reload event
+                var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
+                await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
+                return Redirect("/dashboard/webhooks");
+            }
+        }
+
+        #endregion
+
         #region Accounts
 
         [HttpGet("/dashboard/accounts")]
         public async Task<IActionResult> GetAccounts()
         {
-            var accountsRepository = new AccountRepository(_context);
-            var stats = await accountsRepository.GetStatsAsync().ConfigureAwait(false);
+            var stats = await _accountRepository.GetStatsAsync().ConfigureAwait(false);
             dynamic obj = BuildDefaultData();
             obj.stats = stats;
             var data = Renderer.ParseTemplate("accounts", obj);
@@ -1007,17 +1238,27 @@
 
         #endregion
 
-        [HttpGet("/dashboard/settings")]
+        [
+            HttpGet("/dashboard/settings"),
+            HttpPost("/dashboard/settings"),
+        ]
         public IActionResult GetSettings()
         {
-            var obj = BuildDefaultData();
-            var data = Renderer.ParseTemplate("settings", obj);
-            return new ContentResult
+            if (Request.Method == "GET")
             {
-                Content = data,
-                ContentType = "text/html",
-                StatusCode = 200,
-            };
+                var obj = BuildDefaultData();
+                var data = Renderer.ParseTemplate("settings", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                return Redirect("/dashboard/settings");
+            }
         }
 
         #endregion
@@ -1029,7 +1270,7 @@
             return (type.ToLower()) switch
             {
                 "leapfrog" => CircleRouteType.Default,
-                "spread"   => CircleRouteType.Split,
+                "spread" => CircleRouteType.Split,
                 "circular" => CircleRouteType.Circular,
                 _ => CircleRouteType.Default,
             };
@@ -1039,8 +1280,8 @@
         {
             return type switch
             {
-                CircleRouteType.Default =>  "leapfrog",
-                CircleRouteType.Split =>    "spread",
+                CircleRouteType.Default => "leapfrog",
+                CircleRouteType.Split => "spread",
                 CircleRouteType.Circular => "circular",
                 _ => "leapfrog",
             };
@@ -1149,6 +1390,34 @@
                 ContentType = "text/html",
                 StatusCode = 200,
             };
+        }
+
+        private static List<T> GenerateRange<T>(string ids, int min, int max)
+        {
+            if (string.IsNullOrEmpty(ids))
+                return new List<T>();
+            if (ids == "*")
+            {
+                return (List<T>)Enumerable.Range(min, max);
+            }
+            return (List<T>)ids.Split('\n').Select(int.Parse);
+        }
+
+        private Task PublishData<T>(string channel, T data)
+        {
+            try
+            {
+                if (data == null)
+                {
+                    return Task.CompletedTask;
+                }
+                _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"PublishData: {ex}");
+            }
+            return Task.CompletedTask;
         }
 
         #endregion
