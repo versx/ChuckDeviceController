@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Linq;
     using System.Text.Json;
     using System.Text.Json.Serialization;
     using System.Threading;
@@ -255,7 +254,6 @@
                                     _pokemon.Add(pokemon);
                                 }
                             }
-                            // TODO: Send webhook event
                             /*
                             if (pokemon.Update(oldPokemon, true)) // TODO: Check HasChanges property
                             {

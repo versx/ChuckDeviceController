@@ -1241,24 +1241,25 @@
                     case "delete_stale_pokestops":
                         var stopsDeleted = await _pokestopRepository.DeleteStalePokestops();
                         // TODO: Pass data through to view
-                        break;
+                        return BuildSuccessResponse("utilities", $"<b>{stopsDeleted}</b> Stale Pokestops deleted");
                     case "clear_expired_bans":
                     case "clear_expired_warnings":
                         break;
                     case "truncate_pokemon":
                         await _pokemonRepository.Truncate().ConfigureAwait(false);
-                        break;
+                        return BuildSuccessResponse("utilities", "Pokemon table successfully truncated");
                     case "convert_pokestops":
                         // TODO: Update gyms with pokestop names and urls if set
-                        var staleStopsDeleted = await _pokestopRepository.DeleteStalePokestops().ConfigureAwait(false);
+                        //var stopsConverted = await _pokestopRepository.ConvertPokestopsToGyms().ConfigureAwait(false);
+                        // TODO: delete converted pokestops
                         // TODO: Pass data through to view
-                        break;
+                        return BuildSuccessResponse("utilities", $"<b>0</b> Pokestops converted to Gyms");
                     case "force_logout_all_devices":
                         // TODO: Set device usernames to null
                         break;
                     case "clear_quests":
                         await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
-                        break;
+                        return BuildSuccessResponse("utilities", "All Pokestop quests have been cleared");
                     case "clear_iv_queues":
                     case "flush_redis":
                         break;
@@ -1414,6 +1415,20 @@
             dynamic obj = BuildDefaultData();
             obj.show_error = true;
             obj.error = message;
+            var data = Renderer.ParseTemplate(template, obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        private static IActionResult BuildSuccessResponse(string template, string message)
+        {
+            dynamic obj = BuildDefaultData();
+            obj.show_success = true;
+            obj.success = message;
             var data = Renderer.ParseTemplate(template, obj);
             return new ContentResult
             {
