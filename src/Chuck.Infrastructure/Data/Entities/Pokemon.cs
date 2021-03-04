@@ -294,16 +294,19 @@
                 // The wildPokemon and nearbyPokemon don't contain actual shininess.
                 //IsShiny = wildPokemon.Pokemon.PokemonDisplay.Shiny;
             }
-            Weight = wildPokemon.Pokemon.WeightKg;
-            Size = wildPokemon.Pokemon.HeightM;
-            //ExpireTimestamp = now + 1200;
-            PokemonId = (uint)wildPokemon.Pokemon.PokemonId;
-            Move1 = (uint?)wildPokemon.Pokemon.Move1;
-            Move2 = (uint?)wildPokemon.Pokemon.Move2;
-            CP = (ushort?)wildPokemon.Pokemon.Cp;
-            AttackIV = (ushort?)wildPokemon.Pokemon.IndividualAttack;
-            DefenseIV = (ushort?)wildPokemon.Pokemon.IndividualDefense;
-            StaminaIV = (ushort?)wildPokemon.Pokemon.IndividualStamina;
+            if (wildPokemon.Pokemon.Cp > 0)
+            {
+                Weight = wildPokemon.Pokemon.WeightKg;
+                Size = wildPokemon.Pokemon.HeightM;
+                //ExpireTimestamp = now + 1200;
+                PokemonId = (uint)wildPokemon.Pokemon.PokemonId;
+                Move1 = (uint?)wildPokemon.Pokemon.Move1;
+                Move2 = (uint?)wildPokemon.Pokemon.Move2;
+                CP = (ushort?)wildPokemon.Pokemon.Cp;
+                AttackIV = (ushort?)wildPokemon.Pokemon.IndividualAttack;
+                DefenseIV = (ushort?)wildPokemon.Pokemon.IndividualDefense;
+                StaminaIV = (ushort?)wildPokemon.Pokemon.IndividualStamina;
+            }
 
             Username = username;
             var now = DateTime.UtcNow.ToTotalSeconds();

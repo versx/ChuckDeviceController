@@ -135,7 +135,13 @@
                     }
                 }
 
-                if (events.Count == 0)
+                if (events.Count == 0 )
+                {
+                    Thread.Sleep(SleepIntervalS * 1000);
+                    continue;
+                }
+
+                if (Webhooks == null)
                 {
                     Thread.Sleep(SleepIntervalS * 1000);
                     continue;

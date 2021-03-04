@@ -45,13 +45,15 @@
                 if (_redis.IsConnected)
                 {
                     _subscriber = _redis.GetSubscriber();
-                    _subscriber.Subscribe(_config.Redis.QueueName, SubscriptionHandler);
+                    _subscriber.Subscribe(/*_config.Redis.QueueName*/"*", SubscriptionHandler);
                     //_redisDatabase = _redis.GetDatabase(_config.Redis.DatabaseNum);
                 }
 
+                ConsoleExt.WriteInfo($"[WebhookProcessor] Starting...");
                 WebhookController.Instance.SleepIntervalS = 5;
                 // TODO: WebhookController.Instance.Webhooks = _config.Webhooks;
                 WebhookController.Instance.Start();
+                ConsoleExt.WriteInfo($"[WebhookProcessor] Started, waiting for webhook events");
             }
             catch (Exception ex)
             {
@@ -86,6 +88,7 @@
         {
             if (string.IsNullOrEmpty(message)) return;
 
+            //ConsoleExt.WriteDebug($"[WebhookProcessor] [{channel}] Received: {message}");
             switch (channel)
             {
                 case RedisChannels.WebhookAccount:
@@ -100,8 +103,8 @@
                 case RedisChannels.WebhookQuest:
                 case RedisChannels.WebhookRaid:
                 case RedisChannels.WebhookWeather:
-                    var payload = (dynamic)message;
-                    if (payload == null) return;
+                    var payload = message.ToString().FromJson<dynamic>();
+                    //if (payload == null) return;
 
                     ThreadPool.QueueUserWorkItem(_ => WebhookController.Instance.Add(payload));
                     break;
