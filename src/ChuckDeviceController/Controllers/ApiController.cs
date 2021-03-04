@@ -73,8 +73,7 @@
                 const ulong delta = 15 * 60;
                 var diff = DateTime.UtcNow.ToTotalSeconds() - delta;
                 var isOnline = device.LastSeen > diff ? 0 : 1;
-                var lastSeenDate = device.LastSeen.Value.FromUnix();
-                lastSeenDate = lastSeenDate.Add(TimeSpan.FromHours(Startup.Config.TimezoneOffset));
+                var lastSeenDate = device.LastSeen.Value.FromUnix().ToLocalTime();
                 list.Add(new
                 {
                     is_online = isOnline,

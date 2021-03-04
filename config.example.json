@@ -1,7 +1,6 @@
 {
 	"interface": "LAN_MACHINE_IP",
 	"port": 5001,
-	"timezoneOffset": -3,
 	"db": {
 		"host": "127.0.0.1",
 		"port": 3306,
