@@ -66,6 +66,13 @@
             _pokemonRepository = new PokemonRepository(_context);
             _geofenceRepository = new GeofenceRepository(_context);
             _webhookRepository = new WebhookRepository(_context);
+
+            // TODO: Find somewhere better
+            var webhooks = _webhookRepository.GetAllAsync()
+                                 .ConfigureAwait(false)
+                                 .GetAwaiter()
+                                 .GetResult();
+            PublishData(RedisChannels.WebhookReload, webhooks);
         }
 
         #endregion
@@ -361,9 +368,9 @@
                 //switch (instance.Type)
                 //{
                 //    case InstanceType.CirclePokemon:
-                obj.circle_route_type = instance.Data.CircleRouteType; // TODO: ToString
-                                                                       //        break;
-                                                                       //    case InstanceType.PokemonIV:
+                obj.circle_route_type = instance.Data.CircleRouteType;
+                //        break;
+                //    case InstanceType.PokemonIV:
                 obj.pokemon_ids = instance.Data.PokemonIds == null ? null : string.Join("\n", instance.Data.PokemonIds);
                 obj.iv_queue_limit = instance.Data.IVQueueLimit > 0 ? instance.Data.IVQueueLimit : 100;
                 //        break;
@@ -503,7 +510,6 @@
         ]
         public async Task<IActionResult> AddGeofence()
         {
-            // TODO: Reload instances upon geofence change
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
@@ -566,6 +572,7 @@
                     }
                 };
                 await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
+                InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
         }
@@ -576,7 +583,6 @@
         ]
         public async Task<IActionResult> EditGeofence(string name)
         {
-            // TODO: Reload instances upon geofence change
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
@@ -668,6 +674,7 @@
                     Area = newArea,
                 };
                 await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
+                InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
         }
@@ -1096,7 +1103,6 @@
                                              type = x.Type.ToString().ToLower(),
                                              selected = false,
                                          });
-                // TODO: Pokemon/raid/egg/etc ids
                 obj.pokemon_ids = string.Join("\n", webhook.Data.PokemonIds ?? new List<uint>());
                 obj.pokestop_ids = string.Join("\n", webhook.Data.PokestopIds ?? new List<string>());
                 obj.raid_ids = string.Join("\n", webhook.Data.RaidPokemonIds ?? new List<uint>());

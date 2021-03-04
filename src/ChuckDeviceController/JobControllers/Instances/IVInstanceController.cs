@@ -78,7 +78,6 @@
             {
                 Interval = 1000
             };
-            // TODO: Maybe no ThreadPool
             _timer.Elapsed += (sender, e) => ThreadPool.QueueUserWorkItem(_ => LoopCache());
             _timer.Start();
         }

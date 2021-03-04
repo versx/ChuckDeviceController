@@ -18,7 +18,6 @@
         private readonly AssignmentRepository _assignmentRepository;
         private readonly DeviceRepository _deviceRepository;
         private List<Assignment> _assignments;
-        // TODO: private readonly string _timeZone;
         private bool _initialized;
         private long _lastUpdated;
         private readonly System.Timers.Timer _timer;
@@ -40,7 +39,6 @@
         public AssignmentController()
         {
             _assignments = new List<Assignment>();
-            //_timeZone = null; //config.timezone;
             _initialized = false;
             _lastUpdated = -2;
 

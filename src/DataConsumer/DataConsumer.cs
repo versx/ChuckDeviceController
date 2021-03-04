@@ -380,7 +380,6 @@
                             //if (pokemon.Update(pokemon, true))
                             lock (_pokemonLock)
                             {
-                                // TODO: Webhook
                                 _pokemon.Add(pokemon);
                             }
                             await SetCacheData($"pokemon_{pokemon.Id}", pokemon);
@@ -600,7 +599,7 @@
             //ThreadPool.QueueUserWorkItem(x =>
             new Thread(x =>
             {
-                while (!_shouldExit) // TODO: Use some type of exit condition
+                while (!_shouldExit)
                 {
                     //BenchmarkMethod(() => UpdateCells(), "S2Cells");
                     UpdateCells();
