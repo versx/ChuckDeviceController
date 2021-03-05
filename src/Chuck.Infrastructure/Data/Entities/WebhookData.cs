@@ -4,10 +4,6 @@
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
 
-    using POGOProtos.Rpc;
-    using InvasionCharacter = POGOProtos.Rpc.EnumWrapper.Types.InvasionCharacter;
-    using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
-
     public class WebhookData
     {
         [JsonPropertyName("pokemon_ids")]
@@ -23,15 +19,15 @@
         public List<ushort> EggLevels { get; set; }
 
         [JsonPropertyName("lure_ids")]
-        public List<Item> LureIds { get; set; }
+        public List<ushort> LureIds { get; set; }
 
         [JsonPropertyName("invasion_ids")]
-        public List<InvasionCharacter> InvasionIds { get; set; }
+        public List<ushort> InvasionIds { get; set; }
 
         [JsonPropertyName("gym_ids")]
-        public List<Team> GymTeamIds { get; set; }
+        public List<ushort> GymTeamIds { get; set; }
 
         [JsonPropertyName("weather_ids")]
-        public List<WeatherCondition> WeatherConditionIds { get; set; }
+        public List<ushort> WeatherConditionIds { get; set; }
     }
 }

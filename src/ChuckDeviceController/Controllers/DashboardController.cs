@@ -69,13 +69,6 @@
             _geofenceRepository = new GeofenceRepository(_context);
             _webhookRepository = new WebhookRepository(_context);
             _deviceGroupRepository = new DeviceGroupRepository(_context);
-
-            // TODO: Find somewhere better
-            var webhooks = _webhookRepository.GetAllAsync()
-                                 .ConfigureAwait(false)
-                                 .GetAwaiter()
-                                 .GetResult();
-            PublishData(RedisChannels.WebhookReload, webhooks);
         }
 
         #endregion
@@ -1223,10 +1216,10 @@
                 var pokestopIds = Request.Form["pokestop_ids"].ToString()?.Split("\n").ToList();
                 var raidIds = GenerateRange<uint>(Request.Form["raid_ids"].ToString(), 1, 999);
                 var eggLevels = GenerateRange<ushort>(Request.Form["egg_ids"].ToString(), 1, 6);
-                var lureIds = GenerateRange<Item>(Request.Form["lure_ids"].ToString(), 501, 504);
-                var invasionIds = GenerateRange<InvasionCharacter>(Request.Form["invasion_ids"].ToString(), 1, 50);
-                var gymIds = GenerateRange<Team>(Request.Form["gym_ids"].ToString(), 0, 3);
-                var weatherIds = GenerateRange<WeatherCondition>(Request.Form["weather_ids"].ToString(), 0, 7);
+                var lureIds = GenerateRange<ushort>(Request.Form["lure_ids"].ToString(), 501, 504);
+                var invasionIds = GenerateRange<ushort>(Request.Form["invasion_ids"].ToString(), 1, 50);
+                var gymIds = GenerateRange<ushort>(Request.Form["gym_ids"].ToString(), 0, 3);
+                var weatherIds = GenerateRange<ushort>(Request.Form["weather_ids"].ToString(), 0, 7);
 
                 if (types.Count == 0)
                 {
@@ -1302,10 +1295,10 @@
                 obj.pokestop_ids = string.Join("\n", webhook.Data.PokestopIds ?? new List<string>());
                 obj.raid_ids = string.Join("\n", webhook.Data.RaidPokemonIds ?? new List<uint>());
                 obj.egg_ids = string.Join("\n", webhook.Data.EggLevels ?? new List<ushort>());
-                obj.lure_ids = string.Join("\n", webhook.Data.LureIds ?? new List<Item>());
-                obj.invasion_ids = string.Join("\n", webhook.Data.InvasionIds ?? new List<InvasionCharacter>());
-                obj.gym_ids = string.Join("\n", webhook.Data.GymTeamIds ?? new List<Team>());
-                obj.weather_ids = string.Join("\n", webhook.Data.WeatherConditionIds ?? new List<WeatherCondition>());
+                obj.lure_ids = string.Join("\n", webhook.Data.LureIds ?? new List<ushort>());
+                obj.invasion_ids = string.Join("\n", webhook.Data.InvasionIds ?? new List<ushort>());
+                obj.gym_ids = string.Join("\n", webhook.Data.GymTeamIds ?? new List<ushort>());
+                obj.weather_ids = string.Join("\n", webhook.Data.WeatherConditionIds ?? new List<ushort>());
                 obj.enabled = webhook.Enabled ? "checked" : "";
                 var data = Renderer.ParseTemplate("webhook-edit", obj);
                 return new ContentResult
@@ -1341,10 +1334,10 @@
                 var pokestopIds = Request.Form["pokestop_ids"].ToString()?.Split("\n").ToList();
                 var raidIds = GenerateRange<uint>(Request.Form["raid_ids"].ToString(), 1, 999);
                 var eggLevels = GenerateRange<ushort>(Request.Form["egg_ids"].ToString(), 1, 6);
-                var lureIds = GenerateRange<Item>(Request.Form["lure_ids"].ToString(), 501, 504);
-                var invasionIds = GenerateRange<InvasionCharacter>(Request.Form["invasion_ids"].ToString(), 1, 50);
-                var gymIds = GenerateRange<Team>(Request.Form["gym_ids"].ToString(), 0, 3);
-                var weatherIds = GenerateRange<WeatherCondition>(Request.Form["weather_ids"].ToString(), 0, 7);
+                var lureIds = GenerateRange<ushort>(Request.Form["lure_ids"].ToString(), 501, 504);
+                var invasionIds = GenerateRange<ushort>(Request.Form["invasion_ids"].ToString(), 1, 50);
+                var gymIds = GenerateRange<ushort>(Request.Form["gym_ids"].ToString(), 0, 3);
+                var weatherIds = GenerateRange<ushort>(Request.Form["weather_ids"].ToString(), 0, 7);
 
                 if (types.Count == 0)
                 {

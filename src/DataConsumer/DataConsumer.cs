@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Text.Json;
     using System.Text.Json.Serialization;
     using System.Threading;
@@ -175,6 +176,19 @@
             timer.Start();
 
             ConsoleExt.WriteInfo($"[DataConsumer] Started");
+
+            // Publish available webhooks to redis event
+            using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+            {
+                try
+                {
+                    PublishData(RedisChannels.WebhookReload, ctx.Webhooks.ToList());
+                }
+                catch (MySqlConnector.MySqlException ex)
+                {
+                    ConsoleExt.WriteError($"[DataConsumer] UpdateSpawnpoints: {ex.Message}");
+                }
+            }
         }
 
         public void Stop()
