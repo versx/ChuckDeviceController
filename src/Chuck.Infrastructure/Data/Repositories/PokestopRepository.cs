@@ -44,8 +44,8 @@
                     QuestTimestamp = cIns.QuestTimestamp != null ? cIns.QuestTimestamp : cDb.QuestTimestamp,
                     QuestTarget = cIns.QuestTarget != null ? cIns.QuestTarget : cDb.QuestTarget,
                     QuestTemplate = cIns.QuestTemplate ?? cDb.QuestTemplate,
-                    QuestConditions = cIns.QuestConditions, // TODO: QuestCondtions
-                    QuestRewards = cIns.QuestRewards, // TODO: QuestRewards
+                    QuestConditions = cIns.QuestConditions,
+                    QuestRewards = cIns.QuestRewards,
                     Updated = now,
                     FirstSeenTimestamp = cDb.FirstSeenTimestamp == 0 ? now : cDb.FirstSeenTimestamp,
                 })
@@ -74,8 +74,8 @@
                     QuestTimestamp = cIns.QuestTimestamp != null ? cIns.QuestTimestamp : cDb.QuestTimestamp,
                     QuestTarget = cIns.QuestTarget != null ? cIns.QuestTarget : cDb.QuestTarget,
                     QuestTemplate = cIns.QuestTemplate ?? cDb.QuestTemplate,
-                    QuestConditions = cIns.QuestConditions, // TODO: QuestCondtions
-                    QuestRewards = cIns.QuestRewards, // TODO: QuestRewards
+                    QuestConditions = cIns.QuestConditions,
+                    QuestRewards = cIns.QuestRewards,
                     Updated = now,
                     FirstSeenTimestamp = cDb.FirstSeenTimestamp == 0 ? now : cDb.FirstSeenTimestamp,
                 })

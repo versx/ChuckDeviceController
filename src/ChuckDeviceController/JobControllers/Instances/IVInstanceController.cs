@@ -132,7 +132,7 @@
             var ivh = -1d;
             if (_startDate != default)
             {
-                ivh = _count / DateTime.UtcNow.Subtract(_startDate).TotalSeconds * 3600; // TODO: :thinking:
+                ivh = _count / DateTime.UtcNow.Subtract(_startDate).TotalSeconds * 3600;
             }
             var ivhString = "-";
             if (ivh != -1)

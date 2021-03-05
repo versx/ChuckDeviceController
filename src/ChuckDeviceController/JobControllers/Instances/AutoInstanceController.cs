@@ -300,7 +300,7 @@
                     }
                     else
                     {
-                        // TODO: 
+                        // TODO: Account cooldowns
                     }
 
                     var delayT = DateTime.UtcNow.ToTotalSeconds() - encounterTime;

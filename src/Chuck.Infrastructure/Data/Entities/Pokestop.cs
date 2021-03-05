@@ -11,7 +11,6 @@
 
     using Chuck.Infrastructure.Data.Interfaces;
     using Chuck.Infrastructure.Extensions;
-    //using Chuck.Infrastructure.Net.Webhooks;
 
     [Table("pokestop")]
     public class Pokestop : BaseEntity, IAggregateRoot, IWebhook
@@ -96,13 +95,13 @@
             Column("quest_conditions"),
             JsonPropertyName("quest_conditions"),
         ]
-        public List<dynamic> QuestConditions { get; set; } // TODO: QuestConditionProto
+        public List<dynamic> QuestConditions { get; set; }
 
         [
             Column("quest_rewards"),
             JsonPropertyName("quest_rewards"),
         ]
-        public List<dynamic> QuestRewards { get; set; } // TODO: QuestConditionProto
+        public List<dynamic> QuestRewards { get; set; }
 
         [
             Column("quest_template"),
@@ -247,6 +246,7 @@
 
         public bool Update(Pokestop oldPokestop = null, bool updateQuest = false)
         {
+            // TODO: Return struct of update type to send webhook if quest/lure/invasion etc should be sent
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
             var result = false;
@@ -283,38 +283,38 @@
                 }
                 if ((oldPokestop.LureExpireTimestamp ?? 0) < (LureExpireTimestamp ?? 0))
                 {
-                    // TODO: WebhookController.Instance.AddLure(this);
+                    // WebhookController.Instance.AddLure(this);
                     result = true;
                 }
                 if ((oldPokestop.IncidentExpireTimestamp ?? 0) < (IncidentExpireTimestamp ?? 0))
                 {
-                    // TODO: WebhookController.Instance.AddInvasion(this);
+                    // WebhookController.Instance.AddInvasion(this);
                     result = true;
                 }
                 if (updateQuest && (QuestTimestamp ?? 0) > (oldPokestop.QuestTimestamp ?? 0))
                 {
-                    // TODO: WebhookController.Instance.AddQuest(this);
+                    // WebhookController.Instance.AddQuest(this);
                     result = true;
                 }
             }
 
             if (oldPokestop == null)
             {
-                // TODO: WebhookController.Instance.AddPokestop(this);
+                // WebhookController.Instance.AddPokestop(this);
                 result = true;
                 if (LureExpireTimestamp > 0)
                 {
-                    // TODO: WebhookController.Instance.AddLure(this);
+                    // WebhookController.Instance.AddLure(this);
                     result = true;
                 }
                 if (QuestTimestamp > 0)
                 {
-                    // TODO: WebhookController.Instance.AddQuest(this);
+                    // WebhookController.Instance.AddQuest(this);
                     result = true;
                 }
                 if (IncidentExpireTimestamp > 0)
                 {
-                    // TODO: WebhookController.Instance.AddInvasion(this);
+                    // WebhookController.Instance.AddInvasion(this);
                     result = true;
                 }
             }
@@ -322,18 +322,18 @@
             {
                 if (oldPokestop.LureExpireTimestamp < LureExpireTimestamp)
                 {
-                    // TODO: WebhookController.Instance.AddLure(this);
+                    // WebhookController.Instance.AddLure(this);
                     result = true;
                 }
                 if (oldPokestop.IncidentExpireTimestamp < IncidentExpireTimestamp)
                 {
-                    // TODO: WebhookController.Instance.AddInvasion(this);
+                    // WebhookController.Instance.AddInvasion(this);
                     result = true;
                 }
                 if (updateQuest && (HasQuestChanges || QuestTimestamp > oldPokestop.QuestTimestamp))
                 {
                     HasQuestChanges = false;
-                    // TODO: WebhookController.Instance.AddQuest(this);
+                    // WebhookController.Instance.AddQuest(this);
                     result = true;
                 }
             }
@@ -616,145 +616,4 @@
                 Math.Abs(oldPokestop.Longitude - newPokestop.Longitude) >= 0.000001;
         }
     }
-
-    public class QuestReward<T>
-    {
-        [JsonPropertyName("type")]
-        public uint Type { get; set; } // TODO: Use proto
-
-        [JsonPropertyName("info")]
-        public T Info { get; set; }
-    }
-
-    public class QuestRewardInfo
-    {
-        //
-        [JsonPropertyName("form_id")]
-        public ushort FormId { get; set; }
-
-        [JsonPropertyName("shiny")]
-        public bool IsShiny { get; set; }
-
-        [JsonPropertyName("gender")]
-        public PokemonGender Gender { get; set; }
-
-        [JsonPropertyName("costume_id")]
-        public ushort CostumeId { get; set; }
-
-        [JsonPropertyName("pokemon_id")]
-        public ushort PokemonId { get; set; }
-        //
-
-        //
-        [JsonPropertyName("item")]
-        public Item ItemId { get; set; }
-
-        [JsonPropertyName("amount")]
-        public uint Amount { get; set; }
-        //
-    }
-
-    /*
-    public class QuestRewardPokemonInfo
-    {
-        [JsonPropertyName("form_id")]
-        public ushort FormId { get; set; }
-
-        [JsonPropertyName("shiny")]
-        public bool IsShiny { get; set; }
-
-        [JsonPropertyName("gender")]
-        public PokemonGender Gender { get; set; }
-
-        [JsonPropertyName("costume_id")]
-        public ushort CostumeId { get; set; }
-
-        [JsonPropertyName("pokemon_id")]
-        public ushort PokemonId { get; set; }
-    }
-
-    public class QuestRewardItemInfo
-    {
-        [JsonPropertyName("item")]
-        public Item ItemId { get; set; }
-
-        [JsonPropertyName("amount")]
-        public uint Amount { get; set; }
-    }
-
-    public class QuestRewardStardustInfo
-    {
-        [JsonPropertyName("amount")]
-        public uint Amount { get; set; }
-    }
-    */
-
-
-    public class QuestCondition<T>
-    {
-        [JsonPropertyName("type")]
-        public uint Type { get; set; } // TODO: Use proto
-
-        [JsonPropertyName("info")]
-        public T Info { get; set; }
-    }
-
-    public class QuestConditionInfo
-    {
-        //
-        [JsonPropertyName("throw_type_id")]
-        public WithThrowTypeProto.ThrowOneofCase ThrowTypeId { get; set; }
-
-        [JsonPropertyName("hit")]
-        public bool Hit { get; set; }
-        //
-
-        //
-        [JsonPropertyName("combat_type")]
-        public ushort CombatType { get; set; } // TODO: Use proto enum
-                                               //
-
-        //
-        [JsonPropertyName("raid_levels")]
-        public List<ushort> Levels { get; set; }
-        //
-
-        //
-        [JsonPropertyName("pokemon_type_ids")]
-        public List<HoloPokemonType> Types { get; set; }
-        //
-
-        //
-        // chategory_ids
-        //
-    }
-
-    /*
-    public class QuestConditionThrow
-    {
-        [JsonPropertyName("throw_type_id")]
-        public WithThrowTypeProto.ThrowOneofCase ThrowTypeId { get; set; }
-
-        [JsonPropertyName("hit")]
-        public bool Hit { get; set; }
-    }
-
-    public class QuestConditionGymBattle // TODO: Gym or PVP?
-    {
-        [JsonPropertyName("combat_type")]
-        public ushort CombatType { get; set; } // TODO: Use proto enum
-    }
-
-    public class QuestConditionRaidBattle
-    {
-        [JsonPropertyName("raid_levels")]
-        public List<ushort> Levels { get; set; }
-    }
-
-    public class QuestConditionPokemonType
-    {
-        [JsonPropertyName("pokemon_type_ids")]
-        public List<HoloPokemonType> Types { get; set; }
-    }
-    */
 }

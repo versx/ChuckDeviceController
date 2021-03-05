@@ -60,7 +60,5 @@
 
         [JsonPropertyName("pokemon_encounter_id")]
         public string PokemonEncounterId { get; set; }
-
-        // TODO: scatter_pokemon
     }
 }

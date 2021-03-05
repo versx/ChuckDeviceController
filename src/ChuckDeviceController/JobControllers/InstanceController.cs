@@ -109,7 +109,6 @@
 
         public async Task<string> GetInstanceStatus(Instance instance)
         {
-            // TODO: Lock
             if (!_instances.ContainsKey(instance.Name))
             {
                 // Instance not started yet
@@ -118,7 +117,6 @@
             try
             {
                 var instanceController = _instances[instance.Name];
-                // TODO: Maybe no locking object
                 if (instanceController != null)
                 {
                     return await instanceController.GetStatus().ConfigureAwait(false);

@@ -418,7 +418,6 @@
             }
             device.AccountUsername = null;
             await _deviceRepository.AddOrUpdateAsync(device).ConfigureAwait(false);
-            // TODO: Ensure one update
             return new DeviceResponse
             {
                 Status = "ok",

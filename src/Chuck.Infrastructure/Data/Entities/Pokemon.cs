@@ -328,10 +328,7 @@
             Id = nearbyPokemon.EncounterId.ToString();
             PokemonId = (uint)nearbyPokemon.PokedexNumber;
             PokestopId = nearbyPokemon.FortId;
-            // TODO: Lookup stop in redis cache
-            Latitude = 0;
-            Longitude = 0;
-            Gender = (ushort)nearbyPokemon.PokemonDisplay.Gender;
+             Gender = (ushort)nearbyPokemon.PokemonDisplay.Gender;
             Form = (ushort?)nearbyPokemon.PokemonDisplay?.Form;
             if (nearbyPokemon.PokemonDisplay != null)
             {
@@ -718,7 +715,7 @@
                 {
                     if (SpawnId != null)
                     {
-                        // TODO: spawnpoint = await _spawnpointRepository.GetByIdAsync(SpawnId ?? 0).ConfigureAwait(false);
+                        // spawnpoint = await _spawnpointRepository.GetByIdAsync(SpawnId ?? 0).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
@@ -780,7 +777,7 @@
                 type  = "pokemon",
                 message = new
                 {
-                    spawnpoint_id = SpawnId?.ToString() ?? "None", // TODO: ToHex 
+                    spawnpoint_id = SpawnId?.ToString("X") ?? "None",
                     pokestop_id = PokestopId ?? "None",
                     encounter_id = Id,
                     pokemon_id = PokemonId,

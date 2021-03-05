@@ -202,13 +202,13 @@
                 {
                     x.AutoMap = Z.BulkOperations.AutoMapType.ByIndexerName;
                     x.BatchSize = 100;
-                    //x.BatchTimeout = 10 * 1000; // TODO: Seconds or ms?
+                    //x.BatchTimeout = 10 * 1000;
                     x.InsertIfNotExists = true;
                     x.InsertKeepIdentity = true;
                     x.MergeKeepIdentity = true;
                     x.Resolution = Z.BulkOperations.ResolutionType.Smart;
-                    x.UseTableLock = true; // TODO: ?
-                    x.AllowDuplicateKeys = true; // TODO: ?
+                    x.UseTableLock = true;
+                    x.AllowDuplicateKeys = true;
                     //x.ColumnPrimaryKeyExpression = entity => entity.Id || entity.Uuid;
                 }).ConfigureAwait(false);
             }

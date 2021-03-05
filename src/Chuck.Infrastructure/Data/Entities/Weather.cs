@@ -103,13 +103,13 @@
             var result = false;
             if (oldWeather == null)
             {
-                // TODO: WebhookController.Instance.AddWeather(this);
+                // WebhookController.Instance.AddWeather(this);
                 result = true;
             }
             else if (oldWeather.GameplayCondition != GameplayCondition ||
                 oldWeather.WarnWeather != WarnWeather)
             {
-                // TODO: WebhookController.Instance.AddWeather(this);
+                // WebhookController.Instance.AddWeather(this);
                 result = true;
             }
             return result;

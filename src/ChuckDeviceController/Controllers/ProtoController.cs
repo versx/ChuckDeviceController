@@ -479,7 +479,6 @@
             {
                 foreach (var fort in forts)
                 {
-                    // TODO: InstanceController.Instance.GotFortData(fort.data, payload.Username);
                     if (!inArea)
                     {
                         var coord = new Coordinate(fort.data.Latitude, fort.data.Longitude);

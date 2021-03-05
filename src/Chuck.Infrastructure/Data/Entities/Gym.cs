@@ -253,24 +253,25 @@
 
         public bool Update(Gym oldGym = null)
         {
+            // TODO: Return struct of update type to send webhook if gym/raid/egg etc should be sent
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
             var result = false;
             if (oldGym == null)
             {
-                // TODO: WebhookController.Instance.AddGym(this);
-                // TODO: WebhookController.Instance.AddGymInfo(this);
+                // WebhookController.Instance.AddGym(this);
+                // WebhookController.Instance.AddGymInfo(this);
 
                 var raidBattleTime = now - RaidBattleTimestamp;
                 var raidEndTime = now - RaidEndTimestamp;
                 if (raidBattleTime > now && RaidLevel > 0)
                 {
-                    // TODO: WebhookController.Instance.AddRaid(this);
+                    // WebhookController.Instance.AddRaid(this);
                     result = true;
                 }
                 else if (raidEndTime > now && RaidPokemonId > 0)
                 {
-                    // TODO: WebhookController.Instance.AddRaid(this);
+                    // WebhookController.Instance.AddRaid(this);
                     result = true;
                 }
             }
@@ -286,12 +287,12 @@
                     var raidEndTime = now - RaidEndTimestamp;
                     if (raidBattleTime > now && RaidLevel > 0)
                     {
-                        // TODO: WebhookController.Instance.AddEgg(this);
+                        // WebhookController.Instance.AddEgg(this);
                         result = true;
                     }
                     else if (raidEndTime > now && RaidPokemonId > 0)
                     {
-                        // TODO: WebhookController.Instance.AddRaid(this);
+                        // WebhookController.Instance.AddRaid(this);
                         result = true;
                     }
                 }
@@ -299,7 +300,7 @@
                     oldGym.Team != Team ||
                     oldGym.InBattle != InBattle)
                 {
-                    // TODO: WebhookController.Instance.AddGymInfo(this);
+                    // WebhookController.Instance.AddGymInfo(this);
                     result = true;
                 }
             }

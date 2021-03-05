@@ -743,8 +743,6 @@
                 var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (geofence == null)
                 {
-                    // Provided geofence name does not exist
-                    // TODO: Log error
                     return Redirect("/dashboard/geofences");
                 }
                 obj.name = geofence.Name;
@@ -1227,8 +1225,7 @@
                     return BuildErrorResponse("webhook-add", $"At least one webhook type needs to be selected");
                 }
 
-                // TODO: Make sure geofence exists
-
+                // Make sure geofence exists
                 var webhook = await _webhookRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (webhook != null)
                 {
@@ -1345,8 +1342,7 @@
                     return BuildErrorResponse("webhook-edit", $"At least one webhook type needs to be selected");
                 }
 
-                // TODO: Make sure geofence exists
-
+                // Make sure geofence exists
                 var webhook = await _webhookRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (webhook == null)
                 {
@@ -1490,8 +1486,8 @@
                     case "convert_pokestops":
                         // TODO: Update gyms with pokestop names and urls if set
                         //var stopsConverted = await _pokestopRepository.ConvertPokestopsToGyms().ConfigureAwait(false);
-                        // TODO: delete converted pokestops
-                        // TODO: Pass data through to view
+                        // - delete converted pokestops
+                        // - Pass data through to view
                         return BuildSuccessResponse("utilities", $"<b>0</b> Pokestops converted to Gyms");
                     case "force_logout_all_devices":
                         await _deviceRepository.ClearAllAccounts().ConfigureAwait(false);
