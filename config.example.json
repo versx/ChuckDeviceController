@@ -14,5 +14,6 @@
 		"password": "",
 		"databaseNum": -1,
 		"queueName": "cdc"
-	}
+	},
+	"enableProfiler": true
 }

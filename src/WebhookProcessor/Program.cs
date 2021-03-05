@@ -51,7 +51,6 @@
 
                 ConsoleExt.WriteInfo($"[WebhookProcessor] Starting...");
                 WebhookController.Instance.SleepIntervalS = 5;
-                // TODO: WebhookController.Instance.Webhooks = _config.Webhooks;
                 WebhookController.Instance.Start();
                 ConsoleExt.WriteInfo($"[WebhookProcessor] Started, waiting for webhook events");
             }

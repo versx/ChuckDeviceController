@@ -93,21 +93,23 @@ namespace ChuckDeviceController
                        .AllowAnyMethod();
             }));
 
-            // TODO: Configurable
             // Profiling
             // The services.AddMemoryCache(); code is required - there is a bug in
             // MiniProfiler, if we have not configured MemoryCache, it will fail.
-            services.AddMemoryCache();
-            services.AddEntityFrameworkMySql().AddDbContext<DeviceControllerContext>();
-            services.AddMiniProfiler(options =>
+            if (Config.EnableProfiler)
             {
-                options.RouteBasePath = "/profiler";
-                options.EnableMvcViewProfiling = true;
-                options.EnableMvcFilterProfiling = true;
-                options.EnableServerTimingHeader = true;
-                options.ShowControls = true;
-                options.TrackConnectionOpenClose = true;
-            }).AddEntityFramework();
+                services.AddMemoryCache();
+                services.AddEntityFrameworkMySql().AddDbContext<DeviceControllerContext>();
+                services.AddMiniProfiler(options =>
+                {
+                    options.RouteBasePath = "/profiler";
+                    options.EnableMvcViewProfiling = true;
+                    options.EnableMvcFilterProfiling = true;
+                    options.EnableServerTimingHeader = true;
+                    options.ShowControls = true;
+                    options.TrackConnectionOpenClose = true;
+                }).AddEntityFramework();
+            }
 
             services.AddResponseCaching();
 

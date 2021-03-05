@@ -21,6 +21,9 @@
         [JsonPropertyName("redis")]
         public RedisConfig Redis { get; set; }
 
+        [JsonPropertyName("enableProfiler")]
+        public bool EnableProfiler { get; set; }
+
         /// <summary>
         /// Save the current configuration object
         /// </summary>
