@@ -109,9 +109,12 @@
             var list = new List<dynamic>();
             foreach (var deviceGroup in deviceGroups)
             {
+                var devicesInGroup = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices).ConfigureAwait(false);
+                var instanceNames = devicesInGroup.Select(x => x.InstanceName).Distinct().ToList();
                 list.Add(new
                 {
                     name = deviceGroup.Name,
+                    instances = string.Join(", ", instanceNames),
                     devices = deviceGroup.Devices.Count.ToString("N0"),
                     buttons = $@"
 <div class='btn-group' role='group'>

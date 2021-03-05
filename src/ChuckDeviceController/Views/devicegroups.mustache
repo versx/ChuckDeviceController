@@ -39,7 +39,7 @@ $(document).ready(function() {
         "pageLength": 100,
         "columns": [
             { "data": "name" },
-            //{ "data": "instances" },
+            { "data": "instances" },
             { "data": "devices" },
             { "data": "buttons" }
         ],
@@ -47,7 +47,7 @@ $(document).ready(function() {
         "order": [[0, "asc"]],
         "search.caseInsensitive": true,
         "columnDefs": [{
-            "targets": [2],
+            "targets": [3],
             "orderable": false
         }],
         "responsive": true
@@ -65,13 +65,13 @@ $(document).ready(function() {
     <h1 align="center">Configure {{title}}'s Device Groups!</h1>
     <br>
     <div style="width:90%; margin-left:calc(5%);">
-        <a href="/dashboard/devicegroup/add" role="button" style="float: right;" class="btn btn-success">New Device Group</a>
+        <a href="/dashboard/devicegroup/add" role="button" style="float: right;" class="btn btn-sm btn-success">New Device Group</a>
         <br><br>
         <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
             <thead>
                 <tr>
                     <th>Name</th>
-                    <!--<th>Instances</th>-->
+                    <th>Instances</th>
                     <th>Devices</th>
                     <th width="5%"></th>
                 </tr>
