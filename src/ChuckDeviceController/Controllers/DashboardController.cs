@@ -345,6 +345,19 @@
             }
         }
 
+        [HttpGet("/dashboard/devicegroup/delete/{name}")]
+        public async Task<IActionResult> DeleteDeviceGroup(string name)
+        {
+            var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+            if (deviceGroup == null)
+            {
+                // Failed to get device group, does it exist?
+                return BuildErrorResponse("devicegroup-delete", $"Device Group with name '{name}' does not exist");
+            }
+            await _deviceGroupRepository.DeleteAsync(deviceGroup).ConfigureAwait(false);
+            return Redirect("/dashboard/devicegroups");
+        }
+
         #endregion
 
         #region Instances
@@ -1136,12 +1149,10 @@
         public async Task<IActionResult> DeleteAssignment(uint id)
         {
             var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
-            if (assignment == null)
+            if (assignment != null)
             {
-                // Failed to delete assignment by id, does it exist?
-                return BuildErrorResponse("assignment-delete", $"Assignment with id '{id}' does not exist");
+                await _assignmentRepository.DeleteAsync(assignment).ConfigureAwait(false);
             }
-            await _assignmentRepository.DeleteAsync(assignment).ConfigureAwait(false);
             return Redirect("/dashboard/assignments");
         }
 

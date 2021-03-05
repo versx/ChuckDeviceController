@@ -115,11 +115,11 @@
                     devices = deviceGroup.Devices.Count.ToString("N0"),
                     buttons = $@"
 <div class='btn-group' role='group'>
+    <a href='/dashboard/devicegroup/assign/{Uri.EscapeDataString(deviceGroup.Name)}' role='button' class='btn btn-sm btn-success'>Assign</a>
     <a href='/dashboard/devicegroup/edit/{Uri.EscapeDataString(deviceGroup.Name)}' role='button' class='btn btn-sm btn-primary'>Edit</a>
-    <a href='/dashboard/devicegroup/assign/{Uri.EscapeDataString(deviceGroup.Name)}' role='button' class='btn btn-sm btn-primary'>Assign Instance</a>
+    <a href='/dashboard/devicegroup/delete/{Uri.EscapeDataString(deviceGroup.Name)}' role='button' class='btn btn-sm btn-danger' onclick='return confirm(""Are you sure you want to delete device group {deviceGroup.Name}?"")'>Delete</a>
 </div>
 "
-                    //<a href='/dashboard/assignment/delete/{assignment.Id}' role='button' class='btn btn-sm btn-danger' onclick='return confirm(\'Are you sure you want to delete auto-assignments with id {assignment.Id}?\')'>Delete</a>
                 });
             }
             return new { data = new { devicegroups = list } };
@@ -221,7 +221,7 @@
 <div class='btn-group' role='group'>
     <a href='/dashboard/assignment/start/{assignment.Id}' role='button' class='btn btn-sm btn-success'>Start</a>
     <a href='/dashboard/assignment/edit/{assignment.Id}' role='button' class='btn btn-sm btn-primary'>Edit</a>
-    <a href='/dashboard/assignment/delete/{assignment.Id}' role='button' class='btn btn-sm btn-danger' onclick='return confirm(\'Are you sure you want to delete auto-assignments with id {assignment.Id}?\')'>Delete</a>
+    <a href='/dashboard/assignment/delete/{assignment.Id}' role='button' class='btn btn-sm btn-danger' onclick='return confirm(""Are you sure you want to delete auto-assignments with id {assignment.Id}?"")'>Delete</a>
 </div>
 "
                 });
