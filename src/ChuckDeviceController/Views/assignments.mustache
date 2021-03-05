@@ -35,6 +35,7 @@
                 { "data": "source_instance_name" },
                 { "data": "instance_name" },
                 { "data": "device_uuid" },
+                { "data": "device_group" },
                 { data: {
                     _:    "time.formatted",
                     sort: "time.timestamp"
@@ -49,7 +50,7 @@
             "info":     true,
             "order": [[ 2, "asc" ]],
             "columnDefs": [ {
-                "targets": [6],
+                "targets": [7],
                 "orderable": false
             }],
             "search.caseInsensitive": true,
@@ -78,6 +79,7 @@
                 <th class="all">Source Instance</th>
                 <th class="all">Target Instance</th>
                 <th class="all">Device UUID</th>
+                <th class="all">Device Group</th>
                 <th class="min-desktop">Time</th>
                 <th class="min-desktop">Date</th>
                 <th class="min-desktop">Enabled</th>

@@ -872,9 +872,10 @@
             else
             {
                 var deviceOrDeviceGroupName = Request.Form["device"].ToString();
-                var uuid = deviceOrDeviceGroupName.StartsWith("device:") ? deviceOrDeviceGroupName.Skip(7).ToString() : null;
-                var deviceGroupName = deviceOrDeviceGroupName.StartsWith("group:") ? deviceOrDeviceGroupName.Skip(6).ToString() : null;
+                var uuid = deviceOrDeviceGroupName.StartsWith("device:") ? new string(deviceOrDeviceGroupName.Skip(7).ToArray()) : null;
+                var deviceGroupName = deviceOrDeviceGroupName.StartsWith("group:") ? new string(deviceOrDeviceGroupName.Skip(6).ToArray()) : null;
                 var sourceInstance = Request.Form["source_instance"].ToString();
+                sourceInstance = string.IsNullOrEmpty(sourceInstance) ? null : sourceInstance;
                 var destinationInstance = Request.Form["instance"].ToString();
                 var time = Request.Form["time"].ToString();
                 var date = Request.Form["date"].ToString();
@@ -890,10 +891,13 @@
                     return BuildErrorResponse("assignment-add", "Failed to get instances, devices, or device groups");
                 }
 
-                if (!devices.Any(x => x.Uuid == uuid))
+                if (!string.IsNullOrEmpty(uuid))
                 {
-                    // Device does not exist
-                    return BuildErrorResponse("assignment-add", $"Device with name '{uuid}' does not exist");
+                    if (!devices.Any(x => x.Uuid == uuid))
+                    {
+                        // Device does not exist
+                        return BuildErrorResponse("assignment-add", $"Device with name '{uuid}' does not exist");
+                    }
                 }
 
                 if (!instances.Any(x => x.Name == destinationInstance))
@@ -902,10 +906,13 @@
                     return BuildErrorResponse("assignment-add", $"Instance with name '{destinationInstance}' does not exist");
                 }
 
-                if (!deviceGroups.Any(x => x.Name == deviceGroupName))
+                if (!string.IsNullOrEmpty(deviceGroupName))
                 {
-                    // Device group does not exist
-                    return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist");
+                    if (!deviceGroups.Any(x => x.Name == deviceGroupName))
+                    {
+                        // Device group does not exist
+                        return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist");
+                    }
                 }
 
                 var totalTime = 0u;
@@ -932,11 +939,9 @@
                     realDate = DateTime.Parse(date);
                 }
 
-                if (string.IsNullOrEmpty(uuid) || string.IsNullOrEmpty(destinationInstance))
+                if (string.IsNullOrEmpty(destinationInstance))
                 {
-                    // TODO: Log error
-                    return Redirect("/dashboard/assignments");
-                    //return BuildErrorResponse("assignment-add", $"Somehow device uuid was null or destinationInstance");
+                    return BuildErrorResponse("assignment-add", $"No destination instance selected");
                 }
 
                 try
@@ -1006,6 +1011,7 @@
                 var formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
                 dynamic obj = BuildDefaultData();
                 obj.id = id;
+                obj.old_name = id;
                 obj.date = assignment.Date;
                 obj.time = formattedTime;
                 obj.enabled = assignment.Enabled ? "checked" : "";
@@ -1023,9 +1029,10 @@
             else
             {
                 var deviceOrDeviceGroupName = Request.Form["device"].ToString();
-                var uuid = deviceOrDeviceGroupName.StartsWith("device:") ? deviceOrDeviceGroupName.Skip(7).ToString() : null;
-                var deviceGroupName = deviceOrDeviceGroupName.StartsWith("group:") ? deviceOrDeviceGroupName.Skip(6).ToString() : null;
+                var uuid = deviceOrDeviceGroupName.StartsWith("device:") ? new string(deviceOrDeviceGroupName.Skip(7).ToArray()) : null;
+                var deviceGroupName = deviceOrDeviceGroupName.StartsWith("group:") ? new string(deviceOrDeviceGroupName.Skip(6).ToArray()) : null;
                 var sourceInstance = Request.Form["source_instance"].ToString();
+                sourceInstance = string.IsNullOrEmpty(sourceInstance) ? null : sourceInstance;
                 var destinationInstance = Request.Form["instance"].ToString();
                 var time = Request.Form["time"].ToString();
                 var date = Request.Form["date"].ToString();
@@ -1041,10 +1048,13 @@
                     return BuildErrorResponse("assignment-add", "Failed to get instances, devices, or device groups");
                 }
 
-                if (!devices.Any(x => x.Uuid == uuid))
+                if (!string.IsNullOrEmpty(uuid))
                 {
-                    // Device does not exist
-                    return BuildErrorResponse("assignment-edit", $"Device with name '{uuid}' does not exist");
+                    if (!devices.Any(x => x.Uuid == uuid))
+                    {
+                        // Device does not exist
+                        return BuildErrorResponse("assignment-edit", $"Device with name '{uuid}' does not exist");
+                    }
                 }
 
                 if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
@@ -1053,10 +1063,13 @@
                     return BuildErrorResponse("assignment-edit", $"Instance with name '{destinationInstance}' does not exist");
                 }
 
-                if (!deviceGroups.Any(x => x.Name == deviceGroupName))
+                if (!string.IsNullOrEmpty(deviceGroupName))
                 {
-                    // Device group does not exist
-                    return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist");
+                    if (!deviceGroups.Any(x => x.Name == deviceGroupName))
+                    {
+                        // Device group does not exist
+                        return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist");
+                    }
                 }
 
                 var totalTime = 0u;
@@ -1083,11 +1096,10 @@
                     realDate = DateTime.Parse(date);
                 }
 
-                if (string.IsNullOrEmpty(uuid) || string.IsNullOrEmpty(destinationInstance))
+                if (string.IsNullOrEmpty(destinationInstance))
                 {
-                    // Invalid request, uuid or instance are null
-                    // TODO: Log error
-                    return Redirect("/dashboard/assignments");
+                    // Invalid request, no destination instance selected
+                    return BuildErrorResponse("assignment-add", $"No destination instance selected");
                 }
 
                 var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);

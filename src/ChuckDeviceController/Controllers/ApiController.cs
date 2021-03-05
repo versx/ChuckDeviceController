@@ -205,6 +205,7 @@
                     instance_name = assignment.InstanceName,
                     source_instance_name = assignment.SourceInstanceName,
                     device_uuid = assignment.DeviceUuid,
+                    device_group = assignment.DeviceGroupName,
                     time = new
                     {
                         formatted = time,
