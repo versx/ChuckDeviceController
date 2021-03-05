@@ -46,6 +46,8 @@
         private readonly GeofenceRepository _geofenceRepository;
         private readonly WebhookRepository _webhookRepository;
 
+        private readonly DeviceGroupRepository _deviceGroupRepository;
+
         #endregion
 
         #region Constructor
@@ -66,6 +68,7 @@
             _pokemonRepository = new PokemonRepository(_context);
             _geofenceRepository = new GeofenceRepository(_context);
             _webhookRepository = new WebhookRepository(_context);
+            _deviceGroupRepository = new DeviceGroupRepository(_context);
 
             // TODO: Find somewhere better
             var webhooks = _webhookRepository.GetAllAsync()
@@ -92,6 +95,7 @@
             obj.accounts_count = (await _context.Accounts.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.geofences_count = (await _context.Geofences.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.webhooks_count = (await _context.Webhooks.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.devicegroups_count = (await _context.DeviceGroups.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             var data = Renderer.ParseTemplate("index", obj);
             return new ContentResult
             {
@@ -170,6 +174,192 @@
 
         #endregion
 
+        #region Device Groups
+
+        [
+            HttpGet("/dashboard/devicegroups"),
+            HttpPost("/dashboard/devicegroups"),
+        ]
+        public IActionResult GetDeviceGroups()
+        {
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("devicegroups", obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        [
+            HttpGet("/dashboard/devicegroup/add"),
+            HttpPost("/dashboard/devicegroup/add"),
+        ]
+        public async Task<IActionResult> AddDeviceGroup()
+        {
+            if (Request.Method == "GET")
+            {
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+                dynamic obj = BuildDefaultData();
+                obj.devices = devices.Select(x => new
+                {
+                    name = x.Uuid,
+                    selected = false,
+                });
+                obj.nothing_selected = true;
+                var data = Renderer.ParseTemplate("devicegroup-add", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                var name = Request.Form["name"].ToString();
+                var devices = Request.Form["devices"].ToString().Split(',')?.ToList();
+                var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (deviceGroup != null)
+                {
+                    return BuildErrorResponse("devicegroup-add", $"Device Group with name '{name}' already exists");
+                }
+                await _deviceGroupRepository.AddOrUpdateAsync(new DeviceGroup
+                {
+                    Name = name,
+                    Devices = devices
+                });
+                return Redirect("/dashboard/devicegroups");
+            }
+        }
+
+        [
+            HttpGet("/dashboard/devicegroup/edit/{name}"),
+            HttpPost("/dashboard/devicegroup/edit/{name}"),
+        ]
+        public async Task<IActionResult> EditDeviceGroup(string name)
+        {
+            if (Request.Method == "GET")
+            {
+                var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (deviceGroup == null)
+                {
+                    return BuildErrorResponse("devicegroup-edit", $"Device Group with name '{name}' does not exist");
+                }
+                var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+                dynamic obj = BuildDefaultData();
+                obj.name = deviceGroup.Name;
+                obj.old_name = deviceGroup.Name;
+                obj.devices = devices.Select(x => new
+                {
+                    name = x.Uuid,
+                    selected = deviceGroup.Devices.Contains(x.Uuid),
+                });
+                obj.nothing_selected = true;
+                var data = Renderer.ParseTemplate("devicegroup-edit", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                // TODO: Check if new name does not exist and old name does
+                var newName = Request.Form["name"].ToString();
+                var oldName = Request.Form["old_name"].ToString();
+                var devices = Request.Form["devices"].ToString().Split(',')?.ToList();
+                var deviceGroup = await _deviceGroupRepository.GetByIdAsync(oldName).ConfigureAwait(false);
+                if (deviceGroup == null)
+                {
+                    return BuildErrorResponse("devicegroup-add", $"Device Group with name '{oldName}' does not exist");
+                }
+
+                // TODO: Add support for renaming (need to delete old and create new)
+                deviceGroup.Name = oldName;
+                deviceGroup.Devices = devices;
+                await _deviceGroupRepository.SaveAsync().ConfigureAwait(false);
+                return Redirect("/dashboard/devicegroups");
+            }
+        }
+
+        [
+            HttpGet("/dashboard/devicegroup/assign/{name}"),
+            HttpPost("/dashboard/devicegroup/assign/{name}"),
+        ]
+        public async Task<IActionResult> AssignDeviceGroup(string name)
+        {
+            if (Request.Method == "GET")
+            {
+                var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (deviceGroup == null)
+                {
+                    return BuildErrorResponse("devicegroup-assign", $"Device Group with name '{name}' does not exist");
+                }
+                var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
+                dynamic obj = BuildDefaultData();
+                obj.name = deviceGroup.Name;
+                obj.instances = instances.Select(x => new
+                {
+                    name = x.Name,
+                    selected = false,
+                });
+                obj.nothing_selected = true;
+                var data = Renderer.ParseTemplate("devicegroup-assign", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (deviceGroup == null)
+                {
+                    return BuildErrorResponse("devicegroup-assign", $"Device Group with name '{name}' does not exist");
+                }
+
+                var instanceName = Request.Form["instance"].ToString();
+                var instance = await _instanceRepository.GetByIdAsync(instanceName).ConfigureAwait(false);
+                if (instance == null)
+                {
+                    return BuildErrorResponse("devicegroup-instance", $"Instance with name '{name}' does not exist");
+                }
+
+                var devices = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices);
+                foreach (var device in devices)
+                {
+                    device.InstanceName = instance.Name;
+                }
+                await _deviceRepository.AddOrUpdateAsync(devices).ConfigureAwait(false);
+                // :see_no_evil: TODO: Fix eventually instead of looping twice
+                foreach (var device in devices)
+                {
+                    InstanceController.Instance.ReloadDevice(device, device.Uuid);
+                }
+                return Redirect("/dashboard/devicegroups");
+            }
+        }
+
+        [HttpGet("/dashboard/devicegroup/delete/{name}")]
+        public async Task<IActionResult> DeleteDeviceGroup(string name)
+        {
+            var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+            if (deviceGroup == null)
+            {
+                // Failed to get device group, does it exist?
+                return BuildErrorResponse("devicegroup-delete", $"Device Group with name '{name}' does not exist");
+            }
+            await _deviceGroupRepository.DeleteAsync(deviceGroup).ConfigureAwait(false);
+            return Redirect("/dashboard/devicegroups");
+        }
+
+        #endregion
+
         #region Instances
 
         [HttpGet("/dashboard/instances")]
@@ -204,7 +394,6 @@
                     type = x.Type.ToString().ToLower(),
                     selected = false,
                 });
-                obj.nothing_selected = true;
                 obj.timezone_offset = 0;
                 var timezones = Data.GameMaster.Instance.Timezones.Keys.ToList();
                 timezones.Sort();
@@ -678,9 +867,11 @@
             {
                 var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
                 var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
+                var deviceGroups = await _deviceGroupRepository.GetAllAsync().ConfigureAwait(false);
                 dynamic obj = BuildDefaultData();
                 obj.instances = instances.Select(x => new { name = x.Name, selected = false, selected_source = false });
                 obj.devices = devices.Select(x => new { uuid = x.Uuid, selected = false });
+                obj.device_groups = deviceGroups.Select(x => new { uuid = x.Name, selected = false });
                 obj.nothing_selected = true;
                 obj.nothing_selected_source = true;
                 var data = Renderer.ParseTemplate("assignment-add", obj);
@@ -693,8 +884,11 @@
             }
             else
             {
-                var uuid = Request.Form["device"].ToString();
+                var deviceOrDeviceGroupName = Request.Form["device"].ToString();
+                var uuid = deviceOrDeviceGroupName.StartsWith("device:") ? new string(deviceOrDeviceGroupName.Skip(7).ToArray()) : null;
+                var deviceGroupName = deviceOrDeviceGroupName.StartsWith("group:") ? new string(deviceOrDeviceGroupName.Skip(6).ToArray()) : null;
                 var sourceInstance = Request.Form["source_instance"].ToString();
+                sourceInstance = string.IsNullOrEmpty(sourceInstance) ? null : sourceInstance;
                 var destinationInstance = Request.Form["instance"].ToString();
                 var time = Request.Form["time"].ToString();
                 var date = Request.Form["date"].ToString();
@@ -703,22 +897,35 @@
 
                 var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
                 var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-                if (instances == null || devices == null)
+                var deviceGroups = await _deviceGroupRepository.GetAllAsync().ConfigureAwait(false);
+                if (instances == null || devices == null || deviceGroups == null)
                 {
-                    // Failed to get instances and/or devices, or no instances or devices in database
-                    return BuildErrorResponse("assignment-add", "Failed to get instances or devices");
+                    // Failed to get instances, devices, or device groups
+                    return BuildErrorResponse("assignment-add", "Failed to get instances, devices, or device groups");
                 }
 
-                if (!devices.Any(x => x.Uuid == uuid))
+                if (!string.IsNullOrEmpty(uuid))
                 {
-                    // Device does not exist
-                    return BuildErrorResponse("assignment-add", $"Device with name '{uuid}' does not exist");
+                    if (!devices.Any(x => x.Uuid == uuid))
+                    {
+                        // Device does not exist
+                        return BuildErrorResponse("assignment-add", $"Device with name '{uuid}' does not exist");
+                    }
                 }
 
-                if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
+                if (!instances.Any(x => x.Name == destinationInstance))
                 {
                     // Instance does not exist
                     return BuildErrorResponse("assignment-add", $"Instance with name '{destinationInstance}' does not exist");
+                }
+
+                if (!string.IsNullOrEmpty(deviceGroupName))
+                {
+                    if (!deviceGroups.Any(x => x.Name == deviceGroupName))
+                    {
+                        // Device group does not exist
+                        return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist");
+                    }
                 }
 
                 var totalTime = 0u;
@@ -745,11 +952,9 @@
                     realDate = DateTime.Parse(date);
                 }
 
-                if (string.IsNullOrEmpty(uuid) || string.IsNullOrEmpty(destinationInstance))
+                if (string.IsNullOrEmpty(destinationInstance))
                 {
-                    // TODO: Log error
-                    return Redirect("/dashboard/assignments");
-                    //return BuildErrorResponse("assignment-add", $"Somehow device uuid was null or destinationInstance");
+                    return BuildErrorResponse("assignment-add", $"No destination instance selected");
                 }
 
                 try
@@ -759,6 +964,7 @@
                         InstanceName = destinationInstance,
                         SourceInstanceName = sourceInstance,
                         DeviceUuid = uuid,
+                        DeviceGroupName = deviceGroupName,
                         Time = totalTime,
                         Date = realDate,
                         Enabled = enabled,
@@ -778,6 +984,7 @@
                         InstanceName = destinationInstance,
                         SourceInstanceName = sourceInstance,
                         DeviceUuid = uuid,
+                        DeviceGroupName = deviceGroupName,
                         Time = 0,
                         Date = realDate,
                         Enabled = enabled,
@@ -802,23 +1009,28 @@
                 if (assignment == null)
                 {
                     // Failed to get assignment by id, does assignment exist?
+                    return BuildErrorResponse("assignment-edit", $"Failed to get assignment with id '{id}', does it exist?");
                 }
 
                 var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
-                if (devices == null || instances == null)
+                var deviceGroups = await _deviceGroupRepository.GetAllAsync().ConfigureAwait(false);
+                if (devices == null || instances == null || deviceGroups == null)
                 {
-                    // Failed to get devices or instances from database
+                    // Failed to get devices, instances, or device groups from database
+                    return BuildErrorResponse("assignment-edit", $"Failed to get devices, instances, or device groups from database");                    
                 }
 
                 var formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
                 dynamic obj = BuildDefaultData();
                 obj.id = id;
+                obj.old_name = id;
                 obj.date = assignment.Date;
                 obj.time = formattedTime;
                 obj.enabled = assignment.Enabled ? "checked" : "";
                 obj.instances = instances.Select(x => new { name = x.Name, selected = x.Name == assignment.InstanceName, selected_source = x.Name == assignment.SourceInstanceName });
                 obj.devices = devices.Select(x => new { uuid = x.Uuid, selected = x.Uuid == assignment.DeviceUuid });
+                obj.device_groups = deviceGroups.Select(x => new { uuid = x.Name, selected = x.Name == assignment.DeviceGroupName });
                 var data = Renderer.ParseTemplate("assignment-edit", obj);
                 return new ContentResult
                 {
@@ -829,8 +1041,11 @@
             }
             else
             {
-                var uuid = Request.Form["device"].ToString();
+                var deviceOrDeviceGroupName = Request.Form["device"].ToString();
+                var uuid = deviceOrDeviceGroupName.StartsWith("device:") ? new string(deviceOrDeviceGroupName.Skip(7).ToArray()) : null;
+                var deviceGroupName = deviceOrDeviceGroupName.StartsWith("group:") ? new string(deviceOrDeviceGroupName.Skip(6).ToArray()) : null;
                 var sourceInstance = Request.Form["source_instance"].ToString();
+                sourceInstance = string.IsNullOrEmpty(sourceInstance) ? null : sourceInstance;
                 var destinationInstance = Request.Form["instance"].ToString();
                 var time = Request.Form["time"].ToString();
                 var date = Request.Form["date"].ToString();
@@ -839,22 +1054,35 @@
 
                 var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
                 var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-                if (instances == null || devices == null)
+                var deviceGroups = await _deviceGroupRepository.GetAllAsync().ConfigureAwait(false);
+                if (instances == null || devices == null || deviceGroups == null)
                 {
-                    // Failed to get instances and/or devices, or no instances or devices in database
-                    return BuildErrorResponse("assignment-edit", "Failed to get instances or devices");
+                    // Failed to get instances, devices, or device groups
+                    return BuildErrorResponse("assignment-add", "Failed to get instances, devices, or device groups");
                 }
 
-                if (!devices.Any(x => x.Uuid == uuid))
+                if (!string.IsNullOrEmpty(uuid))
                 {
-                    // Device does not exist
-                    return BuildErrorResponse("assignment-edit", $"Device with name '{uuid}' does not exist");
+                    if (!devices.Any(x => x.Uuid == uuid))
+                    {
+                        // Device does not exist
+                        return BuildErrorResponse("assignment-edit", $"Device with name '{uuid}' does not exist");
+                    }
                 }
 
                 if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
                 {
                     // Instance does not exist
                     return BuildErrorResponse("assignment-edit", $"Instance with name '{destinationInstance}' does not exist");
+                }
+
+                if (!string.IsNullOrEmpty(deviceGroupName))
+                {
+                    if (!deviceGroups.Any(x => x.Name == deviceGroupName))
+                    {
+                        // Device group does not exist
+                        return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist");
+                    }
                 }
 
                 var totalTime = 0u;
@@ -881,11 +1109,10 @@
                     realDate = DateTime.Parse(date);
                 }
 
-                if (string.IsNullOrEmpty(uuid) || string.IsNullOrEmpty(destinationInstance))
+                if (string.IsNullOrEmpty(destinationInstance))
                 {
-                    // Invalid request, uuid or instance are null
-                    // TODO: Log error
-                    return Redirect("/dashboard/assignments");
+                    // Invalid request, no destination instance selected
+                    return BuildErrorResponse("assignment-add", $"No destination instance selected");
                 }
 
                 var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
@@ -897,6 +1124,7 @@
                 assignment.InstanceName = destinationInstance;
                 assignment.SourceInstanceName = sourceInstance;
                 assignment.DeviceUuid = uuid;
+                assignment.DeviceGroupName = deviceGroupName;
                 assignment.Time = totalTime;
                 assignment.Date = realDate;
                 assignment.Enabled = enabled;
@@ -910,12 +1138,10 @@
         public async Task<IActionResult> StartAssignment(uint id)
         {
             var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
-            if (assignment == null)
+            if (assignment != null)
             {
-                // TODO: Log error
-                // Failed to get assignment by id
+                await AssignmentController.Instance.TriggerAssignment(assignment, string.Empty, true).ConfigureAwait(false);
             }
-            await AssignmentController.Instance.TriggerAssignment(assignment, true).ConfigureAwait(false);
             return Redirect("/dashboard/assignments");
         }
 
@@ -923,13 +1149,10 @@
         public async Task<IActionResult> DeleteAssignment(uint id)
         {
             var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
-            if (assignment == null)
+            if (assignment != null)
             {
-                // TODO: Log error
-                // Failed to delete assignment by id, does it exist?
-                return BuildErrorResponse("assignment-delete", $"Assignment with id '{id}' does not exist");
+                await _assignmentRepository.DeleteAsync(assignment).ConfigureAwait(false);
             }
-            await _assignmentRepository.DeleteAsync(assignment).ConfigureAwait(false);
             return Redirect("/dashboard/assignments");
         }
 
@@ -1318,6 +1541,19 @@
             {
                 return Redirect("/dashboard/settings");
             }
+        }
+
+        [HttpGet("/dashboard/about")]
+        public IActionResult GetAbout()
+        {
+            var obj = BuildDefaultData();
+            var data = Renderer.ParseTemplate("about", obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
         }
 
         #endregion

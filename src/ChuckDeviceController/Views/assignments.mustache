@@ -35,6 +35,7 @@
                 { "data": "source_instance_name" },
                 { "data": "instance_name" },
                 { "data": "device_uuid" },
+                { "data": "device_group" },
                 { data: {
                     _:    "time.formatted",
                     sort: "time.timestamp"
@@ -49,7 +50,7 @@
             "info":     true,
             "order": [[ 2, "asc" ]],
             "columnDefs": [ {
-                "targets": [6],
+                "targets": [7],
                 "orderable": false
             }],
             "search.caseInsensitive": true,
@@ -68,7 +69,7 @@
     <h1 align="center">Configure {{title}}'s Auto-Assignments!</h1>
     <br>
     <div style="width:90%; margin-left:calc(5%);">
-        <a href="/dashboard/assignment/add" role="button" style="float: right;" class="btn btn-sm btn-success">Add New Assignment</a>
+        <a href="/dashboard/assignment/add" role="button" style="float: right;" class="btn btn-sm btn-success">New Assignment</a>
         <div style="width:50px; height:auto; display:inline;"></div>
         <a href="/dashboard/assignments/delete_all" role="button" style="float: right; margin-right:5px;" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete ALL of your auto-assignments? This action is irreversible and cannot be undone without backups.')">Delete All Assignments</a>
         <br><br>
@@ -78,6 +79,7 @@
                 <th class="all">Source Instance</th>
                 <th class="all">Target Instance</th>
                 <th class="all">Device UUID</th>
+                <th class="all">Device Group</th>
                 <th class="min-desktop">Time</th>
                 <th class="min-desktop">Date</th>
                 <th class="min-desktop">Enabled</th>

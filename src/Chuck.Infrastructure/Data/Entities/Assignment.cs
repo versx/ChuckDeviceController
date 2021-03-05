@@ -11,7 +11,8 @@
     {
         [
             Column("id"),
-            Key
+            Key,
+            DatabaseGenerated(DatabaseGeneratedOption.Identity),
         ]
         public uint Id { get; set; }
 
@@ -33,7 +34,8 @@
         ]
         public DateTime? Date { get; set; }
 
-        // TODO: device_group_name
+        [Column("device_group_name")]
+        public string DeviceGroupName { get; set; }
 
         [
             Column("enabled"),
