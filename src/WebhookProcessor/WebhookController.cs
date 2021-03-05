@@ -128,7 +128,6 @@
                         while (_queue.Count > 0)
                         {
                             var payload = _queue.Dequeue();
-                            //_sentEvents.Add(payload);
                             events.Add(payload);
                             Thread.Sleep(1);
                         }
@@ -149,11 +148,13 @@
 
                 foreach (var webhook in Webhooks)
                 {
+                    if (!webhook.Enabled)
+                        continue;
+
                     SendEvents(webhook.Url, events);
+                    Thread.Sleep(Convert.ToInt32(webhook.Delay * 1000));
                 }
                 _sentEvents.AddRange(events);
-
-                Thread.Sleep(SleepIntervalS * 1000);
             }
         }
 
