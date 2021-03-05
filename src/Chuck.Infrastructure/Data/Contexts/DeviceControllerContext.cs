@@ -22,6 +22,8 @@
 
         public DbSet<Device> Devices { get; set; }
 
+        public DbSet<DeviceGroup> DeviceGroups { get; set; }
+
         public DbSet<Instance> Instances { get; set; }
 
         public DbSet<Geofence> Geofences { get; set; }
@@ -79,6 +81,9 @@
             modelBuilder.Entity<Webhook>()
                         .Property(nameof(Webhook.Data))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData>());
+            modelBuilder.Entity<DeviceGroup>()
+                        .Property(nameof(DeviceGroup.Devices))
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
 
             base.OnModelCreating(modelBuilder);
         }

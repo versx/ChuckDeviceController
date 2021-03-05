@@ -25,6 +25,7 @@
         private readonly AssignmentRepository _assignmentRepository;
         private readonly GeofenceRepository _geofenceRepository;
         private readonly WebhookRepository _webhookRepository;
+        private readonly DeviceGroupRepository _deviceGroupRepository;
 
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
@@ -49,6 +50,7 @@
             _assignmentRepository = new AssignmentRepository(_context);
             _geofenceRepository = new GeofenceRepository(_context);
             _webhookRepository = new WebhookRepository(_context);
+            _deviceGroupRepository = new DeviceGroupRepository(_context);
         }
 
         #endregion
@@ -95,6 +97,32 @@
                 });
             }
             return new { data = new { devices = list } };
+        }
+
+        [
+            HttpPost("/api/devicegroups"),
+            Produces("application/json"),
+        ]
+        public async Task<dynamic> GetDeviceGroups()
+        {
+            var deviceGroups = await _deviceGroupRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var deviceGroup in deviceGroups)
+            {
+                list.Add(new
+                {
+                    name = deviceGroup.Name,
+                    devices = deviceGroup.Devices.Count.ToString("N0"),
+                    buttons = $@"
+<div class='btn-group' role='group'>
+    <a href='/dashboard/devicegroup/edit/{Uri.EscapeDataString(deviceGroup.Name)}' role='button' class='btn btn-sm btn-primary'>Edit</a>
+    <a href='/dashboard/devicegroup/assign/{Uri.EscapeDataString(deviceGroup.Name)}' role='button' class='btn btn-sm btn-primary'>Assign Instance</a>
+</div>
+"
+                    //<a href='/dashboard/assignment/delete/{assignment.Id}' role='button' class='btn btn-sm btn-danger' onclick='return confirm(\'Are you sure you want to delete auto-assignments with id {assignment.Id}?\')'>Delete</a>
+                });
+            }
+            return new { data = new { devicegroups = list } };
         }
 
         /// <summary>
@@ -147,7 +175,7 @@
                     name = geofence.Name,
                     type = geofence.Type.ToString(),
                     count = geofence.Data.Area.GetArrayLength().ToString("N0"),
-                    buttons = $"<a href='/dashboard/geofence/edit/{Uri.EscapeDataString(geofence.Name)}' role='button' class='btn btn-primary'>Edit</a>",
+                    buttons = $"<a href='/dashboard/geofence/edit/{Uri.EscapeDataString(geofence.Name)}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
                 });
             }
             return new { data = new { geofences = list } };

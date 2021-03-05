@@ -33,7 +33,8 @@
         ]
         public DateTime? Date { get; set; }
 
-        // TODO: device_group_name
+        [Column("device_group_name")]
+        public string DeviceGroupName { get; set; }
 
         [
             Column("enabled"),

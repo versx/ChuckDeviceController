@@ -141,10 +141,12 @@
             {
                 return 0;
             }
-            var pokestops = await GetByIdsAsync(ids).ConfigureAwait(false);
-            return (ulong)pokestops.Count(x => !x.Deleted &&
-                                               x.QuestType.HasValue &&
-                                               x.QuestType != null);
+            return (ulong)await _dbContext.Pokestops.AsNoTracking().DeferredCount(x =>
+                !x.Deleted &&
+                x.QuestType.HasValue &&
+                x.QuestType != null &&
+                ids.Contains(x.Id)
+            ).FromCacheAsync().ConfigureAwait(false);
         }
 
         public async Task<int> GetStalePokestopsCount()

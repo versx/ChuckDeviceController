@@ -1,0 +1,84 @@
+﻿{{> navbar}}
+
+<style>
+    table.dataTable tbody td {
+        vertical-align: middle;
+    }
+</style>
+
+<script>
+$(document).ready(function() {
+    const table = $('#table').DataTable({
+        "ajax": {
+            "url": "/api/devicegroups",
+            "dataSrc": "data.devicegroups",
+            "type": "POST",
+            "_csrf": "{{csrf}}"
+        },
+        //"dom": "Bfrtip",
+        // Reference: https://stackoverflow.com/a/43176143
+        /*
+        "dom": "<'row'<'col-sm-8'B><'col-sm-4'f>t>" +
+                "<'row'<'col-sm-4'li><'col-sm-8'p>>",
+        */
+        "dom": "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        "fixedHeader": {
+            "header": true,
+            "headerOffset": $('.navbar').height() + 15
+        },
+        "buttons": [
+            "colvis",
+            "pageLength"
+        ],
+        "colReorder": true,
+        "stateSave": true,
+        "paging": true,
+        "lengthMenu": [[25, 50, 100, 200, -1], [25, 50, 100, 200, "All"]],
+        "pageLength": 100,
+        "columns": [
+            { "data": "name" },
+            //{ "data": "instances" },
+            { "data": "devices" },
+            { "data": "buttons" }
+        ],
+        "info": true,
+        "order": [[0, "asc"]],
+        "search.caseInsensitive": true,
+        "columnDefs": [{
+            "targets": [2],
+            "orderable": false
+        }],
+        "responsive": true
+    });
+    $('#table').on('draw.dt', function () {
+        setTimeout(function () {
+            table.ajax.reload(null, false);
+        }, 15 * 1000);
+    });
+});
+</script>
+
+<body class="{{body_class}}">
+    <br>
+    <h1 align="center">Configure {{title}}'s Device Groups!</h1>
+    <br>
+    <div style="width:90%; margin-left:calc(5%);">
+        <a href="/dashboard/devicegroup/add" role="button" style="float: right;" class="btn btn-success">New Device Group</a>
+        <br><br>
+        <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <!--<th>Instances</th>-->
+                    <th>Devices</th>
+                    <th width="5%"></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <br>
+</body>
