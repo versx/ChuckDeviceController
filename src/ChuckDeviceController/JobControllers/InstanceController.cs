@@ -146,9 +146,7 @@
                 case InstanceType.SmartCircleRaid:
                     try
                     {
-                        var area = string.IsNullOrEmpty(instance.Geofence)
-                            ? instance.Data?.Area
-                            : geofence?.Data?.Area;
+                        var area = geofence?.Data?.Area;
                         var coordsArray = (List<Coordinate>)
                         (
                             area is List<Coordinate>
@@ -181,9 +179,7 @@
                 case InstanceType.FindTTH:
                     try
                     {
-                        var area = string.IsNullOrEmpty(instance.Geofence)
-                            ? instance.Data?.Area
-                            : geofence?.Data?.Area;
+                        var area = geofence?.Data?.Area;
                         var coordsArray = (List<List<Coordinate>>)
                         (
                             area is List<List<Coordinate>>

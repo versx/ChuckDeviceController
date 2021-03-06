@@ -66,6 +66,8 @@
 
         public int SpinLimit { get; set; }
 
+        public ushort RetryLimit { get; set; } = 5; // TODO: Configurable
+
         #endregion
 
         #region Constructor
@@ -156,7 +158,7 @@
                                 _todayStopsTries.Add(stop.Id, 0);
                             }
                             var tryCount = _todayStopsTries[stop.Id];
-                            if (stop.QuestType == null && stop.Enabled && tryCount <= 5)
+                            if (stop.QuestType == null && stop.Enabled && tryCount <= RetryLimit)
                             {
                                 _todayStops.Add(stop.Id, stop);
                             }

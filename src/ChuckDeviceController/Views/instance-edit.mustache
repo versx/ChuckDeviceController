@@ -12,6 +12,7 @@
                     $('.iv_queue_limit_text').addClass('d-none');
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
+                    $('.quest_retry_limit_text').addClass('d-none');
                     break;
                 case 'pokemon_iv':
                     $('.pokemon_ids_text').removeClass('d-none');
@@ -20,6 +21,7 @@
                     $('.clear_quests_form').addClass('d-none');
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
+                    $('.quest_retry_limit_text').addClass('d-none');
                     break;
                 case 'auto_quest':
                     $('.pokemon_ids_text').addClass('d-none');
@@ -28,6 +30,7 @@
                     $('.clear_quests_form').removeClass('d-none');
                     $('.spin_limit_text').removeClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
+                    $('.quest_retry_limit_text').removeClass('d-none');
                     break;
                 case 'bootstrap':
                     $('.pokemon_ids_text').addClass('d-none');
@@ -36,6 +39,7 @@
                     $('.clear_quests_form').addClass('d-none');
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').removeClass('d-none');
+                    $('.quest_retry_limit_text').addClass('d-none');
                     break;
                 case 'find_tth':
                 default:
@@ -45,6 +49,7 @@
                     $('.clear_quests_form').addClass('d-none');
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
+                    $('.quest_retry_limit_text').addClass('d-none');
                     break;
             }
         });
@@ -137,12 +142,16 @@
                 Spin Limit
                 <input type="number" class="form-control" name="spin_limit" value="{{spin_limit}}" step=1 min="1" max="3500" required>
             </div>
+            <div class="form-group quest_retry_limit_text {{^auto_quest_selected}}d-none{{/auto_quest_selected}}">
+                Quest Retry Limit
+                <input type="number" class="form-control" name="quest_retry_limit" value="{{quest_retry_limit}}" step=1 min="1" max="255" required>
+            </div>
             <div class="form-group bootstrap_text {{^bootstrap_selected}}d-none{{/bootstrap_selected}}">
                 Circle Size (meters, i.e `70, 500, 750, etc`)
                 <input type="number" class="form-control" name="circle_size" value="{{circle_size}}" step="1" min="5" max="1000">
             </div>
             <div class="form-check bootstrap_text {{^bootstrap_selected}}d-none{{/bootstrap_selected}}">
-                <input type="checkbox" class="form-check-input" name="fast_bootstrap_mode" {{#fast_bootstrap_mode}}checked{{/fast_bootstrap_mode}}>
+                <input type="checkbox" class="form-check-input" name="fast_bootstrap_mode" {{#fast_bootstrap_mode}} checked{{/fast_bootstrap_mode}}>
                 <label class="form-check-label" for="fast_bootstrap_mode">Fast Bootstrap Mode (5 seconds vs 10 seconds)</label>
             </div>
             <input type="hidden" name="_csrf" value="{{csrf}}">

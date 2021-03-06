@@ -399,6 +399,7 @@
                 obj.nothing_selected = true;
                 obj.iv_queue_limit = 100;
                 obj.spin_limit = 3500;
+                obj.quest_retry_limit = 5;
                 var data = Renderer.ParseTemplate("instance-add", obj);
                 return new ContentResult
                 {
@@ -429,6 +430,7 @@
                 var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
+                ushort questRetryLimit = 5;
                 if (type == InstanceType.PokemonIV)
                 {
                     if (Request.Form.ContainsKey("iv_queue_limit"))
@@ -441,6 +443,14 @@
                     if (Request.Form.ContainsKey("spin_limit"))
                     {
                         spinLimit = ushort.Parse(Request.Form["spin_limit"]);
+                    }
+                    if (Request.Form.ContainsKey("quest_retry_limit"))
+                    {
+                        questRetryLimit = byte.Parse(Request.Form["quest_retry_limit"].ToString());
+                        if (questRetryLimit > byte.MaxValue || questRetryLimit <= byte.MinValue)
+                        {
+                            return BuildErrorResponse("instance-add", "Invalid Quest Retry Limit value (Valid value: 1-255)");
+                        }
                     }
                 }
                 //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
@@ -542,6 +552,7 @@
                 //        break;
                 //    case InstanceType.AutoQuest:
                 obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
+                obj.quest_retry_limit = instance.Data.QuestRetryLimit > 0 ? instance.Data.QuestRetryLimit : 5;
                 //        break;
                 //    case InstanceType.Bootstrap:
                 obj.circle_size = instance.Data.CircleSize ?? 70;
@@ -589,12 +600,17 @@
                 var ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
                 var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
                 var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
+                var questRetryLimit = byte.Parse(Request.Form["quest_retry_limit"].ToString());
                 //var accountGroup = Request.Form["account_group"];
                 //var isEvent = Request.Form["is_event"];
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided");
+                }
+                if (questRetryLimit > byte.MaxValue || questRetryLimit <= byte.MinValue)
+                {
+                    return BuildErrorResponse("instance-edit", "Invalid Quest Retry Limit value (Valid value: 1-255)");
                 }
 
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);

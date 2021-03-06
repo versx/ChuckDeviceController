@@ -23,8 +23,8 @@
         [JsonPropertyName("timezone")]
         public string Timezone { get; set; }
 
-        [JsonPropertyName("area")]
-        public dynamic Area { get; set; }
+        //[JsonPropertyName("area")]
+        //public dynamic Area { get; set; }
 
         [JsonPropertyName("iv_queue_limit")]
         public ushort? IVQueueLimit { get; set; }
@@ -41,11 +41,11 @@
         [JsonPropertyName("fast_bootstrap_mode")]
         public bool FastBootstrapMode { get; set; }
 
-        //[JsonPropertyName("scatter_pokemon_ids")]
-        //public List<uint> ScatterPokemonIds { get; set; }
-
         //[JsonPropertyName("account_group")]
         //public string AccountGroup { get; set; }
+
+        [JsonPropertyName("quest_retry_limit")]
+        public ushort QuestRetryLimit { get; set; }
 
         // radius
         // store_data

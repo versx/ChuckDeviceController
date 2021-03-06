@@ -1,6 +1,12 @@
 [![GitHub Contributors](https://img.shields.io/github/contributors/versx/ChuckDeviceController.svg)](https://github.com/versx/ChuckDeviceController/graphs/contributors/)
 [![Discord](https://img.shields.io/discord/552003258000998401.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/zZ9h9Xa)  
 # Chuck Device Controller  
+ChuckDeviceController is a C# based backend using Redis, ASP.NET Core, and EntityFramework Core to parse data from iOS devices running Pokemon Go.
+
+## Requirements
+- .NET 5 SDK  
+- MySQL or MariaDB  
+- Redis  
 
 ## Supported Databases  
 - MySQL 5.7
@@ -8,6 +14,12 @@
 - MariaDB 10.3
 - MariaDB 10.4
 - MariaDB 10.5
+
+## How It Works
+There are 3 parts to it:
+- ChuckDeviceController which will control devices, parse incoming protos, and device management dashboard UI.
+- DataConsumer will insert or upsert data from the redis queue containing parsed protos to consume with MySQL.
+- WebhookProcessor controls and filters webhooks and where to send newly updated events (Pokemon, Raids, etc).
 
 ## Installation
 1. Install [Redis](https://redis.io/topics/quickstart)  
@@ -28,7 +40,7 @@ View profiler results:
 `http://LAN_MACHINE_IP:port/profiler/results-list`  
 
 ## Configuration  
-```js
+```json
 {
     // Change to machine IP address
     "interface": "LAN_MACHINE_IP",
@@ -48,12 +60,12 @@ View profiler results:
         "database": "cdcdb"
     },
     // Redis information
-	"redis": {
-		"host": "127.0.0.1",
-		"port": 6379,
-		"password": "",
-		"databaseNum": -1,
-		"queueName": "cdc"
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379,
+        "password": "",
+        "databaseNum": -1,
+        "queueName": "cdc"
 	}
 }
 ```
