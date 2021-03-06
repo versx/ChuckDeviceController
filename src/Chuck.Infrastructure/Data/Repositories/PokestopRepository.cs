@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,9 @@
 
     using Chuck.Infrastructure.Data.Contexts;
     using Chuck.Infrastructure.Data.Entities;
+    using Chuck.Infrastructure.Data.Specifications;
     using Chuck.Infrastructure.Extensions;
+    using Chuck.Infrastructure.Geofence;
     using Chuck.Infrastructure.Geofence.Models;
 
     public class PokestopRepository : EfCoreRepository<Pokestop, DeviceControllerContext>
@@ -82,17 +85,63 @@
                 .RunAsync().ConfigureAwait(false);
         }
 
-        public async Task ClearQuestsAsync()
+        public async Task ClearQuestsAsync(string instanceName = null)
         {
-            await _dbContext.Pokestops.UpdateFromQueryAsync(_ => new Pokestop
+            if (string.IsNullOrEmpty(instanceName))
             {
-                QuestConditions = null,
-                QuestRewards = null,
-                QuestTarget = null,
-                QuestTemplate = null,
-                QuestTimestamp = null,
-                QuestType = null,
-            }).ConfigureAwait(false);
+                await _dbContext.Pokestops.UpdateFromQueryAsync(_ => new Pokestop
+                {
+                    QuestConditions = null,
+                    QuestRewards = null,
+                    QuestTarget = null,
+                    QuestTemplate = null,
+                    QuestTimestamp = null,
+                    QuestType = null,
+                }).ConfigureAwait(false);
+                return;
+            }
+
+            // TODO: Clear quests per instance
+            /*
+            var instance = await new InstanceRepository(_dbContext).GetByIdAsync(instanceName).ConfigureAwait(false);
+            if (instance == null)
+            {
+            }
+            var geofence = await new GeofenceRepository(_dbContext).GetByIdAsync(instance.Geofence).ConfigureAwait(false);
+            var area = geofence.Data.Area;
+            var coordsArray = (List<List<Coordinate>>)
+            (
+                area is List<List<Coordinate>>
+                    ? area
+                    : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
+            );
+            var areaArrayEmptyInner = new List<MultiPolygon>();
+            foreach (var coords in coordsArray)
+            {
+                var multiPolygon = new MultiPolygon();
+                Coordinate first = null;
+                for (var i = 0; i < coords.Count; i++)
+                {
+                    var coord = coords[i];
+                    if (i == 0)
+                    {
+                        first = coord;
+                    }
+                    multiPolygon.Add(new Polygon(coord.Latitude, coord.Longitude));
+                }
+                if (first != null)
+                {
+                    multiPolygon.Add(new Polygon(first.Latitude, first.Longitude));
+                }
+                areaArrayEmptyInner.Add(multiPolygon);
+            }
+            var pokestops = await GetAllAsync(new Specification<Pokestop>(x =>
+                x.QuestType != null &&
+                GeofenceService.InMultiPolygon(areaArrayEmptyInner, x.Latitude, x.Longitude)
+            )).ConfigureAwait(false);
+            var result = await InsertOrUpdate(pokestops).ConfigureAwait(false);
+            ConsoleExt.WriteDebug($"Result: {result}");
+            */
         }
 
         public async Task<List<Pokestop>> GetAllAsync(BoundingBox bbox, ulong updated = 0)

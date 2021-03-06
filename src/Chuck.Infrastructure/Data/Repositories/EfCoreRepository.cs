@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@
     using Z.EntityFramework.Plus;
 
     using Chuck.Infrastructure.Data.Entities;
+    using Chuck.Infrastructure.Data.Interfaces;
     using Chuck.Infrastructure.Extensions;
 
     /// <summary>
@@ -55,6 +57,14 @@
             return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
+        public virtual async Task<TEntity> GetBy(ISpecification<TEntity> spec)
+        {
+            return await _dbContext.Set<TEntity>()
+                                   .AsNoTracking()
+                                   .FirstOrDefaultAsync(spec.Criteria)
+                                   .ConfigureAwait(false);
+        }
+
         #endregion
 
         #region List
@@ -72,7 +82,19 @@
 
         public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync()
         {
-            return await _dbContext.Set<TEntity>().AsNoTracking().ToListAsync().ConfigureAwait(false);
+            return await _dbContext.Set<TEntity>()
+                                   .AsNoTracking()
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
+        }
+
+        public virtual async Task<List<TEntity>> GetAllAsync(ISpecification<TEntity> spec)
+        {
+            return await _dbContext.Set<TEntity>()
+                                   .AsNoTracking()
+                                   .Where(spec.Criteria)
+                                   .ToListAsync()
+                                   .ConfigureAwait(false);
         }
 
         #endregion

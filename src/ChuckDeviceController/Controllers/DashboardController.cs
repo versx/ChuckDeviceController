@@ -580,6 +580,17 @@
                     }
                     return Redirect("/dashboard/instances");
                 }
+                else if (Request.Form.ContainsKey("clear_quests"))
+                {
+                    // Clear quests for instance
+                    var instanceToDelete = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                    if (instanceToDelete != null)
+                    {
+                        await _pokestopRepository.ClearQuestsAsync(name).ConfigureAwait(false);
+                        _logger.LogDebug($"Quests were cleared for instance {name}");
+                    }
+                    return Redirect("/dashboard/instances");
+                }
 
                 var newName = Request.Form["name"].ToString();
                 var type = Instance.StringToInstanceType(Request.Form["type"]);
