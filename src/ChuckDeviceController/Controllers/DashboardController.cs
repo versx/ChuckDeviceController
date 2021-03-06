@@ -11,9 +11,6 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
-    using POGOProtos.Rpc;
-    using InvasionCharacter = POGOProtos.Rpc.EnumWrapper.Types.InvasionCharacter;
-    using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
     using StackExchange.Redis;
     using Z.EntityFramework.Plus;
 
@@ -22,6 +19,7 @@
     using Chuck.Infrastructure.Data.Entities;
     using Chuck.Infrastructure.Data.Repositories;
     using Chuck.Infrastructure.Extensions;
+    using Chuck.Infrastructure.Utilities;
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Utilities;
 
@@ -453,7 +451,6 @@
                         }
                     }
                 }
-                //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
                 //var accountGroup = Request.Form["account_group"];
                 //var isEvent = Request.Form["is_event"];
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
@@ -607,7 +604,6 @@
                 var pokemonIds = pokemonIdsValue == "*"
                     ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
                     : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
-                //var scatterPokemonIds = Request.Form["scatter_pokemon_ids"];
                 var ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
                 var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
                 var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
@@ -723,7 +719,7 @@
                     case GeofenceType.Circle:
                         {
                             // Parse area
-                            var coords = AreaStringToCoordinates(area);
+                            var coords = AreaConverters.AreaStringToCoordinates(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -733,7 +729,7 @@
                         }
                     case GeofenceType.Geofence:
                         {
-                            var coords = AreaStringToMultiPolygon(area);
+                            var coords = AreaConverters.AreaStringToMultiPolygon(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -780,11 +776,11 @@
                 var coordsArray = geofence?.Data?.Area;
                 if (geofence.Type == GeofenceType.Circle)
                 {
-                    coords = CoordinatesToAreaString(coordsArray);
+                    coords = AreaConverters.CoordinatesToAreaString(coordsArray);
                 }
                 else if (geofence.Type == GeofenceType.Geofence)
                 {
-                    coords = MultiPolygonToAreaString(coordsArray);
+                    coords = AreaConverters.MultiPolygonToAreaString(coordsArray);
                 }
                 obj.area = coords;
                 var data = Renderer.ParseTemplate("geofence-edit", obj);
@@ -827,7 +823,7 @@
                     case GeofenceType.Circle:
                         {
                             // Parse area
-                            var coords = AreaStringToCoordinates(area);
+                            var coords = AreaConverters.AreaStringToCoordinates(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -837,7 +833,7 @@
                         }
                     case GeofenceType.Geofence:
                         {
-                            var coords = AreaStringToMultiPolygon(area);
+                            var coords = AreaConverters.AreaStringToMultiPolygon(area);
                             if (coords.Count == 0)
                             {
                                 // Invalid coordinates provided
@@ -1237,14 +1233,14 @@
                 var delay = double.Parse(Request.Form["delay"].ToString() ?? "5");
                 var geofence = Request.Form["geofence"].ToString();
                 var enabled = Request.Form["enabled"].ToString() == "on";
-                var pokemonIds = GenerateRange<uint>(Request.Form["pokemon_ids"].ToString(), 1, 999);
+                var pokemonIds = NumberUtils.GenerateRange<uint>(Request.Form["pokemon_ids"].ToString(), 1, 999);
                 var pokestopIds = Request.Form["pokestop_ids"].ToString()?.Split("\n").ToList();
-                var raidIds = GenerateRange<uint>(Request.Form["raid_ids"].ToString(), 1, 999);
-                var eggLevels = GenerateRange<ushort>(Request.Form["egg_ids"].ToString(), 1, 6);
-                var lureIds = GenerateRange<ushort>(Request.Form["lure_ids"].ToString(), 501, 504);
-                var invasionIds = GenerateRange<ushort>(Request.Form["invasion_ids"].ToString(), 1, 50);
-                var gymIds = GenerateRange<ushort>(Request.Form["gym_ids"].ToString(), 0, 3);
-                var weatherIds = GenerateRange<ushort>(Request.Form["weather_ids"].ToString(), 0, 7);
+                var raidIds = NumberUtils.GenerateRange<uint>(Request.Form["raid_ids"].ToString(), 1, 999);
+                var eggLevels = NumberUtils.GenerateRange<ushort>(Request.Form["egg_ids"].ToString(), 1, 6);
+                var lureIds = NumberUtils.GenerateRange<ushort>(Request.Form["lure_ids"].ToString(), 501, 504);
+                var invasionIds = NumberUtils.GenerateRange<ushort>(Request.Form["invasion_ids"].ToString(), 1, 50);
+                var gymIds = NumberUtils.GenerateRange<ushort>(Request.Form["gym_ids"].ToString(), 0, 3);
+                var weatherIds = NumberUtils.GenerateRange<ushort>(Request.Form["weather_ids"].ToString(), 0, 7);
 
                 if (types.Count == 0)
                 {
@@ -1354,14 +1350,14 @@
                 var delay = double.Parse(Request.Form["delay"].ToString() ?? "5");
                 var geofence = Request.Form["geofence"].ToString();
                 var enabled = Request.Form["enabled"].ToString() == "on";
-                var pokemonIds = GenerateRange<uint>(Request.Form["pokemon_ids"].ToString(), 1, 999);
+                var pokemonIds = NumberUtils.GenerateRange<uint>(Request.Form["pokemon_ids"].ToString(), 1, 999);
                 var pokestopIds = Request.Form["pokestop_ids"].ToString()?.Split("\n").ToList();
-                var raidIds = GenerateRange<uint>(Request.Form["raid_ids"].ToString(), 1, 999);
-                var eggLevels = GenerateRange<ushort>(Request.Form["egg_ids"].ToString(), 1, 6);
-                var lureIds = GenerateRange<ushort>(Request.Form["lure_ids"].ToString(), 501, 504);
-                var invasionIds = GenerateRange<ushort>(Request.Form["invasion_ids"].ToString(), 1, 50);
-                var gymIds = GenerateRange<ushort>(Request.Form["gym_ids"].ToString(), 0, 3);
-                var weatherIds = GenerateRange<ushort>(Request.Form["weather_ids"].ToString(), 0, 7);
+                var raidIds = NumberUtils.GenerateRange<uint>(Request.Form["raid_ids"].ToString(), 1, 999);
+                var eggLevels = NumberUtils.GenerateRange<ushort>(Request.Form["egg_ids"].ToString(), 1, 6);
+                var lureIds = NumberUtils.GenerateRange<ushort>(Request.Form["lure_ids"].ToString(), 501, 504);
+                var invasionIds = NumberUtils.GenerateRange<ushort>(Request.Form["invasion_ids"].ToString(), 1, 50);
+                var gymIds = NumberUtils.GenerateRange<ushort>(Request.Form["gym_ids"].ToString(), 0, 3);
+                var weatherIds = NumberUtils.GenerateRange<ushort>(Request.Form["weather_ids"].ToString(), 0, 7);
 
                 if (types.Count == 0)
                 {
@@ -1612,83 +1608,6 @@
             return obj;
         }
 
-        private static string CoordinatesToAreaString(dynamic area)
-        {
-            var coords = string.Empty;
-            var nfi = new CultureInfo("en-US").NumberFormat;
-            nfi.NumberDecimalSeparator = ".";
-            foreach (var coord in area.EnumerateArray())
-            {
-                var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
-                var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
-                coords += $"{latitude},{longitude}\n";
-            }
-            return coords;
-        }
-
-        private static string MultiPolygonToAreaString(dynamic area)
-        {
-            var index = 1;
-            var coords = string.Empty;
-            var nfi = new CultureInfo("en-US").NumberFormat;
-            nfi.NumberDecimalSeparator = ".";
-            foreach (var fence in area.EnumerateArray())
-            {
-                coords += $"[Geofence {index}]\n";
-                foreach (var coord in fence.EnumerateArray())
-                {
-                    var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
-                    var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
-                    coords += $"{latitude},{longitude}\n";
-                }
-                index++;
-            }
-            return coords;
-        }
-
-        private static List<Coordinate> AreaStringToCoordinates(string area)
-        {
-            var rows = area.Split('\n');
-            var coords = new List<Coordinate>();
-            var nfi = new CultureInfo("en-US").NumberFormat;
-            nfi.NumberDecimalSeparator = ".";
-            foreach (var row in rows)
-            {
-                var split = row.Split(',');
-                if (split.Length != 2)
-                    continue;
-                var latitude = double.Parse(split[0].Trim('\n'), nfi);
-                var longitude = double.Parse(split[1].Trim('\n'), nfi);
-                coords.Add(new Coordinate(latitude, longitude));
-            }
-            return coords;
-        }
-
-        private static List<List<Coordinate>> AreaStringToMultiPolygon(string area)
-        {
-            var rows = area.Split('\n');
-            var index = 0;
-            var coords = new List<List<Coordinate>> { new List<Coordinate>() };
-            var nfi = new CultureInfo("en-US").NumberFormat;
-            nfi.NumberDecimalSeparator = ".";
-            foreach (var row in rows)
-            {
-                var split = row.Split(',');
-                if (split.Length == 2)
-                {
-                    var latitude = double.Parse(split[0].Trim('\0'), nfi);
-                    var longitude = double.Parse(split[1].Trim('\0'), nfi);
-                    coords[index].Add(new Coordinate(latitude, longitude));
-                }
-                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
-                {
-                    coords.Add(new List<Coordinate>());
-                    index++;
-                }
-            }
-            return coords;
-        }
-
         private static IActionResult BuildErrorResponse(string template, string message)
         {
             dynamic obj = BuildDefaultData();
@@ -1715,17 +1634,6 @@
                 ContentType = "text/html",
                 StatusCode = 200,
             };
-        }
-
-        private static List<T> GenerateRange<T>(string ids, int min, int max)
-        {
-            if (string.IsNullOrEmpty(ids))
-                return new List<T>();
-            if (ids == "*")
-            {
-                return (List<T>)Enumerable.Range(min, max);
-            }
-            return (List<T>)ids.Split('\n').Select(int.Parse);
         }
 
         private Task PublishData<T>(string channel, T data)

@@ -561,7 +561,7 @@
             if (events == null || events.Count == 0)
                 return false;
 
-            NetUtil.SendWebhook(url, events.ToJson(), retryCount);
+            NetUtils.SendWebhook(url, events.ToJson(), retryCount);
             ConsoleExt.WriteInfo($"[WebhookController] Sent {events.Count} webhook events to {url}");
             return true;
         }

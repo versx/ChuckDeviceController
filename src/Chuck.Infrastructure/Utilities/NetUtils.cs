@@ -6,7 +6,7 @@
 
     using Chuck.Infrastructure.Extensions;
 
-    public static class NetUtil
+    public static class NetUtils
     {
         private const ushort MaxRetryCount = 3;
 
