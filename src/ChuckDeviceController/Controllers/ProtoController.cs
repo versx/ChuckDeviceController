@@ -19,8 +19,8 @@
     using Chuck.Infrastructure.Data.Repositories;
     using Chuck.Infrastructure.Extensions;
     using ChuckDeviceController.JobControllers;
-    using ChuckDeviceController.Models.Requests;
-    using ChuckDeviceController.Models.Responses;
+    using ChuckDeviceController.Net.Models.Requests;
+    using ChuckDeviceController.Net.Models.Responses;
 
     [ApiController]
     public class ProtoController : ControllerBase
