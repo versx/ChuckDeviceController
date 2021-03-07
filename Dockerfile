@@ -7,8 +7,8 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build
 WORKDIR /src
-COPY ["src/ChuckDeviceController.csproj", "src/"]
-RUN dotnet restore "src/ChuckDeviceController.csproj"
+COPY ["src/ChuckDeviceController/ChuckDeviceController.csproj", "src/"]
+RUN dotnet restore "src/ChuckDeviceController/ChuckDeviceController.csproj"
 COPY . .
 WORKDIR "/src/src"
 RUN dotnet build "ChuckDeviceController.csproj" -c Release -o /app/build
