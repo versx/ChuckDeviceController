@@ -11,10 +11,9 @@
     using Chuck.Infrastructure.Data.Factories;
     using Chuck.Infrastructure.Data.Repositories;
     using Chuck.Infrastructure.Geofence.Models;
+    using Geofence = Chuck.Infrastructure.Geofence.Models.Geofence;
     using Chuck.Infrastructure.JobControllers;
     using Chuck.Infrastructure.JobControllers.Tasks;
-    using Coordinate = Chuck.Infrastructure.Data.Entities.Coordinate;
-    using Geofence = Chuck.Infrastructure.Geofence.Models.Geofence;
 
     public class SpawnpointFinderInstanceController : IJobController
     {

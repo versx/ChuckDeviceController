@@ -21,7 +21,7 @@
     using Chuck.Infrastructure.Extensions;
     using Chuck.Infrastructure.Utilities;
     using ChuckDeviceController.JobControllers;
-    using ChuckDeviceController.Utilities;
+    using ChuckDeviceController.Services;
 
     [Controller]
     public class DashboardController : Controller
@@ -87,7 +87,7 @@
             obj.geofences_count = (await _context.Geofences.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.webhooks_count = (await _context.Webhooks.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.devicegroups_count = (await _context.DeviceGroups.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
-            var data = Renderer.ParseTemplate("index", obj);
+            var data = TemplateRenderer.ParseTemplate("index", obj);
             return new ContentResult
             {
                 Content = data,
@@ -102,7 +102,7 @@
         public IActionResult GetDevices()
         {
             var obj = BuildDefaultData();
-            var data = Renderer.ParseTemplate("devices", obj);
+            var data = TemplateRenderer.ParseTemplate("devices", obj);
             return new ContentResult
             {
                 Content = data,
@@ -133,7 +133,7 @@
                 dynamic obj = BuildDefaultData();
                 obj.device_uuid = uuid;
                 obj.instances = instances;
-                var data = Renderer.ParseTemplate("device-assign", obj);
+                var data = TemplateRenderer.ParseTemplate("device-assign", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -174,7 +174,7 @@
         public IActionResult GetDeviceGroups()
         {
             var obj = BuildDefaultData();
-            var data = Renderer.ParseTemplate("devicegroups", obj);
+            var data = TemplateRenderer.ParseTemplate("devicegroups", obj);
             return new ContentResult
             {
                 Content = data,
@@ -199,7 +199,7 @@
                     selected = false,
                 });
                 obj.nothing_selected = true;
-                var data = Renderer.ParseTemplate("devicegroup-add", obj);
+                var data = TemplateRenderer.ParseTemplate("devicegroup-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -248,7 +248,7 @@
                     selected = deviceGroup.Devices.Contains(x.Uuid),
                 });
                 obj.nothing_selected = true;
-                var data = Renderer.ParseTemplate("devicegroup-edit", obj);
+                var data = TemplateRenderer.ParseTemplate("devicegroup-edit", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -298,7 +298,7 @@
                     selected = false,
                 });
                 obj.nothing_selected = true;
-                var data = Renderer.ParseTemplate("devicegroup-assign", obj);
+                var data = TemplateRenderer.ParseTemplate("devicegroup-assign", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -357,7 +357,7 @@
         public IActionResult GetInstances()
         {
             var obj = BuildDefaultData();
-            var data = Renderer.ParseTemplate("instances", obj);
+            var data = TemplateRenderer.ParseTemplate("instances", obj);
             return new ContentResult
             {
                 Content = data,
@@ -386,7 +386,7 @@
                     selected = false,
                 });
                 obj.timezone_offset = 0;
-                var timezones = Data.GameMaster.Instance.Timezones.Keys.ToList();
+                var timezones = TimeZoneService.Instance.Timezones.Keys.ToList();
                 timezones.Sort();
                 obj.timezones = timezones.Select(x => new
                 {
@@ -400,7 +400,8 @@
                 obj.quest_retry_limit = 5;
                 obj.account_group = null;
                 obj.is_event = false;
-                var data = Renderer.ParseTemplate("instance-add", obj);
+                obj.enable_dst = false;
+                var data = TemplateRenderer.ParseTemplate("instance-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -430,6 +431,7 @@
                 var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
+                var enableDst = Request.Form["enable_dst"].ToString() == "on";
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
                 ushort questRetryLimit = 5;
@@ -482,6 +484,7 @@
                         MaximumLevel = maxLevel,
                         PokemonIds = pokemonIds,
                         Timezone = timezone,
+                        EnableDst = enableDst,
                         CircleRouteType = circleRouteType,
                         CircleSize = (ushort)circleSize,
                         FastBootstrapMode = fastBootstrapMode,
@@ -525,13 +528,14 @@
                 obj.auto_quest_selected = instance.Type == InstanceType.AutoQuest;
                 obj.bootstrap_selected = instance.Type == InstanceType.Bootstrap;
                 obj.find_tth_selected = instance.Type == InstanceType.FindTTH;
-                var timezones = Data.GameMaster.Instance.Timezones.Keys.ToList();
+                var timezones = TimeZoneService.Instance.Timezones.Keys.ToList();
                 timezones.Sort();
                 obj.timezones = timezones.Select(x => new
                 {
                     name = x,
                     selected = x == instance.Data.Timezone,
                 });
+                obj.enable_dst = instance.Data.EnableDst ? "checked" : null;
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
@@ -562,7 +566,7 @@
                 obj.fast_bootstrap_mode = instance.Data.FastBootstrapMode;
                 //        break;
                 //}
-                var data = Renderer.ParseTemplate("instance-edit", obj);
+                var data = TemplateRenderer.ParseTemplate("instance-edit", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -616,6 +620,7 @@
                 var questRetryLimit = byte.Parse(Request.Form["quest_retry_limit"].ToString());
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
+                var enableDst = Request.Form["enable_dst"].ToString() == "on";
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
@@ -646,6 +651,7 @@
                     MaximumLevel = maxLevel,
                     PokemonIds = pokemonIds,
                     Timezone = timezone,
+                    EnableDst = enableDst,
                     FastBootstrapMode = fastBootstrapMode,
                     AccountGroup = accountGroup,
                     IsEvent = isEvent,
@@ -662,7 +668,7 @@
         {
             dynamic obj = BuildDefaultData();
             obj.instance_name = name;
-            var data = Renderer.ParseTemplate("instance-ivqueue", obj);
+            var data = TemplateRenderer.ParseTemplate("instance-ivqueue", obj);
             return new ContentResult
             {
                 Content = data,
@@ -679,7 +685,7 @@
         public IActionResult GetGeofences()
         {
             var obj = BuildDefaultData();
-            var data = Renderer.ParseTemplate("geofences", obj);
+            var data = TemplateRenderer.ParseTemplate("geofences", obj);
             return new ContentResult
             {
                 Content = data,
@@ -697,7 +703,7 @@
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
-                var data = Renderer.ParseTemplate("geofence-add", obj);
+                var data = TemplateRenderer.ParseTemplate("geofence-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -790,7 +796,7 @@
                     coords = AreaConverters.MultiPolygonToAreaString(coordsArray);
                 }
                 obj.area = coords;
-                var data = Renderer.ParseTemplate("geofence-edit", obj);
+                var data = TemplateRenderer.ParseTemplate("geofence-edit", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -869,7 +875,7 @@
         public IActionResult GetAssignments()
         {
             var obj = BuildDefaultData();
-            var data = Renderer.ParseTemplate("assignments", obj);
+            var data = TemplateRenderer.ParseTemplate("assignments", obj);
             return new ContentResult
             {
                 Content = data,
@@ -895,7 +901,7 @@
                 obj.device_groups = deviceGroups.Select(x => new { uuid = x.Name, selected = false });
                 obj.nothing_selected = true;
                 obj.nothing_selected_source = true;
-                var data = Renderer.ParseTemplate("assignment-add", obj);
+                var data = TemplateRenderer.ParseTemplate("assignment-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -1052,7 +1058,7 @@
                 obj.instances = instances.Select(x => new { name = x.Name, selected = x.Name == assignment.InstanceName, selected_source = x.Name == assignment.SourceInstanceName });
                 obj.devices = devices.Select(x => new { uuid = x.Uuid, selected = x.Uuid == assignment.DeviceUuid });
                 obj.device_groups = deviceGroups.Select(x => new { uuid = x.Name, selected = x.Name == assignment.DeviceGroupName });
-                var data = Renderer.ParseTemplate("assignment-edit", obj);
+                var data = TemplateRenderer.ParseTemplate("assignment-edit", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -1192,7 +1198,7 @@
         public IActionResult GetWebhooks()
         {
             var obj = BuildDefaultData();
-            var data = Renderer.ParseTemplate("webhooks", obj);
+            var data = TemplateRenderer.ParseTemplate("webhooks", obj);
             return new ContentResult
             {
                 Content = data,
@@ -1224,7 +1230,7 @@
                                              type = x.Type.ToString().ToLower(),
                                              selected = false,
                                          });
-                var data = Renderer.ParseTemplate("webhook-add", obj);
+                var data = TemplateRenderer.ParseTemplate("webhook-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -1327,7 +1333,7 @@
                 obj.gym_ids = string.Join("\n", webhook.Data.GymTeamIds ?? new List<ushort>());
                 obj.weather_ids = string.Join("\n", webhook.Data.WeatherConditionIds ?? new List<ushort>());
                 obj.enabled = webhook.Enabled ? "checked" : "";
-                var data = Renderer.ParseTemplate("webhook-edit", obj);
+                var data = TemplateRenderer.ParseTemplate("webhook-edit", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -1415,7 +1421,7 @@
             var stats = await _accountRepository.GetStatsAsync().ConfigureAwait(false);
             dynamic obj = BuildDefaultData();
             obj.stats = stats;
-            var data = Renderer.ParseTemplate("accounts", obj);
+            var data = TemplateRenderer.ParseTemplate("accounts", obj);
             return new ContentResult
             {
                 Content = data,
@@ -1434,7 +1440,7 @@
             {
                 dynamic obj = BuildDefaultData();
                 obj.level = 0;
-                var data = Renderer.ParseTemplate("accounts-add", obj);
+                var data = TemplateRenderer.ParseTemplate("accounts-add", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -1446,6 +1452,7 @@
             {
                 // Add accounts to database
                 var level = ushort.Parse(Request.Form["level"].ToString());
+                var group = Request.Form["group"].ToString();
                 var accountsToAdd = Request.Form["accounts"].ToString();
                 var rows = accountsToAdd.Replace(";", ",")
                                         .Replace(":", ",")
@@ -1464,6 +1471,7 @@
                         Username = split[0].Trim(),
                         Password = split[1].Trim(),
                         Level = level,
+                        GroupName = group,
                     });
                 }
                 await _accountRepository.AddOrUpdateAsync(list).ConfigureAwait(false);
@@ -1488,7 +1496,7 @@
                 obj.convertible_pokestops = (await _pokestopRepository.GetConvertiblePokestopsCount().ConfigureAwait(false)).ToString("N0");
                 obj.warnings = (await _accountRepository.GetExpiredWarningsCount().ConfigureAwait(false)).ToString("N0");
                 obj.bans = (await _accountRepository.GetExpiredBansCount().ConfigureAwait(false)).ToString("N0");
-                var data = Renderer.ParseTemplate("utilities", obj);
+                var data = TemplateRenderer.ParseTemplate("utilities", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -1548,7 +1556,7 @@
             if (Request.Method == "GET")
             {
                 var obj = BuildDefaultData();
-                var data = Renderer.ParseTemplate("settings", obj);
+                var data = TemplateRenderer.ParseTemplate("settings", obj);
                 return new ContentResult
                 {
                     Content = data,
@@ -1566,7 +1574,7 @@
         public IActionResult GetAbout()
         {
             var obj = BuildDefaultData();
-            var data = Renderer.ParseTemplate("about", obj);
+            var data = TemplateRenderer.ParseTemplate("about", obj);
             return new ContentResult
             {
                 Content = data,
@@ -1620,7 +1628,7 @@
             dynamic obj = BuildDefaultData();
             obj.show_error = true;
             obj.error = message;
-            var data = Renderer.ParseTemplate(template, obj);
+            var data = TemplateRenderer.ParseTemplate(template, obj);
             return new ContentResult
             {
                 Content = data,
@@ -1634,7 +1642,7 @@
             dynamic obj = BuildDefaultData();
             obj.show_success = true;
             obj.success = message;
-            var data = Renderer.ParseTemplate(template, obj);
+            var data = TemplateRenderer.ParseTemplate(template, obj);
             return new ContentResult
             {
                 Content = data,

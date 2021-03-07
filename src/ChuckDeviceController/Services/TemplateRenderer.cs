@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Utilities
+﻿namespace ChuckDeviceController.Services
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +8,7 @@
 
     using Chuck.Infrastructure.Extensions;
 
-    public static class Renderer
+    public static class TemplateRenderer
     {
         public static string ViewsDirectory => Path.Combine
         (
@@ -18,7 +18,7 @@
 
         private static readonly Dictionary<string, string> _templates;
 
-        static Renderer()
+        static TemplateRenderer()
         {
             _templates = new Dictionary<string, string>();
 
@@ -53,18 +53,6 @@
                     _templates.Add(viewName, viewData);
                 }
             }
-        }
-
-        public static string GetView(string name)
-        {
-            var viewPath = Path.Combine(ViewsDirectory, name + Strings.TemplateExt);
-            if (!File.Exists(viewPath))
-            {
-                ConsoleExt.WriteError($"View does not exist at {viewPath}");
-                return null;
-            }
-            //return await File.ReadAllTextAsync(viewPath);
-            return File.ReadAllText(viewPath);
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     using System;
 
-    using Chuck.Infrastructure.Data.Entities;
+    using Chuck.Infrastructure.Geofence.Models;
 
     public static class CoordinatesDistanceExtensions
     {

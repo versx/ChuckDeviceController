@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Globalization;
 
-    using Chuck.Infrastructure.Data.Entities;
+    using Chuck.Infrastructure.Geofence.Models;
 
     public static class AreaConverters
     {

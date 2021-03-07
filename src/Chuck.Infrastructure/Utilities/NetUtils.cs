@@ -52,5 +52,14 @@
                 }
             }
         }
+
+        public static string Download(string url)
+        {
+            using var wc = new WebClient
+            {
+                Proxy = null
+            };
+            return wc.DownloadString(url);
+        }
     }
 }

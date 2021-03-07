@@ -23,7 +23,7 @@
         public ushort MaximumLevel { get; set; }
 
         [JsonPropertyName("id")]
-        public string EncounterId { get; set; }
+        public ulong EncounterId { get; set; }
 
         [JsonPropertyName("is_spawnpoint")]
         public bool IsSpawnpoint { get; set; }

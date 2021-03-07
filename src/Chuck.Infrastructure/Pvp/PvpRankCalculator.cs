@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace Chuck.Infrastructure.Pvp
 {
     using System;
     using System.Collections.Generic;
@@ -7,9 +7,8 @@
     using Microsoft.Extensions.Caching.Memory;
     using POGOProtos.Rpc;
 
+    using Chuck.Infrastructure.Cache;
     using Chuck.Infrastructure.Data.Entities;
-    using ChuckDeviceController.Cache;
-    using ChuckDeviceController.Data;
 
     /// <summary>
     /// PvpRankCalculator
@@ -114,7 +113,8 @@
             var canEvolve = true;
             if (costumeId > 0)
             {
-                const string costumeName = ""; // TODO: Get Pokemon costume name from protos
+                // Get Pokemon costume name from protos
+                var costumeName = Convert.ToString((PokemonDisplayProto.Types.Costume)costumeId);
                 canEvolve = !costumeName.EndsWith("_NOEVOLVE") && !costumeName.EndsWith("_NO_EVOLVE");
             }
             if (canEvolve && masterForm.Evolutions.Count > 0)

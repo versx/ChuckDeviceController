@@ -251,14 +251,16 @@
 
         // TODO: Add ShouldUpdate method
 
-        public bool Update(Gym oldGym = null)
+        public GymResult Update(Gym oldGym = null)
         {
-            // TODO: Return struct of update type to send webhook if gym/raid/egg etc should be sent
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
-            var result = false;
+            var result = new GymResult();
             if (oldGym == null)
             {
+                result.IsNewOrHasChanges = true;
+                result.SendGym = true;
+                result.SendGymInfo = true;
                 // WebhookController.Instance.AddGym(this);
                 // WebhookController.Instance.AddGymInfo(this);
 
@@ -267,12 +269,12 @@
                 if (raidBattleTime > now && RaidLevel > 0)
                 {
                     // WebhookController.Instance.AddRaid(this);
-                    result = true;
+                    result.SendRaid = true;
                 }
                 else if (raidEndTime > now && RaidPokemonId > 0)
                 {
                     // WebhookController.Instance.AddRaid(this);
-                    result = true;
+                    result.SendRaid = true;
                 }
             }
             else
@@ -288,12 +290,12 @@
                     if (raidBattleTime > now && RaidLevel > 0)
                     {
                         // WebhookController.Instance.AddEgg(this);
-                        result = true;
+                        result.SendEgg = true;
                     }
                     else if (raidEndTime > now && RaidPokemonId > 0)
                     {
                         // WebhookController.Instance.AddRaid(this);
-                        result = true;
+                        result.SendRaid = true;
                     }
                 }
                 if (oldGym.AvailableSlots != AvailableSlots ||
@@ -301,7 +303,7 @@
                     oldGym.InBattle != InBattle)
                 {
                     // WebhookController.Instance.AddGymInfo(this);
-                    result = true;
+                    result.SendGymInfo = true;
                 }
             }
             return result;
@@ -435,5 +437,18 @@
                 message = data,
             };
         }
+    }
+
+    public class GymResult
+    {
+        public bool IsNewOrHasChanges { get; set; }
+
+        public bool SendGym { get; set; }
+
+        public bool SendGymInfo { get; set; }
+
+        public bool SendRaid { get; set; }
+
+        public bool SendEgg { get; set; }
     }
 }

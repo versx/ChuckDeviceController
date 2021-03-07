@@ -20,6 +20,9 @@
         [JsonPropertyName("timezone")]
         public string Timezone { get; set; }
 
+        [JsonPropertyName("enable_dst")]
+        public bool EnableDst { get; set; }
+
         //[JsonPropertyName("area")]
         //public dynamic Area { get; set; }
 
