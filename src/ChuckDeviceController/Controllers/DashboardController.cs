@@ -1446,6 +1446,7 @@
             {
                 // Add accounts to database
                 var level = ushort.Parse(Request.Form["level"].ToString());
+                var group = Request.Form["group"].ToString();
                 var accountsToAdd = Request.Form["accounts"].ToString();
                 var rows = accountsToAdd.Replace(";", ",")
                                         .Replace(":", ",")
@@ -1464,6 +1465,7 @@
                         Username = split[0].Trim(),
                         Password = split[1].Trim(),
                         Level = level,
+                        GroupName = group,
                     });
                 }
                 await _accountRepository.AddOrUpdateAsync(list).ConfigureAwait(false);
