@@ -31,11 +31,15 @@
 
         #region Properties
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public ushort MinimumLevel { get; set; }
+        public ushort MinimumLevel { get; }
 
-        public ushort MaximumLevel { get; set; }
+        public ushort MaximumLevel { get; }
+
+        public string GroupName { get; }
+
+        public bool IsEvent { get; }
 
         public IReadOnlyList<List<Coordinate>> Geofences { get; }
 
@@ -54,12 +58,14 @@
             SpawnpointCoordinates = new List<Coordinate>();
         }
 
-        public SpawnpointFinderInstanceController(string name, List<List<Coordinate>> geofences, ushort minLevel, ushort maxLevel) : this()
+        public SpawnpointFinderInstanceController(string name, List<List<Coordinate>> geofences, ushort minLevel, ushort maxLevel, string groupName = null, bool isEvent = false) : this()
         {
             Name = name;
             Geofences = geofences;
             MinimumLevel = minLevel;
             MaximumLevel = maxLevel;
+            GroupName = groupName;
+            IsEvent = isEvent;
 
             SpawnpointCoordinates = Task.Run(async () => await Bootstrap().ConfigureAwait(false))
                                         .GetAwaiter()

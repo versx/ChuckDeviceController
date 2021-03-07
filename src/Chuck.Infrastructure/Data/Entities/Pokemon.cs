@@ -358,6 +358,7 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             var setIVForWeather = false;
             var result = new PokemonResult();
+
             if (oldPokemon == null)
             {
                 Updated = now;
@@ -846,92 +847,6 @@
                 }
                 */
             });
-        }
-
-        public static Pokemon ParseFromWild(WildPokemonProto wild, Spawnpoint spawnpoint)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var pokemon = new Pokemon
-            {
-                Id = wild.EncounterId.ToString(),
-                Latitude = wild.Latitude,
-                Longitude = wild.Longitude,
-                ExpireTimestamp = now + 1200,
-                PokemonId = (uint)wild.Pokemon.PokemonId,
-                Gender = (ushort)wild.Pokemon.PokemonDisplay.Gender,
-                Form = (ushort)wild.Pokemon.PokemonDisplay.Form,
-                Weather = (ushort)wild.Pokemon.PokemonDisplay.WeatherBoostedCondition,
-                Costume = (ushort)wild.Pokemon.PokemonDisplay.Costume,
-                Changed = now,
-                IsExpireTimestampVerified = false,
-                SpawnId = Convert.ToUInt64(wild.SpawnPointId, 16),
-            };
-            if (spawnpoint != null)
-            {
-                if (spawnpoint.DespawnSecond > 0)
-                {
-                    pokemon.IsExpireTimestampVerified = true;
-                    pokemon.ExpireTimestamp = CalculateDespawnTimer(spawnpoint.DespawnSecond);
-                }
-                pokemon.SpawnId = spawnpoint.Id;
-            }
-
-            var cell = S2CellId.FromLatLng(S2LatLng.FromDegrees(pokemon.Latitude, pokemon.Longitude));
-            pokemon.CellId = cell.Id;
-            return pokemon;
-        }
-
-        public static Pokemon ParseFromEncounter(WildPokemonProto encounter, Spawnpoint spawnpoint)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var pokemon = new Pokemon
-            {
-                Id = encounter.EncounterId.ToString(),
-                Latitude = encounter.Latitude,
-                Longitude = encounter.Longitude,
-                Weight = encounter.Pokemon.WeightKg,
-                Size = encounter.Pokemon.HeightM,
-                ExpireTimestamp = now + 1200,
-                PokemonId = (uint)encounter.Pokemon.PokemonId,
-                Move1 = (uint?)encounter.Pokemon.Move1,
-                Move2 = (uint?)encounter.Pokemon.Move2,
-                Gender = (ushort)encounter.Pokemon.PokemonDisplay.Gender,
-                CP = (ushort?)encounter.Pokemon.Cp,
-                AttackIV = (ushort?)encounter.Pokemon.IndividualAttack,
-                DefenseIV = (ushort?)encounter.Pokemon.IndividualDefense,
-                StaminaIV = (ushort?)encounter.Pokemon.IndividualStamina,
-                Form = (ushort)encounter.Pokemon.PokemonDisplay.Form,
-                Weather = (ushort)encounter.Pokemon.PokemonDisplay.WeatherBoostedCondition,
-                Costume = (ushort)encounter.Pokemon.PokemonDisplay.Costume,
-                Changed = now,
-                IsExpireTimestampVerified = false,
-                SpawnId = Convert.ToUInt64(encounter.SpawnPointId, 16),
-            };
-            ushort level;
-            var cpMultiplier = encounter.Pokemon.CpMultiplier;
-            if (cpMultiplier < 0.734)
-            {
-                level = (ushort)Math.Round(58.35178527 * cpMultiplier * cpMultiplier - 2.838007664 * cpMultiplier + 0.8539209906);
-            }
-            else
-            {
-                level = (ushort)Math.Round(171.0112688 * cpMultiplier - 95.20425243);
-            }
-            pokemon.Level = level;
-
-            if (spawnpoint != null)
-            {
-                if (spawnpoint.DespawnSecond > 0)
-                {
-                    pokemon.IsExpireTimestampVerified = true;
-                    pokemon.ExpireTimestamp = CalculateDespawnTimer(spawnpoint.DespawnSecond);
-                }
-                pokemon.SpawnId = spawnpoint.Id;
-            }
-
-            var cell = S2CellId.FromLatLng(S2LatLng.FromDegrees(pokemon.Latitude, pokemon.Longitude));
-            pokemon.CellId = cell.Id;
-            return pokemon;
         }
     }
 

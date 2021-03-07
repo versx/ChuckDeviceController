@@ -4,18 +4,22 @@
 
     public interface IJobController
     {
-        public string Name { get; }
+        string Name { get; }
 
-        public ushort MinimumLevel { get; }
+        ushort MinimumLevel { get; }
 
-        public ushort MaximumLevel { get; }
+        ushort MaximumLevel { get; }
 
-        public Task<ITask> GetTask(string uuid, string accountUsername, bool startup);
+        string GroupName { get; }
 
-        public Task<string> GetStatus();
+        bool IsEvent { get; }
 
-        public void Stop();
+        Task<ITask> GetTask(string uuid, string accountUsername, bool startup);
 
-        public void Reload();
+        Task<string> GetStatus();
+
+        void Stop();
+
+        void Reload();
     }
 }

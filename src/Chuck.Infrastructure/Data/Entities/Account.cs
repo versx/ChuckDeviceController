@@ -73,12 +73,14 @@
         [Column("last_used_timestamp")]
         public ulong? LastUsedTimestamp { get; set; } = 0;
 
-        // TODO: group
+        [Column("group")]
+        public string GroupName { get; set; }
 
-        public bool IsValid(bool ignoreWarning = false) // TODO: group
+        public bool IsValid(bool ignoreWarning = false, string groupName = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
-            return string.IsNullOrEmpty(Failed) || (
+            return string.Compare(GroupName, groupName, true) == 0 &&
+                string.IsNullOrEmpty(Failed) || (
                     Failed == "GPR_RED_WARNING" &&
                     (ignoreWarning || (WarnExpireTimestamp ?? ulong.MaxValue) <= now)
                 ) || (

@@ -29,26 +29,32 @@
 
         #region Properties
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public ushort MinimumLevel { get; set; }
+        public ushort MinimumLevel { get; }
 
-        public ushort MaximumLevel { get; set; }
+        public ushort MaximumLevel { get; }
 
         public IReadOnlyList<Coordinate> Coordinates { get; }
 
-        public bool FastBootstrapMode { get; set; }
+        public bool FastBootstrapMode { get; }
+
+        public string GroupName { get; }
+
+        public bool IsEvent { get; }
 
         #endregion
 
         #region Constructor
 
-        public BootstrapInstanceController(string name, List<List<Coordinate>> geofences, ushort minLevel, ushort maxLevel, ushort circleSize = 70, bool fastBootstrapMode = false)
+        public BootstrapInstanceController(string name, List<List<Coordinate>> geofences, ushort minLevel, ushort maxLevel, ushort circleSize = 70, bool fastBootstrapMode = false, string groupName = null, bool isEvent = false)
         {
             Name = name;
             MinimumLevel = minLevel;
             MaximumLevel = maxLevel;
             FastBootstrapMode = fastBootstrapMode;
+            GroupName = groupName;
+            IsEvent = isEvent;
 
             _logger = new Logger<BootstrapInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 

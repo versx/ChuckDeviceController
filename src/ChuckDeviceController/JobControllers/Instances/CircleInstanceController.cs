@@ -30,7 +30,7 @@
 
         #region Properties
 
-        public string Name { get; set; }
+        public string Name { get; }
 
         public List<Coordinate> Coordinates { get; }
 
@@ -42,11 +42,15 @@
 
         public ushort MaximumLevel { get; }
 
+        public string GroupName { get; }
+
+        public bool IsEvent { get; }
+
         #endregion
 
         #region Constructor
 
-        public CircleInstanceController(string name, List<Coordinate> coords, CircleType type, CircleRouteType routeType, ushort minLevel, ushort maxLevel)
+        public CircleInstanceController(string name, List<Coordinate> coords, CircleType type, CircleRouteType routeType, ushort minLevel, ushort maxLevel, string groupName = null, bool isEvent = false)
         {
             Name = name;
             Coordinates = coords;
@@ -54,6 +58,8 @@
             RouteType = routeType;
             MinimumLevel = minLevel;
             MaximumLevel = maxLevel;
+            GroupName = groupName;
+            IsEvent = isEvent;
 
             _logger = new Logger<CircleInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 

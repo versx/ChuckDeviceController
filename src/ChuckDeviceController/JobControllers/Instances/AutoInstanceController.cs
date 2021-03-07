@@ -52,27 +52,31 @@
 
         #region Properties
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public List<MultiPolygon> MultiPolygon { get; set; }
+        public List<MultiPolygon> MultiPolygon { get; }
 
-        public AutoType Type { get; set; }
+        public AutoType Type { get; }
 
-        public int TimezoneOffset { get; set; }
+        public int TimezoneOffset { get; }
 
-        public ushort MinimumLevel { get; set; }
+        public ushort MinimumLevel { get; }
 
-        public ushort MaximumLevel { get; set; }
+        public ushort MaximumLevel { get; }
 
-        public int SpinLimit { get; set; }
+        public int SpinLimit { get; }
 
-        public ushort RetryLimit { get; set; } = 5; // TODO: Configurable
+        public byte RetryLimit { get; } = 5; // TODO: Configurable
+
+        public string GroupName { get; }
+
+        public bool IsEvent { get; }
 
         #endregion
 
         #region Constructor
 
-        public AutoInstanceController(string name, List<MultiPolygon> multiPolygon, AutoType type, int timezoneOffset, ushort minLevel, ushort maxLevel, int spinLimit)
+        public AutoInstanceController(string name, List<MultiPolygon> multiPolygon, AutoType type, int timezoneOffset, ushort minLevel, ushort maxLevel, int spinLimit, byte retryLimit, string groupName = null, bool isEvent = false)
         {
             Name = name;
             MultiPolygon = multiPolygon;
@@ -81,6 +85,9 @@
             MinimumLevel = minLevel;
             MaximumLevel = maxLevel;
             SpinLimit = spinLimit;
+            RetryLimit = retryLimit;
+            GroupName = groupName;
+            IsEvent = isEvent;
 
             _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 

@@ -44,23 +44,27 @@
 
         #region Properties
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public List<MultiPolygon> MultiPolygon { get; set; }
+        public List<MultiPolygon> MultiPolygon { get; }
 
-        public List<uint> PokemonList { get; set; }
+        public List<uint> PokemonList { get; }
 
-        public ushort MinimumLevel { get; set; }
+        public ushort MinimumLevel { get; }
 
-        public ushort MaximumLevel { get; set; }
+        public ushort MaximumLevel { get; }
 
-        public int IVQueueLimit { get; set; }
+        public int IVQueueLimit { get; }
+
+        public string GroupName { get; }
+
+        public bool IsEvent { get; }
 
         #endregion
 
         #region Constructor
 
-        public IVInstanceController(string name, List<MultiPolygon> multiPolygon, List<uint> pokemonList, ushort minLevel, ushort maxLevel, int ivQueueLimit)
+        public IVInstanceController(string name, List<MultiPolygon> multiPolygon, List<uint> pokemonList, ushort minLevel, ushort maxLevel, int ivQueueLimit, string groupName = null, bool isEvent = false)
         {
             Name = name;
             MultiPolygon = multiPolygon;
@@ -68,6 +72,8 @@
             MinimumLevel = minLevel;
             MaximumLevel = maxLevel;
             IVQueueLimit = ivQueueLimit;
+            GroupName = groupName;
+            IsEvent = isEvent;
 
             _logger = new Logger<IVInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 
@@ -155,9 +161,9 @@
 
         public void AddPokemon(Pokemon pokemon)
         {
-            if (!PokemonList.Contains(pokemon.PokemonId))
+            if (pokemon.IsEvent != IsEvent || !PokemonList.Contains(pokemon.PokemonId))
             {
-                // Pokemon Id not in pokemon IV list
+                // Pokemon is does not match isEvent for instance or Pokemon Id not in pokemon IV list
                 return;
             }
             lock (_queueLock)
@@ -216,6 +222,17 @@
                 if (pkmn != null)
                 {
                     _pokemonQueue.Remove(pkmn);
+                }
+            }
+            // TODO: Allow for customizable IV list
+            if (IsEvent && !pokemon.IsEvent && (
+                pokemon.AttackIV == 15 || pokemon.AttackIV == 0 || pokemon.AttackIV == 1) &&
+                pokemon.DefenseIV == 15 && pokemon.StaminaIV == 15)
+            {
+                pokemon.IsEvent = true;
+                lock (_queueLock)
+                {
+                    _pokemonQueue.Insert(0, pokemon);
                 }
             }
             if (_startDate == default)

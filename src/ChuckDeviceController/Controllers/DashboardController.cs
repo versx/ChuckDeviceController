@@ -398,6 +398,8 @@
                 obj.iv_queue_limit = 100;
                 obj.spin_limit = 3500;
                 obj.quest_retry_limit = 5;
+                obj.account_group = null;
+                obj.is_event = false;
                 var data = Renderer.ParseTemplate("instance-add", obj);
                 return new ContentResult
                 {
@@ -426,6 +428,8 @@
                     ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
                     : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
                 var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
+                var accountGroup = Request.Form["account_group"].ToString();
+                var isEvent = Request.Form["is_event"].ToString() == "on";
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
                 ushort questRetryLimit = 5;
@@ -451,8 +455,7 @@
                         }
                     }
                 }
-                //var accountGroup = Request.Form["account_group"];
-                //var isEvent = Request.Form["is_event"];
+
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
@@ -473,7 +476,6 @@
                     Geofence = geofence,
                     Data = new InstanceData
                     {
-                        IsEvent = false,
                         IVQueueLimit = ivQueueLimit,
                         SpinLimit = spinLimit,
                         MinimumLevel = minLevel,
@@ -483,6 +485,8 @@
                         CircleRouteType = circleRouteType,
                         CircleSize = (ushort)circleSize,
                         FastBootstrapMode = fastBootstrapMode,
+                        AccountGroup = accountGroup,
+                        IsEvent = isEvent,
                     }
                 };
                 await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
@@ -513,6 +517,8 @@
                 obj.old_name = name;
                 obj.min_level = minLevel;
                 obj.max_level = maxLevel;
+                obj.account_group = instance.Data.AccountGroup;
+                obj.is_event = instance.Data.IsEvent ? "checked" : null;
                 obj.circle_pokemon_selected = instance.Type == InstanceType.CirclePokemon;
                 obj.circle_raid_selected = instance.Type == InstanceType.CircleRaid;
                 obj.pokemon_iv_selected = instance.Type == InstanceType.PokemonIV;
@@ -608,8 +614,8 @@
                 var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
                 var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
                 var questRetryLimit = byte.Parse(Request.Form["quest_retry_limit"].ToString());
-                //var accountGroup = Request.Form["account_group"];
-                //var isEvent = Request.Form["is_event"];
+                var accountGroup = Request.Form["account_group"].ToString();
+                var isEvent = Request.Form["is_event"].ToString() == "on";
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
@@ -632,7 +638,6 @@
                 instance.Geofence = geofence;
                 instance.Data = new InstanceData
                 {
-                    IsEvent = false,
                     IVQueueLimit = ivQueueLimit,
                     CircleRouteType = circleRouteType,
                     CircleSize = circleSize,
@@ -642,6 +647,8 @@
                     PokemonIds = pokemonIds,
                     Timezone = timezone,
                     FastBootstrapMode = fastBootstrapMode,
+                    AccountGroup = accountGroup,
+                    IsEvent = isEvent,
                 };
                 await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
                 await InstanceController.Instance.ReloadInstance(instance, name).ConfigureAwait(false);

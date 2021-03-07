@@ -11,9 +11,6 @@
         [JsonPropertyName("circle_route_type")]
         public CircleRouteType CircleRouteType { get; set; }
 
-        [JsonPropertyName("is_event")]
-        public bool IsEvent { get; set; }
-
         [JsonPropertyName("min_level")]
         public ushort MinimumLevel { get; set; }
 
@@ -41,15 +38,15 @@
         [JsonPropertyName("fast_bootstrap_mode")]
         public bool FastBootstrapMode { get; set; }
 
-        //[JsonPropertyName("account_group")]
-        //public string AccountGroup { get; set; }
+        [JsonPropertyName("account_group")]
+        public string AccountGroup { get; set; }
+
+        [JsonPropertyName("is_event")]
+        public bool IsEvent { get; set; }
 
         [JsonPropertyName("quest_retry_limit")]
-        public ushort QuestRetryLimit { get; set; }
+        public byte? QuestRetryLimit { get; set; }
 
-        // radius
-        // store_data
-        // delay_logout (GD crap?)
         public InstanceData()
         {
             CircleRouteType = CircleRouteType.Default;

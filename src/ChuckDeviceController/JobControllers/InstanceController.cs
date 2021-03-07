@@ -158,10 +158,10 @@
                         switch (instance.Type)
                         {
                             case InstanceType.CirclePokemon:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Pokemon, instance.Data.CircleRouteType, minLevel, maxLevel);
+                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Pokemon, instance.Data.CircleRouteType, minLevel, maxLevel, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.CircleRaid:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Raid, CircleRouteType.Default, minLevel, maxLevel);
+                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Raid, CircleRouteType.Default, minLevel, maxLevel, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.SmartCircleRaid:
                                 // TODO: SmartCircleRaidInstanceController
@@ -226,20 +226,21 @@
                                     }
                                 }
                                 var spinLimit = instance.Data.SpinLimit ?? 3500;
-                                instanceController = new AutoInstanceController(instance.Name, areaArrayEmptyInner, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit);
+                                var retryLimit = instance.Data.QuestRetryLimit ?? 5;
+                                instanceController = new AutoInstanceController(instance.Name, areaArrayEmptyInner, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit, retryLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.PokemonIV:
                                 var pokemonList = instance.Data.PokemonIds;
                                 var ivQueueLimit = instance.Data.IVQueueLimit ?? 100;
-                                instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, pokemonList, minLevel, maxLevel, ivQueueLimit);
+                                instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, pokemonList, minLevel, maxLevel, ivQueueLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.Bootstrap:
                                 var circleSize = instance.Data.CircleSize ?? 70;
                                 var fastBootstrapMode = instance.Data.FastBootstrapMode;
-                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize, fastBootstrapMode);
+                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize, fastBootstrapMode, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.FindTTH:
-                                instanceController = new SpawnpointFinderInstanceController(instance.Name, coordsArray, minLevel, maxLevel);
+                                instanceController = new SpawnpointFinderInstanceController(instance.Name, coordsArray, minLevel, maxLevel, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                         }
                     }

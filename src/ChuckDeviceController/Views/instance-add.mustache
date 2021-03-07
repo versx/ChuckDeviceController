@@ -142,6 +142,13 @@
                 Circle Size (meters, i.e `70, 500, 750, etc`)
                 <input type="number" class="form-control" name="circle_size" value="{{circle_size}}" step="1" min="5" max="1000">
             </div>
+            <div class="form-group">
+                Account Group
+                <input type="text" class="form-control" name="account_group" value="{{account_group}}" maxlength="50">
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="is_event" value="true" {{#is_event}} checked{{/is_event}}> Is Unique Event</label>
+            </div>
             <div class="form-check bootstrap_text {{^bootstrap_selected}}d-none{{/bootstrap_selected}}">
                 <input type="checkbox" class="form-check-input" name="fast_bootstrap_mode" checked>
                 <label class="form-check-label" for="fast_bootstrap_mode">Fast Bootstrap Mode (5 vs 10 seconds load time)</label>
