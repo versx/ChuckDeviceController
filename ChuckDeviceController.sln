@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController", "src\ChuckDeviceController.csproj", "{500922A4-9CA2-4CAC-B9A4-6EF7004FD9AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController", "src\ChuckDeviceController\ChuckDeviceController.csproj", "{500922A4-9CA2-4CAC-B9A4-6EF7004FD9AA}"
 EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{3F9BB9B6-49B6-4B14-A97C-37B3C1B88015}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataConsumer", "src\DataConsumer\DataConsumer.csproj", "{3C8DB8CD-8835-4397-BA53-C8ED48B59904}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebhookProcessor", "src\WebhookProcessor\WebhookProcessor.csproj", "{A5308B7A-9B88-4411-BC2E-E438846681B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Infrastructure", "src\Chuck.Infrastructure\Chuck.Infrastructure.csproj", "{E461AC4F-F4EF-436F-92C2-96EEE280ABBF}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker\docker-compose.dcproj", "{3F9BB9B6-49B6-4B14-A97C-37B3C1B88015}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +23,6 @@ Global
 		{500922A4-9CA2-4CAC-B9A4-6EF7004FD9AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{500922A4-9CA2-4CAC-B9A4-6EF7004FD9AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{500922A4-9CA2-4CAC-B9A4-6EF7004FD9AA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F9BB9B6-49B6-4B14-A97C-37B3C1B88015}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F9BB9B6-49B6-4B14-A97C-37B3C1B88015}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F9BB9B6-49B6-4B14-A97C-37B3C1B88015}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F9BB9B6-49B6-4B14-A97C-37B3C1B88015}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
