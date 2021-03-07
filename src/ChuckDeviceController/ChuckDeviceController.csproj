@@ -30,6 +30,7 @@
     <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon>chuck.png</PackageIcon>
+    <DockerfileContext>..\..</DockerfileContext>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
