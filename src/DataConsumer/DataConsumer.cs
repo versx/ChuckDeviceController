@@ -22,8 +22,6 @@
 
     // TODO: Load all gyms/stops/cells/spawnpoints from mysql to redis
     // TODO: Flush redis database of expired Pokemon
-    // TODO: Change table `pokemon`.`id` type to ulong instead of string
-    // TODO: Check if still connected to redis, if not, reconnect
 
     class DataConsumer
     {
@@ -435,10 +433,25 @@
                                     var oldPokestop = await GetEntity<Pokestop>(fort.FortId, "pokestop");
                                     var pokestop = new Pokestop(cellId, fort);
                                     //if (pokestop.Update(oldPokestop)) // TODO: Check HasChanges property
-                                    pokestop.Update(oldPokestop);
+                                    var result = pokestop.Update(oldPokestop);
+                                    if (result.SendPokestop)
                                     {
-                                        // TODO: Check for lure/invasion etc
                                         await PublishData(RedisChannels.WebhookPokestop, pokestop.GetWebhookValues("pokestop"));
+                                    }
+                                    if (result.SendLure)
+                                    {
+                                        await PublishData(RedisChannels.WebhookLure, pokestop.GetWebhookValues("lure"));
+                                    }
+                                    if (result.SendQuest)
+                                    {
+                                        await PublishData(RedisChannels.WebhookQuest, pokestop.GetWebhookValues("quest"));
+                                    }
+                                    if (result.SendInvasion)
+                                    {
+                                        await PublishData(RedisChannels.WebhookInvasion, pokestop.GetWebhookValues("invasion"));
+                                    }
+                                    if (result.IsNewOrHasChanges)
+                                    {
                                         lock (_pokestopsLock)
                                         {
                                             _pokestops.Add(pokestop);

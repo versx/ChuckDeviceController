@@ -17,6 +17,8 @@
     {
         public const uint LureTime = 1800;
 
+        #region Properties
+
         [
             Column("id"),
             Key,
@@ -192,6 +194,10 @@
         ]
         public bool HasQuestChanges { get; set; }
 
+        #endregion
+
+        #region Constructors
+
         public Pokestop()
         {
         }
@@ -244,12 +250,14 @@
             }
         }
 
-        public bool Update(Pokestop oldPokestop = null, bool updateQuest = false)
+        #endregion
+
+        public PokestopResult Update(Pokestop oldPokestop = null, bool updateQuest = false)
         {
             // TODO: Return struct of update type to send webhook if quest/lure/invasion etc should be sent
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
-            var result = false;
+            var result = new PokestopResult();
             if (oldPokestop != null)
             {
                 if (oldPokestop.CellId > 0 && CellId == 0)
@@ -279,43 +287,47 @@
                 }
                 if (!ShouldUpdate(oldPokestop, this))
                 {
-                    return false;
+                    return result;
                 }
                 if ((oldPokestop.LureExpireTimestamp ?? 0) < (LureExpireTimestamp ?? 0))
                 {
                     // WebhookController.Instance.AddLure(this);
-                    result = true;
+                    result.IsNewOrHasChanges = true;
+                    result.SendLure = true;
                 }
                 if ((oldPokestop.IncidentExpireTimestamp ?? 0) < (IncidentExpireTimestamp ?? 0))
                 {
                     // WebhookController.Instance.AddInvasion(this);
-                    result = true;
+                    result.IsNewOrHasChanges = true;
+                    result.SendInvasion = true;
                 }
                 if (updateQuest && (QuestTimestamp ?? 0) > (oldPokestop.QuestTimestamp ?? 0))
                 {
                     // WebhookController.Instance.AddQuest(this);
-                    result = true;
+                    result.IsNewOrHasChanges = true;
+                    result.SendQuest = true;
                 }
             }
 
             if (oldPokestop == null)
             {
                 // WebhookController.Instance.AddPokestop(this);
-                result = true;
+                result.IsNewOrHasChanges = true;
+                result.SendPokestop = true;
                 if (LureExpireTimestamp > 0)
                 {
                     // WebhookController.Instance.AddLure(this);
-                    result = true;
+                    result.SendLure = true;
                 }
                 if (QuestTimestamp > 0)
                 {
                     // WebhookController.Instance.AddQuest(this);
-                    result = true;
+                    result.SendQuest = true;
                 }
                 if (IncidentExpireTimestamp > 0)
                 {
                     // WebhookController.Instance.AddInvasion(this);
-                    result = true;
+                    result.SendInvasion = true;
                 }
             }
             else
@@ -323,18 +335,21 @@
                 if (oldPokestop.LureExpireTimestamp < LureExpireTimestamp)
                 {
                     // WebhookController.Instance.AddLure(this);
-                    result = true;
+                    result.IsNewOrHasChanges = true;
+                    result.SendLure = true;
                 }
                 if (oldPokestop.IncidentExpireTimestamp < IncidentExpireTimestamp)
                 {
                     // WebhookController.Instance.AddInvasion(this);
-                    result = true;
+                    result.IsNewOrHasChanges = true;
+                    result.SendInvasion = true;
                 }
                 if (updateQuest && (HasQuestChanges || QuestTimestamp > oldPokestop.QuestTimestamp))
                 {
                     HasQuestChanges = false;
                     // WebhookController.Instance.AddQuest(this);
-                    result = true;
+                    result.IsNewOrHasChanges = true;
+                    result.SendQuest = true;
                 }
             }
             return result;
@@ -618,5 +633,18 @@
                 Math.Abs(oldPokestop.Latitude - newPokestop.Latitude) >= 0.000001 ||
                 Math.Abs(oldPokestop.Longitude - newPokestop.Longitude) >= 0.000001;
         }
+    }
+
+    public class PokestopResult
+    {
+        public bool IsNewOrHasChanges { get; set; }
+
+        public bool SendLure { get; set; }
+
+        public bool SendQuest { get; set; }
+
+        public bool SendInvasion { get; set; }
+
+        public bool SendPokestop { get; set; }
     }
 }
