@@ -251,7 +251,7 @@
                             var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
                             //var pokemon = Pokemon.ParseFromWild(wildPokemon, spawnpoint);
                             //pokemon.Username = username;
-                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
+                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id.ToString(), "pokemon").ConfigureAwait(false);
                             var changesResult = pokemon.Update(oldPokemon);
                             if (changesResult.IsNewOrHasChanges)
                             {
@@ -315,7 +315,7 @@
                             }
                             pokemon.Latitude = pokestop.Latitude;
                             pokemon.Longitude = pokestop.Longitude;
-                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
+                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id.ToString(), "pokemon").ConfigureAwait(false);
                             var changesResult = pokemon.Update(oldPokemon);
                             if (changesResult.IsNewOrHasChanges)
                             {
@@ -592,7 +592,7 @@
                                 account.FailedTimestamp = now;
                                 ConsoleExt.WriteWarn($"[ConsumerService] Account {account.Username}|{playerData.Player.Player.Name} - Banned: {playerData.Player.Banned}");
                             }
-                            // TODO: Webhooks
+                            // TODO: Send account webhooks
                             _playerData.Add(account);
                             break;
                         }

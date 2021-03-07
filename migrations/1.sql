@@ -271,7 +271,7 @@ CREATE TABLE `spawnpoint` (
 );
 
 CREATE TABLE `pokemon` (
-   `id` varchar(25) NOT NULL,
+   `id` bigint(30) unsigned NOT NULL,
    `pokestop_id` varchar(35) DEFAULT NULL,
    `spawn_id` bigint(15) unsigned DEFAULT NULL,
    `lat` double(18,14) NOT NULL,

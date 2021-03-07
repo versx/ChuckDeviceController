@@ -39,7 +39,7 @@
             DatabaseGenerated(DatabaseGeneratedOption.None),
             JsonPropertyName("id"),
         ]
-        public string Id { get; set; }
+        public ulong Id { get; set; }
 
         [
             Column("pokestop_id"),
@@ -280,7 +280,7 @@
         public Pokemon(WildPokemonProto wildPokemon, ulong cellId, ulong timestampMs, string username, bool isEvent) : this()
         {
             IsEvent = isEvent;
-            Id = wildPokemon.EncounterId.ToString();
+            Id = wildPokemon.EncounterId;
             PokemonId = (uint)wildPokemon.Pokemon.PokemonId;
             Latitude = wildPokemon.Latitude;
             Longitude = wildPokemon.Longitude;
@@ -325,7 +325,7 @@
         public Pokemon(NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent) : this()
         {
             IsEvent = isEvent;
-            Id = nearbyPokemon.EncounterId.ToString();
+            Id = nearbyPokemon.EncounterId;
             PokemonId = (uint)nearbyPokemon.PokedexNumber;
             PokestopId = nearbyPokemon.FortId;
              Gender = (ushort)nearbyPokemon.PokemonDisplay.Gender;
