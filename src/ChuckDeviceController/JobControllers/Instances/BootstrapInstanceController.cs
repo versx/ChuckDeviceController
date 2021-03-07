@@ -6,11 +6,10 @@
 
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.Data.Entities;
     using Chuck.Infrastructure.JobControllers;
     using Chuck.Infrastructure.JobControllers.Tasks;
+    using Chuck.Infrastructure.Geofence.Models;
     using ChuckDeviceController.Services.Routes;
-    using Geofence = Chuck.Infrastructure.Geofence.Models.Geofence;
 
     public class BootstrapInstanceController : IJobController
     {

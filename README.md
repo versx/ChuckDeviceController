@@ -22,15 +22,46 @@ There are 3 parts to it:
 - WebhookProcessor controls and filters webhooks and where to send newly updated events (Pokemon, Raids, etc).
 
 ## Installation
+### Requirements
 1. Install [Redis](https://redis.io/topics/quickstart)  
-1. Start Redis  
+```
+From Source:
+wget http://download.redis.io/redis-stable.tar.gz
+tar xvzf redis-stable.tar.gz
+cd redis-stable
+make
+src/redis-server
+
+From Ubuntu PPA:
+sudo add-apt-repository ppa:redislabs/redis
+sudo apt-get update
+sudo apt-get install redis
+```
 1. Install [.NET 5 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)  
+```
+Ubuntu:
+wget https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+sudo apt-get update
+sudo apt-get install -y apt-transport-https
+sudo apt-get update
+sudo apt-get install -y dotnet-sdk-5.0
+
+Windows:
+https://download.visualstudio.microsoft.com/download/pr/a105fe06-20a0-4233-8ff1-b85523b40f1d/5f26654016c41ab2dc6d8bc850a9bf4c/dotnet-sdk-5.0.200-win-x64.exe
+
+macOS:
+https://download.visualstudio.microsoft.com/download/pr/a06c387d-2811-4fba-8b5f-86cb9f0bdeba/f41d1c63c5b6bcee9293484e845bc518/dotnet-sdk-5.0.200-osx-x64.pkg
+```
+### ChuckDeviceController
 1. Clone repository `git clone https://github.com/versx/ChuckDeviceController`  
-1. Copy config `cp config.example.json` `config.json`  
+1. Copy config `cp config.example.json` `bin/config.json`  
 1. Fill out `config.json`  
 1. Build project from root folder `~/.dotnet/dotnet build`  
-1. Run from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
-1. Visit Dashboard at `http://LAN_MACHINE_IP:5001`
+1. Run ChuckDeviceController from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
+1. Run WebhookProcessor from `bin/` folder `~/.dotnet/dotnet WebhookProcessor.dll`  
+1. Run DataConsumer from `bin/` folder `~/.dotnet/dotnet DataConsumer.dll`  
+1. Visit Dashboard at `http://LAN_MACHINE_IP:5001`  
 
 View all available API routes:  
 `http://LAN_MACHINE_IP:port/swagger`  
@@ -66,6 +97,6 @@ View profiler results:
         "password": "",
         "databaseNum": -1,
         "queueName": "cdc"
-	}
+    }
 }
 ```

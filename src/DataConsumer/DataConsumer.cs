@@ -5,7 +5,6 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Text.Json;
-    using System.Text.Json.Serialization;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -20,10 +19,10 @@
     using Chuck.Infrastructure.Data.Repositories;
     using Chuck.Infrastructure.Extensions;
 
+    using Models;
+
     // TODO: Load all gyms/stops/cells/spawnpoints from mysql to redis
     // TODO: Flush redis database of expired Pokemon
-    // TODO: Change table `pokemon`.`id` type to ulong instead of string
-    // TODO: Check if still connected to redis, if not, reconnect
 
     class DataConsumer
     {
@@ -72,7 +71,11 @@
 
         #endregion
 
+        #region Properties
+
         public ushort ConsumeIntervalS { get; set; }
+
+        #endregion
 
         #region Constructor
 
@@ -178,16 +181,14 @@
             ConsoleExt.WriteInfo($"[DataConsumer] Started");
 
             // Publish available webhooks to redis event
-            using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+            try
             {
-                try
-                {
-                    PublishData(RedisChannels.WebhookReload, ctx.Webhooks.ToList());
-                }
-                catch (MySqlConnector.MySqlException ex)
-                {
-                    ConsoleExt.WriteError($"[DataConsumer] UpdateSpawnpoints: {ex.Message}");
-                }
+                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString());
+                PublishData(RedisChannels.WebhookReload, ctx.Webhooks.ToList());
+            }
+            catch (MySqlConnector.MySqlException ex)
+            {
+                ConsoleExt.WriteError($"[DataConsumer] UpdateSpawnpoints: {ex.Message}");
             }
         }
 
@@ -198,6 +199,8 @@
         }
 
         #endregion
+
+        #region Queue Handler
 
         private void StartQueueListener()
         {
@@ -253,7 +256,7 @@
                             var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
                             //var pokemon = Pokemon.ParseFromWild(wildPokemon, spawnpoint);
                             //pokemon.Username = username;
-                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
+                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id.ToString(), "pokemon").ConfigureAwait(false);
                             var changesResult = pokemon.Update(oldPokemon);
                             if (changesResult.IsNewOrHasChanges)
                             {
@@ -317,7 +320,7 @@
                             }
                             pokemon.Latitude = pokestop.Latitude;
                             pokemon.Longitude = pokestop.Longitude;
-                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
+                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id.ToString(), "pokemon").ConfigureAwait(false);
                             var changesResult = pokemon.Update(oldPokemon);
                             if (changesResult.IsNewOrHasChanges)
                             {
@@ -380,7 +383,6 @@
                             {
                                 var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude));
                                 var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
-                                //pokemon = Pokemon.ParseFromEncounter(encounter.Pokemon, spawnpoint);
                                 pokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
                                 pokemon.AddEncounter(encounter, username)
                                           .ConfigureAwait(false)
@@ -411,10 +413,10 @@
                                 case FortType.Gym:
                                     var oldGym = await GetEntity<Gym>(fort.FortId, "gym");
                                     var gym = new Gym(cellId, fort);
-                                    //if (gym.Update(oldGym)) // TODO: Check HasChanges property
-                                    gym.Update(oldGym);
+                                    var gymResult = gym.Update(oldGym);
+                                    await PublishGym(gymResult, gym);
+                                    if (gymResult.IsNewOrHasChanges)
                                     {
-                                        await PublishData(RedisChannels.WebhookGym, gym.GetWebhookValues("gym"));
                                         lock (_gymsLock)
                                         {
                                             _gyms.Add(gym);
@@ -436,11 +438,10 @@
                                 case FortType.Checkpoint:
                                     var oldPokestop = await GetEntity<Pokestop>(fort.FortId, "pokestop");
                                     var pokestop = new Pokestop(cellId, fort);
-                                    //if (pokestop.Update(oldPokestop)) // TODO: Check HasChanges property
-                                    pokestop.Update(oldPokestop);
+                                    var stopResult = pokestop.Update(oldPokestop);
+                                    await PublishPokestop(stopResult, pokestop);
+                                    if (stopResult.IsNewOrHasChanges)
                                     {
-                                        // TODO: Check for lure/invasion etc
-                                        await PublishData(RedisChannels.WebhookPokestop, pokestop.GetWebhookValues("pokestop"));
                                         lock (_pokestopsLock)
                                         {
                                             _pokestops.Add(pokestop);
@@ -594,7 +595,7 @@
                                 account.FailedTimestamp = now;
                                 ConsoleExt.WriteWarn($"[ConsumerService] Account {account.Username}|{playerData.Player.Player.Name} - Banned: {playerData.Player.Banned}");
                             }
-                            // TODO: Webhooks
+                            // TODO: Send account webhooks
                             _playerData.Add(account);
                             break;
                         }
@@ -606,6 +607,8 @@
             }
         }
 
+        #endregion
+
         #region Database Ingesters
 
         private void DataIngester()
@@ -615,12 +618,10 @@
             {
                 while (!_shouldExit)
                 {
-                    //BenchmarkMethod(() => UpdateCells(), "S2Cells");
                     UpdateCells();
                     var updatePokemon = true;
                     try
                     {
-                        //BenchmarkMethod(() => UpdateSpawnpoints(), "Spawnpoints");
                         UpdateSpawnpoints();
                     }
                     catch (Exception ex)
@@ -628,19 +629,14 @@
                         updatePokemon = false;
                         ConsoleExt.WriteError($"Failed to update spawnpoints, skipping Pokemon: {ex}");
                     }
-                    //BenchmarkMethod(() => UpdateWeather(), "Weather");
-                    //BenchmarkMethod(() => UpdatePokestops(), "Pokestops");
                     UpdateWeather();
                     UpdatePokestops();
                     if (updatePokemon)
                     {
-                        //BenchmarkMethod(() => UpdatePokemon(), "Pokemon");
                         UpdatePokemon();
                     }
                     UpdateQuests();
-                    //BenchmarkMethod(() => UpdateGyms(), "Gyms");
                     UpdateGyms();
-                    // TODO: UpdateGymInfo
                     UpdateGymTrainers();
                     UpdateGymDefenders();
                     UpdateAccounts();
@@ -1037,10 +1033,8 @@
             if (oldEntity == null)
             {
                 // Entity does not exist in redis database cache, get from sql database
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
-                {
-                    oldEntity = await ctx.Set<T>().FindAsync(new object[] { id }).ConfigureAwait(false);
-                }
+                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString());
+                oldEntity = await ctx.Set<T>().FindAsync(new object[] { id }).ConfigureAwait(false);
             }
             return oldEntity;
         }
@@ -1069,9 +1063,46 @@
 
         #endregion
 
-        private static S2CellId S2CellIdFromLatLng(double latitude, double longitude)
+        #region Redis Event Publishing
+
+        private async Task PublishGym(GymResult result, Gym gym)
         {
-            return S2CellId.FromLatLng(S2LatLng.FromDegrees(latitude, longitude));
+            if (result.SendGym)
+            {
+                await PublishData(RedisChannels.WebhookGym, gym.GetWebhookValues("gym"));
+            }
+            if (result.SendGymInfo)
+            {
+                // TODO: await PublishData(RedisChannels.WebhookGymInfo, gym.GetWebhookValues("gym-info"));
+            }
+            if (result.SendRaid)
+            {
+                await PublishData(RedisChannels.WebhookRaid, gym.GetWebhookValues("raid"));
+            }
+            if (result.SendEgg)
+            {
+                await PublishData(RedisChannels.WebhookEgg, gym.GetWebhookValues("egg"));
+            }
+        }
+
+        private async Task PublishPokestop(PokestopResult result, Pokestop pokestop)
+        {
+            if (result.SendPokestop)
+            {
+                await PublishData(RedisChannels.WebhookPokestop, pokestop.GetWebhookValues("pokestop"));
+            }
+            if (result.SendLure)
+            {
+                await PublishData(RedisChannels.WebhookLure, pokestop.GetWebhookValues("lure"));
+            }
+            if (result.SendQuest)
+            {
+                await PublishData(RedisChannels.WebhookQuest, pokestop.GetWebhookValues("quest"));
+            }
+            if (result.SendInvasion)
+            {
+                await PublishData(RedisChannels.WebhookInvasion, pokestop.GetWebhookValues("invasion"));
+            }
         }
 
         private Task PublishData<T>(string channel, T data)
@@ -1091,55 +1122,11 @@
             return Task.CompletedTask;
         }
 
-        private static void BenchmarkMethod(Func<int> method, string type)
+        #endregion
+
+        private static S2CellId S2CellIdFromLatLng(double latitude, double longitude)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            var count = method();
-            stopwatch.Stop();
-            if (count > 0)
-            {
-                ConsoleExt.WriteInfo($"[DataConsumer] {type} Count: {count:N0} parsed in {stopwatch.Elapsed.TotalSeconds}s");
-            }
+            return S2CellId.FromLatLng(S2LatLng.FromDegrees(latitude, longitude));
         }
-    }
-
-    public class PokemonFound<T>
-    {
-        [JsonPropertyName("cell")]
-        public ulong CellId { get; set; }
-
-        [JsonPropertyName("data")]
-        public T Pokemon { get; set; }
-
-        [JsonPropertyName("timestamp_ms")]
-        public ulong TimestampMs { get; set; }
-
-        [JsonPropertyName("username")]
-        public string Username { get; set; }
-    }
-
-    public class FortFound
-    {
-        [JsonPropertyName("cell")]
-        public ulong CellId { get; set; }
-
-        [JsonPropertyName("data")]
-        public PokemonFortProto Fort { get; set; }
-    }
-
-    public class QuestFound
-    {
-        [JsonPropertyName("raw")]
-        public string Raw { get; set; }
-    }
-
-    public class AccountFound
-    {
-        [JsonPropertyName("gpr")]
-        public GetPlayerOutProto Player { get; set; }
-
-        [JsonPropertyName("username")]
-        public string Username { get; set; }
     }
 }

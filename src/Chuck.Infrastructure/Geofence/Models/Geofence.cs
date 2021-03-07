@@ -7,7 +7,6 @@
     using NetTopologySuite.Features;
     using NetTopologySuite.Geometries;
 
-    using Coordinate = Chuck.Infrastructure.Data.Entities.Coordinate;
     using Chuck.Infrastructure.Utilities;
 
     public class Geofence

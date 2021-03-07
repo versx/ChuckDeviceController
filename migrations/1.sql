@@ -18,6 +18,7 @@ CREATE TABLE `account` (
    `was_suspended` tinyint(1) unsigned DEFAULT NULL,
    `banned` tinyint(1) unsigned DEFAULT NULL,
    `last_used_timestamp` int(11) unsigned DEFAULT NULL,
+   `group` VARCHAR(50) DEFAULT NULL
    PRIMARY KEY (`username`)
 );
 
@@ -37,13 +38,31 @@ CREATE TABLE `geofence` (
    UNIQUE KEY `name` (`name`)
 );
 
+CREATE TABLE `webhook` (
+   `name` varchar(30) NOT NULL,
+   `url` varchar(255) NOT NULL,
+   `delay` double DEFAULT 5,
+   `types` longtext DEFAULT NULL,
+   `geofence` varchar(255) DEFAULT NULL,
+   `enabled` tinyint(1) unsigned DEFAULT 1,
+   PRIMARY KEY `name` (`name`),
+   CONSTRAINT `fk_webhook_geofence_name` FOREIGN KEY (`geofence`) REFERENCES `geofence` (`name`) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
 CREATE TABLE `instance` (
    `name` varchar(30) NOT NULL,
-   `type` enum('circle_pokemon','circle_raid','circle_smart_raid','auto_quest','pokemon_iv','bootstrap') NOT NULL,
+   `type` enum('circle_pokemon','circle_raid','circle_smart_raid','auto_quest','pokemon_iv','bootstrap','find_tth') NOT NULL,
    `geofence` varchar(30) DEFAULT NULL,
    `data` longtext NOT NULL,
    PRIMARY KEY (`name`),
    CONSTRAINT `fk_geofence_name` FOREIGN KEY (`geofence`) REFERENCES `geofence` (`name`) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE TABLE `device_group` (
+   `name` varchar(30) NOT NULL,
+   `device_uuids` longtext NOT NULL,
+   PRIMARY KEY (`name`),
+   UNIQUE KEY `name` (`name`)
 );
 
 CREATE TABLE `device` (
@@ -62,20 +81,22 @@ CREATE TABLE `device` (
 );
 
 CREATE TABLE `assignment` (
-   `device_uuid` varchar(30) DEFAULT NULL,
-   `instance_name` varchar(30) NOT NULL,
-   `time` mediumint(6) unsigned NOT NULL,
-   `enabled` tinyint(1) unsigned NOT NULL DEFAULT 1,
    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+   `device_uuid` varchar(40) DEFAULT NULL,
+   `device_group_name` varchar(30) DEFAULT NULL,
+   `instance_name` varchar(30) NOT NULL,
    `source_instance_name` varchar(30) DEFAULT NULL,
+   `time` mediumint(6) unsigned NOT NULL,
    `date` date DEFAULT NULL,
+   `enabled` tinyint(1) unsigned NOT NULL DEFAULT 1,
    PRIMARY KEY (`id`),
-   UNIQUE KEY `assignment_unique` (`device_uuid`,`instance_name`,`time`,`date`),
+   UNIQUE KEY assignment_unique (`device_uuid`,`device_group_name`,`instance_name`,`time`,`date`),
    KEY `assignment_fk_instance_name` (`instance_name`),
    KEY `assignment_fk_source_instance_name` (`source_instance_name`),
-   CONSTRAINT `assignment_fk_device_uuid` FOREIGN KEY (`device_uuid`) REFERENCES `device` (`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
    CONSTRAINT `assignment_fk_instance_name` FOREIGN KEY (`instance_name`) REFERENCES `instance` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
-   CONSTRAINT `assignment_fk_source_instance_name` FOREIGN KEY (`source_instance_name`) REFERENCES `instance` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
+   CONSTRAINT `assignment_fk_source_instance_name` FOREIGN KEY (`source_instance_name`) REFERENCES `instance` (`name`) ON DELETE CASCADE ON UPDATE CASCADE,
+   CONSTRAINT `assignment_fk_device_uuid` FOREIGN KEY (`device_uuid`) REFERENCES `device`(`uuid`) ON DELETE CASCADE ON UPDATE CASCADE,
+   CONSTRAINT `assignment_fk_source_device_group_name` FOREIGN KEY (`device_group_name`) REFERENCES `device_group`(`name`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -209,7 +230,7 @@ CREATE TABLE `trainer` (
 );
 
 CREATE TABLE `gym_defender` (
-   `id` varchar(64) NOT NULL,
+   `id` bigint(30) unsigned NOT NULL,
    `pokemon_id` smallint(6) NOT NULL,
    `cp_when_deployed` smallint(6) DEFAULT 0,
    `cp_now` smallint(6) DEFAULT 0,
@@ -242,6 +263,7 @@ CREATE TABLE `spawnpoint` (
    `lat` double(18,14) NOT NULL,
    `lon` double(18,14) NOT NULL,
    `updated` int(11) unsigned NOT NULL DEFAULT 0,
+   `first_seen_timestamp` int(11) unsigned NOT NULL DEFAULT 0;
    `despawn_sec` smallint(6) unsigned DEFAULT NULL,
    PRIMARY KEY (`id`),
    KEY `ix_coords` (`lat`,`lon`),
@@ -249,7 +271,7 @@ CREATE TABLE `spawnpoint` (
 );
 
 CREATE TABLE `pokemon` (
-   `id` varchar(25) NOT NULL,
+   `id` bigint(30) unsigned NOT NULL,
    `pokestop_id` varchar(35) DEFAULT NULL,
    `spawn_id` bigint(15) unsigned DEFAULT NULL,
    `lat` double(18,14) NOT NULL,
@@ -285,7 +307,7 @@ CREATE TABLE `pokemon` (
    `pvp_rankings_great_league` text DEFAULT NULL,
    `pvp_rankings_ultra_league` text DEFAULT NULL,
    `is_event` tinyint(1) unsigned NOT NULL DEFAULT 0,
-   PRIMARY KEY (`id`),
+   PRIMARY KEY (id, is_event);
    KEY `ix_coords` (`lat`,`lon`),
    KEY `ix_pokemon_id` (`pokemon_id`),
    KEY `ix_updated` (`updated`),

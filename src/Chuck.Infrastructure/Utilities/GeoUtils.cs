@@ -7,7 +7,7 @@
     using NetTopologySuite.Features;
     using NetTopologySuite.Geometries;
 
-    using Coordinate = Chuck.Infrastructure.Data.Entities.Coordinate;
+    using Coordinate = Chuck.Infrastructure.Geofence.Models.Coordinate;
 
     public static class GeoUtils
     {

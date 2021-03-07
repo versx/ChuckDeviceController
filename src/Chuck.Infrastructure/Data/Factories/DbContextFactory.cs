@@ -23,9 +23,10 @@
             }
             catch (Exception ex)
             {
-                ConsoleExt.WriteError($"[RawSql] Result: {ex}");
-                return null;
+                ConsoleExt.WriteError($"[RawSql] Result: {ex.Message}");
+                Environment.Exit(0);
             }
+            return null;
         }
 
         public static ValueConverter<T, string> CreateJsonValueConverter<T>()

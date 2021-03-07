@@ -16,6 +16,7 @@
     using Chuck.Infrastructure.Geofence.Models;
     using Chuck.Infrastructure.JobControllers;
     using ChuckDeviceController.JobControllers.Instances;
+    using ChuckDeviceController.Services;
 
     using Geofence = Chuck.Infrastructure.Data.Entities.Geofence;
 
@@ -215,13 +216,12 @@
                                 var timezoneOffset = 0;
                                 if (!string.IsNullOrEmpty(timezone))
                                 {
-                                    var tz = Data.GameMaster.Instance.Timezones.ContainsKey(timezone) ? Data.GameMaster.Instance.Timezones[timezone] : null;
+                                    var tz = TimeZoneService.Instance.Timezones.ContainsKey(timezone) ? TimeZoneService.Instance.Timezones[timezone] : null;
                                     if (tz != null)
                                     {
-                                        var tzData = Data.GameMaster.Instance.Timezones[timezone];
-                                        // TODO: Check if dts is enabled
-                                        timezoneOffset = false
-                                            ? tzData.Dts * 3600
+                                        var tzData = TimeZoneService.Instance.Timezones[timezone];
+                                        timezoneOffset = instance.Data.EnableDst
+                                            ? tzData.Dst * 3600
                                             : tzData.Utc * 3600;
                                     }
                                 }

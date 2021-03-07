@@ -145,11 +145,12 @@ namespace ChuckDeviceController
 
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ChuckDeviceController v1"));
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{Strings.AppName} v1"));
 
-            //app.UseRequestResponseLogging();
-
-            app.UseMiniProfiler();
+            if (Config.EnableProfiler)
+            {
+                app.UseMiniProfiler();
+            }
 
             //app.UseHttpsRedirection();
             app.UseDefaultFiles();

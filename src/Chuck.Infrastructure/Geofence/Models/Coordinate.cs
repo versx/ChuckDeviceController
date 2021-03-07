@@ -1,8 +1,7 @@
-﻿namespace Chuck.Infrastructure.Data.Entities
+﻿namespace Chuck.Infrastructure.Geofence.Models
 {
     using System.Text.Json.Serialization;
 
-    // TODO: Move to Geofence.Models namespace
     public class Coordinate
     {
         [JsonPropertyName("lat")]

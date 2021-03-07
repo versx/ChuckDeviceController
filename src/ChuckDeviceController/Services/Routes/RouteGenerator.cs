@@ -8,12 +8,12 @@
     using Google.Common.Geometry;
     using NetTopologySuite.Geometries;
 
-    using Coordinate = Chuck.Infrastructure.Data.Entities.Coordinate;
     using Chuck.Infrastructure.Data.Factories;
     using Chuck.Infrastructure.Data.Repositories;
     using Chuck.Infrastructure.Extensions;
-    using Chuck.Infrastructure.Geofence.Models;
     using Chuck.Infrastructure.Geofence;
+    using Chuck.Infrastructure.Geofence.Models;
+    using Coordinate = Chuck.Infrastructure.Geofence.Models.Coordinate;
 
     public class RouteGenerator
     {
