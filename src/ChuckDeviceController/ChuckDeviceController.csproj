@@ -18,7 +18,7 @@
   <PropertyGroup>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <ApplicationIcon>Ressources\chuck.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\chuck.ico</ApplicationIcon>
     <Authors>versx's Projects</Authors>
     <Description />
     <Copyright>Copyright © 2021</Copyright>
@@ -34,13 +34,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Handlebars.Net" Version="2.0.4" />
+    <PackageReference Include="Handlebars.Net" Version="2.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.4.0" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.2.22" />
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.2.22" />
     <PackageReference Include="NetTopologySuite" Version="2.1.0" />
@@ -49,8 +48,8 @@
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-alpha.2" />
     <PackageReference Include="S2Geometry" Version="1.0.3" />
     <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.7" />
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="5.1.21" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.0" />
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="5.1.22" />
     <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.1.19" />
   </ItemGroup>
 

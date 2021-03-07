@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace Chuck.Infrastructure.Pvp
 {
     using System;
     using System.Collections.Generic;
@@ -7,9 +7,8 @@
     using Microsoft.Extensions.Caching.Memory;
     using POGOProtos.Rpc;
 
+    using Chuck.Infrastructure.Cache;
     using Chuck.Infrastructure.Data.Entities;
-    using ChuckDeviceController.Cache;
-    using ChuckDeviceController.Data;
 
     /// <summary>
     /// PvpRankCalculator

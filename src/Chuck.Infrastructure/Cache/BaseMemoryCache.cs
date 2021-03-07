@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Cache
+﻿namespace Chuck.Infrastructure.Cache
 {
     using Microsoft.Extensions.Caching.Memory;
 
@@ -6,7 +6,7 @@
     {
         public MemoryCache Cache { get; }
 
-        public BaseMemoryCache(long sizeLimit = 1024)
+        public BaseMemoryCache(long sizeLimit = 8192)
         {
             Cache = new MemoryCache(new MemoryCacheOptions
             {

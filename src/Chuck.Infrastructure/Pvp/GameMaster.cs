@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Data
+﻿namespace Chuck.Infrastructure.Pvp
 {
     using System;
     using System.Collections.Generic;
@@ -14,9 +14,6 @@
 
     public class GameMaster
     {
-        //private const string CpMultipliersFileName = "cp_multipliers.json";
-        private const string TimezonesFileName = "timezones.json";
-
         private const string LatestGameMasterUrl = "https://raw.githubusercontent.com/WatWowMap/Masterfile-Generator/master/master-latest.json";
 
         #region Singleton
@@ -167,20 +164,7 @@
             { 55, 0.865299999713897 }
         };
 
-        [JsonIgnore]
-        public IReadOnlyDictionary<string, TimezoneOffsetData> Timezones { get; set; }
-
         #endregion
-
-        public GameMaster()
-        {
-            Timezones = LoadInit<Dictionary<string, TimezoneOffsetData>>(
-                Path.Combine(
-                    Strings.DataFolder,
-                    TimezonesFileName
-                )
-            );
-        }
 
         public static PokedexPokemon GetPokemon(uint pokemonId, uint formId)
         {
@@ -194,23 +178,6 @@
             return pkmnForm;
         }
 
-        private static T LoadInit<T>(string filePath)
-        {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException($"{filePath} file not found.", filePath);
-            }
-
-            var data = File.ReadAllText(filePath);
-            if (string.IsNullOrEmpty(data))
-            {
-                ConsoleExt.WriteError($"{filePath} database is empty.");
-                return default;
-            }
-
-            return data.FromJson<T>();
-        }
-
         private static GameMaster DownloadLatestGameMaster()
         {
             var data = NetUtils.Download(LatestGameMasterUrl);
@@ -221,13 +188,6 @@
             }
             return data.FromJson<GameMaster>();
         }
-    }
-
-    public class TimezoneOffsetData
-    {
-        public short Utc { get; set; }
-
-        public short Dts { get; set; }
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
