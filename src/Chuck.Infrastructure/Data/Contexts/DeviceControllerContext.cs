@@ -71,10 +71,10 @@
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<PvpRank>>());
             modelBuilder.Entity<Pokestop>()
                         .Property(nameof(Pokestop.QuestConditions))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<dynamic>>()); // TODO: QuestConditionProto
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<dynamic>>());
             modelBuilder.Entity<Pokestop>()
                         .Property(nameof(Pokestop.QuestRewards))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<dynamic>>()); // TODO: QuestRewardProto
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<dynamic>>());
             modelBuilder.Entity<Webhook>()
                         .Property(p => p.Types)
                         .HasConversion(x => Webhook.WebhookTypeToString(x), x => Webhook.StringToWebhookTypes(x));

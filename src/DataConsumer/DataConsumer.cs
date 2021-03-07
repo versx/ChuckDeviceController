@@ -618,12 +618,10 @@
             {
                 while (!_shouldExit)
                 {
-                    //BenchmarkMethod(() => UpdateCells(), "S2Cells");
                     UpdateCells();
                     var updatePokemon = true;
                     try
                     {
-                        //BenchmarkMethod(() => UpdateSpawnpoints(), "Spawnpoints");
                         UpdateSpawnpoints();
                     }
                     catch (Exception ex)
@@ -631,19 +629,14 @@
                         updatePokemon = false;
                         ConsoleExt.WriteError($"Failed to update spawnpoints, skipping Pokemon: {ex}");
                     }
-                    //BenchmarkMethod(() => UpdateWeather(), "Weather");
-                    //BenchmarkMethod(() => UpdatePokestops(), "Pokestops");
                     UpdateWeather();
                     UpdatePokestops();
                     if (updatePokemon)
                     {
-                        //BenchmarkMethod(() => UpdatePokemon(), "Pokemon");
                         UpdatePokemon();
                     }
                     UpdateQuests();
-                    //BenchmarkMethod(() => UpdateGyms(), "Gyms");
                     UpdateGyms();
-                    // TODO: UpdateGymInfo
                     UpdateGymTrainers();
                     UpdateGymDefenders();
                     UpdateAccounts();

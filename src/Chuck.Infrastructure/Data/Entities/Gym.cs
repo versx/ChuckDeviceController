@@ -253,7 +253,6 @@
 
         public GymResult Update(Gym oldGym = null)
         {
-            // TODO: Return struct of update type to send webhook if gym/raid/egg etc should be sent
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
             var result = new GymResult();

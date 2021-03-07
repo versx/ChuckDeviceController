@@ -7,8 +7,8 @@
     using Microsoft.Extensions.Logging;
 
     using Chuck.Infrastructure.Common;
-    using Chuck.Infrastructure.Data.Entities;
     using Chuck.Infrastructure.Extensions;
+    using Chuck.Infrastructure.Geofence.Models;
     using Chuck.Infrastructure.JobControllers;
     using Chuck.Infrastructure.JobControllers.Tasks;
 
