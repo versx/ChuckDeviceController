@@ -113,7 +113,8 @@
             var canEvolve = true;
             if (costumeId > 0)
             {
-                const string costumeName = ""; // TODO: Get Pokemon costume name from protos
+                // Get Pokemon costume name from protos
+                var costumeName = Convert.ToString((PokemonDisplayProto.Types.Costume)costumeId);
                 canEvolve = !costumeName.EndsWith("_NOEVOLVE") && !costumeName.EndsWith("_NO_EVOLVE");
             }
             if (canEvolve && masterForm.Evolutions.Count > 0)

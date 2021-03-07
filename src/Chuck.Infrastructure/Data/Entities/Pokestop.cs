@@ -254,7 +254,6 @@
 
         public PokestopResult Update(Pokestop oldPokestop = null, bool updateQuest = false)
         {
-            // TODO: Return struct of update type to send webhook if quest/lure/invasion etc should be sent
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
             var result = new PokestopResult();

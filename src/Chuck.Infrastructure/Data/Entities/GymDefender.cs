@@ -13,13 +13,15 @@
     [Table("gym_defender")]
     public class GymDefender : BaseEntity, IAggregateRoot
     {
+        #region Properties
+
         [
             Column("id"),
             Key,
             DatabaseGenerated(DatabaseGeneratedOption.None),
             JsonPropertyName("id"),
         ]
-        public string Id { get; set; }
+        public ulong Id { get; set; }
 
         [
             Column("pokemon_id"),
@@ -153,13 +155,15 @@
         ]
         public ulong Updated { get; set; }
 
+        #endregion
+
         public GymDefender()
         {
         }
 
         public GymDefender(string fortId, GymDefenderProto proto)
         {
-            Id = proto.MotivatedPokemon.Pokemon.Id.ToString(); // TODO: Convert to ulong
+            Id = proto.MotivatedPokemon.Pokemon.Id;
             PokemonId = (ushort)proto.MotivatedPokemon.Pokemon.PokemonId;
             CpWhenDeployed = (uint)proto.MotivatedPokemon.CpWhenDeployed;
             CpNow = (uint)proto.MotivatedPokemon.CpNow;

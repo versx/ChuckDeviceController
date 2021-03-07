@@ -230,7 +230,7 @@ CREATE TABLE `trainer` (
 );
 
 CREATE TABLE `gym_defender` (
-   `id` varchar(64) NOT NULL,
+   `id` bigint(30) unsigned NOT NULL,
    `pokemon_id` smallint(6) NOT NULL,
    `cp_when_deployed` smallint(6) DEFAULT 0,
    `cp_now` smallint(6) DEFAULT 0,
