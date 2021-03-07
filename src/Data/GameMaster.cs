@@ -100,7 +100,7 @@
             if (string.IsNullOrEmpty(data))
             {
                 //_logger.Error($"{filePath} database is empty.");
-                Console.WriteLine($"{filePath} database is empty.");
+                ConsoleExt.WriteError($"{filePath} database is empty.");
                 return default;
             }
 

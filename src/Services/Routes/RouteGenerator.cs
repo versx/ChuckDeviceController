@@ -19,7 +19,7 @@
     {
         #region Variables
 
-        private static readonly Random _rand = new Random();
+        //private static readonly Random _rand = new Random();
         private readonly SpawnpointRepository _spawnpointsRepository = null;
         private readonly PokestopRepository _pokestopRepository = null;
         private readonly GymRepository _gymRepository = null;
@@ -168,6 +168,7 @@
             return list;
         }
 
+        /*
         private static List<Coordinate> FilterCoordinates(List<Coordinate> coordinates, ushort stepDistance)
         {
             var list = new List<Coordinate>();
@@ -200,6 +201,7 @@
             //var destination = 
             return null;
         }
+        */
 
         private static List<Coordinate> Calculate(Coordinate location1, Coordinate location2, Coordinate location3, Coordinate location4, int maxPoints = 3000, double circleSize = 70)
         {

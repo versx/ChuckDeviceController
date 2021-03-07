@@ -38,6 +38,9 @@
         [JsonPropertyName("circle_size")]
         public ushort? CircleSize { get; set; }
 
+        [JsonPropertyName("fast_bootstrap_mode")]
+        public bool FastBootstrapMode { get; set; }
+
         //[JsonPropertyName("scatter_pokemon_ids")]
         //public List<uint> ScatterPokemonIds { get; set; }
 

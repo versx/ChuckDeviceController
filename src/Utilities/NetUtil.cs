@@ -4,6 +4,8 @@
     using System.Net;
     using System.Threading;
 
+    using ChuckDeviceController.Extensions;
+
     public static class NetUtil
     {
         private const ushort MaxRetryCount = 3;
@@ -31,7 +33,7 @@
                 switch ((int)resp.StatusCode)
                 {
                     case 429:
-                        Console.WriteLine("RATE LIMITED");
+                        ConsoleExt.WriteWarn("RATE LIMITED");
                         var retryAfter = resp.Headers["Retry-After"];
                         if (!int.TryParse(retryAfter, out var retry))
                             return;

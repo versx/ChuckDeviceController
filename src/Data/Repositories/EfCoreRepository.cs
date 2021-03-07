@@ -37,6 +37,12 @@
             return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
+        public virtual async Task<TEntity> GetByIdAsync(long id)
+        {
+            var keyValues = new object[] { id };
+            return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
+        }
+
         public virtual async Task<TEntity> GetByIdAsync(ulong id)
         {
             var keyValues = new object[] { id };
@@ -66,10 +72,15 @@
 
         public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync()
         {
-            return await _dbContext.Set<TEntity>().ToListAsync().ConfigureAwait(false);
+            return await _dbContext.Set<TEntity>().AsNoTracking().ToListAsync().ConfigureAwait(false);
         }
 
         #endregion
+
+        public virtual async Task<bool> ContainsAsync(TEntity entity)
+        {
+            return await _dbContext.Set<TEntity>().ContainsAsync(entity).ConfigureAwait(false);
+        }
 
         #region Add
 
@@ -165,7 +176,16 @@
             }
             catch (Exception ex)
             {
-                ConsoleExt.WriteError($"AddOrUpdateAsync: {ex}");
+
+                if (ex.Message.Contains("foreign key constraint fails"))
+                {
+                    // TODO: noting ??
+                    ConsoleExt.WriteInfo("[EfCoreRepository] AddOrUpdateAsync: This not needs update.");
+                }
+                else
+                {
+                    ConsoleExt.WriteError($"[EfCoreRepository] AddOrUpdateAsync: {ex.Message}");
+                }
             }
         }
     }

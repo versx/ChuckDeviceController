@@ -24,12 +24,13 @@
                 {
                     return false;
                 }
-                ConsoleExt.WriteInfo($"[RawSql] Result -> OK");
+                ConsoleExt.WriteInfo("[RawSql] Result -> OK");
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ConsoleExt.WriteError($"[RawSql] Result: {ex}, Sql: {sql}");
+                //this not needed because is warnned 
+                //ConsoleExt.WriteError($"[RawSql] Result: {ex.Message}, Sql: {sql}");
                 return false;
             }
         }

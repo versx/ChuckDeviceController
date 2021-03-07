@@ -4,11 +4,13 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
+    using System.Threading.Tasks;
 
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Data.Interfaces;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Net.Webhooks;
 
     [Table("gym")]
     public class Gym : BaseEntity, IAggregateRoot, IWebhook
@@ -126,7 +128,7 @@
             Team = fort.Team;
             AvailableSlots = (ushort)(fort.GymDisplay?.SlotsAvailable ?? 0);
             InBattle = fort.IsInBattle;
-            TotalCP = fort.GymDisplay.TotalGymCp;
+            TotalCP = fort.GymDisplay?.TotalGymCp ?? 0;
             CellId = cellId;
             FirstSeenTimestamp = now;
             Updated = now;
@@ -150,6 +152,63 @@
                     RaidPokemonEvolution = (uint)fort.RaidInfo.RaidPokemon.PokemonDisplay.CurrentTempEvolution;
                 }
             }
+        }
+
+        // TODO: Add ShouldUpdate method
+
+        public bool Update(Gym oldGym = null)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            Updated = now;
+            var result = false;
+            if (oldGym == null)
+            {
+                WebhookController.Instance.AddGym(this);
+                WebhookController.Instance.AddGymInfo(this);
+
+                var raidBattleTime = now - RaidBattleTimestamp;
+                var raidEndTime = now - RaidEndTimestamp;
+                if (raidBattleTime > now && RaidLevel > 0)
+                {
+                    WebhookController.Instance.AddRaid(this);
+                    result = true;
+                }
+                else if (raidEndTime > now && RaidPokemonId > 0)
+                {
+                    WebhookController.Instance.AddRaid(this);
+                    result = true;
+                }
+            }
+            else
+            {
+                if (RaidSpawnTimestamp > 0 &&
+                    (
+                    oldGym.RaidLevel != RaidLevel ||
+                    oldGym.RaidPokemonId != RaidPokemonId ||
+                    oldGym.RaidSpawnTimestamp != RaidSpawnTimestamp))
+                {
+                    var raidBattleTime = now - RaidBattleTimestamp;
+                    var raidEndTime = now - RaidEndTimestamp;
+                    if (raidBattleTime > now && RaidLevel > 0)
+                    {
+                        WebhookController.Instance.AddEgg(this);
+                        result = true;
+                    }
+                    else if (raidEndTime > now && RaidPokemonId > 0)
+                    {
+                        WebhookController.Instance.AddRaid(this);
+                        result = true;
+                    }
+                }
+                if (oldGym.AvailableSlots != AvailableSlots ||
+                    oldGym.Team != Team ||
+                    oldGym.InBattle != InBattle)
+                {
+                    WebhookController.Instance.AddGymInfo(this);
+                    result = true;
+                }
+            }
+            return result;
         }
 
         public void AddDetails(FortDetailsOutProto fortDetails)

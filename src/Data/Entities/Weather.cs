@@ -5,7 +5,9 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     using ChuckDeviceController.Data.Interfaces;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geofence.Models;
+    using ChuckDeviceController.Net.Webhooks;
 
     using Google.Common.Geometry;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
@@ -60,6 +62,24 @@
 
         [Column("updated")]
         public ulong Updated { get; set; }
+
+        public bool Update(Weather oldWeather = null)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            Updated = now;
+            if (oldWeather == null)
+            {
+                WebhookController.Instance.AddWeather(this);
+                return true;
+            }
+            else if (oldWeather.GameplayCondition != GameplayCondition ||
+                oldWeather.WarnWeather != WarnWeather)
+            {
+                WebhookController.Instance.AddWeather(this);
+                return true;
+            }
+            return false;
+        }
 
         public dynamic GetWebhookValues(string type)
         {

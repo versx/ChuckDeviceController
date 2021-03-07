@@ -1,29 +1,36 @@
 ﻿namespace ChuckDeviceController.Extensions
 {
-    using System;
+    using Microsoft.Extensions.Logging;
 
-    public static class ConsoleExt
+    public class ConsoleExt
     {
+        private static readonly ILogger<ConsoleExt> _logger = new Logger<ConsoleExt>(LoggerFactory.Create(x => x.AddConsole()));
+
         public static void WriteInfo(string format, params object[] args)
         {
-            WriteLine(ConsoleColor.White, format, args);
+            //WriteLine(ConsoleColor.White, $"info: {format}", args);
+            _logger.LogInformation(format, args);
         }
 
         public static void WriteDebug(string format, params object[] args)
         {
-            WriteLine(ConsoleColor.Cyan, format, args);
+            //WriteLine(ConsoleColor.Gray, $"dbug: {format}", args);
+            _logger.LogDebug(format, args);
         }
 
         public static void WriteWarn(string format, params object[] args)
         {
-            WriteLine(ConsoleColor.Yellow, format, args);
+            //WriteLine(ConsoleColor.Yellow, $"warn: {format}", args);
+            _logger.LogWarning(format, args);
         }
 
         public static void WriteError(string format, params object[] args)
         {
-            WriteLine(ConsoleColor.Red, format, args);
+            //WriteLine(ConsoleColor.Red, $"fail: {format}", args);
+            _logger.LogError(format, args);
         }
 
+        /*
         public static void WriteError(Exception exception)
         {
             WriteLine(ConsoleColor.Red, $"Error: {exception}");
@@ -39,5 +46,6 @@
             Console.WriteLine(message);
             Console.ForegroundColor = originalColor;
         }
+        */
     }
 }

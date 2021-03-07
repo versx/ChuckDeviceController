@@ -9,6 +9,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geofence.Models;
 
     public class GymRepository : EfCoreRepository<Gym, DeviceControllerContext>
@@ -57,7 +58,15 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GymRepository] AddOrUpdateAsync: {ex}");
+                if (ex.Message.Contains("foreign key constraint fails"))
+                {
+                    // TODO: noting ??
+                    ConsoleExt.WriteInfo("[GymRepository] AddOrUpdateAsync: Fort not needs update.");
+                }
+                else
+                {
+                    ConsoleExt.WriteError($"[GymRepository] AddOrUpdateAsync: {ex.Message}");
+                }
             }
         }
 

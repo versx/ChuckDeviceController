@@ -4,13 +4,16 @@ namespace ChuckDeviceController
     using System.IO;
     using System.Reflection;
     using System.Text;
+    using System.Threading;
 
     using ChuckDeviceController.Configuration;
+    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Extensions;
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
 
-    // TODO: Add auto bootstrap mode, add 'bootstrap_complete' property to Instance.Data
+    // TODO: Add 'bootstrap_complete' property to Instance.Data for bootstrap instance, add auto_complete_instance property
     // TODO: Fix IV loop adding pokemon
     // TODO: Implement cache better
     // TODO: Use Z.EntityFramework.Cache for Cells/Pokestops/Gyms/Spawnpoints/Accounts/Devices/Instances/Assignments
@@ -21,27 +24,26 @@ namespace ChuckDeviceController
     // TODO: Add HasChanges property for each entity to see if needs updating
     // TODO: Add cache system for ASP.NET
     // TODO: Add secondary cache system with EntityFrameworkCore.Plus/Extensions
-    // TODO: Add reusable Webhooks
     // TODO: Add reusable IV lists
     // TODO: Redis cache incoming requests, database consumer handles redis queue
     // TODO: Add first_seen_timestamp and last_modified_timestamp to Spawnpoints
     // TODO: Add s2cell logic route
-    // TODO: Add proper error responses via Dashboard UI
 
     public static class Program
     {
         public static void Main(string[] args)
         {
+            //head app cant not uses consoleex
             Console.OutputEncoding = Encoding.UTF8;
             ConsoleColor org = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("\tCopyright © 2021 - versx protect's\n");
+            Console.WriteLine($"Chuck Device Controler version: v{Assembly.GetExecutingAssembly().GetName().Version}");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("\tCopyright © 2021 - versx's Projects\n");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("Starting ...");
             Console.ForegroundColor = org;
-            
+
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Strings.DefaultConfigFileName);
             try
             {
@@ -54,17 +56,15 @@ namespace ChuckDeviceController
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Config {ex.Message}");
-                Console.ForegroundColor = org;
+                ConsoleExt.WriteError($"Config: {ex.Message}");
                 Console.ReadKey();
                 return;
             }
             // Start database migrator
-            var migrator = new Data.DatabaseMigrator();
+            var migrator = new DatabaseMigrator();
             while (!migrator.Finished)
             {
-                System.Threading.Thread.Sleep(50);
+                Thread.Sleep(50);
             }
 
             CreateHostBuilder(args).Build().Run();
@@ -78,6 +78,8 @@ namespace ChuckDeviceController
                     //webBuilder.UseUrls("http://localhost:5000", "https://localhost:5001");
                     webBuilder.UseUrls($"http://{Startup.Config.Interface}:{Startup.Config.Port}"); // TODO: Support for https and port + 1
                     webBuilder.UseWebRoot(Strings.WebRoot);
+                    //copy Views and wwwroot to output dir
+                    //webBuilder.UseContentRoot(AppDomain.CurrentDomain.BaseDirectory);
                 });
     }
 }

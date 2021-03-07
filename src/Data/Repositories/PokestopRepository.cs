@@ -56,7 +56,15 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PokestopRepository] AddOrUpdateAsync: {ex}");
+                if (ex.Message.Contains("foreign key constraint fails"))
+                {
+                    // TODO: noting ??
+                    ConsoleExt.WriteInfo("[PokestopRepository] AddOrUpdateAsync: Fort not needs update.");
+                }
+                else
+                {
+                    ConsoleExt.WriteError($"[PokestopRepository] AddOrUpdateAsync: {ex.Message}");
+                }
             }
         }
 

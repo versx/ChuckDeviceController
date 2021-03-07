@@ -5,6 +5,8 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    using Z.EntityFramework.Plus;
+
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
@@ -16,8 +18,18 @@
         {
         }
 
+        public async Task<IReadOnlyList<Account>> GetAllAsync(bool fromCache = true)
+        {
+            if (fromCache)
+            {
+                return await Task.FromResult(_dbContext.Accounts.FromCache().ToList()).ConfigureAwait(false);
+            }
+            return await base.GetAllAsync().ConfigureAwait(false);
+        }
+
         public async Task<Account> GetNewAccountAsync(int minLevel, int maxLevel, List<string> inuseAccounts)
         {
+            var account = _dbContext.Accounts.DeferredCount().FromCacheAsync();
             var accounts = await GetAllAsync().ConfigureAwait(false);
             return accounts.FirstOrDefault(x =>
                 x.Level >= minLevel &&
@@ -58,7 +70,7 @@
         {
             var deviceRepository = new DeviceRepository(_dbContext);
             var devices = await deviceRepository.GetAllAsync().ConfigureAwait(false);
-            var accounts = await GetAllAsync().ConfigureAwait(false);
+            var accounts = await GetAllAsync(true).ConfigureAwait(false);
             var now = DateTime.UtcNow.ToTotalSeconds();
             const uint SpinLimit = 3500;
             const uint OneDaySeconds = 86400;

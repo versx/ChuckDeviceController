@@ -6,6 +6,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     public class PokemonRepository : EfCoreRepository<Pokemon, DeviceControllerContext>
     {
@@ -62,7 +63,15 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PokemonRepository] AddOrUpdateAsync: {ex}");
+                if (ex.Message.Contains("foreign key constraint fails"))
+                {
+                    // TODO: noting ??
+                    ConsoleExt.WriteInfo("[PokemonRepository] AddOrUpdateAsync: Pokemon not needs update.");
+                }
+                else
+                {
+                    ConsoleExt.WriteError($"[PokemonRepository] AddOrUpdateAsync: {ex.Message}");
+                }
             }
         }
     }
