@@ -400,6 +400,7 @@
                 obj.quest_retry_limit = 5;
                 obj.account_group = null;
                 obj.is_event = false;
+                obj.enable_dst = false;
                 var data = TemplateRenderer.ParseTemplate("instance-add", obj);
                 return new ContentResult
                 {
@@ -430,6 +431,7 @@
                 var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
+                var enableDst = Request.Form["enable_dst"].ToString() == "on";
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
                 ushort questRetryLimit = 5;
@@ -482,6 +484,7 @@
                         MaximumLevel = maxLevel,
                         PokemonIds = pokemonIds,
                         Timezone = timezone,
+                        EnableDst = enableDst,
                         CircleRouteType = circleRouteType,
                         CircleSize = (ushort)circleSize,
                         FastBootstrapMode = fastBootstrapMode,
@@ -532,6 +535,7 @@
                     name = x,
                     selected = x == instance.Data.Timezone,
                 });
+                obj.enable_dst = instance.Data.EnableDst ? "checked" : null;
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
@@ -616,6 +620,7 @@
                 var questRetryLimit = byte.Parse(Request.Form["quest_retry_limit"].ToString());
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
+                var enableDst = Request.Form["enable_dst"].ToString() == "on";
                 if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
@@ -646,6 +651,7 @@
                     MaximumLevel = maxLevel,
                     PokemonIds = pokemonIds,
                     Timezone = timezone,
+                    EnableDst = enableDst,
                     FastBootstrapMode = fastBootstrapMode,
                     AccountGroup = accountGroup,
                     IsEvent = isEvent,

@@ -55,7 +55,7 @@
         [JsonPropertyName("utc")]
         public short Utc { get; set; }
 
-        [JsonPropertyName("dts")]
-        public short Dts { get; set; }
+        [JsonPropertyName("dst")]
+        public short Dst { get; set; }
     }
 }

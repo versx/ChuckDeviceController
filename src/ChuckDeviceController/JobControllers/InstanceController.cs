@@ -220,9 +220,8 @@
                                     if (tz != null)
                                     {
                                         var tzData = TimeZoneService.Instance.Timezones[timezone];
-                                        // TODO: Check if dts is enabled
-                                        timezoneOffset = false
-                                            ? tzData.Dts * 3600
+                                        timezoneOffset = instance.Data.EnableDst
+                                            ? tzData.Dst * 3600
                                             : tzData.Utc * 3600;
                                     }
                                 }

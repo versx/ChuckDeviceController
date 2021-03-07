@@ -178,16 +178,14 @@
             ConsoleExt.WriteInfo($"[DataConsumer] Started");
 
             // Publish available webhooks to redis event
-            using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+            try
             {
-                try
-                {
-                    PublishData(RedisChannels.WebhookReload, ctx.Webhooks.ToList());
-                }
-                catch (MySqlConnector.MySqlException ex)
-                {
-                    ConsoleExt.WriteError($"[DataConsumer] UpdateSpawnpoints: {ex.Message}");
-                }
+                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString());
+                PublishData(RedisChannels.WebhookReload, ctx.Webhooks.ToList());
+            }
+            catch (MySqlConnector.MySqlException ex)
+            {
+                ConsoleExt.WriteError($"[DataConsumer] UpdateSpawnpoints: {ex.Message}");
             }
         }
 
@@ -1037,10 +1035,8 @@
             if (oldEntity == null)
             {
                 // Entity does not exist in redis database cache, get from sql database
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
-                {
-                    oldEntity = await ctx.Set<T>().FindAsync(new object[] { id }).ConfigureAwait(false);
-                }
+                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString());
+                oldEntity = await ctx.Set<T>().FindAsync(new object[] { id }).ConfigureAwait(false);
             }
             return oldEntity;
         }

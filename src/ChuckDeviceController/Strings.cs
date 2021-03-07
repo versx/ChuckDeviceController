@@ -5,6 +5,7 @@
 
     public static class Strings
     {
+        public const string AppName = "ChuckDeviceController";
         public const string DefaultConfigFileName = "config.json";
         public const string ViewsFolder = "Views";
         public const string TemplateExt = ".mustache";
