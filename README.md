@@ -60,7 +60,7 @@ https://download.visualstudio.microsoft.com/download/pr/a06c387d-2811-4fba-8b5f-
 1. Build project from root folder `~/.dotnet/dotnet build`  
 1. Run ChuckDeviceController from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
 1. Run WebhookProcessor from `bin/` folder `~/.dotnet/dotnet WebhookProcessor.dll`  
-1. Run DataConsumer from `bin/` folder `~/.dotnet/dotnet DataConsumer.dll`  
+1. Run DataConsumer from `bin/` folder `~/.dotnet/dotnet DataConsumer.dll` or use [Chuck](https://github.com/WatWowMap/Chuck) as the backend data consumer.  
 1. Visit Dashboard at `http://LAN_MACHINE_IP:5001`  
 
 View all available API routes:  
@@ -92,10 +92,15 @@ View profiler results:
     },
     // Redis information
     "redis": {
+        // Redis server IP/hostname
         "host": "127.0.0.1",
+        // Redis server listening port
         "port": 6379,
+        // Redis password/secret
         "password": "",
+        // Redis database number to use
         "databaseNum": -1,
+        // Redis queue name to use
         "queueName": "cdc"
     }
 }
