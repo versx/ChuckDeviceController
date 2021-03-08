@@ -4,8 +4,10 @@
     <!-- Sidebar -->
     <nav id="sidebar">
         <div class="sidebar-header">
-            <h3>{{title}}</h3>
-            <strong>CDC</strong>
+            <a class="navbar-brand text-center" href="/dashboard">
+                <img class="align-middle" src="/static/favicons/chuck.gif" border="0" height="48">
+                <div class="text-wrap">{{title}}</div>
+            </a>
         </div>
         <ul class="list-unstyled components">
             <li>
@@ -69,6 +71,14 @@
                 <a href="/profiler/results" target="_blank">
                     <i class="fa fa-fw fa-chart-bar"></i>
                     Profiler
+                </a>
+            </li>
+        </ul>
+        <ul class="list-unstyled components">
+            <li>
+                <a href="/dashboard/logout">
+                    <i class="fas fa-fw fa-home"></i>
+                    Logout
                 </a>
             </li>
         </ul>
