@@ -20,7 +20,7 @@
                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
             "fixedHeader": {
                 "header": true,
-                "headerOffset": $('.navbar').height() + 15
+                "headerOffset": $('.navbar').height()
             },
             "buttons": [
                 "colvis",
@@ -65,14 +65,14 @@
         <br><br>
         <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
             <thead>
-            <tr>
-                <th class="all">Name</th>
-                <th class="min-desktop">Type</th>
-                <th class="all">Status</th>
-                <th class="min-desktop">Geofence</th>
-                <th class="min-desktop">Devices</th>
-                <th class="all" width="5%"></th>
-            </tr>
+                <tr>
+                    <th class="all">Name</th>
+                    <th class="min-desktop">Type</th>
+                    <th class="all">Status</th>
+                    <th class="min-desktop">Geofence</th>
+                    <th class="min-desktop">Devices</th>
+                    <th class="all" width="5%"></th>
+                </tr>
             </thead>
             <tbody>
             </tbody>
@@ -80,3 +80,5 @@
     </div>
     <br>
 </body>
+
+{{> footer}}

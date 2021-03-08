@@ -31,18 +31,18 @@
             <div class="form-group">
                 Select Source Instance (Empty for Any Instance)
                 <select class="form-control" name="source_instance">
-                    <option value="" {{#nothing_selected_source}}selected{{/nothing_selected_source}}>Any Instance</option>
+                    <option value="" {{#nothing_selected_source}} selected{{/nothing_selected_source}}>Any Instance</option>
                     {{#instances}}
-                        <option value="{{name}}" {{#selected_source}}selected{{/selected_source}}>{{name}}</option>
+                    <option value="{{name}}" {{#selected_source}} selected{{/selected_source}}>{{name}}</option>
                     {{/instances}}
                 </select>
             </div>
             <div class="form-group">
                 Select Destination Instance
                 <select class="form-control" name="instance" required>
-                    <option value="" {{#nothing_selected}}selected{{/nothing_selected}} disabled hidden>Choose a Instance</option>
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose a Instance</option>
                     {{#instances}}
-                        <option value="{{name}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+                    <option value="{{name}}" {{#selected}} selected{{/selected}}>{{name}}</option>
                     {{/instances}}
                 </select>
             </div>
@@ -65,3 +65,5 @@
     </div>
     <br>
 </body>
+
+{{> footer}}

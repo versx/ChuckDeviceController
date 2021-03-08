@@ -3,7 +3,7 @@
 <script>
     $(document).ready(function () {
         checkSelection($('.types-select').val());
-        $('.types-select').change(function() {
+        $('.types-select').change(function () {
             checkSelection($(this).val());
         });
         function checkSelection(value) {
@@ -118,3 +118,5 @@
     </div>
     <br>
 </body>
+
+{{> footer}}

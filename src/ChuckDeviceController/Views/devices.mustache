@@ -20,7 +20,7 @@
                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
             "fixedHeader": {
                 "header": true,
-                "headerOffset": $('.navbar').height() + 15
+                "headerOffset": $('.navbar').height()
             },
             "buttons": [
                 "colvis",
@@ -71,15 +71,15 @@
     <div style="width:90%; margin-left:calc(5%);">
         <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width:100%">
             <thead>
-            <tr>
-                <th class="all">Status</th>
-                <th class="all">UUID</th>
-                <th class="min-desktop">Username</th>
-                <th class="all">Instance</th>
-                <th class="min-desktop">Host</th>
-                <th class="min-desktop">Last Seen</th>
-                <th class="all" width="5%"></th>
-            </tr>
+                <tr>
+                    <th class="all">Status</th>
+                    <th class="all">UUID</th>
+                    <th class="min-desktop">Username</th>
+                    <th class="all">Instance</th>
+                    <th class="min-desktop">Host</th>
+                    <th class="min-desktop">Last Seen</th>
+                    <th class="all" width="5%"></th>
+                </tr>
             </thead>
             <tbody>
             </tbody>
@@ -87,3 +87,5 @@
     </div>
     <br>
 </body>
+
+{{> footer}}

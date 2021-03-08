@@ -1,62 +1,112 @@
 {{> header}}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="navbar-header">
-        <a class="navbar-brand" href="/dashboard"><img class="align-middle" src="/static/favicons/chuck.gif" border="0" height="32"></a>
-        <a class="navbar-brand" href="/dashboard">{{title}}</a>
-    </div>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbar">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="/dashboard"><i class="fa fa-fw fa-home" aria-hidden="true"></i>&nbsp;Home <span class="sr-only"></span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/dashboard/devices"><i class="fa fa-fw fa-mobile-alt" aria-hidden="true"></i>&nbsp;Devices</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/dashboard/devicegroups"><i class="fa fa-fw fa-layer-group" aria-hidden="true"></i>&nbsp;Device Groups</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/dashboard/instances"><i class="fa fa-fw fa-tasks" aria-hidden="true"></i>&nbsp;Instances</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/dashboard/geofences"><i class="fa fa-fw fa-map-marker-alt" aria-hidden="true"></i>&nbsp;Geofences</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/dashboard/assignments"><i class="fa fa-fw fa-cog" aria-hidden="true"></i>&nbsp;Assignments</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/dashboard/webhooks"><i class="fas fa-fw fa-network-wired" aria-hidden="true"></i>&nbsp;Webhooks</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/dashboard/accounts"><i class="fa fa-fw fa-user" aria-hidden="true"></i>&nbsp;Accounts</a>
-            </li>
-        </ul>
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fa fa-fw fa-cogs" aria-hidden="true"></i>&nbsp;Options
+<div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <a class="navbar-brand text-center" href="/dashboard">
+                <img class="align-middle" src="/static/favicons/chuck.gif" border="0" height="48">
+                <div class="text-wrap">{{title}}</div>
+            </a>
+        </div>
+        <ul class="list-unstyled components">
+            <li>
+                <a href="/dashboard">
+                    <i class="fas fa-fw fa-home"></i>
+                    Home
                 </a>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                    <a class="dropdown-item" href="/dashboard/settings"><i class="fa fa-fw fas fa-ellipsis-v" aria-hidden="true"></i>&nbsp;Settings</a>
-                    <a class="dropdown-item" href="/dashboard/utilities"><i class="fa fa-fw fa-toolbox" aria-hidden="true"></i>&nbsp;Utilities</a>
-                    <a class="dropdown-item" href="/swagger" target="_blank"><i class="fa fa-fw fas fa-file-alt" aria-hidden="true"></i>&nbsp;API</a>
-                    <a class="dropdown-item" href="/profiler/results" target="_blank"><i class="fa fa-fw fa-chart-bar" aria-hidden="true"></i>&nbsp;Profiler</a>
-                </div>
+            </li>
+            <li>
+                <a href="#devicesSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fa fa-fw fa-mobile-alt"></i>
+                    Devices
+                </a>
+                <ul class="collapse list-unstyled" id="devicesSubmenu">
+                    <li><a href="/dashboard/devices"><i class="fa fa-fw fa-mobile-alt"></i> Devices</a></li>
+                    <li><a href="/dashboard/devicegroups"><i class="fa fa-fw fa-layer-group"></i> Device Groups</a></li>
+                    <li><a href="/dashboard/assignments"><i class="fa fa-fw fa-cog"></i> Assignments</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#instancesSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                    <i class="fa fa-fw fa-tasks"></i>
+                    Instances
+                </a>
+                <ul class="collapse list-unstyled" id="instancesSubmenu">
+                    <li><a href="/dashboard/instances"><i class="fa fa-fw fa-tasks"></i> Instances</a></li>
+                    <li><a href="/dashboard/geofences"><i class="fa fa-fw fa-map-marker-alt"></i> Geofences</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/dashboard/webhooks">
+                    <i class="fas fa-fw fa-network-wired"></i>
+                    Webhooks
+                </a>
+            </li>
+            <li>
+                <a href="/dashboard/accounts">
+                    <i class="fa fa-fw fa-user"></i>
+                    Accounts
+                </a>
+            </li>
+            <li>
+                <a href="/dashboard/utilities">
+                    <i class="fa fa-fw fa-toolbox"></i>
+                    Utilities
+                </a>
+            </li>
+            <li>
+                <a href="/dashboard/settings">
+                    <i class="fa fa-fw fas fa-ellipsis-v"></i>
+                    Settings
+                </a>
+            </li>
+            <li>
+                <a href="/swagger" target="_blank">
+                    <i class="fa fa-fw fas fa-file-alt"></i>
+                    Swagger API
+                </a>
+            </li>
+            <li>
+                <a href="/profiler/results" target="_blank">
+                    <i class="fa fa-fw fa-chart-bar"></i>
+                    Profiler
+                </a>
             </li>
         </ul>
-        <input type="hidden" name="_csrf" value="{{csrf}}">
-    </div>
-</nav>
-<br>
-<br>
+        <ul class="list-unstyled components">
+            <li>
+                <a href="/dashboard/logout">
+                    <i class="fas fa-fw fa-home"></i>
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <!-- Page Content  -->
+    <div id="content">
+        <button type="button" id="sidebarCollapse" class="navbar-btn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <!--
+        <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fas fa-align-justify"></i>
+        </button>
+        -->
+
 <script>
-    $(document).ready(function() {
-          // Get current URL path and assign 'active' class
+    $(document).ready(function () {
+        // Get current URL path and assign 'active' class
         const pathname = window.location.pathname;
-        $('#navbar > ul > li > a[href="'+pathname+'"]').parent().addClass('active');
+        console.log('path:', pathname);
+        //$('#navbar > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
+        $('#sidebar > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
+        $('#sidebar > ul > li > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
+        $('#sidebarCollapse').on('click', function () {
+            $('#sidebar').toggleClass('active');
+            $(this).toggleClass('active');
+        });
     });
 </script>

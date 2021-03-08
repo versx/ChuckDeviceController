@@ -1,7 +1,7 @@
 {{> navbar}}
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('#table').DataTable({
             "fixedHeader": {
                 "header": true
@@ -9,7 +9,7 @@
             "stateSave": true,
             "paging": false,
             "info": false,
-            "order": [[ 0, "desc" ]],
+            "order": [[0, "desc"]],
             "searching": false,
             "responsive": true
         });
@@ -99,7 +99,8 @@
             </div>
         </div>
 
-        <div class="row justify-content-center m-3 w-75 mt-4"><!-- Start Row -->
+        <div class="row justify-content-center m-3 w-75 mt-4">
+            <!-- Start Row -->
             <div class="col-lg-6">
                 <div class="card text-center">
                     <div class="card-header bg-dark text-light"><b>Ban Statistics</b></div>
@@ -176,18 +177,18 @@
         <div class="w-75 text-center">
             <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width: 100%; margin: 0 auto;">
                 <thead class="bg-dark text-light">
-                <tr>
-                    <th>Level</th>
-                    <th>Total</th>
-                    <th>In Use</th>
-                    <th>Good</th>
-                    <th>Banned</th>
-                    <th>Warning</th>
-                    <th>Invalid</th>
-                    <th>Other</th>
-                    <th>Cooldown</th>
-                    <th>Spin Limit</th>
-                </tr>
+                    <tr>
+                        <th>Level</th>
+                        <th>Total</th>
+                        <th>In Use</th>
+                        <th>Good</th>
+                        <th>Banned</th>
+                        <th>Warning</th>
+                        <th>Invalid</th>
+                        <th>Other</th>
+                        <th>Cooldown</th>
+                        <th>Spin Limit</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {{#each stats.all_account_stats}}
@@ -209,3 +210,5 @@
         </div>
     </center>
 </body>
+
+{{> footer}}

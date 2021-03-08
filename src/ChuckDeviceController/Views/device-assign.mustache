@@ -14,9 +14,9 @@
             <div class="form-group">
                 Select Instance
                 <select class="form-control" name="instance" required>
-                    <option value="" {{#nothing_selected}}selected{{/nothing_selected}} disabled hidden>Choose a Instance</option>
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose a Instance</option>
                     {{#each instances}}
-                        <option value="{{name}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+                    <option value="{{name}}" {{#selected}} selected{{/selected}}>{{name}}</option>
                     {{/each}}
                 </select>
             </div>
@@ -26,3 +26,5 @@
     </div>
     <br>
 </body>
+
+{{> footer}}
