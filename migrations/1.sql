@@ -18,7 +18,7 @@ CREATE TABLE `account` (
    `was_suspended` tinyint(1) unsigned DEFAULT NULL,
    `banned` tinyint(1) unsigned DEFAULT NULL,
    `last_used_timestamp` int(11) unsigned DEFAULT NULL,
-   `group` VARCHAR(50) DEFAULT NULL
+   `group` VARCHAR(50) DEFAULT NULL,
    PRIMARY KEY (`username`)
 );
 
