@@ -58,6 +58,8 @@ https://download.visualstudio.microsoft.com/download/pr/a06c387d-2811-4fba-8b5f-
 1. Copy config `cp config.example.json` `bin/config.json`  
 1. Fill out `config.json`  
 1. Build project from root folder `~/.dotnet/dotnet build`  
+1. Copy `Views` folder from `cp src/ChuckDeviceController/Views` to `bin/Views`  
+1. Copy `wwwroot` folder from `cp src/ChuckDeviceController/wwwroot/ to `bin/wwwroot`  
 1. Run ChuckDeviceController from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
 1. Run WebhookProcessor from `bin/` folder `~/.dotnet/dotnet WebhookProcessor.dll`  
 1. Run DataConsumer from `bin/` folder `~/.dotnet/dotnet DataConsumer.dll` or use [Chuck](https://github.com/WatWowMap/Chuck) as the backend data consumer.  
