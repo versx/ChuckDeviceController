@@ -263,7 +263,7 @@ CREATE TABLE `spawnpoint` (
    `lat` double(18,14) NOT NULL,
    `lon` double(18,14) NOT NULL,
    `updated` int(11) unsigned NOT NULL DEFAULT 0,
-   `first_seen_timestamp` int(11) unsigned NOT NULL DEFAULT 0;
+   `first_seen_timestamp` int(11) unsigned NOT NULL DEFAULT 0,
    `despawn_sec` smallint(6) unsigned DEFAULT NULL,
    PRIMARY KEY (`id`),
    KEY `ix_coords` (`lat`,`lon`),
@@ -307,7 +307,7 @@ CREATE TABLE `pokemon` (
    `pvp_rankings_great_league` text DEFAULT NULL,
    `pvp_rankings_ultra_league` text DEFAULT NULL,
    `is_event` tinyint(1) unsigned NOT NULL DEFAULT 0,
-   PRIMARY KEY (id, is_event);
+   PRIMARY KEY (id, is_event),
    KEY `ix_coords` (`lat`,`lon`),
    KEY `ix_pokemon_id` (`pokemon_id`),
    KEY `ix_updated` (`updated`),
