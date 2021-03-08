@@ -8,7 +8,7 @@
             <strong>CDC</strong>
         </div>
         <ul class="list-unstyled components">
-            <li class="active">
+            <li>
                 <a href="/dashboard">
                     <i class="fas fa-fw fa-home"></i>
                     Home
@@ -90,7 +90,10 @@
     $(document).ready(function () {
         // Get current URL path and assign 'active' class
         const pathname = window.location.pathname;
-        $('#navbar > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
+        console.log('path:', pathname);
+        //$('#navbar > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
+        $('#sidebar > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
+        $('#sidebar > ul > li > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
         $('#sidebarCollapse').on('click', function () {
             $('#sidebar').toggleClass('active');
             $(this).toggleClass('active');
