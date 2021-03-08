@@ -16,7 +16,7 @@
         ]
         public string Name { get; set; }
 
-        [Column("devices")]
+        [Column("device_uuids")]
         public List<string> Devices { get; set; }
 
         //public virtual ICollection<DeviceGroupDevice> Devices { get; set; }
