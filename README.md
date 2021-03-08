@@ -109,3 +109,5 @@ View profiler results:
 ## TODO:
 - Re-implement PVP stats for Pokemon
 - Finish MAD support
+- User management system for UI
+- Token/IP whilelist auth
