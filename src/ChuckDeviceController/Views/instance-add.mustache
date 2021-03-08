@@ -21,6 +21,8 @@
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
                     $('.quest_retry_limit_text').addClass('d-none');
+                    $('.timezone_text').addClass('d-none');
+                    $('.enable_dst_text').addClass('d-none');
                     break;
                 case 'pokemon_iv':
                     $('.circle_route_type').addClass('d-none');
@@ -29,6 +31,8 @@
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
                     $('.quest_retry_limit_text').addClass('d-none');
+                    $('.timezone_text').addClass('d-none');
+                    $('.enable_dst_text').addClass('d-none');
                     break;
                 case 'auto_quest':
                     $('.circle_route_type').addClass('d-none');
@@ -37,6 +41,8 @@
                     $('.spin_limit_text').removeClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
                     $('.quest_retry_limit_text').removeClass('d-none');
+                    $('.timezone_text').removeClass('d-none');
+                    $('.enable_dst_text').removeClass('d-none');
                     break;
                 case 'bootstrap':
                     $('.circle_route_type').addClass('d-none');
@@ -45,6 +51,8 @@
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').removeClass('d-none');
                     $('.quest_retry_limit_text').addClass('d-none');
+                    $('.timezone_text').addClass('d-none');
+                    $('.enable_dst_text').addClass('d-none');
                     break;
                 case 'find_tth':
                 default:
@@ -54,6 +62,8 @@
                     $('.spin_limit_text').addClass('d-none');
                     $('.bootstrap_text').addClass('d-none');
                     $('.quest_retry_limit_text').addClass('d-none');
+                    $('.timezone_text').addClass('d-none');
+                    $('.enable_dst_text').addClass('d-none');
                     break;
             }
         });
@@ -97,7 +107,7 @@
                     <option value="circular" {{#circular_selected}} selected{{/circular_selected}}>Circular</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="form-group timezone_text">
                 Timezone
                 <select class="form-control" name="timezone" required>
                     <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Timezone</option>
@@ -106,7 +116,7 @@
                     {{/each}}
                 </select>
             </div>
-            <div class="form-check">
+            <div class="form-check enable_dst_text">
                 <input type="checkbox" class="form-check-input" name="enable_dst">
                 <label class="form-check-label" for="enable_dst">Enable Daylight Saving Time</label>
             </div>
