@@ -105,3 +105,6 @@ View profiler results:
     }
 }
 ```
+
+## TODO:
+- Re-implement PVP stats for Pokemon
