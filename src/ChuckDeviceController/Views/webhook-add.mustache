@@ -1,8 +1,8 @@
 ﻿{{> navbar}}
 
 <script>
-    $(document).ready(function() {
-        $('.types-select').change(function() {
+    $(document).ready(function () {
+        $('.types-select').change(function () {
             $(this).val().indexOf("Pokemon") >= 0 ?
                 $('.pokemon_ids_text').removeClass('d-none') :
                 $('.pokemon_ids_text').addClass('d-none');
@@ -108,3 +108,5 @@
     </div>
     <br>
 </body>
+
+{{> footer}}
