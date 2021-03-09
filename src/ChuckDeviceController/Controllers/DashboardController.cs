@@ -210,7 +210,7 @@
             else
             {
                 var name = Request.Form["name"].ToString();
-                var devices = Request.Form["devices"].ToString().Split(',')?.ToList();
+                var devices = Request.Form["devices"].ToString().Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
                 var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (deviceGroup != null)
                 {
@@ -261,7 +261,7 @@
                 // TODO: Check if new name does not exist and old name does
                 var newName = Request.Form["name"].ToString();
                 var oldName = Request.Form["old_name"].ToString();
-                var devices = Request.Form["devices"].ToString().Split(',')?.ToList();
+                var devices = Request.Form["devices"].ToString().Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
                 var deviceGroup = await _deviceGroupRepository.GetByIdAsync(oldName).ConfigureAwait(false);
                 if (deviceGroup == null)
                 {
