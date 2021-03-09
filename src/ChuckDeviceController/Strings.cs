@@ -13,9 +13,9 @@
         public const string WebRoot = "wwwroot";
         public const string DataFolder = WebRoot + "/static/data";
 //#if DEBUG
-//        public const string MigrationsFolder = "../../migrations";
+        public const string MigrationsFolder = "../../migrations";
 //#else
-        public const string MigrationsFolder = "../migrations";
+//        public const string MigrationsFolder = "../migrations";
 //#endif
 
         public const string SQL_CREATE_TABLE_METADATA = @"
@@ -23,6 +23,7 @@
             `key` VARCHAR(50) PRIMARY KEY NOT NULL,
             `value` VARCHAR(50) DEFAULT NULL
         );";
+        public const string All = "All";
 
         public static string Started
         {

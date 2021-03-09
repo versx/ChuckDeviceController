@@ -1230,6 +1230,7 @@
                                              type = x.Type.ToString().ToLower(),
                                              selected = false,
                                          });
+                obj.nothing_selected = true;
                 var data = TemplateRenderer.ParseTemplate("webhook-add", obj);
                 return new ContentResult
                 {
@@ -1275,7 +1276,7 @@
                     Types = types,
                     Url = url,
                     Delay = delay,
-                    Geofence = geofence,
+                    Geofence = string.Compare(geofence, Strings.All, true) == 0 ? null : geofence,
                     Enabled = enabled,
                     Data = new WebhookData
                     {
@@ -1333,6 +1334,7 @@
                 obj.gym_ids = string.Join("\n", webhook.Data.GymTeamIds ?? new List<ushort>());
                 obj.weather_ids = string.Join("\n", webhook.Data.WeatherConditionIds ?? new List<ushort>());
                 obj.enabled = webhook.Enabled ? "checked" : "";
+                obj.nothing_selected = string.IsNullOrEmpty(webhook.Geofence);
                 var data = TemplateRenderer.ParseTemplate("webhook-edit", obj);
                 return new ContentResult
                 {
@@ -1390,7 +1392,7 @@
                 webhook.Types = types;
                 webhook.Url = url;
                 webhook.Delay = delay;
-                webhook.Geofence = geofence;
+                webhook.Geofence = string.Compare(geofence, Strings.All, true) == 0 ? null : geofence;
                 webhook.Enabled = enabled;
                 webhook.Data = new WebhookData
                 {

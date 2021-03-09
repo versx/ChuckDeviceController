@@ -91,9 +91,9 @@
             <div class="form-group">
                 Select Scan Area (Empty Includes Everything)
                 <select class="form-control" name="geofence" required>
-                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Geofence</option>
+                    <option value="all" {{#nothing_selected}}selected{{/nothing_selected}}>Any Area</option>
                     {{#each geofences}}
-                    <option value="{{name}}" class="{{type}}" {{#selected}} selected{{/selected}}>{{name}}</option>
+                    <option value="{{name}}" class="{{type}}" {{#selected}}selected{{/selected}}>{{name}}</option>
                     {{/each}}
                 </select>
             </div>
