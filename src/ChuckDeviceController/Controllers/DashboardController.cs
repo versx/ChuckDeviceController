@@ -462,7 +462,7 @@
                     }
                 }
 
-                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided");
@@ -628,7 +628,7 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
-                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided");
@@ -1509,6 +1509,18 @@
             }
             else
             {
+                if (Request.Form.ContainsKey("delete"))
+                {
+                    var ivListToDelete = await _ivListRepository.GetByIdAsync(name).ConfigureAwait(false);
+                    if (ivListToDelete != null)
+                    {
+                        await _ivListRepository.DeleteAsync(ivListToDelete).ConfigureAwait(false);
+                        await IVListController.Instance.Reload().ConfigureAwait(false);
+                        _logger.LogDebug($"IV list {name} was deleted");
+                    }
+                    return Redirect("/dashboard/ivlists");
+                }
+
                 var newName = Request.Form["name"].ToString();
                 var oldName = Request.Form["old_name"].ToString();
                 var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();

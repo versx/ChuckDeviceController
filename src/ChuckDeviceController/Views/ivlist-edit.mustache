@@ -23,6 +23,12 @@
             <input type="hidden" name="_csrf" value="{{csrf}}">
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
+        <br>
+        <form action="" method="post" onsubmit="return confirm('Are you sure that you want to delete the IV list {{old_name}}?');">
+            <input type="hidden" name="_csrf" value="{{csrf}}">
+            <input type="hidden" name="delete" value="true">
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
     </div>
     <br>
 </body>
