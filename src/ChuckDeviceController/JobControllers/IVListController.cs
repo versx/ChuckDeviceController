@@ -57,6 +57,9 @@
 
         public IVList GetIVList(string name)
         {
+            if (string.IsNullOrEmpty(name))
+                return null;
+
             if (!_ivLists.ContainsKey(name))
             {
                 return null;
