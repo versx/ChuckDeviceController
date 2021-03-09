@@ -88,7 +88,7 @@
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
             modelBuilder.Entity<IVList>()
                         .Property(nameof(IVList.PokemonIDs))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<ushort>>());
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
 
             base.OnModelCreating(modelBuilder);
         }
