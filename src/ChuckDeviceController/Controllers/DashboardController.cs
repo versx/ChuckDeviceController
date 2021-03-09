@@ -1323,7 +1323,7 @@
                                          {
                                              name = x.Name,
                                              type = x.Type.ToString().ToLower(),
-                                             selected = false,
+                                             selected = string.Compare(x.Name, webhook.Geofence, true) == 0,
                                          });
                 obj.pokemon_ids = string.Join("\n", webhook.Data.PokemonIds ?? new List<uint>());
                 obj.pokestop_ids = string.Join("\n", webhook.Data.PokestopIds ?? new List<string>());
