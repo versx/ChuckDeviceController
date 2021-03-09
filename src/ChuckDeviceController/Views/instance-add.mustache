@@ -135,9 +135,14 @@
                     {{/each}}
                 </select>
             </div>
-            <div class="form-group pokemon_ids_text {{^pokemon_iv_selected}}d-none{{/pokemon_iv_selected}}">
-                Pokemon IDs (first = highest priority)
-                <textarea class="form-control" rows="5" name="pokemon_ids">{{{pokemon_ids}}}</textarea>
+            <div class="form-group pokemon_ids_text">
+                IV Priority List
+                <select class="form-control" name="geofence" required>
+                    <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose an IV List</option>
+                    {{#each iv_lists}}
+                    <option value="{{name}}" {{#selected}} selected{{/selected}}>{{name}}</option>
+                    {{/each}}
+                </select>
             </div>
             <div class="form-group iv_queue_limit_text {{^pokemon_iv_selected}}d-none{{/pokemon_iv_selected}}">
                 IV Queue Limit

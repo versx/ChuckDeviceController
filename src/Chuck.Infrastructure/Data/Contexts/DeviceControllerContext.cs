@@ -47,6 +47,8 @@
 
         public DbSet<Webhook> Webhooks { get; set; }
 
+        public DbSet<IVList> IVLists { get; set; }
+
         public DbSet<Metadata> Metadata { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -84,6 +86,9 @@
             modelBuilder.Entity<DeviceGroup>()
                         .Property(nameof(DeviceGroup.Devices))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+            modelBuilder.Entity<IVList>()
+                        .Property(nameof(IVList.PokemonIDs))
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<ushort>>());
 
             base.OnModelCreating(modelBuilder);
         }

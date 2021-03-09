@@ -26,6 +26,7 @@
         private readonly GeofenceRepository _geofenceRepository;
         private readonly WebhookRepository _webhookRepository;
         private readonly DeviceGroupRepository _deviceGroupRepository;
+        private readonly IVListRepository _ivListRepository;
 
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
@@ -45,12 +46,14 @@
             _context = context;
             _logger = logger;
 
+            // TODO: Maybe use the DbContextFactory instead of relying on the same one per repo
             _deviceRepository = new DeviceRepository(_context);
             _instanceRepository = new InstanceRepository(_context);
             _assignmentRepository = new AssignmentRepository(_context);
             _geofenceRepository = new GeofenceRepository(_context);
             _webhookRepository = new WebhookRepository(_context);
             _deviceGroupRepository = new DeviceGroupRepository(_context);
+            _ivListRepository = new IVListRepository(_context);
         }
 
         #endregion
@@ -254,10 +257,31 @@
                     delay = webhook.Delay,
                     geofence = webhook.Geofence,
                     enabled = webhook.Enabled ? "Yes" : "No",
-                    buttons = $"<a href='/dashboard/webhook/edit/{webhook.Name}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
+                    buttons = $"<a href='/dashboard/webhook/edit/{Uri.EscapeDataString(webhook.Name)}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
                 });
             }
             return new { data = new { webhooks = list } };
+        }
+
+        [
+            HttpPost("/api/ivlists"),
+            Produces("application/json"),
+        ]
+        public async Task<dynamic> GetIVLists()
+        {
+            var ivLists = await _ivListRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var ivList in ivLists)
+            {
+                list.Add(new
+                {
+                    name = ivList.Name,
+                    pokemon_list_count = ivList.PokemonIDs.Count.ToString("N0"),
+                    buttons = $"<a href='/dashboard/ivlist/edit/{Uri.EscapeDataString(ivList.Name)}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
+                    // TODO: Delete button
+                });
+            }
+            return new { data = new { ivlists = list } };
         }
 
         /// <summary>

@@ -230,9 +230,9 @@
                                 instanceController = new AutoInstanceController(instance.Name, areaArrayEmptyInner, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit, retryLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.PokemonIV:
-                                var pokemonList = instance.Data.PokemonIds;
+                                var ivList = IVListController.Instance.GetIVList(instance.Data.IVList)?.PokemonIDs ?? new List<uint>();
                                 var ivQueueLimit = instance.Data.IVQueueLimit ?? 100;
-                                instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, pokemonList, minLevel, maxLevel, ivQueueLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, ivList, minLevel, maxLevel, ivQueueLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.Bootstrap:
                                 var circleSize = instance.Data.CircleSize ?? 70;
