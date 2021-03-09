@@ -27,10 +27,6 @@
             <br>
             <h4>Pokemon</h4>
             <div class="form-group">
-                Max Pokemon ID
-                <input type="number" class="form-control" name="max_pokemon_id" value="{{max_pokemon_id}}" step=1 min="1" max="999" required>
-            </div>
-            <div class="form-group">
                 Default time left on new pokemon (in seconds)
                 <input type="number" class="form-control" name="pokemon_time_new" value="{{pokemon_time_new}}" step=1 min="60" max="3600" required>
             </div>
@@ -40,7 +36,7 @@
             </div>
             <div class="form-group">
                 Ditto Disguises (separated by ",")
-                <input type="string" class="form-control" name="ditto_disguises" value="{{ditto_disguises}}">
+                <input type="text" class="form-control" name="ditto_disguises" value="{{ditto_disguises}}">
             </div>
             <div class="checkbox">
                 <label><input type="checkbox" name="pvp_ranks" value="pvp_ranks" {{#pvp_ranks}} checked{{/pvp_ranks}}> Enable PVP Ranking</label>
