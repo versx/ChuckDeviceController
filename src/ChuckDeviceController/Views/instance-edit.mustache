@@ -114,7 +114,7 @@
             </div>
             <div class="form-group timezone_text">
                 Timezone
-                <select class="form-control" name="timezone" required>
+                <select class="form-control" name="timezone">
                     <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Timezone</option>
                     {{#each timezones}}
                     <option value="{{name}}" {{#selected}} selected{{/selected}}>{{name}}</option>
