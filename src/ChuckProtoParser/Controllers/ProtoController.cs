@@ -547,24 +547,25 @@
             stopwatch.Stop();
 
             var sb = new System.Text.StringBuilder();
-            sb.Append($"[{payload.Uuid}] ");
-            sb.Append($"Nearby: {nearbyPokemon}, ");
-            sb.Append($"Wild: {wildPokemon}, ");
-            sb.Append($"Forts: {forts}, ");
-            sb.Append($"Quests: {quests}, ");
-            sb.Append($"FortSearch: {fortSearch}, ");
-            sb.Append($"Encounters: {encounters}, ");
-            sb.Append($"Level: {payload.Level}, ");
-            sb.Append($"Only Empty GMOs: {containsGmo && isEmptyGmo}, ");
-            sb.Append($"Only Invalid GMOs: {containsGmo && isInvalidGmo}, ");
-            sb.Append($"Contains GMOs: {containsGmo}, ");
-            sb.Append($"InArea: {inArea}, ");
-            sb.Append($"Target Latitude: {targetCoord?.Latitude}, ");
-            sb.Append($"Target Longitude: {targetCoord?.Longitude}, ");
-            sb.Append($"Pokemon Latitude: {pokemonCoords?.Latitude}, ");
-            sb.Append($"Pokemon Longitude: {pokemonCoords?.Longitude}, ");
-            sb.Append($"Pokemon Encounter Id: {payload.PokemonEncounterId} ");
-            sb.Append($"parsed in {stopwatch.Elapsed.TotalSeconds}");
+            sb.AppendLine($"[{payload.Uuid}]");
+            sb.AppendLine($"Nearby: {nearbyPokemon}");
+            sb.AppendLine($"Wild: {wildPokemon}");
+            sb.AppendLine($"Forts: {forts}");
+            sb.AppendLine($"Quests: {quests}");
+            sb.AppendLine($"FortSearch: {fortSearch}");
+            sb.AppendLine($"Encounters: {encounters}");
+            sb.AppendLine($"Level: {payload.Level}");
+            sb.AppendLine($"Only Empty GMOs: {containsGmo && isEmptyGmo}");
+            sb.AppendLine($"Only Invalid GMOs: {containsGmo && isInvalidGmo}");
+            sb.AppendLine($"Contains GMOs: {containsGmo}");
+            sb.AppendLine($"InArea: {inArea}");
+            sb.AppendLine($"Target Latitude: {targetCoord?.Latitude}");
+            sb.AppendLine($"Target Longitude: {targetCoord?.Longitude}");
+            sb.AppendLine($"Pokemon Latitude: {pokemonCoords?.Latitude}");
+            sb.AppendLine($"Pokemon Longitude: {pokemonCoords?.Longitude}");
+            sb.AppendLine($"Pokemon Encounter Id: {payload.PokemonEncounterId}");
+            sb.AppendLine($"parsed in {stopwatch.Elapsed.TotalSeconds}");
+            sb.AppendLine();
             _logger.LogInformation(sb.ToString());
 
             return new ProtoResponse
