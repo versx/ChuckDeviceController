@@ -259,7 +259,6 @@
             }
             else
             {
-                // TODO: Check if new name does not exist and old name does
                 var newName = Request.Form["name"].ToString();
                 var oldName = Request.Form["old_name"].ToString();
                 var devices = Request.Form["devices"].ToString().Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
@@ -269,10 +268,23 @@
                     return BuildErrorResponse("devicegroup-add", $"Device Group with name '{oldName}' does not exist");
                 }
 
-                // TODO: Add support for renaming (need to delete old and create new)
-                deviceGroup.Name = oldName;
-                deviceGroup.Devices = devices;
-                await _deviceGroupRepository.SaveAsync().ConfigureAwait(false);
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
+                {
+                    // Delete old device group
+                    await _deviceGroupRepository.DeleteAsync(deviceGroup);
+                    // Insert new device group
+                    await _deviceGroupRepository.AddAsync(new DeviceGroup
+                    {
+                        Name = newName,
+                        Devices = devices,
+                    });
+                }
+                else
+                {
+                    deviceGroup.Devices = devices;
+                    await _deviceGroupRepository.SaveAsync().ConfigureAwait(false);
+                }
                 return Redirect("/dashboard/devicegroups");
             }
         }

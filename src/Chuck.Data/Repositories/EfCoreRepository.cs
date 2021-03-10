@@ -18,9 +18,8 @@
     /// https://blogs.msdn.microsoft.com/pfxteam/2012/04/13/should-i-expose-synchronous-wrappers-for-asynchronous-methods/
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    //public class EfRepository<T> : IAsyncRepository<T> where T : BaseEntity, IAggregateRoot
     public class EfCoreRepository<TEntity, TContext>
-        where TEntity : BaseEntity
+        where TEntity : BaseEntity, IAggregateRoot
         where TContext : DbContext
     {
         protected readonly TContext _dbContext;
@@ -57,7 +56,7 @@
             return await _dbContext.Set<TEntity>().FindAsync(keyValues).ConfigureAwait(false);
         }
 
-        public virtual async Task<TEntity> GetBy(ISpecification<TEntity> spec)
+        public virtual async Task<TEntity> GetByAsync(ISpecification<TEntity> spec)
         {
             return await _dbContext.Set<TEntity>()
                                    .AsNoTracking()
@@ -168,6 +167,11 @@
             await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
+        public virtual async Task UpdateAndRenameAsync(TEntity entity, string oldName)
+        {
+            //
+        }
+
         public virtual async Task UpdateRangeAsync(List<TEntity> entities)
         {
             _dbContext.UpdateRange(entities);
@@ -200,6 +204,14 @@
             _dbContext.RemoveRange(entities);
             await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
+
+        /*
+        public virtual async Task DeleteByIdAsync(string key)
+        {
+            var entity = _dbContext.Set<TEntity>().FirstOrDefault(x => x.Id == key);
+            await _dbContext.Set<TEntity>().DeleteAsync(entity);
+        }
+        */
 
         #endregion
 
