@@ -177,8 +177,7 @@
         {
             foreach (var assignment in _assignments)
             {
-                var deviceUUIDs = InstanceController.Instance.GetDeviceUuidsInInstance(name);
-                if (assignment.Enabled && assignment.Time != 0 && deviceUUIDs.Contains(assignment.DeviceUuid))
+                if (assignment.Enabled && assignment.Time == 0)
                 {
                     await TriggerAssignment(assignment, name).ConfigureAwait(false);
                 }
