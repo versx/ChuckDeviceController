@@ -43,8 +43,8 @@
         private readonly PokestopRepository _pokestopRepository;
         private readonly GeofenceRepository _geofenceRepository;
         private readonly WebhookRepository _webhookRepository;
-
         private readonly DeviceGroupRepository _deviceGroupRepository;
+        private readonly IVListRepository _ivListRepository;
 
         #endregion
 
@@ -67,6 +67,7 @@
             _geofenceRepository = new GeofenceRepository(_context);
             _webhookRepository = new WebhookRepository(_context);
             _deviceGroupRepository = new DeviceGroupRepository(_context);
+            _ivListRepository = new IVListRepository(_context);
         }
 
         #endregion
@@ -395,6 +396,12 @@
                 });
                 obj.circle_size = 70;
                 obj.nothing_selected = true;
+                var ivLists = await _ivListRepository.GetAllAsync().ConfigureAwait(false);
+                obj.iv_lists = ivLists.Select(x => new
+                {
+                    name = x.Name,
+                    selected = false,
+                });
                 obj.iv_queue_limit = 100;
                 obj.spin_limit = 3500;
                 obj.quest_retry_limit = 5;
@@ -424,10 +431,7 @@
                 var circleSize = Request.Form.ContainsKey("circle_size")
                     ? ushort.Parse(Request.Form["circle_size"].ToString() ?? "70")
                     : 70;
-                var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
-                var pokemonIds = pokemonIdsValue == "*"
-                    ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
-                    : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
+                var ivList = Request.Form["iv_list"].ToString();
                 var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
@@ -458,7 +462,7 @@
                     }
                 }
 
-                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided");
@@ -482,7 +486,7 @@
                     {
                         IVQueueLimit = ivQueueLimit,
                         SpinLimit = spinLimit,
-                        PokemonIds = pokemonIds,
+                        IVList = ivList,
                         Timezone = timezone,
                         EnableDst = enableDst,
                         CircleRouteType = circleRouteType,
@@ -552,7 +556,13 @@
                 obj.circle_route_type = instance.Data.CircleRouteType;
                 //        break;
                 //    case InstanceType.PokemonIV:
-                obj.pokemon_ids = instance.Data.PokemonIds == null ? null : string.Join("\n", instance.Data.PokemonIds);
+                //obj.pokemon_ids = instance.Data.PokemonIds == null ? null : string.Join("\n", instance.Data.PokemonIds);
+                var ivLists = await _ivListRepository.GetAllAsync().ConfigureAwait(false);
+                obj.iv_lists = ivLists.Select(x => new
+                {
+                    name = x.Name,
+                    selected = string.Compare(instance.Data.IVList, x.Name, true) == 0,
+                });
                 obj.iv_queue_limit = instance.Data.IVQueueLimit > 0 ? instance.Data.IVQueueLimit : 100;
                 //        break;
                 //    case InstanceType.AutoQuest:
@@ -608,10 +618,7 @@
                 var circleRouteType = Request.Form.ContainsKey("circle_route_type")
                     ? StringToCircleRouteType(Request.Form["circle_route_type"].ToString())
                     : CircleRouteType.Default;
-                var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
-                var pokemonIds = pokemonIdsValue == "*"
-                    ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
-                    : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?.Select(uint.Parse).ToList();
+                var ivList = Request.Form["iv_list"].ToString();
                 var ivQueueLimit = ushort.Parse(Request.Form["iv_queue_limit"]);
                 var spinLimit = ushort.Parse(Request.Form["spin_limit"]);
                 var fastBootstrapMode = Request.Form["fast_bootstrap_mode"].ToString() == "on";
@@ -619,7 +626,7 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
-                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided");
@@ -647,7 +654,7 @@
                     CircleRouteType = circleRouteType,
                     CircleSize = circleSize,
                     SpinLimit = spinLimit,
-                    PokemonIds = pokemonIds,
+                    IVList = ivList,
                     Timezone = timezone,
                     EnableDst = enableDst,
                     FastBootstrapMode = fastBootstrapMode,
@@ -1408,6 +1415,132 @@
                 var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
                 await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
                 return Redirect("/dashboard/webhooks");
+            }
+        }
+
+        #endregion
+
+        #region IV Lists
+
+        [HttpGet("/dashboard/ivlists")]
+        public IActionResult GetIVLists()
+        {
+            var obj = BuildDefaultData();
+            var data = TemplateRenderer.ParseTemplate("ivlists", obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        [
+            HttpGet("/dashboard/ivlist/add"),
+            HttpPost("/dashboard/ivlist/add"),
+        ]
+        public async Task<IActionResult> AddIVList()
+        {
+            if (Request.Method == "GET")
+            {
+                dynamic obj = BuildDefaultData();
+                var data = TemplateRenderer.ParseTemplate("ivlist-add", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                var name = Request.Form["name"].ToString();
+                var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
+                var pokemonIds = pokemonIdsValue == "*"
+                    ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
+                    : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?
+                                      .Select(uint.Parse)
+                                      .ToList();
+                
+                var ivList = await _ivListRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (ivList != null)
+                {
+                    // Already exists
+                    return BuildErrorResponse("ivlist-add", $"IV List with name '{name}' already exists");
+                }
+                ivList = new IVList
+                {
+                    Name = name,
+                    PokemonIDs = pokemonIds,
+                };
+                await _ivListRepository.AddOrUpdateAsync(ivList);
+                await IVListController.Instance.Reload();
+                return Redirect("/dashboard/ivlists");
+            }
+        }
+
+        [
+            HttpGet("/dashboard/ivlist/edit/{name}"),
+            HttpPost("/dashboard/ivlist/edit/{name}"),
+        ]
+        public async Task<IActionResult> EditIVList(string name)
+        {
+            if (Request.Method == "GET")
+            {
+                var ivList = await _ivListRepository.GetByIdAsync(name);
+                if (ivList == null)
+                {
+                    // Failed to get IV list by name
+                    return Redirect("/dashboard/ivlists");
+                }
+                dynamic obj = BuildDefaultData();
+                obj.name = ivList.Name;
+                obj.old_name = ivList.Name;
+                obj.pokemon_ids = string.Join("\n", ivList.PokemonIDs);
+                var data = TemplateRenderer.ParseTemplate("ivlist-edit", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                if (Request.Form.ContainsKey("delete"))
+                {
+                    var ivListToDelete = await _ivListRepository.GetByIdAsync(name).ConfigureAwait(false);
+                    if (ivListToDelete != null)
+                    {
+                        await _ivListRepository.DeleteAsync(ivListToDelete).ConfigureAwait(false);
+                        await IVListController.Instance.Reload().ConfigureAwait(false);
+                        _logger.LogDebug($"IV list {name} was deleted");
+                    }
+                    return Redirect("/dashboard/ivlists");
+                }
+
+                var newName = Request.Form["name"].ToString();
+                var oldName = Request.Form["old_name"].ToString();
+                var pokemonIdsValue = Request.Form["pokemon_ids"].ToString();
+                var pokemonIds = pokemonIdsValue == "*"
+                    ? Enumerable.Range(1, 999).Select(x => (uint)x).ToList()
+                    : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?
+                                      .Select(uint.Parse)
+                                      .ToList();
+                var ivList = await _ivListRepository.GetByIdAsync(oldName).ConfigureAwait(false);
+                if (ivList == null)
+                {
+                    // Does not exist
+                    return BuildErrorResponse("ivlist-edit", $"IV List with name '{name}' does not exist");
+                }
+                ivList = new IVList
+                {
+                    Name = oldName,
+                    PokemonIDs = pokemonIds,
+                };
+                await _ivListRepository.AddOrUpdateAsync(ivList);
+                await IVListController.Instance.Reload();
+                return Redirect("/dashboard/ivlists");
             }
         }
 
