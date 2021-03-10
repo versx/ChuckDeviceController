@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Common", "src\Chuck.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Configuration", "src\Chuck.Configuration\Chuck.Configuration.csproj", "{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Pvp", "Chuck.Pvp\Chuck.Pvp.csproj", "{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Pvp", "src\Chuck.Pvp\Chuck.Pvp.csproj", "{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
