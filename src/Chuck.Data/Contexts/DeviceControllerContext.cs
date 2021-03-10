@@ -48,6 +48,8 @@
 
         public DbSet<IVList> IVLists { get; set; }
 
+        public DbSet<User> Users { get; set; }
+
         public DbSet<Metadata> Metadata { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -88,6 +90,11 @@
             modelBuilder.Entity<IVList>()
                         .Property(nameof(IVList.PokemonIDs))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
+            /*
+            modelBuilder.Entity<User>()
+                        .Property(p => p.Permissions)
+                        .HasConversion(x => (int)x, x => (Permission)x);
+            */
 
             base.OnModelCreating(modelBuilder);
         }

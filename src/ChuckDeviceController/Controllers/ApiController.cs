@@ -27,6 +27,7 @@
         private readonly WebhookRepository _webhookRepository;
         private readonly DeviceGroupRepository _deviceGroupRepository;
         private readonly IVListRepository _ivListRepository;
+        private readonly UserRepository _userRepository;
 
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
@@ -54,6 +55,7 @@
             _webhookRepository = new WebhookRepository(_context);
             _deviceGroupRepository = new DeviceGroupRepository(_context);
             _ivListRepository = new IVListRepository(_context);
+            _userRepository = new UserRepository(_context);
         }
 
         #endregion
@@ -262,6 +264,28 @@
                 });
             }
             return new { data = new { webhooks = list } };
+        }
+
+        [
+            HttpPost("/api/users"),
+            Produces("application/json"),
+        ]
+        public async Task<dynamic> GetUsers()
+        {
+            var users = await _userRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var user in users)
+            {
+                list.Add(new
+                {
+                    name = user.Username,
+                    permissions = user.Permissions,
+                    status = "Test",
+                    enabled = user.Enabled ? "Yes" : "No",
+                    buttons = $"<a href='/dashboard/user/edit/{Uri.EscapeDataString(user.Username)}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
+                });
+            }
+            return new { data = new { users = list } };
         }
 
         [

@@ -74,6 +74,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Views\login.mustache" />
+    <None Remove="Views\user-add.mustache" />
+    <None Remove="Views\users.mustache" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="wwwroot\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

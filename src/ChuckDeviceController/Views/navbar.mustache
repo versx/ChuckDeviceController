@@ -51,6 +51,12 @@
                 </a>
             </li>
             <li>
+                <a href="/dashboard/users">
+                    <i class="fa fa-fw fa-user"></i>
+                    Users
+                </a>
+            </li>
+            <li>
                 <a href="/dashboard/utilities">
                     <i class="fa fa-fw fa-toolbox"></i>
                     Utilities
@@ -101,8 +107,6 @@
     $(document).ready(function () {
         // Get current URL path and assign 'active' class
         const pathname = window.location.pathname;
-        console.log('path:', pathname);
-        //$('#navbar > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
         $('#sidebar > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
         $('#sidebar > ul > li > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
         $('#sidebarCollapse').on('click', function () {

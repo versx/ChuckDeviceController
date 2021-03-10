@@ -20,6 +20,7 @@
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
     using ChuckDeviceController.Converters;
+    using ChuckDeviceController.Cryptography;
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Services;
 
@@ -30,6 +31,7 @@
 
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
+        //private readonly UserManagerService _userManager;
         private readonly IConnectionMultiplexer _redis;
         private readonly IDatabaseAsync _redisDatabase;
         private readonly ISubscriber _subscriber;
@@ -45,6 +47,7 @@
         private readonly WebhookRepository _webhookRepository;
         private readonly DeviceGroupRepository _deviceGroupRepository;
         private readonly IVListRepository _ivListRepository;
+        private readonly UserRepository _userRepository;
 
         #endregion
 
@@ -68,6 +71,7 @@
             _webhookRepository = new WebhookRepository(_context);
             _deviceGroupRepository = new DeviceGroupRepository(_context);
             _ivListRepository = new IVListRepository(_context);
+            _userRepository = new UserRepository(_context);
         }
 
         #endregion
@@ -95,6 +99,49 @@
                 ContentType = "text/html",
                 StatusCode = 200,
             };
+        }
+
+        [
+            HttpGet("/dashboard/login"),
+            HttpPost("/dashboard/login"),
+        ]
+        public async Task<IActionResult> Login()
+        {
+            if (Request.Method == "GET")
+            {
+                dynamic obj = BuildDefaultData();
+                var data = TemplateRenderer.ParseTemplate("login", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                var username = Request.Form["username"].ToString();
+                var password = Request.Form["password"].ToString();
+                var redirect = Request.Form["redirect"].ToString();
+                // Check if valid, if so continue
+                var isValid = true; // TODO: await _userManager.Login(username, password);
+                if (isValid)
+                {
+                    if (string.IsNullOrEmpty(redirect))
+                    {
+                        return Redirect("/dashboard");
+                    }
+                    return Redirect(redirect);
+                }
+                return Redirect("/dashboard/login");
+            }
+        }
+
+        [HttpGet("/dashboard/logout")]
+        public async Task<IActionResult> Logout()
+        {
+            //await _userManager.Logout();
+            return Redirect("/dashboard/login");
         }
 
         #region Devices
@@ -1612,6 +1659,124 @@
                 }
                 await _accountRepository.AddOrUpdateAsync(list).ConfigureAwait(false);
                 return Redirect("/dashboard/accounts");
+            }
+        }
+
+        #endregion
+
+        #region Users
+
+        [HttpGet("/dashboard/users")]
+        public IActionResult GetUsers()
+        {
+            var obj = BuildDefaultData();
+            var data = TemplateRenderer.ParseTemplate("users", obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        [
+            HttpGet("/dashboard/user/add"),
+            HttpPost("/dashboard/user/add"),
+        ]
+        public async Task<IActionResult> NewUser()
+        {
+            if (Request.Method == "GET")
+            {
+                var obj = BuildDefaultData();
+                var data = TemplateRenderer.ParseTemplate("user-add", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                var username = Request.Form["username"].ToString();
+                var password = Request.Form["password"].ToString();
+                var passwordConfirmed = Request.Form["password_confirm"].ToString();
+                if (password != passwordConfirmed)
+                {
+                    return BuildErrorResponse("user-add", "Passwords do not match");
+                }
+                var enabled = bool.Parse(Request.Form["enabled"].ToString());
+
+                var salt = Pbkdf2Hasher.GenerateRandomSalt();
+                var hashedPassword = Pbkdf2Hasher.ComputeHash(password, salt);
+                // TODO: Check permissions
+
+                var user = await _userRepository.GetByIdAsync(username).ConfigureAwait(false);
+                if (user != null)
+                {
+                    // User with name already exists
+                    return BuildErrorResponse("user-add", $"User account with name '{username}' already exists");
+                }
+                var now = DateTime.UtcNow.ToTotalSeconds();
+                user = new User
+                {
+                    Username = username,
+                    Password = hashedPassword,
+                    Permissions = Permission.None,
+                    Enabled = enabled,
+                    Created = now,
+                    Updated = now,
+                };
+                if (Request.Form.ContainsKey("perm_admin"))
+                    user.AddPermission(Permission.Admin);
+                if (Request.Form.ContainsKey("perm_view_only"))
+                    user.AddPermission(Permission.View);
+                if (Request.Form.ContainsKey("perm_devices"))
+                    user.AddPermission(Permission.Devices);
+                if (Request.Form.ContainsKey("perm_device_groups"))
+                    user.AddPermission(Permission.DeviceGroups);
+                if (Request.Form.ContainsKey("perm_assignments"))
+                    user.AddPermission(Permission.Assignments);
+                if (Request.Form.ContainsKey("perm_instances"))
+                    user.AddPermission(Permission.Instances);
+                if (Request.Form.ContainsKey("perm_geofences"))
+                    user.AddPermission(Permission.Geofences);
+                if (Request.Form.ContainsKey("perm_ivlists"))
+                    user.AddPermission(Permission.IVLists);
+                if (Request.Form.ContainsKey("perm_webhooks"))
+                    user.AddPermission(Permission.Webhooks);
+                if (Request.Form.ContainsKey("perm_accounts"))
+                    user.AddPermission(Permission.Accounts);
+                if (Request.Form.ContainsKey("perm_utilities"))
+                    user.AddPermission(Permission.Utilities);
+                if (Request.Form.ContainsKey("perm_settings"))
+                    user.AddPermission(Permission.Settings);
+
+                await _userRepository.AddAsync(user);
+                return Redirect("/dashboard/users");
+            }
+        }
+
+        [
+            HttpGet("/dashboard/user/edit/{name}"),
+            HttpPost("/dashboard/user/edit/{name}"),
+        ]
+        public IActionResult EditUser()
+        {
+            if (Request.Method == "GET")
+            {
+                var obj = BuildDefaultData();
+                var data = TemplateRenderer.ParseTemplate("user-edit", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                return Redirect("/dashboard/users");
             }
         }
 

@@ -60,6 +60,18 @@ namespace ChuckDeviceController
             //services.AddRazorPages();
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckDeviceController", Version = "v1" }));
 
+            //services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount);
+            //services.AddDefaultIdentity<User>()
+            //        .AddEntityFrameworkStores<DeviceControllerContext>();
+            //services.AddScoped<Services.UserManagerService>();
+            //services.AddIdentityCore<User>();
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = $"/dashboard/login";
+                options.LogoutPath = $"/dashboard/logout";
+                options.AccessDeniedPath = $"/account/access-denied";
+            });
+
             services.AddDbContextFactory<DeviceControllerContext>(options =>
                 options.UseMySql(DbConfig.ToString(), ServerVersion.AutoDetect(DbConfig.ToString())), ServiceLifetime.Singleton);
             services.AddDbContext<DeviceControllerContext>(options =>
@@ -162,6 +174,8 @@ namespace ChuckDeviceController
             {
                 app.UseMiniProfiler();
             }
+
+            app.UseAuthentication();
 
             //app.UseHttpsRedirection();
             app.UseDefaultFiles();

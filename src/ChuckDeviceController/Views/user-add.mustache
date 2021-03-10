@@ -1,0 +1,81 @@
+﻿{{> navbar}}
+
+<body class="{{body_class}}">
+    <br>
+    <div class="alert alert-danger w-75 {{^show_error}}d-none{{/show_error}}" style="float: none; margin: 0 auto;">
+        <strong>Error!</strong> {{error}}
+    </div>
+    {{#show_error}}<br>{{/show_error}}
+
+    <h1 align="center">Add a new User to {{title}}!</h1>
+    <br>
+    <div class="w-75" style="float: none; margin: 0 auto;">
+        <form action="" method="post">
+            <div class="form-group">
+                Username
+                <input type="text" class="form-control" name="username" value="{{username}}" required minlength="3" maxlength="30">
+            </div>
+            <div class="form-group">
+                Password
+                <input type="password" class="form-control" name="password" value="{{password}}" required minlength="8" maxlength="64">
+            </div>
+            <div class="form-group">
+                Confirm Password
+                <input type="password" class="form-control" name="password_confirm" value="" required minlength="8" maxlength="64">
+            </div>
+            <div class="form-group">
+                Email Address
+                <input type="email" class="form-control" name="email" value="{{email}}">
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="enabled" value="true" {{#enabled}} checked{{/enabled}}> Is Enabled</label>
+            </div>
+            <br>
+            <h4>Admin Permissions</h4>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_admin" value="perm_admin" {{#perm_admin}} checked{{/perm_admin}}> Admin</label>
+            </div>
+            <br>
+            <h4>Management Permissions</h4>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_view" value="perm_view" {{#perm_view_only}} checked{{/perm_view_only}}> View Only</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_devices" value="perm_devices" {{#perm_devices}} checked{{/perm_devices}}> Devices</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_device_groups" value="perm_device_groups" {{#perm_device_groups}} checked{{/perm_device_groups}}> Device Groups</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_assignments" value="perm_assignments" {{#perm_assignments}} checked{{/perm_assignments}}> Assignments</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_instances" value="perm_instances" {{#perm_instances}} checked{{/perm_instances}}> Instances</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_geofences" value="perm_geofences" {{#perm_geofences}} checked{{/perm_geofences}}> Geofences</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_ivlists" value="perm_ivlists" {{#perm_ivlists}} checked{{/perm_ivlists}}> IV Lists</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_webhooks" value="perm_webhooks" {{#perm_webhooks}} checked{{/perm_webhooks}}> Webhooks</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_accounts" value="perm_accounts" {{#perm_accounts}} checked{{/perm_accounts}}> Accounts</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_utilities" value="perm_utilities" {{#perm_utilities}} checked{{/perm_utilities}}> Utilities</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="perm_settings" value="perm_settings" {{#perm_settings}} checked{{/perm_settings}}> Settings</label>
+            </div>
+            <br>
+            <input type="hidden" name="_csrf" value="{{csrf}}">
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+    <br>
+</body>
+
+{{> footer}}

@@ -10,15 +10,20 @@
     using Chuck.Data.Entities;
     using Chuck.Data.Factories;
     using Chuck.Data.Repositories;
+    using Chuck.Extensions;
+    using ChuckDeviceController.Cryptography;
 
     /// <summary>
     /// Database migration class
     /// </summary>
     public class DatabaseMigrator
     {
+        private const string SetupKey = "SETUP";
+
         private static readonly ILogger<DatabaseMigrator> _logger =
             new Logger<DatabaseMigrator>(LoggerFactory.Create(x => x.AddConsole()));
         private readonly MetadataRepository _metadataRepository;
+        private readonly UserRepository _userRepository;
 
         /// <summary>
         /// Gets a value determining whether the migration has finished or not
@@ -40,6 +45,30 @@
         public DatabaseMigrator()
         {
             _metadataRepository = new MetadataRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _userRepository = new UserRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+
+            var isSetup = IsSetup().ConfigureAwait(false).GetAwaiter().GetResult();
+            if (!isSetup)
+            {
+                ConsoleExt.WriteWarn($"Root Account Information");
+                // Create default root user
+                var randomPassword = Pbkdf2Hasher.GeneratePassword();
+                var salt = Pbkdf2Hasher.GenerateRandomSalt();
+                var hashedPassword = Pbkdf2Hasher.ComputeHash(randomPassword, salt);
+                var user = _userRepository.CreateRootAccount(hashedPassword).ConfigureAwait(false).GetAwaiter().GetResult();
+                ConsoleExt.WriteWarn($"Username:\t{user.Username}");
+                ConsoleExt.WriteWarn($"Password:\t{randomPassword}");
+                ConsoleExt.WriteWarn($"Permissions:\t{user.Permissions}");
+                ConsoleExt.WriteWarn("-------------------------");
+                _metadataRepository.AddAsync(new Metadata
+                {
+                    Key = SetupKey,
+                    Value = "1",
+                });
+                // Wait 10 seconds so the user can copy the root password
+                ConsoleExt.WriteWarn("Waiting 10 seconds before starting...");
+                Thread.Sleep(10 * 1000);
+            }
 
             // Create the metadata table
             _metadataRepository.ExecuteSql(Strings.SQL_CREATE_TABLE_METADATA);
@@ -154,6 +183,12 @@
         public async Task<Metadata> GetMetadata(string key)
         {
             return await _metadataRepository.GetByIdAsync(key).ConfigureAwait(false);
+        }
+
+        private async Task<bool> IsSetup()
+        {
+            var isSetup = await GetMetadata(SetupKey).ConfigureAwait(false);
+            return isSetup?.Value == "1";
         }
     }
 }
