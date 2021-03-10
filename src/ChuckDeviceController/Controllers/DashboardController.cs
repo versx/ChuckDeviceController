@@ -876,11 +876,11 @@
                     : GeofenceType.Geofence;
                 var area = Request.Form["area"].ToString();
 
-                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var geofence = await _geofenceRepository.GetByIdAsync(oldName).ConfigureAwait(false);
                 if (geofence == null)
                 {
                     // Failed to find geofence by by name
-                    return BuildErrorResponse("geofence-edit", $"Geofence with name '{name}' does not exist");
+                    return BuildErrorResponse("geofence-edit", $"Geofence with name '{oldName}' does not exist");
                 }
 
                 dynamic newArea = null;
@@ -908,13 +908,32 @@
                             break;
                         }
                 }
-                geofence.Name = newName;
-                geofence.Type = type;
-                geofence.Data = new GeofenceData
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
                 {
-                    Area = newArea,
-                };
-                await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
+                    // Delete old geofence
+                    await _geofenceRepository.DeleteAsync(geofence);
+                    // Insert new geofence
+                    await _geofenceRepository.AddAsync(new Geofence
+                    {
+                        Name = newName,
+                        Type = type,
+                        Data = new GeofenceData
+                        {
+                            Area = newArea,
+                        }
+                    });
+                }
+                else
+                {
+                    geofence.Name = newName;
+                    geofence.Type = type;
+                    geofence.Data = new GeofenceData
+                    {
+                        Area = newArea,
+                    };
+                    await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
+                }
                 await GeofenceController.Instance.Reload();
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
@@ -1617,9 +1636,9 @@
                 // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
                 if (newName != oldName)
                 {
-                    // Delete old device group
+                    // Delete old IV list
                     await _ivListRepository.DeleteAsync(ivList);
-                    // Insert new device group
+                    // Insert new IV list
                     await _ivListRepository.AddAsync(new IVList
                     {
                         Name = newName,
