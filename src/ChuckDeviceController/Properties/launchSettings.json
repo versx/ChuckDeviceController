@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-     "ChuckDeviceController": {
+    "ChuckDeviceController": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

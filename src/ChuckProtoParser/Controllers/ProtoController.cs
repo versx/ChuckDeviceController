@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -113,6 +114,8 @@
                 return null;
             }
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             var device = await _deviceRepository.GetByIdAsync(payload.Uuid).ConfigureAwait(false);
             if (device != null)
             {
@@ -540,6 +543,29 @@
                 }
             }
             */
+
+            stopwatch.Stop();
+
+            var sb = new System.Text.StringBuilder();
+            sb.Append($"[{payload.Uuid}] ");
+            sb.Append($"Nearby: {nearbyPokemon}, ");
+            sb.Append($"Wild: {wildPokemon}, ");
+            sb.Append($"Forts: {forts}, ");
+            sb.Append($"Quests: {quests}, ");
+            sb.Append($"FortSearch: {fortSearch}, ");
+            sb.Append($"Encounters: {encounters}, ");
+            sb.Append($"Level: {payload.Level}, ");
+            sb.Append($"Only Empty GMOs: {containsGmo && isEmptyGmo}, ");
+            sb.Append($"Only Invalid GMOs: {containsGmo && isInvalidGmo}, ");
+            sb.Append($"Contains GMOs: {containsGmo}, ");
+            sb.Append($"InArea: {inArea}, ");
+            sb.Append($"Target Latitude: {targetCoord?.Latitude}, ");
+            sb.Append($"Target Longitude: {targetCoord?.Longitude}, ");
+            sb.Append($"Pokemon Latitude: {pokemonCoords?.Latitude}, ");
+            sb.Append($"Pokemon Longitude: {pokemonCoords?.Longitude}, ");
+            sb.Append($"Pokemon Encounter Id: {payload.PokemonEncounterId} ");
+            sb.Append($"parsed in {stopwatch.Elapsed.TotalSeconds}");
+            _logger.LogInformation(sb.ToString());
 
             return new ProtoResponse
             {

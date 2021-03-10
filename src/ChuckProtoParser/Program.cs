@@ -13,6 +13,7 @@ namespace ChuckProtoParser
     {
         public static void Main(string[] args)
         {
+            ConsoleExt.WriteInfo($"ProtoParser starting...");
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
             try
             {
@@ -38,7 +39,7 @@ namespace ChuckProtoParser
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls($"http://{Startup.Config.Interface}:{Startup.Config.Port}"); // TODO: Support for https and port + 1
+                    webBuilder.UseUrls($"http://{Startup.Config.ParserInterface}:{Startup.Config.ParserPort}"); // TODO: Support for https and port + 1
                 });
     }
 }

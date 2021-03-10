@@ -20,6 +20,7 @@
 
         static void Main(string[] args)
         {
+            ConsoleExt.WriteInfo($"WebhookProcessor starting...");
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
             try
             {

@@ -9,11 +9,17 @@
 
     public class Config
     {
-        [JsonPropertyName("interface")]
-        public string Interface { get; set; }
+        [JsonPropertyName("controllerInterface")]
+        public string ControllerInterface { get; set; }
 
-        [JsonPropertyName("port")]
-        public ushort Port { get; set; }
+        [JsonPropertyName("controllerPort")]
+        public ushort ControllerPort { get; set; }
+
+        [JsonPropertyName("parserInterface")]
+        public string ParserInterface { get; set; }
+
+        [JsonPropertyName("parserPort")]
+        public ushort ParserPort { get; set; }
 
         [JsonPropertyName("db")]
         public DatabaseConfig Database { get; set; }
