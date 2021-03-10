@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="POGOProtos.Core" Version="2.53.8" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-alpha.2" />
     <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
   </ItemGroup>
 
