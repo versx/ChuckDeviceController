@@ -45,6 +45,10 @@
         ]
         public ulong Updated { get; set; }
 
+        public Cell()
+        {
+        }
+
         public Cell(ulong cellId)
         {
             var s2cell = new S2Cell(new S2CellId(cellId));
