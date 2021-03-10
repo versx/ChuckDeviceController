@@ -23,6 +23,18 @@
         public InstanceType Type { get; set; }
 
         [
+            Column("min_level"),
+            JsonPropertyName("min_level"),
+        ]
+        public ushort MinimumLevel { get; set; }
+
+        [
+            Column("max_level"),
+            JsonPropertyName("max_level"),
+        ]
+        public ushort MaximumLevel { get; set; }
+
+        [
             Column("geofence"),
             JsonPropertyName("geofence"),
         ]

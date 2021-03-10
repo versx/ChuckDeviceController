@@ -11,11 +11,11 @@
         [JsonPropertyName("circle_route_type")]
         public CircleRouteType CircleRouteType { get; set; }
 
-        [JsonPropertyName("min_level")]
-        public ushort MinimumLevel { get; set; }
+        //[JsonPropertyName("min_level")]
+        //public ushort MinimumLevel { get; set; }
 
-        [JsonPropertyName("max_level")]
-        public ushort MaximumLevel { get; set; }
+        //[JsonPropertyName("max_level")]
+        //public ushort MaximumLevel { get; set; }
 
         [JsonPropertyName("timezone")]
         public string Timezone { get; set; }
@@ -29,8 +29,8 @@
         [JsonPropertyName("iv_queue_limit")]
         public ushort? IVQueueLimit { get; set; }
 
-        [JsonPropertyName("pokemon_ids")]
-        public List<uint> PokemonIds { get; set; }
+        [JsonPropertyName("iv_list")]
+        public string IVList { get; set; }
 
         [JsonPropertyName("spin_limit")]
         public ushort? SpinLimit { get; set; }
