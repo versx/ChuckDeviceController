@@ -1,3 +1,5 @@
+[![Build](https://github.com/versx/ChuckDeviceController/workflows/.NET%20Core/badge.svg)](https://github.com/versx/ChuckDeviceController/actions)
+[![GitHub Release](https://img.shields.io/github/release/versx/ChuckDeviceController.svg)](https://github.com/versx/ChuckDeviceController/releases/)
 [![GitHub Contributors](https://img.shields.io/github/contributors/versx/ChuckDeviceController.svg)](https://github.com/versx/ChuckDeviceController/graphs/contributors/)
 [![Discord](https://img.shields.io/discord/552003258000998401.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/zZ9h9Xa)  
 # Chuck Device Controller  
@@ -16,8 +18,9 @@ ChuckDeviceController is a C# based backend using Redis, ASP.NET Core, and Entit
 - MariaDB 10.5
 
 ## How It Works
-There are 3 parts to it:
-- ChuckDeviceController which will control devices, parse incoming protos, and device management dashboard UI.
+There are 4 parts to it:
+- ChuckDeviceController which will control devices and includes the device management dashboard UI.
+- ChuckProtoParser parses any raw incoming proto data and relays to Redis.  
 - DataConsumer will insert or upsert data from the redis queue containing parsed protos to consume with MySQL.
 - WebhookProcessor controls and filters webhooks and where to send newly updated events (Pokemon, Raids, etc).
 
@@ -59,9 +62,10 @@ https://download.visualstudio.microsoft.com/download/pr/a06c387d-2811-4fba-8b5f-
 1. Fill out `config.json`  
 1. Build project from root folder `~/.dotnet/dotnet build`
 1. Run ChuckDeviceController from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
-1. Run WebhookProcessor from `bin/` folder `~/.dotnet/dotnet WebhookProcessor.dll`  
-1. Run DataConsumer from `bin/` folder `~/.dotnet/dotnet DataConsumer.dll` or use [Chuck](https://github.com/WatWowMap/Chuck) as the backend data consumer.  
-1. Visit Dashboard at `http://LAN_MACHINE_IP:5001`  
+1. Run ChuckProtoParser from `bin/` folder `~/.dotnet/dotnet ChuckProtoParser.dll`  
+3. Run WebhookProcessor from `bin/` folder `~/.dotnet/dotnet WebhookProcessor.dll`  
+4. Run DataConsumer from `bin/` folder `~/.dotnet/dotnet DataConsumer.dll` or use [Chuck](https://github.com/WatWowMap/Chuck) as the backend data consumer.  
+5. Visit Dashboard at `http://LAN_MACHINE_IP:5001`  
 
 View all available API routes:  
 `http://LAN_MACHINE_IP:port/swagger`  
@@ -74,9 +78,13 @@ View profiler results:
 ```json
 {
     // Change to machine IP address
-    "interface": "LAN_MACHINE_IP",
-    // Listening port to receive data and control devices
-    "port": 5001,
+    "controllerInterface": "LAN_MACHINE_IP",
+    // Listening port to control devices
+    "controllerPort": 5000,
+    // Change to machine IP address
+    "parserInterface": "LAN_MACHINE_IP",
+    // Listening port to receive raw proto data
+    "parserPort": 5000,
     // Database information
     "db": {
         // Database host/IP address
@@ -111,3 +119,4 @@ View profiler results:
 - Finish MAD support
 - User management system for UI
 - Token/IP whilelist auth
+- Environment variables
