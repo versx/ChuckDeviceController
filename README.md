@@ -84,7 +84,7 @@ View profiler results:
     // Change to machine IP address
     "parserInterface": "LAN_MACHINE_IP",
     // Listening port to receive raw proto data
-    "parserPort": 5000,
+    "parserPort": 5001,
     // Database information
     "db": {
         // Database host/IP address
