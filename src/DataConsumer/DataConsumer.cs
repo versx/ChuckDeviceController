@@ -247,7 +247,7 @@
                             var cell = data.CellId;
                             lock (_cellsLock)
                             {
-                                _cells.Add(Cell.FromId(cell));
+                                _cells.Add(new Cell(cell));
                             }
                             var wildPokemon = data.Pokemon;
                             var timestampMs = data.TimestampMs;
@@ -361,8 +361,7 @@
                             lock (_cellsLock)
                             {
                                 var cellId = S2CellIdFromLatLng(data.Pokemon.Pokemon.Latitude, data.Pokemon.Pokemon.Longitude);
-                                var cell = Cell.FromId(cellId.Id);
-                                _cells.Add(cell);
+                                _cells.Add(new Cell(cellId.Id));
                             }
                             try
                             {
@@ -540,7 +539,7 @@
 
                             lock (_cellsLock)
                             {
-                                _cells.Add(Cell.FromId(cellId));
+                                _cells.Add(new Cell(cellId));
                             }
                             break;
                         }

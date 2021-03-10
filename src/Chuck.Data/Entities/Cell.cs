@@ -45,18 +45,15 @@
         ]
         public ulong Updated { get; set; }
 
-        public static Cell FromId(ulong cellId)
+        public Cell(ulong cellId)
         {
             var s2cell = new S2Cell(new S2CellId(cellId));
             var center = s2cell.RectBound.Center;
-            return new Cell
-            {
-                Id = cellId,
-                Latitude = center.LatDegrees,
-                Longitude = center.LngDegrees,
-                Level = 15,
-                Updated = DateTime.UtcNow.ToTotalSeconds(),
-            };
+            Id = cellId;
+            Latitude = center.LatDegrees;
+            Longitude = center.LngDegrees;
+            Level = 15;
+            Updated = DateTime.UtcNow.ToTotalSeconds();
         }
     }
 }
