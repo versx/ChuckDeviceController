@@ -156,6 +156,7 @@
                 {
                     name = instance.Name,
                     type = FormatInstanceType(instance.Type),
+                    level = $"{instance.MinimumLevel}-{instance.MaximumLevel}",
                     //count = totalCount == 0 ? "0" : $"{totalCount} ({onlineCount}/{offlineCount})",
                     count = totalCount == 0 ? "0" : $"{onlineCount}/{offlineCount}|{totalCount}",
                     geofence = instance.Geofence,
