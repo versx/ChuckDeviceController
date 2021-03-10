@@ -1,19 +1,21 @@
 {
-	"interface": "LAN_MACHINE_IP",
-	"port": 5001,
-	"db": {
-		"host": "127.0.0.1",
-		"port": 3306,
-		"username": "cdcuser",
-		"password": "cdcPass!",
-		"database": "cdcdb"
-	},
-	"redis": {
-		"host": "127.0.0.1",
-		"port": 6379,
-		"password": "",
-		"databaseNum": -1,
-		"queueName": "cdc"
-	},
-	"enableProfiler": true
+    "controllerInterface": "LAN_MACHINE_IP",
+    "controllerPort": 5000,
+    "parserInterface": "LAN_MACHINE_IP",
+    "parserPort": 5001,
+    "db": {
+        "host": "127.0.0.1",
+        "port": 3306,
+        "username": "cdcuser",
+        "password": "cdcPass!",
+        "database": "cdcdb"
+    },
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379,
+        "password": "",
+        "databaseNum": -1,
+        "queueName": "cdc"
+    },
+    "enableProfiler": true
 }
