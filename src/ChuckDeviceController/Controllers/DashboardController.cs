@@ -619,10 +619,10 @@
                     return Redirect("/dashboard/instances");
                 }
 
+                var oldName = Request.Form["old_name"].ToString();
                 var newName = Request.Form["name"].ToString();
                 var type = Instance.StringToInstanceType(Request.Form["type"]);
                 var geofence = Request.Form["geofence"].ToString();
-                //var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
                 var timezone = Request.Form["timezone"].ToString();
@@ -648,33 +648,66 @@
                     return BuildErrorResponse("instance-edit", "Invalid Quest Retry Limit value (Valid value: 1-255)");
                 }
 
-                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var instance = await _instanceRepository.GetByIdAsync(oldName).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Instance does not exist, create?
-                    return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist");
+                    return BuildErrorResponse("instance-edit", $"Instance with name '{oldName}' does not exist");
                 }
 
-                instance.Name = newName;
-                instance.Type = type;
-                instance.MinimumLevel = minLevel;
-                instance.MaximumLevel = maxLevel;
-                instance.Geofence = geofence;
-                instance.Data = new InstanceData
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
                 {
-                    IVQueueLimit = ivQueueLimit,
-                    CircleRouteType = circleRouteType,
-                    CircleSize = circleSize,
-                    SpinLimit = spinLimit,
-                    IVList = ivList,
-                    Timezone = timezone,
-                    EnableDst = enableDst,
-                    FastBootstrapMode = fastBootstrapMode,
-                    AccountGroup = accountGroup,
-                    IsEvent = isEvent,
-                };
-                await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
-                await InstanceController.Instance.ReloadInstance(instance, name).ConfigureAwait(false);
+                    // Delete old instance
+                    await _instanceRepository.DeleteAsync(instance);
+                    // Insert new instance
+                    var newInstance = new Instance
+                    {
+                        Name = newName,
+                        Type = type,
+                        MinimumLevel = minLevel,
+                        MaximumLevel = maxLevel,
+                        Geofence = geofence,
+                        Data = new InstanceData
+                        {
+                            IVQueueLimit = ivQueueLimit,
+                            CircleRouteType = circleRouteType,
+                            CircleSize = circleSize,
+                            SpinLimit = spinLimit,
+                            IVList = ivList,
+                            Timezone = timezone,
+                            EnableDst = enableDst,
+                            FastBootstrapMode = fastBootstrapMode,
+                            AccountGroup = accountGroup,
+                            IsEvent = isEvent,
+                        }
+                    };
+                    await _instanceRepository.AddAsync(newInstance);
+                    await InstanceController.Instance.ReloadInstance(newInstance, oldName).ConfigureAwait(false);
+                }
+                else
+                {
+                    instance.Name = newName;
+                    instance.Type = type;
+                    instance.MinimumLevel = minLevel;
+                    instance.MaximumLevel = maxLevel;
+                    instance.Geofence = geofence;
+                    instance.Data = new InstanceData
+                    {
+                        IVQueueLimit = ivQueueLimit,
+                        CircleRouteType = circleRouteType,
+                        CircleSize = circleSize,
+                        SpinLimit = spinLimit,
+                        IVList = ivList,
+                        Timezone = timezone,
+                        EnableDst = enableDst,
+                        FastBootstrapMode = fastBootstrapMode,
+                        AccountGroup = accountGroup,
+                        IsEvent = isEvent,
+                    };
+                    await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
+                    await InstanceController.Instance.ReloadInstance(instance, oldName).ConfigureAwait(false);
+                }
                 _logger.LogDebug($"Instance {name} was updated");
                 return Redirect("/dashboard/instances");
             }

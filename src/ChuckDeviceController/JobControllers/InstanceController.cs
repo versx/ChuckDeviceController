@@ -267,10 +267,9 @@
                             _devices[uuid] = device;
                         }
                     }
-                    _instances[oldInstanceName]?.Stop();
-                    _instances[oldInstanceName] = null;
                 }
             }
+            await RemoveInstance(oldInstanceName);
             await AddInstance(newInstance).ConfigureAwait(false);
         }
 
@@ -291,6 +290,7 @@
             {
                 _instances[instanceName]?.Stop();
                 _instances[instanceName] = null;
+                _instances.Remove(instanceName);
                 var devices = _devices.Where(d => string.Compare(d.Value.InstanceName, instanceName, true) == 0);
                 foreach (var device in devices)
                 {
