@@ -767,6 +767,7 @@
                     }
                 };
                 await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
+                await GeofenceController.Instance.Reload();
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
@@ -819,6 +820,7 @@
                         await _geofenceRepository.DeleteAsync(geofenceToDelete).ConfigureAwait(false);
                         _logger.LogDebug($"Geofence {name} was deleted");
                     }
+                    await GeofenceController.Instance.Reload();
                     return Redirect("/dashboard/geofences");
                 }
 
@@ -867,6 +869,7 @@
                     Area = newArea,
                 };
                 await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
+                await GeofenceController.Instance.Reload();
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
