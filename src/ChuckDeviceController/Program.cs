@@ -5,6 +5,7 @@ namespace ChuckDeviceController
     using System.Reflection;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
@@ -24,7 +25,9 @@ namespace ChuckDeviceController
 
     public static class Program
     {
-        public static void Main(string[] args)
+        static void Main(string[] args) => MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
+
+        static async Task MainAsync(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
             var org = Console.ForegroundColor;
@@ -52,6 +55,7 @@ namespace ChuckDeviceController
             }
             // Start database migrator
             var migrator = new DatabaseMigrator();
+            await migrator.Start().ConfigureAwait(false);
             while (!migrator.Finished)
             {
                 Thread.Sleep(50);

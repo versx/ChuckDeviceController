@@ -7,12 +7,12 @@
 
     using Chuck.Data.Entities;
 
-    public class UserManagerService
+    public class LoginService
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
 
-        public UserManagerService(UserManager<User> userManager, SignInManager<User> signInManager)
+        public LoginService(UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;

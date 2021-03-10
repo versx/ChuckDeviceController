@@ -46,8 +46,11 @@
         {
             _metadataRepository = new MetadataRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             _userRepository = new UserRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+        }
 
-            var isSetup = IsSetup().ConfigureAwait(false).GetAwaiter().GetResult();
+        public async Task Start()
+        {
+            var isSetup = await IsSetup().ConfigureAwait(false);
             if (!isSetup)
             {
                 ConsoleExt.WriteWarn($"Root Account Information");
@@ -55,12 +58,12 @@
                 var randomPassword = Pbkdf2Hasher.GeneratePassword();
                 var salt = Pbkdf2Hasher.GenerateRandomSalt();
                 var hashedPassword = Pbkdf2Hasher.ComputeHash(randomPassword, salt);
-                var user = _userRepository.CreateRootAccount(hashedPassword).ConfigureAwait(false).GetAwaiter().GetResult();
+                var user = await _userRepository.CreateRootAccount(hashedPassword).ConfigureAwait(false);
                 ConsoleExt.WriteWarn($"Username:\t{user.Username}");
                 ConsoleExt.WriteWarn($"Password:\t{randomPassword}");
                 ConsoleExt.WriteWarn($"Permissions:\t{user.Permissions}");
                 ConsoleExt.WriteWarn("-------------------------");
-                _metadataRepository.AddAsync(new Metadata
+                await _metadataRepository.AddAsync(new Metadata
                 {
                     Key = SetupKey,
                     Value = "1",
@@ -74,9 +77,7 @@
             _metadataRepository.ExecuteSql(Strings.SQL_CREATE_TABLE_METADATA);
 
             // Get current version from metadata table
-            var dbVersion = GetMetadata("DB_VERSION").ConfigureAwait(false)
-                                                     .GetAwaiter()
-                                                     .GetResult();
+            var dbVersion = await GetMetadata("DB_VERSION").ConfigureAwait(false);
             var currentVersion = int.Parse(dbVersion?.Value ?? "0");
 
             // Get newest version from migration files
@@ -91,7 +92,7 @@
                 _logger.LogInformation("MIGRATION IS ABOUT TO START IN 30 SECONDS, PLEASE MAKE SURE YOU HAVE A BACKUP!!!");
                 Thread.Sleep(30 * 1000);
             }
-            Migrate(currentVersion, newestVersion).GetAwaiter().GetResult();
+            await Migrate(currentVersion, newestVersion).ConfigureAwait(false);
         }
 
         /// <summary>
