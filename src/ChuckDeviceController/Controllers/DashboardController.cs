@@ -283,7 +283,7 @@
                 else
                 {
                     deviceGroup.Devices = devices;
-                    await _deviceGroupRepository.SaveAsync().ConfigureAwait(false);
+                    await _deviceGroupRepository.UpdateAsync(deviceGroup).ConfigureAwait(false);
                 }
                 return Redirect("/dashboard/devicegroups");
             }
@@ -870,6 +870,7 @@
                 }
 
                 var newName = Request.Form["name"].ToString();
+                var oldName = Request.Form["old_name"].ToString();
                 var type = Request.Form["type"].ToString() == "circle"
                     ? GeofenceType.Circle
                     : GeofenceType.Geofence;
@@ -1610,14 +1611,26 @@
                 if (ivList == null)
                 {
                     // Does not exist
-                    return BuildErrorResponse("ivlist-edit", $"IV List with name '{name}' does not exist");
+                    return BuildErrorResponse("ivlist-edit", $"IV List with name '{oldName}' does not exist");
                 }
-                ivList = new IVList
+
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
                 {
-                    Name = oldName,
-                    PokemonIDs = pokemonIds,
-                };
-                await _ivListRepository.AddOrUpdateAsync(ivList);
+                    // Delete old device group
+                    await _ivListRepository.DeleteAsync(ivList);
+                    // Insert new device group
+                    await _ivListRepository.AddAsync(new IVList
+                    {
+                        Name = newName,
+                        PokemonIDs = pokemonIds,
+                    });
+                }
+                else
+                {
+                    ivList.PokemonIDs = pokemonIds;
+                    await _ivListRepository.UpdateAsync(ivList).ConfigureAwait(false);
+                }
                 await IVListController.Instance.Reload();
                 return Redirect("/dashboard/ivlists");
             }
