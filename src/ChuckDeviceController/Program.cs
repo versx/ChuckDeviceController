@@ -6,12 +6,12 @@ namespace ChuckDeviceController
     using System.Text;
     using System.Threading;
 
-    using Chuck.Infrastructure.Configuration;
-    using Chuck.Infrastructure.Extensions;
-    using ChuckDeviceController.Data;
-
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
+
+    using Chuck.Configuration;
+    using Chuck.Extensions;
+    using ChuckDeviceController.Data;
 
     // TODO: Add 'bootstrap_complete' property to Instance.Data for bootstrap instance, add auto_complete_instance property
     // TODO: Implement cache better
@@ -26,7 +26,6 @@ namespace ChuckDeviceController
     {
         public static void Main(string[] args)
         {
-            //head app cant not uses consoleex
             Console.OutputEncoding = Encoding.UTF8;
             var org = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.White;

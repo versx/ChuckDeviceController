@@ -4,6 +4,7 @@ namespace ChuckDeviceController
     using System.IO;
     using System.Linq;
     using System.Net.Mime;
+    using System.Threading;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -21,11 +22,13 @@ namespace ChuckDeviceController
     using Microsoft.OpenApi.Models;
     using StackExchange.Redis;
 
-    using Chuck.Infrastructure.Configuration;
-    using Chuck.Infrastructure.Data.Contexts;
-    using Chuck.Infrastructure.Data.Interfaces;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Extensions;
+    using Chuck.Common;
+    using Chuck.Configuration;
+    using Chuck.Data.Contexts;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Interfaces;
+    using Chuck.Data.Repositories;
+    using Chuck.Extensions;
     using ChuckDeviceController.JobControllers;
 
     public class Startup
@@ -33,6 +36,9 @@ namespace ChuckDeviceController
         public static Config Config { get; set; }
 
         public static DatabaseConfig DbConfig => Config?.Database;
+
+        private IConnectionMultiplexer _redis;
+        private ISubscriber _subscriber;
 
         public Startup(IConfiguration configuration)
         {
@@ -119,6 +125,11 @@ namespace ChuckDeviceController
 
             await InstanceController.Instance.Start().ConfigureAwait(false);
             await AssignmentController.Instance.Start().ConfigureAwait(false);
+
+            // TODO: Better impl, use singleton class
+            _redis = ConnectionMultiplexer.Connect(options);
+            _subscriber = _redis.GetSubscriber();
+            _subscriber.Subscribe("*", PokemonSubscriptionHandler);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -174,6 +185,31 @@ namespace ChuckDeviceController
                 endpoints.MapHealthChecks("api_health_check");
                 //endpoints.MapRazorPages();
             });
+        }
+
+        private void PokemonSubscriptionHandler(RedisChannel channel, RedisValue message)
+        {
+            switch (channel)
+            {
+                case RedisChannels.PokemonAdded:
+                    {
+                        var pokemon = message.ToString().FromJson<Pokemon>();
+                        if (pokemon != null)
+                        {
+                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotPokemon(pokemon));
+                        }
+                        break;
+                    }
+                case RedisChannels.PokemonUpdated:
+                    {
+                        var pokemon = message.ToString().FromJson<Pokemon>();
+                        if (pokemon != null)
+                        {
+                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotIV(pokemon));
+                        }
+                        break;
+                    }
+            }
         }
     }
 }

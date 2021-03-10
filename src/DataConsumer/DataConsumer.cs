@@ -12,12 +12,12 @@
     using POGOProtos.Rpc;
     using StackExchange.Redis;
 
-    using Chuck.Infrastructure.Common;
-    using Chuck.Infrastructure.Configuration;
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Data.Factories;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Extensions;
+    using Chuck.Common;
+    using Chuck.Configuration;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Factories;
+    using Chuck.Data.Repositories;
+    using Chuck.Extensions;
 
     using Models;
 

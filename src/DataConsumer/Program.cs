@@ -3,8 +3,8 @@
     using System;
     using System.IO;
 
-    using Chuck.Infrastructure.Configuration;
-    using Chuck.Infrastructure.Extensions;
+    using Chuck.Configuration;
+    using Chuck.Extensions;
 
     class Program
     {

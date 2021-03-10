@@ -6,7 +6,7 @@
 
     using HandlebarsDotNet;
 
-    using Chuck.Infrastructure.Extensions;
+    using Chuck.Extensions;
 
     public static class TemplateRenderer
     {

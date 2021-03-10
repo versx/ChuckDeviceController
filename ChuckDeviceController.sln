@@ -5,11 +5,25 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController", "src\ChuckDeviceController\ChuckDeviceController.csproj", "{500922A4-9CA2-4CAC-B9A4-6EF7004FD9AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataConsumer", "src\DataConsumer\DataConsumer.csproj", "{3C8DB8CD-8835-4397-BA53-C8ED48B59904}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataConsumer", "src\DataConsumer\DataConsumer.csproj", "{3C8DB8CD-8835-4397-BA53-C8ED48B59904}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebhookProcessor", "src\WebhookProcessor\WebhookProcessor.csproj", "{A5308B7A-9B88-4411-BC2E-E438846681B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebhookProcessor", "src\WebhookProcessor\WebhookProcessor.csproj", "{A5308B7A-9B88-4411-BC2E-E438846681B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Infrastructure", "src\Chuck.Infrastructure\Chuck.Infrastructure.csproj", "{E461AC4F-F4EF-436F-92C2-96EEE280ABBF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckProtoParser", "src\ChuckProtoParser\ChuckProtoParser.csproj", "{E30FE869-21E6-4223-8A9B-1D09A920A17B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Data", "src\Chuck.Data\Chuck.Data.csproj", "{646FD349-6699-4D4A-BB86-3AE968638198}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Geometry", "src\Chuck.Geometry\Chuck.Geometry.csproj", "{1DB2AA38-2967-4314-A300-9BF651713C81}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Extensions", "src\Chuck.Extensions\Chuck.Extensions.csproj", "{FA37EDD5-2A95-4348-9EF9-92615174B8E9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{6584334A-42F9-409D-9C21-4FA6338B7095}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Common", "src\Chuck.Common\Chuck.Common.csproj", "{ADEC3C2F-5374-40A0-8100-942825CD3079}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Configuration", "src\Chuck.Configuration\Chuck.Configuration.csproj", "{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Pvp", "Chuck.Pvp\Chuck.Pvp.csproj", "{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,13 +43,45 @@ Global
 		{A5308B7A-9B88-4411-BC2E-E438846681B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5308B7A-9B88-4411-BC2E-E438846681B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5308B7A-9B88-4411-BC2E-E438846681B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E461AC4F-F4EF-436F-92C2-96EEE280ABBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E461AC4F-F4EF-436F-92C2-96EEE280ABBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E461AC4F-F4EF-436F-92C2-96EEE280ABBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E461AC4F-F4EF-436F-92C2-96EEE280ABBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E30FE869-21E6-4223-8A9B-1D09A920A17B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E30FE869-21E6-4223-8A9B-1D09A920A17B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E30FE869-21E6-4223-8A9B-1D09A920A17B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E30FE869-21E6-4223-8A9B-1D09A920A17B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{646FD349-6699-4D4A-BB86-3AE968638198}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{646FD349-6699-4D4A-BB86-3AE968638198}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{646FD349-6699-4D4A-BB86-3AE968638198}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{646FD349-6699-4D4A-BB86-3AE968638198}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DB2AA38-2967-4314-A300-9BF651713C81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DB2AA38-2967-4314-A300-9BF651713C81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DB2AA38-2967-4314-A300-9BF651713C81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DB2AA38-2967-4314-A300-9BF651713C81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA37EDD5-2A95-4348-9EF9-92615174B8E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA37EDD5-2A95-4348-9EF9-92615174B8E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA37EDD5-2A95-4348-9EF9-92615174B8E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA37EDD5-2A95-4348-9EF9-92615174B8E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADEC3C2F-5374-40A0-8100-942825CD3079}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADEC3C2F-5374-40A0-8100-942825CD3079}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADEC3C2F-5374-40A0-8100-942825CD3079}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADEC3C2F-5374-40A0-8100-942825CD3079}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{646FD349-6699-4D4A-BB86-3AE968638198} = {6584334A-42F9-409D-9C21-4FA6338B7095}
+		{1DB2AA38-2967-4314-A300-9BF651713C81} = {6584334A-42F9-409D-9C21-4FA6338B7095}
+		{FA37EDD5-2A95-4348-9EF9-92615174B8E9} = {6584334A-42F9-409D-9C21-4FA6338B7095}
+		{ADEC3C2F-5374-40A0-8100-942825CD3079} = {6584334A-42F9-409D-9C21-4FA6338B7095}
+		{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997} = {6584334A-42F9-409D-9C21-4FA6338B7095}
+		{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A} = {6584334A-42F9-409D-9C21-4FA6338B7095}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {70AD1516-D444-4A61-936C-DD5BB1FC4564}

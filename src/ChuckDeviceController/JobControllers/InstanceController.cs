@@ -9,16 +9,16 @@
 
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.Common;
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Data.Factories;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Geofence.Models;
-    using Chuck.Infrastructure.JobControllers;
+    using Chuck.Common;
+    using Chuck.Common.JobControllers;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Factories;
+    using Chuck.Data.Repositories;
+    using Chuck.Geometry.Geofence.Models;
     using ChuckDeviceController.JobControllers.Instances;
     using ChuckDeviceController.Services;
 
-    using Geofence = Chuck.Infrastructure.Data.Entities.Geofence;
+    using Geofence = Chuck.Data.Entities.Geofence;
 
     public class InstanceController
     {

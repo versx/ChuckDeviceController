@@ -7,10 +7,10 @@
 
     using StackExchange.Redis;
 
-    using Chuck.Infrastructure.Common;
-    using Chuck.Infrastructure.Configuration;
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Extensions;
+    using Chuck.Common;
+    using Chuck.Configuration;
+    using Chuck.Data.Entities;
+    using Chuck.Extensions;
 
     class Program
     {
