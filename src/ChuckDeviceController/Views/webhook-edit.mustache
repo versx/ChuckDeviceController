@@ -95,9 +95,9 @@
             <div class="form-group">
                 Select Scan Area (Empty Includes Everything)
                 <select class="form-control" name="geofence" required>
-                    <option value="all" {{#nothing_selected}}selected{{/nothing_selected}}>Any Area</option>
+                    <option value="all" {{#nothing_selected}} selected{{/nothing_selected}}>Any Area</option>
                     {{#each geofences}}
-                    <option value="{{name}}" class="{{type}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+                    <option value="{{name}}" class="{{type}}" {{#selected}} selected{{/selected}}>{{name}}</option>
                     {{/each}}
                 </select>
             </div>
@@ -107,6 +107,7 @@
             </div>
             <br>
             <input type="hidden" name="_csrf" value="{{csrf}}">
+            <input type="hidden" name="old_name" value="{{old_name}}">
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
         <br>

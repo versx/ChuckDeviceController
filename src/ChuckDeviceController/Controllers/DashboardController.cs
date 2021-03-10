@@ -1413,6 +1413,7 @@
                 }
 
                 var newName = Request.Form["name"].ToString();
+                var oldName = Request.Form["old_name"].ToString();
                 var types = Webhook.StringToWebhookTypes(Request.Form["types"]);
                 var url = Request.Form["url"].ToString();
                 var delay = double.Parse(Request.Form["delay"].ToString() ?? "5");
@@ -1434,32 +1435,62 @@
                 }
 
                 // Make sure geofence exists
-                var webhook = await _webhookRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var webhook = await _webhookRepository.GetByIdAsync(oldName).ConfigureAwait(false);
                 if (webhook == null)
                 {
                     // Webhook does not exist
-                    return BuildErrorResponse("webhook-edit", $"Webhook with name '{name}' does not exist");
+                    return BuildErrorResponse("webhook-edit", $"Webhook with name '{oldName}' does not exist");
                 }
 
-                webhook.Name = name;
-                webhook.Types = types;
-                webhook.Url = url;
-                webhook.Delay = delay;
-                webhook.Geofence = string.Compare(geofence, Strings.All, true) == 0 ? null : geofence;
-                webhook.Enabled = enabled;
-                webhook.Data = new WebhookData
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
                 {
-                    PokemonIds = pokemonIds,
-                    PokestopIds = pokestopIds,
-                    RaidPokemonIds = raidIds,
-                    EggLevels = eggLevels,
-                    LureIds = lureIds,
-                    InvasionIds = invasionIds,
-                    GymTeamIds = gymIds,
-                    WeatherConditionIds = weatherIds,
-                };
-                await _webhookRepository.UpdateAsync(webhook).ConfigureAwait(false);
-                // Send redis webhook:reload event
+                    // Delete old webhook
+                    await _webhookRepository.DeleteAsync(webhook);
+                    // Insert new webhook
+                    await _webhookRepository.AddAsync(new Webhook
+                    {
+                        Name = newName,
+                        Types = types,
+                        Url = url,
+                        Delay = delay,
+                        Geofence = string.Compare(geofence, Strings.All, true) == 0 ? null : geofence,
+                        Enabled = enabled,
+                        Data = new WebhookData
+                        {
+                            PokemonIds = pokemonIds,
+                            PokestopIds = pokestopIds,
+                            RaidPokemonIds = raidIds,
+                            EggLevels = eggLevels,
+                            LureIds = lureIds,
+                            InvasionIds = invasionIds,
+                            GymTeamIds = gymIds,
+                            WeatherConditionIds = weatherIds,
+                        }
+                    });
+                }
+                else
+                {
+                    webhook.Name = name;
+                    webhook.Types = types;
+                    webhook.Url = url;
+                    webhook.Delay = delay;
+                    webhook.Geofence = string.Compare(geofence, Strings.All, true) == 0 ? null : geofence;
+                    webhook.Enabled = enabled;
+                    webhook.Data = new WebhookData
+                    {
+                        PokemonIds = pokemonIds,
+                        PokestopIds = pokestopIds,
+                        RaidPokemonIds = raidIds,
+                        EggLevels = eggLevels,
+                        LureIds = lureIds,
+                        InvasionIds = invasionIds,
+                        GymTeamIds = gymIds,
+                        WeatherConditionIds = weatherIds,
+                    };
+                    await _webhookRepository.UpdateAsync(webhook).ConfigureAwait(false);
+                }
+                
                 var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
                 await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
                 return Redirect("/dashboard/webhooks");
