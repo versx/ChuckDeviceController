@@ -475,13 +475,13 @@
                 {
                     Name = name,
                     Type = type,
+                    MinimumLevel = minLevel,
+                    MaximumLevel = maxLevel,
                     Geofence = geofence,
                     Data = new InstanceData
                     {
                         IVQueueLimit = ivQueueLimit,
                         SpinLimit = spinLimit,
-                        MinimumLevel = minLevel,
-                        MaximumLevel = maxLevel,
                         PokemonIds = pokemonIds,
                         Timezone = timezone,
                         EnableDst = enableDst,
@@ -512,14 +512,12 @@
                     // Failed to get instance by name
                     return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist");
                 }
-                var minLevel = instance.Data.MinimumLevel;
-                var maxLevel = instance.Data.MaximumLevel;
                 dynamic obj = BuildDefaultData();
                 obj.name = name;
                 obj.geofence = instance.Geofence;
                 obj.old_name = name;
-                obj.min_level = minLevel;
-                obj.max_level = maxLevel;
+                obj.min_level = instance.MinimumLevel;
+                obj.max_level = instance.MaximumLevel;
                 obj.account_group = instance.Data.AccountGroup;
                 obj.is_event = instance.Data.IsEvent ? "checked" : null;
                 obj.circle_pokemon_selected = instance.Type == InstanceType.CirclePokemon;
@@ -640,6 +638,8 @@
 
                 instance.Name = newName;
                 instance.Type = type;
+                instance.MinimumLevel = minLevel;
+                instance.MaximumLevel = maxLevel;
                 instance.Geofence = geofence;
                 instance.Data = new InstanceData
                 {
@@ -647,8 +647,6 @@
                     CircleRouteType = circleRouteType,
                     CircleSize = circleSize,
                     SpinLimit = spinLimit,
-                    MinimumLevel = minLevel,
-                    MaximumLevel = maxLevel,
                     PokemonIds = pokemonIds,
                     Timezone = timezone,
                     EnableDst = enableDst,

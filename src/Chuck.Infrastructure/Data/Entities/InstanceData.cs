@@ -11,11 +11,11 @@
         [JsonPropertyName("circle_route_type")]
         public CircleRouteType CircleRouteType { get; set; }
 
-        [JsonPropertyName("min_level")]
-        public ushort MinimumLevel { get; set; }
+        //[JsonPropertyName("min_level")]
+        //public ushort MinimumLevel { get; set; }
 
-        [JsonPropertyName("max_level")]
-        public ushort MaximumLevel { get; set; }
+        //[JsonPropertyName("max_level")]
+        //public ushort MaximumLevel { get; set; }
 
         [JsonPropertyName("timezone")]
         public string Timezone { get; set; }

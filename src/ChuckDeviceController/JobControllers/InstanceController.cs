@@ -154,8 +154,8 @@
                                 ? area
                                 : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
                         );
-                        var minLevel = instance.Data.MinimumLevel;
-                        var maxLevel = instance.Data.MaximumLevel;
+                        var minLevel = instance.MinimumLevel;
+                        var maxLevel = instance.MaximumLevel;
                         switch (instance.Type)
                         {
                             case InstanceType.CirclePokemon:
@@ -207,8 +207,8 @@
                             }
                             areaArrayEmptyInner.Add(multiPolygon);
                         }
-                        var minLevel = instance.Data.MinimumLevel;
-                        var maxLevel = instance.Data.MaximumLevel;
+                        var minLevel = instance.MinimumLevel;
+                        var maxLevel = instance.MaximumLevel;
                         switch (instance.Type)
                         {
                             case InstanceType.AutoQuest:
