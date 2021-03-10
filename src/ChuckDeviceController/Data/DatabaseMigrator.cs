@@ -7,9 +7,9 @@
 
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Data.Factories;
-    using Chuck.Infrastructure.Data.Repositories;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Factories;
+    using Chuck.Data.Repositories;
 
     /// <summary>
     /// Database migration class

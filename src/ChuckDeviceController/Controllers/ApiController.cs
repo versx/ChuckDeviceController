@@ -8,10 +8,10 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.Data.Contexts;
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Extensions;
+    using Chuck.Data.Contexts;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Repositories;
+    using Chuck.Extensions;
     using ChuckDeviceController.JobControllers;
 
     [ApiController]
@@ -156,6 +156,7 @@
                 {
                     name = instance.Name,
                     type = FormatInstanceType(instance.Type),
+                    level = $"{instance.MinimumLevel}-{instance.MaximumLevel}",
                     //count = totalCount == 0 ? "0" : $"{totalCount} ({onlineCount}/{offlineCount})",
                     count = totalCount == 0 ? "0" : $"{onlineCount}/{offlineCount}|{totalCount}",
                     geofence = instance.Geofence,

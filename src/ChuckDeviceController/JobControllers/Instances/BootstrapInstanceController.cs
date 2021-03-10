@@ -6,9 +6,9 @@
 
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.JobControllers;
-    using Chuck.Infrastructure.JobControllers.Tasks;
-    using Chuck.Infrastructure.Geofence.Models;
+    using Chuck.Common.JobControllers;
+    using Chuck.Common.JobControllers.Tasks;
+    using Chuck.Geometry.Geofence.Models;
     using ChuckDeviceController.Services.Routes;
 
     public class BootstrapInstanceController : IJobController

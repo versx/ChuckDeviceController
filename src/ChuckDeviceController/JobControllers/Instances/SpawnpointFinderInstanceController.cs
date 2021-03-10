@@ -7,13 +7,13 @@
 
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Data.Factories;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Geofence.Models;
-    using Geofence = Chuck.Infrastructure.Geofence.Models.Geofence;
-    using Chuck.Infrastructure.JobControllers;
-    using Chuck.Infrastructure.JobControllers.Tasks;
+    using Chuck.Common.JobControllers;
+    using Chuck.Common.JobControllers.Tasks;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Factories;
+    using Chuck.Data.Repositories;
+    using Chuck.Geometry.Geofence.Models;
+    using Geofence = Chuck.Geometry.Geofence.Models.Geofence;
 
     public class SpawnpointFinderInstanceController : IJobController
     {
@@ -156,7 +156,13 @@
                     MinimumLongitude = geofence.Min(x => x.Longitude),
                     MaximumLongitude = geofence.Max(x => x.Longitude),
                 };
-                var spawnpoints = await _spawnpointRepository.GetAllAsync(bbox, true).ConfigureAwait(false);
+                var spawnpoints = await _spawnpointRepository.GetAllAsync(
+                    bbox.MinimumLatitude,
+                    bbox.MinimumLongitude,
+                    bbox.MaximumLatitude,
+                    bbox.MinimumLongitude,
+                    true
+                ).ConfigureAwait(false);
                 var spawnCoords = spawnpoints.Select(x => new Coordinate(x.Latitude, x.Longitude));
                 list.AddRange(spawnCoords);
             }

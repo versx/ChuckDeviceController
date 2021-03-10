@@ -5,7 +5,7 @@
     using System.IO;
     using System.Text.Json.Serialization;
 
-    using Chuck.Infrastructure.Extensions;
+    using Chuck.Extensions;
 
     public class TimeZoneService
     {

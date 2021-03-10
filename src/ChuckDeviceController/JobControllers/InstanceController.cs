@@ -9,16 +9,14 @@
 
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.Common;
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Data.Factories;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Geofence.Models;
-    using Chuck.Infrastructure.JobControllers;
+    using Chuck.Common;
+    using Chuck.Common.JobControllers;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Factories;
+    using Chuck.Data.Repositories;
+    using Chuck.Geometry.Geofence.Models;
     using ChuckDeviceController.JobControllers.Instances;
     using ChuckDeviceController.Services;
-
-    using Geofence = Chuck.Infrastructure.Data.Entities.Geofence;
 
     public class InstanceController
     {
@@ -30,7 +28,6 @@
         private readonly IDictionary<string, IJobController> _instances;
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
-        private readonly GeofenceRepository _geofenceRepository;
 
         private readonly object _instancesLock = new object();
         private readonly object _devicesLock = new object();
@@ -53,7 +50,6 @@
             _instances = new Dictionary<string, IJobController>();
             _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             _instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _geofenceRepository = new GeofenceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
 
             _logger = new Logger<InstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _logger.LogInformation("Starting instances...");
@@ -67,13 +63,12 @@
         {
             var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
             var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-            var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
             foreach (var instance in instances)
             {
                 if (!ThreadPool.QueueUserWorkItem(async _ =>
                 {
                     _logger.LogInformation($"Starting {instance.Name}");
-                    await AddInstance(instance, geofences).ConfigureAwait(false);
+                    await AddInstance(instance).ConfigureAwait(false);
                     _logger.LogInformation($"Started {instance.Name}");
                     foreach (var device in devices.AsEnumerable().Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0))
                     {
@@ -130,10 +125,10 @@
             return "Error";
         }
 
-        public async Task AddInstance(Instance instance, IReadOnlyList<Geofence> geofences = null)
+        public async Task AddInstance(Instance instance)
         {
             IJobController instanceController = null;
-            var geofence = await GetGeofence(instance, geofences).ConfigureAwait(false);
+            var geofence = GeofenceController.Instance.GetGeofence(instance.Geofence);
             if (geofence == null)
             {
                 // Failed to get geofence, skip?
@@ -254,6 +249,7 @@
             {
                 _instances[instance.Name] = instanceController;
             }
+            await Task.CompletedTask;
         }
 
         public async Task ReloadInstance(Instance newInstance, string oldInstanceName)
@@ -420,32 +416,6 @@
         private async Task RemoveInstance(Instance instance)
         {
             await RemoveInstance(instance.Name).ConfigureAwait(false);
-        }
-
-        private async Task<Geofence> GetGeofence(Instance instance, IReadOnlyList<Geofence> geofences = null)
-        {
-            Geofence geofence = null;
-            if (geofences == null)
-            {
-                try
-                {
-                    geofence = await _geofenceRepository.GetByIdAsync(instance.Geofence).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Error: {ex}");
-                }
-            }
-            else
-            {
-                geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
-            }
-            if (geofence == null)
-            {
-                // Failed to get geofence for instance
-                _logger.LogWarning($"[{instance.Name}] Failed to get geofence for instance, are you sure it's assigned one?");
-            }
-            return geofence;
         }
 
         #endregion

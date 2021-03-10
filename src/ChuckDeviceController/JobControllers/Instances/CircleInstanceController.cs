@@ -6,11 +6,11 @@
 
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.Common;
-    using Chuck.Infrastructure.Extensions;
-    using Chuck.Infrastructure.Geofence.Models;
-    using Chuck.Infrastructure.JobControllers;
-    using Chuck.Infrastructure.JobControllers.Tasks;
+    using Chuck.Common;
+    using Chuck.Common.JobControllers;
+    using Chuck.Common.JobControllers.Tasks;
+    using Chuck.Extensions;
+    using Chuck.Geometry.Geofence.Models;
 
     public class CircleInstanceController : IJobController
     {

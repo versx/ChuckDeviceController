@@ -8,14 +8,14 @@
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.Data.Contexts;
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Extensions;
-    using Chuck.Infrastructure.JobControllers.Tasks;
+    using Chuck.Common.JobControllers.Tasks;
+    using Chuck.Common.Net.Models.Requests;
+    using Chuck.Common.Net.Models.Responses;
+    using Chuck.Data.Contexts;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Repositories;
+    using Chuck.Extensions;
     using ChuckDeviceController.JobControllers;
-    using ChuckDeviceController.Net.Models.Requests;
-    using ChuckDeviceController.Net.Models.Responses;
 
     [ApiController]
     public class DeviceController : ControllerBase

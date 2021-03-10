@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
-    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -14,12 +13,13 @@
     using StackExchange.Redis;
     using Z.EntityFramework.Plus;
 
-    using Chuck.Infrastructure.Common;
-    using Chuck.Infrastructure.Data.Contexts;
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Extensions;
-    using Chuck.Infrastructure.Utilities;
+    using Chuck.Common;
+    using Chuck.Common.Utilities;
+    using Chuck.Data.Contexts;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Repositories;
+    using Chuck.Extensions;
+    using ChuckDeviceController.Converters;
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Services;
 
@@ -767,6 +767,7 @@
                     }
                 };
                 await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
+                await GeofenceController.Instance.Reload();
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
@@ -819,6 +820,7 @@
                         await _geofenceRepository.DeleteAsync(geofenceToDelete).ConfigureAwait(false);
                         _logger.LogDebug($"Geofence {name} was deleted");
                     }
+                    await GeofenceController.Instance.Reload();
                     return Redirect("/dashboard/geofences");
                 }
 
@@ -867,6 +869,7 @@
                     Area = newArea,
                 };
                 await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
+                await GeofenceController.Instance.Reload();
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }

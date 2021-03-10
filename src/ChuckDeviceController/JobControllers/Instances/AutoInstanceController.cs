@@ -8,15 +8,16 @@
     using Google.Common.Geometry;
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Infrastructure.Data.Contexts;
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Data.Factories;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Extensions;
-    using Chuck.Infrastructure.Geofence;
-    using Chuck.Infrastructure.Geofence.Models;
-    using Chuck.Infrastructure.JobControllers;
-    using Chuck.Infrastructure.JobControllers.Tasks;
+    using Chuck.Common.JobControllers;
+    using Chuck.Common.JobControllers.Tasks;
+    using Chuck.Data.Contexts;
+    using Chuck.Data.Entities;
+    using Chuck.Data.Factories;
+    using Chuck.Data.Repositories;
+    using Chuck.Extensions;
+    using Chuck.Geometry.Geofence;
+    using Chuck.Geometry.Geofence.Models;
+    using ChuckDeviceController.Extensions;
 
     public enum AutoType
     {
@@ -466,8 +467,13 @@
                         try
                         {
                             // Get all existing Pokestops within geofence bounds
-                            var bounds = polygon.GetBoundingBox();
-                            var stops = await _pokestopRepository.GetAllAsync(bounds).ConfigureAwait(false);
+                            var bbox = polygon.GetBoundingBox();
+                            var stops = await _pokestopRepository.GetAllAsync(
+                                bbox.MinimumLatitude,
+                                bbox.MinimumLongitude,
+                                bbox.MaximumLatitude,
+                                bbox.MinimumLongitude
+                            ).ConfigureAwait(false);
                             foreach (var stop in stops)
                             {
                                 // Check if Pokestop is within geofence

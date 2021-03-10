@@ -8,12 +8,12 @@
     using Google.Common.Geometry;
     using NetTopologySuite.Geometries;
 
-    using Chuck.Infrastructure.Data.Factories;
-    using Chuck.Infrastructure.Data.Repositories;
-    using Chuck.Infrastructure.Extensions;
-    using Chuck.Infrastructure.Geofence;
-    using Chuck.Infrastructure.Geofence.Models;
-    using Coordinate = Chuck.Infrastructure.Geofence.Models.Coordinate;
+    using Chuck.Data.Factories;
+    using Chuck.Data.Repositories;
+    using Chuck.Extensions;
+    using Chuck.Geometry.Geofence;
+    using Chuck.Geometry.Geofence.Models;
+    using Coordinate = Chuck.Geometry.Geofence.Models.Coordinate;
 
     public class RouteGenerator
     {
@@ -129,9 +129,9 @@
                 MaximumLongitude = maxLon,
             };
             var spawnpoints = (await _spawnpointsRepository.GetAllAsync().ConfigureAwait(false)).ToList();
-            var pokestops = await _pokestopRepository.GetAllAsync(bbox).ConfigureAwait(false);
-            var gyms = await _gymRepository.GetAllAsync(bbox).ConfigureAwait(false);
-            var cells = await _cellRepository.GetAllAsync(bbox).ConfigureAwait(false);
+            var pokestops = await _pokestopRepository.GetAllAsync(bbox.MinimumLatitude, bbox.MinimumLongitude, bbox.MaximumLatitude, bbox.MaximumLongitude).ConfigureAwait(false);
+            var gyms = await _gymRepository.GetAllAsync(bbox.MinimumLatitude, bbox.MinimumLongitude, bbox.MaximumLatitude, bbox.MaximumLongitude).ConfigureAwait(false);
+            var cells = await _cellRepository.GetAllAsync(bbox.MinimumLatitude, bbox.MinimumLongitude, bbox.MaximumLatitude, bbox.MaximumLongitude).ConfigureAwait(false);
             var list = new List<Coordinate>();
             spawnpoints.ForEach(x => list.Add(new Coordinate(x.Latitude, x.Longitude)));
             pokestops.ForEach(x => list.Add(new Coordinate(x.Latitude, x.Longitude)));

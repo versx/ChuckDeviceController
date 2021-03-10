@@ -20,7 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Chuck.Infrastructure\Chuck.Infrastructure.csproj" />
+    <ProjectReference Include="..\Chuck.Configuration\Chuck.Configuration.csproj" />
+    <ProjectReference Include="..\Chuck.Data\Chuck.Data.csproj" />
   </ItemGroup>
 
 </Project>

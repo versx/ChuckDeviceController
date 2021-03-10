@@ -3,7 +3,7 @@
 	using System;
 	using System.Collections.Generic;
 
-	using Chuck.Infrastructure.Geofence.Models;
+	using Chuck.Geometry.Geofence.Models;
 
 	public class RouteCalculator
 	{

@@ -4,10 +4,10 @@
     using System.Collections.Generic;
     using System.Threading;
 
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Extensions;
-    using Chuck.Infrastructure.Queues;
-    using Chuck.Infrastructure.Utilities;
+    using Chuck.Common.Utilities;
+    using Chuck.Data.Entities;
+    using Chuck.Extensions;
+    using WebhookProcessor.Queues;
 
     // TODO: Filter webhooks by area
     // TODO: Load all geofences and cache them (send redis event when geofences change and reload them)

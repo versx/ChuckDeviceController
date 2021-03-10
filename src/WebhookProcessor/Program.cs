@@ -7,10 +7,10 @@
 
     using StackExchange.Redis;
 
-    using Chuck.Infrastructure.Common;
-    using Chuck.Infrastructure.Configuration;
-    using Chuck.Infrastructure.Data.Entities;
-    using Chuck.Infrastructure.Extensions;
+    using Chuck.Common;
+    using Chuck.Configuration;
+    using Chuck.Data.Entities;
+    using Chuck.Extensions;
 
     class Program
     {
@@ -20,6 +20,7 @@
 
         static void Main(string[] args)
         {
+            ConsoleExt.WriteInfo($"WebhookProcessor starting...");
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
             try
             {
