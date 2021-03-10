@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.Json;
     using System.Threading.Tasks;
 
     using Microsoft.Extensions.Logging;
@@ -65,6 +67,11 @@
                 return null;
             }
             return _geofences[name];
+        }
+
+        public List<Geofence> GetGeofences(List<string> names)
+        {
+            return names.Select(x => GetGeofence(x)).ToList();
         }
     }
 }

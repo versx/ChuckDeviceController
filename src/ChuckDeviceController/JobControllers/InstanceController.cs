@@ -128,11 +128,11 @@
         public async Task AddInstance(Instance instance)
         {
             IJobController instanceController = null;
-            var geofence = GeofenceController.Instance.GetGeofence(instance.Geofence);
-            if (geofence == null)
+            var geofences = GeofenceController.Instance.GetGeofences(instance.Geofences);
+            if (geofences == null)
             {
                 // Failed to get geofence, skip?
-                _logger.LogError($"[{instance.Name}] Failed to get geofence for instance, make sure it is assign one");
+                _logger.LogError($"[{instance.Name}] Failed to get geofences for instance, make sure it is assign at least one");
                 return;
             }
             switch (instance.Type)
@@ -142,22 +142,27 @@
                 case InstanceType.SmartCircleRaid:
                     try
                     {
-                        var area = geofence?.Data?.Area;
-                        var coordsArray = (List<Coordinate>)
-                        (
-                            area is List<Coordinate>
-                                ? area
-                                : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
-                        );
+                        var coords = new List<Coordinate>();
+                        foreach (var geofence in geofences)
+                        {
+                            var area = geofence?.Data?.Area;
+                            var coordsArray = (List<Coordinate>)
+                            (
+                                area is List<Coordinate>
+                                    ? area
+                                    : JsonSerializer.Deserialize<List<Coordinate>>(Convert.ToString(area))
+                            );
+                            coords.AddRange(coordsArray);
+                        }
                         var minLevel = instance.MinimumLevel;
                         var maxLevel = instance.MaximumLevel;
                         switch (instance.Type)
                         {
                             case InstanceType.CirclePokemon:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Pokemon, instance.Data.CircleRouteType, minLevel, maxLevel, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                instanceController = new CircleInstanceController(instance.Name, coords, CircleType.Pokemon, instance.Data.CircleRouteType, minLevel, maxLevel, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.CircleRaid:
-                                instanceController = new CircleInstanceController(instance.Name, coordsArray, CircleType.Raid, CircleRouteType.Default, minLevel, maxLevel, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                instanceController = new CircleInstanceController(instance.Name, coords, CircleType.Raid, CircleRouteType.Default, minLevel, maxLevel, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.SmartCircleRaid:
                                 // TODO: SmartCircleRaidInstanceController
@@ -175,32 +180,40 @@
                 case InstanceType.FindTTH:
                     try
                     {
-                        var area = geofence?.Data?.Area;
-                        var coordsArray = (List<List<Coordinate>>)
-                        (
-                            area is List<List<Coordinate>>
-                                ? area
-                                : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
-                        );
-                        var areaArrayEmptyInner = new List<MultiPolygon>();
-                        foreach (var coords in coordsArray)
+                        var multiPolygons = new List<MultiPolygon>();
+                        var coordinates = new List<List<Coordinate>>();
+                        foreach (var geofence in geofences)
                         {
-                            var multiPolygon = new MultiPolygon();
-                            Coordinate first = null;
-                            for (var i = 0; i < coords.Count; i++)
+                            var area = geofence?.Data?.Area;
+                            var coordsArray = (List<List<Coordinate>>)
+                            (
+                                area is List<List<Coordinate>>
+                                    ? area
+                                    : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
+                            );
+                            coordinates.AddRange(coordsArray);
+
+                            var areaArrayEmptyInner = new List<MultiPolygon>();
+                            foreach (var coords in coordsArray)
                             {
-                                var coord = coords[i];
-                                if (i == 0)
+                                var multiPolygon = new MultiPolygon();
+                                Coordinate first = null;
+                                for (var i = 0; i < coords.Count; i++)
                                 {
-                                    first = coord;
+                                    var coord = coords[i];
+                                    if (i == 0)
+                                    {
+                                        first = coord;
+                                    }
+                                    multiPolygon.Add(new Polygon(coord.Latitude, coord.Longitude));
                                 }
-                                multiPolygon.Add(new Polygon(coord.Latitude, coord.Longitude));
+                                if (first != null)
+                                {
+                                    multiPolygon.Add(new Polygon(first.Latitude, first.Longitude));
+                                }
+                                areaArrayEmptyInner.Add(multiPolygon);
                             }
-                            if (first != null)
-                            {
-                                multiPolygon.Add(new Polygon(first.Latitude, first.Longitude));
-                            }
-                            areaArrayEmptyInner.Add(multiPolygon);
+                            multiPolygons.AddRange(areaArrayEmptyInner);
                         }
                         var minLevel = instance.MinimumLevel;
                         var maxLevel = instance.MaximumLevel;
@@ -222,20 +235,20 @@
                                 }
                                 var spinLimit = instance.Data.SpinLimit ?? 3500;
                                 var retryLimit = instance.Data.QuestRetryLimit ?? 5;
-                                instanceController = new AutoInstanceController(instance.Name, areaArrayEmptyInner, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit, retryLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                instanceController = new AutoInstanceController(instance.Name, multiPolygons, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit, retryLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.PokemonIV:
                                 var ivList = IVListController.Instance.GetIVList(instance.Data.IVList)?.PokemonIDs ?? new List<uint>();
                                 var ivQueueLimit = instance.Data.IVQueueLimit ?? 100;
-                                instanceController = new IVInstanceController(instance.Name, areaArrayEmptyInner, ivList, minLevel, maxLevel, ivQueueLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                instanceController = new IVInstanceController(instance.Name, multiPolygons, ivList, minLevel, maxLevel, ivQueueLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.Bootstrap:
                                 var circleSize = instance.Data.CircleSize ?? 70;
                                 var fastBootstrapMode = instance.Data.FastBootstrapMode;
-                                instanceController = new BootstrapInstanceController(instance.Name, coordsArray, minLevel, maxLevel, circleSize, fastBootstrapMode, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                instanceController = new BootstrapInstanceController(instance.Name, coordinates, minLevel, maxLevel, circleSize, fastBootstrapMode, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.FindTTH:
-                                instanceController = new SpawnpointFinderInstanceController(instance.Name, coordsArray, minLevel, maxLevel, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                instanceController = new SpawnpointFinderInstanceController(instance.Name, coordinates, minLevel, maxLevel, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                         }
                     }
