@@ -256,7 +256,7 @@
                     types = string.Join(", ", webhook.Types),
                     url = webhook.Url,
                     delay = webhook.Delay,
-                    geofence = webhook.Geofence,
+                    geofences = string.Join(", ", webhook.Geofences),
                     enabled = webhook.Enabled ? "Yes" : "No",
                     buttons = $"<a href='/dashboard/webhook/edit/{Uri.EscapeDataString(webhook.Name)}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
                 });
