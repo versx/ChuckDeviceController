@@ -1396,7 +1396,7 @@
                                          {
                                              name = x.Name,
                                              type = x.Type.ToString().ToLower(),
-                                             selected = webhook.Geofences.Contains(x.Name),
+                                             selected = webhook.Geofences?.Contains(x.Name),
                                          });
                 obj.pokemon_ids = string.Join("\n", webhook.Data.PokemonIds ?? new List<uint>());
                 obj.pokestop_ids = string.Join("\n", webhook.Data.PokestopIds ?? new List<string>());

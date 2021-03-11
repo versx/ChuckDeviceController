@@ -159,7 +159,7 @@
                     level = $"{instance.MinimumLevel}-{instance.MaximumLevel}",
                     //count = totalCount == 0 ? "0" : $"{totalCount} ({onlineCount}/{offlineCount})",
                     count = totalCount == 0 ? "0" : $"{onlineCount}/{offlineCount}|{totalCount}",
-                    geofences = string.Join(", ", instance.Geofences),
+                    geofences = string.Join(", ", instance.Geofences ?? new List<string>()),
                     status = await InstanceController.Instance.GetInstanceStatus(instance).ConfigureAwait(false),
                     buttons = $"<a href='/dashboard/instance/edit/{Uri.EscapeDataString(instance.Name)}' role='button' class='btn btn-sm btn-primary'>Edit Instance</a>",
                 });
@@ -256,7 +256,7 @@
                     types = string.Join(", ", webhook.Types),
                     url = webhook.Url,
                     delay = webhook.Delay,
-                    geofences = string.Join(", ", webhook.Geofences),
+                    geofences = string.Join(", ", webhook.Geofences ?? new List<string>()),
                     enabled = webhook.Enabled ? "Yes" : "No",
                     buttons = $"<a href='/dashboard/webhook/edit/{Uri.EscapeDataString(webhook.Name)}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
                 });
