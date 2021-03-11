@@ -569,7 +569,7 @@
                     PokemonEncounterId = payload.PokemonEncounterId,
                 },
             };
-            _logger.LogInformation($"[{payload.Uuid}] {response.ToJson()}");
+            _logger.LogInformation($"[{payload.Uuid}] {response.ToJson()} parsed in {stopwatch.Elapsed.TotalSeconds}s");
             return response;
         }
 
