@@ -124,6 +124,7 @@
             const uint SpinLimit = 3500;
             const uint OneDaySeconds = 86400;
             const uint SevenDaySeconds = 7 * OneDaySeconds;
+            var banExpireTime = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7)).ToTotalSeconds();
             // TODO: Use raw sql query or better alternative
             return new
             {
@@ -145,14 +146,14 @@
                                                       x.Level >= 30).ToString("N0"),
                 total_iv_count = accounts.Count(x => x.Level >= 30).ToString("N0"),
                 total = accounts.Count.ToString("N0"),
-                failed_count = accounts.Count(x => !string.IsNullOrEmpty(x.Failed) || x.FailedTimestamp != null).ToString("N0"),
-                in_cooldown_count = 0, // TODO: Cooldown
+                failed_count = accounts.Count(x => !string.IsNullOrEmpty(x.Failed) || x.FirstWarningTimestamp > 0).ToString("N0"),
+                in_cooldown_count = accounts.Count(x => x.LastEncounterTime != null && now - x.LastEncounterTime < 7200),
                 over_spin_limit_count = accounts.Count(x => x.Spins >= SpinLimit).ToString("N0"),
-                banned_1day = accounts.Count(x => x.FailedTimestamp > 0 && now - x.FailedTimestamp > OneDaySeconds).ToString("N0"),
-                banned_7day = accounts.Count(x => x.FailedTimestamp > 0 && now - x.FailedTimestamp > SevenDaySeconds).ToString("N0"),
-                banned_total = accounts.Count(x => x.FailedTimestamp > 0).ToString("N0"),
-                warning_1day = accounts.Count(x => x.FirstWarningTimestamp > 0 && now - x.FailedTimestamp > OneDaySeconds).ToString("N0"),
-                warning_7day = accounts.Count(x => x.FirstWarningTimestamp > 0 && now - x.FailedTimestamp > SevenDaySeconds).ToString("N0"),
+                banned_1day = accounts.Count(x => (x.Failed == "banned" || x.Failed == "GPR_BANNED") && x.FailedTimestamp < now - OneDaySeconds).ToString("N0"),
+                banned_7day = accounts.Count(x => (x.Failed == "banned" || x.Failed == "GPR_BANNED") && x.FailedTimestamp < now - SevenDaySeconds).ToString("N0"),
+                banned_total = accounts.Count(x => (x.Failed == "banned" || x.Failed == "GPR_BANNED") && x.FailedTimestamp > 0).ToString("N0"),
+                warning_1day = accounts.Count(x => x.FirstWarningTimestamp > 0 && now - x.FailedTimestamp > now - OneDaySeconds).ToString("N0"),
+                warning_7day = accounts.Count(x => x.FirstWarningTimestamp > 0 && now - x.FailedTimestamp > now - SevenDaySeconds).ToString("N0"),
                 warning_total = accounts.Count(x => x.FirstWarningTimestamp > 0).ToString("N0"),
                 all_account_stats = accounts.GroupBy(x => x.Level, (x, y) => new
                 {
@@ -160,11 +161,11 @@
                     total = accounts.Count(z => z.Level == x).ToString("N0"),
                     in_use = accounts.Count(z => devices.Any(dev => string.Compare(dev.AccountUsername, z.Username) == 0 && z.Level == x)).ToString("N0"),
                     good = y.Count(z => string.IsNullOrEmpty(z.Failed) && z.FailedTimestamp == null && z.FirstWarningTimestamp == null).ToString("N0"),
-                    banned = y.Count(z => !string.IsNullOrEmpty(z.Failed) || z.FailedTimestamp > 0).ToString("N0"),
+                    banned = y.Count(z => (z.Failed == "banned" || z.Failed == "GPR_BANNED") && z.FailedTimestamp < banExpireTime).ToString("N0"),
                     warning = y.Count(z => z.FirstWarningTimestamp > 0).ToString("N0"),
-                    invalid = 0, // TODO: Invalid
+                    invalid = y.Count(z => z.Failed == "invalid_credentials").ToString("N0"),
                     other = 0, // TODO: Other
-                    cooldown = 0, // TODO: Cooldown
+                    cooldown = y.Count(z => z.LastEncounterTime != null && now - z.LastEncounterTime < 7200),
                     spin_limit = y.Count(z => z.Spins >= SpinLimit).ToString("N0"),
                 }).ToArray(),
             };

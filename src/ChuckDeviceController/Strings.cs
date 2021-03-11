@@ -12,11 +12,11 @@
 
         public const string WebRoot = "wwwroot";
         public const string DataFolder = WebRoot + "/static/data";
-//#if DEBUG
-//        public const string MigrationsFolder = "../../migrations";
-//#else
+#if DEBUG
+        public const string MigrationsFolder = "../../migrations";
+#else
         public const string MigrationsFolder = "../migrations";
-//#endif
+#endif
 
         public const string SQL_CREATE_TABLE_METADATA = @"
         CREATE TABLE IF NOT EXISTS metadata (

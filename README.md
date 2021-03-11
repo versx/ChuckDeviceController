@@ -60,7 +60,7 @@ https://download.visualstudio.microsoft.com/download/pr/a06c387d-2811-4fba-8b5f-
 1. Clone repository `git clone https://github.com/versx/ChuckDeviceController`  
 1. Copy config `cp config.example.json` `bin/config.json`  
 1. Fill out `config.json`  
-1. Build project from root folder `~/.dotnet/dotnet build`
+1. Build project from root folder `~/.dotnet/dotnet build -c Release`
 1. Run ChuckDeviceController from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
 1. Run ChuckProtoParser from `bin/` folder `~/.dotnet/dotnet ChuckProtoParser.dll`  
 3. Run WebhookProcessor from `bin/` folder `~/.dotnet/dotnet WebhookProcessor.dll`  
