@@ -58,6 +58,9 @@
             modelBuilder.Entity<Instance>()
                         .Property(nameof(Instance.Data))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData>());
+            modelBuilder.Entity<Instance>()
+                        .Property(nameof(Instance.Geofences))
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
             modelBuilder.Entity<Geofence>()
                         .Property(p => p.Type)
                         .HasConversion(x => Geofence.GeofenceTypeToString(x), x => Geofence.StringToGeofenceType(x));
