@@ -32,15 +32,6 @@
                         ? cIns.Form
                         : cDb.Form,
                     Costume = cIns.Costume,
-                    CaptureRate1 = cIns.CaptureRate1 != null
-                        ? cIns.CaptureRate1
-                        : cDb.CaptureRate1,
-                    CaptureRate2 = cIns.CaptureRate2 != null
-                        ? cIns.CaptureRate2
-                        : cDb.CaptureRate2,
-                    CaptureRate3 = cIns.CaptureRate3 != null
-                        ? cIns.CaptureRate3
-                        : cDb.CaptureRate3,
                     CP = cDb.CP == null
                         ? cIns.CP
                         : cDb.CP,
@@ -102,15 +93,6 @@
                         ? cIns.Form
                         : cDb.Form,
                     Costume = cIns.Costume,
-                    CaptureRate1 = cIns.CaptureRate1 != null
-                        ? cIns.CaptureRate1
-                        : cDb.CaptureRate1,
-                    CaptureRate2 = cIns.CaptureRate2 != null
-                        ? cIns.CaptureRate2
-                        : cDb.CaptureRate2,
-                    CaptureRate3 = cIns.CaptureRate3 != null
-                        ? cIns.CaptureRate3
-                        : cDb.CaptureRate3,
                     CP = cDb.CP == null
                         ? cIns.CP
                         : cDb.CP,
