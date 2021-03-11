@@ -420,7 +420,7 @@
             {
                 var name = Request.Form["name"].ToString();
                 var type = Instance.StringToInstanceType(Request.Form["type"]);
-                var geofence = Request.Form["geofence"].ToString();
+                var geofences = Request.Form["geofences"].ToString()?.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
                 var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
@@ -462,6 +462,8 @@
                     }
                 }
 
+                // TODO: Valid geofence names
+
                 if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
                 {
                     // Invalid levels
@@ -481,7 +483,7 @@
                     Type = type,
                     MinimumLevel = minLevel,
                     MaximumLevel = maxLevel,
-                    Geofence = geofence,
+                    Geofences = geofences,
                     Data = new InstanceData
                     {
                         IVQueueLimit = ivQueueLimit,
@@ -518,7 +520,6 @@
                 }
                 dynamic obj = BuildDefaultData();
                 obj.name = name;
-                obj.geofence = instance.Geofence;
                 obj.old_name = name;
                 obj.min_level = instance.MinimumLevel;
                 obj.max_level = instance.MaximumLevel;
@@ -543,9 +544,8 @@
                 {
                     name = x.Name,
                     type = x.Type.ToString().ToLower(),
-                    selected = string.Compare(instance.Geofence, x.Name, true) == 0,
+                    selected = instance.Geofences.Contains(x.Name),
                 });
-                var geofence = geofences.FirstOrDefault(x => string.Compare(x.Name, instance.Geofence, true) == 0);
                 obj.circle_route_type = CircleRouteTypeToString(instance.Data.CircleRouteType);
                 obj.leapfrog_selected = instance.Data.CircleRouteType == CircleRouteType.Default;
                 obj.spread_selected = instance.Data.CircleRouteType == CircleRouteType.Split;
@@ -609,7 +609,7 @@
 
                 var newName = Request.Form["name"].ToString();
                 var type = Instance.StringToInstanceType(Request.Form["type"]);
-                var geofence = Request.Form["geofence"].ToString();
+                var geofences = Request.Form["geofences"].ToString()?.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
                 //var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
@@ -647,7 +647,7 @@
                 instance.Type = type;
                 instance.MinimumLevel = minLevel;
                 instance.MaximumLevel = maxLevel;
-                instance.Geofence = geofence;
+                instance.Geofences = geofences;
                 instance.Data = new InstanceData
                 {
                     IVQueueLimit = ivQueueLimit,
