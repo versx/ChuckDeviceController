@@ -259,7 +259,6 @@
             }
             else
             {
-                // TODO: Check if new name does not exist and old name does
                 var newName = Request.Form["name"].ToString();
                 var oldName = Request.Form["old_name"].ToString();
                 var devices = Request.Form["devices"].ToString().Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
@@ -269,10 +268,23 @@
                     return BuildErrorResponse("devicegroup-add", $"Device Group with name '{oldName}' does not exist");
                 }
 
-                // TODO: Add support for renaming (need to delete old and create new)
-                deviceGroup.Name = oldName;
-                deviceGroup.Devices = devices;
-                await _deviceGroupRepository.SaveAsync().ConfigureAwait(false);
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
+                {
+                    // Delete old device group
+                    await _deviceGroupRepository.DeleteAsync(deviceGroup);
+                    // Insert new device group
+                    await _deviceGroupRepository.AddAsync(new DeviceGroup
+                    {
+                        Name = newName,
+                        Devices = devices,
+                    });
+                }
+                else
+                {
+                    deviceGroup.Devices = devices;
+                    await _deviceGroupRepository.UpdateAsync(deviceGroup).ConfigureAwait(false);
+                }
                 return Redirect("/dashboard/devicegroups");
             }
         }
@@ -607,10 +619,10 @@
                     return Redirect("/dashboard/instances");
                 }
 
+                var oldName = Request.Form["old_name"].ToString();
                 var newName = Request.Form["name"].ToString();
                 var type = Instance.StringToInstanceType(Request.Form["type"]);
                 var geofences = Request.Form["geofences"].ToString()?.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
-                //var area = Request.Form["area"].ToString();
                 var minLevel = ushort.Parse(Request.Form["min_level"]);
                 var maxLevel = ushort.Parse(Request.Form["max_level"]);
                 var timezone = Request.Form["timezone"].ToString();
@@ -636,33 +648,66 @@
                     return BuildErrorResponse("instance-edit", "Invalid Quest Retry Limit value (Valid value: 1-255)");
                 }
 
-                var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var instance = await _instanceRepository.GetByIdAsync(oldName).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Instance does not exist, create?
-                    return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist");
+                    return BuildErrorResponse("instance-edit", $"Instance with name '{oldName}' does not exist");
                 }
 
-                instance.Name = newName;
-                instance.Type = type;
-                instance.MinimumLevel = minLevel;
-                instance.MaximumLevel = maxLevel;
-                instance.Geofences = geofences;
-                instance.Data = new InstanceData
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
                 {
-                    IVQueueLimit = ivQueueLimit,
-                    CircleRouteType = circleRouteType,
-                    CircleSize = circleSize,
-                    SpinLimit = spinLimit,
-                    IVList = ivList,
-                    Timezone = timezone,
-                    EnableDst = enableDst,
-                    FastBootstrapMode = fastBootstrapMode,
-                    AccountGroup = accountGroup,
-                    IsEvent = isEvent,
-                };
-                await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
-                await InstanceController.Instance.ReloadInstance(instance, name).ConfigureAwait(false);
+                    // Delete old instance
+                    await _instanceRepository.DeleteAsync(instance);
+                    // Insert new instance
+                    var newInstance = new Instance
+                    {
+                        Name = newName,
+                        Type = type,
+                        MinimumLevel = minLevel,
+                        MaximumLevel = maxLevel,
+                        Geofences = geofences,
+                        Data = new InstanceData
+                        {
+                            IVQueueLimit = ivQueueLimit,
+                            CircleRouteType = circleRouteType,
+                            CircleSize = circleSize,
+                            SpinLimit = spinLimit,
+                            IVList = ivList,
+                            Timezone = timezone,
+                            EnableDst = enableDst,
+                            FastBootstrapMode = fastBootstrapMode,
+                            AccountGroup = accountGroup,
+                            IsEvent = isEvent,
+                        }
+                    };
+                    await _instanceRepository.AddAsync(newInstance);
+                    await InstanceController.Instance.ReloadInstance(newInstance, oldName).ConfigureAwait(false);
+                }
+                else
+                {
+                    instance.Name = newName;
+                    instance.Type = type;
+                    instance.MinimumLevel = minLevel;
+                    instance.MaximumLevel = maxLevel;
+                    instance.Geofences = geofences;
+                    instance.Data = new InstanceData
+                    {
+                        IVQueueLimit = ivQueueLimit,
+                        CircleRouteType = circleRouteType,
+                        CircleSize = circleSize,
+                        SpinLimit = spinLimit,
+                        IVList = ivList,
+                        Timezone = timezone,
+                        EnableDst = enableDst,
+                        FastBootstrapMode = fastBootstrapMode,
+                        AccountGroup = accountGroup,
+                        IsEvent = isEvent,
+                    };
+                    await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
+                    await InstanceController.Instance.ReloadInstance(instance, oldName).ConfigureAwait(false);
+                }
                 _logger.LogDebug($"Instance {name} was updated");
                 return Redirect("/dashboard/instances");
             }
@@ -825,16 +870,17 @@
                 }
 
                 var newName = Request.Form["name"].ToString();
+                var oldName = Request.Form["old_name"].ToString();
                 var type = Request.Form["type"].ToString() == "circle"
                     ? GeofenceType.Circle
                     : GeofenceType.Geofence;
                 var area = Request.Form["area"].ToString();
 
-                var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var geofence = await _geofenceRepository.GetByIdAsync(oldName).ConfigureAwait(false);
                 if (geofence == null)
                 {
                     // Failed to find geofence by by name
-                    return BuildErrorResponse("geofence-edit", $"Geofence with name '{name}' does not exist");
+                    return BuildErrorResponse("geofence-edit", $"Geofence with name '{oldName}' does not exist");
                 }
 
                 dynamic newArea = null;
@@ -862,13 +908,32 @@
                             break;
                         }
                 }
-                geofence.Name = newName;
-                geofence.Type = type;
-                geofence.Data = new GeofenceData
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
                 {
-                    Area = newArea,
-                };
-                await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
+                    // Delete old geofence
+                    await _geofenceRepository.DeleteAsync(geofence);
+                    // Insert new geofence
+                    await _geofenceRepository.AddAsync(new Geofence
+                    {
+                        Name = newName,
+                        Type = type,
+                        Data = new GeofenceData
+                        {
+                            Area = newArea,
+                        }
+                    });
+                }
+                else
+                {
+                    geofence.Name = newName;
+                    geofence.Type = type;
+                    geofence.Data = new GeofenceData
+                    {
+                        Area = newArea,
+                    };
+                    await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
+                }
                 await GeofenceController.Instance.Reload();
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
@@ -1368,6 +1433,7 @@
                 }
 
                 var newName = Request.Form["name"].ToString();
+                var oldName = Request.Form["old_name"].ToString();
                 var types = Webhook.StringToWebhookTypes(Request.Form["types"]);
                 var url = Request.Form["url"].ToString();
                 var delay = double.Parse(Request.Form["delay"].ToString() ?? "5");
@@ -1389,32 +1455,62 @@
                 }
 
                 // Make sure geofence exists
-                var webhook = await _webhookRepository.GetByIdAsync(name).ConfigureAwait(false);
+                var webhook = await _webhookRepository.GetByIdAsync(oldName).ConfigureAwait(false);
                 if (webhook == null)
                 {
                     // Webhook does not exist
-                    return BuildErrorResponse("webhook-edit", $"Webhook with name '{name}' does not exist");
+                    return BuildErrorResponse("webhook-edit", $"Webhook with name '{oldName}' does not exist");
                 }
 
-                webhook.Name = name;
-                webhook.Types = types;
-                webhook.Url = url;
-                webhook.Delay = delay;
-                webhook.Geofence = string.Compare(geofence, Strings.All, true) == 0 ? null : geofence;
-                webhook.Enabled = enabled;
-                webhook.Data = new WebhookData
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
                 {
-                    PokemonIds = pokemonIds,
-                    PokestopIds = pokestopIds,
-                    RaidPokemonIds = raidIds,
-                    EggLevels = eggLevels,
-                    LureIds = lureIds,
-                    InvasionIds = invasionIds,
-                    GymTeamIds = gymIds,
-                    WeatherConditionIds = weatherIds,
-                };
-                await _webhookRepository.UpdateAsync(webhook).ConfigureAwait(false);
-                // Send redis webhook:reload event
+                    // Delete old webhook
+                    await _webhookRepository.DeleteAsync(webhook);
+                    // Insert new webhook
+                    await _webhookRepository.AddAsync(new Webhook
+                    {
+                        Name = newName,
+                        Types = types,
+                        Url = url,
+                        Delay = delay,
+                        Geofence = string.Compare(geofence, Strings.All, true) == 0 ? null : geofence,
+                        Enabled = enabled,
+                        Data = new WebhookData
+                        {
+                            PokemonIds = pokemonIds,
+                            PokestopIds = pokestopIds,
+                            RaidPokemonIds = raidIds,
+                            EggLevels = eggLevels,
+                            LureIds = lureIds,
+                            InvasionIds = invasionIds,
+                            GymTeamIds = gymIds,
+                            WeatherConditionIds = weatherIds,
+                        }
+                    });
+                }
+                else
+                {
+                    webhook.Name = name;
+                    webhook.Types = types;
+                    webhook.Url = url;
+                    webhook.Delay = delay;
+                    webhook.Geofence = string.Compare(geofence, Strings.All, true) == 0 ? null : geofence;
+                    webhook.Enabled = enabled;
+                    webhook.Data = new WebhookData
+                    {
+                        PokemonIds = pokemonIds,
+                        PokestopIds = pokestopIds,
+                        RaidPokemonIds = raidIds,
+                        EggLevels = eggLevels,
+                        LureIds = lureIds,
+                        InvasionIds = invasionIds,
+                        GymTeamIds = gymIds,
+                        WeatherConditionIds = weatherIds,
+                    };
+                    await _webhookRepository.UpdateAsync(webhook).ConfigureAwait(false);
+                }
+                
                 var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
                 await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
                 return Redirect("/dashboard/webhooks");
@@ -1534,14 +1630,26 @@
                 if (ivList == null)
                 {
                     // Does not exist
-                    return BuildErrorResponse("ivlist-edit", $"IV List with name '{name}' does not exist");
+                    return BuildErrorResponse("ivlist-edit", $"IV List with name '{oldName}' does not exist");
                 }
-                ivList = new IVList
+
+                // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
+                if (newName != oldName)
                 {
-                    Name = oldName,
-                    PokemonIDs = pokemonIds,
-                };
-                await _ivListRepository.AddOrUpdateAsync(ivList);
+                    // Delete old IV list
+                    await _ivListRepository.DeleteAsync(ivList);
+                    // Insert new IV list
+                    await _ivListRepository.AddAsync(new IVList
+                    {
+                        Name = newName,
+                        PokemonIDs = pokemonIds,
+                    });
+                }
+                else
+                {
+                    ivList.PokemonIDs = pokemonIds;
+                    await _ivListRepository.UpdateAsync(ivList).ConfigureAwait(false);
+                }
                 await IVListController.Instance.Reload();
                 return Redirect("/dashboard/ivlists");
             }
