@@ -1737,10 +1737,10 @@
             if (Request.Method == "GET")
             {
                 dynamic obj = BuildDefaultData();
-                obj.stale_pokestops = (await _pokestopRepository.GetStalePokestopsCount().ConfigureAwait(false)).ToString("N0");
-                obj.convertible_pokestops = (await _pokestopRepository.GetConvertiblePokestopsCount().ConfigureAwait(false));
-                obj.warnings = (await _accountRepository.GetExpiredWarningsCount().ConfigureAwait(false)).ToString("N0");
-                obj.bans = (await _accountRepository.GetExpiredBansCount().ConfigureAwait(false)).ToString("N0");
+                obj.stale_pokestops = await _pokestopRepository.GetStalePokestopsCount().ConfigureAwait(false);
+                obj.convertible_pokestops = await _pokestopRepository.GetConvertiblePokestopsCount().ConfigureAwait(false);
+                obj.warnings = await _accountRepository.GetExpiredWarningsCount().ConfigureAwait(false);
+                obj.bans = await _accountRepository.GetExpiredBansCount().ConfigureAwait(false);
                 var data = TemplateRenderer.ParseTemplate("utilities", obj);
                 return new ContentResult
                 {
