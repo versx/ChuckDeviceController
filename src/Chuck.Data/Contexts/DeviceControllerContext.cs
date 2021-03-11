@@ -85,6 +85,9 @@
             modelBuilder.Entity<Webhook>()
                         .Property(nameof(Webhook.Data))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData>());
+            modelBuilder.Entity<Webhook>()
+                        .Property(nameof(Webhook.Geofences))
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
             modelBuilder.Entity<DeviceGroup>()
                         .Property(nameof(DeviceGroup.Devices))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
