@@ -60,6 +60,9 @@
             modelBuilder.Entity<Instance>()
                         .Property(nameof(Instance.Data))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData>());
+            modelBuilder.Entity<Instance>()
+                        .Property(nameof(Instance.Geofences))
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
             modelBuilder.Entity<Geofence>()
                         .Property(p => p.Type)
                         .HasConversion(x => Geofence.GeofenceTypeToString(x), x => Geofence.StringToGeofenceType(x));
@@ -84,6 +87,9 @@
             modelBuilder.Entity<Webhook>()
                         .Property(nameof(Webhook.Data))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData>());
+            modelBuilder.Entity<Webhook>()
+                        .Property(nameof(Webhook.Geofences))
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
             modelBuilder.Entity<DeviceGroup>()
                         .Property(nameof(DeviceGroup.Devices))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());

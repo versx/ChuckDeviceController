@@ -3,7 +3,7 @@
 [![GitHub Contributors](https://img.shields.io/github/contributors/versx/ChuckDeviceController.svg)](https://github.com/versx/ChuckDeviceController/graphs/contributors/)
 [![Discord](https://img.shields.io/discord/552003258000998401.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/zZ9h9Xa)  
 # Chuck Device Controller  
-ChuckDeviceController is a C# based backend using Redis, ASP.NET Core, and EntityFramework Core to parse data from iOS devices running Pokemon Go.
+ChuckDeviceController is a C# based backend using Redis, ASP.NET Core, and EntityFramework Core to control and parse data from iOS devices running Pokemon Go.
 
 ## Requirements
 - .NET 5 SDK  
@@ -60,7 +60,7 @@ https://download.visualstudio.microsoft.com/download/pr/a06c387d-2811-4fba-8b5f-
 1. Clone repository `git clone https://github.com/versx/ChuckDeviceController`  
 1. Copy config `cp config.example.json` `bin/config.json`  
 1. Fill out `config.json`  
-1. Build project from root folder `~/.dotnet/dotnet build`
+1. Build project from root folder `~/.dotnet/dotnet build -c Release`
 1. Run ChuckDeviceController from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
 1. Run ChuckProtoParser from `bin/` folder `~/.dotnet/dotnet ChuckProtoParser.dll`  
 3. Run WebhookProcessor from `bin/` folder `~/.dotnet/dotnet WebhookProcessor.dll`  
@@ -120,3 +120,4 @@ View profiler results:
 - User management system for UI
 - Token/IP whilelist auth
 - Environment variables
+- Webhooks don't currently implement the geofences property

@@ -43,10 +43,10 @@
         public bool Enabled { get; set; }
 
         [
-            Column("geofence"),
-            JsonPropertyName("geofence"),
+            Column("geofences"),
+            JsonPropertyName("geofences"),
         ]
-        public string Geofence { get; set; }
+        public List<string> Geofences { get; set; }
 
         [
             Column("data"),

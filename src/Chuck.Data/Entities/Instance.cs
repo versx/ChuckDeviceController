@@ -1,5 +1,7 @@
 ﻿namespace Chuck.Data.Entities
 {
+    using System;
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
@@ -35,10 +37,10 @@
         public ushort MaximumLevel { get; set; }
 
         [
-            Column("geofence"),
-            JsonPropertyName("geofence"),
+            Column("geofences"),
+            JsonPropertyName("geofences"),
         ]
-        public string Geofence { get; set; }
+        public List<string> Geofences { get; set; }
 
         [
             Column("data"),

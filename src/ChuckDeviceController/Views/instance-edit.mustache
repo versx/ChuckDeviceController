@@ -2,10 +2,23 @@
 
 <script>
     $(document).ready(function () {
-        checkElements();
+        checkElements($('.type-select').val());
         $('.type-select').change(function () {
-            checkElements();
-            switch ($(this).val()) {
+            checkElements($(this).val());
+        });
+
+        function checkElements(value) {
+            if (value === 'pokemon_iv' ||
+                value === 'auto_quest' ||
+                value === 'bootstrap' ||
+                value === 'find_tth') {
+                $('.circle').addClass('d-none');
+                $('.geofence').removeClass('d-none');
+            } else {
+                $('.circle').removeClass('d-none');
+                $('.geofence').addClass('d-none');
+            }
+            switch (value) {
                 case 'circle_pokemon':
                     $('.circle_route_type').removeClass('d-none');
                     $('.pokemon_ids_text').addClass('d-none');
@@ -57,19 +70,6 @@
                     $('.timezone_text').addClass('d-none');
                     $('.enable_dst_text').addClass('d-none');
                     break;
-            }
-        });
-
-        function checkElements() {
-            if ($('.type-select').val() === 'pokemon_iv' ||
-                $('.type-select').val() === 'auto_quest' ||
-                $('.type-select').val() === 'bootstrap' ||
-                $('.type-select').val() === 'find_tth') {
-                $('.circle').addClass('d-none');
-                $('.geofence').removeClass('d-none');
-            } else {
-                $('.circle').removeClass('d-none');
-                $('.geofence').addClass('d-none');
             }
         }
     })
@@ -132,8 +132,8 @@
                 <input type="number" class="form-control" name="max_level" value="{{max_level}}" step=1 min="0" max="40" required>
             </div>
             <div class="form-group">
-                Select Scan Area
-                <select class="form-control" name="geofence" required>
+                Select Scan Areas
+                <select class="form-control" name="geofences" multiple required>
                     <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose Geofence</option>
                     {{#each geofences}}
                     <option value="{{name}}" class="{{type}}" {{#selected}} selected{{/selected}}>{{name}}</option>
@@ -142,7 +142,7 @@
             </div>
             <div class="form-group pokemon_ids_text">
                 IV Priority List
-                <select class="form-control" name="iv_list" required>
+                <select class="form-control" name="iv_list">
                     <option value="" {{#nothing_selected}} selected{{/nothing_selected}} disabled hidden>Choose an IV List</option>
                     {{#each iv_lists}}
                     <option value="{{name}}" {{#selected}} selected{{/selected}}>{{name}}</option>
@@ -176,7 +176,9 @@
                 <input type="checkbox" class="form-check-input" name="fast_bootstrap_mode" {{#fast_bootstrap_mode}} checked{{/fast_bootstrap_mode}}>
                 <label class="form-check-label" for="fast_bootstrap_mode">Fast Bootstrap Mode (5 vs 10 seconds load time)</label>
             </div>
+            <br>
             <input type="hidden" name="_csrf" value="{{csrf}}">
+            <input type="hidden" name="old_name" value="{{old_name}}">
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
         <br>

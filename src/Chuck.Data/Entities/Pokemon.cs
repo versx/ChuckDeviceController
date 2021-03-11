@@ -211,23 +211,6 @@
         public uint? DisplayPokemonId { get; set; }
 
         [
-            Column("capture_1"),
-            JsonPropertyName("capture_1"),
-        ]
-        public double? CaptureRate1 { get; set; }
-
-        [
-            Column("capture_2"),
-            JsonPropertyName("capture_2"),]
-        public double? CaptureRate2 { get; set; }
-
-        [
-            Column("capture_3"),
-            JsonPropertyName("capture_3"),
-        ]
-        public double? CaptureRate3 { get; set; }
-
-        [
             Column("pvp_rankings_great_league"),
             JsonPropertyName("pvp_rankings_great_league"),
         ]
@@ -447,9 +430,6 @@
                     Move1 = oldPokemon.Move1;
                     Move2 = oldPokemon.Move2;
                     Level = oldPokemon.Level;
-                    CaptureRate1 = oldPokemon.CaptureRate1;
-                    CaptureRate2 = oldPokemon.CaptureRate2;
-                    CaptureRate3 = oldPokemon.CaptureRate3;
                     IsShiny = oldPokemon.IsShiny;
                     IsDitto = IsDittoDisguised(oldPokemon);
                     if (IsDitto)
@@ -476,9 +456,6 @@
                     Move1 = null;
                     Move2 = null;
                     Level = null;
-                    CaptureRate1 = null;
-                    CaptureRate2 = null;
-                    CaptureRate3 = null;
                     PvpRankingsGreatLeague = null;
                     PvpRankingsUltraLeague = null;
                     ConsoleExt.WriteInfo("[Pokemon] WeatherBoosted state changed. Cleared IVs");
@@ -639,12 +616,6 @@
 
             if (_hasIvChanges)
             {
-                if (encounter.CaptureProbability?.CaptureProbability.Count > 0)
-                {
-                    CaptureRate1 = Convert.ToDouble(encounter.CaptureProbability.CaptureProbability[0]);
-                    CaptureRate2 = Convert.ToDouble(encounter.CaptureProbability.CaptureProbability[1]);
-                    CaptureRate3 = Convert.ToDouble(encounter.CaptureProbability.CaptureProbability[2]);
-                }
                 var cpMultiplier = encounter.Pokemon.Pokemon.CpMultiplier;
                 ushort level;
                 if (cpMultiplier < 0.734)
@@ -801,9 +772,6 @@
                     weight = Weight,
                     height = Size,
                     weather = Weather,
-                    capture_1 = CaptureRate1,
-                    capture_2 = CaptureRate2,
-                    capture_3 = CaptureRate3,
                     shiny = IsShiny,
                     username = Username,
                     display_pokemon_id = DisplayPokemonId,

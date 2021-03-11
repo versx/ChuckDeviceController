@@ -18,6 +18,7 @@
     using Chuck.Data.Factories;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
+    using Chuck.Pvp;
 
     using Models;
 
@@ -34,6 +35,7 @@
         private readonly ISubscriber _subscriber;
         private readonly IDatabaseAsync _redisDatabase;
         private readonly Config _config;
+        private readonly PvpRankCalculator _pvpCalculator;
 
         // Global lists
         private readonly List<Pokemon> _pokemon;
@@ -97,6 +99,7 @@
             _stopIdsPerCell = new Dictionary<ulong, List<string>>();
 
             _config = config;
+            _pvpCalculator = new PvpRankCalculator();
 
             ConsumeIntervalS = 5;
 
@@ -254,10 +257,9 @@
                             var username = data.Username;
                             //var id = wildPokemon.EncounterId;
                             var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
-                            //var pokemon = Pokemon.ParseFromWild(wildPokemon, spawnpoint);
-                            //pokemon.Username = username;
-                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id.ToString(), "pokemon").ConfigureAwait(false);
+                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
                             var changesResult = pokemon.Update(oldPokemon);
+                            SetPvpRanks(pokemon);
                             if (changesResult.IsNewOrHasChanges)
                             {
                                 // Send pokemon_added event for InstanceController.Instance.GotPokemon();
@@ -320,8 +322,10 @@
                             }
                             pokemon.Latitude = pokestop.Latitude;
                             pokemon.Longitude = pokestop.Longitude;
-                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id.ToString(), "pokemon").ConfigureAwait(false);
+                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
                             var changesResult = pokemon.Update(oldPokemon);
+                            //SetPvpRanks(pokemon);
+
                             if (changesResult.IsNewOrHasChanges)
                             {
                                 // Send pokemon_added event for InstanceController.Instance.GotPokemon();
@@ -365,9 +369,7 @@
                             }
                             try
                             {
-                                pokemon = await GetEntity<Pokemon>(encounter.Pokemon.EncounterId.ToString(), "pokemon").ConfigureAwait(false); // TODO: is_event
-                                //pokemon = Pokemon.ParseFromEncounter(encounter.Pokemon, spawnpoint);
-                                //pokemon.Username = username;
+                                pokemon = await GetEntity<Pokemon>(encounter.Pokemon.EncounterId, "pokemon").ConfigureAwait(false); // TODO: is_event
                             }
                             catch (Exception ex)
                             {
@@ -383,11 +385,9 @@
                                 var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude));
                                 var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
                                 pokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
-                                pokemon.AddEncounter(encounter, username)
-                                          .ConfigureAwait(false)
-                                          .GetAwaiter()
-                                          .GetResult();
+                                await pokemon.AddEncounter(encounter, username).ConfigureAwait(false);
                             }
+                            SetPvpRanks(pokemon);
 
                             await PublishData(RedisChannels.PokemonUpdated, pokemon);
                             await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
@@ -1026,6 +1026,18 @@
             return default;
         }
 
+        private async Task<T> GetEntity<T>(ulong id, string prefix) where T : BaseEntity
+        {
+            var oldEntity = await GetCacheData<T>(prefix + "_" + id).ConfigureAwait(false);
+            if (oldEntity == null)
+            {
+                // Entity does not exist in redis database cache, get from sql database
+                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString());
+                oldEntity = await ctx.Set<T>().FindAsync(new object[] { id }).ConfigureAwait(false);
+            }
+            return oldEntity;
+        }
+
         private async Task<T> GetEntity<T>(string id, string prefix) where T : BaseEntity
         {
             var oldEntity = await GetCacheData<T>(prefix + "_" + id).ConfigureAwait(false);
@@ -1122,6 +1134,36 @@
         }
 
         #endregion
+
+        private void SetPvpRanks(Pokemon pokemon)
+        {
+            if (pokemon.AttackIV == null)
+            {
+                return;
+            }
+            var ranks = _pvpCalculator.QueryPvpRank
+            (
+                pokemon.PokemonId,
+                pokemon.Form ?? 0,
+                pokemon.Costume,
+                pokemon.AttackIV ?? 0,
+                pokemon.DefenseIV ?? 0,
+                pokemon.StaminaIV ?? 0,
+                pokemon.Level ?? 0,
+                (PokemonGender)pokemon.Gender
+            );
+            if (ranks.Count > 0)
+            {
+                if (ranks.ContainsKey("great"))
+                {
+                    pokemon.PvpRankingsGreatLeague = ranks["great"];
+                }
+                if (ranks.ContainsKey("ultra"))
+                {
+                    pokemon.PvpRankingsUltraLeague = ranks["ultra"];
+                }
+            }
+        }
 
         private static S2CellId S2CellIdFromLatLng(double latitude, double longitude)
         {

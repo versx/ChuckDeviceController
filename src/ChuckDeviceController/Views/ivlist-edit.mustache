@@ -7,7 +7,7 @@
     </div>
     {{#show_error}}<br>{{/show_error}}
 
-    <h1 align="center">Edit Instance "{{old_name}}"!</h1>
+    <h1 align="center">Edit IV list "{{old_name}}"!</h1>
     <br>
     <div class="w-75" style="float: none; margin: 0 auto;">
         <form action="" method="post">
@@ -19,8 +19,8 @@
                 Pokemon IDs (first = highest priority)
                 <textarea class="form-control" rows="5" name="pokemon_ids">{{{pokemon_ids}}}</textarea>
             </div>
-            <input type="hidden" name="old_name" value="{{old_name}}">
             <input type="hidden" name="_csrf" value="{{csrf}}">
+            <input type="hidden" name="old_name" value="{{old_name}}">
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
         <br>
