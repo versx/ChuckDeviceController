@@ -88,6 +88,7 @@
             obj.geofences_count = (await _context.Geofences.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.webhooks_count = (await _context.Webhooks.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.devicegroups_count = (await _context.DeviceGroups.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.ivlists_count = (await _context.IVLists.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             var data = TemplateRenderer.ParseTemplate("index", obj);
             return new ContentResult
             {
