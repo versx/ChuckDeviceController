@@ -2,10 +2,23 @@
 
 <script>
     $(document).ready(function () {
-        checkElements();
+        checkElements($('.type-select').val());
         $('.type-select').change(function () {
-            checkElements();
-            switch ($(this).val()) {
+            checkElements($(this).val());
+        });
+
+        function checkElements(value) {
+            if (value === 'pokemon_iv' ||
+                value === 'auto_quest' ||
+                value === 'bootstrap' ||
+                value === 'find_tth') {
+                $('.circle').addClass('d-none');
+                $('.geofence').removeClass('d-none');
+            } else {
+                $('.circle').removeClass('d-none');
+                $('.geofence').addClass('d-none');
+            }
+            switch (value) {
                 case 'circle_pokemon':
                     $('.circle_route_type').removeClass('d-none');
                     $('.pokemon_ids_text').addClass('d-none');
@@ -57,19 +70,6 @@
                     $('.timezone_text').addClass('d-none');
                     $('.enable_dst_text').addClass('d-none');
                     break;
-            }
-        });
-
-        function checkElements() {
-            if ($('.type-select').val() === 'pokemon_iv' ||
-                $('.type-select').val() === 'auto_quest' ||
-                $('.type-select').val() === 'bootstrap' ||
-                $('.type-select').val() === 'find_tth') {
-                $('.circle').addClass('d-none');
-                $('.geofence').removeClass('d-none');
-            } else {
-                $('.circle').removeClass('d-none');
-                $('.geofence').addClass('d-none');
             }
         }
     })
