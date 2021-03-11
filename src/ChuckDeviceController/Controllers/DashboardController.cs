@@ -1318,7 +1318,7 @@
                 var types = Webhook.StringToWebhookTypes(Request.Form["types"]);
                 var url = Request.Form["url"].ToString();
                 var delay = double.Parse(Request.Form["delay"].ToString() ?? "5");
-                var geofences = Request.Form["geofence"].ToString()?.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
+                var geofences = Request.Form["geofences"].ToString()?.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
                 var enabled = Request.Form["enabled"].ToString() == "on";
                 var pokemonIds = NumberUtils.GenerateRange<uint>(Request.Form["pokemon_ids"].ToString(), 1, 999);
                 var pokestopIds = Request.Form["pokestop_ids"].ToString()?.Split("\n").ToList();
@@ -1437,7 +1437,7 @@
                 var types = Webhook.StringToWebhookTypes(Request.Form["types"]);
                 var url = Request.Form["url"].ToString();
                 var delay = double.Parse(Request.Form["delay"].ToString() ?? "5");
-                var geofences = Request.Form["geofence"].ToString()?.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
+                var geofences = Request.Form["geofences"].ToString()?.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries)?.ToList();
                 var enabled = Request.Form["enabled"].ToString() == "on";
                 var pokemonIds = NumberUtils.GenerateRange<uint>(Request.Form["pokemon_ids"].ToString(), 1, 999);
                 var pokestopIds = Request.Form["pokestop_ids"].ToString()?.Split("\n").ToList();
