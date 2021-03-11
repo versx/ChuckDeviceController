@@ -46,7 +46,7 @@
 
         #region Public Methods
 
-        public Dictionary<string, List<PvpRank>> QueryPvpRank(uint pokemonId, uint formId, uint costumeId, ushort atk, ushort def, ushort sta, double level, PokemonGender gender)
+        public Dictionary<string, List<dynamic>> QueryPvpRank(uint pokemonId, uint formId, uint costumeId, ushort atk, ushort def, ushort sta, double level, PokemonGender gender)
         {
             if (!GameMaster.Instance.Pokedex.ContainsKey(pokemonId))
             {
@@ -66,7 +66,7 @@
                 Form = Convert.ToUInt16(formId > 0 ? formId : 0),
             };
 
-            var results = new Dictionary<string, List<PvpRank>>();
+            var results = new Dictionary<string, List<dynamic>>();
             void pushAllEntries(PokedexPokemon stats, ushort evolution)
             {
                 Dictionary<string, Dictionary<ushort, StatCombination>> allRanks = CalculateAllRanks(stats);
@@ -102,7 +102,7 @@
                         */
                         if (!results.ContainsKey(leagueName))
                         {
-                            results.Add(leagueName, new List<PvpRank>());
+                            results.Add(leagueName, new List<dynamic>());
                         }
                         results[leagueName].Add(entry);
                     }

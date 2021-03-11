@@ -546,29 +546,7 @@
 
             stopwatch.Stop();
 
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"[{payload.Uuid}]");
-            sb.AppendLine($"Nearby: {nearbyPokemon}");
-            sb.AppendLine($"Wild: {wildPokemon}");
-            sb.AppendLine($"Forts: {forts}");
-            sb.AppendLine($"Quests: {quests}");
-            sb.AppendLine($"FortSearch: {fortSearch}");
-            sb.AppendLine($"Encounters: {encounters}");
-            sb.AppendLine($"Level: {payload.Level}");
-            sb.AppendLine($"Only Empty GMOs: {containsGmo && isEmptyGmo}");
-            sb.AppendLine($"Only Invalid GMOs: {containsGmo && isInvalidGmo}");
-            sb.AppendLine($"Contains GMOs: {containsGmo}");
-            sb.AppendLine($"InArea: {inArea}");
-            sb.AppendLine($"Target Latitude: {targetCoord?.Latitude}");
-            sb.AppendLine($"Target Longitude: {targetCoord?.Longitude}");
-            sb.AppendLine($"Pokemon Latitude: {pokemonCoords?.Latitude}");
-            sb.AppendLine($"Pokemon Longitude: {pokemonCoords?.Longitude}");
-            sb.AppendLine($"Pokemon Encounter Id: {payload.PokemonEncounterId}");
-            sb.AppendLine($"parsed in {stopwatch.Elapsed.TotalSeconds}");
-            sb.AppendLine();
-            _logger.LogInformation(sb.ToString());
-
-            return new ProtoResponse
+            var response = new ProtoResponse
             {
                 Status = "ok",
                 Data = new ProtoDataDetails
@@ -591,6 +569,8 @@
                     PokemonEncounterId = payload.PokemonEncounterId,
                 },
             };
+            _logger.LogInformation($"[{payload.Uuid}] {response.ToJson()}");
+            return response;
         }
 
         #endregion

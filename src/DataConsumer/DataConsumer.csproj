@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Chuck.Configuration\Chuck.Configuration.csproj" />
     <ProjectReference Include="..\Chuck.Data\Chuck.Data.csproj" />
+    <ProjectReference Include="..\Chuck.Pvp\Chuck.Pvp.csproj" />
   </ItemGroup>
 
 </Project>
