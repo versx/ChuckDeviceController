@@ -9,6 +9,7 @@
 
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using StackExchange.Redis;
     using Z.EntityFramework.Plus;
@@ -30,6 +31,7 @@
 
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
+        private readonly IConfiguration _config;
         private readonly IConnectionMultiplexer _redis;
         private readonly IDatabaseAsync _redisDatabase;
         private readonly ISubscriber _subscriber;
@@ -50,11 +52,12 @@
 
         #region Constructor
 
-        public DashboardController(DeviceControllerContext context, IConnectionMultiplexer connectionMultiplexer, ILogger<DeviceController> logger)
+        public DashboardController(DeviceControllerContext context, IConfiguration config, IConnectionMultiplexer connectionMultiplexer, ILogger<DeviceController> logger)
         {
             _context = context;
+            _config = config;
             _redis = connectionMultiplexer;
-            _redisDatabase = _redis.GetDatabase(Startup.Config.Redis.DatabaseNum);
+            _redisDatabase = _redis.GetDatabase(int.Parse(_config["Redis:DatabaseNum"]));
             _subscriber = _redis.GetSubscriber();
             _logger = logger;
 

@@ -54,7 +54,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Chuck.Common\Chuck.Common.csproj" />
-    <ProjectReference Include="..\Chuck.Configuration\Chuck.Configuration.csproj" />
     <ProjectReference Include="..\Chuck.Data\Chuck.Data.csproj" />
     <ProjectReference Include="..\Chuck.Extensions\Chuck.Extensions.csproj" />
     <ProjectReference Include="..\Chuck.Geometry\Chuck.Geometry.csproj" />

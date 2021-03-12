@@ -1,16 +1,14 @@
 namespace ChuckDeviceController
 {
     using System;
-    using System.IO;
     using System.Reflection;
     using System.Text;
     using System.Threading;
 
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
 
-    using Chuck.Configuration;
-    using Chuck.Extensions;
     using ChuckDeviceController.Data;
 
     // TODO: Add 'bootstrap_complete' property to Instance.Data for bootstrap instance, add auto_complete_instance property
@@ -34,42 +32,39 @@ namespace ChuckDeviceController
             Console.WriteLine("Starting...");
             Console.ForegroundColor = org;
 
-            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Strings.DefaultConfigFileName);
-            try
-            {
-                Startup.Config = Config.Load(configPath);
-                if (Startup.Config == null)
-                {
-                    Console.WriteLine($"Failed to load config {configPath}");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                ConsoleExt.WriteError($"Config: {ex.Message}");
-                Console.ReadKey();
-                return;
-            }
+            CreateHostBuilder(args).Build().Run();
+
             // Start database migrator
             var migrator = new DatabaseMigrator();
             while (!migrator.Finished)
             {
                 Thread.Sleep(50);
             }
-
-            CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var config = new ConfigurationBuilder()
+                .SetBasePath(System.IO.Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env}.json",
+                                optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .AddCommandLine(args)
+                .Build();
+
+            Startup.DbConnectionString = config["DbConnectionString"];
+
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    //webBuilder.UseUrls("http://localhost:5000", "https://localhost:5001");
-                    webBuilder.UseUrls($"http://{Startup.Config.ControllerInterface}:{Startup.Config.ControllerPort}"); // TODO: Support for https and port + 1
+                    webBuilder.UseConfiguration(config);
+                    // TODO: Support for https and port + 1
+                    webBuilder.UseUrls(config["ControllerUrls"]);
                     webBuilder.UseWebRoot(Strings.WebRoot);
-                    //copy Views and wwwroot to output dir
-                    //webBuilder.UseContentRoot(AppDomain.CurrentDomain.BaseDirectory);
                 });
+        }
     }
 }

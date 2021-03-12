@@ -335,3 +335,5 @@ ASALocalRun/
 # No config files
 config.json
 /.DS_Store
+
+appsettings.*.json

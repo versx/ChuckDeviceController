@@ -34,7 +34,7 @@
         public IVListController()
         {
             _ivLists = new Dictionary<string, IVList>();
-            _ivListRepository = new IVListRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _ivListRepository = new IVListRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
             //_logger = new Logger<IVListController>(LoggerFactory.Create(x => x.AddConsole()));
             Reload().ConfigureAwait(false).GetAwaiter().GetResult();
         }

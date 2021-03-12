@@ -167,11 +167,6 @@
             await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public virtual async Task UpdateAndRenameAsync(TEntity entity, string oldName)
-        {
-            //
-        }
-
         public virtual async Task UpdateRangeAsync(List<TEntity> entities)
         {
             _dbContext.UpdateRange(entities);
@@ -222,7 +217,7 @@
                 _dbContext.SingleMerge(entity);
                 await _dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (MySqlConnector.MySqlException ex)
             {
                 ConsoleExt.WriteError($"AddOrUpdateAsync: {ex}");
             }
@@ -246,7 +241,7 @@
                     //x.ColumnPrimaryKeyExpression = entity => entity.Id || entity.Uuid;
                 }).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (MySqlConnector.MySqlException ex)
             {
                 ConsoleExt.WriteError($"[EfCoreRepository] AddOrUpdateAsync: {ex.Message}");
             }

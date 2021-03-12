@@ -97,9 +97,9 @@
             _todayStopsTries = new Dictionary<string, int>();
             _bootstrapCellIds = new List<ulong>();
 
-            _accountRepository = new AccountRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _pokestopRepository = new PokestopRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _cellRepository = new CellRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _accountRepository = new AccountRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
+            _pokestopRepository = new PokestopRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
+            _cellRepository = new CellRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
 
             var timeLeft = DateTime.Now.SecondsUntilMidnight();
             _timer = new System.Timers.Timer(timeLeft * 1000);

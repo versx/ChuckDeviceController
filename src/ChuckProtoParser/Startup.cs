@@ -9,16 +9,13 @@ namespace ChuckProtoParser
     using Microsoft.OpenApi.Models;
     using StackExchange.Redis;
 
-    using Chuck.Configuration;
     using Chuck.Data.Contexts;
     using Chuck.Data.Interfaces;
     using Chuck.Data.Repositories;
 
     public class Startup
     {
-        public static Config Config { get; set; }
-
-        public static DatabaseConfig DbConfig => Config?.Database;
+        public static string DbConnectionString { get; set; }
 
         public Startup(IConfiguration configuration)
         {
@@ -37,19 +34,19 @@ namespace ChuckProtoParser
             });
 
             services.AddDbContextFactory<DeviceControllerContext>(options =>
-                options.UseMySql(DbConfig.ToString(), ServerVersion.AutoDetect(DbConfig.ToString())), ServiceLifetime.Singleton);
+                options.UseMySql(DbConnectionString, ServerVersion.AutoDetect(DbConnectionString)), ServiceLifetime.Singleton);
             services.AddDbContext<DeviceControllerContext>(options =>
                 //options.UseMySQL(DbConfig.ToString()));
-                options.UseMySql(DbConfig.ToString(), ServerVersion.AutoDetect(DbConfig.ToString())), ServiceLifetime.Scoped);
+                options.UseMySql(DbConnectionString, ServerVersion.AutoDetect(DbConnectionString)), ServiceLifetime.Scoped);
             services.AddScoped(typeof(IAsyncRepository<>), typeof(EfCoreRepository<,>));
 
             var options = new ConfigurationOptions
             {
                 EndPoints =
                 {
-                    { $"{Config.Redis.Host}:{Config.Redis.Port}" }
+                    { $"{Configuration["Redis:Host"]}:{Configuration["Redis:Port"]}" }
                 },
-                Password = Config.Redis.Password,
+                Password = Configuration["Redis:Password"],
             };
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
         }

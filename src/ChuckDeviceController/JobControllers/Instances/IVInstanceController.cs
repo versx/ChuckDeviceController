@@ -77,7 +77,7 @@
 
             _logger = new Logger<IVInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 
-            _pokemonRepository = new PokemonRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _pokemonRepository = new PokemonRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
             _pokemonQueue = new List<Pokemon>();
             _scannedPokemon = new List<ScannedPokemon>();
             _timer = new System.Timers.Timer
