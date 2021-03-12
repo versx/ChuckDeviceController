@@ -212,7 +212,7 @@
                                 {
                                     gpr,
                                     username = payload.Username,
-                                });
+                                }).ConfigureAwait(false);
                                 playerData++;
                             }
                             else
@@ -258,7 +258,7 @@
                                     await PushData(RedisChannels.ProtoQuest, new
                                     {
                                         raw = data,
-                                    });
+                                    }).ConfigureAwait(false);
                                     quests++;
                                 }
                                 //fortSearch.Add(fsr);
@@ -288,7 +288,7 @@
                                     {
                                         data = er,
                                         username = payload.Username,
-                                    });
+                                    }).ConfigureAwait(false);
                                     encounters++;
                                 }
                                 else if (er == null)
@@ -348,7 +348,7 @@
                                 foreach (var mapCell in mapCellsNew)
                                 {
                                     cells.Add(mapCell.S2CellId);
-                                    await PushData(RedisChannels.ProtoCell, mapCell.S2CellId);
+                                    await PushData(RedisChannels.ProtoCell, mapCell.S2CellId).ConfigureAwait(false);
 
                                     var tsMs = mapCell.AsOfTimeMs;
                                     foreach (var wild in mapCell.WildPokemon)
@@ -359,7 +359,7 @@
                                             data = wild,
                                             timestamp_ms = tsMs,
                                             username = payload.Username,
-                                        });
+                                        }).ConfigureAwait(false);
                                         wildPokemon++;
                                     }
                                     foreach (var nearby in mapCell.NearbyPokemon)
@@ -370,7 +370,7 @@
                                             data = nearby,
                                             timestamp_ms = tsMs,
                                             username = payload.Username,
-                                        });
+                                        }).ConfigureAwait(false);
                                         nearbyPokemon++;
                                     }
                                     foreach (var fort in mapCell.Fort)
@@ -379,13 +379,13 @@
                                         {
                                             cell = mapCell.S2CellId,
                                             data = fort,
-                                        });
+                                        }).ConfigureAwait(false);
                                         forts++;
                                     }
                                 }
                                 foreach (var weather in gmo.ClientWeather)
                                 {
-                                    await PushData(RedisChannels.ProtoWeather, new Weather(weather));
+                                    await PushData(RedisChannels.ProtoWeather, new Weather(weather)).ConfigureAwait(false);
                                     clientWeather++;
                                 }
                                 if (wildPokemon == 0 && nearbyPokemon == 0 && forts == 0 && quests == 0)
@@ -403,7 +403,7 @@
                                         if (_emptyCells[cellId] == 3)
                                         {
                                             _logger.LogWarning($"[Proto] [{payload.Uuid}] Cell {cellId} was empty 3 times in a row, assuming empty...");
-                                            await PushData(RedisChannels.ProtoCell, cellId);
+                                            await PushData(RedisChannels.ProtoCell, cellId).ConfigureAwait(false);
                                         }
                                     }
                                     _logger.LogDebug($"[Proto] [{payload.Uuid}] GMO is empty");
@@ -445,11 +445,11 @@
                                 {
                                     if (gymDefender.TrainerPublicProfile != null)
                                     {
-                                        await PushData(RedisChannels.ProtoGymTrainer, new Trainer(gymDefender));
+                                        await PushData(RedisChannels.ProtoGymTrainer, new Trainer(gymDefender)).ConfigureAwait(false);
                                     }
                                     if (gymDefender.MotivatedPokemon != null)
                                     {
-                                        await PushData(RedisChannels.ProtoGymDefender, new GymDefender(fortId, gymDefender));
+                                        await PushData(RedisChannels.ProtoGymDefender, new GymDefender(fortId, gymDefender)).ConfigureAwait(false);
                                     }
                                 }
                             }
@@ -575,22 +575,24 @@
 
         #endregion
 
-        private Task PushData<T>(string channel, T data)
+        private async Task PushData<T>(string channel, T data)
         {
             try
             {
                 if (data == null)
                 {
-                    return Task.CompletedTask;
+                    await Task.CompletedTask.ConfigureAwait(false);
+                    return;
                 }
                 //_subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
-                _redisDatabase.ListRightPushAsync(Startup.Config.Redis.QueueName, new { channel, data, }.ToJson());
+                _ = _redisDatabase.ListRightPushAsync(Startup.Config.Redis.QueueName, new { channel, data, }.ToJson());
             }
             catch (Exception ex)
             {
                 ConsoleExt.WriteError(ex);
             }
-            return Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
+            return;
         }
     }
 }

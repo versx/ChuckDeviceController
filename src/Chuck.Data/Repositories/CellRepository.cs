@@ -27,7 +27,7 @@
             return await _dbContext.Cells
                 .Upsert(cell)
                 .On(p => p.Id)
-                .WhenMatched(c => new Cell
+                .WhenMatched(_ => new Cell
                 {
                     Updated = now,
                 })
@@ -53,7 +53,7 @@
             return await _dbContext.Cells
                 .UpsertRange(cells)
                 .On(p => p.Id)
-                .WhenMatched(c => new Cell
+                .WhenMatched(_ => new Cell
                 {
                     Updated = now,
                 })

@@ -31,9 +31,7 @@
                 .On(p => p.Id)
                 .WhenMatched((cDb, cIns) => new Spawnpoint
                 {
-                    DespawnSecond = cIns.DespawnSecond != null
-                        ? cIns.DespawnSecond
-                        : cDb.DespawnSecond,
+                    DespawnSecond = cIns.DespawnSecond ?? cDb.DespawnSecond,
                     FirstSeenTimestamp = cDb.FirstSeenTimestamp == 0 && cIns.FirstSeenTimestamp == 0 ? now : cDb.FirstSeenTimestamp,
                     Updated = now,
                 })
@@ -48,9 +46,7 @@
                 .On(p => p.Id)
                 .WhenMatched((cDb, cIns) => new Spawnpoint
                 {
-                    DespawnSecond = cIns.DespawnSecond != null
-                        ? cIns.DespawnSecond
-                        : cDb.DespawnSecond,
+                    DespawnSecond = cIns.DespawnSecond ?? cDb.DespawnSecond,
                     FirstSeenTimestamp = cDb.FirstSeenTimestamp == 0 && cIns.FirstSeenTimestamp == 0 ? now : cDb.FirstSeenTimestamp,
                     Updated = now,
                 })

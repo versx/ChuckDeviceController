@@ -79,8 +79,8 @@
         public bool IsValid(bool ignoreWarning = false, string groupName = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
-            return string.Compare(GroupName, groupName, true) == 0 &&
-                string.IsNullOrEmpty(Failed) || (
+            return (string.Compare(GroupName, groupName, true) == 0 &&
+                string.IsNullOrEmpty(Failed)) || (
                     Failed == "GPR_RED_WARNING" &&
                     (ignoreWarning || (WarnExpireTimestamp ?? ulong.MaxValue) <= now)
                 ) || (

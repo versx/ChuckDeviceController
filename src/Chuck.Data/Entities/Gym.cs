@@ -92,7 +92,7 @@
         [
             Column("availble_slots"), // I cringe every time
             JsonPropertyName("available_slots"),
-        ] 
+        ]
         public ushort AvailableSlots { get; set; }
 
         [

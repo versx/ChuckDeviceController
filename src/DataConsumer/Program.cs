@@ -6,11 +6,11 @@
     using Chuck.Configuration;
     using Chuck.Extensions;
 
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main(/*string[] args*/)
         {
-            ConsoleExt.WriteInfo($"DataConsumer starting...");
+            ConsoleExt.WriteInfo("DataConsumer starting...");
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
             try
             {

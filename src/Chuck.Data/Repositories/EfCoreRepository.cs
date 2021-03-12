@@ -103,7 +103,7 @@
             return await _dbContext.Set<TEntity>().ContainsAsync(entity).ConfigureAwait(false);
         }
 
-        public virtual bool ExistsAsync(TEntity entity)
+        public virtual bool Exists(TEntity entity)
         {
             return _dbContext.Entry(entity).IsKeySet;
         }

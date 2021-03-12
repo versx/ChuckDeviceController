@@ -262,7 +262,7 @@
             {
                 _instances[instance.Name] = instanceController;
             }
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         public async Task ReloadInstance(Instance newInstance, string oldInstanceName)
@@ -282,7 +282,7 @@
                     }
                 }
             }
-            await RemoveInstance(oldInstanceName);
+            await RemoveInstance(oldInstanceName).ConfigureAwait(false);
             await AddInstance(newInstance).ConfigureAwait(false);
         }
 

@@ -9,11 +9,11 @@ namespace ChuckProtoParser
     using Chuck.Configuration;
     using Chuck.Extensions;
 
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
-            ConsoleExt.WriteInfo($"ProtoParser starting...");
+            ConsoleExt.WriteInfo("ProtoParser starting...");
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
             try
             {

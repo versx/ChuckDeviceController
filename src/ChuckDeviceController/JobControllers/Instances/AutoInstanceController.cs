@@ -127,7 +127,7 @@
                 case AutoType.Quest:
                     if (_bootstrapCellIds.Count > 0)
                     {
-                        return await GetBootstrapTask();
+                        return await GetBootstrapTask().ConfigureAwait(false);
                     }
 
                     // TODO: Check InstanceController.NoRequireAccount (username == null and account == null)
@@ -143,7 +143,7 @@
                         var now = DateTime.UtcNow.ToTotalSeconds();
                         if (now - _lastCompletionCheck >= 600)
                         {
-                            await OnComplete();
+                            await OnComplete().ConfigureAwait(false);
                             return null;
                         }
                         _lastCompletionCheck = now;
@@ -174,7 +174,7 @@
                         // Check if all stops have quests, if so call on complete
                         if (_todayStops.Count == 0)
                         {
-                            await OnComplete();
+                            await OnComplete().ConfigureAwait(false);
                             return null;
                         }
                     }
@@ -340,7 +340,7 @@
                         // If there's no pokestops left that need quests, instance complete
                         if (_todayStops.Count == 0)
                         {
-                            await OnComplete();
+                            await OnComplete().ConfigureAwait(false);
                         }
                     }
                     return new QuestTask
@@ -429,7 +429,7 @@
             {
                 // Get max amount of s2 level 15 cells within this geofence
                 var s2Cells = polygon.GetS2CellIds(15, int.MaxValue);
-                var s2CellIds = s2Cells.Select(x => x.Id).ToList();
+                var s2CellIds = s2Cells.ConvertAll(x => x.Id);
                 totalCount += s2CellIds.Count;
                 // Get all known cells from the database
                 var cells = await _cellRepository.GetByIdsAsync(s2CellIds, false).ConfigureAwait(false);

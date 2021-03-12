@@ -222,7 +222,7 @@
                 {
                     Name = name,
                     Devices = devices
-                });
+                }).ConfigureAwait(false);
                 return Redirect("/dashboard/devicegroups");
             }
         }
@@ -273,13 +273,13 @@
                 if (newName != oldName)
                 {
                     // Delete old device group
-                    await _deviceGroupRepository.DeleteAsync(deviceGroup);
+                    await _deviceGroupRepository.DeleteAsync(deviceGroup).ConfigureAwait(false);
                     // Insert new device group
                     await _deviceGroupRepository.AddAsync(new DeviceGroup
                     {
                         Name = newName,
                         Devices = devices,
-                    });
+                    }).ConfigureAwait(false);
                 }
                 else
                 {
@@ -335,7 +335,7 @@
                     return BuildErrorResponse("devicegroup-instance", $"Instance with name '{name}' does not exist");
                 }
 
-                var devices = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices);
+                var devices = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices).ConfigureAwait(false);
                 foreach (var device in devices)
                 {
                     device.InstanceName = instance.Name;
@@ -477,7 +477,7 @@
 
                 // TODO: Valid geofence names
 
-                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided");
@@ -639,7 +639,7 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
-                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided");
@@ -660,7 +660,7 @@
                 if (newName != oldName)
                 {
                     // Delete old instance
-                    await _instanceRepository.DeleteAsync(instance);
+                    await _instanceRepository.DeleteAsync(instance).ConfigureAwait(false);
                     // Insert new instance
                     var newInstance = new Instance
                     {
@@ -683,7 +683,7 @@
                             IsEvent = isEvent,
                         }
                     };
-                    await _instanceRepository.AddAsync(newInstance);
+                    await _instanceRepository.AddAsync(newInstance).ConfigureAwait(false);
                     await InstanceController.Instance.ReloadInstance(newInstance, oldName).ConfigureAwait(false);
                 }
                 else
@@ -813,7 +813,7 @@
                     }
                 };
                 await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
-                await GeofenceController.Instance.Reload();
+                await GeofenceController.Instance.Reload().ConfigureAwait(false);
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
@@ -866,7 +866,7 @@
                         await _geofenceRepository.DeleteAsync(geofenceToDelete).ConfigureAwait(false);
                         _logger.LogDebug($"Geofence {name} was deleted");
                     }
-                    await GeofenceController.Instance.Reload();
+                    await GeofenceController.Instance.Reload().ConfigureAwait(false);
                     return Redirect("/dashboard/geofences");
                 }
 
@@ -913,7 +913,7 @@
                 if (newName != oldName)
                 {
                     // Delete old geofence
-                    await _geofenceRepository.DeleteAsync(geofence);
+                    await _geofenceRepository.DeleteAsync(geofence).ConfigureAwait(false);
                     // Insert new geofence
                     await _geofenceRepository.AddAsync(new Geofence
                     {
@@ -923,7 +923,7 @@
                         {
                             Area = newArea,
                         }
-                    });
+                    }).ConfigureAwait(false);
                 }
                 else
                 {
@@ -935,7 +935,7 @@
                     };
                     await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
                 }
-                await GeofenceController.Instance.Reload();
+                await GeofenceController.Instance.Reload().ConfigureAwait(false);
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
@@ -1055,7 +1055,7 @@
 
                 if (string.IsNullOrEmpty(destinationInstance))
                 {
-                    return BuildErrorResponse("assignment-add", $"No destination instance selected");
+                    return BuildErrorResponse("assignment-add", "No destination instance selected");
                 }
 
                 try
@@ -1119,7 +1119,7 @@
                 if (devices == null || instances == null || deviceGroups == null)
                 {
                     // Failed to get devices, instances, or device groups from database
-                    return BuildErrorResponse("assignment-edit", $"Failed to get devices, instances, or device groups from database");                    
+                    return BuildErrorResponse("assignment-edit", "Failed to get devices, instances, or device groups from database");
                 }
 
                 var formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
@@ -1213,7 +1213,7 @@
                 if (string.IsNullOrEmpty(destinationInstance))
                 {
                     // Invalid request, no destination instance selected
-                    return BuildErrorResponse("assignment-add", $"No destination instance selected");
+                    return BuildErrorResponse("assignment-add", "No destination instance selected");
                 }
 
                 var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
@@ -1333,7 +1333,7 @@
                 if (types.Count == 0)
                 {
                     // No webhook type selected (forgot if this is needed, double check lol)
-                    return BuildErrorResponse("webhook-add", $"At least one webhook type needs to be selected");
+                    return BuildErrorResponse("webhook-add", "At least one webhook type needs to be selected");
                 }
 
                 // Make sure geofence exists
@@ -1452,7 +1452,7 @@
                 if (types.Count == 0)
                 {
                     // No webhook type selected (forgot if this is needed, double check lol)
-                    return BuildErrorResponse("webhook-edit", $"At least one webhook type needs to be selected");
+                    return BuildErrorResponse("webhook-edit", "At least one webhook type needs to be selected");
                 }
 
                 // Make sure geofence exists
@@ -1467,7 +1467,7 @@
                 if (newName != oldName)
                 {
                     // Delete old webhook
-                    await _webhookRepository.DeleteAsync(webhook);
+                    await _webhookRepository.DeleteAsync(webhook).ConfigureAwait(false);
                     // Insert new webhook
                     await _webhookRepository.AddAsync(new Webhook
                     {
@@ -1488,7 +1488,7 @@
                             GymTeamIds = gymIds,
                             WeatherConditionIds = weatherIds,
                         }
-                    });
+                    }).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1511,7 +1511,7 @@
                     };
                     await _webhookRepository.UpdateAsync(webhook).ConfigureAwait(false);
                 }
-                
+
                 var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
                 await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
                 return Redirect("/dashboard/webhooks");
@@ -1561,7 +1561,7 @@
                     : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?
                                       .Select(uint.Parse)
                                       .ToList();
-                
+
                 var ivList = await _ivListRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (ivList != null)
                 {
@@ -1573,8 +1573,8 @@
                     Name = name,
                     PokemonIDs = pokemonIds,
                 };
-                await _ivListRepository.AddOrUpdateAsync(ivList);
-                await IVListController.Instance.Reload();
+                await _ivListRepository.AddOrUpdateAsync(ivList).ConfigureAwait(false);
+                await IVListController.Instance.Reload().ConfigureAwait(false);
                 return Redirect("/dashboard/ivlists");
             }
         }
@@ -1587,7 +1587,7 @@
         {
             if (Request.Method == "GET")
             {
-                var ivList = await _ivListRepository.GetByIdAsync(name);
+                var ivList = await _ivListRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (ivList == null)
                 {
                     // Failed to get IV list by name
@@ -1638,20 +1638,20 @@
                 if (newName != oldName)
                 {
                     // Delete old IV list
-                    await _ivListRepository.DeleteAsync(ivList);
+                    await _ivListRepository.DeleteAsync(ivList).ConfigureAwait(false);
                     // Insert new IV list
                     await _ivListRepository.AddAsync(new IVList
                     {
                         Name = newName,
                         PokemonIDs = pokemonIds,
-                    });
+                    }).ConfigureAwait(false);
                 }
                 else
                 {
                     ivList.PokemonIDs = pokemonIds;
                     await _ivListRepository.UpdateAsync(ivList).ConfigureAwait(false);
                 }
-                await IVListController.Instance.Reload();
+                await IVListController.Instance.Reload().ConfigureAwait(false);
                 return Redirect("/dashboard/ivlists");
             }
         }
@@ -1771,10 +1771,10 @@
                         //var stopsConverted = await _pokestopRepository.ConvertPokestopsToGyms().ConfigureAwait(false);
                         // - delete converted pokestops
                         // - Pass data through to view
-                        return BuildSuccessResponse("utilities", $"<b>0</b> Pokestops converted to Gyms");
+                        return BuildSuccessResponse("utilities", "<b>0</b> Pokestops converted to Gyms");
                     case "force_logout_all_devices":
                         await _deviceRepository.ClearAllAccounts().ConfigureAwait(false);
-                        return BuildSuccessResponse("utilities", $"All devices forced to logout");
+                        return BuildSuccessResponse("utilities", "All devices forced to logout");
                     case "clear_quests":
                         await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
                         return BuildSuccessResponse("utilities", "All Pokestop quests have been cleared");
@@ -1896,21 +1896,23 @@
             };
         }
 
-        private Task PublishData<T>(string channel, T data)
+        private async Task PublishData<T>(string channel, T data)
         {
             try
             {
                 if (data == null)
                 {
-                    return Task.CompletedTask;
+                    await Task.CompletedTask.ConfigureAwait(false);
+                    return;
                 }
-                _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
+                _ = _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"PublishData: {ex}");
             }
-            return Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
+            return;
         }
 
         #endregion

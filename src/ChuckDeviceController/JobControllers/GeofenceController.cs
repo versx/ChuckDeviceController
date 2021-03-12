@@ -71,7 +71,7 @@
 
         public List<Geofence> GetGeofences(List<string> names)
         {
-            return names.Select(x => GetGeofence(x)).ToList();
+            return names.ConvertAll(x => GetGeofence(x));
         }
     }
 }

@@ -14,8 +14,7 @@
 
         public List<string> IncludeStrings { get; } = new List<string>();
 
-
-        public BaseSpecification(Expression<Func<T, bool>> criteria)
+        protected BaseSpecification(Expression<Func<T, bool>> criteria)
         {
             Criteria = criteria;
         }

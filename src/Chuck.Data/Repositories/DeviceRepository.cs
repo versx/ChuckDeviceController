@@ -18,7 +18,7 @@
 
         public async Task ClearAllAccounts()
         {
-            var devices = await GetAllAsync();
+            var devices = await GetAllAsync().ConfigureAwait(false);
             foreach (var device in devices)
             {
                 device.AccountUsername = null;

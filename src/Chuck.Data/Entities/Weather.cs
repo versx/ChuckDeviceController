@@ -98,32 +98,30 @@
 
         public bool Update(Weather oldWeather = null)
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            Updated = now;
-            var result = false;
+            Updated = DateTime.UtcNow.ToTotalSeconds();
             if (oldWeather == null)
             {
                 // WebhookController.Instance.AddWeather(this);
-                result = true;
+                return true;
             }
             else if (oldWeather.GameplayCondition != GameplayCondition ||
                 oldWeather.WarnWeather != WarnWeather)
             {
                 // WebhookController.Instance.AddWeather(this);
-                result = true;
+                return true;
             }
-            return result;
+            return false;
         }
 
         public dynamic GetWebhookValues(string type)
         {
             var s2cell = new S2Cell(new S2CellId((ulong)Id));
-            var polygon = new List<List<double>>();
+            var _polygon = new List<List<double>>();
             for (var i = 0; i <= 3; i++)
             {
                 var vertex = s2cell.GetVertex(i);
                 var coord = new S2LatLng(vertex);
-                polygon.Add(new List<double> {
+                _polygon.Add(new List<double> {
                     coord.LatDegrees,
                     coord.LngDegrees
                 });
@@ -136,7 +134,7 @@
                     s2_cell_id = Id,
                     latitude = Latitude,
                     longitude = Longitude,
-                    polygon = polygon,
+                    polygon = _polygon,
                     gameplay_condition = (ushort)GameplayCondition,
                     wind_direction = WindDirection,
                     cloud_level = CloudLevel,

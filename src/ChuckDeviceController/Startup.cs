@@ -196,7 +196,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotPokemon(pokemon));
+                            ThreadPool.QueueUserWorkItem(_ => InstanceController.Instance.GotPokemon(pokemon));
                         }
                         break;
                     }
@@ -205,7 +205,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotIV(pokemon));
+                            ThreadPool.QueueUserWorkItem(_ => InstanceController.Instance.GotIV(pokemon));
                         }
                         break;
                     }

@@ -81,7 +81,7 @@
         public async Task Stop()
         {
             _timer?.Stop();
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         public void AddAssignment(Assignment assignment)
@@ -136,7 +136,7 @@
                 if (!string.IsNullOrEmpty(assignment.DeviceGroupName))
                 {
                     var deviceGroup = await _deviceGroupRepository.GetByIdAsync(assignment.DeviceGroupName).ConfigureAwait(false);
-                    if (deviceGroup != null && deviceGroup.Devices?.Count > 0)
+                    if (deviceGroup?.Devices?.Count > 0)
                     {
                         var devicesInGroup = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices).ConfigureAwait(false);
                         if (devicesInGroup != null && devicesInGroup?.Count > 0)
@@ -161,7 +161,7 @@
                     (string.IsNullOrEmpty(instance) || device.InstanceName == instance) &&
                     string.Compare(device.InstanceName, assignment.InstanceName, true) != 0 &&
                     (string.IsNullOrEmpty(assignment.SourceInstanceName) || assignment.SourceInstanceName == device.InstanceName)
-                    )   
+                    )
                 )
                 {
                     _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");

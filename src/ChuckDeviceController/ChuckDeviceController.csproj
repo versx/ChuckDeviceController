@@ -31,6 +31,7 @@
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>../../bin</OutputPath>
+    <NoWarn>1701;1702;RCS1213;RCS1093</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -58,13 +59,6 @@
     <ProjectReference Include="..\Chuck.Data\Chuck.Data.csproj" />
     <ProjectReference Include="..\Chuck.Extensions\Chuck.Extensions.csproj" />
     <ProjectReference Include="..\Chuck.Geometry\Chuck.Geometry.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\wwwroot\static\favicons\chuck.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

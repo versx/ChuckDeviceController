@@ -23,7 +23,6 @@
         public const ushort WeatherBoostMinLevel = 6;
         public const ushort WeatherBoostMinIvStat = 4;
 
-
         // TODO: Configurable
         private static readonly List<uint> _dittoDisguises = new List<uint>
         {

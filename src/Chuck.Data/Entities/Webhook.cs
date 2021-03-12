@@ -84,23 +84,23 @@
             var split = webhookTypes.Split(',');
             foreach (var item in split)
             {
-                if (item.ToLower().Contains("pokemon"))
+                if (item.Contains("pokemon", System.StringComparison.OrdinalIgnoreCase))
                     list.Add(WebhookType.Pokemon);
-                if (item.ToLower().Contains("pokestops"))
+                if (item.Contains("pokestops", System.StringComparison.OrdinalIgnoreCase))
                     list.Add(WebhookType.Pokestops);
-                if (item.ToLower().Contains("raids"))
+                if (item.Contains("raids", System.StringComparison.OrdinalIgnoreCase))
                     list.Add(WebhookType.Raids);
-                if (item.ToLower().Contains("eggs"))
+                if (item.Contains("eggs", System.StringComparison.OrdinalIgnoreCase))
                     list.Add(WebhookType.Eggs);
-                if (item.ToLower().Contains("quests"))
+                if (item.Contains("quests", System.StringComparison.OrdinalIgnoreCase))
                     list.Add(WebhookType.Quests);
-                if (item.ToLower().Contains("lures"))
+                if (item.Contains("lures", System.StringComparison.OrdinalIgnoreCase))
                     list.Add(WebhookType.Lures);
-                if (item.ToLower().Contains("invasions"))
+                if (item.Contains("invasions", System.StringComparison.OrdinalIgnoreCase))
                     list.Add(WebhookType.Invasions);
-                if (item.ToLower().Contains("gyms"))
+                if (item.Contains("gyms", System.StringComparison.OrdinalIgnoreCase))
                     list.Add(WebhookType.Gyms);
-                if (item.ToLower().Contains("weather"))
+                if (item.Contains("weather", System.StringComparison.OrdinalIgnoreCase))
                     list.Add(WebhookType.Weather);
             }
             return list;

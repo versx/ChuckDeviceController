@@ -66,7 +66,7 @@
             {
                 //wild.LastModifiedMs
                 var unixDate = DateTime.UtcNow;
-                var secondsOfHour = unixDate.Minute * 60 + unixDate.Second;
+                var secondsOfHour = (unixDate.Minute * 60) + unixDate.Second;
                 var despawnSec = (int)Math.Round(tthMs / 1000.0);
                 var offset = secondsOfHour + despawnSec;
                 if (offset > 3600)

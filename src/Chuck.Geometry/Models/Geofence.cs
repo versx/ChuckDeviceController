@@ -73,7 +73,7 @@
             {
                 Priority = Convert.ToInt32(feature.Attributes["priority"]);
             }
-            catch
+            catch (Exception)
             {
                 Priority = 0;
             }

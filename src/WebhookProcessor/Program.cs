@@ -12,15 +12,15 @@
     using Chuck.Data.Entities;
     using Chuck.Extensions;
 
-    class Program
+    internal static class Program
     {
-        static IConnectionMultiplexer _redis;
-        static ISubscriber _subscriber;
-        static Config _config;
+        private static IConnectionMultiplexer _redis;
+        private static ISubscriber _subscriber;
+        private static Config _config;
 
-        static void Main(string[] args)
+        private static void Main(/*string[] args*/)
         {
-            ConsoleExt.WriteInfo($"WebhookProcessor starting...");
+            ConsoleExt.WriteInfo("WebhookProcessor starting...");
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
             try
             {
@@ -50,10 +50,10 @@
                     //_redisDatabase = _redis.GetDatabase(_config.Redis.DatabaseNum);
                 }
 
-                ConsoleExt.WriteInfo($"[WebhookProcessor] Starting...");
+                ConsoleExt.WriteInfo("[WebhookProcessor] Starting...");
                 WebhookController.Instance.SleepIntervalS = 5;
                 WebhookController.Instance.Start();
-                ConsoleExt.WriteInfo($"[WebhookProcessor] Started, waiting for webhook events");
+                ConsoleExt.WriteInfo("[WebhookProcessor] Started, waiting for webhook events");
             }
             catch (Exception ex)
             {
@@ -67,24 +67,24 @@
 
         #region Redis Events
 
-        static void RedisOnConnectionFailed(object sender, ConnectionFailedEventArgs e)
+        private static void RedisOnConnectionFailed(object sender, ConnectionFailedEventArgs e)
         {
             ConsoleExt.WriteError($"[DataConsumer] [Redis] {e.EndPoint}: {e.FailureType} {e.Exception}");
         }
 
-        static void RedisOnErrorMessage(object sender, RedisErrorEventArgs e)
+        private static void RedisOnErrorMessage(object sender, RedisErrorEventArgs e)
         {
             ConsoleExt.WriteError($"[DataConsumer] [Redis] {e.EndPoint}: {e.Message}");
         }
 
-        static void RedisOnInternalError(object sender, InternalErrorEventArgs e)
+        private static void RedisOnInternalError(object sender, InternalErrorEventArgs e)
         {
             ConsoleExt.WriteError($"[DataConsumer] [Redis] {e.EndPoint}: {e.Exception}");
         }
 
         #endregion
 
-        static void SubscriptionHandler(RedisChannel channel, RedisValue message)
+        private static void SubscriptionHandler(RedisChannel channel, RedisValue message)
         {
             if (string.IsNullOrEmpty(message)) return;
 
