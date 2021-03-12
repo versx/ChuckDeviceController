@@ -128,15 +128,11 @@ namespace ChuckDeviceController
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
 
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{Strings.AppName} v1"));
 
-            if (bool.Parse(Configuration["EnableProfiler"]))
+            if (Configuration.GetValue<bool>("EnableProfiler"))
             {
                 app.UseMiniProfiler();
             }
