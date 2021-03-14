@@ -31,21 +31,21 @@
 
         //private readonly List<object> _sentEvents;
 
-        private readonly object _webhooksLock = new object();
+        //private readonly object _webhooksLock = new();
 
-        private readonly object _accountLock = new object();
-        private readonly object _pokemonLock = new object();
-        private readonly object _eggLock = new object();
-        private readonly object _raidLock = new object();
-        private readonly object _gymLock = new object();
-        private readonly object _gymDefenderLock = new object();
-        private readonly object _gymTrainerLock = new object();
-        private readonly object _pokestopLock = new object();
-        private readonly object _lureLock = new object();
-        private readonly object _invasionLock = new object();
-        private readonly object _questLock = new object();
-        private readonly object _weatherLock = new object();
-        //private readonly object _lock = new object();
+        private readonly object _accountLock = new();
+        private readonly object _pokemonLock = new();
+        private readonly object _eggLock = new();
+        private readonly object _raidLock = new();
+        private readonly object _gymLock = new();
+        private readonly object _gymDefenderLock = new();
+        private readonly object _gymTrainerLock = new();
+        private readonly object _pokestopLock = new();
+        private readonly object _lureLock = new();
+        private readonly object _invasionLock = new();
+        private readonly object _questLock = new();
+        private readonly object _weatherLock = new();
+        //private readonly object _lock = new();
 
         private Thread _thread;
         //private readonly System.Timers.Timer _timer;
@@ -125,7 +125,7 @@
             _thread.Interrupt();
             if (!_thread.Join(2000))
             {
-                ConsoleExt.WriteError($"[WebhookController] Failed to abort webhook thread");
+                ConsoleExt.WriteError("[WebhookController] Failed to abort webhook thread");
             }
             _thread = null;
         }

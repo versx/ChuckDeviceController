@@ -19,12 +19,12 @@
         private readonly ILogger<CircleInstanceController> _logger;
 
         private readonly Dictionary<string, DeviceIndex> _lastUuid;
-        private static readonly Random _random = new Random();
+        private static readonly Random _random = new();
         private DateTime _lastCompletedTime;
         private int _lastIndex;
         private DateTime _lastLastCompletedTime;
 
-        private readonly object _indexLock = new object();
+        private readonly object _indexLock = new();
 
         #endregion
 

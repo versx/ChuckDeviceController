@@ -13,6 +13,8 @@ namespace ChuckProtoParser
     using Chuck.Data.Contexts;
     using Chuck.Data.Interfaces;
     using Chuck.Data.Repositories;
+    using System;
+    using Chuck.Extensions;
 
     public class Startup
     {
@@ -31,10 +33,7 @@ namespace ChuckProtoParser
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckProtoParser", Version = "v1" });
-            });
+            services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckProtoParser", Version = "v1" }));
 
             services.AddDbContextFactory<DeviceControllerContext>(options =>
                 options.UseMySql(DbConfig.ToString(), ServerVersion.AutoDetect(DbConfig.ToString())), ServiceLifetime.Singleton);
@@ -51,7 +50,16 @@ namespace ChuckProtoParser
                 },
                 Password = Config.Redis.Password,
             };
-            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
+
+            try
+            {
+                services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
+            }
+            catch (Exception ex)
+            {
+                ConsoleExt.WriteError(ex.Message);
+                Environment.Exit(0);
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,10 +78,7 @@ namespace ChuckProtoParser
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
     }
 }

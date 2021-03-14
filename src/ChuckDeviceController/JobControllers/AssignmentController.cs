@@ -22,7 +22,7 @@
         private bool _initialized;
         private long _lastUpdated;
         private readonly System.Timers.Timer _timer;
-        private readonly object _assignmentsLock = new object();
+        private readonly object _assignmentsLock = new();
 
         #region Singleton
 

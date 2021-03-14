@@ -24,7 +24,7 @@
 
         private int _lastIndex;
 
-        private readonly object _indexLock = new object();
+        private readonly object _indexLock = new();
 
         #endregion
 
