@@ -91,7 +91,16 @@ namespace ChuckDeviceController
                 },
                 Password = Config.Redis.Password,
             };
-            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
+            
+            try
+            {
+                services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
+            }
+            catch (Exception ex)
+            {
+                ConsoleExt.WriteError(ex.Message);
+                Environment.Exit(0);
+            }
 
             services.AddCors(option => option.AddPolicy("Test", builder => {
                 builder.AllowAnyOrigin()
