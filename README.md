@@ -28,12 +28,15 @@ There are 4 parts to it:
 ### Requirements
 1. Install [Redis](https://redis.io/topics/quickstart)  
 ```
-From Source:
+From Source Linux/Unix:
 wget http://download.redis.io/redis-stable.tar.gz
 tar xvzf redis-stable.tar.gz
 cd redis-stable
 make
 src/redis-server
+
+From RedisLabs:
+Windows uses last of [Redis-Windows](https://redislabs.com/ebook/appendix-a/a-3-installing-on-windows/a-3-2-installing-redis-on-window/)
 
 From Ubuntu PPA:
 sudo add-apt-repository ppa:redislabs/redis

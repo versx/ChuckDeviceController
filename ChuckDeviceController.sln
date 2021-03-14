@@ -21,9 +21,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Common", "src\Chuck.Common\Chuck.Common.csproj", "{ADEC3C2F-5374-40A0-8100-942825CD3079}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Configuration", "src\Chuck.Configuration\Chuck.Configuration.csproj", "{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Configuration", "src\Chuck.Configuration\Chuck.Configuration.csproj", "{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Pvp", "src\Chuck.Pvp\Chuck.Pvp.csproj", "{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Pvp", "src\Chuck.Pvp\Chuck.Pvp.csproj", "{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "POGOProtos.Core", "src\POGOProtos.Core\POGOProtos.Core.csproj", "{CC7E9761-17B1-4E9E-ACD1-CEF35AFE1D42}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +73,10 @@ Global
 		{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC7E9761-17B1-4E9E-ACD1-CEF35AFE1D42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC7E9761-17B1-4E9E-ACD1-CEF35AFE1D42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC7E9761-17B1-4E9E-ACD1-CEF35AFE1D42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC7E9761-17B1-4E9E-ACD1-CEF35AFE1D42}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,6 +88,7 @@ Global
 		{ADEC3C2F-5374-40A0-8100-942825CD3079} = {6584334A-42F9-409D-9C21-4FA6338B7095}
 		{3CD4204E-BE9B-43BE-AE2D-6F8D5850D997} = {6584334A-42F9-409D-9C21-4FA6338B7095}
 		{CD7AA0D7-EECA-476A-922F-3A5B7AAB0C2A} = {6584334A-42F9-409D-9C21-4FA6338B7095}
+		{CC7E9761-17B1-4E9E-ACD1-CEF35AFE1D42} = {6584334A-42F9-409D-9C21-4FA6338B7095}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {70AD1516-D444-4A61-936C-DD5BB1FC4564}
