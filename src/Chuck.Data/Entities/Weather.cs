@@ -116,12 +116,12 @@
         public dynamic GetWebhookValues(string type)
         {
             var s2cell = new S2Cell(new S2CellId((ulong)Id));
-            var _polygon = new List<List<double>>();
+            var polygon = new List<List<double>>();
             for (var i = 0; i <= 3; i++)
             {
                 var vertex = s2cell.GetVertex(i);
                 var coord = new S2LatLng(vertex);
-                _polygon.Add(new List<double> {
+                polygon.Add(new List<double> {
                     coord.LatDegrees,
                     coord.LngDegrees
                 });
@@ -134,7 +134,7 @@
                     s2_cell_id = Id,
                     latitude = Latitude,
                     longitude = Longitude,
-                    polygon = _polygon,
+                    polygon,
                     gameplay_condition = (ushort)GameplayCondition,
                     wind_direction = WindDirection,
                     cloud_level = CloudLevel,
