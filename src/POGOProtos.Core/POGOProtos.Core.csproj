@@ -4,7 +4,7 @@
     <Description>Compiled protobuf files *.cs for communication with PokemonGo.</Description>
     <AssemblyTitle>POGOProtos.Core</AssemblyTitle>
     <Authors>--=FurtiF™=--</Authors>
-    <TargetFrameworks>netstandard2.0;net47</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <AssemblyName>POGOProtos.Core</AssemblyName>
     <PackageId>POGOProtos.Core</PackageId>
     <PackageTags>Pokemon;PokemonGo;POGOProtos;netstandard;POGOProtos.Core</PackageTags>
@@ -12,11 +12,10 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Furtif/POGOProtos</RepositoryUrl>
     <Version>2.53.9</Version>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <DebugType>portable</DebugType>
     <Platforms>AnyCPU</Platforms>
     <Company>--=FurtiF™=-- (RocketBot)</Company>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageReleaseNotes>203.0 uses rpc only real names</PackageReleaseNotes>
     <PackageIcon></PackageIcon>
     <Copyright>Copyright (c) 2016-2021 --=FurtiF™=--</Copyright>
@@ -36,7 +35,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="POGOProtos.Rpc.desc">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
