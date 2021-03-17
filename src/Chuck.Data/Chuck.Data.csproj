@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="4.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.4" />
-    <PackageReference Include="POGOProtos.Core" Version="2.53.8" />
+    <PackageReference Include="POGOProtos.Core" Version="2.53.9" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-alpha.2" />
     <PackageReference Include="S2Geometry" Version="1.0.3" />
     <PackageReference Include="System.Text.Json" Version="5.0.1" />

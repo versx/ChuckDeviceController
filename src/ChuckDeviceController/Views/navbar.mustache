@@ -62,14 +62,6 @@
                     Settings
                 </a>
             </li>
-            <!--
-            <li>
-                <a href="/dashboard/logout">
-                    <i class="fas fa-fw fa-home"></i>
-                    Logout
-                </a>
-            </li>
-            -->
         </ul>
         <ul class="list-unstyled components">
             <li>
@@ -83,6 +75,29 @@
                     <i class="fa fa-fw fa-chart-bar"></i>
                     Profiler
                 </a>
+            </li>
+        </ul>
+        <ul class="list-unstyled components">
+            {{#if username}}
+            <li>
+                <a href="#">
+                    <i class="fas fa-fw fa-home"></i>
+                    {{username}}
+                </a>
+            </li>
+            {{/if}}
+            <li>
+                {{#if username}}
+                <a href="/discord/logout">
+                    <i class="fas fa-fw fa-home"></i>
+                    Logout
+                </a>
+                {{else}}
+                <a href="/discord/login">
+                    <i class="fas fa-fw fa-home"></i>
+                    Login
+                </a>
+                {{/if}}
             </li>
         </ul>
     </nav>

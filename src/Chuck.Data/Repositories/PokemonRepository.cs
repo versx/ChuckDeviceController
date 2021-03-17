@@ -28,47 +28,25 @@
                     CellId = cIns.CellId,
                     PokemonId = cIns.PokemonId,
                     Gender = cIns.Gender,
-                    Form = cIns.Form != null
-                        ? cIns.Form
-                        : cDb.Form,
+                    Form = cIns.Form ?? cDb.Form,
                     Costume = cIns.Costume,
-                    CP = cDb.CP == null
-                        ? cIns.CP
-                        : cDb.CP,
+                    CP = cIns.CP ?? cDb.CP,
                     Level = cIns.Level,
-                    AttackIV = cIns.AttackIV != null
-                        ? cIns.AttackIV
-                        : cDb.AttackIV,
-                    DefenseIV = cIns.DefenseIV != null
-                        ? cIns.DefenseIV
-                        : cDb.DefenseIV,
-                    StaminaIV = cIns.StaminaIV != null
-                        ? cIns.StaminaIV
-                        : cDb.StaminaIV,
-                    DisplayPokemonId = cIns.DisplayPokemonId != null
-                        ? cIns.DisplayPokemonId
-                        : cDb.DisplayPokemonId,
+                    AttackIV = cIns.AttackIV ?? cDb.AttackIV,
+                    DefenseIV = cIns.DefenseIV ?? cDb.DefenseIV,
+                    StaminaIV = cIns.StaminaIV ?? cDb.StaminaIV,
+                    DisplayPokemonId = cIns.DisplayPokemonId ?? cDb.DisplayPokemonId,
                     Weather = cIns.Weather,
-                    Weight = cIns.Weight != null
-                        ? cIns.Weight
-                        : cDb.Weight,
-                    Size = cIns.Size != null
-                        ? cIns.Size
-                        : cDb.Size,
+                    Weight = cIns.Weight ?? cDb.Weight,
+                    Size = cIns.Size ?? cDb.Size,
                     Username = cIns.Username,
                     IsShiny = cIns.IsShiny,
                     ExpireTimestamp = cIns.ExpireTimestamp,
                     IsExpireTimestampVerified = cIns.IsExpireTimestampVerified,
-                    Move1 = cIns.Move1 != null
-                        ? cIns.Move1
-                        : cDb.Move1,
-                    Move2 = cIns.Move2 != null
-                        ? cIns.Move2
-                        : cDb.Move2,
+                    Move1 = cIns.Move1 ?? cDb.Move1,
+                    Move2 = cIns.Move2 ?? cDb.Move2,
                     PokestopId = cIns.PokestopId ?? cDb.PokestopId,
-                    SpawnId = cIns.SpawnId != null
-                        ? cIns.SpawnId
-                        : cDb.SpawnId,
+                    SpawnId = cIns.SpawnId ?? cDb.SpawnId,
                     Changed = cIns.Changed,
                     PvpRankingsGreatLeague = cIns.PvpRankingsGreatLeague ?? cDb.PvpRankingsGreatLeague,
                     PvpRankingsUltraLeague = cIns.PvpRankingsUltraLeague ?? cDb.PvpRankingsUltraLeague,
@@ -89,47 +67,25 @@
                     CellId = cIns.CellId,
                     PokemonId = cIns.PokemonId,
                     Gender = cIns.Gender,
-                    Form = cIns.Form != null
-                        ? cIns.Form
-                        : cDb.Form,
+                    Form = cIns.Form ?? cDb.Form,
                     Costume = cIns.Costume,
-                    CP = cDb.CP == null
-                        ? cIns.CP
-                        : cDb.CP,
+                    CP = cIns.CP ?? cDb.CP,
                     Level = cIns.Level,
-                    AttackIV = cIns.AttackIV != null
-                        ? cIns.AttackIV
-                        : cDb.AttackIV,
-                    DefenseIV = cIns.DefenseIV != null
-                        ? cIns.DefenseIV
-                        : cDb.DefenseIV,
-                    StaminaIV = cIns.StaminaIV != null
-                        ? cIns.StaminaIV
-                        : cDb.StaminaIV,
-                    DisplayPokemonId = cIns.DisplayPokemonId != null
-                        ? cIns.DisplayPokemonId
-                        : cDb.DisplayPokemonId,
+                    AttackIV = cIns.AttackIV ?? cDb.AttackIV,
+                    DefenseIV = cIns.DefenseIV ?? cDb.DefenseIV,
+                    StaminaIV = cIns.StaminaIV ?? cDb.StaminaIV,
+                    DisplayPokemonId = cIns.DisplayPokemonId ?? cDb.DisplayPokemonId,
                     Weather = cIns.Weather,
-                    Weight = cIns.Weight != null
-                        ? cIns.Weight
-                        : cDb.Weight,
-                    Size = cIns.Size != null
-                        ? cIns.Size
-                        : cDb.Size,
+                    Weight = cIns.Weight ?? cDb.Weight,
+                    Size = cIns.Size ?? cDb.Size,
                     Username = cIns.Username,
                     IsShiny = cIns.IsShiny,
                     ExpireTimestamp = cIns.ExpireTimestamp,
                     IsExpireTimestampVerified = cIns.IsExpireTimestampVerified,
-                    Move1 = cIns.Move1 != null
-                        ? cIns.Move1
-                        : cDb.Move1,
-                    Move2 = cIns.Move2 != null
-                        ? cIns.Move2
-                        : cDb.Move2,
+                    Move1 = cIns.Move1 ?? cDb.Move1,
+                    Move2 = cIns.Move2 ?? cDb.Move2,
                     PokestopId = cIns.PokestopId ?? cDb.PokestopId,
-                    SpawnId = cIns.SpawnId != null
-                        ? cIns.SpawnId
-                        : cDb.SpawnId,
+                    SpawnId = cIns.SpawnId ?? cDb.SpawnId,
                     Changed = cIns.Changed,
                     PvpRankingsGreatLeague = cIns.PvpRankingsGreatLeague ?? cDb.PvpRankingsGreatLeague,
                     PvpRankingsUltraLeague = cIns.PvpRankingsUltraLeague ?? cDb.PvpRankingsUltraLeague,
