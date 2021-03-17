@@ -278,13 +278,13 @@
                 if (newName != oldName)
                 {
                     // Delete old device group
-                    await _deviceGroupRepository.DeleteAsync(deviceGroup);
+                    await _deviceGroupRepository.DeleteAsync(deviceGroup).ConfigureAwait(false);
                     // Insert new device group
                     await _deviceGroupRepository.AddAsync(new DeviceGroup
                     {
                         Name = newName,
                         Devices = devices,
-                    });
+                    }).ConfigureAwait(false);
                 }
                 else
                 {
@@ -340,7 +340,7 @@
                     return BuildErrorResponse("devicegroup-instance", $"Instance with name '{name}' does not exist", HttpContext.Session);
                 }
 
-                var devices = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices);
+                var devices = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices).ConfigureAwait(false);
                 foreach (var device in devices)
                 {
                     device.InstanceName = instance.Name;
@@ -665,7 +665,7 @@
                 if (newName != oldName)
                 {
                     // Delete old instance
-                    await _instanceRepository.DeleteAsync(instance);
+                    await _instanceRepository.DeleteAsync(instance).ConfigureAwait(false);
                     // Insert new instance
                     var newInstance = new Instance
                     {
@@ -688,7 +688,7 @@
                             IsEvent = isEvent,
                         }
                     };
-                    await _instanceRepository.AddAsync(newInstance);
+                    await _instanceRepository.AddAsync(newInstance).ConfigureAwait(false);
                     await InstanceController.Instance.ReloadInstance(newInstance, oldName).ConfigureAwait(false);
                 }
                 else
@@ -818,7 +818,7 @@
                     }
                 };
                 await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
-                await GeofenceController.Instance.Reload();
+                await GeofenceController.Instance.Reload().ConfigureAwait(false);
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
@@ -918,7 +918,7 @@
                 if (newName != oldName)
                 {
                     // Delete old geofence
-                    await _geofenceRepository.DeleteAsync(geofence);
+                    await _geofenceRepository.DeleteAsync(geofence).ConfigureAwait(false);
                     // Insert new geofence
                     await _geofenceRepository.AddAsync(new Geofence
                     {
@@ -928,7 +928,7 @@
                         {
                             Area = newArea,
                         }
-                    });
+                    }).ConfigureAwait(false);
                 }
                 else
                 {
@@ -940,7 +940,7 @@
                     };
                     await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
                 }
-                await GeofenceController.Instance.Reload();
+                await GeofenceController.Instance.Reload().ConfigureAwait(false);
                 InstanceController.Instance.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
@@ -1472,7 +1472,7 @@
                 if (newName != oldName)
                 {
                     // Delete old webhook
-                    await _webhookRepository.DeleteAsync(webhook);
+                    await _webhookRepository.DeleteAsync(webhook).ConfigureAwait(false);
                     // Insert new webhook
                     await _webhookRepository.AddAsync(new Webhook
                     {
@@ -1493,7 +1493,7 @@
                             GymTeamIds = gymIds,
                             WeatherConditionIds = weatherIds,
                         }
-                    });
+                    }).ConfigureAwait(false);
                 }
                 else
                 {
@@ -1578,8 +1578,8 @@
                     Name = name,
                     PokemonIDs = pokemonIds,
                 };
-                await _ivListRepository.AddOrUpdateAsync(ivList);
-                await IVListController.Instance.Reload();
+                await _ivListRepository.AddOrUpdateAsync(ivList).ConfigureAwait(false);
+                await IVListController.Instance.Reload().ConfigureAwait(false);
                 return Redirect("/dashboard/ivlists");
             }
         }
@@ -1592,7 +1592,7 @@
         {
             if (Request.Method == "GET")
             {
-                var ivList = await _ivListRepository.GetByIdAsync(name);
+                var ivList = await _ivListRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (ivList == null)
                 {
                     // Failed to get IV list by name
@@ -1643,20 +1643,20 @@
                 if (newName != oldName)
                 {
                     // Delete old IV list
-                    await _ivListRepository.DeleteAsync(ivList);
+                    await _ivListRepository.DeleteAsync(ivList).ConfigureAwait(false);
                     // Insert new IV list
                     await _ivListRepository.AddAsync(new IVList
                     {
                         Name = newName,
                         PokemonIDs = pokemonIds,
-                    });
+                    }).ConfigureAwait(false);
                 }
                 else
                 {
                     ivList.PokemonIDs = pokemonIds;
                     await _ivListRepository.UpdateAsync(ivList).ConfigureAwait(false);
                 }
-                await IVListController.Instance.Reload();
+                await IVListController.Instance.Reload().ConfigureAwait(false);
                 return Redirect("/dashboard/ivlists");
             }
         }
@@ -1838,7 +1838,7 @@
                     new Metadata { Key = "DISCORD_REDIRECT_URI", Value = discordRedirectUri },
                     new Metadata { Key = "DISCORD_USER_IDS", Value = discordUserIds },
                 };
-                await _metadataRepository.AddOrUpdateAsync(settings);
+                await _metadataRepository.AddOrUpdateAsync(settings).ConfigureAwait(false);
                 // TODO: Update DiscordController based on settings
                 // REVIEW: Should just Redirect("/dashboard/settings");
                 dynamic obj = BuildDefaultData(HttpContext.Session);

@@ -32,10 +32,10 @@
 
         public IReadOnlyList<ulong> UserIds { get; private set; }
 
-        public static readonly string AuthorizationEndpoint = "https://discordapp.com/api/oauth2/authorize";
-        public static readonly string TokenEndpoint = "https://discordapp.com/api/oauth2/token";
-        public static readonly string UserInformationEndpoint = "https://discordapp.com/api/users/@me";
-        public static readonly string UserGuildsInformationEndpoint = "https://discordapp.com/api/users/@me/guilds";
+        private const string AuthorizationEndpoint = "https://discordapp.com/api/oauth2/authorize";
+        private const string TokenEndpoint = "https://discordapp.com/api/oauth2/token";
+        private const string UserInformationEndpoint = "https://discordapp.com/api/users/@me";
+        private const string UserGuildsInformationEndpoint = "https://discordapp.com/api/users/@me/guilds";
 
         public DiscordController(DeviceControllerContext context, ILogger<DiscordController> logger)
         {
@@ -175,8 +175,7 @@
                     return response;
                 }
                 catch (Exception)
-                {
-                    
+                {                    
                     return null;
                 }
             }
