@@ -2,11 +2,37 @@
 {
     using System;
     using System.IO;
-    using System.Text.Json;
-    using System.Text.Json.Serialization;
 
-    using Chuck.Extensions;
+    using Microsoft.Extensions.Configuration;
 
+    public class Config
+    {
+        private readonly string _environmentName;
+
+        public IConfiguration Root { get; set; }
+
+        public Config(string directory, string[] args) // TODO: Use current
+        {
+            _environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(directory);
+            if (File.Exists(Path.Combine(directory, "appsettings.json")))
+            {
+                builder = builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            }
+            if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), $"appsettings.{_environmentName}.json")))
+            {
+                builder = builder.AddJsonFile($"appsettings.{_environmentName}.json",
+                                optional: true, reloadOnChange: true);
+            }
+            Root = builder.AddEnvironmentVariables()
+                .AddCommandLine(args)
+                .Build();
+        }
+    }
+
+    /*
     public class Config
     {
         [JsonPropertyName("controllerInterface")]
@@ -59,4 +85,5 @@
             return filePath.LoadFile<Config>();
         }
     }
+    */
 }

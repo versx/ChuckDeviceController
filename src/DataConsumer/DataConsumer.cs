@@ -107,9 +107,9 @@
             {
                 EndPoints =
                 {
-                    { $"{_config.Redis.Host}:{_config.Redis.Port}" }
+                    { $"{_config.Root["Redis:Host"]}:{_config.Root["Redis:Port"]}" }
                 },
-                Password = _config.Redis.Password,
+                Password = _config.Root["Redis:Password"],
             };
             _redis = ConnectionMultiplexer.Connect(options);
             _redis.ConnectionFailed += RedisOnConnectionFailed;
@@ -118,7 +118,7 @@
             if (_redis.IsConnected)
             {
                 _subscriber = _redis.GetSubscriber();
-                _redisDatabase = _redis.GetDatabase(_config.Redis.DatabaseNum);
+                _redisDatabase = _redis.GetDatabase(int.Parse(_config.Root["Redis:DatabaseNum"]));
             }
         }
 
@@ -168,7 +168,7 @@
                 }
                 try
                 {
-                    var length = await _redisDatabase.ListLengthAsync(_config.Redis.QueueName);
+                    var length = await _redisDatabase.ListLengthAsync(_config.Root["Redis:QueueName"]);
                     if (length > 1000)
                     {
                         ConsoleExt.WriteWarn($"[DataConsumer] Queue is current {length}");
@@ -186,7 +186,7 @@
             // Publish available webhooks to redis event
             try
             {
-                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString());
+                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]);
                 PublishData(RedisChannels.WebhookReload, ctx.Webhooks.ToList());
             }
             catch (MySqlConnector.MySqlException ex)
@@ -211,7 +211,7 @@
             {
                 while (!_shouldExit)
                 {
-                    var data = await GetData(_config.Redis.QueueName);
+                    var data = await GetData(_config.Root["Redis:QueueName"]);
                     if (data == default)
                     {
                         Thread.Sleep(10);
@@ -662,7 +662,7 @@
                 var cellsCount = 0;
                 var cells = _cells;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {cells.Count:N0} S2Cells");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     try
                     {
@@ -696,7 +696,7 @@
                 var spawnpointsCount = 0;
                 var spawnpoints = _spawnpoints;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {spawnpoints.Count:N0} Spawnpoints");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     try
                     {
@@ -730,7 +730,7 @@
                 var weatherCount = 0;
                 var weather = _weather;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {weather.Count:N0} Weather");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     try
                     {
@@ -764,7 +764,7 @@
                 var gymCount = 0;
                 var gyms = _gyms;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {gyms.Count:N0} Gyms");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     try
                     {
@@ -798,7 +798,7 @@
                 var gymDefendersCount = 0;
                 var gymDefenders = _gymDefenders;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {gymDefenders.Count:N0} Gym Defenders");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     try
                     {
@@ -832,7 +832,7 @@
                 var gymTrainersCount = 0;
                 var gymTrainers = _gymTrainers;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {gymTrainers.Count:N0} Gym Trainers");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     try
                     {
@@ -866,7 +866,7 @@
                 var pokestopCount = 0;
                 var pokestops = _pokestops;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {pokestops.Count:N0} Pokestops");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     try
                     {
@@ -900,7 +900,7 @@
                 var pokemonCount = 0;
                 var pokemon = _pokemon;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {pokemon.Count:N0} Pokemon");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     var pokemonRepository = new PokemonRepository(ctx);
                     try
@@ -950,7 +950,7 @@
                 var questCount = 0;
                 var quests = _quests;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {quests.Count:N0} Quests");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     try
                     {
@@ -984,7 +984,7 @@
                 var accountCount = 0;
                 var accounts = _playerData;
                 ConsoleExt.WriteInfo($"[DataConsumer] Inserting {accounts.Count:N0} Account Data");
-                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString()))
+                using (var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]))
                 {
                     try
                     {
@@ -1032,7 +1032,7 @@
             if (oldEntity == null)
             {
                 // Entity does not exist in redis database cache, get from sql database
-                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString());
+                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]);
                 oldEntity = await ctx.Set<T>().FindAsync(new object[] { id }).ConfigureAwait(false);
             }
             return oldEntity;
@@ -1044,7 +1044,7 @@
             if (oldEntity == null)
             {
                 // Entity does not exist in redis database cache, get from sql database
-                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString());
+                using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Root["DbConnectionString"]);
                 oldEntity = await ctx.Set<T>().FindAsync(new object[] { id }).ConfigureAwait(false);
             }
             return oldEntity;

@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.1" />
   </ItemGroup>
 
   <ItemGroup>

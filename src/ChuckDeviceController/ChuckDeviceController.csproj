@@ -43,7 +43,7 @@
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.2.22" />
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.2.22" />
     <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
 namespace ChuckProtoParser
 {
     using System;
+    using System.IO;
 
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -19,12 +20,18 @@ namespace ChuckProtoParser
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            var config = new ConfigurationBuilder()
-                .SetBasePath(System.IO.Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env}.json",
-                                optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
+            var configBuilder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory());
+            if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json")))
+            {
+                configBuilder = configBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            }
+            if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), $"appsettings.{env}.json")))
+            {
+                configBuilder = configBuilder.AddJsonFile($"appsettings.{env}.json",
+                                optional: true, reloadOnChange: true);
+            }
+            var config = configBuilder.AddEnvironmentVariables()
                 .AddCommandLine(args)
                 .Build();
 
