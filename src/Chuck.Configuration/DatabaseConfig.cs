@@ -43,7 +43,7 @@
         /// <returns></returns>
         public override string ToString()
         {
-            return $"Uid={Username};Password={Password};Server={Host};Port={Port};Database={Database};old guids=true;";
+            return $"Uid={Username};Password={Password};Server={Host};Port={Port};Database={Database};old guids=true; Allow User Variables=true;";
         }
     }
 }

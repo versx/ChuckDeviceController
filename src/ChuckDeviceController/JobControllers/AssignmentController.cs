@@ -136,10 +136,10 @@
                 if (!string.IsNullOrEmpty(assignment.DeviceGroupName))
                 {
                     var deviceGroup = await _deviceGroupRepository.GetByIdAsync(assignment.DeviceGroupName).ConfigureAwait(false);
-                    if (deviceGroup != null && deviceGroup.Devices?.Count > 0)
+                    if (deviceGroup?.Devices?.Count > 0)
                     {
                         var devicesInGroup = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices).ConfigureAwait(false);
-                        if (devicesInGroup != null && devicesInGroup?.Count > 0)
+                        if (devicesInGroup?.Count > 0)
                         {
                             devices.AddRange(devicesInGroup);
                         }
@@ -158,10 +158,10 @@
             foreach (var device in devices)
             {
                 if (force || (
-                    (string.IsNullOrEmpty(instance) || device.InstanceName == instance) &&
+                    (string.IsNullOrEmpty(instance) || string.Compare(device.InstanceName, instance, true) == 0) &&
                     string.Compare(device.InstanceName, assignment.InstanceName, true) != 0 &&
-                    (string.IsNullOrEmpty(assignment.SourceInstanceName) || assignment.SourceInstanceName == device.InstanceName)
-                    )   
+                    (string.IsNullOrEmpty(assignment.SourceInstanceName) || string.Compare(assignment.SourceInstanceName, device.InstanceName, true) == 0)
+                    )
                 )
                 {
                     _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");

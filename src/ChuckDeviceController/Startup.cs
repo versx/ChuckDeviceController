@@ -24,6 +24,7 @@ namespace ChuckDeviceController
     using Chuck.Data.Interfaces;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
 
     public class Startup
@@ -49,6 +50,25 @@ namespace ChuckDeviceController
         // This method gets called by the runtime. Use this method to add services to the container.
         public async void ConfigureServices(IServiceCollection services)
         {
+            // Save sessions to the database
+            // TODO: Allow for custom column names
+            services.AddDistributedMemoryCache();
+            services.AddDistributedMySqlCache(options =>
+            {
+                options.ConnectionString = DbConfig.ToString();
+                //options.DefaultSlidingExpiration
+                options.ExpiredItemsDeletionInterval = TimeSpan.FromHours(1);
+                options.SchemaName = DbConfig.Database;
+                options.TableName = "session";
+            });
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(60);
+                options.Cookie.Name = "cdc.session";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckDeviceController", Version = "v1" }));
 
             services.AddDbContextFactory<DeviceControllerContext>(options =>
@@ -72,6 +92,7 @@ namespace ChuckDeviceController
 
             services.AddScoped(typeof(IAsyncRepository<>), typeof(EfCoreRepository<,>));
 
+            // Redis
             var options = new ConfigurationOptions
             {
                 EndPoints =
@@ -80,9 +101,19 @@ namespace ChuckDeviceController
                 },
                 Password = Configuration["Redis:Password"],
             };
-            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
+            
+            try
+            {
+                services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
+            }
+            catch (Exception ex)
+            {
+                ConsoleExt.WriteError(ex.Message);
+                Environment.Exit(0);
+            }
 
-            services.AddCors(option => option.AddPolicy("Test", builder =>
+            // Cross origin resource sharing configuration
+            services.AddCors(option => option.AddPolicy("Test", builder => {
                 builder.AllowAnyOrigin()
                        .AllowAnyHeader()
                        .AllowAnyMethod()
@@ -108,7 +139,6 @@ namespace ChuckDeviceController
 
             services.AddResponseCaching();
 
-            //services.AddDistributedMemoryCache();
             services.AddControllers();
             services.AddControllersWithViews();
 
@@ -128,6 +158,10 @@ namespace ChuckDeviceController
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseSession();
+
+            // Discord auth middleware
+            app.UseDiscordAuth();
 
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{Strings.AppName} v1"));
