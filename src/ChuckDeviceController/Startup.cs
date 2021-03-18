@@ -113,7 +113,7 @@ namespace ChuckDeviceController
             }
 
             // Cross origin resource sharing configuration
-            services.AddCors(option => option.AddPolicy("Test", builder => {
+            services.AddCors(option => option.AddPolicy("Test", builder =>
                 builder.AllowAnyOrigin()
                        .AllowAnyHeader()
                        .AllowAnyMethod()
