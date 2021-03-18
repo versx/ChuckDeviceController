@@ -7,6 +7,7 @@
     using System.Reflection;
     using System.Threading.Tasks;
 
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
     using ChuckDeviceController.Converters;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Services;
 
@@ -45,6 +47,7 @@
         private readonly WebhookRepository _webhookRepository;
         private readonly DeviceGroupRepository _deviceGroupRepository;
         private readonly IVListRepository _ivListRepository;
+        private readonly MetadataRepository _metadataRepository;
 
         #endregion
 
@@ -68,6 +71,7 @@
             _webhookRepository = new WebhookRepository(_context);
             _deviceGroupRepository = new DeviceGroupRepository(_context);
             _ivListRepository = new IVListRepository(_context);
+            _metadataRepository = new MetadataRepository(_context);
         }
 
         #endregion
@@ -80,7 +84,8 @@
         [HttpGet("/dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
-            dynamic obj = BuildDefaultData();
+            // TODO: Provide username/etc from session
+            dynamic obj = BuildDefaultData(HttpContext.Session);
             obj.devices_count = (await _context.Devices.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.instances_count = (await _context.Instances.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.assignments_count = (await _context.Assignments.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
@@ -103,7 +108,7 @@
         [HttpGet("/dashboard/devices")]
         public IActionResult GetDevices()
         {
-            var obj = BuildDefaultData();
+            var obj = BuildDefaultData(HttpContext.Session);
             var data = TemplateRenderer.ParseTemplate("devices", obj);
             return new ContentResult
             {
@@ -123,7 +128,7 @@
             if (device == null)
             {
                 // Unknown device
-                return BuildErrorResponse("device-assign", $"Failed to retrieve device '{uuid}'");
+                return BuildErrorResponse("device-assign", $"Failed to retrieve device '{uuid}'", HttpContext.Session);
             }
             if (Request.Method == "GET")
             {
@@ -132,7 +137,7 @@
                     name = x.Name,
                     selected = string.Compare(x.Name, device.InstanceName, true) == 0
                 }).ToList();
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.device_uuid = uuid;
                 obj.instances = instances;
                 var data = TemplateRenderer.ParseTemplate("device-assign", obj);
@@ -149,13 +154,13 @@
                 if (string.IsNullOrEmpty(instanceName))
                 {
                     // Unknown instance name provided
-                    return BuildErrorResponse("device-assign", $"Instance '{instanceName}' does not exist");
+                    return BuildErrorResponse("device-assign", $"Instance '{instanceName}' does not exist", HttpContext.Session);
                 }
                 var instance = await _instanceRepository.GetByIdAsync(instanceName).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Failed to get instance by name
-                    return BuildErrorResponse("device-assign", $"Failed to retrieve instance '{instanceName}'");
+                    return BuildErrorResponse("device-assign", $"Failed to retrieve instance '{instanceName}'", HttpContext.Session);
                 }
                 device.InstanceName = instance.Name;
                 await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
@@ -175,7 +180,7 @@
         ]
         public IActionResult GetDeviceGroups()
         {
-            var obj = BuildDefaultData();
+            var obj = BuildDefaultData(HttpContext.Session);
             var data = TemplateRenderer.ParseTemplate("devicegroups", obj);
             return new ContentResult
             {
@@ -194,7 +199,7 @@
             if (Request.Method == "GET")
             {
                 var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.devices = devices.Select(x => new
                 {
                     name = x.Uuid,
@@ -216,13 +221,13 @@
                 var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (deviceGroup != null)
                 {
-                    return BuildErrorResponse("devicegroup-add", $"Device Group with name '{name}' already exists");
+                    return BuildErrorResponse("devicegroup-add", $"Device Group with name '{name}' already exists", HttpContext.Session);
                 }
                 await _deviceGroupRepository.AddOrUpdateAsync(new DeviceGroup
                 {
                     Name = name,
                     Devices = devices
-                }).ConfigureAwait(false);
+                });
                 return Redirect("/dashboard/devicegroups");
             }
         }
@@ -238,10 +243,10 @@
                 var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (deviceGroup == null)
                 {
-                    return BuildErrorResponse("devicegroup-edit", $"Device Group with name '{name}' does not exist");
+                    return BuildErrorResponse("devicegroup-edit", $"Device Group with name '{name}' does not exist", HttpContext.Session);
                 }
                 var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.name = deviceGroup.Name;
                 obj.old_name = deviceGroup.Name;
                 obj.devices = devices.Select(x => new
@@ -266,7 +271,7 @@
                 var deviceGroup = await _deviceGroupRepository.GetByIdAsync(oldName).ConfigureAwait(false);
                 if (deviceGroup == null)
                 {
-                    return BuildErrorResponse("devicegroup-add", $"Device Group with name '{oldName}' does not exist");
+                    return BuildErrorResponse("devicegroup-add", $"Device Group with name '{oldName}' does not exist", HttpContext.Session);
                 }
 
                 // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
@@ -301,10 +306,10 @@
                 var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (deviceGroup == null)
                 {
-                    return BuildErrorResponse("devicegroup-assign", $"Device Group with name '{name}' does not exist");
+                    return BuildErrorResponse("devicegroup-assign", $"Device Group with name '{name}' does not exist", HttpContext.Session);
                 }
                 var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.name = deviceGroup.Name;
                 obj.instances = instances.Select(x => new
                 {
@@ -325,14 +330,14 @@
                 var deviceGroup = await _deviceGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (deviceGroup == null)
                 {
-                    return BuildErrorResponse("devicegroup-assign", $"Device Group with name '{name}' does not exist");
+                    return BuildErrorResponse("devicegroup-assign", $"Device Group with name '{name}' does not exist", HttpContext.Session);
                 }
 
                 var instanceName = Request.Form["instance"].ToString();
                 var instance = await _instanceRepository.GetByIdAsync(instanceName).ConfigureAwait(false);
                 if (instance == null)
                 {
-                    return BuildErrorResponse("devicegroup-instance", $"Instance with name '{name}' does not exist");
+                    return BuildErrorResponse("devicegroup-instance", $"Instance with name '{name}' does not exist", HttpContext.Session);
                 }
 
                 var devices = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices).ConfigureAwait(false);
@@ -357,7 +362,7 @@
             if (deviceGroup == null)
             {
                 // Failed to get device group, does it exist?
-                return BuildErrorResponse("devicegroup-delete", $"Device Group with name '{name}' does not exist");
+                return BuildErrorResponse("devicegroup-delete", $"Device Group with name '{name}' does not exist", HttpContext.Session);
             }
             await _deviceGroupRepository.DeleteAsync(deviceGroup).ConfigureAwait(false);
             return Redirect("/dashboard/devicegroups");
@@ -370,7 +375,7 @@
         [HttpGet("/dashboard/instances")]
         public IActionResult GetInstances()
         {
-            var obj = BuildDefaultData();
+            var obj = BuildDefaultData(HttpContext.Session);
             var data = TemplateRenderer.ParseTemplate("instances", obj);
             return new ContentResult
             {
@@ -388,7 +393,7 @@
         {
             if (Request.Method == "GET")
             {
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.timezone_offset = 0;
                 obj.min_level = 0;
                 obj.max_level = 30;
@@ -470,24 +475,24 @@
                         questRetryLimit = byte.Parse(Request.Form["quest_retry_limit"].ToString());
                         if (questRetryLimit > byte.MaxValue || questRetryLimit <= byte.MinValue)
                         {
-                            return BuildErrorResponse("instance-add", "Invalid Quest Retry Limit value (Valid value: 1-255)");
+                            return BuildErrorResponse("instance-add", "Invalid Quest Retry Limit value (Valid value: 1-255)", HttpContext.Session);
                         }
                     }
                 }
 
                 // TODO: Valid geofence names
 
-                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
                 {
                     // Invalid levels
-                    return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided");
+                    return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided", HttpContext.Session);
                 }
 
                 var instance = await _instanceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (instance != null)
                 {
                     // Instance already exists
-                    return BuildErrorResponse("instance-add", $"Instance with name '{name}' already exists");
+                    return BuildErrorResponse("instance-add", $"Instance with name '{name}' already exists", HttpContext.Session);
                 }
 
                 instance = new Instance
@@ -529,9 +534,9 @@
                 if (instance == null)
                 {
                     // Failed to get instance by name
-                    return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist");
+                    return BuildErrorResponse("instance-edit", $"Instance with name '{name}' does not exist", HttpContext.Session);
                 }
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.name = name;
                 obj.old_name = name;
                 obj.min_level = instance.MinimumLevel;
@@ -639,21 +644,21 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
-                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
                 {
                     // Invalid levels
-                    return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided");
+                    return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided", HttpContext.Session);
                 }
                 if (questRetryLimit > byte.MaxValue || questRetryLimit <= byte.MinValue)
                 {
-                    return BuildErrorResponse("instance-edit", "Invalid Quest Retry Limit value (Valid value: 1-255)");
+                    return BuildErrorResponse("instance-edit", "Invalid Quest Retry Limit value (Valid value: 1-255)", HttpContext.Session);
                 }
 
                 var instance = await _instanceRepository.GetByIdAsync(oldName).ConfigureAwait(false);
                 if (instance == null)
                 {
                     // Instance does not exist, create?
-                    return BuildErrorResponse("instance-edit", $"Instance with name '{oldName}' does not exist");
+                    return BuildErrorResponse("instance-edit", $"Instance with name '{oldName}' does not exist", HttpContext.Session);
                 }
 
                 // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
@@ -717,7 +722,7 @@
         [HttpGet("/dashboard/instance/ivqueue/{name}")]
         public IActionResult GetIVQueue(string name)
         {
-            dynamic obj = BuildDefaultData();
+            dynamic obj = BuildDefaultData(HttpContext.Session);
             obj.instance_name = name;
             var data = TemplateRenderer.ParseTemplate("instance-ivqueue", obj);
             return new ContentResult
@@ -735,7 +740,7 @@
         [HttpGet("/dashboard/geofences")]
         public IActionResult GetGeofences()
         {
-            var obj = BuildDefaultData();
+            var obj = BuildDefaultData(HttpContext.Session);
             var data = TemplateRenderer.ParseTemplate("geofences", obj);
             return new ContentResult
             {
@@ -753,7 +758,7 @@
         {
             if (Request.Method == "GET")
             {
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 var data = TemplateRenderer.ParseTemplate("geofence-add", obj);
                 return new ContentResult
                 {
@@ -774,7 +779,7 @@
                 if (geofence != null)
                 {
                     // Geofence already exists by name
-                    return BuildErrorResponse("geofence-add", $"Geofence with name '{name}' already exists");
+                    return BuildErrorResponse("geofence-add", $"Geofence with name '{name}' already exists", HttpContext.Session);
                 }
 
                 dynamic newArea = null;
@@ -827,7 +832,7 @@
         {
             if (Request.Method == "GET")
             {
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 var geofence = await _geofenceRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (geofence == null)
                 {
@@ -866,7 +871,7 @@
                         await _geofenceRepository.DeleteAsync(geofenceToDelete).ConfigureAwait(false);
                         _logger.LogDebug($"Geofence {name} was deleted");
                     }
-                    await GeofenceController.Instance.Reload().ConfigureAwait(false);
+                    await GeofenceController.Instance.Reload();
                     return Redirect("/dashboard/geofences");
                 }
 
@@ -881,7 +886,7 @@
                 if (geofence == null)
                 {
                     // Failed to find geofence by by name
-                    return BuildErrorResponse("geofence-edit", $"Geofence with name '{oldName}' does not exist");
+                    return BuildErrorResponse("geofence-edit", $"Geofence with name '{oldName}' does not exist", HttpContext.Session);
                 }
 
                 dynamic newArea = null;
@@ -948,7 +953,7 @@
         [HttpGet("/dashboard/assignments")]
         public IActionResult GetAssignments()
         {
-            var obj = BuildDefaultData();
+            var obj = BuildDefaultData(HttpContext.Session);
             var data = TemplateRenderer.ParseTemplate("assignments", obj);
             return new ContentResult
             {
@@ -969,7 +974,7 @@
                 var instances = await _instanceRepository.GetAllAsync().ConfigureAwait(false);
                 var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
                 var deviceGroups = await _deviceGroupRepository.GetAllAsync().ConfigureAwait(false);
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.instances = instances.Select(x => new { name = x.Name, selected = false, selected_source = false });
                 obj.devices = devices.Select(x => new { uuid = x.Uuid, selected = false });
                 obj.device_groups = deviceGroups.Select(x => new { uuid = x.Name, selected = false });
@@ -1002,7 +1007,7 @@
                 if (instances == null || devices == null || deviceGroups == null)
                 {
                     // Failed to get instances, devices, or device groups
-                    return BuildErrorResponse("assignment-add", "Failed to get instances, devices, or device groups");
+                    return BuildErrorResponse("assignment-add", "Failed to get instances, devices, or device groups", HttpContext.Session);
                 }
 
                 if (!string.IsNullOrEmpty(uuid))
@@ -1010,14 +1015,14 @@
                     if (!devices.Any(x => x.Uuid == uuid))
                     {
                         // Device does not exist
-                        return BuildErrorResponse("assignment-add", $"Device with name '{uuid}' does not exist");
+                        return BuildErrorResponse("assignment-add", $"Device with name '{uuid}' does not exist", HttpContext.Session);
                     }
                 }
 
                 if (!instances.Any(x => x.Name == destinationInstance))
                 {
                     // Instance does not exist
-                    return BuildErrorResponse("assignment-add", $"Instance with name '{destinationInstance}' does not exist");
+                    return BuildErrorResponse("assignment-add", $"Instance with name '{destinationInstance}' does not exist", HttpContext.Session);
                 }
 
                 if (!string.IsNullOrEmpty(deviceGroupName))
@@ -1025,7 +1030,7 @@
                     if (!deviceGroups.Any(x => x.Name == deviceGroupName))
                     {
                         // Device group does not exist
-                        return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist");
+                        return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist", HttpContext.Session);
                     }
                 }
 
@@ -1044,7 +1049,7 @@
                     else
                     {
                         // Invalid time
-                        return BuildErrorResponse("assignment-add", $"Invalid assignment time '{time}' provided");
+                        return BuildErrorResponse("assignment-add", $"Invalid assignment time '{time}' provided", HttpContext.Session);
                     }
                 }
                 DateTime? realDate = null;
@@ -1055,7 +1060,7 @@
 
                 if (string.IsNullOrEmpty(destinationInstance))
                 {
-                    return BuildErrorResponse("assignment-add", "No destination instance selected");
+                    return BuildErrorResponse("assignment-add", $"No destination instance selected", HttpContext.Session);
                 }
 
                 try
@@ -1110,7 +1115,7 @@
                 if (assignment == null)
                 {
                     // Failed to get assignment by id, does assignment exist?
-                    return BuildErrorResponse("assignment-edit", $"Failed to get assignment with id '{id}', does it exist?");
+                    return BuildErrorResponse("assignment-edit", $"Failed to get assignment with id '{id}', does it exist?", HttpContext.Session);
                 }
 
                 var devices = await _deviceRepository.GetAllAsync().ConfigureAwait(false);
@@ -1119,11 +1124,11 @@
                 if (devices == null || instances == null || deviceGroups == null)
                 {
                     // Failed to get devices, instances, or device groups from database
-                    return BuildErrorResponse("assignment-edit", "Failed to get devices, instances, or device groups from database");
+                    return BuildErrorResponse("assignment-edit", $"Failed to get devices, instances, or device groups from database", HttpContext.Session);                    
                 }
 
                 var formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.id = id;
                 obj.old_name = id;
                 obj.date = assignment.Date;
@@ -1159,7 +1164,7 @@
                 if (instances == null || devices == null || deviceGroups == null)
                 {
                     // Failed to get instances, devices, or device groups
-                    return BuildErrorResponse("assignment-add", "Failed to get instances, devices, or device groups");
+                    return BuildErrorResponse("assignment-add", "Failed to get instances, devices, or device groups", HttpContext.Session);
                 }
 
                 if (!string.IsNullOrEmpty(uuid))
@@ -1167,14 +1172,14 @@
                     if (!devices.Any(x => x.Uuid == uuid))
                     {
                         // Device does not exist
-                        return BuildErrorResponse("assignment-edit", $"Device with name '{uuid}' does not exist");
+                        return BuildErrorResponse("assignment-edit", $"Device with name '{uuid}' does not exist", HttpContext.Session);
                     }
                 }
 
                 if (!instances.Any(x => string.Compare(x.Name, destinationInstance, true) == 0))
                 {
                     // Instance does not exist
-                    return BuildErrorResponse("assignment-edit", $"Instance with name '{destinationInstance}' does not exist");
+                    return BuildErrorResponse("assignment-edit", $"Instance with name '{destinationInstance}' does not exist", HttpContext.Session);
                 }
 
                 if (!string.IsNullOrEmpty(deviceGroupName))
@@ -1182,7 +1187,7 @@
                     if (!deviceGroups.Any(x => x.Name == deviceGroupName))
                     {
                         // Device group does not exist
-                        return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist");
+                        return BuildErrorResponse("assignment-add", $"Device group with name '{deviceGroupName} does not exist", HttpContext.Session);
                     }
                 }
 
@@ -1201,7 +1206,7 @@
                     else
                     {
                         // Invalid time
-                        return BuildErrorResponse("assignment-edit", $"Invalid assignment time '{time}' provided");
+                        return BuildErrorResponse("assignment-edit", $"Invalid assignment time '{time}' provided", HttpContext.Session);
                     }
                 }
                 DateTime? realDate = null;
@@ -1213,14 +1218,14 @@
                 if (string.IsNullOrEmpty(destinationInstance))
                 {
                     // Invalid request, no destination instance selected
-                    return BuildErrorResponse("assignment-add", "No destination instance selected");
+                    return BuildErrorResponse("assignment-add", $"No destination instance selected", HttpContext.Session);
                 }
 
                 var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
                 if (assignment == null)
                 {
                     // Failed to get assignment by id
-                    return BuildErrorResponse("assignment-edit", $"Assignment with id '{id}' does not exist");
+                    return BuildErrorResponse("assignment-edit", $"Assignment with id '{id}' does not exist", HttpContext.Session);
                 }
                 assignment.InstanceName = destinationInstance;
                 assignment.SourceInstanceName = sourceInstance;
@@ -1271,7 +1276,7 @@
         [HttpGet("/dashboard/webhooks")]
         public IActionResult GetWebhooks()
         {
-            var obj = BuildDefaultData();
+            var obj = BuildDefaultData(HttpContext.Session);
             var data = TemplateRenderer.ParseTemplate("webhooks", obj);
             return new ContentResult
             {
@@ -1290,7 +1295,7 @@
             if (Request.Method == "GET")
             {
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.delay = 5;
                 obj.types = Enum.GetValues(typeof(WebhookType)).Cast<WebhookType>().ToList().Select(x => new
                 {
@@ -1333,7 +1338,7 @@
                 if (types.Count == 0)
                 {
                     // No webhook type selected (forgot if this is needed, double check lol)
-                    return BuildErrorResponse("webhook-add", "At least one webhook type needs to be selected");
+                    return BuildErrorResponse("webhook-add", $"At least one webhook type needs to be selected", HttpContext.Session);
                 }
 
                 // Make sure geofence exists
@@ -1341,7 +1346,7 @@
                 if (webhook != null)
                 {
                     // Webhook already exists
-                    return BuildErrorResponse("webhook-add", $"Webhook with name '{name}' already exists");
+                    return BuildErrorResponse("webhook-add", $"Webhook with name '{name}' already exists", HttpContext.Session);
                 }
 
                 webhook = new Webhook
@@ -1382,7 +1387,7 @@
             {
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 var webhook = await _webhookRepository.GetByIdAsync(name).ConfigureAwait(false);
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.name = webhook.Name;
                 obj.old_name = webhook.Name;
                 obj.url = webhook.Url;
@@ -1452,7 +1457,7 @@
                 if (types.Count == 0)
                 {
                     // No webhook type selected (forgot if this is needed, double check lol)
-                    return BuildErrorResponse("webhook-edit", "At least one webhook type needs to be selected");
+                    return BuildErrorResponse("webhook-edit", $"At least one webhook type needs to be selected", HttpContext.Session);
                 }
 
                 // Make sure geofence exists
@@ -1460,7 +1465,7 @@
                 if (webhook == null)
                 {
                     // Webhook does not exist
-                    return BuildErrorResponse("webhook-edit", $"Webhook with name '{oldName}' does not exist");
+                    return BuildErrorResponse("webhook-edit", $"Webhook with name '{oldName}' does not exist", HttpContext.Session);
                 }
 
                 // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
@@ -1511,7 +1516,7 @@
                     };
                     await _webhookRepository.UpdateAsync(webhook).ConfigureAwait(false);
                 }
-
+                
                 var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
                 await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
                 return Redirect("/dashboard/webhooks");
@@ -1525,7 +1530,7 @@
         [HttpGet("/dashboard/ivlists")]
         public IActionResult GetIVLists()
         {
-            var obj = BuildDefaultData();
+            var obj = BuildDefaultData(HttpContext.Session);
             var data = TemplateRenderer.ParseTemplate("ivlists", obj);
             return new ContentResult
             {
@@ -1543,7 +1548,7 @@
         {
             if (Request.Method == "GET")
             {
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 var data = TemplateRenderer.ParseTemplate("ivlist-add", obj);
                 return new ContentResult
                 {
@@ -1561,12 +1566,12 @@
                     : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?
                                       .Select(uint.Parse)
                                       .ToList();
-
+                
                 var ivList = await _ivListRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (ivList != null)
                 {
                     // Already exists
-                    return BuildErrorResponse("ivlist-add", $"IV List with name '{name}' already exists");
+                    return BuildErrorResponse("ivlist-add", $"IV List with name '{name}' already exists", HttpContext.Session);
                 }
                 ivList = new IVList
                 {
@@ -1593,7 +1598,7 @@
                     // Failed to get IV list by name
                     return Redirect("/dashboard/ivlists");
                 }
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.name = ivList.Name;
                 obj.old_name = ivList.Name;
                 obj.pokemon_ids = string.Join("\n", ivList.PokemonIDs);
@@ -1631,7 +1636,7 @@
                 if (ivList == null)
                 {
                     // Does not exist
-                    return BuildErrorResponse("ivlist-edit", $"IV List with name '{oldName}' does not exist");
+                    return BuildErrorResponse("ivlist-edit", $"IV List with name '{oldName}' does not exist", HttpContext.Session);
                 }
 
                 // Check if name has changed, if so delete and insert since EFCore doesn't like when you change the primary key
@@ -1664,7 +1669,7 @@
         public async Task<IActionResult> GetAccounts()
         {
             var stats = await _accountRepository.GetStatsAsync().ConfigureAwait(false);
-            dynamic obj = BuildDefaultData();
+            dynamic obj = BuildDefaultData(HttpContext.Session);
             obj.stats = stats;
             var data = TemplateRenderer.ParseTemplate("accounts", obj);
             return new ContentResult
@@ -1683,7 +1688,7 @@
         {
             if (Request.Method == "GET")
             {
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.level = 0;
                 var data = TemplateRenderer.ParseTemplate("accounts-add", obj);
                 return new ContentResult
@@ -1736,7 +1741,7 @@
         {
             if (Request.Method == "GET")
             {
-                dynamic obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.stale_pokestops = await _pokestopRepository.GetStalePokestopsCount().ConfigureAwait(false);
                 obj.convertible_pokestops = await _pokestopRepository.GetConvertiblePokestopsCount().ConfigureAwait(false);
                 obj.warnings = await _accountRepository.GetExpiredWarningsCount().ConfigureAwait(false);
@@ -1756,35 +1761,35 @@
                 {
                     case "delete_stale_pokestops":
                         var stopsDeleted = await _pokestopRepository.DeleteStalePokestops().ConfigureAwait(false);
-                        return BuildSuccessResponse("utilities", $"<b>{stopsDeleted}</b> Stale Pokestops deleted");
+                        return BuildSuccessResponse("utilities", $"<b>{stopsDeleted}</b> Stale Pokestops deleted", HttpContext.Session);
                     case "clear_expired_bans":
                         var bansCleared = await _accountRepository.ClearExpiredBans().ConfigureAwait(false);
-                        return BuildSuccessResponse("utilities", $"<b>{bansCleared}</b> Expired bans cleared");
+                        return BuildSuccessResponse("utilities", $"<b>{bansCleared}</b> Expired bans cleared", HttpContext.Session);
                     case "clear_expired_warnings":
                         var warningsCleared = await _accountRepository.ClearExpiredWarnings().ConfigureAwait(false);
-                        return BuildSuccessResponse("utilities", $"<b>{warningsCleared}</b> Expired warnings cleared");
+                        return BuildSuccessResponse("utilities", $"<b>{warningsCleared}</b> Expired warnings cleared", HttpContext.Session);
                     case "truncate_pokemon":
                         await _pokemonRepository.Truncate().ConfigureAwait(false);
-                        return BuildSuccessResponse("utilities", "Pokemon table successfully truncated");
+                        return BuildSuccessResponse("utilities", "Pokemon table successfully truncated", HttpContext.Session);
                     case "convert_pokestops":
                         // TODO: Update gyms with pokestop names and urls if set
                         //var stopsConverted = await _pokestopRepository.ConvertPokestopsToGyms().ConfigureAwait(false);
                         // - delete converted pokestops
                         // - Pass data through to view
-                        return BuildSuccessResponse("utilities", "<b>0</b> Pokestops converted to Gyms");
+                        return BuildSuccessResponse("utilities", $"<b>0</b> Pokestops converted to Gyms", HttpContext.Session);
                     case "force_logout_all_devices":
                         await _deviceRepository.ClearAllAccounts().ConfigureAwait(false);
-                        return BuildSuccessResponse("utilities", "All devices forced to logout");
+                        return BuildSuccessResponse("utilities", $"All devices forced to logout", HttpContext.Session);
                     case "clear_quests":
                         await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
-                        return BuildSuccessResponse("utilities", "All Pokestop quests have been cleared");
+                        return BuildSuccessResponse("utilities", "All Pokestop quests have been cleared", HttpContext.Session);
                     case "clear_iv_queues":
                         break;
                     case "flush_redis":
                         var result = await _redisDatabase.ExecuteAsync("FLUSHDB").ConfigureAwait(false);
                         if (string.Compare(result.ToString(), "OK", true) == 0)
-                            return BuildSuccessResponse("utilities", "Redis database successfully flushed");
-                        return BuildErrorResponse("utilities", $"Failed to flush Redis database: {result?.Type}");
+                            return BuildSuccessResponse("utilities", "Redis database successfully flushed", HttpContext.Session);
+                        return BuildErrorResponse("utilities", $"Failed to flush Redis database: {result?.Type}", HttpContext.Session);
                 }
                 return Redirect("/dashboard/utilities");
             }
@@ -1796,11 +1801,20 @@
             HttpGet("/dashboard/settings"),
             HttpPost("/dashboard/settings"),
         ]
-        public IActionResult GetSettings()
+        public async Task<IActionResult> GetSettings()
         {
             if (Request.Method == "GET")
             {
-                var obj = BuildDefaultData();
+                dynamic obj = BuildDefaultData(HttpContext.Session);
+                var settings = await _metadataRepository.GetAllAsync().ConfigureAwait(false);
+                obj.pokemon_time_new = 1200;
+                obj.pokemon_time_old = 600;
+                obj.pokestop_lure_time = 1800;
+                obj.discord_enabled = bool.Parse(settings.FirstOrDefault(x => "DISCORD_ENABLED" == x.Key)?.Value);
+                obj.discord_client_id = settings.FirstOrDefault(x => "DISCORD_CLIENT_ID" == x.Key)?.Value;
+                obj.discord_client_secret = settings.FirstOrDefault(x => "DISCORD_CLIENT_SECRET" == x.Key)?.Value;
+                obj.discord_redirect_uri = settings.FirstOrDefault(x => "DISCORD_REDIRECT_URI" == x.Key)?.Value;
+                obj.discord_user_ids = settings.FirstOrDefault(x => "DISCORD_USER_IDS" == x.Key)?.Value;
                 var data = TemplateRenderer.ParseTemplate("settings", obj);
                 return new ContentResult
                 {
@@ -1811,14 +1825,39 @@
             }
             else
             {
-                return Redirect("/dashboard/settings");
+                var discordEnabled = Request.Form["DISCORD_ENABLED"].ToString() == "on";
+                var discordClientId = Request.Form["DISCORD_CLIENT_ID"].ToString();
+                var discordClientSecret = Request.Form["DISCORD_CLIENT_SECRET"].ToString();
+                var discordRedirectUri = Request.Form["DISCORD_REDIRECT_URI"].ToString();
+                var discordUserIds = Request.Form["DISCORD_USER_IDS"].ToString();
+                var settings = new List<Metadata>
+                {
+                    new Metadata { Key = "DISCORD_ENABLED", Value = discordEnabled.ToString() },
+                    new Metadata { Key = "DISCORD_CLIENT_ID", Value = discordClientId },
+                    new Metadata { Key = "DISCORD_CLIENT_SECRET", Value = discordClientSecret },
+                    new Metadata { Key = "DISCORD_REDIRECT_URI", Value = discordRedirectUri },
+                    new Metadata { Key = "DISCORD_USER_IDS", Value = discordUserIds },
+                };
+                await _metadataRepository.AddOrUpdateAsync(settings).ConfigureAwait(false);
+                // TODO: Update DiscordController based on settings
+                // REVIEW: Should just Redirect("/dashboard/settings");
+                dynamic obj = BuildDefaultData(HttpContext.Session);
+                obj.pokemon_time_new = 60;
+                obj.pokemon_time_old = 60;
+                obj.pokestop_lure_time = 1800;
+                obj.discord_enabled = discordEnabled;
+                obj.discord_client_id = discordClientId;
+                obj.discord_client_secret = discordClientSecret;
+                obj.discord_redirect_uri = discordRedirectUri;
+                obj.discord_user_ids = discordUserIds;
+                return BuildSuccessResponse("settings", obj, HttpContext.Session);
             }
         }
 
         [HttpGet("/dashboard/about")]
         public IActionResult GetAbout()
         {
-            var obj = BuildDefaultData();
+            var obj = BuildDefaultData(HttpContext.Session);
             var data = TemplateRenderer.ParseTemplate("about", obj);
             return new ContentResult
             {
@@ -1854,7 +1893,7 @@
             };
         }
 
-        private static ExpandoObject BuildDefaultData()
+        private static ExpandoObject BuildDefaultData(ISession session)
         {
             // TODO: Include locales
             dynamic obj = new ExpandoObject();
@@ -1865,12 +1904,13 @@
             obj.body_class = "theme-dark";
             obj.table_class = "table-dark";
             obj.current_version = Assembly.GetExecutingAssembly().GetName().Version;
+            obj.username = session?.GetValue<string>("username");
             return obj;
         }
 
-        private static IActionResult BuildErrorResponse(string template, string message)
+        private static IActionResult BuildErrorResponse(string template, string message, ISession session)
         {
-            dynamic obj = BuildDefaultData();
+            dynamic obj = BuildDefaultData(session);
             obj.show_error = true;
             obj.error = message;
             var data = TemplateRenderer.ParseTemplate(template, obj);
@@ -1882,9 +1922,9 @@
             };
         }
 
-        private static IActionResult BuildSuccessResponse(string template, string message)
+        private static IActionResult BuildSuccessResponse(string template, string message, ISession session)
         {
-            dynamic obj = BuildDefaultData();
+            dynamic obj = BuildDefaultData(session);
             obj.show_success = true;
             obj.success = message;
             var data = TemplateRenderer.ParseTemplate(template, obj);
@@ -1896,23 +1936,38 @@
             };
         }
 
-        private async Task PublishData<T>(string channel, T data)
+        private static IActionResult BuildSuccessResponse(string template, dynamic data, ISession session)
+        {
+            IDictionary<string, object> obj = BuildDefaultData(session);
+            obj["show_success"] = true;
+            foreach (var item in (IDictionary<string, object>)data)
+            {
+                obj[item.Key] = item.Value;
+            }
+            var templateData = TemplateRenderer.ParseTemplate(template, obj);
+            return new ContentResult
+            {
+                Content = templateData,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        private Task PublishData<T>(string channel, T data)
         {
             try
             {
                 if (data == null)
                 {
-                    await Task.CompletedTask.ConfigureAwait(false);
-                    return;
+                    return Task.CompletedTask;
                 }
-                _ = _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
+                _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"PublishData: {ex}");
             }
-            await Task.CompletedTask.ConfigureAwait(false);
-            return;
+            return Task.CompletedTask;
         }
 
         #endregion

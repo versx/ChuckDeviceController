@@ -30,7 +30,7 @@
                     Gender = cIns.Gender,
                     Form = cIns.Form ?? cDb.Form,
                     Costume = cIns.Costume,
-                    CP = cDb.CP ?? cIns.CP,
+                    CP = cIns.CP ?? cDb.CP,
                     Level = cIns.Level,
                     AttackIV = cIns.AttackIV ?? cDb.AttackIV,
                     DefenseIV = cIns.DefenseIV ?? cDb.DefenseIV,
@@ -69,7 +69,7 @@
                     Gender = cIns.Gender,
                     Form = cIns.Form ?? cDb.Form,
                     Costume = cIns.Costume,
-                    CP = cDb.CP ?? cIns.CP,
+                    CP = cIns.CP ?? cDb.CP,
                     Level = cIns.Level,
                     AttackIV = cIns.AttackIV ?? cDb.AttackIV,
                     DefenseIV = cIns.DefenseIV ?? cDb.DefenseIV,
@@ -97,7 +97,7 @@
 
         public async Task Truncate()
         {
-            await _dbContext.Pokemon.BulkDeleteAsync(_dbContext.Pokemon).ConfigureAwait(false);
+            await _dbContext.Pokemon.BulkDeleteAsync(_dbContext.Pokemon);
         }
     }
 }

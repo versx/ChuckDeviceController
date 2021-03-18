@@ -2,12 +2,9 @@ namespace ChuckDeviceController
 {
     using System;
     using System.IO;
-    using System.Linq;
-    using System.Net.Mime;
     using System.Threading;
 
     using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.HttpsPolicy;
@@ -15,7 +12,6 @@ namespace ChuckDeviceController
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Diagnostics.HealthChecks;
     using Microsoft.Extensions.FileProviders;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
@@ -29,6 +25,7 @@ namespace ChuckDeviceController
     using Chuck.Data.Interfaces;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
 
     public class Startup
@@ -57,7 +54,25 @@ namespace ChuckDeviceController
                     .Build());
             */
 
-            //services.AddRazorPages();
+            // Save sessions to the database
+            // TODO: Allow for custom column names
+            services.AddDistributedMemoryCache();
+            services.AddDistributedMySqlCache(options =>
+            {
+                options.ConnectionString = DbConfig.ToString();
+                //options.DefaultSlidingExpiration
+                options.ExpiredItemsDeletionInterval = TimeSpan.FromHours(1);
+                options.SchemaName = DbConfig.Database;
+                options.TableName = "session";
+            });
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(60);
+                options.Cookie.Name = "cdc.session";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckDeviceController", Version = "v1" }));
 
             services.AddDbContextFactory<DeviceControllerContext>(options =>
@@ -79,10 +94,10 @@ namespace ChuckDeviceController
             ), 128); // TODO: Configurable PoolSize (128=default)
             */
 
-            services.AddHealthChecks();
             services.AddScoped(typeof(IAsyncRepository<>), typeof(EfCoreRepository<,>));
             services.AddScoped<Config>();
 
+            // Redis
             var options = new ConfigurationOptions
             {
                 EndPoints =
@@ -91,7 +106,7 @@ namespace ChuckDeviceController
                 },
                 Password = Config.Redis.Password,
             };
-
+            
             try
             {
                 services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
@@ -102,8 +117,8 @@ namespace ChuckDeviceController
                 Environment.Exit(0);
             }
 
-            services.AddCors(option => option.AddPolicy("Test", builder =>
-            {
+            // Cross origin resource sharing configuration
+            services.AddCors(option => option.AddPolicy("Test", builder => {
                 builder.AllowAnyOrigin()
                        .AllowAnyHeader()
                        .AllowAnyMethod();
@@ -129,7 +144,6 @@ namespace ChuckDeviceController
 
             services.AddResponseCaching();
 
-            //services.AddDistributedMemoryCache();
             services.AddControllers();
             services.AddControllersWithViews();
 
@@ -145,24 +159,10 @@ namespace ChuckDeviceController
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseHealthChecks("/health",
-                new HealthCheckOptions
-                {
-                    ResponseWriter = async (context, report) =>
-                    {
-                        var result = new
-                        {
-                            status = report.Status.ToString(),
-                            errors = report.Entries.Select(e => new
-                            {
-                                key = e.Key,
-                                value = Enum.GetName(typeof(HealthStatus), e.Value.Status)
-                            })
-                        }.ToJson();
-                        context.Response.ContentType = MediaTypeNames.Application.Json;
-                        await context.Response.WriteAsync(result).ConfigureAwait(false);
-                    }
-                });
+            app.UseSession();
+
+            // Discord auth middleware
+            app.UseDiscordAuth();
 
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
@@ -191,9 +191,6 @@ namespace ChuckDeviceController
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHealthChecks("home_page_health_check");
-                endpoints.MapHealthChecks("api_health_check");
-                //endpoints.MapRazorPages();
             });
         }
 
@@ -206,7 +203,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            ThreadPool.QueueUserWorkItem(_ => InstanceController.Instance.GotPokemon(pokemon));
+                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotPokemon(pokemon));
                         }
                         break;
                     }
@@ -215,7 +212,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            ThreadPool.QueueUserWorkItem(_ => InstanceController.Instance.GotIV(pokemon));
+                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotIV(pokemon));
                         }
                         break;
                     }

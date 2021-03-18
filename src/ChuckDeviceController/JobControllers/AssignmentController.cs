@@ -22,7 +22,7 @@
         private bool _initialized;
         private long _lastUpdated;
         private readonly System.Timers.Timer _timer;
-        private readonly object _assignmentsLock = new();
+        private readonly object _assignmentsLock = new object();
 
         #region Singleton
 
@@ -81,7 +81,7 @@
         public async Task Stop()
         {
             _timer?.Stop();
-            await Task.CompletedTask.ConfigureAwait(false);
+            await Task.CompletedTask;
         }
 
         public void AddAssignment(Assignment assignment)
@@ -139,7 +139,7 @@
                     if (deviceGroup?.Devices?.Count > 0)
                     {
                         var devicesInGroup = await _deviceRepository.GetByIdsAsync(deviceGroup.Devices).ConfigureAwait(false);
-                        if (devicesInGroup != null && devicesInGroup?.Count > 0)
+                        if (devicesInGroup?.Count > 0)
                         {
                             devices.AddRange(devicesInGroup);
                         }
@@ -158,9 +158,9 @@
             foreach (var device in devices)
             {
                 if (force || (
-                    (string.IsNullOrEmpty(instance) || device.InstanceName == instance) &&
+                    (string.IsNullOrEmpty(instance) || string.Compare(device.InstanceName, instance, true) == 0) &&
                     string.Compare(device.InstanceName, assignment.InstanceName, true) != 0 &&
-                    (string.IsNullOrEmpty(assignment.SourceInstanceName) || assignment.SourceInstanceName == device.InstanceName)
+                    (string.IsNullOrEmpty(assignment.SourceInstanceName) || string.Compare(assignment.SourceInstanceName, device.InstanceName, true) == 0)
                     )
                 )
                 {
