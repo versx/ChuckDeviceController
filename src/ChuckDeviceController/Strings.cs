@@ -25,15 +25,19 @@
         );";
         public const string All = "All";
 
+        private static DateTime _started;
         public static string Started
         {
             get
             {
-                // Create a DateTime value.
-                var dtIn = DateTime.UtcNow.AddSeconds(TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalSeconds);
+                if (_started == default)
+                {
+                    // Create a DateTime value.
+                    _started = DateTime.UtcNow.AddSeconds(TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalSeconds);
+                }
                 // Retrieve a CultureInfo object.
                 var invC = CultureInfo.InvariantCulture;
-                return dtIn.ToString("r", invC);
+                return _started.ToString("r", invC);
             }
         }
     }
