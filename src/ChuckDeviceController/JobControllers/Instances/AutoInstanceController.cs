@@ -472,7 +472,7 @@
                                 bbox.MinimumLatitude,
                                 bbox.MinimumLongitude,
                                 bbox.MaximumLatitude,
-                                bbox.MinimumLongitude
+                                bbox.MaximumLongitude
                             ).ConfigureAwait(false);
                             foreach (var stop in stops)
                             {
