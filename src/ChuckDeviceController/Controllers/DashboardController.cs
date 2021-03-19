@@ -20,8 +20,8 @@
     using Chuck.Data.Entities;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
+    using Chuck.Net.Extensions;
     using ChuckDeviceController.Converters;
-    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Services;
 
@@ -1809,11 +1809,6 @@
                 obj.pokemon_time_new = 1200;
                 obj.pokemon_time_old = 600;
                 obj.pokestop_lure_time = 1800;
-                obj.discord_enabled = bool.Parse(settings.FirstOrDefault(x => "DISCORD_ENABLED" == x.Key)?.Value);
-                obj.discord_client_id = settings.FirstOrDefault(x => "DISCORD_CLIENT_ID" == x.Key)?.Value;
-                obj.discord_client_secret = settings.FirstOrDefault(x => "DISCORD_CLIENT_SECRET" == x.Key)?.Value;
-                obj.discord_redirect_uri = settings.FirstOrDefault(x => "DISCORD_REDIRECT_URI" == x.Key)?.Value;
-                obj.discord_user_ids = settings.FirstOrDefault(x => "DISCORD_USER_IDS" == x.Key)?.Value;
                 var data = TemplateRenderer.ParseTemplate("settings", obj);
                 return new ContentResult
                 {
@@ -1824,32 +1819,12 @@
             }
             else
             {
-                var discordEnabled = Request.Form["DISCORD_ENABLED"].ToString() == "on";
-                var discordClientId = Request.Form["DISCORD_CLIENT_ID"].ToString();
-                var discordClientSecret = Request.Form["DISCORD_CLIENT_SECRET"].ToString();
-                var discordRedirectUri = Request.Form["DISCORD_REDIRECT_URI"].ToString();
-                var discordUserIds = Request.Form["DISCORD_USER_IDS"].ToString();
-                var settings = new List<Metadata>
-                {
-                    new Metadata { Key = "DISCORD_ENABLED", Value = discordEnabled.ToString() },
-                    new Metadata { Key = "DISCORD_CLIENT_ID", Value = discordClientId },
-                    new Metadata { Key = "DISCORD_CLIENT_SECRET", Value = discordClientSecret },
-                    new Metadata { Key = "DISCORD_REDIRECT_URI", Value = discordRedirectUri },
-                    new Metadata { Key = "DISCORD_USER_IDS", Value = discordUserIds },
-                };
-                await _metadataRepository.AddOrUpdateAsync(settings).ConfigureAwait(false);
                 // TODO: Update DiscordController based on settings
                 // REVIEW: Should just Redirect("/dashboard/settings");
                 dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.pokemon_time_new = 60;
                 obj.pokemon_time_old = 60;
                 obj.pokestop_lure_time = 1800;
-                obj.discord_enabled = discordEnabled;
-                obj.discord_client_id = discordClientId;
-                obj.discord_client_secret = discordClientSecret;
-                obj.discord_redirect_uri = discordRedirectUri;
-                obj.discord_user_ids = discordUserIds;
-                DiscordController.Enabled = discordEnabled;
                 return BuildSuccessResponse("settings", obj, HttpContext.Session);
             }
         }

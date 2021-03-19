@@ -14,8 +14,8 @@
 
     using Chuck.Data.Contexts;
     using Chuck.Data.Repositories;
+    using Chuck.Net.Extensions;
     using ChuckDeviceController.Authentication.Models.Discord;
-    using ChuckDeviceController.Extensions;
 
     [ApiController]
     public class DiscordController : ControllerBase

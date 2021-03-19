@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Middleware
+﻿namespace Chuck.Net.Middleware
 {
     using System;
     using System.Collections.Generic;
@@ -6,8 +6,7 @@
 
     using Microsoft.AspNetCore.Http;
 
-    using ChuckDeviceController.Controllers;
-    using ChuckDeviceController.Extensions;
+    using Chuck.Net.Extensions;
 
     public class DiscordAuthMiddleware
     {
@@ -20,11 +19,6 @@
 
         public async Task Invoke(HttpContext httpContext)
         {
-            if (!DiscordController.Enabled)
-            {
-                await _next(httpContext).ConfigureAwait(false);
-                return;
-            }
             var ignorePaths = new List<string>
             {
                 "/discord/login",

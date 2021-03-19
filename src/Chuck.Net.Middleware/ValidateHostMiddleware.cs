@@ -1,29 +1,33 @@
-﻿namespace ChuckDeviceController.Middleware
+﻿namespace Chuck.Net.Middleware
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Http;
 
-    // TODO: Load all valid tokens from database
-    public class TokenAuthMiddleware
+    using Chuck.Net.Extensions;
+
+    public class ValidateHostMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly List<string> _validHosts;
 
-        public TokenAuthMiddleware(RequestDelegate next)
+        public ValidateHostMiddleware(RequestDelegate next, List<string> validHosts)
         {
             _next = next;
+            _validHosts = validHosts;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var validList = new List<string>();
-            var token = httpContext.Request.Headers["Authorization"].ToString();
-            if (validList.Count > 0 && !validList.Contains(token))
+            var host = httpContext.Request.GetIPAddress();
+            if (_validHosts?.Count > 0 && !_validHosts.Contains(host))
             {
                 // Invalid
                 httpContext.Response.StatusCode = 401;
+                return;
             }
             else
             {

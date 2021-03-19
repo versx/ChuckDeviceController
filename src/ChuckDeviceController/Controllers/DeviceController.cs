@@ -9,13 +9,13 @@
     using Microsoft.Extensions.Logging;
 
     using Chuck.Common.JobControllers.Tasks;
-    using Chuck.Common.Net.Models.Requests;
-    using Chuck.Common.Net.Models.Responses;
     using Chuck.Data.Contexts;
     using Chuck.Data.Entities;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
-    using ChuckDeviceController.Extensions;
+    using Chuck.Net.Extensions;
+    using Chuck.Net.Models.Requests;
+    using Chuck.Net.Models.Responses;
     using ChuckDeviceController.JobControllers;
 
     [ApiController]

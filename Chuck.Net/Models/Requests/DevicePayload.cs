@@ -1,4 +1,4 @@
-﻿namespace Chuck.Common.Net.Models.Requests
+﻿namespace Chuck.Net.Models.Requests
 {
     using System.Text.Json.Serialization;
 
@@ -12,13 +12,5 @@
 
         [JsonPropertyName("username")]
         public string Username { get; set; }
-
-        /*
-        [JsonPropertyName("min_level")]
-        public int MinimumLevel { get; set; } = 0;
-
-        [JsonPropertyName("max_level")]
-        public int MaximumLevel { get; set; } = 29;
-        */
     }
 }

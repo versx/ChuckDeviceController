@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Extensions
+﻿namespace Chuck.Net.Extensions
 {
     using System;
     using System.Linq;
@@ -10,7 +10,7 @@
         public static string GetIPAddress(this HttpRequest request)
         {
             var cfHeader = request.Headers["cf-connecting-ip"].ToString();
-            var forwardedfor = request.Headers["x-forwarded-for"].ToString()?.Split(",").FirstOrDefault();
+            var forwardedfor = request.Headers["x-forwarded-for"].ToString()?.Split(',').FirstOrDefault();
             var remoteIp = request.HttpContext.Connection.RemoteIpAddress?.ToString();
             var localIp = request.HttpContext.Connection.LocalIpAddress?.ToString();
             var ipAddr = !string.IsNullOrEmpty(cfHeader)

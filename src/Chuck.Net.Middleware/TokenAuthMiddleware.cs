@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Middleware
+﻿namespace Chuck.Net.Middleware
 {
     using System;
     using System.Collections.Generic;
@@ -6,26 +6,25 @@
 
     using Microsoft.AspNetCore.Http;
 
-    using ChuckDeviceController.Extensions;
-
-    // TODO: Load all valid host IP addresses from database
-    public class ValidateHostMiddleware
+    public class TokenAuthMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly List<string> _validTokens;
 
-        public ValidateHostMiddleware(RequestDelegate next)
+        public TokenAuthMiddleware(RequestDelegate next, List<string> validTokens)
         {
             _next = next;
+            _validTokens = validTokens;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var validList = new List<string>();
-            var host = httpContext.Request.GetIPAddress();
-            if (validList.Count > 0 && !validList.Contains(host))
+            var token = httpContext.Request.Headers["Authorization"].ToString();
+            if (_validTokens?.Count > 0 && !_validTokens.Contains(token))
             {
                 // Invalid
                 httpContext.Response.StatusCode = 401;
+                return;
             }
             else
             {
