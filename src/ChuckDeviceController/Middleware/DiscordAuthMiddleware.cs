@@ -32,6 +32,8 @@
             {
                 "/discord/login",
                 "/discord/callback",
+                "/controler",
+                "/controller",
             };
             if (!httpContext.Session.GetValue<bool>("is_valid") && !ignorePaths.Contains(httpContext.Request.Path))
             {
