@@ -61,23 +61,6 @@
             </div>
             <br>
             <div class="card">
-                <div class="card-header bg-dark text-center"><b>Device API</b></div>
-                <div class="card-body">
-                    <div class="form-group">
-                        Device Endpoint Whitelist (separated by ";", empty=No Whitelist)
-                        <input type="text" class="form-control" name="deviceapi_host_whitelist" value="{{deviceapi_host_whitelist}}" disabled>
-                    </div>
-                    <div class="checkbox">
-                        <label><input type="checkbox" name="deviceapi_host_whitelist_uses_proxy" value="deviceapi_host_whitelist_uses_proxy" {{#deviceapi_host_whitelist_uses_proxy}} checked{{/deviceapi_host_whitelist_uses_proxy}} disabled> Device Endpoint is behind proxy (Apache/NGINX/etc.)</label>
-                    </div>
-                    <div class="form-group">
-                        Device Endpoint Secret (empty=No Secret)
-                        <input type="text" class="form-control" name="deviceapi_secret" value="{{deviceapi_secret}}" disabled>
-                    </div>
-                </div>
-            </div>
-            <br>
-            <div class="card">
                 <div class="card-header bg-dark text-center"><b>Miscellaneous</b></div>
                 <div class="card-body">
                     <div class="checkbox">

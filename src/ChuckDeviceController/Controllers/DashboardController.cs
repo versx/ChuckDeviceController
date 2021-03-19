@@ -1809,6 +1809,7 @@
                 obj.pokemon_time_new = 1200;
                 obj.pokemon_time_old = 600;
                 obj.pokestop_lure_time = 1800;
+                obj.ditto_disguises = string.Join(",", Pokemon.DittoDisguises);
                 var data = TemplateRenderer.ParseTemplate("settings", obj);
                 return new ContentResult
                 {
