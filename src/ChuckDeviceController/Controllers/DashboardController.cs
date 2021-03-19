@@ -480,9 +480,9 @@
                     }
                 }
 
-                // TODO: Valid geofence names
+                // TODO: Validate geofence names
 
-                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel > 40 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided", HttpContext.Session);
@@ -644,7 +644,7 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
-                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel > 40 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided", HttpContext.Session);
