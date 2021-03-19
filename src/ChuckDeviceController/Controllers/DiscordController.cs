@@ -68,7 +68,7 @@
         #region Routes
 
         [HttpGet("/discord/login")]
-        public IActionResult LoginAsync()
+        public IActionResult Login()
         {
             if (!IsEnabled())
             {
@@ -79,7 +79,7 @@
         }
 
         [HttpGet("/discord/logout")]
-        public IActionResult LogoutAsync()
+        public IActionResult Logout()
         {
             if (!IsEnabled())
             {
@@ -92,7 +92,7 @@
         }
 
         [HttpGet("/discord/callback")]
-        public IActionResult CallbackAsync(string code)
+        public IActionResult Callback(string code)
         {
             if (!IsEnabled())
             {
@@ -101,7 +101,7 @@
             if (string.IsNullOrEmpty(code))
             {
                 // Error
-                _logger.LogError($"Authentication code is empty");
+                _logger.LogError("Authentication code is empty");
                 return null;
             }
 
@@ -109,7 +109,7 @@
             if (response == null)
             {
                 // Error authorizing
-                _logger.LogError($"Failed to authenticate with Discord");
+                _logger.LogError("Failed to authenticate with Discord");
                 return null;
             }
 
@@ -118,7 +118,7 @@
             if (user == null)
             {
                 // Failed to get user
-                _logger.LogError($"Failed to get user information");
+                _logger.LogError("Failed to get user information");
                 return null;
             }
             var guilds = GetUserGuilds(response.TokenType, response.AccessToken);
@@ -155,12 +155,11 @@
 
         private DiscordAuthResponse SendAuthorize(string authorizationCode)
         {
-            using (var wc = new WebClient())
+            using var wc = new WebClient();
+            wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+            try
             {
-                wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
-                try
-                {
-                    var result = wc.UploadValues(TokenEndpoint, new NameValueCollection
+                var result = wc.UploadValues(TokenEndpoint, new NameValueCollection
                 {
                     { "client_id", _clientId.ToString() },
                     { "client_secret", _clientSecret },
@@ -169,14 +168,13 @@
                     { "redirect_uri", _redirectUri },
                     { "scope", DefaultScope },
                 });
-                    var responseJson = Encoding.UTF8.GetString(result);
-                    var response = JsonSerializer.Deserialize<DiscordAuthResponse>(responseJson);
-                    return response;
-                }
-                catch (Exception)
-                {                    
-                    return null;
-                }
+                var responseJson = Encoding.UTF8.GetString(result);
+                var response = JsonSerializer.Deserialize<DiscordAuthResponse>(responseJson);
+                return response;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 
@@ -196,13 +194,11 @@
 
         private static string SendRequest(string url, string tokenType, string token)
         {
-            using (var wc = new WebClient())
-            {
-                wc.Proxy = null;
-                wc.Headers[HttpRequestHeader.ContentType] = "application/json";
-                wc.Headers[HttpRequestHeader.Authorization] = $"{tokenType} {token} ";
-                return wc.DownloadString(url);
-            }
+            using var wc = new WebClient();
+            wc.Proxy = null;
+            wc.Headers[HttpRequestHeader.ContentType] = "application/json";
+            wc.Headers[HttpRequestHeader.Authorization] = $"{tokenType} {token} ";
+            return wc.DownloadString(url);
         }
 
         #endregion

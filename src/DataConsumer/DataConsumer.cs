@@ -25,7 +25,7 @@
     // TODO: Load all gyms/stops/cells/spawnpoints from mysql to redis
     // TODO: Flush redis database of expired Pokemon
 
-    class DataConsumer
+    internal class DataConsumer
     {
         //private const uint MaxConcurrency = 100;
 
@@ -53,21 +53,21 @@
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell;
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell;
 
-        private static readonly object _gymCellsLock = new object();
-        private static readonly object _stopCellsLock = new object();
+        private static readonly object _gymCellsLock = new();
+        private static readonly object _stopCellsLock = new();
 
         // Object locks
-        private static readonly object _pokemonLock = new object();
-        private static readonly object _gymsLock = new object();
-        private static readonly object _pokestopsLock = new object();
-        private static readonly object _gymInfoLock = new object();
-        private static readonly object _gymDefendersLock = new object();
-        private static readonly object _gymTrainersLock = new object();
-        private static readonly object _questsLock = new object();
-        private static readonly object _weatherLock = new object();
-        private static readonly object _cellsLock = new object();
-        private static readonly object _accountsLock = new object();
-        private static readonly object _spawnpointsLock = new object();
+        private static readonly object _pokemonLock = new();
+        private static readonly object _gymsLock = new();
+        private static readonly object _pokestopsLock = new();
+        //private static readonly object _gymInfoLock = new();
+        private static readonly object _gymDefendersLock = new();
+        private static readonly object _gymTrainersLock = new();
+        private static readonly object _questsLock = new();
+        private static readonly object _weatherLock = new();
+        private static readonly object _cellsLock = new();
+        private static readonly object _accountsLock = new();
+        private static readonly object _spawnpointsLock = new();
 
         private bool _shouldExit = false;
 
@@ -163,12 +163,12 @@
             {
                 if (!_redis.IsConnected)
                 {
-                    ConsoleExt.WriteWarn($"[DataConsumer] Not connected to redis server");
+                    ConsoleExt.WriteWarn("[DataConsumer] Not connected to redis server");
                     return;
                 }
                 try
                 {
-                    var length = await _redisDatabase.ListLengthAsync(_config.Redis.QueueName);
+                    var length = await _redisDatabase.ListLengthAsync(_config.Redis.QueueName).ConfigureAwait(false);
                     if (length > 1000)
                     {
                         ConsoleExt.WriteWarn($"[DataConsumer] Queue is current {length}");
@@ -181,13 +181,13 @@
             };
             timer.Start();
 
-            ConsoleExt.WriteInfo($"[DataConsumer] Started");
+            ConsoleExt.WriteInfo("[DataConsumer] Started");
 
             // Publish available webhooks to redis event
             try
             {
                 using var ctx = DbContextFactory.CreateDeviceControllerContext(_config.Database.ToString());
-                PublishData(RedisChannels.WebhookReload, ctx.Webhooks.ToList());
+                PublishData(RedisChannels.WebhookReload, ctx.Webhooks.ToList()).ConfigureAwait(false);
             }
             catch (MySqlConnector.MySqlException ex)
             {
@@ -198,7 +198,7 @@
         public void Stop()
         {
             _shouldExit = true;
-            ConsoleExt.WriteInfo($"[DataConsumer] Started");
+            ConsoleExt.WriteInfo("[DataConsumer] Started");
         }
 
         #endregion
@@ -211,7 +211,7 @@
             {
                 while (!_shouldExit)
                 {
-                    var data = await GetData(_config.Redis.QueueName);
+                    var data = await GetData(_config.Redis.QueueName).ConfigureAwait(false);
                     if (data == default)
                     {
                         Thread.Sleep(10);
@@ -220,7 +220,7 @@
                     var obj = JsonSerializer.Deserialize<dynamic>(data.ToString());
                     string channel = Convert.ToString(obj.GetProperty("channel"));
                     string message = Convert.ToString(obj.GetProperty("data"));
-                    await SubscriptionHandler(channel, message);
+                    await SubscriptionHandler(channel, message).ConfigureAwait(false);
                     Thread.Sleep(10);
                 }
             })
@@ -413,7 +413,7 @@
                                     var oldGym = await GetEntity<Gym>(fort.FortId, "gym").ConfigureAwait(false);
                                     var gym = new Gym(cellId, fort);
                                     var gymResult = gym.Update(oldGym);
-                                    await PublishGym(gymResult, gym);
+                                    await PublishGym(gymResult, gym).ConfigureAwait(false);
                                     if (gymResult.IsNewOrHasChanges)
                                     {
                                         lock (_gymsLock)
@@ -432,7 +432,7 @@
                                             _gymIdsPerCell[cellId].Add(fort.FortId);
                                         }
                                     }
-                                    await SetCacheData($"gym_{gym.Id}", gym);
+                                    await SetCacheData($"gym_{gym.Id}", gym).ConfigureAwait(false);
                                     break;
                                 case FortType.Checkpoint:
                                     var oldPokestop = await GetEntity<Pokestop>(fort.FortId, "pokestop").ConfigureAwait(false);
@@ -1012,13 +1012,13 @@
 
         #region Cache Helpers
 
-        private Task<RedisValue> GetData(string key)
+        private async Task<RedisValue> GetData(string key)
         {
             try
             {
                 if (_redis.IsConnected)
                 {
-                    return _redisDatabase.ListLeftPopAsync(key);
+                    return await _redisDatabase.ListLeftPopAsync(key).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -1118,21 +1118,23 @@
             }
         }
 
-        private Task PublishData<T>(string channel, T data)
+        private async Task PublishData<T>(string channel, T data)
         {
             try
             {
                 if (data == null)
                 {
-                    return Task.CompletedTask;
+                    await Task.CompletedTask.ConfigureAwait(false);
+                    return;
                 }
-                _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
+                _ = _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
             }
             catch (Exception ex)
             {
                 ConsoleExt.WriteError(ex);
             }
-            return Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
+            return;
         }
 
         #endregion
