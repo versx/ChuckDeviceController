@@ -84,7 +84,6 @@
         [HttpGet("/dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
-            // TODO: Provide username/etc from session
             dynamic obj = BuildDefaultData(HttpContext.Session);
             obj.devices_count = (await _context.Devices.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.instances_count = (await _context.Instances.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
@@ -227,7 +226,7 @@
                 {
                     Name = name,
                     Devices = devices
-                }).ConfigureAwait(false);
+                });
                 return Redirect("/dashboard/devicegroups");
             }
         }
@@ -395,8 +394,8 @@
             {
                 dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.timezone_offset = 0;
-                obj.min_level = 0;
-                obj.max_level = 30;
+                obj.min_level = 30;
+                obj.max_level = 40;
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
@@ -480,9 +479,9 @@
                     }
                 }
 
-                // TODO: Valid geofence names
+                // TODO: Validate geofence names
 
-                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel > 40 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided", HttpContext.Session);
@@ -644,7 +643,7 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
-                if (minLevel > maxLevel || minLevel == 0 || minLevel > 40 || maxLevel == 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel > 40 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided", HttpContext.Session);
@@ -871,7 +870,7 @@
                         await _geofenceRepository.DeleteAsync(geofenceToDelete).ConfigureAwait(false);
                         _logger.LogDebug($"Geofence {name} was deleted");
                     }
-                    await GeofenceController.Instance.Reload().ConfigureAwait(false);
+                    await GeofenceController.Instance.Reload();
                     return Redirect("/dashboard/geofences");
                 }
 
@@ -1060,7 +1059,7 @@
 
                 if (string.IsNullOrEmpty(destinationInstance))
                 {
-                    return BuildErrorResponse("assignment-add", "No destination instance selected", HttpContext.Session);
+                    return BuildErrorResponse("assignment-add", $"No destination instance selected", HttpContext.Session);
                 }
 
                 try
@@ -1124,7 +1123,7 @@
                 if (devices == null || instances == null || deviceGroups == null)
                 {
                     // Failed to get devices, instances, or device groups from database
-                    return BuildErrorResponse("assignment-edit", "Failed to get devices, instances, or device groups from database", HttpContext.Session);
+                    return BuildErrorResponse("assignment-edit", $"Failed to get devices, instances, or device groups from database", HttpContext.Session);                    
                 }
 
                 var formattedTime = assignment.Time == 0 ? "" : $"{assignment.Time / 3600:00}:{assignment.Time % 3600 / 60:00}:{assignment.Time % 3600 % 60:00}";
@@ -1218,7 +1217,7 @@
                 if (string.IsNullOrEmpty(destinationInstance))
                 {
                     // Invalid request, no destination instance selected
-                    return BuildErrorResponse("assignment-add", "No destination instance selected", HttpContext.Session);
+                    return BuildErrorResponse("assignment-add", $"No destination instance selected", HttpContext.Session);
                 }
 
                 var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
@@ -1338,7 +1337,7 @@
                 if (types.Count == 0)
                 {
                     // No webhook type selected (forgot if this is needed, double check lol)
-                    return BuildErrorResponse("webhook-add", "At least one webhook type needs to be selected", HttpContext.Session);
+                    return BuildErrorResponse("webhook-add", $"At least one webhook type needs to be selected", HttpContext.Session);
                 }
 
                 // Make sure geofence exists
@@ -1457,7 +1456,7 @@
                 if (types.Count == 0)
                 {
                     // No webhook type selected (forgot if this is needed, double check lol)
-                    return BuildErrorResponse("webhook-edit", "At least one webhook type needs to be selected", HttpContext.Session);
+                    return BuildErrorResponse("webhook-edit", $"At least one webhook type needs to be selected", HttpContext.Session);
                 }
 
                 // Make sure geofence exists
@@ -1516,7 +1515,7 @@
                     };
                     await _webhookRepository.UpdateAsync(webhook).ConfigureAwait(false);
                 }
-
+                
                 var webhooks = await _webhookRepository.GetAllAsync(false).ConfigureAwait(false);
                 await PublishData(RedisChannels.WebhookReload, webhooks).ConfigureAwait(false);
                 return Redirect("/dashboard/webhooks");
@@ -1566,7 +1565,7 @@
                     : pokemonIdsValue?.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)?
                                       .Select(uint.Parse)
                                       .ToList();
-
+                
                 var ivList = await _ivListRepository.GetByIdAsync(name).ConfigureAwait(false);
                 if (ivList != null)
                 {
@@ -1711,16 +1710,29 @@
                 foreach (var row in rows)
                 {
                     var split = row.Split(',');
-                    if (split.Length != 2)
+                    // Need at least 2 or more parameters
+                    if (split.Length < 2)
                     {
-                        // Invalid account provided
+                        // Failed to parse account
                         continue;
+                    }
+                    ushort? accountLevel = null;
+                    switch (split.Length)
+                    {
+                        case 2:
+                            // Without level
+                            accountLevel = level;
+                            break;
+                        case 3:
+                            // With level
+                            accountLevel = ushort.Parse(split[2].Trim() ?? level.ToString());
+                            break;
                     }
                     list.Add(new Account
                     {
                         Username = split[0].Trim(),
                         Password = split[1].Trim(),
-                        Level = level,
+                        Level = accountLevel ?? level,
                         GroupName = group,
                     });
                 }
@@ -1776,10 +1788,10 @@
                         //var stopsConverted = await _pokestopRepository.ConvertPokestopsToGyms().ConfigureAwait(false);
                         // - delete converted pokestops
                         // - Pass data through to view
-                        return BuildSuccessResponse("utilities", "<b>0</b> Pokestops converted to Gyms", HttpContext.Session);
+                        return BuildSuccessResponse("utilities", $"<b>0</b> Pokestops converted to Gyms", HttpContext.Session);
                     case "force_logout_all_devices":
                         await _deviceRepository.ClearAllAccounts().ConfigureAwait(false);
-                        return BuildSuccessResponse("utilities", "All devices forced to logout", HttpContext.Session);
+                        return BuildSuccessResponse("utilities", $"All devices forced to logout", HttpContext.Session);
                     case "clear_quests":
                         await _pokestopRepository.ClearQuestsAsync().ConfigureAwait(false);
                         return BuildSuccessResponse("utilities", "All Pokestop quests have been cleared", HttpContext.Session);
@@ -1810,11 +1822,11 @@
                 obj.pokemon_time_new = 1200;
                 obj.pokemon_time_old = 600;
                 obj.pokestop_lure_time = 1800;
-                obj.discord_enabled = bool.Parse(settings.FirstOrDefault(x => x.Key == "DISCORD_ENABLED")?.Value);
-                obj.discord_client_id = settings.FirstOrDefault(x => x.Key == "DISCORD_CLIENT_ID")?.Value;
-                obj.discord_client_secret = settings.FirstOrDefault(x => x.Key == "DISCORD_CLIENT_SECRET")?.Value;
-                obj.discord_redirect_uri = settings.FirstOrDefault(x => x.Key == "DISCORD_REDIRECT_URI")?.Value;
-                obj.discord_user_ids = settings.FirstOrDefault(x => x.Key == "DISCORD_USER_IDS")?.Value;
+                obj.discord_enabled = bool.Parse(settings.FirstOrDefault(x => "DISCORD_ENABLED" == x.Key)?.Value);
+                obj.discord_client_id = settings.FirstOrDefault(x => "DISCORD_CLIENT_ID" == x.Key)?.Value;
+                obj.discord_client_secret = settings.FirstOrDefault(x => "DISCORD_CLIENT_SECRET" == x.Key)?.Value;
+                obj.discord_redirect_uri = settings.FirstOrDefault(x => "DISCORD_REDIRECT_URI" == x.Key)?.Value;
+                obj.discord_user_ids = settings.FirstOrDefault(x => "DISCORD_USER_IDS" == x.Key)?.Value;
                 var data = TemplateRenderer.ParseTemplate("settings", obj);
                 return new ContentResult
                 {
@@ -1850,6 +1862,7 @@
                 obj.discord_client_secret = discordClientSecret;
                 obj.discord_redirect_uri = discordRedirectUri;
                 obj.discord_user_ids = discordUserIds;
+                DiscordController.Enabled = discordEnabled;
                 return BuildSuccessResponse("settings", obj, HttpContext.Session);
             }
         }
@@ -1953,23 +1966,21 @@
             };
         }
 
-        private async Task PublishData<T>(string channel, T data)
+        private Task PublishData<T>(string channel, T data)
         {
             try
             {
                 if (data == null)
                 {
-                    await Task.CompletedTask.ConfigureAwait(false);
-                    return;
+                    return Task.CompletedTask;
                 }
-                _ = _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
+                _subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"PublishData: {ex}");
             }
-            await Task.CompletedTask.ConfigureAwait(false);
-            return;
+            return Task.CompletedTask;
         }
 
         #endregion

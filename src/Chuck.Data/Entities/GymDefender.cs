@@ -11,7 +11,7 @@
     using Chuck.Extensions;
 
     [Table("gym_defender")]
-    public class GymDefender : BaseEntity, IAggregateRoot
+    public class GymDefender : BaseEntity, IAggregateRoot, IWebhook
     {
         #region Properties
 
@@ -208,6 +208,43 @@
             //PokemonDisplay.Costume
             //TradedTimeMs
             //WeightKg
+        }
+
+        public dynamic GetWebhookValues(string type)
+        {
+            return type switch
+            {
+                _ => new
+                {
+                    type = "gym_defender",
+                    message = new
+                    {
+                        id = Id,
+                        pokemon_id = PokemonId,
+                        cp_when_deployed = CpWhenDeployed,
+                        cp_new = CpNow,
+                        berry_value = BerryValue,
+                        times_fed = TimesFed,
+                        deployment_duration = DeploymentDuration,
+                        trainer_name = TrainerName,
+                        fort_id = FortId,
+                        individual_attack = AttackIV,
+                        individual_defense = DefenseIV,
+                        individual_stamina = StaminaIV,
+                        move_1 = Move1,
+                        move_2 = Move2,
+                        battles_attacked = BattlesAttacked,
+                        battles_defended = BattlesDefended,
+                        gender = Gender,
+                        hatched_from_egg = HatchedFromEgg,
+                        pvp_combat_won = PvpCombatWon,
+                        pvp_combat_total = PvpCombatTotal,
+                        npc_combat_won = NpcCombatWon,
+                        npc_combat_total = NpcCombatTotal,
+                        updated = Updated,
+                    },
+                },
+            };
         }
     }
 }

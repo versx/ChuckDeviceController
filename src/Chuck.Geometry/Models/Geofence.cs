@@ -68,15 +68,7 @@
             Name = feature.Attributes["name"]?.ToString() ?? DefaultName;
             Feature = feature;
             BBox = feature.Geometry.Envelope;
-
-            try
-            {
-                Priority = Convert.ToInt32(feature.Attributes["priority"]);
-            }
-            catch (Exception)
-            {
-                Priority = 0;
-            }
+            Priority = Convert.ToInt32(feature?.Attributes["priority"] ?? 0);
         }
 
         /// <summary>

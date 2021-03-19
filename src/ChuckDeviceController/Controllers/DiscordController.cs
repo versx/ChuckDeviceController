@@ -28,7 +28,7 @@
         private string _clientSecret;
         private string _redirectUri;
 
-        public static bool Enabled { get; private set; }
+        public static bool Enabled { get; set; }
 
         public IReadOnlyList<ulong> UserIds { get; private set; }
 
@@ -36,6 +36,7 @@
         private const string TokenEndpoint = "https://discordapp.com/api/oauth2/token";
         private const string UserInformationEndpoint = "https://discordapp.com/api/users/@me";
         private const string UserGuildsInformationEndpoint = "https://discordapp.com/api/users/@me/guilds";
+        private const string DefaultScope = "guilds%20identify%20email";
 
         public DiscordController(DeviceControllerContext context, ILogger<DiscordController> logger)
         {
@@ -59,7 +60,7 @@
             _clientSecret = clientSecret?.Value;
             _redirectUri = redirectUri?.Value;
             Enabled = bool.Parse(enabled?.Value);
-            UserIds = userIds?.Value?.Split(',')
+            UserIds = userIds?.Value?.Split(',')?
                                      .Select(ulong.Parse)
                                      .ToList();
         }
@@ -67,19 +68,18 @@
         #region Routes
 
         [HttpGet("/discord/login")]
-        public IActionResult Login()
+        public IActionResult LoginAsync()
         {
             if (!IsEnabled())
             {
                 return Redirect("/dashboard");
             }
-            const string scope = "guilds%20identify%20email";
-            var url = $"{AuthorizationEndpoint}?client_id={_clientId}&scope={scope}&response_type=code&redirect_uri={_redirectUri}";
+            var url = $"{AuthorizationEndpoint}?client_id={_clientId}&scope={DefaultScope}&response_type=code&redirect_uri={_redirectUri}";
             return Redirect(url);
         }
 
         [HttpGet("/discord/logout")]
-        public IActionResult Logout()
+        public IActionResult LogoutAsync()
         {
             if (!IsEnabled())
             {
@@ -92,7 +92,7 @@
         }
 
         [HttpGet("/discord/callback")]
-        public IActionResult Callback(string code)
+        public IActionResult CallbackAsync(string code)
         {
             if (!IsEnabled())
             {
@@ -101,7 +101,7 @@
             if (string.IsNullOrEmpty(code))
             {
                 // Error
-                _logger.LogError("Authentication code is empty");
+                _logger.LogError($"Authentication code is empty");
                 return null;
             }
 
@@ -109,7 +109,7 @@
             if (response == null)
             {
                 // Error authorizing
-                _logger.LogError("Failed to authenticate with Discord");
+                _logger.LogError($"Failed to authenticate with Discord");
                 return null;
             }
 
@@ -118,7 +118,7 @@
             if (user == null)
             {
                 // Failed to get user
-                _logger.LogError("Failed to get user information");
+                _logger.LogError($"Failed to get user information");
                 return null;
             }
             var guilds = GetUserGuilds(response.TokenType, response.AccessToken);
@@ -155,27 +155,28 @@
 
         private DiscordAuthResponse SendAuthorize(string authorizationCode)
         {
-            const string scope = "guilds%20identify%20email";
-            using var wc = new WebClient();
-            wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
-            try
+            using (var wc = new WebClient())
             {
-                var result = wc.UploadValues(TokenEndpoint, new NameValueCollection
+                wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
+                try
+                {
+                    var result = wc.UploadValues(TokenEndpoint, new NameValueCollection
                 {
                     { "client_id", _clientId.ToString() },
                     { "client_secret", _clientSecret },
                     { "grant_type", "authorization_code" },
                     { "code", authorizationCode },
                     { "redirect_uri", _redirectUri },
-                    { "scope", scope },
+                    { "scope", DefaultScope },
                 });
-                var responseJson = Encoding.UTF8.GetString(result);
-                var response = JsonSerializer.Deserialize<DiscordAuthResponse>(responseJson);
-                return response;
-            }
-            catch (Exception)
-            {
-                return null;
+                    var responseJson = Encoding.UTF8.GetString(result);
+                    var response = JsonSerializer.Deserialize<DiscordAuthResponse>(responseJson);
+                    return response;
+                }
+                catch (Exception)
+                {                    
+                    return null;
+                }
             }
         }
 
@@ -195,11 +196,13 @@
 
         private static string SendRequest(string url, string tokenType, string token)
         {
-            using var wc = new WebClient();
-            wc.Proxy = null;
-            wc.Headers[HttpRequestHeader.ContentType] = "application/json";
-            wc.Headers[HttpRequestHeader.Authorization] = $"{tokenType} {token} ";
-            return wc.DownloadString(url);
+            using (var wc = new WebClient())
+            {
+                wc.Proxy = null;
+                wc.Headers[HttpRequestHeader.ContentType] = "application/json";
+                wc.Headers[HttpRequestHeader.Authorization] = $"{tokenType} {token} ";
+                return wc.DownloadString(url);
+            }
         }
 
         #endregion

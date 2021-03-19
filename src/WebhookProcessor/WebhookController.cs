@@ -9,9 +9,6 @@
     using Chuck.Extensions;
     using WebhookProcessor.Queues;
 
-    // TODO: Filter webhooks by area
-    // TODO: Load all geofences and cache them (send redis event when geofences change and reload them)
-
     public class WebhookController
     {
         #region Variables
@@ -424,26 +421,42 @@
                             }
                         }
                     }
-                    /*
-                    lock (_gymDefenderLock)
+                    // Check gym defender webhooks against webhook filters
+                    if (_gymDefenderQueue.Count > 0) // TODO: WebhookType.GymDefenders
                     {
-                        while (_gymDefenderQueue.Count > 0)
+                        var gymDefenderEvents = new List<GymDefender>();
+                        lock (_gymDefenderLock)
                         {
-                            var gymDefender = _gymDefenderQueue.Dequeue();
-                            events.Add(gymDefender.GetWebhookValues("defender"));
-                            Thread.Sleep(1);
+                            while (_gymDefenderQueue.Count > 0)
+                            {
+                                gymDefenderEvents.Add(_gymDefenderQueue.Dequeue());
+                                Thread.Sleep(1);
+                            }
+                        }
+                        foreach (var defender in gymDefenderEvents)
+                        {
+                            // TODO: Defender filters
+                            events.Add(defender.GetWebhookValues("gym_defender"));
                         }
                     }
-                    lock (_gymTrainerLock)
+                    // Check gym trainer webhooks against webhook filters
+                    if (_gymTrainerQueue.Count > 0) // TODO: WebhookType.GymTrainers
                     {
-                        while (_gymTrainerQueue.Count > 0)
+                        var gymTrainerEvents = new List<Trainer>();
+                        lock (_gymTrainerLock)
                         {
-                            var gymTrainer = _gymTrainerQueue.Dequeue();
-                            events.Add(gymTrainer.GetWebhookValues("trainer"));
-                            Thread.Sleep(1);
+                            while (_gymTrainerQueue.Count > 0)
+                            {
+                                gymTrainerEvents.Add(_gymTrainerQueue.Dequeue());
+                                Thread.Sleep(1);
+                            }
+                        }
+                        foreach (var trainer in gymTrainerEvents)
+                        {
+                            // TODO: Trainer filters
+                            events.Add(trainer.GetWebhookValues("gym_trainer"));
                         }
                     }
-                    */
                     // Check pokestop webhooks against webhook filters
                     if (_pokestopQueue.Count > 0 && webhook.Types.Contains(WebhookType.Pokestops))
                     {
