@@ -9,7 +9,6 @@
 
     using Chuck.Common.JobControllers;
     using Chuck.Common.JobControllers.Tasks;
-    using Chuck.Data.Entities;
     using Chuck.Data.Factories;
     using Chuck.Data.Repositories;
     using Chuck.Geometry.Geofence.Models;
@@ -160,7 +159,7 @@
                     bbox.MinimumLatitude,
                     bbox.MinimumLongitude,
                     bbox.MaximumLatitude,
-                    bbox.MinimumLongitude,
+                    bbox.MaximumLongitude,
                     true
                 ).ConfigureAwait(false);
                 var spawnCoords = spawnpoints.Select(x => new Coordinate(x.Latitude, x.Longitude));
