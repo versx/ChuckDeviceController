@@ -1796,40 +1796,6 @@
 
         #endregion
 
-        [
-            HttpGet("/dashboard/settings"),
-            HttpPost("/dashboard/settings"),
-        ]
-        public async Task<IActionResult> GetSettings()
-        {
-            if (Request.Method == "GET")
-            {
-                dynamic obj = BuildDefaultData(HttpContext.Session);
-                var settings = await _metadataRepository.GetAllAsync().ConfigureAwait(false);
-                obj.pokemon_time_new = 1200;
-                obj.pokemon_time_old = 600;
-                obj.pokestop_lure_time = 1800;
-                obj.ditto_disguises = string.Join(",", Pokemon.DittoDisguises);
-                var data = TemplateRenderer.ParseTemplate("settings", obj);
-                return new ContentResult
-                {
-                    Content = data,
-                    ContentType = "text/html",
-                    StatusCode = 200,
-                };
-            }
-            else
-            {
-                // TODO: Update DiscordController based on settings
-                // REVIEW: Should just Redirect("/dashboard/settings");
-                dynamic obj = BuildDefaultData(HttpContext.Session);
-                obj.pokemon_time_new = 60;
-                obj.pokemon_time_old = 60;
-                obj.pokestop_lure_time = 1800;
-                return BuildSuccessResponse("settings", obj, HttpContext.Session);
-            }
-        }
-
         [HttpGet("/dashboard/about")]
         public IActionResult GetAbout()
         {
