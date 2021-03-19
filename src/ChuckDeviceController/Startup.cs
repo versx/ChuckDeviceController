@@ -55,10 +55,10 @@ namespace ChuckDeviceController
             services.AddDistributedMemoryCache();
             services.AddDistributedMySqlCache(options =>
             {
-                options.ConnectionString = DbConfig.ToString();
+                options.ConnectionString = DbConnectionString;
                 //options.DefaultSlidingExpiration
                 options.ExpiredItemsDeletionInterval = TimeSpan.FromHours(1);
-                options.SchemaName = DbConfig.Database;
+                options.SchemaName = DbConnectionString.GetBetween("Database=", ";");//DbConfig.Database;
                 options.TableName = "session";
             });
             services.AddSession(options =>
@@ -215,6 +215,29 @@ namespace ChuckDeviceController
                         break;
                     }
             }
+        }
+    }
+
+    internal static class StringExtensions
+    {
+        /// <summary>
+        ///     A string extension method that get the string between the two specified string.
+        /// </summary>
+        /// <param name="this">The @this to act on.</param>
+        /// <param name="before">The string before to search.</param>
+        /// <param name="after">The string after to search.</param>
+        /// <returns>The string between the two specified string.</returns>
+        public static string GetBetween(this string value, string before, string after)
+        {
+            var beforeStartIndex = value.IndexOf(before);
+            var startIndex = beforeStartIndex + before.Length;
+            var afterStartIndex = value.IndexOf(after, startIndex);
+            if (beforeStartIndex == -1 || afterStartIndex == -1)
+            {
+                return string.Empty;
+            }
+            //return value.Substring(startIndex, afterStartIndex - startIndex);
+            return value[startIndex..afterStartIndex];
         }
     }
 }
