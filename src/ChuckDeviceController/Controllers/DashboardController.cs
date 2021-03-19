@@ -394,8 +394,8 @@
             {
                 dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.timezone_offset = 0;
-                obj.min_level = 0;
-                obj.max_level = 30;
+                obj.min_level = 30;
+                obj.max_level = 40;
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
