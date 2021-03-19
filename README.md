@@ -120,6 +120,7 @@ View profiler results:
 - Token/IP whilelist auth
 - Environment variables
 - Webhooks don't currently implement the geofences property
+- Localization
 
 
 ## Previews:  
