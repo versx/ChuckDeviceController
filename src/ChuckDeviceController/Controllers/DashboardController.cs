@@ -84,7 +84,6 @@
         [HttpGet("/dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
-            // TODO: Provide username/etc from session
             dynamic obj = BuildDefaultData(HttpContext.Session);
             obj.devices_count = (await _context.Devices.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.instances_count = (await _context.Instances.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
@@ -1850,6 +1849,7 @@
                 obj.discord_client_secret = discordClientSecret;
                 obj.discord_redirect_uri = discordRedirectUri;
                 obj.discord_user_ids = discordUserIds;
+                DiscordController.Enabled = discordEnabled;
                 return BuildSuccessResponse("settings", obj, HttpContext.Session);
             }
         }

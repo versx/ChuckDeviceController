@@ -67,7 +67,7 @@
 
         public int SpinLimit { get; }
 
-        public byte RetryLimit { get; } = 5; // TODO: Configurable
+        public byte RetryLimit { get; } = 5;
 
         public string GroupName { get; }
 

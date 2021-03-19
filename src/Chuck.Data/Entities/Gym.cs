@@ -357,7 +357,6 @@
             Updated = DateTime.UtcNow.ToTotalSeconds();
         }
 
-        // TODO: Include gym defenders and trainers in gym details webhook
         public dynamic GetWebhookValues(string type)
         {
             dynamic data;

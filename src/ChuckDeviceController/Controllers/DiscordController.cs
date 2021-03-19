@@ -28,7 +28,7 @@
         private string _clientSecret;
         private string _redirectUri;
 
-        public static bool Enabled { get; private set; }
+        public static bool Enabled { get; set; }
 
         public IReadOnlyList<ulong> UserIds { get; private set; }
 

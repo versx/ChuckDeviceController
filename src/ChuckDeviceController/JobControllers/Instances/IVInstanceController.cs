@@ -224,7 +224,7 @@
                     _pokemonQueue.Remove(pkmn);
                 }
             }
-            // TODO: Allow for customizable IV list
+            // TODO: Allow for customizable event IV list
             if (IsEvent && !pokemon.IsEvent && (
                 pokemon.AttackIV == 15 || pokemon.AttackIV == 0 || pokemon.AttackIV == 1) &&
                 pokemon.DefenseIV == 15 && pokemon.StaminaIV == 15)

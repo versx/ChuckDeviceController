@@ -279,7 +279,6 @@
                     name = ivList.Name,
                     pokemon_list_count = ivList.PokemonIDs.Count.ToString("N0"),
                     buttons = $"<a href='/dashboard/ivlist/edit/{Uri.EscapeDataString(ivList.Name)}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
-                    // TODO: Delete button
                 });
             }
             return new { data = new { ivlists = list } };

@@ -9,9 +9,6 @@
     using Chuck.Extensions;
     using WebhookProcessor.Queues;
 
-    // TODO: Filter webhooks by area
-    // TODO: Load all geofences and cache them (send redis event when geofences change and reload them)
-
     public class WebhookController
     {
         #region Variables

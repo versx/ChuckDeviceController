@@ -20,14 +20,11 @@
 
         public async Task Invoke(HttpContext httpContext)
         {
-            // TODO: Fix
-            /*
             if (!DiscordController.Enabled)
             {
-                await _next(httpContext);
+                await _next(httpContext).ConfigureAwait(false);
                 return;
             }
-            */
             var ignorePaths = new List<string>
             {
                 "/discord/login",
@@ -42,7 +39,7 @@
             }
             else
             {
-                await _next(httpContext);
+                await _next(httpContext).ConfigureAwait(false);
             }
         }
     }
