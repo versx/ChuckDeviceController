@@ -36,6 +36,7 @@
         private const string TokenEndpoint = "https://discordapp.com/api/oauth2/token";
         private const string UserInformationEndpoint = "https://discordapp.com/api/users/@me";
         private const string UserGuildsInformationEndpoint = "https://discordapp.com/api/users/@me/guilds";
+        private const string DefaultScope = "guilds%20identify%20email";
 
         public DiscordController(DeviceControllerContext context, ILogger<DiscordController> logger)
         {
@@ -73,8 +74,7 @@
             {
                 return Redirect("/dashboard");
             }
-            var scope = "guilds%20identify%20email";
-            var url = $"{AuthorizationEndpoint}?client_id={_clientId}&scope={scope}&response_type=code&redirect_uri={_redirectUri}";
+            var url = $"{AuthorizationEndpoint}?client_id={_clientId}&scope={DefaultScope}&response_type=code&redirect_uri={_redirectUri}";
             return Redirect(url);
         }
 
@@ -155,7 +155,6 @@
 
         private DiscordAuthResponse SendAuthorize(string authorizationCode)
         {
-            var scope = "guilds%20identify%20email";
             using (var wc = new WebClient())
             {
                 wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
@@ -168,7 +167,7 @@
                     { "grant_type", "authorization_code" },
                     { "code", authorizationCode },
                     { "redirect_uri", _redirectUri },
-                    { "scope", scope },
+                    { "scope", DefaultScope },
                 });
                     var responseJson = Encoding.UTF8.GetString(result);
                     var response = JsonSerializer.Deserialize<DiscordAuthResponse>(responseJson);
