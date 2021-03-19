@@ -106,7 +106,7 @@ namespace ChuckDeviceController
                 },
                 Password = Config.Redis.Password,
             };
-            
+
             try
             {
                 services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(options));
@@ -188,10 +188,7 @@ namespace ChuckDeviceController
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
 
         private void PokemonSubscriptionHandler(RedisChannel channel, RedisValue message)
@@ -203,7 +200,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotPokemon(pokemon));
+                            ThreadPool.QueueUserWorkItem(_ => InstanceController.Instance.GotPokemon(pokemon));
                         }
                         break;
                     }
@@ -212,7 +209,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotIV(pokemon));
+                            ThreadPool.QueueUserWorkItem(_ => InstanceController.Instance.GotIV(pokemon));
                         }
                         break;
                     }

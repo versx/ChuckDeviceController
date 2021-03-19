@@ -97,7 +97,7 @@
 
         public async Task Truncate()
         {
-            await _dbContext.Pokemon.BulkDeleteAsync(_dbContext.Pokemon);
+            await _dbContext.Pokemon.BulkDeleteAsync(_dbContext.Pokemon).ConfigureAwait(false);
         }
     }
 }

@@ -40,7 +40,7 @@
             }
             else
             {
-                await _next(httpContext);
+                await _next(httpContext).ConfigureAwait(false);
             }
         }
     }
