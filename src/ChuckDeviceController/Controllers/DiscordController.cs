@@ -60,7 +60,7 @@
             _clientSecret = clientSecret?.Value;
             _redirectUri = redirectUri?.Value;
             Enabled = bool.Parse(enabled?.Value);
-            UserIds = userIds?.Value?.Split(',')
+            UserIds = userIds?.Value?.Split(',')?
                                      .Select(ulong.Parse)
                                      .ToList();
         }
