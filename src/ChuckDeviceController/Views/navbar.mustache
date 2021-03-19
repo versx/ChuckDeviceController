@@ -71,6 +71,7 @@
                 </a>
             </li>
         </ul>
+        {{#auth_enabled}}
         <ul class="list-unstyled components">
             {{#if username}}
             <li>
@@ -94,6 +95,7 @@
                 {{/if}}
             </li>
         </ul>
+        {{/auth_enabled}}
     </nav>
     <!-- Page Content  -->
     <div id="content">

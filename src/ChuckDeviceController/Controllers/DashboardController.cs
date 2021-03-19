@@ -37,6 +37,7 @@
         private readonly ISubscriber _subscriber;
         private readonly ILogger<DeviceController> _logger;
 
+        // Data model repositories
         private readonly AccountRepository _accountRepository;
         private readonly AssignmentRepository _assignmentRepository;
         private readonly DeviceRepository _deviceRepository;
@@ -78,6 +79,8 @@
 
         #region Routes
 
+        #region Dashboard
+
         [HttpGet("/")]
         public IActionResult GetIndex() => Redirect("/dashboard");
 
@@ -101,6 +104,8 @@
                 StatusCode = 200,
             };
         }
+
+        #endregion
 
         #region Devices
 
@@ -1847,6 +1852,7 @@
             obj.table_class = "table-dark";
             obj.current_version = Assembly.GetExecutingAssembly().GetName().Version;
             obj.username = session?.GetValue<string>("username");
+            obj.auth_enabled = Startup.Config.Discord?.Enabled;
             return obj;
         }
 
