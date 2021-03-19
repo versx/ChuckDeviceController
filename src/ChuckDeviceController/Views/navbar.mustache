@@ -71,15 +71,15 @@
                 </a>
             </li>
         </ul>
-        {{#auth_enabled}}
+        {{#if auth_enabled}}
         <ul class="list-unstyled components">
             {{#if username}}
             <li>
                 <a href="#">
-                    {{if avatar_url}}
-                    <img src="{{avatar_url}}" width="24" height="24" /> 
+                    {{#if avatar_url}}
+                    <img src="{{avatar_url}}" width="24" height="24" />
                     {{else}}
-                    <i class="fas fa-fw fa-home"></i> 
+                    <i class="fas fa-fw fa-home"></i>
                     {{/if}}
                     {{username}}
                 </a>
@@ -88,7 +88,7 @@
             <li>
                 {{#if username}}
                 <a href="/discord/logout">
-                    <i class="fas fa-fw fa-home"></i>
+                    <i class="fas fa-fw fa-sign-out-alt"></i>
                     Logout
                 </a>
                 {{else}}
@@ -99,7 +99,7 @@
                 {{/if}}
             </li>
         </ul>
-        {{/auth_enabled}}
+        {{/if}}
     </nav>
     <!-- Page Content  -->
     <div id="content">
