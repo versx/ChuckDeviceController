@@ -1710,16 +1710,29 @@
                 foreach (var row in rows)
                 {
                     var split = row.Split(',');
-                    if (split.Length != 2)
+                    // Need at least 2 or more parameters
+                    if (split.Length < 2)
                     {
-                        // Invalid account provided
+                        // Failed to parse account
                         continue;
+                    }
+                    ushort? accountLevel = null;
+                    switch (split.Length)
+                    {
+                        case 2:
+                            // Without level
+                            accountLevel = level;
+                            break;
+                        case 3:
+                            // With level
+                            accountLevel = ushort.Parse(split[2].Trim() ?? level.ToString());
+                            break;
                     }
                     list.Add(new Account
                     {
                         Username = split[0].Trim(),
                         Password = split[1].Trim(),
-                        Level = level,
+                        Level = accountLevel ?? level,
                         GroupName = group,
                     });
                 }
