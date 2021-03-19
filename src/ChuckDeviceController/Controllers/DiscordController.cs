@@ -119,8 +119,10 @@
             // User authenticated successfully
             _logger.LogInformation($"User {user.Username} ({user.Id}) authenticated successfully");
             HttpContext.Session.SetValue("is_valid", isValid);
+            HttpContext.Session.SetValue("user_id", user.Id);
             HttpContext.Session.SetValue("username", $"{user.Username}#{user.Discriminator}");
             HttpContext.Session.SetValue("guild_ids", guilds.Select(x => x.Id));
+            HttpContext.Session.SetValue("avatar_id", user.Avatar);
             // Check previous page saved if we should redirect to it or the home page
             var redirect = HttpContext.Session.GetValue<string>("last_redirect");
             HttpContext.Session.Remove("last_redirect");
@@ -177,6 +179,7 @@
 
         private static string SendRequest(string url, string tokenType, string token)
         {
+            // TODO: Retry request x amount of times before failing
             using (var wc = new WebClient())
             {
                 wc.Proxy = null;

@@ -1852,6 +1852,9 @@
             obj.table_class = "table-dark";
             obj.current_version = Assembly.GetExecutingAssembly().GetName().Version;
             obj.username = session?.GetValue<string>("username");
+            var userId = session?.GetValue<string>("user_id");
+            var avatarId = session?.GetValue<string>("avatar_id");
+            obj.avatar_url = $"https://cdn.discordapp.com/avatars/{userId}/{avatarId}.png";
             obj.auth_enabled = Startup.Config.Discord?.Enabled;
             return obj;
         }
