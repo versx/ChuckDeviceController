@@ -263,8 +263,8 @@
                             if (changesResult.IsNewOrHasChanges)
                             {
                                 // Send pokemon_added event for InstanceController.Instance.GotPokemon();
-                                await PublishData(RedisChannels.PokemonAdded, pokemon);
-                                await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
+                                await PublishData(RedisChannels.PokemonAdded, pokemon).ConfigureAwait(false);
+                                await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
@@ -273,8 +273,8 @@
                             if (changesResult.GotIV)
                             {
                                 // Send pokemon_updated event for InstanceController.Instance.GotIV();
-                                await PublishData(RedisChannels.PokemonUpdated, pokemon);
-                                await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
+                                await PublishData(RedisChannels.PokemonUpdated, pokemon).ConfigureAwait(false);
+                                await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
@@ -289,7 +289,7 @@
                                 }
                             }
                             */
-                            await SetCacheData($"pokemon_{pokemon.Id}", pokemon);
+                            await SetCacheData($"pokemon_{pokemon.Id}", pokemon).ConfigureAwait(false);
                             break;
                         }
                     case RedisChannels.ProtoNearbyPokemon:
@@ -329,8 +329,8 @@
                             if (changesResult.IsNewOrHasChanges)
                             {
                                 // Send pokemon_added event for InstanceController.Instance.GotPokemon();
-                                await PublishData(RedisChannels.PokemonAdded, pokemon);
-                                await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
+                                await PublishData(RedisChannels.PokemonAdded, pokemon).ConfigureAwait(false);
+                                await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
@@ -339,14 +339,14 @@
                             if (changesResult.GotIV)
                             {
                                 // Send pokemon_updated event for InstanceController.Instance.GotIV();
-                                await PublishData(RedisChannels.PokemonUpdated, pokemon);
-                                await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
+                                await PublishData(RedisChannels.PokemonUpdated, pokemon).ConfigureAwait(false);
+                                await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
                                 lock (_pokemonLock)
                                 {
                                     _pokemon.Add(pokemon);
                                 }
                             }
-                            await SetCacheData($"pokemon_{pokemon.Id}", pokemon);
+                            await SetCacheData($"pokemon_{pokemon.Id}", pokemon).ConfigureAwait(false);
                             break;
                         }
                     case RedisChannels.ProtoEncounter:
@@ -389,15 +389,15 @@
                             }
                             SetPvpRanks(pokemon);
 
-                            await PublishData(RedisChannels.PokemonUpdated, pokemon);
-                            await PublishData(RedisChannels.WebhookPokemon, pokemon.GetWebhookValues("pokemon"));
+                            await PublishData(RedisChannels.PokemonUpdated, pokemon).ConfigureAwait(false);
+                            await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
                             // TODO: Check for changes
                             //if (pokemon.Update(pokemon, true))
                             lock (_pokemonLock)
                             {
                                 _pokemon.Add(pokemon);
                             }
-                            await SetCacheData($"pokemon_{pokemon.Id}", pokemon);
+                            await SetCacheData($"pokemon_{pokemon.Id}", pokemon).ConfigureAwait(false);
                             break;
                         }
                     case RedisChannels.ProtoFort:
@@ -410,7 +410,7 @@
                             switch (fort.FortType)
                             {
                                 case FortType.Gym:
-                                    var oldGym = await GetEntity<Gym>(fort.FortId, "gym");
+                                    var oldGym = await GetEntity<Gym>(fort.FortId, "gym").ConfigureAwait(false);
                                     var gym = new Gym(cellId, fort);
                                     var gymResult = gym.Update(oldGym);
                                     await PublishGym(gymResult, gym);
@@ -435,10 +435,10 @@
                                     await SetCacheData($"gym_{gym.Id}", gym);
                                     break;
                                 case FortType.Checkpoint:
-                                    var oldPokestop = await GetEntity<Pokestop>(fort.FortId, "pokestop");
+                                    var oldPokestop = await GetEntity<Pokestop>(fort.FortId, "pokestop").ConfigureAwait(false);
                                     var pokestop = new Pokestop(cellId, fort);
                                     var stopResult = pokestop.Update(oldPokestop);
-                                    await PublishPokestop(stopResult, pokestop);
+                                    await PublishPokestop(stopResult, pokestop).ConfigureAwait(false);
                                     if (stopResult.IsNewOrHasChanges)
                                     {
                                         lock (_pokestopsLock)
@@ -457,7 +457,7 @@
                                             _stopIdsPerCell[cellId].Add(fort.FortId);
                                         }
                                     }
-                                    await SetCacheData($"pokestop_{pokestop.Id}", pokestop);
+                                    await SetCacheData($"pokestop_{pokestop.Id}", pokestop).ConfigureAwait(false);
                                     break;
                             }
                             break;
@@ -484,6 +484,7 @@
                             var defender = JsonSerializer.Deserialize<GymDefender>(message);
                             if (defender == null) return;
 
+                            await PublishData(RedisChannels.WebhookGymDefender, defender).ConfigureAwait(false);
                             lock (_gymDefendersLock)
                             {
                                 _gymDefenders.Add(defender);
@@ -495,6 +496,7 @@
                             var trainer = JsonSerializer.Deserialize<Trainer>(message);
                             if (trainer == null) return;
 
+                            await PublishData(RedisChannels.WebhookGymTrainer, trainer).ConfigureAwait(false);
                             lock (_gymTrainersLock)
                             {
                                 _gymTrainers.Add(trainer);
@@ -509,7 +511,7 @@
                             if (fs == null) return;
 
                             // Get existing pokestop, and add quest to it
-                            var pokestop = await GetEntity<Pokestop>(fs.FortId, "pokestop");
+                            var pokestop = await GetEntity<Pokestop>(fs.FortId, "pokestop").ConfigureAwait(false);
                             // Skip quests we don't have stops for yet
                             if (pokestop == null)
                                 return;
@@ -523,13 +525,13 @@
                             pokestop.AddQuest(fs.ChallengeQuest.Quest);
                             //if (pokestop.Update(pokestop, true)) // TODO: Check HasChanges property
                             //{
-                                await PublishData(RedisChannels.WebhookQuest, pokestop.GetWebhookValues("quest"));
+                                await PublishData(RedisChannels.WebhookQuest, pokestop).ConfigureAwait(false);
                                 lock (_questsLock)
                                 {
                                     _quests.Add(pokestop);
                                 }
                             //}
-                            await SetCacheData($"pokestop_{pokestop.Id}", pokestop);
+                            await SetCacheData($"pokestop_{pokestop.Id}", pokestop).ConfigureAwait(false);
                             break;
                         }
                     case RedisChannels.ProtoCell:
@@ -549,7 +551,7 @@
                             if (weather == null) return;
 
                             // TODO: Check for changes
-                            await PublishData(RedisChannels.WebhookWeather, weather.GetWebhookValues("weather"));
+                            await PublishData(RedisChannels.WebhookWeather, weather).ConfigureAwait(false);
                             lock (_weatherLock)
                             {
                                 _weather.Add(weather);
@@ -613,7 +615,7 @@
         private void DataIngester()
         {
             //ThreadPool.QueueUserWorkItem(x =>
-            new Thread(x =>
+            new Thread(_ =>
             {
                 while (!_shouldExit)
                 {

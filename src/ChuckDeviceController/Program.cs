@@ -15,11 +15,8 @@ namespace ChuckDeviceController
 
     // TODO: Add 'bootstrap_complete' property to Instance.Data for bootstrap instance, add auto_complete_instance property
     // TODO: Implement cache better
-    // TODO: Use Z.EntityFramework.Cache for Cells/Pokestops/Gyms/Spawnpoints/Accounts/Devices/Instances/Assignments
-    // TODO: Fix lures possible overwrite (unsure)
     // TODO: Add HasChanges property for each entity to see if needs updating
     // TODO: Add cache system for ASP.NET
-    // TODO: Add reusable IV lists
     // TODO: Add s2cell logic route
 
     public static class Program
@@ -68,8 +65,6 @@ namespace ChuckDeviceController
                     //webBuilder.UseUrls("http://localhost:5000", "https://localhost:5001");
                     webBuilder.UseUrls($"http://{Startup.Config.ControllerInterface}:{Startup.Config.ControllerPort}"); // TODO: Support for https and port + 1
                     webBuilder.UseWebRoot(Strings.WebRoot);
-                    //copy Views and wwwroot to output dir
-                    //webBuilder.UseContentRoot(AppDomain.CurrentDomain.BaseDirectory);
                 });
     }
 }

@@ -11,7 +11,7 @@
     using Chuck.Extensions;
 
     [Table("trainer")]
-    public class Trainer : BaseEntity, IAggregateRoot
+    public class Trainer : BaseEntity, IAggregateRoot, IWebhook
     {
         [
             Column("name"),
@@ -95,6 +95,30 @@
             // TODO: New gym trainer properties
             //trainerProfile.GymBadgeType (gym badge type)
             //trainerProfile.HasSharedExPass (invited to ex raid)
+        }
+
+        public dynamic GetWebhookValues(string type)
+        {
+            return type switch
+            {
+                _ => new
+                {
+                    type = "gym_trainer",
+                    message = new
+                    {
+                        name = Name,
+                        level = Level,
+                        team_id = TeamId,
+                        battles_won = BattlesWon,
+                        km_walked = KmWalked,
+                        pokemon_caught = PokemonCaught,
+                        experience = Experience,
+                        combat_rank = CombatRank,
+                        combat_rating = CombatRating,
+                        updated = Updated,
+                    },
+                },
+            };
         }
     }
 }
