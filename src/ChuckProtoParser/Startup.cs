@@ -13,6 +13,7 @@ namespace ChuckProtoParser
     using Chuck.Data.Contexts;
     using Chuck.Data.Interfaces;
     using Chuck.Data.Repositories;
+    using Chuck.Net.Middleware;
 
     public class Startup
     {
@@ -62,6 +63,17 @@ namespace ChuckProtoParser
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ChuckProtoParser v1"));
+            }
+
+            // If allowedHosts set, add token auth middleware
+            if (Config.DeviceAuth?.AllowedTokens?.Count > 0)
+            {
+                app.UseMiddleware<TokenAuthMiddleware>(Config.DeviceAuth.AllowedTokens);
+            }
+            // If allowedTokens set, add host whitelist middleware
+            if (Config.DeviceAuth?.AllowedHosts?.Count > 0)
+            {
+                app.UseMiddleware<ValidateHostMiddleware>(Config.DeviceAuth.AllowedHosts);
             }
 
             //app.UseHttpsRedirection();

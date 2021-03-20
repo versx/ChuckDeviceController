@@ -27,6 +27,7 @@
     <ProjectReference Include="..\Chuck.Data\Chuck.Data.csproj" />
     <ProjectReference Include="..\Chuck.Extensions\Chuck.Extensions.csproj" />
     <ProjectReference Include="..\Chuck.Geometry\Chuck.Geometry.csproj" />
+    <ProjectReference Include="..\Chuck.Net.Middleware\Chuck.Net.Middleware.csproj" />
   </ItemGroup>
 
 </Project>

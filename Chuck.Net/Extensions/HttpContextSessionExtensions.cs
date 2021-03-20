@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Extensions
+﻿namespace Chuck.Net.Extensions
 {
     using System;
     using System.Text;

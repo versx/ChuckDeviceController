@@ -9,12 +9,13 @@
     using Microsoft.Extensions.Logging;
 
     using Chuck.Common.JobControllers.Tasks;
-    using Chuck.Common.Net.Models.Requests;
-    using Chuck.Common.Net.Models.Responses;
     using Chuck.Data.Contexts;
     using Chuck.Data.Entities;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
+    using Chuck.Net.Extensions;
+    using Chuck.Net.Models.Requests;
+    using Chuck.Net.Models.Responses;
     using ChuckDeviceController.JobControllers;
 
     [ApiController]
@@ -169,19 +170,7 @@
             var device = await _deviceRepository.GetByIdAsync(uuid).ConfigureAwait(false);
             if (device != null)
             {
-                var cfHeader = Request.Headers["cf-connecting-ip"].ToString();
-                var forwardedfor = Request.Headers["x-forwarded-for"].ToString()?.Split(",").FirstOrDefault();
-                var remoteIp = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-                var localIp = Request.HttpContext.Connection.LocalIpAddress?.ToString();
-                device.LastHost = !string.IsNullOrEmpty(cfHeader)
-                    ? cfHeader
-                    : !string.IsNullOrEmpty(forwardedfor)
-                        ? forwardedfor
-                        : !string.IsNullOrEmpty(remoteIp)
-                            ? remoteIp
-                            : !string.IsNullOrEmpty(localIp)
-                                ? localIp
-                                : string.Empty;
+                device.LastHost = Request.GetIPAddress();
                 await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
             }
             return new DeviceResponse

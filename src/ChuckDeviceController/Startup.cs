@@ -8,7 +8,6 @@ namespace ChuckDeviceController
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.HttpsPolicy;
-    using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +24,7 @@ namespace ChuckDeviceController
     using Chuck.Data.Interfaces;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
-    using ChuckDeviceController.Extensions;
+    using Chuck.Net.Middleware;
     using ChuckDeviceController.JobControllers;
 
     public class Startup
@@ -162,7 +161,18 @@ namespace ChuckDeviceController
             app.UseSession();
 
             // Discord auth middleware
-            app.UseDiscordAuth();
+            if (Config.Discord?.Enabled ?? false)
+            {
+                app.UseMiddleware<DiscordAuthMiddleware>();
+            }
+            if (Config.DeviceAuth?.AllowedHosts?.Count > 0)
+            {
+                app.UseMiddleware<ValidateHostMiddleware>(Config.DeviceAuth?.AllowedTokens);
+            }
+            if (Config.DeviceAuth?.AllowedTokens?.Count > 0)
+            {
+                app.UseMiddleware<TokenAuthMiddleware>(Config.DeviceAuth?.AllowedTokens);
+            }
 
             app.UseDeveloperExceptionPage();
             app.UseSwagger();

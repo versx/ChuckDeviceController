@@ -1,4 +1,4 @@
-﻿namespace Chuck.Common.Net.Models.Requests
+﻿namespace Chuck.Net.Models.Requests
 {
     using System;
     using System.Collections.Generic;

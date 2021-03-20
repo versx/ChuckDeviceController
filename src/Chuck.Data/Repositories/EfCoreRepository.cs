@@ -167,11 +167,6 @@
             await _dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public virtual async Task UpdateAndRenameAsync(TEntity entity, string oldName)
-        {
-            //
-        }
-
         public virtual async Task UpdateRangeAsync(List<TEntity> entities)
         {
             _dbContext.UpdateRange(entities);

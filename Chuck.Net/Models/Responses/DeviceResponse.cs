@@ -1,4 +1,4 @@
-﻿namespace Chuck.Common.Net.Models.Responses
+﻿namespace Chuck.Net.Models.Responses
 {
     using System.Text.Json.Serialization;
 

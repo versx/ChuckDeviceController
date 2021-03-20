@@ -14,13 +14,13 @@
     using StackExchange.Redis;
 
     using Chuck.Common;
-    using Chuck.Common.Net.Models.Requests;
-    using Chuck.Common.Net.Models.Responses;
     using Chuck.Data.Contexts;
     using Chuck.Data.Entities;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
     using Chuck.Geometry.Geofence.Models;
+    using Chuck.Net.Models.Requests;
+    using Chuck.Net.Models.Responses;
 
     [ApiController]
     public class ProtoController : ControllerBase

@@ -17,5 +17,16 @@
         "databaseNum": -1,
         "queueName": "cdc"
     },
-    "enableProfiler": true
+    "enableProfiler": true,
+    "deviceAuth": {
+        "allowedHosts": [],
+        "allowedTokens": []
+    },
+    "discord": {
+        "enabled": false,
+        "clientId": 0,
+        "clientSecret": "",
+        "redirectUri": "",
+        "userIds": []
+    }
 }
