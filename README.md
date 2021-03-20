@@ -66,7 +66,7 @@ https://download.visualstudio.microsoft.com/download/pr/a06c387d-2811-4fba-8b5f-
 1. Run ChuckProtoParser from `bin/` folder `dotnet ChuckProtoParser.dll`  
 3. Run WebhookProcessor from `bin/` folder `dotnet WebhookProcessor.dll`  
 4. Run DataConsumer from `bin/` folder `dotnet DataConsumer.dll` or use [Chuck](https://github.com/WatWowMap/Chuck) as the backend data consumer.  
-5. Visit Dashboard at `http://LAN_MACHINE_IP:5001`  
+5. Visit Dashboard at `http://LAN_MACHINE_IP:5000`  
 
 View all available API routes:  
 `http://LAN_MACHINE_IP:port/swagger`  
