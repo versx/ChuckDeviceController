@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chuck.Pvp", "src\Chuck.Pvp\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Net.Middleware", "src\Chuck.Net.Middleware\Chuck.Net.Middleware.csproj", "{AF815EC4-0893-4610-AFC1-B43053A4F18B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Net", "Chuck.Net\Chuck.Net.csproj", "{0B39DD61-8499-4846-9862-A758B0EDA0C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chuck.Net", "src\Chuck.Net\Chuck.Net.csproj", "{0B39DD61-8499-4846-9862-A758B0EDA0C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
