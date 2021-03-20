@@ -7,13 +7,10 @@
     using System.Net;
     using System.Text;
     using System.Text.Json;
-    using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Data.Contexts;
-    using Chuck.Data.Repositories;
     using Chuck.Net.Extensions;
     using ChuckDeviceController.Authentication.Models.Discord;
 
@@ -144,14 +141,14 @@
                 try
                 {
                     var result = wc.UploadValues(TokenEndpoint, new NameValueCollection
-                {
-                    { "client_id", _clientId.ToString() },
-                    { "client_secret", _clientSecret },
-                    { "grant_type", "authorization_code" },
-                    { "code", authorizationCode },
-                    { "redirect_uri", _redirectUri },
-                    { "scope", DefaultScope },
-                });
+                    {
+                        { "client_id", _clientId.ToString() },
+                        { "client_secret", _clientSecret },
+                        { "grant_type", "authorization_code" },
+                        { "code", authorizationCode },
+                        { "redirect_uri", _redirectUri },
+                        { "scope", DefaultScope },
+                    });
                     var responseJson = Encoding.UTF8.GetString(result);
                     var response = JsonSerializer.Deserialize<DiscordAuthResponse>(responseJson);
                     return response;

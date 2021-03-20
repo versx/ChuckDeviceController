@@ -38,6 +38,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.MySql" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.Network" Version="5.0.4" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="5.0.2" />
+    <PackageReference Include="AspNetCore.HealthChecks.System" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="5.0.1" />
     <PackageReference Include="Handlebars.Net" Version="2.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.4">

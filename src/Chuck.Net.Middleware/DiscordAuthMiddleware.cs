@@ -25,6 +25,8 @@
                 "/discord/callback",
                 "/controler",
                 "/controller",
+                //"/health-ui",
+                "/health",
             };
             if (!httpContext.Session.GetValue<bool>("is_valid") && !ignorePaths.Contains(httpContext.Request.Path))
             {

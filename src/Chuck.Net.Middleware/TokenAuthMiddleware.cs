@@ -26,10 +26,7 @@
                 httpContext.Response.StatusCode = 401;
                 return;
             }
-            else
-            {
-                await _next(httpContext).ConfigureAwait(false);
-            }
+            await _next(httpContext).ConfigureAwait(false);
         }
     }
 }

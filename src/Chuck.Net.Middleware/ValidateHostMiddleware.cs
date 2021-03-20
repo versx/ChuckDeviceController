@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Http;
@@ -29,10 +28,7 @@
                 httpContext.Response.StatusCode = 401;
                 return;
             }
-            else
-            {
-                await _next(httpContext).ConfigureAwait(false);
-            }
+            await _next(httpContext).ConfigureAwait(false);
         }
     }
 }
