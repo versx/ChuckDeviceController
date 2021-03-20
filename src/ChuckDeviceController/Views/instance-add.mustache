@@ -23,6 +23,7 @@
                     $('.quest_retry_limit_text').addClass('d-none');
                     $('.timezone_text').addClass('d-none');
                     $('.enable_dst_text').addClass('d-none');
+                    $('.ignore_bootstrap_text').addClass('d-none');
                     break;
                 case 'pokemon_iv':
                     $('.circle_route_type').addClass('d-none');
@@ -33,6 +34,7 @@
                     $('.quest_retry_limit_text').addClass('d-none');
                     $('.timezone_text').addClass('d-none');
                     $('.enable_dst_text').addClass('d-none');
+                    $('.ignore_bootstrap_text').addClass('d-none');
                     break;
                 case 'auto_quest':
                     $('.circle_route_type').addClass('d-none');
@@ -43,6 +45,7 @@
                     $('.quest_retry_limit_text').removeClass('d-none');
                     $('.timezone_text').removeClass('d-none');
                     $('.enable_dst_text').removeClass('d-none');
+                    $('.ignore_bootstrap_text').removeClass('d-none');
                     break;
                 case 'bootstrap':
                     $('.circle_route_type').addClass('d-none');
@@ -53,6 +56,7 @@
                     $('.quest_retry_limit_text').addClass('d-none');
                     $('.timezone_text').addClass('d-none');
                     $('.enable_dst_text').addClass('d-none');
+                    $('.ignore_bootstrap_text').addClass('d-none');
                     break;
                 case 'find_tth':
                 default:
@@ -64,6 +68,7 @@
                     $('.quest_retry_limit_text').addClass('d-none');
                     $('.timezone_text').addClass('d-none');
                     $('.enable_dst_text').addClass('d-none');
+                    $('.ignore_bootstrap_text').addClass('d-none');
                     break;
             }
         });
@@ -155,6 +160,11 @@
             <div class="form-group quest_retry_limit_text {{^auto_quest_selected}}d-none{{/auto_quest_selected}}">
                 Quest Retry Limit
                 <input type="number" class="form-control" name="quest_retry_limit" value="{{quest_retry_limit}}" step=1 min="1" max="255" required>
+            </div>
+            <!-- TODO: Use same class for types instead of a individual-->
+            <div class="form-check ignore_bootstrap_text {{^auto_quest_selected}}d-none{{/auto_quest_selected}}">
+                <input type="checkbox" class="form-check-input" name="ignore_s2cell_bootstrap" checked>
+                <label class="form-check-label" for="ignore_s2cell_bootstrap">Ignore S2Cell Bootstrap</label>
             </div>
             <div class="form-group bootstrap_text {{^bootstrap_selected}}d-none{{/bootstrap_selected}}">
                 Circle Size (meters, i.e `70, 500, 750, etc`)

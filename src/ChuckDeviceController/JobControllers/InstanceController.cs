@@ -235,7 +235,8 @@
                                 }
                                 var spinLimit = instance.Data.SpinLimit ?? 3500;
                                 var retryLimit = instance.Data.QuestRetryLimit ?? 5;
-                                instanceController = new AutoInstanceController(instance.Name, multiPolygons, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit, retryLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                var ignoreBootstrap = instance.Data.IgnoreS2CellBootstrap;
+                                instanceController = new AutoInstanceController(instance.Name, multiPolygons, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit, retryLimit, ignoreBootstrap, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.PokemonIV:
                                 var ivList = IVListController.Instance.GetIVList(instance.Data.IVList)?.PokemonIDs ?? new List<uint>();
