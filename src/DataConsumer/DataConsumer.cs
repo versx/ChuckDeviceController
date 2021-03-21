@@ -220,7 +220,7 @@
                     var obj = JsonSerializer.Deserialize<dynamic>(data.ToString());
                     string channel = Convert.ToString(obj.GetProperty("channel"));
                     string message = Convert.ToString(obj.GetProperty("data"));
-                    await SubscriptionHandler(channel, message);
+                    await QueueHandler(channel, message);
                     Thread.Sleep(10);
                 }
             })
@@ -228,7 +228,7 @@
             //_subscriber.Subscribe(RedisQueueName, async (channel, message) => await SubscriptionHandler(channel, message));
         }
 
-        private async Task SubscriptionHandler(RedisChannel channel, RedisValue message)
+        private async Task QueueHandler(RedisChannel channel, RedisValue message)
         {
             if (string.IsNullOrEmpty(message)) return;
 

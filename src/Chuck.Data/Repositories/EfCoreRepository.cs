@@ -7,6 +7,7 @@
 
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
+    using Z.BulkOperations;
     using Z.EntityFramework.Plus;
 
     using Chuck.Data.Entities;
@@ -229,13 +230,13 @@
             {
                 await _dbContext.BulkMergeAsync(entities, x =>
                 {
-                    x.AutoMap = Z.BulkOperations.AutoMapType.ByIndexerName;
+                    x.AutoMap = AutoMapType.ByIndexerName;
                     x.BatchSize = 100;
                     //x.BatchTimeout = 10 * 1000;
                     x.InsertIfNotExists = true;
                     x.InsertKeepIdentity = true;
                     x.MergeKeepIdentity = true;
-                    x.Resolution = Z.BulkOperations.ResolutionType.Smart;
+                    x.Resolution = ResolutionType.Smart;
                     x.UseTableLock = true;
                     x.AllowDuplicateKeys = true;
                     //x.ColumnPrimaryKeyExpression = entity => entity.Id || entity.Uuid;
