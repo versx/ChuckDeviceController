@@ -145,7 +145,7 @@
 
             // Register new device
             _logger.LogDebug($"[Device] [{uuid}] Registering device");
-            await _deviceRepository.AddAsync(new Device
+            await _deviceRepository.AddOrUpdateAsync(new Device
             {
                 Uuid = uuid,
                 AccountUsername = null,
