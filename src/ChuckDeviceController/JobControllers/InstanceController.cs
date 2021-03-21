@@ -150,6 +150,11 @@
                         foreach (var geofence in geofences)
                         {
                             var area = geofence?.Data?.Area;
+                            if (area is null)
+                            {
+                                _logger.LogError($"[{instance.Name}] Failed to get teleport circles, skipping...");
+                                continue;
+                            }
                             var coordsArray = (List<Coordinate>)
                             (
                                 area is List<Coordinate>
@@ -175,7 +180,7 @@
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Error: {ex}");
+                        _logger.LogError($"[{instance.Name}] Error: {ex}");
                     }
                     break;
                 case InstanceType.AutoQuest:
@@ -189,11 +194,16 @@
                         foreach (var geofence in geofences)
                         {
                             var area = geofence?.Data?.Area;
+                            if (area is null)
+                            {
+                                _logger.LogError($"[{instance.Name}] Failed to get geofence area, skipping...");
+                                continue;
+                            }
                             var coordsArray = (List<List<Coordinate>>)
                             (
                                 area is List<List<Coordinate>>
                                     ? area
-                                    : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
+                                    : JsonSerializer.Deserialize<List<List<Coordinate>>>(json: Convert.ToString(area))
                             );
                             coordinates.AddRange(coordsArray);
 
@@ -258,7 +268,7 @@
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Error: {ex}");
+                        _logger.LogError($"[{instance.Name}] Error: {ex}");
                     }
                     break;
             }

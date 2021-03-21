@@ -125,25 +125,19 @@
             const uint SevenDaySeconds = 7 * OneDaySeconds;
             var banExpireTime = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7)).ToTotalSeconds();
             var failedList = new List<string> { "banned", "invalid_credentials", "GPR_RED_WARNING", "GPR_BANNED" };
-            // TODO: Use raw sql query or better alternative
-            return new
-            {
-                new_count = accounts.Count(x => string.IsNullOrEmpty(x.Failed) &&
-                                                 x.FailedTimestamp == null &&
-                                                 x.FirstWarningTimestamp == null &&
-                                                 x.LastEncounterLatitude == null &&
-                                                 x.LastEncounterLongitude == null &&
-                                                 x.LastEncounterTime == null &&
-                                                 x.Spins == 0).ToString("N0"),
-                in_use_count = accounts.Count(x => devices.Any(dev => string.Compare(dev.AccountUsername, x.Username, true) == 0)).ToString("N0"),
-                clean_iv_count = accounts.Count(x => string.IsNullOrEmpty(x.Failed) &&
+            var cleanAccounts = accounts.Where(x => string.IsNullOrEmpty(x.Failed) &&
                                                       x.FailedTimestamp == null &&
                                                       x.FirstWarningTimestamp == null &&
                                                       x.LastEncounterLatitude == null &&
                                                       x.LastEncounterLongitude == null &&
                                                       x.LastEncounterTime == null &&
-                                                      x.Spins == 0 &&
-                                                      x.Level >= 30).ToString("N0"),
+                                                      x.Spins == 0);
+            // TODO: Use raw sql query or better alternative
+            return new
+            {
+                new_count = cleanAccounts.Count().ToString("N0"),
+                in_use_count = accounts.Count(x => devices.Any(dev => string.Compare(dev.AccountUsername, x.Username, true) == 0)).ToString("N0"),
+                clean_iv_count = cleanAccounts.Count(x => x.Level >= 30).ToString("N0"),
                 total_iv_count = accounts.Count(x => x.Level >= 30).ToString("N0"),
                 total = accounts.Count.ToString("N0"),
                 failed_count = accounts.Count(x => !string.IsNullOrEmpty(x.Failed) || x.FirstWarningTimestamp > 0).ToString("N0"),
