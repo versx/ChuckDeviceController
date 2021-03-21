@@ -78,7 +78,6 @@
 
         public async Task<Account> GetNewAccountAsync(int minLevel, int maxLevel, List<string> inuseAccounts)
         {
-            var account = _dbContext.Accounts.DeferredCount().FromCacheAsync();
             var accounts = await GetAllAsync().ConfigureAwait(false);
             return accounts.FirstOrDefault(x =>
                 x.Level >= minLevel &&
