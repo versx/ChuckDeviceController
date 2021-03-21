@@ -87,6 +87,7 @@
         [HttpGet("/dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
+            var now = DateTime.UtcNow.ToTotalSeconds();
             dynamic obj = BuildDefaultData(HttpContext.Session);
             obj.devices_count = (await _context.Devices.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.instances_count = (await _context.Instances.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
@@ -96,6 +97,18 @@
             obj.webhooks_count = (await _context.Webhooks.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.devicegroups_count = (await _context.DeviceGroups.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.ivlists_count = (await _context.IVLists.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.pokemon_count = (await _context.Pokemon.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.gym_count = (await _context.Gyms.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.gym_defender_count = (await _context.GymDefenders.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.gym_trainer_count = (await _context.Trainers.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.raid_count = (await _context.Gyms.AsNoTracking().Where(x => x.RaidEndTimestamp > 0 && x.RaidEndTimestamp >= now).DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.pokestop_count = (await _context.Pokestops.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.lure_count = (await _context.Pokestops.AsNoTracking().Where(x => x.LureExpireTimestamp > 0 && x.LureExpireTimestamp >= now).DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.invasion_count = (await _context.Pokestops.AsNoTracking().Where(x => x.IncidentExpireTimestamp > 0 && x.IncidentExpireTimestamp >= now).DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.quest_count = (await _context.Pokestops.AsNoTracking().Where(x => x.QuestType != null).DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.spawnpoint_count = (await _context.Spawnpoints.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.s2cell_count = (await _context.Cells.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+
             var data = TemplateRenderer.ParseTemplate("index", obj);
             return new ContentResult
             {
