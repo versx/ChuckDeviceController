@@ -25,21 +25,22 @@
 
         private readonly DeviceRepository _deviceRepository;
         private readonly AccountRepository _accountRepository;
-        //private readonly DeviceControllerContext _context;
-        private readonly IDbContextFactory<DeviceControllerContext> _dbFactory;
+        private readonly DeviceControllerContext _context;
+        //private readonly IDbContextFactory<DeviceControllerContext> _dbFactory;
         private readonly ILogger<DeviceController> _logger;
 
         #endregion
 
         #region Constructor
 
-        public DeviceController(IDbContextFactory<DeviceControllerContext> dbFactory, ILogger<DeviceController> logger)
+        public DeviceController(DeviceControllerContext context/*IDbContextFactory<DeviceControllerContext> dbFactory*/, ILogger<DeviceController> logger)
         {
-            _dbFactory = dbFactory;
+            _context = context;
+            //_dbFactory = dbFactory;
             _logger = logger;
 
-            _deviceRepository = new DeviceRepository(_dbFactory.CreateDbContext());
-            _accountRepository = new AccountRepository(_dbFactory.CreateDbContext());
+            _deviceRepository = new DeviceRepository(_context);
+            _accountRepository = new AccountRepository(_context);
         }
 
         #endregion
@@ -76,6 +77,14 @@
             _logger.LogInformation($"[Device] [{payload.Uuid}] Received control request: {payload.Type}");
 
             var device = await _deviceRepository.GetByIdAsync(payload.Uuid).ConfigureAwait(false);
+            if (device == null)
+            {
+                await _deviceRepository.AddOrUpdateAsync(new Device
+                {
+                    Uuid = payload.Uuid,
+                    LastHost = Request.GetIPAddress(),
+                }).ConfigureAwait(false);
+            }
             switch (payload.Type.ToLower())
             {
                 case "init":
@@ -145,7 +154,7 @@
 
             // Register new device
             _logger.LogDebug($"[Device] [{uuid}] Registering device");
-            await _deviceRepository.AddAsync(new Device
+            await _deviceRepository.AddOrUpdateAsync(new Device
             {
                 Uuid = uuid,
                 AccountUsername = null,
@@ -263,10 +272,10 @@
 
         private async Task<DeviceResponse> HandleGetJob(Device device, string username)
         {
-            var instanceController = InstanceController.Instance.GetInstanceController(device.Uuid);
+            var instanceController = InstanceController.Instance.GetInstanceController(device?.Uuid);
             if (instanceController == null)
             {
-                _logger.LogError($"[Device] [{device.Uuid}] Failed to get instance controller.");
+                _logger.LogError($"[Device] [{device?.Uuid}] Failed to get instance controller.");
                 return new DeviceResponse
                 {
                     Status = "error",

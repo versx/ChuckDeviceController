@@ -86,6 +86,10 @@
 
         public IJobController GetInstanceController(string uuid)
         {
+            if (string.IsNullOrEmpty(uuid))
+            {
+                return null;
+            }
             lock (_devicesLock)
             {
                 if (!_devices.ContainsKey(uuid))
