@@ -238,227 +238,255 @@
                 {
                     case RedisChannels.ProtoWildPokemon:
                         {
-                            var data = JsonSerializer.Deserialize<PokemonFound<WildPokemonProto>>(message);
-                            if (data == null) return;
+                            try
+                            {
+                                var data = JsonSerializer.Deserialize<PokemonFound<WildPokemonProto>>(message);
+                                if (data == null) return;
 
-                            var spawnpoint = Spawnpoint.FromPokemon(data.Pokemon);
-                            lock (_spawnpointsLock)
-                            {
-                                _spawnpoints.Add(spawnpoint);
-                            }
+                                var spawnpoint = Spawnpoint.FromPokemon(data.Pokemon);
+                                lock (_spawnpointsLock)
+                                {
+                                    _spawnpoints.Add(spawnpoint);
+                                }
 
-                            var cell = data.CellId;
-                            lock (_cellsLock)
-                            {
-                                _cells.Add(new Cell(cell));
-                            }
-                            var wildPokemon = data.Pokemon;
-                            var timestampMs = data.TimestampMs;
-                            var username = data.Username;
-                            //var id = wildPokemon.EncounterId;
-                            var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
-                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
-                            var changesResult = pokemon.Update(oldPokemon);
-                            SetPvpRanks(pokemon);
-                            if (changesResult.IsNewOrHasChanges)
-                            {
-                                // Send pokemon_added event for InstanceController.Instance.GotPokemon();
-                                await PublishData(RedisChannels.PokemonAdded, pokemon).ConfigureAwait(false);
-                                await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
-                                lock (_pokemonLock)
+                                var cell = data.CellId;
+                                lock (_cellsLock)
                                 {
-                                    _pokemon.Add(pokemon);
+                                    _cells.Add(new Cell(cell));
                                 }
-                            }
-                            if (changesResult.GotIV)
-                            {
-                                // Send pokemon_updated event for InstanceController.Instance.GotIV();
-                                await PublishData(RedisChannels.PokemonUpdated, pokemon).ConfigureAwait(false);
-                                await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
-                                lock (_pokemonLock)
+                                var wildPokemon = data.Pokemon;
+                                var timestampMs = data.TimestampMs;
+                                var username = data.Username;
+                                //var id = wildPokemon.EncounterId;
+                                var pokemon = new Pokemon(wildPokemon, cell, timestampMs, username, false); // TODO: IsEvent
+                                var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
+                                var changesResult = pokemon.Update(oldPokemon);
+                                SetPvpRanks(pokemon);
+                                if (changesResult.IsNewOrHasChanges)
                                 {
-                                    _pokemon.Add(pokemon);
+                                    // Send pokemon_added event for InstanceController.Instance.GotPokemon();
+                                    await PublishData(RedisChannels.PokemonAdded, pokemon).ConfigureAwait(false);
+                                    await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
+                                    lock (_pokemonLock)
+                                    {
+                                        _pokemon.Add(pokemon);
+                                    }
                                 }
-                            }
-                            /*
-                            if (pokemon.Update(oldPokemon, true)) // TODO: Check HasChanges property
-                            {
-                                lock (_pokemonLock)
+                                if (changesResult.GotIV)
                                 {
-                                    _pokemon.Add(pokemon);
+                                    // Send pokemon_updated event for InstanceController.Instance.GotIV();
+                                    await PublishData(RedisChannels.PokemonUpdated, pokemon).ConfigureAwait(false);
+                                    await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
+                                    lock (_pokemonLock)
+                                    {
+                                        _pokemon.Add(pokemon);
+                                    }
                                 }
+                                /*
+                                if (pokemon.Update(oldPokemon, true)) // TODO: Check HasChanges property
+                                {
+                                    lock (_pokemonLock)
+                                    {
+                                        _pokemon.Add(pokemon);
+                                    }
+                                }
+                                */
+                                await SetCacheData($"pokemon_{pokemon.Id}", pokemon).ConfigureAwait(false);
                             }
-                            */
-                            await SetCacheData($"pokemon_{pokemon.Id}", pokemon).ConfigureAwait(false);
+                            catch (Exception ex)
+                            {
+                                ConsoleExt.WriteError($"[WildPokemon] {ex}");
+                            }
                             break;
                         }
                     case RedisChannels.ProtoNearbyPokemon:
                         {
-                            var data = JsonSerializer.Deserialize<PokemonFound<NearbyPokemonProto>>(message);
-                            if (data == null) return;
+                            try
+                            {
+                                var data = JsonSerializer.Deserialize<PokemonFound<NearbyPokemonProto>>(message);
+                                if (data == null) return;
 
-                            /*
-                            lock (_cellsLock)
-                            {
-                                _cells.Add(Cell.FromId(data.CellId));
-                            }
-                            */
-
-                            var cell = data.CellId;
-                            // data.timestamp_ms
-                            var nearbyPokemon = data.Pokemon;
-                            var username = data.Username;
-                            var pokemon = new Pokemon(nearbyPokemon, cell, username, false); // TODO: IsEvent
-                            if (pokemon.Latitude == 0 && string.IsNullOrEmpty(pokemon.PokestopId))
-                            {
-                                // Skip nearby pokemon without pokestop id set and no coordinate
-                                return;
-                            }
-                            var pokestop = await GetEntity<Pokestop>(pokemon.PokestopId, "pokestop").ConfigureAwait(false);
-                            if (pokestop == null)
-                            {
-                                // Unknown stop, skip pokemon
-                                return;
-                            }
-                            pokemon.Latitude = pokestop.Latitude;
-                            pokemon.Longitude = pokestop.Longitude;
-                            var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
-                            var changesResult = pokemon.Update(oldPokemon);
-                            //SetPvpRanks(pokemon);
-
-                            if (changesResult.IsNewOrHasChanges)
-                            {
-                                // Send pokemon_added event for InstanceController.Instance.GotPokemon();
-                                await PublishData(RedisChannels.PokemonAdded, pokemon).ConfigureAwait(false);
-                                await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
-                                lock (_pokemonLock)
+                                /*
+                                lock (_cellsLock)
                                 {
-                                    _pokemon.Add(pokemon);
+                                    _cells.Add(Cell.FromId(data.CellId));
                                 }
-                            }
-                            if (changesResult.GotIV)
-                            {
-                                // Send pokemon_updated event for InstanceController.Instance.GotIV();
-                                await PublishData(RedisChannels.PokemonUpdated, pokemon).ConfigureAwait(false);
-                                await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
-                                lock (_pokemonLock)
+                                */
+
+                                var cell = data.CellId;
+                                // data.timestamp_ms
+                                var nearbyPokemon = data.Pokemon;
+                                var username = data.Username;
+                                var pokemon = new Pokemon(nearbyPokemon, cell, username, false); // TODO: IsEvent
+                                if (pokemon.Latitude == 0 && string.IsNullOrEmpty(pokemon.PokestopId))
                                 {
-                                    _pokemon.Add(pokemon);
+                                    // Skip nearby pokemon without pokestop id set and no coordinate
+                                    return;
                                 }
+                                var pokestop = await GetEntity<Pokestop>(pokemon.PokestopId, "pokestop").ConfigureAwait(false);
+                                if (pokestop == null)
+                                {
+                                    // Unknown stop, skip pokemon
+                                    return;
+                                }
+                                pokemon.Latitude = pokestop.Latitude;
+                                pokemon.Longitude = pokestop.Longitude;
+                                var oldPokemon = await GetEntity<Pokemon>(pokemon.Id, "pokemon").ConfigureAwait(false);
+                                var changesResult = pokemon.Update(oldPokemon);
+                                //SetPvpRanks(pokemon);
+
+                                if (changesResult.IsNewOrHasChanges)
+                                {
+                                    // Send pokemon_added event for InstanceController.Instance.GotPokemon();
+                                    await PublishData(RedisChannels.PokemonAdded, pokemon).ConfigureAwait(false);
+                                    await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
+                                    lock (_pokemonLock)
+                                    {
+                                        _pokemon.Add(pokemon);
+                                    }
+                                }
+                                if (changesResult.GotIV)
+                                {
+                                    // Send pokemon_updated event for InstanceController.Instance.GotIV();
+                                    await PublishData(RedisChannels.PokemonUpdated, pokemon).ConfigureAwait(false);
+                                    await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
+                                    lock (_pokemonLock)
+                                    {
+                                        _pokemon.Add(pokemon);
+                                    }
+                                }
+                                await SetCacheData($"pokemon_{pokemon.Id}", pokemon).ConfigureAwait(false);
                             }
-                            await SetCacheData($"pokemon_{pokemon.Id}", pokemon).ConfigureAwait(false);
+                            catch (Exception ex)
+                            {
+                                ConsoleExt.WriteError($"[NearbyPokemon] {ex}");
+                            }
                             break;
                         }
                     case RedisChannels.ProtoEncounter:
                         {
-                            var data = JsonSerializer.Deserialize<PokemonFound<EncounterOutProto>>(message);
-                            if (data == null) return;
-
-                            var encounter = data.Pokemon;
-                            var username = data.Username;
-                            var spawnpoint = Spawnpoint.FromPokemon(encounter.Pokemon);
-                            lock (_spawnpointsLock)
-                            {
-                                _spawnpoints.Add(spawnpoint);
-                            }
-                            Pokemon pokemon;
-                            lock (_cellsLock)
-                            {
-                                var cellId = S2CellIdFromLatLng(data.Pokemon.Pokemon.Latitude, data.Pokemon.Pokemon.Longitude);
-                                _cells.Add(new Cell(cellId.Id));
-                            }
                             try
                             {
-                                pokemon = await GetEntity<Pokemon>(encounter.Pokemon.EncounterId, "pokemon").ConfigureAwait(false); // TODO: is_event
+                                var data = JsonSerializer.Deserialize<PokemonFound<EncounterOutProto>>(message);
+                                if (data == null) return;
+
+                                var encounter = data.Pokemon;
+                                var username = data.Username;
+                                var spawnpoint = Spawnpoint.FromPokemon(encounter.Pokemon);
+                                lock (_spawnpointsLock)
+                                {
+                                    _spawnpoints.Add(spawnpoint);
+                                }
+                                Pokemon pokemon;
+                                lock (_cellsLock)
+                                {
+                                    var cellId = S2CellIdFromLatLng(data.Pokemon.Pokemon.Latitude, data.Pokemon.Pokemon.Longitude);
+                                    _cells.Add(new Cell(cellId.Id));
+                                }
+                                try
+                                {
+                                    pokemon = await GetEntity<Pokemon>(encounter.Pokemon.EncounterId, "pokemon").ConfigureAwait(false); // TODO: is_event
+                                }
+                                catch (Exception ex)
+                                {
+                                    ConsoleExt.WriteError($"Error: {ex}");
+                                    pokemon = null;
+                                }
+                                if (pokemon != null)
+                                {
+                                    await pokemon.AddEncounter(encounter, username).ConfigureAwait(false);
+                                }
+                                else
+                                {
+                                    var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude));
+                                    var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
+                                    pokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
+                                    await pokemon.AddEncounter(encounter, username).ConfigureAwait(false);
+                                }
+                                SetPvpRanks(pokemon);
+
+                                await PublishData(RedisChannels.PokemonUpdated, pokemon).ConfigureAwait(false);
+                                await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
+                                // TODO: Check for changes
+                                //if (pokemon.Update(pokemon, true))
+                                lock (_pokemonLock)
+                                {
+                                    _pokemon.Add(pokemon);
+                                }
+                                await SetCacheData($"pokemon_{pokemon.Id}", pokemon).ConfigureAwait(false);
                             }
                             catch (Exception ex)
                             {
-                                ConsoleExt.WriteError($"Error: {ex}");
-                                pokemon = null;
+                                ConsoleExt.WriteError($"[Encounter] {ex}");
                             }
-                            if (pokemon != null)
-                            {
-                                await pokemon.AddEncounter(encounter, username).ConfigureAwait(false);
-                            }
-                            else
-                            {
-                                var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(encounter.Pokemon.Latitude, encounter.Pokemon.Longitude));
-                                var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
-                                pokemon = new Pokemon(encounter.Pokemon, cellId.Id, timestampMs, username, false); // TODO: IsEvent
-                                await pokemon.AddEncounter(encounter, username).ConfigureAwait(false);
-                            }
-                            SetPvpRanks(pokemon);
-
-                            await PublishData(RedisChannels.PokemonUpdated, pokemon).ConfigureAwait(false);
-                            await PublishData(RedisChannels.WebhookPokemon, pokemon).ConfigureAwait(false);
-                            // TODO: Check for changes
-                            //if (pokemon.Update(pokemon, true))
-                            lock (_pokemonLock)
-                            {
-                                _pokemon.Add(pokemon);
-                            }
-                            await SetCacheData($"pokemon_{pokemon.Id}", pokemon).ConfigureAwait(false);
                             break;
                         }
                     case RedisChannels.ProtoFort:
                         {
-                            var data = JsonSerializer.Deserialize<FortFound>(message);
-                            if (data == null) return;
-
-                            var cellId = data.CellId;
-                            var fort = data.Fort;
-                            switch (fort.FortType)
+                            try
                             {
-                                case FortType.Gym:
-                                    var oldGym = await GetEntity<Gym>(fort.FortId, "gym").ConfigureAwait(false);
-                                    var gym = new Gym(cellId, fort);
-                                    var gymResult = gym.Update(oldGym);
-                                    await PublishGym(gymResult, gym);
-                                    if (gymResult.IsNewOrHasChanges)
-                                    {
-                                        lock (_gymsLock)
+                                var data = JsonSerializer.Deserialize<FortFound>(message);
+                                if (data == null) return;
+
+                                var cellId = data.CellId;
+                                var fort = data.Fort;
+                                switch (fort.FortType)
+                                {
+                                    case FortType.Gym:
+                                        var oldGym = await GetEntity<Gym>(fort.FortId, "gym").ConfigureAwait(false);
+                                        var gym = new Gym(cellId, fort);
+                                        var gymResult = gym.Update(oldGym);
+                                        await PublishGym(gymResult, gym);
+                                        if (gymResult.IsNewOrHasChanges)
                                         {
-                                            _gyms.Add(gym);
+                                            lock (_gymsLock)
+                                            {
+                                                _gyms.Add(gym);
+                                            }
                                         }
-                                    }
-                                    lock (_gymCellsLock)
-                                    {
-                                        if (!_gymIdsPerCell.ContainsKey(cellId))
+                                        lock (_gymCellsLock)
                                         {
-                                            _gymIdsPerCell.Add(cellId, new List<string> { fort.FortId });
+                                            if (!_gymIdsPerCell.ContainsKey(cellId))
+                                            {
+                                                _gymIdsPerCell.Add(cellId, new List<string> { fort.FortId });
+                                            }
+                                            else
+                                            {
+                                                _gymIdsPerCell[cellId].Add(fort.FortId);
+                                            }
                                         }
-                                        else
+                                        await SetCacheData($"gym_{gym.Id}", gym);
+                                        break;
+                                    case FortType.Checkpoint:
+                                        var oldPokestop = await GetEntity<Pokestop>(fort.FortId, "pokestop").ConfigureAwait(false);
+                                        var pokestop = new Pokestop(cellId, fort);
+                                        var stopResult = pokestop.Update(oldPokestop);
+                                        await PublishPokestop(stopResult, pokestop).ConfigureAwait(false);
+                                        if (stopResult.IsNewOrHasChanges)
                                         {
-                                            _gymIdsPerCell[cellId].Add(fort.FortId);
+                                            lock (_pokestopsLock)
+                                            {
+                                                _pokestops.Add(pokestop);
+                                            }
                                         }
-                                    }
-                                    await SetCacheData($"gym_{gym.Id}", gym);
-                                    break;
-                                case FortType.Checkpoint:
-                                    var oldPokestop = await GetEntity<Pokestop>(fort.FortId, "pokestop").ConfigureAwait(false);
-                                    var pokestop = new Pokestop(cellId, fort);
-                                    var stopResult = pokestop.Update(oldPokestop);
-                                    await PublishPokestop(stopResult, pokestop).ConfigureAwait(false);
-                                    if (stopResult.IsNewOrHasChanges)
-                                    {
-                                        lock (_pokestopsLock)
+                                        lock (_stopCellsLock)
                                         {
-                                            _pokestops.Add(pokestop);
+                                            if (!_stopIdsPerCell.ContainsKey(cellId))
+                                            {
+                                                _stopIdsPerCell.Add(cellId, new List<string> { fort.FortId });
+                                            }
+                                            else
+                                            {
+                                                _stopIdsPerCell[cellId].Add(fort.FortId);
+                                            }
                                         }
-                                    }
-                                    lock (_stopCellsLock)
-                                    {
-                                        if (!_stopIdsPerCell.ContainsKey(cellId))
-                                        {
-                                            _stopIdsPerCell.Add(cellId, new List<string> { fort.FortId });
-                                        }
-                                        else
-                                        {
-                                            _stopIdsPerCell[cellId].Add(fort.FortId);
-                                        }
-                                    }
-                                    await SetCacheData($"pokestop_{pokestop.Id}", pokestop).ConfigureAwait(false);
-                                    break;
+                                        await SetCacheData($"pokestop_{pokestop.Id}", pokestop).ConfigureAwait(false);
+                                        break;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                ConsoleExt.WriteError($"[Fort] {ex}");
                             }
                             break;
                         }
@@ -481,123 +509,165 @@
                         }
                     case RedisChannels.ProtoGymDefender:
                         {
-                            var defender = JsonSerializer.Deserialize<GymDefender>(message);
-                            if (defender == null) return;
-
-                            await PublishData(RedisChannels.WebhookGymDefender, defender).ConfigureAwait(false);
-                            lock (_gymDefendersLock)
+                            try
                             {
-                                _gymDefenders.Add(defender);
+                                var defender = JsonSerializer.Deserialize<GymDefender>(message);
+                                if (defender == null) return;
+
+                                await PublishData(RedisChannels.WebhookGymDefender, defender).ConfigureAwait(false);
+                                lock (_gymDefendersLock)
+                                {
+                                    _gymDefenders.Add(defender);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                ConsoleExt.WriteError($"[GymDefender] {ex}");
                             }
                             break;
                         }
                     case RedisChannels.ProtoGymTrainer:
                         {
-                            var trainer = JsonSerializer.Deserialize<Trainer>(message);
-                            if (trainer == null) return;
-
-                            await PublishData(RedisChannels.WebhookGymTrainer, trainer).ConfigureAwait(false);
-                            lock (_gymTrainersLock)
+                            try
                             {
-                                _gymTrainers.Add(trainer);
+                                var trainer = JsonSerializer.Deserialize<Trainer>(message);
+                                if (trainer == null) return;
+
+                                await PublishData(RedisChannels.WebhookGymTrainer, trainer).ConfigureAwait(false);
+                                lock (_gymTrainersLock)
+                                {
+                                    _gymTrainers.Add(trainer);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                ConsoleExt.WriteError($"[GymTrainer] {ex}");
                             }
                             break;
                         }
                     case RedisChannels.ProtoQuest:
                         {
-                            var quest = JsonSerializer.Deserialize<QuestFound>(message);
-                            if (quest == null) return;
-                            var fs = FortSearchOutProto.Parser.ParseFrom(Convert.FromBase64String(quest.Raw));
-                            if (fs == null) return;
-
-                            // Get existing pokestop, and add quest to it
-                            var pokestop = await GetEntity<Pokestop>(fs.FortId, "pokestop").ConfigureAwait(false);
-                            // Skip quests we don't have stops for yet
-                            if (pokestop == null)
-                                return;
-                            /*
-                            if (await pokestop.TriggerWebhook(true))
+                            try
                             {
-                                _logger.LogDebug($"[Quest] Found a quest belonging to a new stop, skipping..."); // :face_with_raised_eyebrow:
-                                continue;
-                            }
-                            */
-                            pokestop.AddQuest(fs.ChallengeQuest.Quest);
-                            //if (pokestop.Update(pokestop, true)) // TODO: Check HasChanges property
-                            //{
+                                var quest = JsonSerializer.Deserialize<QuestFound>(message);
+                                if (quest == null) return;
+                                var fs = FortSearchOutProto.Parser.ParseFrom(Convert.FromBase64String(quest.Raw));
+                                if (fs == null) return;
+
+                                // Get existing pokestop, and add quest to it
+                                var pokestop = await GetEntity<Pokestop>(fs.FortId, "pokestop").ConfigureAwait(false);
+                                // Skip quests we don't have stops for yet
+                                if (pokestop == null)
+                                    return;
+                                /*
+                                if (await pokestop.TriggerWebhook(true))
+                                {
+                                    _logger.LogDebug($"[Quest] Found a quest belonging to a new stop, skipping..."); // :face_with_raised_eyebrow:
+                                    continue;
+                                }
+                                */
+                                pokestop.AddQuest(fs.ChallengeQuest.Quest);
+                                //if (pokestop.Update(pokestop, true)) // TODO: Check HasChanges property
+                                //{
                                 await PublishData(RedisChannels.WebhookQuest, pokestop).ConfigureAwait(false);
                                 lock (_questsLock)
                                 {
                                     _quests.Add(pokestop);
                                 }
-                            //}
-                            await SetCacheData($"pokestop_{pokestop.Id}", pokestop).ConfigureAwait(false);
+                                //}
+                                await SetCacheData($"pokestop_{pokestop.Id}", pokestop).ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                ConsoleExt.WriteError($"[Quest] {ex}");
+                            }
                             break;
                         }
                     case RedisChannels.ProtoCell:
                         {
-                            var cellId = Convert.ToUInt64(message);
-                            if (cellId == 0) return;
-
-                            lock (_cellsLock)
+                            try
                             {
-                                _cells.Add(new Cell(cellId));
+                                var cellId = Convert.ToUInt64(message);
+                                if (cellId == 0) return;
+
+                                lock (_cellsLock)
+                                {
+                                    _cells.Add(new Cell(cellId));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                ConsoleExt.WriteError($"[Cell] {ex}");
                             }
                             break;
                         }
                     case RedisChannels.ProtoWeather:
                         {
-                            var weather = JsonSerializer.Deserialize<Weather>(message);
-                            if (weather == null) return;
-
-                            // TODO: Check for changes
-                            await PublishData(RedisChannels.WebhookWeather, weather).ConfigureAwait(false);
-                            lock (_weatherLock)
+                            try
                             {
-                                _weather.Add(weather);
+                                var weather = JsonSerializer.Deserialize<Weather>(message);
+                                if (weather == null) return;
+
+                                // TODO: Check for changes
+                                await PublishData(RedisChannels.WebhookWeather, weather).ConfigureAwait(false);
+                                lock (_weatherLock)
+                                {
+                                    _weather.Add(weather);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                ConsoleExt.WriteError($"[Weather] {ex}");
                             }
                             break;
                         }
                     case RedisChannels.ProtoAccount:
                         {
-                            var now = DateTime.UtcNow.ToTotalSeconds();
-                            var playerData = JsonSerializer.Deserialize<AccountFound>(message);
-                            if (playerData == null) return;
-                            // Get account
-                            var account = await GetEntity<Account>(playerData.Username, "account").ConfigureAwait(false);
-                            // Skip account if we failed to get it
-                            if (account == null)
-                                return;
+                            try
+                            {
+                                var now = DateTime.UtcNow.ToTotalSeconds();
+                                var playerData = JsonSerializer.Deserialize<AccountFound>(message);
+                                if (playerData == null) return;
+                                // Get account
+                                var account = await GetEntity<Account>(playerData.Username, "account").ConfigureAwait(false);
+                                // Skip account if we failed to get it
+                                if (account == null)
+                                    return;
 
-                            account.CreationTimestamp = (ulong)playerData.Player.Player.CreationTimeMs / 1000;
-                            account.Warn = playerData.Player.Warn;
-                            var warnExpireTimestamp = (ulong)playerData.Player.WarnExpireMs / 1000;
-                            if (warnExpireTimestamp > 0)
-                            {
-                                account.WarnExpireTimestamp = warnExpireTimestamp;
-                            }
-                            account.WarnMessageAcknowledged = playerData.Player.WarnMessageAcknowledged;
-                            account.SuspendedMessageAcknowledged = playerData.Player.SuspendedMessageAcknowledged;
-                            account.WasSuspended = playerData.Player.WasSuspended;
-                            account.Banned = playerData.Player.Banned;
-                            if (playerData.Player.Warn && string.IsNullOrEmpty(account.Failed))
-                            {
-                                account.Failed = "GPR_RED_WARNING";
-                                if (account.FirstWarningTimestamp == null)
+                                account.CreationTimestamp = (ulong)playerData.Player.Player.CreationTimeMs / 1000;
+                                account.Warn = playerData.Player.Warn;
+                                var warnExpireTimestamp = (ulong)playerData.Player.WarnExpireMs / 1000;
+                                if (warnExpireTimestamp > 0)
                                 {
-                                    account.FirstWarningTimestamp = now;
+                                    account.WarnExpireTimestamp = warnExpireTimestamp;
                                 }
-                                account.FailedTimestamp = now;
-                                ConsoleExt.WriteWarn($"[ConsumerService] Account {account.Username}|{playerData.Player.Player.Name} - Red Warning: {playerData.Player.Banned}");
+                                account.WarnMessageAcknowledged = playerData.Player.WarnMessageAcknowledged;
+                                account.SuspendedMessageAcknowledged = playerData.Player.SuspendedMessageAcknowledged;
+                                account.WasSuspended = playerData.Player.WasSuspended;
+                                account.Banned = playerData.Player.Banned;
+                                if (playerData.Player.Warn && string.IsNullOrEmpty(account.Failed))
+                                {
+                                    account.Failed = "GPR_RED_WARNING";
+                                    if (account.FirstWarningTimestamp == null)
+                                    {
+                                        account.FirstWarningTimestamp = now;
+                                    }
+                                    account.FailedTimestamp = now;
+                                    ConsoleExt.WriteWarn($"[ConsumerService] Account {account.Username}|{playerData.Player.Player.Name} - Red Warning: {playerData.Player.Banned}");
+                                }
+                                if (playerData.Player.Banned)
+                                {
+                                    account.Failed = "GPR_BANNED";
+                                    account.FailedTimestamp = now;
+                                    ConsoleExt.WriteWarn($"[ConsumerService] Account {account.Username}|{playerData.Player.Player.Name} - Banned: {playerData.Player.Banned}");
+                                }
+                                // TODO: Send account webhooks
+                                _playerData.Add(account);
                             }
-                            if (playerData.Player.Banned)
+                            catch (Exception ex)
                             {
-                                account.Failed = "GPR_BANNED";
-                                account.FailedTimestamp = now;
-                                ConsoleExt.WriteWarn($"[ConsumerService] Account {account.Username}|{playerData.Player.Player.Name} - Banned: {playerData.Player.Banned}");
+                                ConsoleExt.WriteError($"[PlayerData] {ex}");
                             }
-                            // TODO: Send account webhooks
-                            _playerData.Add(account);
                             break;
                         }
                 }
