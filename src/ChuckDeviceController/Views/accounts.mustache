@@ -73,14 +73,16 @@
             <a href="/dashboard/account/add" role="button" class="btn btn-sm btn-success" style="float: right;">Add Accounts</a>
         </div>
         <br>
-        <ul class="nav nav-pills justify-content-center">
-            <li class="nav-item"><a class="nav-link active" data-toggle="pill" href="#overview">Overview</a></li>
-            <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#accounts">Accounts</a></li>
-        </ul>
+        <div class="m-3 w-75 mt-4">
+            <ul class="nav nav-pills justify-content-center">
+                <li class="nav-item"><a class="nav-link active" data-toggle="pill" href="#overview">Overview</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#accounts">Accounts</a></li>
+            </ul>
+        </div>
         <br/>
-        <div class="tab-content">
+        <div class="tab-content m-3 w-75 mt-4">
             <div class="tab-pane active" id="overview">
-                <div class="card text-center m-3 w-75 mt-4">
+                <div class="card text-center">
                     <div class="card-header bg-dark text-light"><b>Accounts Overview</b></div>
                     <div class="card-body">
                         <div class="container">
@@ -155,8 +157,8 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="row justify-content-center m-3 w-75 mt-4">
+                <br>
+                <div class="row justify-content-center">
                     <!-- Start Row -->
                     <div class="col-lg-6">
                         <div class="card text-center">
@@ -231,40 +233,38 @@
                 </div><!-- End Row -->
 
                 <br>
-                <div class="w-75 text-center">
-                    <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width: 100%; margin: 0 auto;">
-                        <thead class="bg-dark text-light">
-                            <tr>
-                                <th>Level</th>
-                                <th>Total</th>
-                                <th>In Use</th>
-                                <th>Good</th>
-                                <th>Banned</th>
-                                <th>Warning</th>
-                                <th>Invalid</th>
-                                <th>Other</th>
-                                <th>Cooldown</th>
-                                <th>Spin Limit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{#each stats.all_account_stats}}
-                            <tr>
-                                <td><b>{{level}}</b></td>
-                                <td><span class="badge badge-primary badge-pill">{{total}}</span></td>
-                                <td><span class="badge badge-success badge-pill">{{in_use}}</span></td>
-                                <td><span class="badge badge-success badge-pill">{{good}}</span></td>
-                                <td><span class="badge badge-danger badge-pill">{{banned}}</span></td>
-                                <td><span class="badge badge-warning badge-pill">{{warning}}</span></td>
-                                <td><span class="badge badge-warning badge-pill">{{invalid}}</span></td>
-                                <td><span class="badge badge-warning badge-pill">{{other}}</span></td>
-                                <td><span class="badge badge-warning badge-pill">{{cooldown}}</span></td>
-                                <td><span class="badge badge-warning badge-pill">{{spin_limit}}</span></td>
-                            </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
-                </div>
+                <table id="table" class="table {{table_class}} table-striped table-bordered dt-responsive nowrap" style="position: center; width: 100%; margin: 0 auto;">
+                    <thead class="bg-dark text-light">
+                        <tr>
+                            <th>Level</th>
+                            <th>Total</th>
+                            <th>In Use</th>
+                            <th>Good</th>
+                            <th>Banned</th>
+                            <th>Warning</th>
+                            <th>Invalid</th>
+                            <th>Other</th>
+                            <th>Cooldown</th>
+                            <th>Spin Limit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each stats.all_account_stats}}
+                        <tr>
+                            <td><b>{{level}}</b></td>
+                            <td><span class="badge badge-primary badge-pill">{{total}}</span></td>
+                            <td><span class="badge badge-success badge-pill">{{in_use}}</span></td>
+                            <td><span class="badge badge-success badge-pill">{{good}}</span></td>
+                            <td><span class="badge badge-danger badge-pill">{{banned}}</span></td>
+                            <td><span class="badge badge-warning badge-pill">{{warning}}</span></td>
+                            <td><span class="badge badge-warning badge-pill">{{invalid}}</span></td>
+                            <td><span class="badge badge-warning badge-pill">{{other}}</span></td>
+                            <td><span class="badge badge-warning badge-pill">{{cooldown}}</span></td>
+                            <td><span class="badge badge-warning badge-pill">{{spin_limit}}</span></td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
             </div>
 
             <div class="tab-pane fade" id="accounts">
