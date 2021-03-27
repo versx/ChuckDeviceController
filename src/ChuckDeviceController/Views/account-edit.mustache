@@ -9,15 +9,19 @@
 
     <h1 align="center">Edit Account {{name}}</h1>
     <br>
+    <div class="alert alert-danger w-75" style="float: none; margin: 0 auto;">
+        <strong>Account Status:</strong> {{status}}
+    </div>
+    <br>
     <div class="w-75" style="float: none; margin: 0 auto;">
         <form action="" method="post">
             <div class="form-group">
                 Username
-                <input type="text" class="form-control" name="group" value="{{name}}" readonly required>
+                <input type="text" class="form-control" name="name" value="{{name}}" readonly required>
             </div>
             <div class="form-group">
                 Password
-                <input type="text" class="form-control" name="group" value="{{password}}" required>
+                <input type="text" class="form-control" name="password" value="{{password}}" required>
             </div>
             <div class="form-group">
                 Level

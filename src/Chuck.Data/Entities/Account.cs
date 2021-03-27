@@ -88,5 +88,29 @@
                     (FailedTimestamp ?? ulong.MaxValue) <= now - 2592000
             );
         }
+
+        public string GetStatus()
+        {
+            // TODO: Check against ban/warn times
+            if (string.Compare(Failed, "banned", true) == 0)
+                return "Banned";
+            if (string.Compare(Failed, "GPR_BANNED", true) == 0)
+                return "Banned";
+            if (Banned ?? false)
+                return "Banned";
+            if (FirstWarningTimestamp > 0)
+                return "Warning";
+            if (string.Compare(Failed, "GPR_RED_WARNING", true) == 0)
+                return "Warning";
+            if (Warn ?? false)
+                return "Warning";
+            if (WasSuspended ?? false)
+                return "Warning";
+            if (string.Compare(Failed, "invalid_credentials", true) == 0)
+                return "Invalid";
+            // TODO: Cooldown?
+            // TODO: InUse?
+            return "Good";
+        }
     }
 }

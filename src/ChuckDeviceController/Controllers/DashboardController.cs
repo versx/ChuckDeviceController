@@ -1779,6 +1779,7 @@
                 obj.level = account.Level;
                 obj.failed = account.Failed;
                 obj.group = account.GroupName;
+                obj.status = account.GetStatus();
                 var data = TemplateRenderer.ParseTemplate("account-edit", obj);
                 return new ContentResult
                 {
@@ -1789,7 +1790,39 @@
             }
             else
             {
-                return Redirect("/dashboard/accounts");
+                if (Request.Form.ContainsKey("delete"))
+                {
+                    var accountToDelete = await _accountRepository.GetByIdAsync(username).ConfigureAwait(false);
+                    if (accountToDelete != null)
+                    {
+                        await _accountRepository.DeleteAsync(accountToDelete).ConfigureAwait(false);
+                        _logger.LogDebug($"Account {username} was deleted");
+                    }
+                    return Redirect("/dashboard/accounts#accounts");
+                }
+
+                var name = Request.Form["name"].ToString();
+                var password = Request.Form["password"].ToString();
+                var level = ushort.Parse(Request.Form["level"].ToString());
+                var group = Request.Form["group"].ToString();
+
+                var account = await _accountRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (account == null)
+                {
+                    // Failed to get account by username
+                    return BuildErrorResponse("account-edit", $"Account with username '{name}' does not exist", HttpContext.Session);
+                }
+
+                if (account.Password != password ||
+                    account.Level != level ||
+                    account.GroupName != group)
+                {
+                    account.Password = password;
+                    account.Level = level;
+                    account.GroupName = group;
+                    await _accountRepository.UpdateAsync(account).ConfigureAwait(false);
+                }
+                return Redirect("/dashboard/accounts#accounts");
             }
         }
 

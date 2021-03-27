@@ -46,14 +46,15 @@
             "columns": [
                 { "data": "username" },
                 { "data": "level" },
-                { "data": "failed" },
+                { "data": "status" },
+                { "data": "group" },
                 { "data": "buttons" }
             ],
             "info": true,
             "order": [[ 0, "asc" ]],
             "search.caseInsensitive": true,
             "columnDefs": [ {
-                "targets": [3],
+                "targets": [4],
                 "orderable": false
             }],
             "responsive": true
@@ -273,7 +274,8 @@
                         <tr>
                             <th class="all">Username</th>
                             <th class="all">Level</th>
-                            <th class="all">Failed</th>
+                            <th class="all">Status</th>
+                            <th class="min-desktop">Group</th>
                             <th class="all" width="5%"></th>
                         </tr>
                     </thead>

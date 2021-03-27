@@ -77,7 +77,8 @@
                 {
                     username = account.Username,
                     level = account.Level,
-                    failed = account.Failed,
+                    status = account.GetStatus(),
+                    group = account.GroupName,
                     buttons = $"<a href='/dashboard/account/edit/{Uri.EscapeDataString(account.Username)}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
                 });
             }
