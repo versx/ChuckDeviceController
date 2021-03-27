@@ -20,6 +20,7 @@
 
             using var wc = new WebClient();
             wc.Headers.Add(HttpRequestHeader.ContentType, "application/json");
+            wc.Headers.Add(HttpRequestHeader.UserAgent, "Webhooks");
             try
             {
                 var resp = wc.UploadString(webhookUrl, json);
