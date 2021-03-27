@@ -1,10 +1,12 @@
 namespace ChuckDeviceController
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Threading;
 
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.HttpsPolicy;
@@ -52,6 +54,31 @@ namespace ChuckDeviceController
                     .AddJsonFile("config.json", optional: false, reloadOnChange: true)
                     .Build());
             */
+
+            services.AddHealthChecks()
+                .AddMySql(DbConfig.ToString())
+                .AddRedis($"{Config.Redis.Host}:{Config.Redis.Port}")
+                .AddProcessHealthCheck(Process.GetCurrentProcess().ProcessName, p => p.Length >= 1)
+                .AddProcessAllocatedMemoryHealthCheck((int)Environment.WorkingSet)
+                .AddDiskStorageHealthCheck(setup =>
+                {
+                    foreach (var drive in DriveInfo.GetDrives())
+                    {
+                        if (drive.IsReady && drive.DriveType == DriveType.Fixed)
+                        {
+                            setup.AddDrive(drive.RootDirectory.FullName);
+                        }
+                    }
+                })
+                //.AddDnsResolveHealthCheck(setup => setup.ResolveHost("https://google.com"))
+                .AddPingHealthCheck(setup => setup.AddHost("discord.com", 10), "discord");
+
+                services.AddHealthChecksUI(settings =>
+                {
+                    settings.AddHealthCheckEndpoint("Main Health Check", "/health");
+                    settings.MaximumHistoryEntriesPerEndpoint(50);
+                })
+                    .AddInMemoryStorage();
 
             // Save sessions to the database
             // TODO: Allow for custom column names
@@ -201,6 +228,15 @@ namespace ChuckDeviceController
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health", new HealthCheckOptions
+                {
+                    ResponseWriter = HealthChecks.UI.Client.UIResponseWriter.WriteHealthCheckUIResponse,
+                });
+                endpoints.MapHealthChecksUI(opt =>
+                {
+                    opt.UIPath = "/health-ui";
+                    opt.ResourcesPath = "/health";
+                });
             });
         }
 
