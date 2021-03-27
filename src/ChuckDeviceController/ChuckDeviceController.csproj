@@ -22,7 +22,7 @@
     <Authors>versx's Projects</Authors>
     <Description />
     <Copyright>Copyright © 2021</Copyright>
-    <Version>0.11.0.0</Version>
+    <Version>0.12.0.0</Version>
     <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
     <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -38,6 +38,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.MySql" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.Network" Version="5.0.4" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="5.0.2" />
+    <PackageReference Include="AspNetCore.HealthChecks.System" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="5.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="5.0.1" />
     <PackageReference Include="Handlebars.Net" Version="2.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.4">
@@ -56,6 +63,8 @@
     <ProjectReference Include="..\Chuck.Data\Chuck.Data.csproj" />
     <ProjectReference Include="..\Chuck.Extensions\Chuck.Extensions.csproj" />
     <ProjectReference Include="..\Chuck.Geometry\Chuck.Geometry.csproj" />
+    <ProjectReference Include="..\Chuck.Net.Middleware\Chuck.Net.Middleware.csproj" />
+    <ProjectReference Include="..\Chuck.Net\Chuck.Net.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -67,17 +67,19 @@
 
         public int SpinLimit { get; }
 
-        public byte RetryLimit { get; } = 5; // TODO: Configurable
+        public byte RetryLimit { get; } = 5;
 
         public string GroupName { get; }
 
         public bool IsEvent { get; }
 
+        public bool IgnoreS2CellBootstrap { get; }
+
         #endregion
 
         #region Constructor
 
-        public AutoInstanceController(string name, List<MultiPolygon> multiPolygon, AutoType type, int timezoneOffset, ushort minLevel, ushort maxLevel, int spinLimit, byte retryLimit, string groupName = null, bool isEvent = false)
+        public AutoInstanceController(string name, List<MultiPolygon> multiPolygon, AutoType type, int timezoneOffset, ushort minLevel, ushort maxLevel, int spinLimit, byte retryLimit, bool ignoreBootstrap, string groupName = null, bool isEvent = false)
         {
             Name = name;
             MultiPolygon = multiPolygon;
@@ -87,6 +89,7 @@
             MaximumLevel = maxLevel;
             SpinLimit = spinLimit;
             RetryLimit = retryLimit;
+            IgnoreS2CellBootstrap = ignoreBootstrap;
             GroupName = groupName;
             IsEvent = isEvent;
 
@@ -111,9 +114,12 @@
             Update().ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
-            Bootstrap().ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
+            if (!IgnoreS2CellBootstrap)
+            {
+                Bootstrap().ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
+            }
         }
 
         #endregion
@@ -472,7 +478,7 @@
                                 bbox.MinimumLatitude,
                                 bbox.MinimumLongitude,
                                 bbox.MaximumLatitude,
-                                bbox.MinimumLongitude
+                                bbox.MaximumLongitude
                             ).ConfigureAwait(false);
                             foreach (var stop in stops)
                             {

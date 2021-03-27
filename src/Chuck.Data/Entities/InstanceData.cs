@@ -50,6 +50,9 @@
         [JsonPropertyName("quest_retry_limit")]
         public byte? QuestRetryLimit { get; set; }
 
+        [JsonPropertyName("ignore_s2cell_bootstrap")]
+        public bool IgnoreS2CellBootstrap { get; set; }
+
         public InstanceData()
         {
             CircleRouteType = CircleRouteType.Default;

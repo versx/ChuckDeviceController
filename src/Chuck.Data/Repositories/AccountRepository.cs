@@ -78,7 +78,6 @@
 
         public async Task<Account> GetNewAccountAsync(int minLevel, int maxLevel, List<string> inuseAccounts)
         {
-            var account = _dbContext.Accounts.DeferredCount().FromCacheAsync();
             var accounts = await GetAllAsync().ConfigureAwait(false);
             return accounts.FirstOrDefault(x =>
                 x.Level >= minLevel &&
@@ -125,25 +124,20 @@
             const uint OneDaySeconds = 86400;
             const uint SevenDaySeconds = 7 * OneDaySeconds;
             var banExpireTime = DateTime.UtcNow.Subtract(TimeSpan.FromDays(7)).ToTotalSeconds();
-            // TODO: Use raw sql query or better alternative
-            return new
-            {
-                new_count = accounts.Count(x => string.IsNullOrEmpty(x.Failed) &&
-                                                 x.FailedTimestamp == null &&
-                                                 x.FirstWarningTimestamp == null &&
-                                                 x.LastEncounterLatitude == null &&
-                                                 x.LastEncounterLongitude == null &&
-                                                 x.LastEncounterTime == null &&
-                                                 x.Spins == 0).ToString("N0"),
-                in_use_count = accounts.Count(x => devices.Any(dev => string.Compare(dev.AccountUsername, x.Username, true) == 0)).ToString("N0"),
-                clean_iv_count = accounts.Count(x => string.IsNullOrEmpty(x.Failed) &&
+            var failedList = new List<string> { "banned", "invalid_credentials", "GPR_RED_WARNING", "GPR_BANNED" };
+            var cleanAccounts = accounts.Where(x => string.IsNullOrEmpty(x.Failed) &&
                                                       x.FailedTimestamp == null &&
                                                       x.FirstWarningTimestamp == null &&
                                                       x.LastEncounterLatitude == null &&
                                                       x.LastEncounterLongitude == null &&
                                                       x.LastEncounterTime == null &&
-                                                      x.Spins == 0 &&
-                                                      x.Level >= 30).ToString("N0"),
+                                                      x.Spins == 0);
+            // TODO: Use raw sql query or better alternative
+            return new
+            {
+                new_count = cleanAccounts.Count().ToString("N0"),
+                in_use_count = accounts.Count(x => devices.Any(dev => string.Compare(dev.AccountUsername, x.Username, true) == 0)).ToString("N0"),
+                clean_iv_count = cleanAccounts.Count(x => x.Level >= 30).ToString("N0"),
                 total_iv_count = accounts.Count(x => x.Level >= 30).ToString("N0"),
                 total = accounts.Count.ToString("N0"),
                 failed_count = accounts.Count(x => !string.IsNullOrEmpty(x.Failed) || x.FirstWarningTimestamp > 0).ToString("N0"),
@@ -164,7 +158,7 @@
                     banned = y.Count(z => (z.Failed == "banned" || z.Failed == "GPR_BANNED") && z.FailedTimestamp < banExpireTime).ToString("N0"),
                     warning = y.Count(z => z.FirstWarningTimestamp > 0).ToString("N0"),
                     invalid = y.Count(z => z.Failed == "invalid_credentials").ToString("N0"),
-                    other = 0, // TODO: Other
+                    other = y.Count(z => !failedList.Contains(z.Failed)),
                     cooldown = y.Count(z => z.LastEncounterTime != null && now - z.LastEncounterTime < 7200),
                     spin_limit = y.Count(z => z.Spins >= SpinLimit).ToString("N0"),
                 }).ToArray(),

@@ -23,9 +23,8 @@
         public const ushort WeatherBoostMinLevel = 6;
         public const ushort WeatherBoostMinIvStat = 4;
 
-
         // TODO: Configurable
-        private static readonly List<uint> _dittoDisguises = new List<uint>
+        public static readonly List<uint> DittoDisguises = new List<uint>
         {
             163, 167, 187, 223, 293, 316, 322, 399, 590,
         };
@@ -541,7 +540,7 @@
 
         public static bool IsDittoDisguised(uint pokemonId, ushort level, ushort weather, ushort atkIv, ushort defIv, ushort staIv)
         {
-            var isDisguised = pokemonId == DittoPokemonId || _dittoDisguises.Contains(pokemonId);
+            var isDisguised = pokemonId == DittoPokemonId || DittoDisguises.Contains(pokemonId);
             var isUnderLevelBoosted = level > 0 && level < WeatherBoostMinLevel;
             var isUnderIvStatBoosted = level > 0 &&
                 (atkIv < WeatherBoostMinIvStat ||

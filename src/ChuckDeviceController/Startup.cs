@@ -1,11 +1,13 @@
 namespace ChuckDeviceController
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Threading;
 
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.HttpsPolicy;
@@ -24,7 +26,7 @@ namespace ChuckDeviceController
     using Chuck.Data.Interfaces;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
-    using ChuckDeviceController.Extensions;
+    using Chuck.Net.Middleware;
     using ChuckDeviceController.JobControllers;
 
     public class Startup
@@ -50,6 +52,38 @@ namespace ChuckDeviceController
         // This method gets called by the runtime. Use this method to add services to the container.
         public async void ConfigureServices(IServiceCollection services)
         {
+            /*
+            services.AddSingleton<IConfiguration>(provider => new ConfigurationBuilder()
+                    .AddEnvironmentVariables()
+                    .AddJsonFile("config.json", optional: false, reloadOnChange: true)
+                    .Build());
+            */
+
+            services.AddHealthChecks()
+                .AddMySql(DbConfig.ToString())
+                .AddRedis($"{Config.Redis.Host}:{Config.Redis.Port}")
+                .AddProcessHealthCheck(Process.GetCurrentProcess().ProcessName, p => p.Length >= 1)
+                .AddProcessAllocatedMemoryHealthCheck((int)Environment.WorkingSet)
+                .AddDiskStorageHealthCheck(setup =>
+                {
+                    foreach (var drive in DriveInfo.GetDrives())
+                    {
+                        if (drive.IsReady && drive.DriveType == DriveType.Fixed)
+                        {
+                            setup.AddDrive(drive.RootDirectory.FullName);
+                        }
+                    }
+                })
+                //.AddDnsResolveHealthCheck(setup => setup.ResolveHost("https://google.com"))
+                .AddPingHealthCheck(setup => setup.AddHost("discord.com", 10), "discord");
+
+                services.AddHealthChecksUI(settings =>
+                {
+                    settings.AddHealthCheckEndpoint("Main Health Check", "/health");
+                    settings.MaximumHistoryEntriesPerEndpoint(50);
+                })
+                    .AddInMemoryStorage();
+
             // Save sessions to the database
             // TODO: Allow for custom column names
             services.AddDistributedMemoryCache();
@@ -161,7 +195,18 @@ namespace ChuckDeviceController
             app.UseSession();
 
             // Discord auth middleware
-            app.UseDiscordAuth();
+            if (Config.Discord?.Enabled ?? false)
+            {
+                app.UseMiddleware<DiscordAuthMiddleware>();
+            }
+            if (Config.DeviceAuth?.AllowedHosts?.Count > 0)
+            {
+                app.UseMiddleware<ValidateHostMiddleware>(Config.DeviceAuth?.AllowedTokens);
+            }
+            if (Config.DeviceAuth?.AllowedTokens?.Count > 0)
+            {
+                app.UseMiddleware<TokenAuthMiddleware>(Config.DeviceAuth?.AllowedTokens);
+            }
 
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{Strings.AppName} v1"));
@@ -189,6 +234,15 @@ namespace ChuckDeviceController
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health", new HealthCheckOptions
+                {
+                    ResponseWriter = HealthChecks.UI.Client.UIResponseWriter.WriteHealthCheckUIResponse,
+                });
+                endpoints.MapHealthChecksUI(opt =>
+                {
+                    opt.UIPath = "/health-ui";
+                    opt.ResourcesPath = "/health";
+                });
             });
         }
 

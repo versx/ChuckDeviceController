@@ -56,12 +56,6 @@
                     Utilities
                 </a>
             </li>
-            <li>
-                <a href="/dashboard/settings">
-                    <i class="fa fa-fw fas fa-ellipsis-v"></i>
-                    Settings
-                </a>
-            </li>
         </ul>
         <ul class="list-unstyled components">
             <li>
@@ -77,11 +71,16 @@
                 </a>
             </li>
         </ul>
+        {{#if auth_enabled}}
         <ul class="list-unstyled components">
             {{#if username}}
             <li>
                 <a href="#">
+                    {{#if avatar_url}}
+                    <img src="{{avatar_url}}" width="24" height="24" />
+                    {{else}}
                     <i class="fas fa-fw fa-home"></i>
+                    {{/if}}
                     {{username}}
                 </a>
             </li>
@@ -89,7 +88,7 @@
             <li>
                 {{#if username}}
                 <a href="/discord/logout">
-                    <i class="fas fa-fw fa-home"></i>
+                    <i class="fas fa-fw fa-sign-out-alt"></i>
                     Logout
                 </a>
                 {{else}}
@@ -100,6 +99,7 @@
                 {{/if}}
             </li>
         </ul>
+        {{/if}}
     </nav>
     <!-- Page Content  -->
     <div id="content">

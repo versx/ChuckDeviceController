@@ -1,5 +1,5 @@
 ALTER TABLE `instance` 
-DROP FOREIGN KEY `fk_geofence_name`;
+DROP KEY `fk_geofence_name`;
 
 ALTER TABLE `instance` 
 CHANGE COLUMN `geofence` `geofences` longtext NOT NULL;

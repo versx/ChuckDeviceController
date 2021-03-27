@@ -86,6 +86,10 @@
 
         public IJobController GetInstanceController(string uuid)
         {
+            if (string.IsNullOrEmpty(uuid))
+            {
+                return null;
+            }
             lock (_devicesLock)
             {
                 if (!_devices.ContainsKey(uuid))
@@ -146,6 +150,11 @@
                         foreach (var geofence in geofences)
                         {
                             var area = geofence?.Data?.Area;
+                            if (area is null)
+                            {
+                                _logger.LogError($"[{instance.Name}] Failed to get teleport circles, skipping...");
+                                continue;
+                            }
                             var coordsArray = (List<Coordinate>)
                             (
                                 area is List<Coordinate>
@@ -171,7 +180,7 @@
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Error: {ex}");
+                        _logger.LogError($"[{instance.Name}] Error: {ex}");
                     }
                     break;
                 case InstanceType.AutoQuest:
@@ -185,11 +194,16 @@
                         foreach (var geofence in geofences)
                         {
                             var area = geofence?.Data?.Area;
+                            if (area is null)
+                            {
+                                _logger.LogError($"[{instance.Name}] Failed to get geofence area, skipping...");
+                                continue;
+                            }
                             var coordsArray = (List<List<Coordinate>>)
                             (
                                 area is List<List<Coordinate>>
                                     ? area
-                                    : JsonSerializer.Deserialize<List<List<Coordinate>>>(Convert.ToString(area))
+                                    : JsonSerializer.Deserialize<List<List<Coordinate>>>(json: Convert.ToString(area))
                             );
                             coordinates.AddRange(coordsArray);
 
@@ -235,7 +249,8 @@
                                 }
                                 var spinLimit = instance.Data.SpinLimit ?? 3500;
                                 var retryLimit = instance.Data.QuestRetryLimit ?? 5;
-                                instanceController = new AutoInstanceController(instance.Name, multiPolygons, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit, retryLimit, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                var ignoreBootstrap = instance.Data.IgnoreS2CellBootstrap;
+                                instanceController = new AutoInstanceController(instance.Name, multiPolygons, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit, retryLimit, ignoreBootstrap, instance.Data.AccountGroup, instance.Data.IsEvent);
                                 break;
                             case InstanceType.PokemonIV:
                                 var ivList = IVListController.Instance.GetIVList(instance.Data.IVList)?.PokemonIDs ?? new List<uint>();
@@ -254,7 +269,7 @@
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Error: {ex}");
+                        _logger.LogError($"[{instance.Name}] Error: {ex}");
                     }
                     break;
             }

@@ -60,12 +60,13 @@ https://download.visualstudio.microsoft.com/download/pr/a06c387d-2811-4fba-8b5f-
 1. Clone repository `git clone https://github.com/versx/ChuckDeviceController`  
 1. Copy config `cp config.example.json` `bin/config.json`  
 1. Fill out `config.json`  
-1. Build project from root folder `~/.dotnet/dotnet build -c Release`
-1. Run ChuckDeviceController from `bin/` folder `~/.dotnet/dotnet ChuckDeviceController.dll`  
-1. Run ChuckProtoParser from `bin/` folder `~/.dotnet/dotnet ChuckProtoParser.dll`  
-3. Run WebhookProcessor from `bin/` folder `~/.dotnet/dotnet WebhookProcessor.dll`  
-4. Run DataConsumer from `bin/` folder `~/.dotnet/dotnet DataConsumer.dll` or use [Chuck](https://github.com/WatWowMap/Chuck) as the backend data consumer.  
-5. Visit Dashboard at `http://LAN_MACHINE_IP:5001`  
+1. Add `dotnet` to your environment path: `export PATH=~/.dotnet/:$PATH`  
+1. Build project from root folder `dotnet build -c Release`
+1. Run ChuckDeviceController from `bin/` folder `dotnet ChuckDeviceController.dll`  
+1. Run ChuckProtoParser from `bin/` folder `dotnet ChuckProtoParser.dll`  
+3. Run WebhookProcessor from `bin/` folder `dotnet WebhookProcessor.dll`  
+4. Run DataConsumer from `bin/` folder `dotnet DataConsumer.dll` or use [Chuck](https://github.com/WatWowMap/Chuck) as the backend data consumer.  
+5. Visit Dashboard at `http://LAN_MACHINE_IP:5000`  
 
 View all available API routes:  
 `http://LAN_MACHINE_IP:port/swagger`  
@@ -115,9 +116,12 @@ View profiler results:
 ```
 
 ## TODO:
-- Re-implement PVP stats for Pokemon
 - Finish MAD support
-- User management system for UI
 - Token/IP whilelist auth
 - Environment variables
 - Webhooks don't currently implement the geofences property
+- Localization
+
+
+## Previews:  
+![image](https://user-images.githubusercontent.com/1327440/111721034-57e4b400-881c-11eb-97dc-22196ef9e25e.png)

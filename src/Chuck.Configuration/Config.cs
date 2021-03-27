@@ -56,6 +56,12 @@
         [JsonPropertyName("enableProfiler")]
         public bool EnableProfiler { get; set; }
 
+        [JsonPropertyName("deviceAuth")]
+        public DeviceAuthConfig DeviceAuth { get; set; }
+
+        [JsonPropertyName("discord")]
+        public DiscordAuthConfig Discord { get; set; }
+
         /// <summary>
         /// Save the current configuration object
         /// </summary>

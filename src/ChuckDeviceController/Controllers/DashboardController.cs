@@ -21,8 +21,8 @@
     using Chuck.Data.Entities;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
+    using Chuck.Net.Extensions;
     using ChuckDeviceController.Converters;
-    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Services;
 
@@ -39,6 +39,7 @@
         private readonly ISubscriber _subscriber;
         private readonly ILogger<DeviceController> _logger;
 
+        // Data model repositories
         private readonly AccountRepository _accountRepository;
         private readonly AssignmentRepository _assignmentRepository;
         private readonly DeviceRepository _deviceRepository;
@@ -81,13 +82,15 @@
 
         #region Routes
 
+        #region Dashboard
+
         [HttpGet("/")]
         public IActionResult GetIndex() => Redirect("/dashboard");
 
         [HttpGet("/dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
-            // TODO: Provide username/etc from session
+            var now = DateTime.UtcNow.ToTotalSeconds();
             dynamic obj = BuildDefaultData(HttpContext.Session);
             obj.devices_count = (await _context.Devices.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.instances_count = (await _context.Instances.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
@@ -97,6 +100,18 @@
             obj.webhooks_count = (await _context.Webhooks.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.devicegroups_count = (await _context.DeviceGroups.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
             obj.ivlists_count = (await _context.IVLists.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.pokemon_count = (await _context.Pokemon.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.gym_count = (await _context.Gyms.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.gym_defender_count = (await _context.GymDefenders.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.gym_trainer_count = (await _context.Trainers.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.raid_count = (await _context.Gyms.AsNoTracking().Where(x => x.RaidEndTimestamp > 0 && x.RaidEndTimestamp >= now).DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.pokestop_count = (await _context.Pokestops.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.lure_count = (await _context.Pokestops.AsNoTracking().Where(x => x.LureExpireTimestamp > 0 && x.LureExpireTimestamp >= now).DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.invasion_count = (await _context.Pokestops.AsNoTracking().Where(x => x.IncidentExpireTimestamp > 0 && x.IncidentExpireTimestamp >= now).DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.quest_count = (await _context.Pokestops.AsNoTracking().Where(x => x.QuestType != null).DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.spawnpoint_count = (await _context.Spawnpoints.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+            obj.s2cell_count = (await _context.Cells.AsNoTracking().DeferredCount().FromCacheAsync().ConfigureAwait(false)).ToString("N0");
+
             var data = TemplateRenderer.ParseTemplate("index", obj);
             return new ContentResult
             {
@@ -105,6 +120,8 @@
                 StatusCode = 200,
             };
         }
+
+        #endregion
 
         #region Devices
 
@@ -398,8 +415,8 @@
             {
                 dynamic obj = BuildDefaultData(HttpContext.Session);
                 obj.timezone_offset = 0;
-                obj.min_level = 0;
-                obj.max_level = 30;
+                obj.min_level = 30;
+                obj.max_level = 40;
                 var geofences = await _geofenceRepository.GetAllAsync().ConfigureAwait(false);
                 obj.geofences = geofences.Select(x => new
                 {
@@ -457,6 +474,7 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
+                var ignoreBootstrap = Request.Form["ignore_s2cell_bootstrap"].ToString() == "on";
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
                 ushort questRetryLimit = 5;
@@ -483,9 +501,9 @@
                     }
                 }
 
-                // TODO: Valid geofence names
+                // TODO: Validate geofence names
 
-                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
+                if (minLevel > maxLevel || minLevel > 40 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-add", "Invalid minimum and maximum levels provided", HttpContext.Session);
@@ -517,6 +535,7 @@
                         FastBootstrapMode = fastBootstrapMode,
                         AccountGroup = accountGroup,
                         IsEvent = isEvent,
+                        IgnoreS2CellBootstrap = ignoreBootstrap,
                     }
                 };
                 await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
@@ -589,6 +608,7 @@
                 //    case InstanceType.AutoQuest:
                 obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
                 obj.quest_retry_limit = instance.Data.QuestRetryLimit > 0 ? instance.Data.QuestRetryLimit : 5;
+                obj.ignore_s2cell_bootstrap = instance.Data.IgnoreS2CellBootstrap;
                 //        break;
                 //    case InstanceType.Bootstrap:
                 obj.circle_size = instance.Data.CircleSize ?? 70;
@@ -647,7 +667,9 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
-                if (minLevel > maxLevel || minLevel < 0 || minLevel > 40 || maxLevel < 0 || maxLevel > 40)
+                var ignoreBootstrap = Request.Form["ignore_s2cell_bootstrap"].ToString() == "on";
+
+                if (minLevel > maxLevel || minLevel > 40 || maxLevel > 40)
                 {
                     // Invalid levels
                     return BuildErrorResponse("instance-edit", "Invalid minimum and maximum levels provided", HttpContext.Session);
@@ -689,6 +711,7 @@
                             FastBootstrapMode = fastBootstrapMode,
                             AccountGroup = accountGroup,
                             IsEvent = isEvent,
+                            IgnoreS2CellBootstrap = ignoreBootstrap,
                         }
                     };
                     await _instanceRepository.AddAsync(newInstance).ConfigureAwait(false);
@@ -713,6 +736,7 @@
                         FastBootstrapMode = fastBootstrapMode,
                         AccountGroup = accountGroup,
                         IsEvent = isEvent,
+                        IgnoreS2CellBootstrap = ignoreBootstrap,
                     };
                     await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
                     await InstanceController.Instance.ReloadInstance(instance, oldName).ConfigureAwait(false);
@@ -1714,16 +1738,29 @@
                 foreach (var row in rows)
                 {
                     var split = row.Split(',');
-                    if (split.Length != 2)
+                    // Need at least 2 or more parameters
+                    if (split.Length < 2)
                     {
-                        // Invalid account provided
+                        // Failed to parse account
                         continue;
+                    }
+                    ushort? accountLevel = null;
+                    switch (split.Length)
+                    {
+                        case 2:
+                            // Without level
+                            accountLevel = level;
+                            break;
+                        case 3:
+                            // With level
+                            accountLevel = ushort.Parse(split[2].Trim() ?? level.ToString());
+                            break;
                     }
                     list.Add(new Account
                     {
                         Username = split[0].Trim(),
                         Password = split[1].Trim(),
-                        Level = level,
+                        Level = accountLevel ?? level,
                         GroupName = group,
                     });
                 }
@@ -1800,63 +1837,6 @@
 
         #endregion
 
-        [
-            HttpGet("/dashboard/settings"),
-            HttpPost("/dashboard/settings"),
-        ]
-        public async Task<IActionResult> GetSettings()
-        {
-            if (Request.Method == "GET")
-            {
-                dynamic obj = BuildDefaultData(HttpContext.Session);
-                var settings = await _metadataRepository.GetAllAsync().ConfigureAwait(false);
-                obj.pokemon_time_new = 1200;
-                obj.pokemon_time_old = 600;
-                obj.pokestop_lure_time = 1800;
-                obj.discord_enabled = bool.Parse(settings.FirstOrDefault(x => "DISCORD_ENABLED" == x.Key)?.Value);
-                obj.discord_client_id = settings.FirstOrDefault(x => "DISCORD_CLIENT_ID" == x.Key)?.Value;
-                obj.discord_client_secret = settings.FirstOrDefault(x => "DISCORD_CLIENT_SECRET" == x.Key)?.Value;
-                obj.discord_redirect_uri = settings.FirstOrDefault(x => "DISCORD_REDIRECT_URI" == x.Key)?.Value;
-                obj.discord_user_ids = settings.FirstOrDefault(x => "DISCORD_USER_IDS" == x.Key)?.Value;
-                var data = TemplateRenderer.ParseTemplate("settings", obj);
-                return new ContentResult
-                {
-                    Content = data,
-                    ContentType = "text/html",
-                    StatusCode = 200,
-                };
-            }
-            else
-            {
-                var discordEnabled = Request.Form["DISCORD_ENABLED"].ToString() == "on";
-                var discordClientId = Request.Form["DISCORD_CLIENT_ID"].ToString();
-                var discordClientSecret = Request.Form["DISCORD_CLIENT_SECRET"].ToString();
-                var discordRedirectUri = Request.Form["DISCORD_REDIRECT_URI"].ToString();
-                var discordUserIds = Request.Form["DISCORD_USER_IDS"].ToString();
-                var settings = new List<Metadata>
-                {
-                    new Metadata { Key = "DISCORD_ENABLED", Value = discordEnabled.ToString() },
-                    new Metadata { Key = "DISCORD_CLIENT_ID", Value = discordClientId },
-                    new Metadata { Key = "DISCORD_CLIENT_SECRET", Value = discordClientSecret },
-                    new Metadata { Key = "DISCORD_REDIRECT_URI", Value = discordRedirectUri },
-                    new Metadata { Key = "DISCORD_USER_IDS", Value = discordUserIds },
-                };
-                await _metadataRepository.AddOrUpdateAsync(settings).ConfigureAwait(false);
-                // TODO: Update DiscordController based on settings
-                // REVIEW: Should just Redirect("/dashboard/settings");
-                dynamic obj = BuildDefaultData(HttpContext.Session);
-                obj.pokemon_time_new = 60;
-                obj.pokemon_time_old = 60;
-                obj.pokestop_lure_time = 1800;
-                obj.discord_enabled = discordEnabled;
-                obj.discord_client_id = discordClientId;
-                obj.discord_client_secret = discordClientSecret;
-                obj.discord_redirect_uri = discordRedirectUri;
-                obj.discord_user_ids = discordUserIds;
-                return BuildSuccessResponse("settings", obj, HttpContext.Session);
-            }
-        }
-
         [HttpGet("/dashboard/about")]
         public IActionResult GetAbout()
         {
@@ -1908,6 +1888,13 @@
             obj.table_class = "table-dark";
             obj.current_version = Assembly.GetExecutingAssembly().GetName().Version;
             obj.username = session?.GetValue<string>("username");
+            var userId = session?.GetValue<string>("user_id");
+            var avatarId = session?.GetValue<string>("avatar_id");
+            if (!string.IsNullOrEmpty(avatarId))
+            {
+                obj.avatar_url = $"https://cdn.discordapp.com/avatars/{userId}/{avatarId}.png";
+            }
+            obj.auth_enabled = Startup.Config.Discord?.Enabled;
             return obj;
         }
 

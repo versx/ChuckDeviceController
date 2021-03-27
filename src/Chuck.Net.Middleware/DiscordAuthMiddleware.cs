@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Middleware
+﻿namespace Chuck.Net.Middleware
 {
     using System;
     using System.Collections.Generic;
@@ -6,8 +6,7 @@
 
     using Microsoft.AspNetCore.Http;
 
-    using ChuckDeviceController.Controllers;
-    using ChuckDeviceController.Extensions;
+    using Chuck.Net.Extensions;
 
     public class DiscordAuthMiddleware
     {
@@ -20,18 +19,14 @@
 
         public async Task Invoke(HttpContext httpContext)
         {
-            // TODO: Fix
-            /*
-            if (!DiscordController.Enabled)
-            {
-                await _next(httpContext);
-                return;
-            }
-            */
             var ignorePaths = new List<string>
             {
                 "/discord/login",
                 "/discord/callback",
+                "/controler",
+                "/controller",
+                //"/health-ui",
+                "/health",
             };
             if (!httpContext.Session.GetValue<bool>("is_valid") && !ignorePaths.Contains(httpContext.Request.Path))
             {
@@ -40,7 +35,7 @@
             }
             else
             {
-                await _next(httpContext);
+                await _next(httpContext).ConfigureAwait(false);
             }
         }
     }

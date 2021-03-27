@@ -17,10 +17,18 @@
         static IConnectionMultiplexer _redis;
         static ISubscriber _subscriber;
         static Config _config;
+        static readonly ManualResetEvent _quitEvent = new ManualResetEvent(false);
 
         static void Main(string[] args)
         {
-            ConsoleExt.WriteInfo($"WebhookProcessor starting...");
+            ConsoleExt.WriteInfo($"[WebhookProcessor] Starting...");
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                _quitEvent.Set();
+                e.Cancel = true;
+            };
+
+            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
             try
             {
                 _config = new Config(Directory.GetCurrentDirectory(), args);
@@ -47,32 +55,33 @@
                 WebhookController.Instance.SleepIntervalS = 5;
                 WebhookController.Instance.Start();
                 ConsoleExt.WriteInfo($"[WebhookProcessor] Started, waiting for webhook events");
+
+                _quitEvent.WaitOne();
+                ConsoleExt.WriteInfo($"[WebhookProcessor] Received Ctrl+C event. Exiting...");
             }
             catch (Exception ex)
             {
-                ConsoleExt.WriteError($"[DataConsumer] Error: {ex}");
+                ConsoleExt.WriteError($"[WebhookProcessor] Error: {ex}");
                 Console.ReadKey();
                 return;
             }
-
-            while (true) ;
         }
 
         #region Redis Events
 
         static void RedisOnConnectionFailed(object sender, ConnectionFailedEventArgs e)
         {
-            ConsoleExt.WriteError($"[DataConsumer] [Redis] {e.EndPoint}: {e.FailureType} {e.Exception}");
+            ConsoleExt.WriteError($"[WebhookProcessor] [Redis] {e.EndPoint}: {e.FailureType} {e.Exception}");
         }
 
         static void RedisOnErrorMessage(object sender, RedisErrorEventArgs e)
         {
-            ConsoleExt.WriteError($"[DataConsumer] [Redis] {e.EndPoint}: {e.Message}");
+            ConsoleExt.WriteError($"[WebhookProcessor] [Redis] {e.EndPoint}: {e.Message}");
         }
 
         static void RedisOnInternalError(object sender, InternalErrorEventArgs e)
         {
-            ConsoleExt.WriteError($"[DataConsumer] [Redis] {e.EndPoint}: {e.Exception}");
+            ConsoleExt.WriteError($"[WebhookProcessor] [Redis] {e.EndPoint}: {e.Exception}");
         }
 
         #endregion

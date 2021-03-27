@@ -7,61 +7,40 @@
     using System.Net;
     using System.Text;
     using System.Text.Json;
-    using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 
-    using Chuck.Data.Contexts;
-    using Chuck.Data.Repositories;
+    using Chuck.Net.Extensions;
     using ChuckDeviceController.Authentication.Models.Discord;
-    using ChuckDeviceController.Extensions;
 
     [ApiController]
     public class DiscordController : ControllerBase
     {
-        //private readonly DeviceControllerContext _context;
         private readonly ILogger<DiscordController> _logger;
-        private readonly MetadataRepository _metadataRepository;
 
-        private ulong _clientId;
-        private string _clientSecret;
-        private string _redirectUri;
-
-        public static bool Enabled { get; private set; }
-
-        public IReadOnlyList<ulong> UserIds { get; private set; }
+        private readonly bool _enabled;
+        private readonly ulong _clientId;
+        private readonly string _clientSecret;
+        private readonly string _redirectUri;
+        private readonly IReadOnlyList<ulong> _userIds;
 
         private const string AuthorizationEndpoint = "https://discordapp.com/api/oauth2/authorize";
         private const string TokenEndpoint = "https://discordapp.com/api/oauth2/token";
         private const string UserInformationEndpoint = "https://discordapp.com/api/users/@me";
         private const string UserGuildsInformationEndpoint = "https://discordapp.com/api/users/@me/guilds";
+        private const string DefaultScope = "guilds%20identify%20email";
 
-        public DiscordController(DeviceControllerContext context, ILogger<DiscordController> logger)
+        public DiscordController(ILogger<DiscordController> logger)
         {
-            //_context = context;
             _logger = logger;
-            _metadataRepository = new MetadataRepository(context);
 
-            // Load values from database
-            LoadSettings().ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        [NonAction]
-        public async Task LoadSettings()
-        {
-            var enabled = await _metadataRepository.GetByIdAsync("DISCORD_ENABLED").ConfigureAwait(false);
-            var clientId = await _metadataRepository.GetByIdAsync("DISCORD_CLIENT_ID").ConfigureAwait(false);
-            var clientSecret = await _metadataRepository.GetByIdAsync("DISCORD_CLIENT_SECRET").ConfigureAwait(false);
-            var redirectUri = await _metadataRepository.GetByIdAsync("DISCORD_REDIRECT_URI").ConfigureAwait(false);
-            var userIds = await _metadataRepository.GetByIdAsync("DISCORD_USER_IDS").ConfigureAwait(false);
-            _clientId = ulong.Parse(clientId?.Value);
-            _clientSecret = clientSecret?.Value;
-            _redirectUri = redirectUri?.Value;
-            Enabled = bool.Parse(enabled?.Value);
-            UserIds = userIds?.Value?.Split(',')
-                                     .Select(ulong.Parse)
-                                     .ToList();
+            // Load settings from config
+            _enabled = Startup.Config.Discord?.Enabled ?? false;
+            _clientId = Startup.Config.Discord?.ClientId ?? 0;
+            _clientSecret = Startup.Config.Discord?.ClientSecret;
+            _redirectUri = Startup.Config.Discord?.RedirectUri;
+            _userIds = Startup.Config.Discord?.UserIDs;
         }
 
         #region Routes
@@ -73,8 +52,7 @@
             {
                 return Redirect("/dashboard");
             }
-            var scope = "guilds%20identify%20email";
-            var url = $"{AuthorizationEndpoint}?client_id={_clientId}&scope={scope}&response_type=code&redirect_uri={_redirectUri}";
+            var url = $"{AuthorizationEndpoint}?client_id={_clientId}&scope={DefaultScope}&response_type=code&redirect_uri={_redirectUri}";
             return Redirect(url);
         }
 
@@ -129,7 +107,7 @@
                 return null;
             }
             // Validate user is in guild or user id matches
-            var isValid = UserIds.Contains(ulong.Parse(user.Id));
+            var isValid = _userIds.Contains(ulong.Parse(user.Id));
             if (!isValid)
             {
                 _logger.LogError($"Unauthorized user tried to authenticate {user.Username} ({user.Id}");
@@ -138,8 +116,10 @@
             // User authenticated successfully
             _logger.LogInformation($"User {user.Username} ({user.Id}) authenticated successfully");
             HttpContext.Session.SetValue("is_valid", isValid);
+            HttpContext.Session.SetValue("user_id", user.Id);
             HttpContext.Session.SetValue("username", $"{user.Username}#{user.Discriminator}");
             HttpContext.Session.SetValue("guild_ids", guilds.Select(x => x.Id));
+            HttpContext.Session.SetValue("avatar_id", user.Avatar);
             // Check previous page saved if we should redirect to it or the home page
             var redirect = HttpContext.Session.GetValue<string>("last_redirect");
             HttpContext.Session.Remove("last_redirect");
@@ -155,21 +135,20 @@
 
         private DiscordAuthResponse SendAuthorize(string authorizationCode)
         {
-            var scope = "guilds%20identify%20email";
             using (var wc = new WebClient())
             {
                 wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                 try
                 {
                     var result = wc.UploadValues(TokenEndpoint, new NameValueCollection
-                {
-                    { "client_id", _clientId.ToString() },
-                    { "client_secret", _clientSecret },
-                    { "grant_type", "authorization_code" },
-                    { "code", authorizationCode },
-                    { "redirect_uri", _redirectUri },
-                    { "scope", scope },
-                });
+                    {
+                        { "client_id", _clientId.ToString() },
+                        { "client_secret", _clientSecret },
+                        { "grant_type", "authorization_code" },
+                        { "code", authorizationCode },
+                        { "redirect_uri", _redirectUri },
+                        { "scope", DefaultScope },
+                    });
                     var responseJson = Encoding.UTF8.GetString(result);
                     var response = JsonSerializer.Deserialize<DiscordAuthResponse>(responseJson);
                     return response;
@@ -197,6 +176,7 @@
 
         private static string SendRequest(string url, string tokenType, string token)
         {
+            // TODO: Retry request x amount of times before failing
             using (var wc = new WebClient())
             {
                 wc.Proxy = null;
@@ -210,7 +190,7 @@
 
         private bool IsEnabled()
         {
-            return Enabled &&
+            return _enabled &&
                 _clientId > 0 &&
                 !string.IsNullOrEmpty(_clientSecret) &&
                 !string.IsNullOrEmpty(_redirectUri);
