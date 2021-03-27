@@ -9,7 +9,7 @@
 
     <h1 align="center">Edit Account {{name}}</h1>
     <br>
-    <div class="alert alert-danger w-75" style="float: none; margin: 0 auto;">
+    <div class="alert w-75" style="float: none; margin: 0 auto;">
         <strong>Account Status:</strong> {{status}}
     </div>
     <br>
@@ -39,3 +39,22 @@
 </body>
 
 {{> footer}}
+
+<script>
+    $(document).ready(function () {
+        const status = '{{status}}';
+        let classColor = 'alert-success';
+        switch (status) {
+            //case 'Good':
+            case 'Cooldown':
+            case 'Invalid':
+            case 'Warning':
+                classColor = 'alert-warning';
+                break;
+            case 'Banned':
+                classColor = 'alert-danger';
+                break;
+        }
+        $('.alert').addClass(classColor);
+    });
+</script>
