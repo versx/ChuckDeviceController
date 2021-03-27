@@ -471,6 +471,7 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
+                var ignoreBootstrap = Request.Form["ignore_s2cell_bootstrap"].ToString() == "on";
                 ushort ivQueueLimit = 100;
                 ushort spinLimit = 3500;
                 ushort questRetryLimit = 5;
@@ -531,6 +532,7 @@
                         FastBootstrapMode = fastBootstrapMode,
                         AccountGroup = accountGroup,
                         IsEvent = isEvent,
+                        IgnoreS2CellBootstrap = ignoreBootstrap,
                     }
                 };
                 await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
@@ -603,6 +605,7 @@
                 //    case InstanceType.AutoQuest:
                 obj.spin_limit = instance.Data.SpinLimit > 0 ? instance.Data.SpinLimit : 3500;
                 obj.quest_retry_limit = instance.Data.QuestRetryLimit > 0 ? instance.Data.QuestRetryLimit : 5;
+                obj.ignore_s2cell_bootstrap = instance.Data.IgnoreS2CellBootstrap;
                 //        break;
                 //    case InstanceType.Bootstrap:
                 obj.circle_size = instance.Data.CircleSize ?? 70;
@@ -661,6 +664,8 @@
                 var accountGroup = Request.Form["account_group"].ToString();
                 var isEvent = Request.Form["is_event"].ToString() == "on";
                 var enableDst = Request.Form["enable_dst"].ToString() == "on";
+                var ignoreBootstrap = Request.Form["ignore_s2cell_bootstrap"].ToString() == "on";
+
                 if (minLevel > maxLevel || minLevel > 40 || maxLevel > 40)
                 {
                     // Invalid levels
@@ -703,6 +708,7 @@
                             FastBootstrapMode = fastBootstrapMode,
                             AccountGroup = accountGroup,
                             IsEvent = isEvent,
+                            IgnoreS2CellBootstrap = ignoreBootstrap,
                         }
                     };
                     await _instanceRepository.AddAsync(newInstance).ConfigureAwait(false);
@@ -727,6 +733,7 @@
                         FastBootstrapMode = fastBootstrapMode,
                         AccountGroup = accountGroup,
                         IsEvent = isEvent,
+                        IgnoreS2CellBootstrap = ignoreBootstrap,
                     };
                     await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
                     await InstanceController.Instance.ReloadInstance(instance, oldName).ConfigureAwait(false);
