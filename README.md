@@ -117,7 +117,6 @@ View profiler results:
 
 ## TODO:
 - Finish MAD support
-- Token/IP whilelist auth
 - Environment variables
 - Webhooks don't currently implement the geofences property
 - Localization
