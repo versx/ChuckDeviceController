@@ -20,6 +20,7 @@
         #region Variables
 
         // Database repository wrappers
+        private readonly AccountRepository _accountRepository;
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
         private readonly AssignmentRepository _assignmentRepository;
@@ -47,6 +48,7 @@
             _logger = logger;
 
             // TODO: Maybe use the DbContextFactory instead of relying on the same one per repo
+            _accountRepository = new AccountRepository(_context);
             _deviceRepository = new DeviceRepository(_context);
             _instanceRepository = new InstanceRepository(_context);
             _assignmentRepository = new AssignmentRepository(_context);
@@ -59,6 +61,29 @@
         #endregion
 
         #region Routes
+
+        [
+            HttpPost("/api/accounts"),
+            Produces("application/json"),
+        ]
+        public async Task<dynamic> GetAccounts()
+        {
+            // TODO: Use formatted in query
+            var accounts = await _accountRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var account in accounts)
+            {
+                list.Add(new
+                {
+                    username = account.Username,
+                    level = account.Level,
+                    status = account.GetStatus(),
+                    group = account.GroupName,
+                    buttons = $"<a href='/dashboard/account/edit/{Uri.EscapeDataString(account.Username)}' role='button' class='btn btn-sm btn-primary'>Edit</a>",
+                });
+            }
+            return new { data = new { accounts = list } };
+        }
 
         /// <summary>
         /// Get all devices
