@@ -1325,7 +1325,7 @@
                 obj.assignments = assignments.Select(x => new
                 {
                     id = x.Id,
-                    name = (string.IsNullOrEmpty(x.DeviceGroupName) ? x.DeviceUuid : x.DeviceGroupName) + " -> " + x.InstanceName,
+                    name = (string.IsNullOrEmpty(x.DeviceGroupName) ? x.DeviceUuid : x.DeviceGroupName) + " -> " + x.InstanceName + " (" + Utils.FormatTime(x.Time) + ")",
                     selected = false,
                 });
                 obj.nothing_selected = true;
@@ -1387,7 +1387,7 @@
                 obj.assignments = assignments.Select(x => new
                 {
                     id = x.Id,
-                    name = (string.IsNullOrEmpty(x.DeviceGroupName) ? x.DeviceUuid : x.DeviceGroupName) + " -> " + x.InstanceName,
+                    name = (string.IsNullOrEmpty(x.DeviceGroupName) ? x.DeviceUuid : x.DeviceGroupName) + " -> " + x.InstanceName + " (" + Utils.FormatTime(x.Time) + ")",
                     selected = assignmentGroup.AssignmentIds.Contains(x.Id),
                 });
                 var data = TemplateRenderer.ParseTemplate("assignmentgroup-edit", obj);
