@@ -22,7 +22,7 @@
         //private static readonly Random _random = new Random();
         //private DateTime _lastCompletedTime;
         private int _lastIndex;
-        private readonly object _indexLock = new object();
+        private readonly object _indexLock = new();
 
         #endregion
 

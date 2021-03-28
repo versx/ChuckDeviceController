@@ -49,6 +49,7 @@
         private readonly DeviceGroupRepository _deviceGroupRepository;
         private readonly IVListRepository _ivListRepository;
         private readonly MetadataRepository _metadataRepository;
+        private readonly AssignmentGroupRepository _assignmentGroupRepository;
 
         #endregion
 
@@ -73,6 +74,7 @@
             _deviceGroupRepository = new DeviceGroupRepository(_context);
             _ivListRepository = new IVListRepository(_context);
             _metadataRepository = new MetadataRepository(_context);
+            _assignmentGroupRepository = new AssignmentGroupRepository(_context);
         }
 
         #endregion
@@ -1291,6 +1293,175 @@
         {
             await _assignmentRepository.DeleteAllAsync().ConfigureAwait(false);
             return Redirect("/dashboard/assignments");
+        }
+
+        #endregion
+
+        #region Assignment Groups
+
+        [HttpGet("/dashboard/assignmentgroups")]
+        public IActionResult GetAssignmentGroups()
+        {
+            var obj = BuildDefaultData(HttpContext.Session);
+            var data = TemplateRenderer.ParseTemplate("assignmentgroups", obj);
+            return new ContentResult
+            {
+                Content = data,
+                ContentType = "text/html",
+                StatusCode = 200,
+            };
+        }
+
+        [
+            HttpGet("/dashboard/assignmentgroup/add"),
+            HttpPost("/dashboard/assignmentgroup/add"),
+        ]
+        public async Task<IActionResult> AddAssignmentGroup()
+        {
+            if (Request.Method == "GET")
+            {
+                var assignments = await _assignmentRepository.GetAllAsync().ConfigureAwait(false);
+                dynamic obj = BuildDefaultData(HttpContext.Session);
+                obj.assignments = assignments.Select(x => new
+                {
+                    id = x.Id,
+                    name = (string.IsNullOrEmpty(x.DeviceGroupName) ? x.DeviceUuid : x.DeviceGroupName) + " -> " + x.InstanceName,
+                    selected = false,
+                });
+                obj.nothing_selected = true;
+                var data = TemplateRenderer.ParseTemplate("assignmentgroup-add", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                var name = Request.Form["name"].ToString();
+                var assignmentIds = Request.Form["assignments"].ToString();
+                var parsedAssignmentIds = assignmentIds?.Split(',')?.Select(uint.Parse)?.ToList();
+
+                var assignmentGroup = await _assignmentGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (assignmentGroup != null)
+                {
+                    return BuildErrorResponse("assignmentgroup-add", $"Assignment Group with name '{name}' already exists", HttpContext.Session);
+                }
+                assignmentGroup = new AssignmentGroup
+                {
+                    Name = name,
+                    AssignmentIds = parsedAssignmentIds,
+                };
+                await _assignmentGroupRepository.AddAsync(assignmentGroup).ConfigureAwait(false);
+                _logger.LogInformation($"Assignment Group '{name}' created");
+                return Redirect("/dashboard/assignmentgroups");
+            }
+        }
+
+        [
+            HttpGet("/dashboard/assignmentgroup/edit/{name}"),
+            HttpPost("/dashboard/assignmentgroup/edit/{name}"),
+        ]
+        public async Task<IActionResult> EditAssignmentGroup(string name)
+        {
+            if (Request.Method == "GET")
+            {
+                var assignmentGroup = await _assignmentGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (assignmentGroup == null)
+                {
+                    // Failed to get assignment group by name, does assignment group exist?
+                    return BuildErrorResponse("assignmentgroup-edit", $"Failed to get assignment group with name '{name}', does it exist?", HttpContext.Session);
+                }
+
+                var assignments = await _assignmentRepository.GetAllAsync().ConfigureAwait(false);
+                if (assignments == null)
+                {
+                    // Failed to get list of assignments
+                    return BuildErrorResponse("assignmentgroup-edit", $"Failed to get list of assignments for assignment group with name '{name}'", HttpContext.Session);
+                }
+
+                dynamic obj = BuildDefaultData(HttpContext.Session);
+                obj.name = assignmentGroup.Name;
+                obj.old_name = assignmentGroup.Name;
+                obj.assignments = assignments.Select(x => new
+                {
+                    id = x.Id,
+                    name = (string.IsNullOrEmpty(x.DeviceGroupName) ? x.DeviceUuid : x.DeviceGroupName) + " -> " + x.InstanceName,
+                    selected = assignmentGroup.AssignmentIds.Contains(x.Id),
+                });
+                var data = TemplateRenderer.ParseTemplate("assignmentgroup-edit", obj);
+                return new ContentResult
+                {
+                    Content = data,
+                    ContentType = "text/html",
+                    StatusCode = 200,
+                };
+            }
+            else
+            {
+                if (Request.Form.ContainsKey("delete"))
+                {
+                    var assignmentGroupToDelete = await _assignmentGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+                    if (assignmentGroupToDelete != null)
+                    {
+                        await _assignmentGroupRepository.DeleteAsync(assignmentGroupToDelete).ConfigureAwait(false);
+                        _logger.LogDebug($"Assignment Group {name} was deleted");
+                    }
+                    return Redirect("/dashboard/assignmentgroups");
+                }
+
+                var newName = Request.Form["name"].ToString();
+                var oldName = Request.Form["old_name"].ToString();
+                var assignmentIds = Request.Form["assignments"].ToString();
+                var parsedAssignmentIds = assignmentIds?.Split(',')?.Select(uint.Parse)?.ToList();
+
+                var assignmentGroup = await _assignmentGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+                if (assignmentGroup == null)
+                {
+                    return BuildErrorResponse("assignmentgroup-edit", $"Failed to get assignment group with name '{name}', does it exist?", HttpContext.Session);
+                }
+
+                if (newName != oldName)
+                {
+                    // Delete old assignment group
+                    await _assignmentGroupRepository.DeleteAsync(assignmentGroup).ConfigureAwait(false);
+                    // Insert new assignment group
+                    await _assignmentGroupRepository.AddAsync(new AssignmentGroup
+                    {
+                        Name = newName,
+                        AssignmentIds = parsedAssignmentIds,
+                    }).ConfigureAwait(false);
+                }
+                else
+                {
+                    assignmentGroup.AssignmentIds = parsedAssignmentIds;
+                    await _assignmentGroupRepository.UpdateAsync(assignmentGroup).ConfigureAwait(false);
+                }
+                return Redirect("/dashboard/assignmentgroups");
+            }
+        }
+
+        [HttpGet("/dashboard/assignmentgroup/start/{name}")]
+        public async Task<IActionResult> StartAssignmentGroup(string name)
+        {
+            var assignmentGroup = await _assignmentGroupRepository.GetByIdAsync(name).ConfigureAwait(false);
+            if (assignmentGroup != null)
+            {
+                var assignments = await _assignmentRepository.GetByIdsAsync(assignmentGroup.AssignmentIds).ConfigureAwait(false);
+                foreach (var assignment in assignments)
+                {
+                    await AssignmentController.Instance.TriggerAssignment(assignment, string.Empty, true).ConfigureAwait(false);
+                }
+            }
+            return Redirect("/dashboard/assignmentgroups");
+        }
+
+        [HttpGet("/dashboard/assignmentgroup/clearquests/{name}")]
+        public async Task<IActionResult> ReQuestAssignmentGroup(string name)
+        {
+            // TODO: Clear quests within assignment group
+            return Redirect("/dashboard/assignmentgroups");
         }
 
         #endregion

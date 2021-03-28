@@ -40,7 +40,7 @@
         private ulong _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds() - 3600;
         private bool _shouldExit;
 
-        private readonly object _bootstrapLock = new object();
+        private readonly object _bootstrapLock = new();
 
         // Entity repositories
         private readonly AccountRepository _accountRepository;
