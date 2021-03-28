@@ -56,6 +56,22 @@
             "columnDefs": [ {
                 "targets": [4],
                 "orderable": false
+            }, {
+                "targets": [2],
+                "render": function (data, type, row) {
+                    let color = 'green';
+                    switch (data) {
+                        case 'Cooldown':
+                        case 'Invalid':
+                        case 'Warning':
+                            color = 'yellow';
+                            break;
+                        case 'Banned':
+                            color = 'red';
+                            break;
+                    }
+                    return `<span style="color:${color}">${data}</span>`;
+                }
             }],
             "responsive": true
         });
