@@ -126,6 +126,7 @@ namespace ChuckDeviceController
             // Redis
             var options = new ConfigurationOptions
             {
+                AbortOnConnectFail = false,
                 EndPoints =
                 {
                     { $"{Config.Redis.Host}:{Config.Redis.Port}" }
