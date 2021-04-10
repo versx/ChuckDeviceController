@@ -186,8 +186,8 @@
 
         private async Task CheckAssignments()
         {
-            var utcNow = DateTime.UtcNow;
-            var now = utcNow.Hour * 3600 + utcNow.Minute * 60 + utcNow.Second;
+            var dateNow = DateTime.Now;
+            var now = dateNow.Hour * 3600 + dateNow.Minute * 60 + dateNow.Second;
             if (_lastUpdated == -2)
             {
                 _lastUpdated = now;
