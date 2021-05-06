@@ -22,7 +22,7 @@
         private bool _initialized;
         private long _lastUpdated;
         private readonly System.Timers.Timer _timer;
-        private readonly object _assignmentsLock = new object();
+        private readonly object _assignmentsLock = new();
 
         #region Singleton
 
@@ -123,7 +123,7 @@
             if (!(force || (assignment.Enabled && (assignment.Date == default || assignment.Date == DateTime.UtcNow))))
                 return;
 
-            List<Device> devices = null;
+            var devices = new List<Device>();
             try
             {
                 // If assignment assigned to device, add to devices list
@@ -150,7 +150,7 @@
             {
                 _logger.LogError($"Error: {ex}");
             }
-            if (devices == null)
+            if (devices?.Count == 0)
             {
                 _logger.LogWarning($"Failed to trigger assignment {assignment.Id}, unable to find devices");
                 return;

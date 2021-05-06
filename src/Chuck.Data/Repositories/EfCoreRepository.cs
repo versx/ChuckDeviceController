@@ -80,6 +80,17 @@
             return list;
         }
 
+        public virtual async Task<List<TEntity>> GetByIdsAsync(List<uint> ids)
+        {
+            var list = new List<TEntity>();
+            foreach (var id in ids)
+            {
+                var item = await GetByIdAsync(id).ConfigureAwait(false);
+                list.Add(item);
+            }
+            return list;
+        }
+
         public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync()
         {
             return await _dbContext.Set<TEntity>()

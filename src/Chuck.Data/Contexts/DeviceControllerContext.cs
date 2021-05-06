@@ -19,6 +19,8 @@
 
         public DbSet<Assignment> Assignments { get; set; }
 
+        public DbSet<AssignmentGroup> AssignmentGroups { get; set; }
+
         public DbSet<Device> Devices { get; set; }
 
         public DbSet<DeviceGroup> DeviceGroups { get; set; }
@@ -93,6 +95,9 @@
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
             modelBuilder.Entity<IVList>()
                         .Property(nameof(IVList.PokemonIDs))
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
+            modelBuilder.Entity<AssignmentGroup>()
+                        .Property(nameof(AssignmentGroup.AssignmentIds))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
 
             base.OnModelCreating(modelBuilder);

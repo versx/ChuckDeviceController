@@ -8,6 +8,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 
+    using Chuck.Common.Utilities;
     using Chuck.Data.Contexts;
     using Chuck.Data.Entities;
     using Chuck.Data.Repositories;
@@ -24,6 +25,7 @@
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
         private readonly AssignmentRepository _assignmentRepository;
+        private readonly AssignmentGroupRepository _assignmentGroupRepository;
         private readonly GeofenceRepository _geofenceRepository;
         private readonly WebhookRepository _webhookRepository;
         private readonly DeviceGroupRepository _deviceGroupRepository;
@@ -52,6 +54,7 @@
             _deviceRepository = new DeviceRepository(_context);
             _instanceRepository = new InstanceRepository(_context);
             _assignmentRepository = new AssignmentRepository(_context);
+            _assignmentGroupRepository = new AssignmentGroupRepository(_context);
             _geofenceRepository = new GeofenceRepository(_context);
             _webhookRepository = new WebhookRepository(_context);
             _deviceGroupRepository = new DeviceGroupRepository(_context);
@@ -227,10 +230,6 @@
             var list = new List<dynamic>();
             foreach (var assignment in assignments)
             {
-                var times = TimeSpan.FromSeconds(assignment.Time);
-                var time = assignment.Time == 0
-                    ? "On Complete"
-                    : $"{times.Hours:00}:{times.Minutes:00}:{times.Seconds:00}";
                 list.Add(new
                 {
                     id = assignment.Id,
@@ -240,7 +239,7 @@
                     device_group = assignment.DeviceGroupName,
                     time = new
                     {
-                        formatted = time,
+                        formatted = Utils.FormatTime(assignment.Time),
                         timestamp = assignment.Time,
                     },
                     date = new
@@ -259,6 +258,35 @@
                 });
             }
             return new { data = new { assignments = list } };
+        }
+
+        [
+            HttpPost("/api/assignmentgroups"),
+            Produces("application/json"),
+        ]
+        public async Task<dynamic> GetAssignmentGroups()
+        {
+            var assignmentGroups = await _assignmentGroupRepository.GetAllAsync().ConfigureAwait(false);
+            var list = new List<dynamic>();
+            foreach (var assignmentGroup in assignmentGroups)
+            {
+                var assignmentsInGroup = await _assignmentRepository.GetByIdsAsync(assignmentGroup.AssignmentIds).ConfigureAwait(false);
+                list.Add(new
+                {
+                    name = assignmentGroup.Name,
+                    assignments = string.Join(", ", assignmentsInGroup.Where(x => !string.IsNullOrEmpty(x.DeviceGroupName) || !string.IsNullOrEmpty(x.DeviceUuid))
+                                                                      .Select(x => (string.IsNullOrEmpty(x.DeviceGroupName) ? x.DeviceUuid : x.DeviceGroupName) + " -> " + x.InstanceName)),
+                    buttons = $@"
+<div class='btn-group' role='group'>
+    <a href='/dashboard/assignmentgroup/start/{Uri.EscapeDataString(assignmentGroup.Name)}' role='button' class='btn btn-sm btn-success'>Start</a>
+    <a href='/dashboard/assignmentgroup/request/{Uri.EscapeDataString(assignmentGroup.Name)}' role='button' class='btn btn-sm btn-warning'>Re-Quest</a>
+    <a href='/dashboard/assignmentgroup/edit/{Uri.EscapeDataString(assignmentGroup.Name)}' role='button' class='btn btn-sm btn-primary'>Edit</a>
+    <a href='/dashboard/assignmentgroup/delete/{Uri.EscapeDataString(assignmentGroup.Name)}' role='button' class='btn btn-sm btn-danger' onclick='return confirm(""Are you sure you want to delete assignment group {assignmentGroup.Name}?"")'>Delete</a>
+</div>
+"
+                });
+            }
+            return new { data = new { assignmentgroups = list } };
         }
 
         /// <summary>

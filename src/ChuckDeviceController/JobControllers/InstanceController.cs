@@ -29,8 +29,8 @@
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
 
-        private readonly object _instancesLock = new object();
-        private readonly object _devicesLock = new object();
+        private readonly object _instancesLock = new();
+        private readonly object _devicesLock = new();
 
         #endregion
 

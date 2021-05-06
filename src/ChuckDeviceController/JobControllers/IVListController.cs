@@ -19,7 +19,7 @@
         private readonly IDictionary<string, IVList> _ivLists;
         private readonly IVListRepository _ivListRepository;
 
-        private readonly object _ivListsLock = new object();
+        private readonly object _ivListsLock = new();
 
         #endregion
 

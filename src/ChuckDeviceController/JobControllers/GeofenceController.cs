@@ -21,7 +21,7 @@
         private readonly IDictionary<string, Geofence> _geofences;
         private readonly GeofenceRepository _geofenceRepository;
 
-        private readonly object _geofencesLock = new object();
+        private readonly object _geofencesLock = new();
 
         #endregion
 

@@ -89,6 +89,9 @@
 
   <ItemGroup>
     <None Remove="Views\account-edit.mustache" />
+    <None Remove="Views\assignmentgroup-add.mustache" />
+    <None Remove="Views\assignmentgroup-edit.mustache" />
+    <None Remove="Views\assignmentgroups.mustache" />
   </ItemGroup>
 
   <ItemGroup>
