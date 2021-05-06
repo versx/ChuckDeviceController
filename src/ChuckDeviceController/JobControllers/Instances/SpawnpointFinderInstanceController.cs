@@ -49,7 +49,7 @@
 
         public SpawnpointFinderInstanceController()
         {
-            _spawnpointRepository = new SpawnpointRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _spawnpointRepository = new SpawnpointRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
             _logger = new Logger<SpawnpointFinderInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _lastIndex = 0;
 

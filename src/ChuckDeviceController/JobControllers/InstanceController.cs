@@ -48,8 +48,8 @@
         {
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
-            _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
+            _instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
 
             _logger = new Logger<InstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _logger.LogInformation("Starting instances...");

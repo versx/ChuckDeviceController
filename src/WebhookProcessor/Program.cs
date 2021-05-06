@@ -21,30 +21,24 @@
 
         static void Main(string[] args)
         {
+            ConsoleExt.WriteInfo($"[WebhookProcessor] Starting...");
             Console.CancelKeyPress += (sender, e) =>
             {
                 _quitEvent.Set();
                 e.Cancel = true;
             };
 
-            ConsoleExt.WriteInfo($"[WebhookProcessor] Starting...");
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
             try
             {
-                _config = Config.Load(configPath);
-                if (_config == null)
-                {
-                    Console.WriteLine($"Failed to load config {configPath}");
-                    return;
-                }
-
+                _config = new Config(Directory.GetCurrentDirectory(), args);
                 var options = new ConfigurationOptions
                 {
                     EndPoints =
                     {
-                        { $"{_config.Redis.Host}:{_config.Redis.Port}" }
+                        { $"{_config.Root["Redis:Host"]}:{_config.Root["Redis:Port"]}" }
                     },
-                    Password = _config.Redis.Password,
+                    Password = _config.Root["Redis:Password"],
                 };
                 _redis = ConnectionMultiplexer.Connect(options);
                 _redis.ConnectionFailed += RedisOnConnectionFailed;

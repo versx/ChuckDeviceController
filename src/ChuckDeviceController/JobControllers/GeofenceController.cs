@@ -36,7 +36,7 @@
         public GeofenceController()
         {
             _geofences = new Dictionary<string, Geofence>();
-            _geofenceRepository = new GeofenceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _geofenceRepository = new GeofenceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
             //_logger = new Logger<IVListController>(LoggerFactory.Create(x => x.AddConsole()));
             Reload().ConfigureAwait(false).GetAwaiter().GetResult();
         }

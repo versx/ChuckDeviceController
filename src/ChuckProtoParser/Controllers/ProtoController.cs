@@ -9,6 +9,7 @@
     using Google.Common.Geometry;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using POGOProtos.Rpc;
     using StackExchange.Redis;
@@ -27,6 +28,7 @@
     {
         #region Variables
 
+        private readonly IConfiguration _config;
         private readonly IConnectionMultiplexer _redis;
         private readonly IDatabaseAsync _redisDatabase;
         private readonly ILogger<ProtoController> _logger;
@@ -44,10 +46,11 @@
 
         #region Constructor
 
-        public ProtoController(IDbContextFactory<DeviceControllerContext> dbFactory, IConnectionMultiplexer connectionMultiplexer, ILogger<ProtoController> logger)
+        public ProtoController(IDbContextFactory<DeviceControllerContext> dbFactory, IConfiguration config, IConnectionMultiplexer connectionMultiplexer, ILogger<ProtoController> logger)
         {
+            _config = config;
             _redis = connectionMultiplexer;
-            _redisDatabase = _redis.GetDatabase(Startup.Config.Redis.DatabaseNum);
+            _redisDatabase = _redis.GetDatabase(int.Parse(_config["Redis:DatabaseNum"]));
             _logger = logger;
 
             _accountRepository = new AccountRepository(dbFactory.CreateDbContext());
@@ -584,7 +587,7 @@
                     return Task.CompletedTask;
                 }
                 //_subscriber.PublishAsync(channel, data.ToJson(), CommandFlags.FireAndForget);
-                _redisDatabase.ListRightPushAsync(Startup.Config.Redis.QueueName, new { channel, data, }.ToJson());
+                _redisDatabase.ListRightPushAsync(_config["Redis:QueueName"], new { channel, data, }.ToJson());
             }
             catch (Exception ex)
             {

@@ -3,6 +3,7 @@ namespace ChuckDeviceController
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
     using System.Threading;
 
     using Microsoft.AspNetCore.Builder;
@@ -20,7 +21,6 @@ namespace ChuckDeviceController
     using StackExchange.Redis;
 
     using Chuck.Common;
-    using Chuck.Configuration;
     using Chuck.Data.Contexts;
     using Chuck.Data.Entities;
     using Chuck.Data.Interfaces;
@@ -31,9 +31,7 @@ namespace ChuckDeviceController
 
     public class Startup
     {
-        public static Config Config { get; set; }
-
-        public static DatabaseConfig DbConfig => Config?.Database;
+        public static string DbConnectionString { get; set; }
 
         private IConnectionMultiplexer _redis;
         private ISubscriber _subscriber;
@@ -41,6 +39,12 @@ namespace ChuckDeviceController
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
+            ConsoleExt.WriteDebug($"Available Environment Variables");
+            foreach (var c in Configuration.AsEnumerable())
+            {
+                ConsoleExt.WriteDebug(c.Key + "=" + c.Value);
+            }
         }
 
         public IConfiguration Configuration { get; }
@@ -85,10 +89,10 @@ namespace ChuckDeviceController
             services.AddDistributedMemoryCache();
             services.AddDistributedMySqlCache(options =>
             {
-                options.ConnectionString = DbConfig.ToString();
+                options.ConnectionString = DbConnectionString;
                 //options.DefaultSlidingExpiration
                 options.ExpiredItemsDeletionInterval = TimeSpan.FromHours(1);
-                options.SchemaName = DbConfig.Database;
+                options.SchemaName = DbConnectionString.GetBetween("Database=", ";");//DbConfig.Database;
                 options.TableName = "session";
             });
             services.AddSession(options =>
@@ -102,10 +106,10 @@ namespace ChuckDeviceController
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckDeviceController", Version = "v1" }));
 
             services.AddDbContextFactory<DeviceControllerContext>(options =>
-                options.UseMySql(DbConfig.ToString(), ServerVersion.AutoDetect(DbConfig.ToString())), ServiceLifetime.Singleton);
+                options.UseMySql(DbConnectionString, ServerVersion.AutoDetect(DbConnectionString)), ServiceLifetime.Singleton);
             services.AddDbContext<DeviceControllerContext>(options =>
                 //options.UseMySQL(DbConfig.ToString()));
-                options.UseMySql(DbConfig.ToString(), ServerVersion.AutoDetect(DbConfig.ToString())), ServiceLifetime.Scoped);
+                options.UseMySql(DbConnectionString, ServerVersion.AutoDetect(DbConnectionString)), ServiceLifetime.Scoped);
             /*
             services.AddDbContextPool<DeviceControllerContext>(
                 options => options.UseMySql(ServerVersion.AutoDetect(DbConfig.ToString()),
@@ -121,7 +125,6 @@ namespace ChuckDeviceController
             */
 
             services.AddScoped(typeof(IAsyncRepository<>), typeof(EfCoreRepository<,>));
-            services.AddScoped<Config>();
 
             // Redis
             var options = new ConfigurationOptions
@@ -129,9 +132,9 @@ namespace ChuckDeviceController
                 AbortOnConnectFail = false,
                 EndPoints =
                 {
-                    { $"{Config.Redis.Host}:{Config.Redis.Port}" }
+                    { $"{Configuration["Redis:Host"]}:{Configuration["Redis:Port"]}" }
                 },
-                Password = Config.Redis.Password,
+                Password = Configuration["Redis:Password"],
             };
             
             try
@@ -145,16 +148,16 @@ namespace ChuckDeviceController
             }
 
             // Cross origin resource sharing configuration
-            services.AddCors(option => option.AddPolicy("Test", builder => {
+            services.AddCors(option => option.AddPolicy("Test", builder =>
                 builder.AllowAnyOrigin()
                        .AllowAnyHeader()
-                       .AllowAnyMethod();
-            }));
+                       .AllowAnyMethod()
+            ));
 
             // Profiling
             // The services.AddMemoryCache(); code is required - there is a bug in
             // MiniProfiler, if we have not configured MemoryCache, it will fail.
-            if (Config.EnableProfiler)
+            if (bool.Parse(Configuration["EnableProfiler"]))
             {
                 services.AddMemoryCache();
                 services.AddEntityFrameworkMySql().AddDbContext<DeviceControllerContext>();
@@ -186,6 +189,10 @@ namespace ChuckDeviceController
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
             app.UseSession();
 
             // Discord auth middleware
@@ -202,11 +209,10 @@ namespace ChuckDeviceController
                 app.UseMiddleware<TokenAuthMiddleware>(Config.DeviceAuth?.AllowedTokens);
             }
 
-            app.UseDeveloperExceptionPage();
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{Strings.AppName} v1"));
 
-            if (Config.EnableProfiler)
+            if (Configuration.GetValue<bool>("EnableProfiler"))
             {
                 app.UseMiniProfiler();
             }
@@ -264,6 +270,29 @@ namespace ChuckDeviceController
                         break;
                     }
             }
+        }
+    }
+
+    internal static class StringExtensions
+    {
+        /// <summary>
+        ///     A string extension method that get the string between the two specified string.
+        /// </summary>
+        /// <param name="this">The @this to act on.</param>
+        /// <param name="before">The string before to search.</param>
+        /// <param name="after">The string after to search.</param>
+        /// <returns>The string between the two specified string.</returns>
+        public static string GetBetween(this string value, string before, string after)
+        {
+            var beforeStartIndex = value.IndexOf(before);
+            var startIndex = beforeStartIndex + before.Length;
+            var afterStartIndex = value.IndexOf(after, startIndex);
+            if (beforeStartIndex == -1 || afterStartIndex == -1)
+            {
+                return string.Empty;
+            }
+            //return value.Substring(startIndex, afterStartIndex - startIndex);
+            return value[startIndex..afterStartIndex];
         }
     }
 }

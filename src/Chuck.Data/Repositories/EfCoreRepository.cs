@@ -218,7 +218,7 @@
                 _dbContext.SingleMerge(entity);
                 await _dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (MySqlConnector.MySqlException ex)
             {
                 ConsoleExt.WriteError($"AddOrUpdateAsync: {ex}");
             }
@@ -242,7 +242,7 @@
                     //x.ColumnPrimaryKeyExpression = entity => entity.Id || entity.Uuid;
                 }).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (MySqlConnector.MySqlException ex)
             {
                 ConsoleExt.WriteError($"[EfCoreRepository] AddOrUpdateAsync: {ex.Message}");
             }

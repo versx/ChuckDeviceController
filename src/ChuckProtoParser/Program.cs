@@ -4,9 +4,9 @@ namespace ChuckProtoParser
     using System.IO;
 
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
 
-    using Chuck.Configuration;
     using Chuck.Extensions;
 
     public class Program
@@ -14,32 +14,37 @@ namespace ChuckProtoParser
         public static void Main(string[] args)
         {
             ConsoleExt.WriteInfo($"ProtoParser starting...");
-            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
-            try
-            {
-                Startup.Config = Config.Load(configPath);
-                if (Startup.Config == null)
-                {
-                    Console.WriteLine($"Failed to load config {configPath}");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                ConsoleExt.WriteError($"Config: {ex.Message}");
-                Console.ReadKey();
-                return;
-            }
-
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var configBuilder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory());
+            if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json")))
+            {
+                configBuilder = configBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            }
+            if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), $"appsettings.{env}.json")))
+            {
+                configBuilder = configBuilder.AddJsonFile($"appsettings.{env}.json",
+                                optional: true, reloadOnChange: true);
+            }
+            var config = configBuilder.AddEnvironmentVariables()
+                .AddCommandLine(args)
+                .Build();
+
+            Startup.DbConnectionString = config["DbConnectionString"];
+
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls($"http://{Startup.Config.ParserInterface}:{Startup.Config.ParserPort}"); // TODO: Support for https and port + 1
+                    webBuilder.UseConfiguration(config);
+                    // TODO: Support for https and port + 1
+                    webBuilder.UseUrls(config["ParserUrls"]);
                 });
+        }
     }
 }

@@ -13,23 +13,17 @@
 
         static void Main(string[] args)
         {
+            ConsoleExt.WriteInfo($"[DataConsumer] Starting...");
             Console.CancelKeyPress += (sender, e) =>
             {
                 _quitEvent.Set();
                 e.Cancel = true;
             };
 
-            ConsoleExt.WriteInfo($"[DataConsumer] Starting...");
             var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");//Strings.DefaultConfigFileName);
             try
             {
-                var config = Config.Load(configPath);
-                if (config == null)
-                {
-                    Console.WriteLine($"Failed to load config {configPath}");
-                    return;
-                }
-
+                var config = new Config(Directory.GetCurrentDirectory(), args);
                 var consumer = new DataConsumer(config);
                 consumer.Start();
 
@@ -38,7 +32,7 @@
             }
             catch (Exception ex)
             {
-                ConsoleExt.WriteError($"Config: {ex}");
+                ConsoleExt.WriteError(ex);
                 Console.ReadKey();
                 return;
             }

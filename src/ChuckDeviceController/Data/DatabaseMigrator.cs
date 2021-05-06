@@ -39,7 +39,7 @@
         /// </summary>
         public DatabaseMigrator()
         {
-            _metadataRepository = new MetadataRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _metadataRepository = new MetadataRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
 
             // Create the metadata table
             _metadataRepository.ExecuteSql(Strings.SQL_CREATE_TABLE_METADATA);

@@ -45,9 +45,9 @@
 
             _logger = new Logger<AssignmentController>(LoggerFactory.Create(x => x.AddConsole()));
 
-            _assignmentRepository = new AssignmentRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _deviceGroupRepository = new DeviceGroupRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _assignmentRepository = new AssignmentRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
+            _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
+            _deviceGroupRepository = new DeviceGroupRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConnectionString));
 
             _timer = new System.Timers.Timer
             {
