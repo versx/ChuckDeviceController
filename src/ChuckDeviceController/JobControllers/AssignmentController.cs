@@ -123,7 +123,7 @@
             if (!(force || (assignment.Enabled && (assignment.Date == default || assignment.Date == DateTime.UtcNow))))
                 return;
 
-            List<Device> devices = null;
+            var devices = new List<Device>();
             try
             {
                 // If assignment assigned to device, add to devices list
