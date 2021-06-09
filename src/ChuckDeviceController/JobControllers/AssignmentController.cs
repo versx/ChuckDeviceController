@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
 
     using Chuck.Data.Contexts;
@@ -31,8 +32,9 @@
 
     public class AssignmentController : IAssignmentController
     {
-        private readonly DeviceControllerContext _context;
-        private readonly IInstanceController _instanceController;
+        //private readonly DeviceControllerContext _context;
+        private readonly IDbContextFactory<DeviceControllerContext> _dbContextFactory;
+        //private readonly IInstanceController _instanceController;
         private readonly ILogger<AssignmentController> _logger;
 
         private readonly AssignmentRepository _assignmentRepository;
@@ -60,24 +62,26 @@
         */
 
         public AssignmentController(
-            DeviceControllerContext context,
-            IInstanceController instanceController,
+            //DeviceControllerContext context,
+            //IInstanceController instanceController,
+            IDbContextFactory<DeviceControllerContext> dbContextFactory,
             ILogger<AssignmentController> logger)
         {
             _assignments = new List<Assignment>();
             _initialized = false;
             _lastUpdated = -2;
 
-            _context = context;
-            _instanceController = instanceController;
+            //_context = context;
+            //_instanceController = instanceController;
+            _dbContextFactory = dbContextFactory;
             _logger = logger;
 
             //_assignmentRepository = new AssignmentRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             //_deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             //_deviceGroupRepository = new DeviceGroupRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _assignmentRepository = new AssignmentRepository(_context);
-            _deviceRepository = new DeviceRepository(_context);
-            _deviceGroupRepository = new DeviceGroupRepository(_context);
+            _assignmentRepository = new AssignmentRepository(_dbContextFactory.CreateDbContext());
+            _deviceRepository = new DeviceRepository(_dbContextFactory.CreateDbContext());
+            _deviceGroupRepository = new DeviceGroupRepository(_dbContextFactory.CreateDbContext());
 
             _timer = new System.Timers.Timer
             {
@@ -195,10 +199,10 @@
                 )
                 {
                     _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
-                    await _instanceController.RemoveDevice(device).ConfigureAwait(false);
+                    // TODO: await _instanceController.RemoveDevice(device).ConfigureAwait(false);
                     device.InstanceName = assignment.InstanceName;
                     await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
-                    _instanceController.AddDevice(device);
+                    // TODO: _instanceController.AddDevice(device);
                 }
             }
         }

@@ -7,6 +7,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
 
     using Chuck.Common;
@@ -65,7 +66,8 @@
     {
         #region Variables
 
-        private readonly DeviceControllerContext _context;
+        //private readonly DeviceControllerContext _context;
+        private readonly IDbContextFactory<DeviceControllerContext> _dbContextFactory;
         private readonly ILogger<InstanceController> _logger;
         private readonly IDictionary<string, Device> _devices;
         private readonly IDictionary<string, IJobController> _instances;
@@ -94,20 +96,26 @@
         #region Constructor
 
         public InstanceController(
-            DeviceControllerContext context,
+            //DeviceControllerContext context,
+            IDbContextFactory<DeviceControllerContext> dbContextFactory,
             IAssignmentController assignmentController,
             ILogger<InstanceController> logger)
         {
-            _context = context;
+            //_context = context;
+            _dbContextFactory = dbContextFactory;
             _assignmentController = assignmentController;
             _devices = new Dictionary<string, Device>();
+            _instances = new Dictionary<string, IJobController>();
             //_deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
             //_instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _deviceRepository = new DeviceRepository(_context);
-            _instanceRepository = new InstanceRepository(_context);
+            _deviceRepository = new DeviceRepository(_dbContextFactory.CreateDbContext());
+            _instanceRepository = new InstanceRepository(_dbContextFactory.CreateDbContext());
 
             _logger = logger;
             _logger.LogInformation("Starting instances...");
+            Start().ConfigureAwait(false)
+                   .GetAwaiter()
+                   .GetResult();
         }
 
         #endregion

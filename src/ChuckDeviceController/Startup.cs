@@ -39,7 +39,7 @@ namespace ChuckDeviceController
         private ISubscriber _subscriber;
 
         private IInstanceController _instanceController;
-        private IAssignmentController _assignmentController;
+        //private IAssignmentController _assignmentController;
 
         public Startup(IConfiguration configuration)
         {
@@ -49,7 +49,7 @@ namespace ChuckDeviceController
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public async void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             /*
             services.AddSingleton<IConfiguration>(provider => new ConfigurationBuilder()
@@ -183,10 +183,10 @@ namespace ChuckDeviceController
             services.AddControllersWithViews();
 
             // Start instance controller
-            await _instanceController.Start().ConfigureAwait(false);
+            //await _instanceController.Start().ConfigureAwait(false);
 
             // Start assignment controller
-            await _assignmentController.Start().ConfigureAwait(false);
+            //await _assignmentController.Start().ConfigureAwait(false);
 
             // TODO: Better impl, use singleton class
             _redis = ConnectionMultiplexer.Connect(options);
@@ -252,6 +252,7 @@ namespace ChuckDeviceController
             });
         }
 
+        // TODO: Create DI class to handle 
         private void PokemonSubscriptionHandler(RedisChannel channel, RedisValue message)
         {
             switch (channel)
@@ -261,6 +262,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
+                            
                             ThreadPool.QueueUserWorkItem(x => _instanceController?.GotPokemon(pokemon));
                         }
                         break;
