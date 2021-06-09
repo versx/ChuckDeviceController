@@ -66,7 +66,6 @@
     {
         #region Variables
 
-        //private readonly DeviceControllerContext _context;
         private readonly IDbContextFactory<DeviceControllerContext> _dbContextFactory;
         private readonly ILogger<InstanceController> _logger;
         private readonly IDictionary<string, Device> _devices;
@@ -80,23 +79,12 @@
 
         #endregion
 
-        /*
-        #region Singleton
-
-        private static InstanceController _instance;
-        public static InstanceController Instance =>
-            _instance ??= new InstanceController();
-
-        #endregion
-        */
-
         public IReadOnlyDictionary<string, IJobController> Instances =>
             (IReadOnlyDictionary<string, IJobController>)_instances;
 
         #region Constructor
 
         public InstanceController(
-            //DeviceControllerContext context,
             IDbContextFactory<DeviceControllerContext> dbContextFactory,
             IAssignmentController assignmentController,
             ILogger<InstanceController> logger)

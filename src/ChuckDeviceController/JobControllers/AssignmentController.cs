@@ -32,7 +32,6 @@
 
     public class AssignmentController : IAssignmentController
     {
-        //private readonly DeviceControllerContext _context;
         private readonly IDbContextFactory<DeviceControllerContext> _dbContextFactory;
         //private readonly IInstanceController _instanceController;
         private readonly ILogger<AssignmentController> _logger;
@@ -46,23 +45,7 @@
         private readonly System.Timers.Timer _timer;
         private readonly object _assignmentsLock = new();
 
-        /*
-        #region Singleton
-
-        private static AssignmentController _instance;
-        public static AssignmentController Instance
-        {
-            get
-            {
-                return _instance ??= new AssignmentController();
-            }
-        }
-
-        #endregion
-        */
-
         public AssignmentController(
-            //DeviceControllerContext context,
             //IInstanceController instanceController,
             IDbContextFactory<DeviceControllerContext> dbContextFactory,
             ILogger<AssignmentController> logger)
@@ -71,7 +54,6 @@
             _initialized = false;
             _lastUpdated = -2;
 
-            //_context = context;
             //_instanceController = instanceController;
             _dbContextFactory = dbContextFactory;
             _logger = logger;

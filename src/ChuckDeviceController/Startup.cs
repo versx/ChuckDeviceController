@@ -37,9 +37,7 @@ namespace ChuckDeviceController
 
         private IConnectionMultiplexer _redis;
         private ISubscriber _subscriber;
-
         private IInstanceController _instanceController;
-        //private IAssignmentController _assignmentController;
 
         public Startup(IConfiguration configuration)
         {
@@ -103,7 +101,6 @@ namespace ChuckDeviceController
             });
 
             // Register IAssignmentController and IInstanceController's with DI
-            // TODO: Get reference for Redis IV events
             services.AddSingleton(typeof(IInstanceController), typeof(InstanceController));
             services.AddSingleton(typeof(IAssignmentController), typeof(AssignmentController));
 
@@ -182,12 +179,6 @@ namespace ChuckDeviceController
             services.AddControllers();
             services.AddControllersWithViews();
 
-            // Start instance controller
-            //await _instanceController.Start().ConfigureAwait(false);
-
-            // Start assignment controller
-            //await _assignmentController.Start().ConfigureAwait(false);
-
             // TODO: Better impl, use singleton class
             _redis = ConnectionMultiplexer.Connect(options);
             _subscriber = _redis.GetSubscriber();
@@ -250,11 +241,18 @@ namespace ChuckDeviceController
                     opt.ResourcesPath = "/health";
                 });
             });
+
+            _instanceController = app.ApplicationServices.GetRequiredService<IInstanceController>();
         }
 
         // TODO: Create DI class to handle 
         private void PokemonSubscriptionHandler(RedisChannel channel, RedisValue message)
         {
+            if (_instanceController == null)
+            {
+                Console.WriteLine($"[Startup] InstanceController not initialized yet");
+                return;
+            }
             switch (channel)
             {
                 case RedisChannels.PokemonAdded:
@@ -262,8 +260,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            
-                            ThreadPool.QueueUserWorkItem(x => _instanceController?.GotPokemon(pokemon));
+                            ThreadPool.QueueUserWorkItem(x => _instanceController.GotPokemon(pokemon));
                         }
                         break;
                     }
@@ -272,7 +269,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            ThreadPool.QueueUserWorkItem(x => _instanceController?.GotIV(pokemon));
+                            ThreadPool.QueueUserWorkItem(x => _instanceController.GotIV(pokemon));
                         }
                         break;
                     }
