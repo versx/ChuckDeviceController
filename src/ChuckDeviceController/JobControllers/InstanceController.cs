@@ -11,6 +11,7 @@
 
     using Chuck.Common;
     using Chuck.Common.JobControllers;
+    using Chuck.Data.Contexts;
     using Chuck.Data.Entities;
     using Chuck.Data.Factories;
     using Chuck.Data.Repositories;
@@ -18,22 +19,66 @@
     using ChuckDeviceController.JobControllers.Instances;
     using ChuckDeviceController.Services;
 
-    public class InstanceController
+    public interface IInstanceController
+    {
+        Task Start();
+
+        #region Instances
+
+        IJobController GetInstanceController(string uuid);
+
+        Task<string> GetInstanceStatus(Instance instance);
+
+        Task AddInstance(Instance instance);
+
+        Task ReloadInstance(Instance newInstance, string oldInstanceName);
+
+        void ReloadAll();
+
+        Task RemoveInstance(string instanceName);
+
+        #endregion
+
+        #region Devices
+
+        void AddDevice(Device device);
+
+        Task RemoveDevice(Device device);
+
+        void RemoveDevice(string uuid);
+
+        void ReloadDevice(Device newDevice, string oldDeviceUuid);
+
+        List<string> GetDeviceUuidsInInstance(string instanceName);
+
+        #endregion
+
+        List<Pokemon> GetIVQueue(string name);
+
+        void GotPokemon(Pokemon pokemon); // TODO: Rename to ReceivedPokemon
+
+        void GotIV(Pokemon pokemon); // TODO: Rename to ReceivedPokemonIV
+    }
+
+
+    public class InstanceController : IInstanceController
     {
         #region Variables
 
+        private readonly DeviceControllerContext _context;
         private readonly ILogger<InstanceController> _logger;
-
         private readonly IDictionary<string, Device> _devices;
         private readonly IDictionary<string, IJobController> _instances;
         private readonly DeviceRepository _deviceRepository;
         private readonly InstanceRepository _instanceRepository;
+        private readonly IAssignmentController _assignmentController;
 
-        private readonly object _instancesLock = new object();
-        private readonly object _devicesLock = new object();
+        private readonly object _instancesLock = new();
+        private readonly object _devicesLock = new();
 
         #endregion
 
+        /*
         #region Singleton
 
         private static InstanceController _instance;
@@ -41,17 +86,27 @@
             _instance ??= new InstanceController();
 
         #endregion
+        */
+
+        public IReadOnlyDictionary<string, IJobController> Instances =>
+            (IReadOnlyDictionary<string, IJobController>)_instances;
 
         #region Constructor
 
-        public InstanceController()
+        public InstanceController(
+            DeviceControllerContext context,
+            IAssignmentController assignmentController,
+            ILogger<InstanceController> logger)
         {
+            _context = context;
+            _assignmentController = assignmentController;
             _devices = new Dictionary<string, Device>();
-            _instances = new Dictionary<string, IJobController>();
-            _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            //_deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            //_instanceRepository = new InstanceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _deviceRepository = new DeviceRepository(_context);
+            _instanceRepository = new InstanceRepository(_context);
 
-            _logger = new Logger<InstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            _logger = logger;
             _logger.LogInformation("Starting instances...");
         }
 
@@ -251,6 +306,7 @@
                                 var retryLimit = instance.Data.QuestRetryLimit ?? 5;
                                 var ignoreBootstrap = instance.Data.IgnoreS2CellBootstrap;
                                 instanceController = new AutoInstanceController(instance.Name, multiPolygons, AutoType.Quest, timezoneOffset, minLevel, maxLevel, spinLimit, retryLimit, ignoreBootstrap, instance.Data.AccountGroup, instance.Data.IsEvent);
+                                ((AutoInstanceController)instanceController).InstanceComplete += (sender, e) => _assignmentController.InstanceControllerDone(e.InstanceName);
                                 break;
                             case InstanceType.PokemonIV:
                                 var ivList = IVListController.Instance.GetIVList(instance.Data.IVList)?.PokemonIDs ?? new List<uint>();
@@ -325,7 +381,7 @@
                     _devices[device.Key] = null;
                 }
             }
-            await AssignmentController.Instance.Start().ConfigureAwait(false);
+            await _assignmentController.Start().ConfigureAwait(false);
         }
 
         #endregion
@@ -346,7 +402,7 @@
         public async Task RemoveDevice(Device device)
         {
             RemoveDevice(device.Uuid);
-            await AssignmentController.Instance.Start().ConfigureAwait(false);
+            await _assignmentController.Start().ConfigureAwait(false);
         }
 
         public void RemoveDevice(string uuid)

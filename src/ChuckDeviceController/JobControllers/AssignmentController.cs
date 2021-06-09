@@ -6,13 +6,33 @@
 
     using Microsoft.Extensions.Logging;
 
+    using Chuck.Data.Contexts;
     using Chuck.Data.Entities;
     using Chuck.Data.Factories;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
 
-    public class AssignmentController
+    public interface IAssignmentController
     {
+        Task Start();
+
+        Task Stop();
+
+        void AddAssignment(Assignment assignment);
+
+        void EditAssignment(uint oldAssignmentId, Assignment newAssignment);
+
+        void DeleteAssignment(Assignment assignment);
+
+        Task TriggerAssignment(Assignment assignment, string instanceName, bool force = false);
+
+        Task InstanceControllerDone(string name);
+    }
+
+    public class AssignmentController : IAssignmentController
+    {
+        private readonly DeviceControllerContext _context;
+        private readonly IInstanceController _instanceController;
         private readonly ILogger<AssignmentController> _logger;
 
         private readonly AssignmentRepository _assignmentRepository;
@@ -22,8 +42,9 @@
         private bool _initialized;
         private long _lastUpdated;
         private readonly System.Timers.Timer _timer;
-        private readonly object _assignmentsLock = new object();
+        private readonly object _assignmentsLock = new();
 
+        /*
         #region Singleton
 
         private static AssignmentController _instance;
@@ -36,18 +57,27 @@
         }
 
         #endregion
+        */
 
-        public AssignmentController()
+        public AssignmentController(
+            DeviceControllerContext context,
+            IInstanceController instanceController,
+            ILogger<AssignmentController> logger)
         {
             _assignments = new List<Assignment>();
             _initialized = false;
             _lastUpdated = -2;
 
-            _logger = new Logger<AssignmentController>(LoggerFactory.Create(x => x.AddConsole()));
+            _context = context;
+            _instanceController = instanceController;
+            _logger = logger;
 
-            _assignmentRepository = new AssignmentRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
-            _deviceGroupRepository = new DeviceGroupRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            //_assignmentRepository = new AssignmentRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            //_deviceRepository = new DeviceRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            //_deviceGroupRepository = new DeviceGroupRepository(DbContextFactory.CreateDeviceControllerContext(Startup.DbConfig.ToString()));
+            _assignmentRepository = new AssignmentRepository(_context);
+            _deviceRepository = new DeviceRepository(_context);
+            _deviceGroupRepository = new DeviceGroupRepository(_context);
 
             _timer = new System.Timers.Timer
             {
@@ -165,10 +195,10 @@
                 )
                 {
                     _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
-                    await InstanceController.Instance.RemoveDevice(device).ConfigureAwait(false);
+                    await _instanceController.RemoveDevice(device).ConfigureAwait(false);
                     device.InstanceName = assignment.InstanceName;
                     await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
-                    InstanceController.Instance.AddDevice(device);
+                    _instanceController.AddDevice(device);
                 }
             }
         }
