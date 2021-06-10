@@ -12,6 +12,8 @@
     using Chuck.Data.Factories;
     using Chuck.Data.Repositories;
     using Chuck.Extensions;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.Extensions.DependencyInjection;
 
     public interface IAssignmentController
     {
@@ -32,6 +34,7 @@
 
     public class AssignmentController : IAssignmentController
     {
+        private readonly IServiceScopeFactory _servicesFactory;
         private readonly IDbContextFactory<DeviceControllerContext> _dbContextFactory;
         //private readonly IInstanceController _instanceController;
         private readonly ILogger<AssignmentController> _logger;
@@ -47,6 +50,7 @@
 
         public AssignmentController(
             //IInstanceController instanceController,
+            IServiceScopeFactory servicesFactory,
             IDbContextFactory<DeviceControllerContext> dbContextFactory,
             ILogger<AssignmentController> logger)
         {
@@ -54,6 +58,7 @@
             _initialized = false;
             _lastUpdated = -2;
 
+            _servicesFactory = servicesFactory;
             //_instanceController = instanceController;
             _dbContextFactory = dbContextFactory;
             _logger = logger;
@@ -171,20 +176,29 @@
                 _logger.LogWarning($"Failed to trigger assignment {assignment.Id}, unable to find devices");
                 return;
             }
-            foreach (var device in devices)
+            using (var scope = _servicesFactory.CreateScope())
             {
-                if (force || (
-                    (string.IsNullOrEmpty(instance) || string.Compare(device.InstanceName, instance, true) == 0) &&
-                    string.Compare(device.InstanceName, assignment.InstanceName, true) != 0 &&
-                    (string.IsNullOrEmpty(assignment.SourceInstanceName) || string.Compare(assignment.SourceInstanceName, device.InstanceName, true) == 0)
-                    )
-                )
+                var instanceController = scope.ServiceProvider.GetRequiredService<IInstanceController>();
+                if (instanceController == null)
                 {
-                    _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
-                    // TODO: await _instanceController.RemoveDevice(device).ConfigureAwait(false);
-                    device.InstanceName = assignment.InstanceName;
-                    await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
-                    // TODO: _instanceController.AddDevice(device);
+                    _logger.LogError($"Failed to get InstanceController service from DI");
+                    return;
+                }
+                foreach (var device in devices)
+                {
+                    if (force || (
+                        (string.IsNullOrEmpty(instance) || string.Compare(device.InstanceName, instance, true) == 0) &&
+                        string.Compare(device.InstanceName, assignment.InstanceName, true) != 0 &&
+                        (string.IsNullOrEmpty(assignment.SourceInstanceName) || string.Compare(assignment.SourceInstanceName, device.InstanceName, true) == 0)
+                        )
+                    )
+                    {
+                        _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
+                        await instanceController.RemoveDevice(device).ConfigureAwait(false);
+                        device.InstanceName = assignment.InstanceName;
+                        await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
+                        instanceController.AddDevice(device);
+                    }
                 }
             }
         }
