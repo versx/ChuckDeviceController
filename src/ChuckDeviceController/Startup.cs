@@ -37,6 +37,7 @@ namespace ChuckDeviceController
 
         private IConnectionMultiplexer _redis;
         private ISubscriber _subscriber;
+        private IInstanceController _instanceController;
 
         public Startup(IConfiguration configuration)
         {
@@ -46,7 +47,7 @@ namespace ChuckDeviceController
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public async void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             /*
             services.AddSingleton<IConfiguration>(provider => new ConfigurationBuilder()
@@ -98,6 +99,10 @@ namespace ChuckDeviceController
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            // Register IAssignmentController and IInstanceController's with DI
+            services.AddSingleton(typeof(IInstanceController), typeof(InstanceController));
+            services.AddSingleton(typeof(IAssignmentController), typeof(AssignmentController));
 
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new OpenApiInfo { Title = "ChuckDeviceController", Version = "v1" }));
 
@@ -174,9 +179,6 @@ namespace ChuckDeviceController
             services.AddControllers();
             services.AddControllersWithViews();
 
-            await InstanceController.Instance.Start().ConfigureAwait(false);
-            await AssignmentController.Instance.Start().ConfigureAwait(false);
-
             // TODO: Better impl, use singleton class
             _redis = ConnectionMultiplexer.Connect(options);
             _subscriber = _redis.GetSubscriber();
@@ -239,10 +241,18 @@ namespace ChuckDeviceController
                     opt.ResourcesPath = "/health";
                 });
             });
+
+            _instanceController = app.ApplicationServices.GetRequiredService<IInstanceController>();
         }
 
+        // TODO: Create DI class to handle 
         private void PokemonSubscriptionHandler(RedisChannel channel, RedisValue message)
         {
+            if (_instanceController == null)
+            {
+                Console.WriteLine($"[Startup] InstanceController not initialized yet");
+                return;
+            }
             switch (channel)
             {
                 case RedisChannels.PokemonAdded:
@@ -250,7 +260,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotPokemon(pokemon));
+                            ThreadPool.QueueUserWorkItem(x => _instanceController.GotPokemon(pokemon));
                         }
                         break;
                     }
@@ -259,7 +269,7 @@ namespace ChuckDeviceController
                         var pokemon = message.ToString().FromJson<Pokemon>();
                         if (pokemon != null)
                         {
-                            ThreadPool.QueueUserWorkItem(x => InstanceController.Instance.GotIV(pokemon));
+                            ThreadPool.QueueUserWorkItem(x => _instanceController.GotIV(pokemon));
                         }
                         break;
                     }

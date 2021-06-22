@@ -36,6 +36,8 @@
         private readonly IDatabaseAsync _redisDatabase;
         private readonly ISubscriber _subscriber;
         private readonly ILogger<DeviceController> _logger;
+        private readonly IInstanceController _instanceController;
+        private readonly IAssignmentController _assignmentController;
 
         // Data model repositories
         private readonly AccountRepository _accountRepository;
@@ -54,13 +56,20 @@
 
         #region Constructor
 
-        public DashboardController(DeviceControllerContext context, IConnectionMultiplexer connectionMultiplexer, ILogger<DeviceController> logger)
+        public DashboardController(
+            DeviceControllerContext context,
+            IConnectionMultiplexer connectionMultiplexer,
+            ILogger<DeviceController> logger,
+            IInstanceController instanceController,
+            IAssignmentController assignmentController)
         {
             _context = context;
             _redis = connectionMultiplexer;
             _redisDatabase = _redis.GetDatabase(Startup.Config.Redis.DatabaseNum);
             _subscriber = _redis.GetSubscriber();
             _logger = logger;
+            _instanceController = instanceController;
+            _assignmentController = assignmentController;
 
             _accountRepository = new AccountRepository(_context);
             _assignmentRepository = new AssignmentRepository(_context);
@@ -182,7 +191,7 @@
                 device.InstanceName = instance.Name;
                 await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
                 //templateData = Renderer.ParseTemplate("devices", BuildDefaultData());
-                InstanceController.Instance.ReloadDevice(device, uuid);
+                _instanceController.ReloadDevice(device, uuid);
                 return Redirect("/dashboard/devices");
             }
         }
@@ -366,7 +375,7 @@
                 // :see_no_evil: TODO: Fix eventually instead of looping twice
                 foreach (var device in devices)
                 {
-                    InstanceController.Instance.ReloadDevice(device, device.Uuid);
+                    _instanceController.ReloadDevice(device, device.Uuid);
                 }
                 return Redirect("/dashboard/devicegroups");
             }
@@ -536,7 +545,7 @@
                     }
                 };
                 await _instanceRepository.AddAsync(instance).ConfigureAwait(false);
-                await InstanceController.Instance.AddInstance(instance).ConfigureAwait(false);
+                await _instanceController.AddInstance(instance).ConfigureAwait(false);
                 return Redirect("/dashboard/instances");
             }
         }
@@ -628,7 +637,7 @@
                     if (instanceToDelete != null)
                     {
                         await _instanceRepository.DeleteAsync(instanceToDelete).ConfigureAwait(false);
-                        await InstanceController.Instance.RemoveInstance(name).ConfigureAwait(false);
+                        await _instanceController.RemoveInstance(name).ConfigureAwait(false);
                         _logger.LogDebug($"Instance {name} was deleted");
                     }
                     return Redirect("/dashboard/instances");
@@ -712,7 +721,7 @@
                         }
                     };
                     await _instanceRepository.AddAsync(newInstance).ConfigureAwait(false);
-                    await InstanceController.Instance.ReloadInstance(newInstance, oldName).ConfigureAwait(false);
+                    await _instanceController.ReloadInstance(newInstance, oldName).ConfigureAwait(false);
                 }
                 else
                 {
@@ -736,7 +745,7 @@
                         IgnoreS2CellBootstrap = ignoreBootstrap,
                     };
                     await _instanceRepository.UpdateAsync(instance).ConfigureAwait(false);
-                    await InstanceController.Instance.ReloadInstance(instance, oldName).ConfigureAwait(false);
+                    await _instanceController.ReloadInstance(instance, oldName).ConfigureAwait(false);
                 }
                 _logger.LogDebug($"Instance {name} was updated");
                 return Redirect("/dashboard/instances");
@@ -843,7 +852,7 @@
                 };
                 await _geofenceRepository.AddAsync(geofence).ConfigureAwait(false);
                 await GeofenceController.Instance.Reload().ConfigureAwait(false);
-                InstanceController.Instance.ReloadAll();
+                _instanceController.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
         }
@@ -965,7 +974,7 @@
                     await _geofenceRepository.UpdateAsync(geofence).ConfigureAwait(false);
                 }
                 await GeofenceController.Instance.Reload().ConfigureAwait(false);
-                InstanceController.Instance.ReloadAll();
+                _instanceController.ReloadAll();
                 return Redirect("/dashboard/geofences");
             }
         }
@@ -1100,7 +1109,7 @@
                         Enabled = enabled,
                     };
                     await _assignmentRepository.AddAsync(assignment).ConfigureAwait(false);
-                    AssignmentController.Instance.AddAssignment(assignment);
+                    _assignmentController.AddAssignment(assignment);
                 }
                 catch (Exception ex)
                 {
@@ -1120,7 +1129,7 @@
                         Enabled = enabled,
                     };
                     await _assignmentRepository.AddAsync(oncompleteAssignment).ConfigureAwait(false);
-                    AssignmentController.Instance.AddAssignment(oncompleteAssignment);
+                    _assignmentController.AddAssignment(oncompleteAssignment);
                 }
 
                 return Redirect("/dashboard/assignments");
@@ -1259,7 +1268,7 @@
                 assignment.Date = realDate;
                 assignment.Enabled = enabled;
                 await _assignmentRepository.UpdateAsync(assignment).ConfigureAwait(false);
-                AssignmentController.Instance.EditAssignment(assignment.Id, assignment);
+                _assignmentController.EditAssignment(assignment.Id, assignment);
                 return Redirect("/dashboard/assignments");
             }
         }
@@ -1270,7 +1279,7 @@
             var assignment = await _assignmentRepository.GetByIdAsync(id).ConfigureAwait(false);
             if (assignment != null)
             {
-                await AssignmentController.Instance.TriggerAssignment(assignment, string.Empty, true).ConfigureAwait(false);
+                await _assignmentController.TriggerAssignment(assignment, string.Empty, true).ConfigureAwait(false);
             }
             return Redirect("/dashboard/assignments");
         }

@@ -33,8 +33,8 @@
         private readonly PokemonRepository _pokemonRepository;
         private List<Pokemon> _pokemonQueue;
         private List<ScannedPokemon> _scannedPokemon;
-        private readonly object _queueLock = new object();
-        private readonly object _scannedLock = new object();
+        private readonly object _queueLock = new();
+        private readonly object _scannedLock = new();
         private readonly System.Timers.Timer _timer;
         private bool _shouldExit;
         private int _count = 0;
