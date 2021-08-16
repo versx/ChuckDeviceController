@@ -86,7 +86,7 @@
                 x.Spins < 3500 &&
                 x.FirstWarningTimestamp == null &&
                 x.Warn == null &&
-                x.WarnExpireTimestamp == null &&
+                (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
                 x.Banned == null &&
                 !inuseAccounts.Contains(x.Username.ToLower())
             );
