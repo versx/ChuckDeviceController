@@ -115,12 +115,15 @@ View profiler results:
 }
 ```
 
-## TODO:
+## TODO
 - Finish MAD support
 - Environment variables
 - Webhooks don't currently implement the geofences property
 - Localization
 
 
-## Previews:  
+## Previews  
 ![image](https://user-images.githubusercontent.com/1327440/112744187-a3047280-8f52-11eb-8de9-ebc8eae2d833.png)
+
+## Dedication  
+- In remembrance of [Chuckleslove](https://github.com/Chuckleslove) - rest in peace brother.  
