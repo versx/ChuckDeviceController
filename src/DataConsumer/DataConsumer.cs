@@ -53,21 +53,21 @@
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell;
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell;
 
-        private static readonly object _gymCellsLock = new object();
-        private static readonly object _stopCellsLock = new object();
+        private static readonly object _gymCellsLock = new();
+        private static readonly object _stopCellsLock = new();
 
         // Object locks
-        private static readonly object _pokemonLock = new object();
-        private static readonly object _gymsLock = new object();
-        private static readonly object _pokestopsLock = new object();
-        private static readonly object _gymInfoLock = new object();
-        private static readonly object _gymDefendersLock = new object();
-        private static readonly object _gymTrainersLock = new object();
-        private static readonly object _questsLock = new object();
-        private static readonly object _weatherLock = new object();
-        private static readonly object _cellsLock = new object();
-        private static readonly object _accountsLock = new object();
-        private static readonly object _spawnpointsLock = new object();
+        private static readonly object _pokemonLock = new();
+        private static readonly object _gymsLock = new();
+        private static readonly object _pokestopsLock = new();
+        private static readonly object _gymInfoLock = new();
+        private static readonly object _gymDefendersLock = new();
+        private static readonly object _gymTrainersLock = new();
+        private static readonly object _questsLock = new();
+        private static readonly object _weatherLock = new();
+        private static readonly object _cellsLock = new();
+        private static readonly object _accountsLock = new();
+        private static readonly object _spawnpointsLock = new();
 
         private bool _shouldExit = false;
 

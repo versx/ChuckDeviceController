@@ -32,6 +32,8 @@
         // Dependency injection variables
         private readonly DeviceControllerContext _context;
         private readonly ILogger<DeviceController> _logger;
+        private readonly IInstanceController _instanceController;
+        private readonly IAssignmentController _assignmentController;
 
         #endregion
 
@@ -42,7 +44,11 @@
         /// </summary>
         /// <param name="context"></param>
         /// <param name="logger"></param>
-        public ApiController(DeviceControllerContext context, ILogger<DeviceController> logger)
+        public ApiController(
+            DeviceControllerContext context,
+            ILogger<DeviceController> logger,
+            IInstanceController instanceController,
+            IAssignmentController assignmentController)
         {
             _context = context;
             _logger = logger;
@@ -56,6 +62,9 @@
             _webhookRepository = new WebhookRepository(_context);
             _deviceGroupRepository = new DeviceGroupRepository(_context);
             _ivListRepository = new IVListRepository(_context);
+
+            _instanceController = instanceController;
+            _assignmentController = assignmentController;
         }
 
         #endregion
@@ -185,7 +194,7 @@
                     //count = totalCount == 0 ? "0" : $"{totalCount} ({onlineCount}/{offlineCount})",
                     count = totalCount == 0 ? "0" : $"{onlineCount}/{offlineCount}|{totalCount}",
                     geofences = string.Join(", ", instance.Geofences ?? new List<string>()),
-                    status = await InstanceController.Instance.GetInstanceStatus(instance).ConfigureAwait(false),
+                    status = await _instanceController.GetInstanceStatus(instance).ConfigureAwait(false),
                     buttons = $"<a href='/dashboard/instance/edit/{Uri.EscapeDataString(instance.Name)}' role='button' class='btn btn-sm btn-primary'>Edit Instance</a>",
                 });
             }
@@ -320,7 +329,7 @@
         ]
         public async Task<dynamic> GetIVQueue(string name)
         {
-            var queue = InstanceController.Instance.GetIVQueue(name);
+            var queue = _instanceController.GetIVQueue(name);
             var list = new List<dynamic>();
             for (var i = 0; i < queue.Count; i++)
             {

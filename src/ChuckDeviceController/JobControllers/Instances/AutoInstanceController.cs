@@ -40,7 +40,7 @@
         private ulong _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds() - 3600;
         private bool _shouldExit;
 
-        private readonly object _bootstrapLock = new object();
+        private readonly object _bootstrapLock = new();
 
         // Entity repositories
         private readonly AccountRepository _accountRepository;
@@ -74,6 +74,14 @@
         public bool IsEvent { get; }
 
         public bool IgnoreS2CellBootstrap { get; }
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler<InstanceCompleteEventArgs> InstanceComplete;
+        private void OnInstanceComplete(string instanceName) =>
+            InstanceComplete?.Invoke(this, new InstanceCompleteEventArgs(instanceName));
 
         #endregion
 
@@ -149,7 +157,7 @@
                         var now = DateTime.UtcNow.ToTotalSeconds();
                         if (now - _lastCompletionCheck >= 600)
                         {
-                            await OnComplete();
+                            OnComplete();
                             return null;
                         }
                         _lastCompletionCheck = now;
@@ -180,7 +188,7 @@
                         // Check if all stops have quests, if so call on complete
                         if (_todayStops.Count == 0)
                         {
-                            await OnComplete();
+                            OnComplete();
                             return null;
                         }
                     }
@@ -346,7 +354,7 @@
                         // If there's no pokestops left that need quests, instance complete
                         if (_todayStops.Count == 0)
                         {
-                            await OnComplete();
+                            OnComplete();
                         }
                     }
                     return new QuestTask
@@ -363,14 +371,15 @@
             return null;
         }
 
-        private async Task OnComplete()
+        private void OnComplete()
         {
             if (_completionDate == default)
             {
                 _completionDate = DateTime.UtcNow;
             }
             _logger.LogInformation($"[{Name}] Instance done");
-            await AssignmentController.Instance.InstanceControllerDone(Name).ConfigureAwait(false);
+            // TODO: Use event
+            OnInstanceComplete(Name);
         }
 
         public async Task<string> GetStatus()
@@ -615,5 +624,15 @@
         }
 
         #endregion
+    }
+
+    public sealed class InstanceCompleteEventArgs : EventArgs
+    {
+        public string InstanceName { get; set; }
+
+        public InstanceCompleteEventArgs(string instanceName)
+        {
+            InstanceName = instanceName;
+        }
     }
 }

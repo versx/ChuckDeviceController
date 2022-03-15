@@ -28,16 +28,21 @@
         private readonly DeviceControllerContext _context;
         //private readonly IDbContextFactory<DeviceControllerContext> _dbFactory;
         private readonly ILogger<DeviceController> _logger;
+        private readonly IInstanceController _instanceController;
 
         #endregion
 
         #region Constructor
 
-        public DeviceController(DeviceControllerContext context/*IDbContextFactory<DeviceControllerContext> dbFactory*/, ILogger<DeviceController> logger)
+        public DeviceController(
+            DeviceControllerContext context/*IDbContextFactory<DeviceControllerContext> dbFactory*/,
+            ILogger<DeviceController> logger,
+            IInstanceController instanceController)
         {
             _context = context;
             //_dbFactory = dbFactory;
             _logger = logger;
+            _instanceController = instanceController;
 
             _deviceRepository = new DeviceRepository(_context);
             _accountRepository = new AccountRepository(_context);
@@ -195,7 +200,7 @@
 
             if (device != null)
             {
-                var instanceController = InstanceController.Instance.GetInstanceController(device.Uuid);
+                var instanceController = _instanceController.GetInstanceController(device.Uuid);
                 if (instanceController != null)
                 {
                     minLevel = instanceController.MinimumLevel;
@@ -272,7 +277,7 @@
 
         private async Task<DeviceResponse> HandleGetJob(Device device, string username)
         {
-            var instanceController = InstanceController.Instance.GetInstanceController(device?.Uuid);
+            var instanceController = _instanceController.GetInstanceController(device?.Uuid);
             if (instanceController == null)
             {
                 _logger.LogError($"[Device] [{device?.Uuid}] Failed to get instance controller.");
