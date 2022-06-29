@@ -1,0 +1,69 @@
+﻿@using ChuckDeviceController.Data;
+@model ChuckDeviceConfigurator.Models.ViewInstanceModel
+@{
+    ViewData["Title"] = "Edit Instance " + Model.Instance.Name;
+}
+
+<h1>Edit Instance</h1>
+
+<h4>Instance</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Instance.Name" class="control-label"></label>
+                <input asp-for="Instance.Name" class="form-control" />
+                <span asp-validation-for="Instance.Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Instance.Type" class="control-label"></label>
+                <select asp-for="Instance.Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()">
+                    <option>Please select one</option>
+                </select>
+                <span asp-validation-for="Instance.Type" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="Instance.MinimumLevel" class="control-label"></label>
+                        <input asp-for="Instance.MinimumLevel" class="form-control" min="0" max="50" required />
+                        <span asp-validation-for="Instance.MinimumLevel" class="text-danger"></span>
+                    </div>
+                    <div class="col">
+                        <label asp-for="Instance.MaximumLevel" class="control-label"></label>
+                        <input asp-for="Instance.MaximumLevel" class="form-control" min="0" max="50" required />
+                        <span asp-validation-for="Instance.MaximumLevel" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Instance.Geofences" class="control-label"></label>
+                <select asp-for="Instance.Geofences" class="form-control" asp-items="@(new SelectList(Model.Geofences))">
+                    <option>Please select one</option>
+                </select>
+                <span asp-validation-for="Geofences" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Instance.Data.AccountGroup" class="control-label"></label>
+                <input asp-for="Instance.Data.AccountGroup" class="form-control" maxlength="50">
+                <span asp-validation-for="Instance.Data.AccountGroup" class="text-danger"></span>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" asp-for="Instance.Data.IsEvent" value="true"> Is Unique Event</label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

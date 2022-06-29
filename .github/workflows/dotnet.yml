@@ -1,10 +1,10 @@
-name: .NET Core
+name: .NET
 
 on:
   push:
-    branches: [ master ]
+    branches: [ net6 ]
   pull_request:
-    branches: [ master ]
+    branches: [ net6 ]
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        dotnet: [ '5.0.202' ]
+        dotnet: [ '6.0.301' ]
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - uses: actions/checkout@v2

@@ -1,0 +1,64 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model ViewModelsModel<ChuckDeviceController.Data.Entities.Assignment>
+@{
+    ViewData["Title"] = "Assignments";
+}
+
+<h1>Assignments</h1>
+
+<p>
+    <a asp-action="Add">Create New</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].InstanceName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].SourceInstanceName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].DeviceUuid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Enabled)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.InstanceName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SourceInstanceName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DeviceUuid)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Enabled ? "Yes" : "No")
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

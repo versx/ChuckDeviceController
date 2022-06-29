@@ -1,0 +1,64 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model ViewModelsModel<ChuckDeviceController.Data.Entities.Device>
+@{
+    ViewData["Title"] = "Devices";
+}
+
+<h1>Devices</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Uuid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].InstanceName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].AccountUsername)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].LastHost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].LastSeen)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Uuid)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.InstanceName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AccountUsername)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LastHost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LastSeen)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Uuid">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Uuid">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Uuid">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

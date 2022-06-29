@@ -1,0 +1,67 @@
+﻿@using ChuckDeviceController.Data.Entities;
+@model ViewModelsModel<Instance>
+@{
+    ViewData["Title"] = "Instances";
+}
+
+<h1>Instances</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Type)
+            </th>
+            <th>
+                Level
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Geofences)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].DeviceCount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].AreaCount)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                    @item.MinimumLevel-@item.MaximumLevel
+                </td>
+                <td>
+                    @string.Join(", ", item.Geofences)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DeviceCount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AreaCount)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Name">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Name">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Name">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

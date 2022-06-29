@@ -1,0 +1,43 @@
+﻿@model ChuckDeviceController.Data.Entities.Device
+
+@{
+    ViewData["Title"] = "Create Device";
+}
+
+<h1>Create Device</h1>
+
+<h4>Device</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Uuid" class="control-label"></label>
+                <input asp-for="Uuid" class="form-control" />
+                <span asp-validation-for="Uuid" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="InstanceName" class="control-label"></label>
+                <input asp-for="InstanceName" class="form-control" />
+                <span asp-validation-for="InstanceName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AccountUsername" class="control-label"></label>
+                <input asp-for="AccountUsername" class="form-control" />
+                <span asp-validation-for="AccountUsername" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

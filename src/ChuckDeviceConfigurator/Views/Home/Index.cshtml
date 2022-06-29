@@ -1,0 +1,60 @@
+﻿@model ChuckDeviceConfigurator.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Dashboard</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Accounts)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Accounts)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Assignments)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Assignments)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Devices)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Devices)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Geofences)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Geofences)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Instances)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Instances)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.IvLists)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.IvLists)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Webhooks)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Webhooks)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Users)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Users)
+    </dd>
+</dl>
