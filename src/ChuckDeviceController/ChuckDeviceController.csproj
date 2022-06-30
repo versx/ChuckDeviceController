@@ -10,7 +10,7 @@
     <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
     <IsMacOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsMacOS>
     <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
-    <BaseOutputPath>C:\Users\Jeremy\Desktop\ChuckDeviceController\src\ChuckDeviceController\bin</BaseOutputPath>
+    <BaseOutputPath>bin</BaseOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>

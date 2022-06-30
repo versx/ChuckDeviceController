@@ -10,10 +10,14 @@
 
     public class InstanceController : Controller
     {
+        private readonly ILogger<InstanceController> _logger;
         private readonly DeviceControllerContext _context;
 
-        public InstanceController(DeviceControllerContext context)
+        public InstanceController(
+            ILogger<InstanceController> logger,
+            DeviceControllerContext context)
         {
+            _logger = logger;
             _context = context;
         }
 
@@ -32,6 +36,12 @@
         public async Task<ActionResult> Details(string id)
         {
             var instance = await _context.Instances.FindAsync(id);
+            if (instance == null)
+            {
+                // Failed to retrieve instance from database, does it exist?
+                ModelState.AddModelError("Instance", $"Instance does not exist with id '{id}'.");
+                return View();
+            }
             return View(instance);
         }
 
@@ -64,33 +74,37 @@
                 var geofences = Convert.ToString(collection["Instance.Geofences"]).Split(',').ToList();
                 var accountGroup = Convert.ToString(collection["Instance.Data.AccountGroup"]);
                 var isEvent = collection["Instance.Data.IsEvent"].Contains("true");
+
                 if (_context.Instances.Any(inst => inst.Name == name))
                 {
-                    // TODO: Exists already
-                    return null;
+                    // Instance exists already by name
+                    ModelState.AddModelError("Instance", $"Instance with name '{name}' already exists.");
+                    return View();
                 }
-                else
+
+                var instance = new Instance
                 {
-                    var instance = new Instance
+                    Name = name,
+                    Type = type,
+                    MinimumLevel = minLevel,
+                    MaximumLevel = maxLevel,
+                    Geofences = geofences,
+                    Data = new InstanceData
                     {
-                        Name = name,
-                        Type = type,
-                        MinimumLevel = minLevel,
-                        MaximumLevel = maxLevel,
-                        Geofences = geofences,
-                        Data = new InstanceData
-                        {
-                            AccountGroup = accountGroup,
-                            IsEvent = false,
-                        },
-                    };
-                    await _context.Instances.AddAsync(instance);
-                    await _context.SaveChangesAsync();
-                }
+                        AccountGroup = accountGroup,
+                        IsEvent = false,
+                    },
+                };
+
+                // Add instance to database
+                await _context.Instances.AddAsync(instance);
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Instance", $"Unknown error occurred while creating new instance.");
                 return View();
             }
         }
@@ -99,6 +113,13 @@
         public async Task<ActionResult> Edit(string id)
         {
             var instance = await _context.Instances.FindAsync(id);
+            if (instance == null)
+            {
+                // Failed to retrieve instance from database, does it exist?
+                ModelState.AddModelError("Instance", $"Instance does not exist with id '{id}'.");
+                return View();
+            }
+
             var model = new ViewInstanceModel
             {
                 InstanceTypes = Enum.GetNames(typeof(InstanceType)).ToList(),
@@ -119,6 +140,14 @@
         {
             try
             {
+                var instance = await _context.Instances.FindAsync(id);
+                if (instance == null)
+                {
+                    // Failed to retrieve instance from database, does it exist?
+                    ModelState.AddModelError("Instance", $"Instance does not exist with id '{id}'.");
+                    return View();
+                }
+
                 var name = Convert.ToString(collection["Instance.Name"]);
                 var type = (InstanceType)Convert.ToUInt16(collection["Instance.Type"]);
                 var minLevel = Convert.ToUInt16(collection["Instance.MinimumLevel"]);
@@ -126,34 +155,25 @@
                 var geofences = Convert.ToString(collection["Instance.Geofences"]).Split(',').ToList();
                 var accountGroup = Convert.ToString(collection["Instance.Data.AccountGroup"]);
                 var isEvent = collection["Instance.Data.IsEvent"].Contains("true");
-                if (_context.Instances.Any(inst => inst.Name == id))
-                {
-                    // TODO: Exists already with new name
-                    var instance = new Instance
-                    {
-                        Name = name,
-                        Type = type,
-                        MinimumLevel = minLevel,
-                        MaximumLevel = maxLevel,
-                        Geofences = geofences,
-                        Data = new InstanceData
-                        {
-                            AccountGroup = accountGroup,
-                            IsEvent = false,
-                        },
-                    };
-                    _context.Instances.Update(instance);
-                    await _context.SaveChangesAsync();
-                }
-                else
-                {
-                    // TODO: Instance does not exist
-                    return null;
-                }
+
+                instance.Name = name;
+                instance.Type = type;
+                instance.MinimumLevel = minLevel;
+                instance.MaximumLevel = maxLevel;
+                instance.Geofences = geofences;
+                // TODO: Check if Data is null
+                instance.Data.AccountGroup = accountGroup;
+                instance.Data.IsEvent = false;
+
+                // Update instance in database
+                _context.Instances.Update(instance);
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Instance", $"Unknown error occurred while editing instance '{id}'.");
                 return View();
             }
         }
@@ -162,6 +182,12 @@
         public async Task<ActionResult> Delete(string id)
         {
             var instance = await _context.Instances.FindAsync(id);
+            if (instance == null)
+            {
+                // Failed to retrieve instance from database, does it exist?
+                ModelState.AddModelError("Instance", $"Instance does not exist with id '{id}'.");
+                return View();
+            }
             return View(instance);
         }
 
@@ -172,18 +198,20 @@
         {
             try
             {
-                if (!_context.Instances.Any(inst => inst.Name == id))
+                var instance = await _context.Instances.FindAsync(id);
+                if (instance == null)
                 {
-                    // Not found
+                    // Failed to retrieve instance from database, does it exist?
                     return null;
                 }
 
-                var instance = await _context.Instances.FindAsync(id);
+                // Delete database from database
                 _context.Instances.Remove(instance);
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Instance", $"Unknown error occurred while deleting instance '{id}'.");
                 return View();
             }
         }

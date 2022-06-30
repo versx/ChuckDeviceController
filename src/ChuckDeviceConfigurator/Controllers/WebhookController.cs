@@ -9,10 +9,14 @@
 
     public class WebhookController : Controller
     {
+        private readonly ILogger<WebhookController> _logger;
         private readonly DeviceControllerContext _context;
 
-        public WebhookController(DeviceControllerContext context)
+        public WebhookController(
+            ILogger<WebhookController> logger,
+            DeviceControllerContext context)
         {
+            _logger = logger;
             _context = context;
         }
 
@@ -30,6 +34,12 @@
         public async Task<ActionResult> Details(string id)
         {
             var webhook = await _context.Webhooks.FindAsync(id);
+            if (webhook == null)
+            {
+                // Failed to retrieve webhook from database, does it exist?
+                ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
+                return View();
+            }
             return View(webhook);
         }
 
@@ -50,6 +60,7 @@
             }
             catch
             {
+                ModelState.AddModelError("Webhook", $"Unknown error occurred while creating new webhook.");
                 return View();
             }
         }
@@ -58,20 +69,34 @@
         public async Task<ActionResult> Edit(string id)
         {
             var webhook = await _context.Webhooks.FindAsync(id);
+            if (webhook == null)
+            {
+                // Failed to retrieve webhook from database, does it exist?
+                ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
+                return View();
+            }
             return View(webhook);
         }
 
         // POST: WebhookController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(string id, IFormCollection collection)
+        public async Task<ActionResult> Edit(string id, IFormCollection collection)
         {
             try
             {
+                var webhook = await _context.Webhooks.FindAsync(id);
+                if (webhook == null)
+                {
+                    // Failed to retrieve webhook from database, does it exist?
+                    ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
+                    return View();
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Webhook", $"Unknown error occurred while editing webhook '{id}'.");
                 return View();
             }
         }
@@ -80,20 +105,34 @@
         public async Task<ActionResult> Delete(string id)
         {
             var webhook = await _context.Webhooks.FindAsync(id);
+            if (webhook == null)
+            {
+                // Failed to retrieve webhook from database, does it exist?
+                ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
+                return View();
+            }
             return View(webhook);
         }
 
         // POST: WebhookController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(string id, IFormCollection collection)
+        public async Task<ActionResult> Delete(string id, IFormCollection collection)
         {
             try
             {
+                var webhook = await _context.Webhooks.FindAsync(id);
+                if (webhook == null)
+                {
+                    // Failed to retrieve webhook from database, does it exist?
+                    ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
+                    return View();
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Webhook", $"Unknown error occurred while deleting webhook '{id}'.");
                 return View();
             }
         }

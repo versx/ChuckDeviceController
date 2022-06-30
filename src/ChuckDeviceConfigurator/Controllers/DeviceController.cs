@@ -10,11 +10,14 @@
     [Controller]
     public class DeviceController : Controller
     {
+        private readonly ILogger<DeviceController> _logger;
         private readonly DeviceControllerContext _context;
 
-        public DeviceController(DeviceControllerContext context)
+        public DeviceController(
+            ILogger<DeviceController> logger,
+            DeviceControllerContext context)
         {
-            
+            _logger = logger;
             _context = context;
         }
 
@@ -33,6 +36,12 @@
         public async Task<ActionResult> Details(string id)
         {
             var device = await _context.Devices.FindAsync(id);
+            if (device == null)
+            {
+                // Failed to retrieve device from database, does it exist?
+                ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                return View();
+            }
             return View(device);
         }
 
@@ -53,6 +62,7 @@
             }
             catch
             {
+                ModelState.AddModelError("Device", $"Unknown error occurred while creating new device.");
                 return View();
             }
         }
@@ -61,20 +71,35 @@
         public async Task<ActionResult> Edit(string id)
         {
             var device = await _context.Devices.FindAsync(id);
+            if (device == null)
+            {
+                // Failed to retrieve device from database, does it exist?
+                ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                return View();
+            }
             return View(device);
         }
 
         // POST: DeviceController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(string id, IFormCollection collection)
+        public async Task<ActionResult> Edit(string id, IFormCollection collection)
         {
             try
             {
+                var device = await _context.Devices.FindAsync(id);
+                if (device == null)
+                {
+                    // Failed to retrieve device from database, does it exist?
+                    ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                    return View();
+                }
+
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Device", $"Unknown error occurred while editing device '{id}'.");
                 return View();
             }
         }
@@ -83,20 +108,34 @@
         public async Task<ActionResult> Delete(string id)
         {
             var device = await _context.Devices.FindAsync(id);
+            if (device == null)
+            {
+                // Failed to retrieve device from database, does it exist?
+                ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                return View();
+            }
             return View(device);
         }
 
         // POST: DeviceController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(string id, IFormCollection collection)
+        public async Task<ActionResult> Delete(string id, IFormCollection collection)
         {
             try
             {
+                var device = await _context.Devices.FindAsync(id);
+                if (device == null)
+                {
+                    // Failed to retrieve device from database, does it exist?
+                    ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                    return View();
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Device", $"Unknown error occurred while deleting device '{id}'.");
                 return View();
             }
         }

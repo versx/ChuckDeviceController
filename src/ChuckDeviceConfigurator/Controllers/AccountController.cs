@@ -9,10 +9,14 @@
 
     public class AccountController : Controller
     {
+        private readonly ILogger<AccountController> _logger;
         private readonly DeviceControllerContext _context;
 
-        public AccountController(DeviceControllerContext context)
+        public AccountController(
+            ILogger<AccountController> logger,
+            DeviceControllerContext context)
         {
+            _logger = logger;
             _context = context;
         }
 
@@ -30,6 +34,12 @@
         public async Task<ActionResult> Details(string id)
         {
             var account = await _context.Accounts.FindAsync(id);
+            if (account == null)
+            {
+                // Failed to retrieve account from database, does it exist?
+                ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
+                return View();
+            }
             return View(account);
         }
 
@@ -47,7 +57,7 @@
         // POST: AccountController/Add
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Add(IFormCollection collection)
+        public async Task<ActionResult> Add(IFormCollection collection)
         {
             try
             {
@@ -55,24 +65,47 @@
                 var accounts = Convert.ToString(collection["Accounts"]);
                 accounts = accounts.Replace("<br>", "\r\n")
                                    .Replace("\r\n", "\n");
-                var split = accounts.Split('\n').ToList();
-                foreach (var account in split)
+                var accountsList = accounts.Split('\n').ToList();
+                if (accountsList.Count == 0)
                 {
-                    var line = account.Split(',');
-                    if (line.Length != 2)
+                    // No accounts provided
+                    ModelState.AddModelError("Account", $"No accounts provided or parsable, please double check your format.");
+                    return View();
+                }
+
+                foreach (var line in accountsList)
+                {
+                    var split = line.Split(',');
+                    if (split.Length != 2)
                     {
-                        Console.WriteLine($"Invalid account format");
+                        _logger.LogWarning($"Invalid account format '{line}', skipping...");
                         continue;
                     }
-                    var username = line[0];
-                    var password = line[1];
-                    Console.WriteLine($"Username: {username}, Password: {password}");
-                    // TODO: Add accounts to database
+
+                    var username = split[0];
+                    var password = split[1];
+
+                    if (_context.Accounts.Any(acc => acc.Username == username))
+                    {
+                        // Already exists, skip - or update? (TODO: Inform user)
+                        continue;
+                    }
+
+                    var account = new Account
+                    {
+                        Username = username,
+                        Password = password,
+                        Level = level,
+                    };
+
+                    await _context.Accounts.AddAsync(account);
+                    await _context.SaveChangesAsync();
                 }
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Account", $"Unknown error occurred while creating new account.");
                 return View();
             }
         }
@@ -81,20 +114,34 @@
         public async Task<ActionResult> Edit(string id)
         {
             var account = await _context.Accounts.FindAsync(id);
+            if (account == null)
+            {
+                // Failed to retrieve account from database, does it exist?
+                ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
+                return View();
+            }
             return View(account);
         }
 
         // POST: AccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(string id, IFormCollection collection)
+        public async Task<ActionResult> Edit(string id, IFormCollection collection)
         {
             try
             {
+                var account = await _context.Accounts.FindAsync(id);
+                if (account == null)
+                {
+                    // Failed to retrieve account from database, does it exist?
+                    ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
+                    return View();
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Account", $"Unknown error occurred while editing account '{id}'.");
                 return View();
             }
         }
@@ -103,20 +150,34 @@
         public async Task<ActionResult> Delete(string id)
         {
             var account = await _context.Accounts.FindAsync(id);
+            if (account == null)
+            {
+                // Failed to retrieve account from database, does it exist?
+                ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
+                return View();
+            }
             return View(account);
         }
 
         // POST: AccountController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(string id, IFormCollection collection)
+        public async Task<ActionResult> Delete(string id, IFormCollection collection)
         {
             try
             {
+                var account = await _context.Accounts.FindAsync(id);
+                if (account == null)
+                {
+                    // Failed to retrieve account from database, does it exist?
+                    ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
+                    return View();
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Account", $"Unknown error occurred while deleting account '{id}'.");
                 return View();
             }
         }

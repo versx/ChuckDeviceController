@@ -5,6 +5,8 @@
 
 <h1>Delete Device</h1>
 
+<p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
+
 <h3>Are you sure you want to delete this device?</h3>
 <div>
     <h4>Device '@Model.Uuid'</h4>

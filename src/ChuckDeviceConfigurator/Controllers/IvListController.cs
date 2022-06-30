@@ -9,10 +9,14 @@
 
     public class IvListController : Controller
     {
+        private readonly ILogger<IvListController> _logger;
         private readonly DeviceControllerContext _context;
 
-        public IvListController(DeviceControllerContext context)
+        public IvListController(
+            ILogger<IvListController> logger,
+            DeviceControllerContext context)
         {
+            _logger = logger;
             _context = context;
         }
 
@@ -27,9 +31,16 @@
         }
 
         // GET: IvListController/Details/5
-        public ActionResult Details(string id)
+        public async Task<ActionResult> Details(string id)
         {
-            return View();
+            var ivList = await _context.IvLists.FindAsync(id);
+            if (ivList == null)
+            {
+                // Failed to retrieve IV list from database, does it exist?
+                ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
+                return View();
+            }
+            return View(ivList);
         }
 
         // GET: IvListController/Create
@@ -49,6 +60,7 @@
             }
             catch
             {
+                ModelState.AddModelError("Geofence", $"Unknown error occurred while creating new IV list.");
                 return View();
             }
         }
@@ -57,20 +69,34 @@
         public async Task<ActionResult> Edit(string id)
         {
             var ivList = await _context.IvLists.FindAsync(id);
+            if (ivList == null)
+            {
+                // Failed to retrieve IV list from database, does it exist?
+                ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
+                return View();
+            }
             return View(ivList);
         }
 
         // POST: IvListController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(string id, IFormCollection collection)
+        public async Task<ActionResult> Edit(string id, IFormCollection collection)
         {
             try
             {
+                var ivList = await _context.IvLists.FindAsync(id);
+                if (ivList == null)
+                {
+                    // Failed to retrieve IV list from database, does it exist?
+                    ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
+                    return View();
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("IvList", $"Unknown error occurred while editing IV list '{id}'.");
                 return View();
             }
         }
@@ -79,20 +105,34 @@
         public async Task<ActionResult> Delete(string id)
         {
             var ivList = await _context.IvLists.FindAsync(id);
+            if (ivList == null)
+            {
+                // Failed to retrieve IV list from database, does it exist?
+                ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
+                return View();
+            }
             return View(ivList);
         }
 
         // POST: IvListController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(string id, IFormCollection collection)
+        public async Task<ActionResult> Delete(string id, IFormCollection collection)
         {
             try
             {
+                var ivList = await _context.IvLists.FindAsync(id);
+                if (ivList == null)
+                {
+                    // Failed to retrieve IV list from database, does it exist?
+                    ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
+                    return View();
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("IvList", $"Unknown error occurred while deleting IV list '{id}'.");
                 return View();
             }
         }
