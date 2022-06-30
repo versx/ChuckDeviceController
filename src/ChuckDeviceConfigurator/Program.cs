@@ -1,8 +1,9 @@
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Areas.Identity.Data;
 using ChuckDeviceConfigurator.Data;
+using ChuckDeviceController.Data.Contexts;
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -23,11 +24,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
 builder.WebHost.UseUrls(config["Urls"]);
 
-// https://codewithmukesh.com/blog/user-management-in-aspnet-core-mvc/
-/*
 #region User Identity
+
+// https://codewithmukesh.com/blog/user-management-in-aspnet-core-mvc/
 builder.Services.AddDbContext<UserIdentityContext>(options =>
-    options.UseMySql(serverVersion));
+{
+    options.UseMySql(connectionString, serverVersion, opt =>
+    {
+        //opt.MigrationsHistoryTable("migrations");
+        opt.MigrationsAssembly(Strings.AssemblyName);
+    });
+}, ServiceLifetime.Transient);
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -37,6 +44,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
+/*
 builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie settings
@@ -50,8 +58,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
     //options.ReturnUrlParameter=""
 });
-#endregion
 */
+
+#endregion
 
 // Add services to the container.
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -88,8 +97,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 // User authentication
-//app.UseAuthentication();
-//app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

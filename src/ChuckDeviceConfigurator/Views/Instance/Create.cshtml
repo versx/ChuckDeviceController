@@ -1,5 +1,6 @@
-﻿@using ChuckDeviceController.Data;
-@model ChuckDeviceConfigurator.Models.ViewInstanceModel
+﻿@using ChuckDeviceController.Data
+@using ChuckDeviceController.Data.Entities;
+@model Instance
 @{
     ViewData["Title"] = "Create Instance";
 }
@@ -15,45 +16,45 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Instance.Name" class="control-label"></label>
-                <input asp-for="Instance.Name" class="form-control" />
-                <span asp-validation-for="Instance.Name" class="text-danger"></span>
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Instance.Type" class="control-label"></label>
-                <select asp-for="Instance.Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()">
+                <label asp-for="Type" class="control-label"></label>
+                <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()">
                     <option>Please select one</option>
                 </select>
-                <span asp-validation-for="Instance.Type" class="text-danger"></span>
+                <span asp-validation-for="Type" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <div class="row">
                     <div class="col">
-                        <label asp-for="Instance.MinimumLevel" class="control-label"></label>
-                        <input asp-for="Instance.MinimumLevel" class="form-control" min="0" max="50" required />
-                        <span asp-validation-for="Instance.MinimumLevel" class="text-danger"></span>
+                        <label asp-for="MinimumLevel" class="control-label"></label>
+                        <input asp-for="MinimumLevel" class="form-control" min="0" max="50" required />
+                        <span asp-validation-for="MinimumLevel" class="text-danger"></span>
                     </div>
                     <div class="col">
-                        <label asp-for="Instance.MaximumLevel" class="control-label"></label>
-                        <input asp-for="Instance.MaximumLevel" class="form-control" min="0" max="50" required />
-                        <span asp-validation-for="Instance.MaximumLevel" class="text-danger"></span>
+                        <label asp-for="MaximumLevel" class="control-label"></label>
+                        <input asp-for="MaximumLevel" class="form-control" min="0" max="50" required />
+                        <span asp-validation-for="MaximumLevel" class="text-danger"></span>
                     </div>
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="Instance.Geofences" class="control-label"></label>
-                <select asp-for="Instance.Geofences" class="form-control" asp-items="@(new SelectList(Model.Geofences))">
+                <label asp-for="Geofences" class="control-label"></label>
+                <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))">
                     <option>Please select one</option>
                 </select>
                 <span asp-validation-for="Geofences" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Instance.Data.AccountGroup" class="control-label"></label>
-                <input asp-for="Instance.Data.AccountGroup" class="form-control" maxlength="50">
-                <span asp-validation-for="Instance.Data.AccountGroup" class="text-danger"></span>
+                <label asp-for="Data.AccountGroup" class="control-label"></label>
+                <input asp-for="Data.AccountGroup" class="form-control" maxlength="50">
+                <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
             </div>
             <div class="checkbox">
-                <label><input type="checkbox" asp-for="Instance.Data.IsEvent" value="true"> Is Unique Event</label>
+                <label><input type="checkbox" asp-for="Data.IsEvent" value="true"> Is Unique Event</label>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

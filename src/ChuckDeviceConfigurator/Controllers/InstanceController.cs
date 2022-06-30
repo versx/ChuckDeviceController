@@ -2,6 +2,7 @@
 {
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Models;
     using ChuckDeviceController.Data;
@@ -48,16 +49,8 @@
         // GET: InstanceController/Create
         public ActionResult Create()
         {
-            var model = new ViewInstanceModel
-            {
-                InstanceTypes = Enum.GetNames(typeof(InstanceType)).ToList(),
-                Geofences = new List<string>
-                {
-                    "Test",
-                    "Test2",
-                },
-            };
-            return View(model);
+            ViewBag.Geofences = _context.Geofences.ToList();
+            return View();
         }
 
         // POST: InstanceController/Create
@@ -120,17 +113,11 @@
                 return View();
             }
 
-            var model = new ViewInstanceModel
-            {
-                InstanceTypes = Enum.GetNames(typeof(InstanceType)).ToList(),
-                Geofences = new List<string>
-                {
-                    "Test",
-                    "Test2",
-                },
-                Instance = instance,
-            };
-            return View(model);
+            var geofences = _context.Geofences.ToList();
+            var selectedGeofences = geofences.Select(g => new SelectListItem("Name", g.Name, instance.Geofences.Contains(g.Name)))
+                                             .ToList();
+            ViewBag.Geofences = new MultiSelectList(geofences, "Name", "Name", selectedGeofences);
+            return View(instance);
         }
 
         // POST: InstanceController/Edit/5
