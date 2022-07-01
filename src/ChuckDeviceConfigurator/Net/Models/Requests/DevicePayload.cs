@@ -11,6 +11,6 @@
         public string Uuid { get; set; }
 
         [JsonPropertyName("username")]
-        public string Username { get; set; }
+        public string? Username { get; set; }
     }
 }

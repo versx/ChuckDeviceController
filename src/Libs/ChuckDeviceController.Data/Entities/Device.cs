@@ -18,19 +18,19 @@
             Column("instance_name"),
             JsonPropertyName("instance_name"),
         ]
-        public string InstanceName { get; set; }
+        public string? InstanceName { get; set; }
 
         [
             Column("account_username"),
             JsonPropertyName("account_username"),
         ]
-        public string AccountUsername { get; set; }
+        public string? AccountUsername { get; set; }
 
         [
             Column("last_host"),
             JsonPropertyName("last_host"),
         ]
-        public string LastHost { get; set; }
+        public string? LastHost { get; set; }
 
         [
             Column("last_lat"),

@@ -51,4 +51,8 @@
     <None Remove="AspNet.Security.OAuth.Discord" />
     <None Remove="AspNet.Security.OAuth.GitHub" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="JobControllers\" />
+  </ItemGroup>
 </Project>

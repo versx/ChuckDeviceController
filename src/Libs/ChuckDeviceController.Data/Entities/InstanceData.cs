@@ -26,7 +26,7 @@
         public ushort? CircleSize { get; set; }
 
         [JsonPropertyName("account_group")]
-        public string AccountGroup { get; set; }
+        public string? AccountGroup { get; set; }
 
         [JsonPropertyName("is_event")]
         public bool IsEvent { get; set; }

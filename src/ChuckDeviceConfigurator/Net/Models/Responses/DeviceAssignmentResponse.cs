@@ -9,5 +9,14 @@
 
         [JsonPropertyName("first_warning_timestamp")]
         public ulong? FirstWarningTimestamp { get; set; }
+
+        [JsonPropertyName("version")]
+        public string Version { get; set; }
+
+        [JsonPropertyName("commit")]
+        public string Commit { get; set; }
+
+        [JsonPropertyName("provider")]
+        public string Provider { get; set; }
     }
 }

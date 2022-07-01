@@ -184,6 +184,11 @@
                     ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
                     return View();
                 }
+
+                // Delete account from database
+                _context.Accounts.Remove(account);
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             catch

@@ -4,7 +4,9 @@
 
     public static class UserIdentityContextSeed
 	{
-        public static async Task SeedSuperAdminAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedSuperAdminAsync(
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
             try
             {
@@ -21,7 +23,7 @@
                     var user = await userManager.FindByNameAsync(defaultUser.UserName);
                     if (user == null)
                     {
-                        await userManager.CreateAsync(defaultUser, "123Pa$$word.");
+                        await userManager.CreateAsync(defaultUser, Strings.DefaultUserPassword);
                         await userManager.AddToRoleAsync(defaultUser, Roles.Registered.ToString());
                         //await userManager.AddToRoleAsync(defaultUser, Roles.Moderator.ToString());
                         await userManager.AddToRoleAsync(defaultUser, Roles.Admin.ToString());
@@ -36,7 +38,9 @@
             }
         }
 
-        public static async Task SeedRolesAsync(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedRolesAsync(
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
             try
             {

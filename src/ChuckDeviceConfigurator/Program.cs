@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
+using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceController.Data.Contexts;
 
 
@@ -69,6 +70,15 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+builder.Services.AddDbContextFactory<DeviceControllerContext>(options =>
+{
+    options.EnableSensitiveDataLogging()
+           .UseMySql(connectionString, serverVersion, opt =>
+           {
+               opt.MigrationsAssembly(Strings.AssemblyName);
+           });
+}, ServiceLifetime.Singleton);
+
 builder.Services.AddDbContext<DeviceControllerContext>(options =>
 {
     options.EnableSensitiveDataLogging()
@@ -78,6 +88,7 @@ builder.Services.AddDbContext<DeviceControllerContext>(options =>
            });
 }, ServiceLifetime.Scoped);
 
+builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 
 
 var app = builder.Build();

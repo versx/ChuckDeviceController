@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -12,13 +13,16 @@
     {
         private readonly ILogger<DeviceController> _logger;
         private readonly DeviceControllerContext _context;
+        private readonly IJobControllerService _jobControllerService;
 
         public DeviceController(
             ILogger<DeviceController> logger,
-            DeviceControllerContext context)
+            DeviceControllerContext context,
+            IJobControllerService jobControllerService)
         {
             _logger = logger;
             _context = context;
+            _jobControllerService = jobControllerService;
         }
 
         // GET: DeviceController
@@ -58,6 +62,9 @@
         {
             try
             {
+                // TODO: Create device
+                // TODO: _jobControllerService.AddDevice(device);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -95,6 +102,9 @@
                     return View();
                 }
 
+                // TODO: Edit Device
+                _jobControllerService.ReloadDevice(device, id);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -131,6 +141,13 @@
                     ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
                     return View();
                 }
+
+                // Delete device from database
+                _context.Devices.Remove(device);
+                await _context.SaveChangesAsync();
+
+                _jobControllerService.RemoveDevice(id);
+
                 return RedirectToAction(nameof(Index));
             }
             catch

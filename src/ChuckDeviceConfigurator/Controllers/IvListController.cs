@@ -128,6 +128,11 @@
                     ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
                     return View();
                 }
+
+                // Delete IV list from database
+                _context.IvLists.Remove(ivList);
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             catch

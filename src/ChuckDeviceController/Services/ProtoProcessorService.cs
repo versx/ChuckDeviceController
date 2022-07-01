@@ -249,7 +249,7 @@
                             {
                                 if (fsr.ChallengeQuest?.Quest != null)
                                 {
-                                    // TODO: Check for AR quest or if AR quest is required
+                                    // Check for AR quest or if AR quest is required
                                     var hasAr = hasArQuestReqGlobal
                                         ?? hasArQuestReq
                                         ?? GetArQuestMode(uuid, timestamp);

@@ -8,9 +8,9 @@
         public string Status { get; set; }
 
         [JsonPropertyName("data")]
-        public dynamic Data { get; set; }
+        public dynamic? Data { get; set; }
 
         [JsonPropertyName("error")]
-        public string Error { get; set; }
+        public string? Error { get; set; }
     }
 }

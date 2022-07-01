@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
 
+    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -13,13 +14,16 @@
     {
         private readonly ILogger<InstanceController> _logger;
         private readonly DeviceControllerContext _context;
+        private readonly IJobControllerService _jobControllerService;
 
         public InstanceController(
             ILogger<InstanceController> logger,
-            DeviceControllerContext context)
+            DeviceControllerContext context,
+            IJobControllerService jobControllerService)
         {
             _logger = logger;
             _context = context;
+            _jobControllerService = jobControllerService;
         }
 
         // GET: InstanceController
@@ -60,13 +64,13 @@
         {
             try
             {
-                var name = Convert.ToString(collection["Instance.Name"]);
-                var type = (InstanceType)Convert.ToUInt16(collection["Instance.Type"]);
-                var minLevel = Convert.ToUInt16(collection["Instance.MinimumLevel"]);
-                var maxLevel = Convert.ToUInt16(collection["Instance.MaximumLevel"]);
-                var geofences = Convert.ToString(collection["Instance.Geofences"]).Split(',').ToList();
-                var accountGroup = Convert.ToString(collection["Instance.Data.AccountGroup"]);
-                var isEvent = collection["Instance.Data.IsEvent"].Contains("true");
+                var name = Convert.ToString(collection["Name"]);
+                var type = (InstanceType)Convert.ToUInt16(collection["Type"]);
+                var minLevel = Convert.ToUInt16(collection["MinimumLevel"]);
+                var maxLevel = Convert.ToUInt16(collection["MaximumLevel"]);
+                var geofences = Convert.ToString(collection["Geofences"]).Split(',').ToList();
+                var accountGroup = Convert.ToString(collection["Data.AccountGroup"]);
+                var isEvent = collection["Data.IsEvent"].Contains("true");
 
                 if (_context.Instances.Any(inst => inst.Name == name))
                 {
@@ -92,6 +96,8 @@
                 // Add instance to database
                 await _context.Instances.AddAsync(instance);
                 await _context.SaveChangesAsync();
+
+                await _jobControllerService.AddInstanceAsync(instance);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -156,6 +162,8 @@
                 _context.Instances.Update(instance);
                 await _context.SaveChangesAsync();
 
+                await _jobControllerService.ReloadInstanceAsync(instance, id);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -192,8 +200,12 @@
                     return null;
                 }
 
-                // Delete database from database
+                // Delete instance from database
                 _context.Instances.Remove(instance);
+                await _context.SaveChangesAsync();
+
+                await _jobControllerService.RemoveInstanceAsync(id);
+
                 return RedirectToAction(nameof(Index));
             }
             catch

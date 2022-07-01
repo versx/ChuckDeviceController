@@ -128,6 +128,11 @@
                     ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
                     return View();
                 }
+
+                // Delete webhook from database
+                _context.Webhooks.Remove(webhook);
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             catch

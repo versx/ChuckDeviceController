@@ -56,11 +56,13 @@
             }
 
             var device = await _context.Devices.FindAsync(payload.Uuid);
-            if (device == null)
+            /*
+            if (device == null && payload.Type != "init")
             {
                 _logger.LogError($"Failed to retrieve device '{payload.Uuid}', skipping...");
                 return null;
             }
+            */
 
             switch (payload.Type.ToLower())
             {
@@ -99,19 +101,8 @@
 
         #region Request Handlers
 
-        private async Task<DeviceResponse> HandleInitializeRequestAsync(string uuid, Device device = null)
+        private async Task<DeviceResponse> HandleInitializeRequestAsync(string uuid, Device? device = null)
         {
-            ulong? firstWarningTimestamp = null;
-            if (!string.IsNullOrEmpty(device?.AccountUsername))
-            {
-                var account = await _context.Accounts.FindAsync(device.AccountUsername);
-                if (account == null)
-                {
-                    _logger.LogWarning($"[{uuid}] Failed to retrieve account '{device.AccountUsername}'");
-                }
-                firstWarningTimestamp = account?.FirstWarningTimestamp;
-            }
-
             if (device is not null)
             {
                 // Device is already registered
@@ -126,7 +117,9 @@
                     Data = new DeviceAssignmentResponse
                     {
                         Assigned = assignedInstance,
-                        FirstWarningTimestamp = firstWarningTimestamp,
+                        Version = Strings.AssemblyVersion,
+                        Commit = "", // TODO: Get git commit
+                        Provider = Strings.AssemblyName,
                     },
                 };
             }
@@ -145,7 +138,9 @@
                 Data = new DeviceAssignmentResponse
                 {
                     Assigned = false,
-                    FirstWarningTimestamp = firstWarningTimestamp,
+                    Version = Strings.AssemblyVersion,
+                    Commit = "", // TODO: Get git commit
+                    Provider = Strings.AssemblyName,
                 },
             };
         }
@@ -182,14 +177,27 @@
                 */
             }
 
-            Account account = null;
+            Account? account = null;
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
                 var devices = _context.Devices.ToList();
                 var inUseAccounts = devices.Where(d => !string.IsNullOrEmpty(d.AccountUsername))
                                            .Select(d => d.AccountUsername.ToLower())
                                            .ToList();
-                account = null; // TODO: Get new account between min/max level and not in inUseAccount list
+
+                // Get new account between min/max level and not in inUseAccount list
+                account = _context.Accounts.AsEnumerable().FirstOrDefault(x =>
+                    x.Level >= minLevel &&
+                    x.Level <= maxLevel &&
+                    string.IsNullOrEmpty(x.Failed) &&
+                    x.Spins < 3500 &&
+                    x.FirstWarningTimestamp == null &&
+                    x.Warn == null &&
+                    (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
+                    x.Banned == null &&
+                    !inUseAccounts.Contains(x.Username.ToLower())
+                );
+
                 _logger.LogDebug($"[{device.Uuid}] GetNewACcount '{account?.Username}'");
                 if (account == null)
                 {
@@ -207,9 +215,11 @@
                 account = await _context.Accounts.FindAsync(device.AccountUsername);
                 if (account == null)
                 {
-                    // TODO: Failed to get account
+                    // Failed to get account
                     _logger.LogError($"[{device.Uuid}] Failed to retrieve device's account from database");
+                    return null;
                 }
+
                 _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account?.Username}'");
                 if (account.Level >= minLevel &&
                     account.Level <= maxLevel &&
@@ -282,7 +292,7 @@
 
             if (!string.IsNullOrEmpty(username))
             {
-                // TODO: Get account
+                // Get account by username from request payload
                 var account = await _context.Accounts.FindAsync(username);
                 if (account == null)
                 {
