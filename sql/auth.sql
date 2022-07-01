@@ -12,10 +12,8 @@ CREATE TABLE `AspNetRoles` (
 
 CREATE TABLE `AspNetUsers` (
     `Id` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
-    `first_name` longtext CHARACTER SET utf8mb4 NOT NULL,
-    `last_name` longtext CHARACTER SET utf8mb4 NOT NULL,
     `username_change_limit` int NOT NULL,
-    `profile_picture` longblob NOT NULL,
+    `profile_picture` longblob NULL,
     `UserName` varchar(256) CHARACTER SET utf8mb4 NULL,
     `NormalizedUserName` varchar(256) CHARACTER SET utf8mb4 NULL,
     `Email` varchar(256) CHARACTER SET utf8mb4 NULL,
