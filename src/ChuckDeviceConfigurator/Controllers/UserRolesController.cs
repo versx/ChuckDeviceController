@@ -35,6 +35,7 @@
                 {
                     UserId = user.Id,
                     Email = user.Email,
+                    UserName = user.UserName,
                     Roles = await GetUserRoles(user),
                 };
                 userRolesViewModel.Add(viewModel);
