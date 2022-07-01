@@ -98,9 +98,28 @@ View all available API routes:
 ### ChuckDeviceConfigurator (Dashboard/Management UI)  
 ```json
 {
+{
   "ConnectionStrings": {
     // Database connection string
     "DefaultConnection": "Uid=cdcuser;Password=cdcpass123;Host=127.0.0.1;Port=3306;Database=cdcdb;old guids=true;Allow User Variables=true;"
+  },
+  // Available authentication providers
+  "Authentication": {
+    "Discord": {
+      "Enabled": false,
+      "ClientId": "",
+      "ClientSecret": ""
+    },
+    "GitHub": {
+      "Enabled": false,
+      "ClientId": "",
+      "ClientSecret": ""
+    },
+    "Google": {
+      "Enabled": false,
+      "ClientId": "",
+      "ClientSecret": ""
+    }
   },
   // Url to access the Dashboard UI
   "Urls": "http://*:8881",
