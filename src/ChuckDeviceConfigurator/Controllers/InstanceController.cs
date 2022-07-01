@@ -4,7 +4,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
 
-    using ChuckDeviceConfigurator.Models;
+    using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;

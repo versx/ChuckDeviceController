@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ChuckDeviceConfigurator</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/fontawesome-free-6.1.1-web/css/all.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ChuckDeviceConfigurator.styles.css" asp-append-version="true" />
     <link rel="icon" href="~/favicons/chuck.ico" type="image/x-icon" asp-append-version="true" />
@@ -48,13 +49,10 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Webhook" asp-action="Index">Webhooks</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Index">Users</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="UserRoles" asp-action="Index">Users</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="UserRoles" asp-action="Index">User Roles</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="RoleManager" asp-action="Index">Role Manager</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="RoleManager" asp-action="Index">Roles</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -70,7 +68,8 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2022 - ChuckDeviceConfigurator - <div class="float-end">&#10084;&#65039; In loving memory of Chuckleslove, rest in peace brother.</div>
+            <div class="float-start">&copy; 2022 - ChuckDeviceConfigurator</div>
+            <div class="float-end">&#10084;&#65039; In loving memory of Chuckleslove, rest in peace brother.</div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

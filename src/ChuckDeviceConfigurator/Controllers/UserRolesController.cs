@@ -1,12 +1,14 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
-    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Areas.Identity.Data;
     using ChuckDeviceConfigurator.Data;
+    using ChuckDeviceConfigurator.ViewModels;
 
+    [Authorize(Roles = Strings.SuperAdminRole)]
     public class UserRolesController : Controller
     {
         private readonly ILogger<UserRolesController> _logger;
@@ -42,14 +44,14 @@
 
         public async Task<IActionResult> Manage(string userId)
         {
-            ViewBag.userId = userId;
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
+                ViewBag.ErrorMessage = $"User with Id '{userId}' not found";
                 return View("NotFound");
             }
 
+            ViewBag.userId = userId;
             ViewBag.UserName = user.UserName;
             var model = new List<ManageUserRolesViewModel>();
             foreach (var role in _roleManager.Roles)

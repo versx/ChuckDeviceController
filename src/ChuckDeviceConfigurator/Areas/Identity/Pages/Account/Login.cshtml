@@ -69,7 +69,78 @@
                             <p>
                                 @foreach (var provider in Model.ExternalLogins)
                                 {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                    if (provider.Name == "Google")
+                                    {
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-block btn-google" value="@provider.Name"
+                                                    title="Log in using your @provider.DisplayName account" name="provider">
+
+                                                <i class="fab fa-google fa-align-left social-icon"></i> Google
+                                            </button>
+                                        </div>
+                                    }
+                                    else if (provider.Name == "Facebook")
+                                    {
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-block btn-facebook" value="@provider.Name"
+                                                    title="Log in using your @provider.DisplayName account" name="provider">
+
+                                                <i class="fab fa-facebook fa-align-left social-icon"></i> Facebook
+                                            </button>
+                                        </div>
+                                    }
+                                    else if (provider.Name == "Twitter")
+                                    {
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-block btn-twitter" value="@provider.Name"
+                                                    title="Log in using your @provider.DisplayName account" name="provider">
+
+                                                <i class="fab fa-twitter fa-align-left social-icon"></i> Twitter
+                                            </button>
+                                        </div>
+                                    }
+                                    else if (provider.Name == "Microsoft")
+                                    {
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-block btn-microsoft" value="@provider.Name"
+                                                    title="Log in using your @provider.DisplayName account" name="provider">
+
+                                                <i class="fab fa-microsoft fa-align-left social-icon"></i> Microsoft
+                                            </button>
+                                        </div>
+                                    }
+                                    else if (provider.Name == "Discord")
+                                    {
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-block btn-discord" value="@provider.Name"
+                                                    title="Register using your @provider.DisplayName account" name="provider">
+
+                                                <i class="fab fa-discord fa-align-left social-icon"></i> Discord
+                                            </button>
+                                        </div>
+                                    }
+                                    else if (provider.Name == "GitHub")
+                                    {
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-block btn-github" value="@provider.Name"
+                                                    title="Register using your @provider.DisplayName account" name="provider">
+
+                                                <i class="fab fa-github fa-align-left social-icon"></i> GitHub
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-block btn-linkedin" name="provider"
+                                                    value="@provider.Name" title="Log in using your @provider.DisplayName account">
+
+                                                <i class="fab fa-life-buoy fa-align-left social-icon"></i>
+                                                Sign in with @provider.Name
+
+                                            </button>
+                                        </div>
+                                    }
                                 }
                             </p>
                         </div>

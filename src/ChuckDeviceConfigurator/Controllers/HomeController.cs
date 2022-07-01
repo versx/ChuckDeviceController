@@ -4,7 +4,7 @@
 
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Models;
+    using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
 
     public class HomeController : Controller

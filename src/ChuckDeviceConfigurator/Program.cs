@@ -1,10 +1,10 @@
-using ChuckDeviceConfigurator;
-using ChuckDeviceConfigurator.Areas.Identity.Data;
-using ChuckDeviceConfigurator.Data;
-using ChuckDeviceController.Data.Contexts;
-
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
+using ChuckDeviceConfigurator;
+using ChuckDeviceConfigurator.Data;
+using ChuckDeviceController.Data.Contexts;
 
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -44,7 +44,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
-/*
 builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie settings
@@ -58,7 +57,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
     //options.ReturnUrlParameter=""
 });
-*/
+
+// Register external 3rd party authentication providers if configured
+var auth = builder.Services.AddAuthentication();
+RegisterAuthProviders(auth);
 
 #endregion
 
@@ -77,7 +79,11 @@ builder.Services.AddDbContext<DeviceControllerContext>(options =>
 }, ServiceLifetime.Scoped);
 
 
+
 var app = builder.Build();
+
+// Seed default user and roles
+await SeedDefaultData(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -90,6 +96,12 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+// https://stackoverflow.com/a/64874175
+app.UseCookiePolicy(new CookiePolicyOptions()
+{
+    MinimumSameSitePolicy = SameSiteMode.Lax
+});
 
 //app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -129,4 +141,87 @@ IConfigurationRoot LoadConfig(string env = "")
         .AddCommandLine(args)
         .Build();
     return config;
+}
+
+void RegisterAuthProviders(AuthenticationBuilder auth)
+{
+    var authConfig = config.GetSection("Authentication");
+
+    // Check if GitHub auth is enabled, if so register it
+    if (bool.TryParse(authConfig["GitHub:Enabled"], out var githubEnabled) && githubEnabled)
+    {
+        auth.AddGitHub(options =>
+        {
+            var github = authConfig.GetSection("GitHub");
+            // Ensure GitHub auth is set
+            if (github != null)
+            {
+                options.ClientId = github["ClientId"];
+                options.ClientSecret = github["ClientSecret"];
+                //options.Scope("");
+            }
+        });
+    }
+
+    // Check if Google auth is enabled, if so register it
+    if (bool.TryParse(authConfig["Google:Enabled"], out var googleEnabled) && googleEnabled)
+    {
+        auth.AddGoogle(options =>
+        {
+            var google = authConfig.GetSection("Google");
+            // Ensure Google auth is set
+            if (google != null)
+            {
+                options.ClientId = google["ClientId"];
+                options.ClientSecret = google["ClientSecret"];
+                options.Scope.Add("email");
+                options.Scope.Add("profile");
+                options.Scope.Add("openid");
+            }
+        });
+    }
+
+    // Check if Discord auth is enabled, if so register it
+    if (bool.TryParse(authConfig["Discord:Enabled"], out var discordEnabled) && discordEnabled)
+    {
+        auth.AddDiscord(options =>
+        {
+            var discord = authConfig.GetSection("Discord");
+            // Ensure Discord auth is set
+            if (discord != null)
+            {
+                options.ClientId = discord["ClientId"];
+                options.ClientSecret = discord["ClientSecret"];
+                options.Scope.Add("email");
+                options.Scope.Add("guilds");
+                options.SaveTokens = true;
+            }
+        });
+    }
+}
+
+async Task SeedDefaultData(IServiceProvider serviceProvider)
+{
+    using (var scope = serviceProvider.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+        try
+        {
+            var context = services.GetRequiredService<UserIdentityContext>();
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+            // Seed default user roles
+            await UserIdentityContextSeed.SeedRolesAsync(userManager, roleManager);
+
+            // Seed default SuperAdmin user
+            await UserIdentityContextSeed.SeedSuperAdminAsync(userManager, roleManager);
+        }
+        catch (Exception ex)
+        {
+            var logger = loggerFactory.CreateLogger<Program>();
+            logger.LogError(ex, "An error occurred while seeding the database.");
+        }
+    }
 }

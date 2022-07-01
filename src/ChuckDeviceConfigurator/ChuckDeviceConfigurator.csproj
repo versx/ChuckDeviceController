@@ -36,6 +36,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.6" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.6" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.6" />
+    <PackageReference Include="AspNet.Security.OAuth.Discord" Version="6.0.6" />
+    <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="6.0.6" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,4 +46,9 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Microsoft.AspNetCore.Authentication.Google" />
+    <None Remove="AspNet.Security.OAuth.Discord" />
+    <None Remove="AspNet.Security.OAuth.GitHub" />
+  </ItemGroup>
 </Project>

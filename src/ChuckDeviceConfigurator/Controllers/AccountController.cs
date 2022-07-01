@@ -3,10 +3,11 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Models;
+    using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
+    //[FormatFilter]
     public class AccountController : Controller
     {
         private readonly ILogger<AccountController> _logger;
@@ -19,6 +20,16 @@
             _logger = logger;
             _context = context;
         }
+
+        /*
+        [HttpGet("/api/test/{id:long}.{format?}")]
+        public List<Account> GetAccounts(string id)
+        {
+            Console.WriteLine($"Id: {id}");
+            var accounts = _context.Accounts.ToList();
+            return accounts;
+        }
+        */
 
         // GET: AccountController
         public ActionResult Index()

@@ -1,12 +1,19 @@
-﻿namespace ChuckDeviceConfigurator.Areas.Identity.Data
+﻿namespace ChuckDeviceConfigurator.Data
 {
     public enum Roles
     {
-        SuperAdmin,
-        Admin,
-        Moderator,
-        Basic,
+        SuperAdmin, // root - full access
+        Admin, // Users & roles maybe?
+        Moderator, // Unused - not needed
+        Registered, // No access other than login and front dashboard page
 
-        // TODO: Accounts, Assignments, Devices, Geofences View/Edit/Delete permissions
+        // Controller data models
+        Accounts,
+        Assignments,
+        Devices,
+        Geofences,
+        Instances,
+        IvLists,
+        Webhooks,
     }
 }

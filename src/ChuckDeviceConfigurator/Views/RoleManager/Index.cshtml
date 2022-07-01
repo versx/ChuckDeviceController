@@ -1,10 +1,12 @@
-﻿@model List<Microsoft.AspNetCore.Identity.IdentityRole>
+﻿@using Microsoft.AspNetCore.Identity
+@model List<IdentityRole>
 @{
     ViewData["Title"] = "Role Manager";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h1>Role Manager</h1>
+
 <form method="post" asp-action="AddRole" asp-controller="RoleManager">
     <div class="input-group">
         <input name="roleName" class="form-control w-25">
@@ -20,6 +22,7 @@
 
             <th>Id</th>
             <th>Role</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -28,6 +31,10 @@
             <tr>
                 <td>@role.Id</td>
                 <td>@role.Name</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@role.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@role.Id">Delete</a>
+                </td>
             </tr>
         }
     </tbody>

@@ -1,27 +1,10 @@
 ﻿namespace ChuckDeviceConfigurator.Data
 {
-    using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Areas.Identity.Data;
-
     public class UserIdentityContext : IdentityDbContext<ApplicationUser>
     {
-        public DbSet<ApplicationUser> User { get; set; }
-
-        public DbSet<IdentityRole> Role { get; set; }
-
-        public DbSet<IdentityUserRole<string>> UserRoles { get; set; }
-
-        public DbSet<IdentityUserClaim<string>> UserClaims { get; set; }
-
-        public DbSet<IdentityUserLogin<string>> UserLogins { get; set; }
-
-        public DbSet<IdentityRoleClaim<string>> RoleClaims { get; set; }
-
-        public DbSet<IdentityUserToken<string>> UserTokens { get; set; }
-
         public UserIdentityContext(DbContextOptions<UserIdentityContext> options)
             : base(options)
         {
@@ -53,29 +36,5 @@
             builder.Entity<IdentityRole>().ToTable("identity_roles");
             */
         }
-    }
-
-    public class ErrorViewModel
-    {
-        public string RequestId { get; set; }
-
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
-    }
-
-    public class ManageUserRolesViewModel
-    {
-        public string RoleId { get; set; }
-        public string RoleName { get; set; }
-        public bool Selected { get; set; }
-    }
-
-    public class UserRolesViewModel
-    {
-        public string UserId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string UserName { get; set; }
-        public string Email { get; set; }
-        public IEnumerable<string> Roles { get; set; }
     }
 }

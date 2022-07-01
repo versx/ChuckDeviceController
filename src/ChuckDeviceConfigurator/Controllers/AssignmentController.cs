@@ -3,7 +3,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Models;
+    using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 

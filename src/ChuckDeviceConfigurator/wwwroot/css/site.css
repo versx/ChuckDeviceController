@@ -16,3 +16,60 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+
+
+.btn-google:hover {
+    background: #b22222;
+    color: #fff;
+}
+
+.btn-facebook:hover {
+    background: #2b4db1;
+    color: #fff;
+}
+
+.btn-twitter:hover {
+    background: #007bb6;
+    color: #fff;
+}
+
+.btn-microsoft:hover {
+    background: #00618E;
+    color: #fff;
+}
+
+.btn-discord {
+    background: #5865F2;
+    color: #fff;
+}
+
+.btn-github {
+    background: #000000;
+    color: #fff;
+}
+
+.btn-facebook {
+    background: #305c99;
+    color: #fff;
+}
+
+.btn-twitter {
+    background: #00cdff;
+    color: #fff;
+}
+
+.btn-google {
+    background: #d24228;
+    color: #fff;
+}
+
+.btn-linkedin {
+    background: #007bb6;
+    color: #fff;
+}
+
+.btn-microsoft {
+    background: #007bb6;
+    color: #fff;
+}
