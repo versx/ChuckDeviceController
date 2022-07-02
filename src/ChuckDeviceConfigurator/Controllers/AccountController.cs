@@ -162,7 +162,7 @@
                 var level = Convert.ToUInt16(collection["Level"]);
                 var spins = Convert.ToUInt32(collection["Spins"]);
                 var tutorial = Convert.ToUInt16(collection["Tutorial"]);
-                var group = Convert.ToString(collection["Group"]);
+                var group = Convert.ToString(collection["GroupName"]);
                 account.Username = username;
                 account.Password = password;
                 account.Level = level;
