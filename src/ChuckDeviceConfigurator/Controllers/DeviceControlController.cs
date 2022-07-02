@@ -57,7 +57,7 @@
             if (string.IsNullOrEmpty(payload?.Uuid))
             {
                 _logger.LogError($"Device UUID is not set in payload, skipping...");
-                return null;
+                return CreateErrorResponse($"Device UUID is not set in payload.");
             }
 
             var device = await _context.Devices.FindAsync(payload.Uuid);
@@ -89,18 +89,10 @@
                     return await HandleLogoutAsync(device);
                 case "job_failed":
                     _logger.LogWarning($"[{device.Uuid}] Job failed");
-                    return new DeviceResponse
-                    {
-                        Status = "error",
-                        Error = "Job failed",
-                    };
+                    return CreateErrorResponse("Job failed");
                 default:
                     _logger.LogWarning($"[{device.Uuid}] Unhandled request type '{payload.Type}'");
-                    return new DeviceResponse
-                    {
-                        Status = "error",
-                        Error = $"Unhandled request type '{payload.Type}'",
-                    };
+                    return CreateErrorResponse($"Unhandled request type '{payload.Type}'");
             }
         }
 
@@ -210,11 +202,7 @@
                 {
                     // Failed to get new account from database
                     _logger.LogError($"[{device.Uuid}] Failed to get account, make sure you have accounts in your `account` table.");
-                    return new DeviceResponse
-                    {
-                        Status = "error",
-                        Error = "Failed to get account, are you sure you have enough acounts?",
-                    };
+                    return CreateErrorResponse("Failed to get account, are you sure you have enough acounts?");
                 }
             }
             else
@@ -223,8 +211,8 @@
                 if (account == null)
                 {
                     // Failed to get account
-                    _logger.LogError($"[{device.Uuid}] Failed to retrieve device's account from database");
-                    return null;
+                    _logger.LogError($"[{device.Uuid}] Failed to retrieve device's assigned account from database");
+                    return CreateErrorResponse($"Failed to retrieve device's assigned account from database");
                 }
 
                 _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account?.Username}'");
@@ -275,18 +263,14 @@
             if (device == null)
             {
                 _logger.LogError($"Unable to get job for device, device is null");
-                return null;
+                return CreateErrorResponse("Unable to get job for device, device is null");
             }
 
             var jobController = _jobControllerService.GetInstanceController(device.Uuid);
             if (jobController == null)
             {
                 _logger.LogError($"[{device.Uuid}] Failed to get job instance controller");
-                return new DeviceResponse
-                {
-                    Status = "error",
-                    Error = "Failed to get job instance controller",
-                };
+                return CreateErrorResponse($"Failed to get job instance controller");
             }
 
             var minLevel = jobController.MinimumLevel;
@@ -322,11 +306,7 @@
             if (task == null)
             {
                 _logger.LogWarning($"[{device.Uuid}] No tasks avaialable yet");
-                return new DeviceResponse
-                {
-                    Status = "error",
-                    Error = "No tasks available yet",
-                };
+                return CreateErrorResponse("No tasks available yet");
             }
 
             if (device != null)
@@ -352,22 +332,14 @@
             // Check if device is assigned an account username
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
-                return new DeviceResponse
-                {
-                    Status = "error",
-                    Error = $"Device '{device.Uuid}' is not assigned an account!",
-                };
+                return CreateErrorResponse($"Device '{device.Uuid}' is not assigned an account!");
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
             var account = await _context.Accounts.FindAsync(device.AccountUsername);
             if (account == null)
             {
-                return new DeviceResponse
-                {
-                    Status = "error",
-                    Error = $"Failed to retrieve account with username '{device.AccountUsername}'",
-                };
+                return CreateErrorResponse($"Failed to retrieve account with username '{device.AccountUsername}'");
             }
 
             switch (status.ToLower())
@@ -422,11 +394,7 @@
             var account = await _context.Accounts.FindAsync(username);
             if (device == null || string.IsNullOrEmpty(username) || account == null)
             {
-                return new DeviceResponse
-                {
-                    Status = "error",
-                    Error = "Failed to get account.",
-                };
+                return CreateErrorResponse("Failed to get account.");
             }
             if (account.Level == 0)
             {
@@ -447,20 +415,12 @@
         {
             if (device == null)
             {
-                return new DeviceResponse
-                {
-                    Status = "error",
-                    Error = "Device does not exist",
-                };
+                return CreateErrorResponse("Device does not exist");
             }
 
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
-                return new DeviceResponse
-                {
-                    Status = "error",
-                    Error = "Account does not exist",
-                };
+                return CreateErrorResponse("Account does not exist");
             }
 
             device.AccountUsername = null;
@@ -485,6 +445,17 @@
                     MinimumLevel = minLevel,
                     MaximumLevel = maxLevel,
                 },
+            };
+        }
+
+        private static DeviceResponse CreateErrorResponse(string error, dynamic? data = null)
+        {
+            //_logger.LogError(error);
+            return new DeviceResponse
+            {
+                Status = "error",
+                Error = error,
+                Data = data,
             };
         }
     }
