@@ -4,7 +4,6 @@
     using System.Diagnostics;
     using System.Transactions;
 
-    using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
     using POGOProtos.Rpc;
     using Z.BulkOperations;
@@ -12,6 +11,7 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.HostedServices;
 
     public interface IDataConsumer
@@ -824,7 +824,7 @@
                         else
                         {
                             // New Pokemon
-                            var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(data.Pokemon.Latitude, data.Pokemon.Longitude));
+                            var cellId = S2CellExtensions.S2CellIdFromLatLng(data.Pokemon.Latitude, data.Pokemon.Longitude);
                             var newPokemon = new Pokemon(context, data.Pokemon, cellId.Id, DateTime.UtcNow.ToTotalSeconds(), username, isEvent);
                             await newPokemon.AddEncounterAsync(context, data, username);
                             await newPokemon.UpdateAsync(context, updateIv: true);

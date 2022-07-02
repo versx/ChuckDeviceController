@@ -1,11 +1,11 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
-    using ChuckDeviceConfigurator.Geometry.Models;
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Models;
 
     using Microsoft.EntityFrameworkCore;
 

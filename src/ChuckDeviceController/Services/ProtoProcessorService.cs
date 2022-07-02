@@ -6,11 +6,12 @@
     using Google.Common.Geometry;
     using POGOProtos.Rpc;
 
-    using ChuckDeviceController.Geometry;
-    using ChuckDeviceController.HostedServices;
-    using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Extensions;
+    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.HostedServices;
+    using ChuckDeviceController.Net.Models.Requests;
 
     public class ProtoPayloadItem
     {
@@ -157,7 +158,7 @@
             {
                 // Check target is within cell id instead of checking geofences
                 targetKnown = true;
-                targetCellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(targetCoord.Latitude, targetCoord.Longitude));
+                targetCellId = targetCoord.S2CellIdFromCoordinate();
                 //_logger.LogDebug($"[{uuid}] Data received within target area {targetCoord} and target distance {payload.TargetMaxDistance}");
             }
             //_logger.LogWarning($"[{device.Uuid}] InArea={inArea}");

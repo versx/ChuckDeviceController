@@ -1,10 +1,10 @@
-﻿namespace ChuckDeviceConfigurator.Converters
+﻿namespace ChuckDeviceController.Geometry.Converters
 {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
 
-    using ChuckDeviceConfigurator.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models;
 
     public static class AreaConverters
     {

@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Data
+﻿namespace ChuckDeviceController.Net
 {
     public interface IWebhookPayload
     {

@@ -4,12 +4,12 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Extensions;
 
     [Table("pokemon")]
     public class Pokemon : BaseEntity
@@ -208,11 +208,9 @@
                 {
                     return;
                 }
-                var s2cell = new S2Cell(new S2CellId(cellId));
-                var cellLat = s2cell.CapBound.RectBound.Center.LatDegrees;
-                var cellLon = s2cell.CapBound.RectBound.Center.LngDegrees;
-                lat = cellLat;
-                lon = cellLon;
+                var latlng = cellId.CoordinateFromS2CellId();
+                lat = latlng.Latitude;
+                lon = latlng.Longitude;
                 SeenType = SeenType.NearbyCell;
             }
             else

@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Geometry
+﻿namespace ChuckDeviceController.Geometry.Models
 {
     using System.Text.Json.Serialization;
 

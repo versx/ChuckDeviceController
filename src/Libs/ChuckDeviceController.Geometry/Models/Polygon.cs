@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Geometry.Models
+﻿namespace ChuckDeviceController.Geometry.Models
 {
     using System.Collections.Generic;
 

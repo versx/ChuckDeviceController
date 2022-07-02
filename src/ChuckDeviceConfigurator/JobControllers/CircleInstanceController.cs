@@ -2,12 +2,12 @@
 {
     using System.Threading.Tasks;
 
-    using ChuckDeviceConfigurator.Geometry.Models;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Models;
 
     public class CircleInstanceController : IJobController
     {

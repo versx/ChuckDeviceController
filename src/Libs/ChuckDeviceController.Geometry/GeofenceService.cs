@@ -1,10 +1,10 @@
-﻿namespace ChuckDeviceConfigurator.Geometry
+﻿namespace ChuckDeviceController.Geometry
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    using ChuckDeviceConfigurator.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models;
 
     public static class GeofenceService
     {

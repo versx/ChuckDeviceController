@@ -4,11 +4,11 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    using Google.Common.Geometry;
     using POGOProtos.Rpc;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Extensions;
 
     [Table("weather")]
     public partial class Weather : BaseEntity
@@ -73,7 +73,7 @@
         public Weather(ClientWeatherProto weatherData)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var s2cell = new S2Cell(new S2CellId((ulong)weatherData.S2CellId));
+            var s2cell = weatherData.S2CellId.S2CellFromId();
             var center = s2cell.RectBound.Center;
             var alert = weatherData.Alerts?.FirstOrDefault();
             Id = weatherData.S2CellId;

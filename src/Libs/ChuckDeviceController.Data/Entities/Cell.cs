@@ -5,13 +5,14 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
 
-    using Google.Common.Geometry;
-
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Extensions;
 
     [Table("s2cell")]
     public class Cell : BaseEntity
     {
+        #region Properties
+
         [
             Column("id"),
             Key,
@@ -44,17 +45,18 @@
         ]
         public ulong Updated { get; set; }
 
+        #endregion
+
         public Cell()
         {
         }
 
         public Cell(ulong cellId)
         {
-            var s2cell = new S2Cell(new S2CellId(cellId));
-            var center = s2cell.RectBound.Center;
+            var latlng = cellId.CoordinateFromS2CellId();
             Id = cellId;
-            Latitude = center.LatDegrees;
-            Longitude = center.LngDegrees;
+            Latitude = latlng.Latitude;
+            Longitude = latlng.Longitude;
             Level = 15;
             Updated = DateTime.UtcNow.ToTotalSeconds();
         }

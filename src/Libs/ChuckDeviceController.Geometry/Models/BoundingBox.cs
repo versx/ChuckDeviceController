@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Geometry.Models
+﻿namespace ChuckDeviceController.Geometry.Models
 {
     public class BoundingBox
     {
