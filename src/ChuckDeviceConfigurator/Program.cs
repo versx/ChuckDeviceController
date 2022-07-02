@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
+using ChuckDeviceConfigurator.Services;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceController.Data.Contexts;
 
@@ -107,6 +109,8 @@ builder.Services.AddDbContext<DeviceControllerContext>(options =>
 }, ServiceLifetime.Scoped);
 
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
+builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
+builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
 
 
 

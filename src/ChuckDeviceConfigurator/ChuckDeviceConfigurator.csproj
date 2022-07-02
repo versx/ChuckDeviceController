@@ -39,6 +39,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.6" />
     <PackageReference Include="AspNet.Security.OAuth.Discord" Version="6.0.6" />
     <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="6.0.6" />
+    <PackageReference Include="SendGrid" Version="9.28.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,6 +51,7 @@
     <None Remove="Microsoft.AspNetCore.Authentication.Google" />
     <None Remove="AspNet.Security.OAuth.Discord" />
     <None Remove="AspNet.Security.OAuth.GitHub" />
+    <None Remove="SendGrid" />
   </ItemGroup>
 
   <ItemGroup>
