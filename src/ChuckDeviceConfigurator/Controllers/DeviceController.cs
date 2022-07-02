@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.Services.Jobs;
@@ -87,6 +88,11 @@
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
                 return View();
             }
+
+            var instances = _context.Instances.ToList();
+            var instanceSelectItems = instances.Select(inst => new SelectListItem(inst.Name, inst.Name, inst.Name == device.InstanceName))
+                                               .ToList();
+            ViewBag.Instances = new SelectList(instances, "Name", "Name");
             return View(device);
         }
 
@@ -105,8 +111,17 @@
                     return View();
                 }
 
-                // TODO: Edit Device
-                _jobControllerService.ReloadDevice(device, id);
+                var instanceName = Convert.ToString(collection["InstanceName"]);
+                // Check if device is not already assigned to instance before updating in database
+                if (device.InstanceName != instanceName)
+                {
+                    device.InstanceName = instanceName;
+
+                    _context.Devices.Update(device);
+                    await _context.SaveChangesAsync();
+
+                    _jobControllerService.ReloadDevice(device, id);
+                }
 
                 return RedirectToAction(nameof(Index));
             }

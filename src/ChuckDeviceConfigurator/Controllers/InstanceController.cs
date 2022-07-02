@@ -144,13 +144,13 @@
                     return View();
                 }
 
-                var name = Convert.ToString(collection["Instance.Name"]);
-                var type = (InstanceType)Convert.ToUInt16(collection["Instance.Type"]);
-                var minLevel = Convert.ToUInt16(collection["Instance.MinimumLevel"]);
-                var maxLevel = Convert.ToUInt16(collection["Instance.MaximumLevel"]);
-                var geofences = Convert.ToString(collection["Instance.Geofences"]).Split(',').ToList();
-                var accountGroup = Convert.ToString(collection["Instance.Data.AccountGroup"]);
-                var isEvent = collection["Instance.Data.IsEvent"].Contains("true");
+                var name = Convert.ToString(collection["Name"]);
+                var type = (InstanceType)Convert.ToUInt16(collection["Type"]);
+                var minLevel = Convert.ToUInt16(collection["MinimumLevel"]);
+                var maxLevel = Convert.ToUInt16(collection["MaximumLevel"]);
+                var geofences = Convert.ToString(collection["Geofences"]).Split(',').ToList();
+                var accountGroup = Convert.ToString(collection["Data.AccountGroup"]);
+                var isEvent = collection["Data.IsEvent"].Contains("true");
 
                 instance.Name = name;
                 instance.Type = type;

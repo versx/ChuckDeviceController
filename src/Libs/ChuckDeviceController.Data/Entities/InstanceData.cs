@@ -1,39 +1,67 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
+    using System.ComponentModel;
     using System.Text.Json.Serialization;
 
     public class InstanceData
     {
-        [JsonPropertyName("circle_route_type")]
-        public CircleRouteType CircleRouteType { get; set; }
+        [
+            DisplayName("Circle Instance Route Type"),
+            JsonPropertyName("circle_route_type"),
+        ]
+        public CircleInstanceRouteType CircleRouteType { get; set; }
 
-        [JsonPropertyName("timezone")]
+        [
+            DisplayName("Time Zone"),
+            JsonPropertyName("timezone"),
+        ]
         public string? Timezone { get; set; }
 
-        [JsonPropertyName("enable_dst")]
+        [
+            DisplayName("Enable DST"),
+            JsonPropertyName("enable_dst"),
+        ]
         public bool? EnableDst { get; set; }
 
-        [JsonPropertyName("iv_queue_limit")]
+        [
+            DisplayName("IV Queue Limit"),
+            JsonPropertyName("iv_queue_limit"),
+        ]
         public ushort? IVQueueLimit { get; set; }
 
-        [JsonPropertyName("iv_list")]
+        [
+            DisplayName("IV List"),
+            JsonPropertyName("iv_list"),
+        ]
         public string? IVList { get; set; }
 
-        [JsonPropertyName("spin_limit")]
+        [
+            DisplayName("Spin Limit"),
+            JsonPropertyName("spin_limit"),
+        ]
         public ushort? SpinLimit { get; set; }
 
-        [JsonPropertyName("circle_size")]
+        [
+            DisplayName("Circle Size"),
+            JsonPropertyName("circle_size"),
+        ]
         public ushort? CircleSize { get; set; }
 
-        [JsonPropertyName("account_group")]
+        [
+            DisplayName("Account Group"),
+            JsonPropertyName("account_group"),
+        ]
         public string? AccountGroup { get; set; }
 
-        [JsonPropertyName("is_event")]
+        [
+            DisplayName("Is Event"),
+            JsonPropertyName("is_event"),
+        ]
         public bool IsEvent { get; set; }
 
         public InstanceData()
         {
-            CircleRouteType = CircleRouteType.Default;
+            CircleRouteType = CircleInstanceRouteType.Default;
         }
     }
 }

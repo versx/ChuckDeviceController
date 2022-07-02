@@ -39,6 +39,16 @@ body {
     color: #fff;
 }
 
+.btn-github:hover {
+    background: #303030;
+    color: #fff; /*#d6d6d6;*/
+}
+
+.btn-discord:hover {
+    background: #4654f0;
+    color: #fff;
+}
+
 .btn-discord {
     background: #5865F2;
     color: #fff;

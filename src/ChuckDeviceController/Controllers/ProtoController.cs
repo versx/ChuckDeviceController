@@ -100,6 +100,8 @@
                 device.LastLatitude = payload.LatitudeTarget;
                 device.LastLongitude = payload.LongitudeTarget;
                 device.LastSeen = DateTime.UtcNow.ToTotalSeconds();
+
+                _context.Update(device);
                 await _context.SaveChangesAsync();
             }
             else
@@ -109,12 +111,11 @@
                 {
                     Uuid = payload.Uuid,
                     AccountUsername = payload.Username,
-                    InstanceName = "",
-                    LastHost = "127.0.0.1",
                     LastLatitude = payload.LatitudeTarget,
                     LastLongitude = payload.LongitudeTarget,
                     LastSeen = DateTime.UtcNow.ToTotalSeconds(),
                 };
+                await _context.AddAsync(device);
                 await _context.SaveChangesAsync();
             }
             /*

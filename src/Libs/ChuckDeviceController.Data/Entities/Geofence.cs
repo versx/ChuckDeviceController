@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
+    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,19 +10,21 @@
         #region Properties
 
         [
-
+            DisplayName("Name"),
             Column("name"),
             Key,
         ]
         public string Name { get; set; }
 
         [
+            DisplayName("Geofence Type"),
             Column("type"),
             Required,
         ]
         public GeofenceType Type { get; set; }
 
         [
+            DisplayName("Data"),
             Column("data"),
             Required,
         ]

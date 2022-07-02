@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
+    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,36 +10,44 @@
         #region Properties
 
         [
+            DisplayName("Name"),
             Column("name"),
             Key,
         ]
         public string Name { get; set; }
 
         [
+            DisplayName("Instance Type"),
             Column("type"),
             Required,
         ]
         public InstanceType Type { get; set; }
 
         [
+            DisplayName("Minimum Level"),
             Column("min_level"),
             Required,
         ]
         public ushort MinimumLevel { get; set; }
 
         [
+            DisplayName("Maximum Level"),
             Column("max_level"),
             Required,
         ]
         public ushort MaximumLevel { get; set; }
 
         [
+            DisplayName("Geofences"),
             Column("geofences"),
             Required,
         ]
         public List<string> Geofences { get; set; }
 
-        [Column("data")]
+        [
+            DisplayName("Data"),
+            Column("data"),
+        ]
         public InstanceData Data { get; set; }
 
         [NotMapped]

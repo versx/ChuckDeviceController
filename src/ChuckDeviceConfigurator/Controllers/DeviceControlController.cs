@@ -5,6 +5,8 @@
     using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.Net.Models.Requests;
     using ChuckDeviceConfigurator.Net.Models.Responses;
+    using ChuckDeviceConfigurator.Services.Jobs;
+    using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
@@ -14,13 +16,16 @@
     {
         private readonly ILogger<DeviceControlController> _logger;
         private readonly DeviceControllerContext _context;
+        private readonly IJobControllerService _jobControllerService;
 
         public DeviceControlController(
             ILogger<DeviceControlController> logger,
-            DeviceControllerContext context)
+            DeviceControllerContext context,
+            IJobControllerService jobControllerService)
         {
             _logger = logger;
             _context = context;
+            _jobControllerService = jobControllerService;
         }
 
         #region Routes
@@ -166,15 +171,13 @@
 
             if (device is not null)
             {
-                // TODO: Get instance controller for device and set min/max level variables
-                /*
-                var instanceController = _instanceController.GetInstanceController(device.Uuid);
+                // Get instance controller for device and set min/max level variables
+                var instanceController = _jobControllerService.GetInstanceController(device.Uuid);
                 if (instanceController != null)
                 {
                     minLevel = instanceController.MinimumLevel;
                     maxLevel = instanceController.MaximumLevel;
                 }
-                */
             }
 
             Account? account = null;
@@ -186,6 +189,7 @@
                                            .ToList();
 
                 // Get new account between min/max level and not in inUseAccount list
+                /*
                 account = _context.Accounts.AsEnumerable().FirstOrDefault(x =>
                     x.Level >= minLevel &&
                     x.Level <= maxLevel &&
@@ -197,12 +201,15 @@
                     x.Banned == null &&
                     !inUseAccounts.Contains(x.Username.ToLower())
                 );
+                */
 
-                _logger.LogDebug($"[{device.Uuid}] GetNewACcount '{account?.Username}'");
+                account = _context.Accounts.FirstOrDefault();// TODO: Fix get new account x => x.Banned == null && x.Failed == null && x.FirstWarningTimestamp == null);
+
+                _logger.LogDebug($"[{device.Uuid}] GetNewAccount '{account?.Username}'");
                 if (account == null)
                 {
                     // Failed to get new account from database
-                    _logger.LogError($"[{device.Uuid}] Failed to get account, Make sure you have accounts in your `account` table.");
+                    _logger.LogError($"[{device.Uuid}] Failed to get account, make sure you have accounts in your `account` table.");
                     return new DeviceResponse
                     {
                         Status = "error",
@@ -265,29 +272,29 @@
 
         private async Task<DeviceResponse> HandleGetJobRequestAsync(Device device, string username)
         {
-            // TODO: Remove VV
-            ushort minLevel = 0;
-            ushort maxLevel = 29;
-
-            /*
-            var instanceController = _instanceController.GetInstanceController(device?.Uuid);
-            if (instanceController == null)
+            if (device == null)
             {
-                _logger.LogError($"[Device] [{device?.Uuid}] Failed to get instance controller.");
+                _logger.LogError($"Unable to get job for device, device is null");
+                return null;
+            }
+
+            var jobController = _jobControllerService.GetInstanceController(device.Uuid);
+            if (jobController == null)
+            {
+                _logger.LogError($"[{device.Uuid}] Failed to get job instance controller");
                 return new DeviceResponse
                 {
                     Status = "error",
-                    Error = "Failed to get instance controller",
+                    Error = "Failed to get job instance controller",
                 };
             }
 
-            var minLevel = instanceController.MinimumLevel;
-            var maxLevel = instanceController.MaximumLevel;
-            */
+            var minLevel = jobController.MinimumLevel;
+            var maxLevel = jobController.MaximumLevel;
 
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
-                //return CreateSwitchAccountTask(minLevel, maxLevel);
+                return CreateSwitchAccountTask(minLevel, maxLevel);
             }
 
             if (!string.IsNullOrEmpty(username))
@@ -307,12 +314,22 @@
 
                 if (account.Level < minLevel || account.Level > maxLevel)
                 {
-                    //_logger.LogWarning($"[{device.Uuid}] Account {username} level {account.Level} does not meet instance {instanceController.Name} level requirements between {minLevel}-{maxLevel}, switching accounts...");
+                    _logger.LogWarning($"[{device.Uuid}] Account {username} level {account.Level} does not meet instance {jobController.Name} level requirements between {minLevel}-{maxLevel}, switching accounts...");
                     return CreateSwitchAccountTask(minLevel, maxLevel);
                 }
             }
-
-            var task = new Task(null);// await instanceController.GetTask(device.Uuid, device.AccountUsername, false).ConfigureAwait(false);
+            var task = await jobController.GetTaskAsync(device.Uuid, device.AccountUsername, false).ConfigureAwait(false);
+            /*
+            task ??= new CircleTask
+            {
+                Area = "Test Instance",
+                Action = "scan_pokemon",
+                Latitude = 34.01,
+                Longitude = -117.01,
+                MinimumLevel = minLevel,
+                MaximumLevel = maxLevel,
+            };
+            */
             if (task == null)
             {
                 _logger.LogWarning($"[{device.Uuid}] No tasks avaialable yet");
@@ -322,7 +339,8 @@
                     Error = "No tasks available yet",
                 };
             }
-            //_logger.LogInformation($"[{device.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
+
+            _logger.LogInformation($"[{device.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
             return new DeviceResponse
             {
                 Status = "ok",
@@ -362,6 +380,13 @@
                         account.Failed = "banned";
                     }
                     break;
+                case "account_suspended":
+                    //if (account.FirstWarningTimestamp == null || string.IsNullOrEmpty(account.Failed))
+                    //{
+                        account.FailedTimestamp = now;
+                        account.Failed = "suspended";
+                    //}
+                    break;
                 case "account_warning":
                     if (account.FirstWarningTimestamp == null)
                     {
@@ -373,6 +398,13 @@
                     {
                         account.FailedTimestamp = now;
                         account.Failed = "invalid_credentials";
+                    }
+                    break;
+                case "error_26":
+                    if (account.FirstWarningTimestamp == null || string.IsNullOrEmpty(account.Failed))
+                    {
+                        account.FailedTimestamp = now;
+                        account.Failed = "error_26";
                     }
                     break;
             }
@@ -449,13 +481,11 @@
             return new DeviceResponse
             {
                 Status = "ok",
-                /* TODO: SwitchAccountTask
                 Data = new SwitchAccountTask
                 {
                     MinimumLevel = minLevel,
                     MaximumLevel = maxLevel,
                 },
-                */
             };
         }
     }

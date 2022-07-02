@@ -52,7 +52,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
             {
                 return RedirectToPage("/Index");
             }
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
 
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
@@ -62,7 +62,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
 
             Email = email;
             // Once you add a real email sender, you should remove this code that lets you confirm the account
-            DisplayConfirmAccountLink = false;
+            DisplayConfirmAccountLink = _sender is null;
             if (DisplayConfirmAccountLink)
             {
                 var userId = await _userManager.GetUserIdAsync(user);

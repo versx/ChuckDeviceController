@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Linq;
@@ -9,7 +10,10 @@
     [Table("webhook")]
     public class Webhook : BaseEntity
     {
+        #region Properties
+
         [
+            DisplayName("Name"),
             Column("name"),
             Key,
             JsonPropertyName("name"),
@@ -17,40 +21,48 @@
         public string Name { get; set; }
 
         [
+            DisplayName("Webhook Types"),
             Column("types"),
             JsonPropertyName("types"),
         ]
         public List<WebhookType> Types { get; set; }
 
         [
+            DisplayName("Delay"),
             Column("delay"),
             JsonPropertyName("delay"),
         ]
         public double Delay { get; set; }
 
         [
+            DisplayName("Url"),
             Column("url"),
             JsonPropertyName("url"),
         ]
         public string Url { get; set; }
 
         [
+            DisplayName("Enabled"),
             Column("enabled"),
             JsonPropertyName("enabled"),
         ]
         public bool Enabled { get; set; }
 
         [
+            DisplayName("Geofences"),
             Column("geofences"),
             JsonPropertyName("geofences"),
         ]
         public List<string> Geofences { get; set; }
 
         [
+            DisplayName("Data"),
             Column("data"),
             JsonPropertyName("data"),
         ]
         public WebhookData Data { get; set; }
+
+        #endregion
 
         #region Helper Methods
 
@@ -105,46 +117,5 @@
         }
 
         #endregion
-    }
-
-    public class WebhookData
-    {
-        [JsonPropertyName("pokemon_ids")]
-        public List<uint> PokemonIds { get; set; }
-
-        [JsonPropertyName("pokestop_ids")]
-        public List<string> PokestopIds { get; set; }
-
-        [JsonPropertyName("raid_ids")]
-        public List<uint> RaidPokemonIds { get; set; }
-
-        [JsonPropertyName("egg_levels")]
-        public List<ushort> EggLevels { get; set; }
-
-        [JsonPropertyName("lure_ids")]
-        public List<ushort> LureIds { get; set; }
-
-        [JsonPropertyName("invasion_ids")]
-        public List<ushort> InvasionIds { get; set; }
-
-        [JsonPropertyName("gym_ids")]
-        public List<ushort> GymTeamIds { get; set; }
-
-        [JsonPropertyName("weather_ids")]
-        public List<ushort> WeatherConditionIds { get; set; }
-    }
-
-    // TODO: Deserialize by name
-    public enum WebhookType
-    {
-        Pokemon = 0,
-        Pokestops,
-        Raids,
-        Eggs,
-        Quests,
-        Lures,
-        Invasions,
-        Gyms,
-        Weather,
     }
 }

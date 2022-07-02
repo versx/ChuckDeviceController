@@ -10,6 +10,7 @@
     public class IvList : BaseEntity
     {
         [
+            DisplayName("Name"),
             Column("name"),
             Key,
             DatabaseGenerated(DatabaseGeneratedOption.None),
@@ -18,6 +19,7 @@
         public string Name { get; set; }
 
         [
+            DisplayName("Pokemon IDs"),
             Column("pokemon_ids"),
             JsonPropertyName("pokemon_ids"),
         ]

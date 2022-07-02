@@ -1,7 +1,11 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
+    using ChuckDeviceConfigurator.Geometry.Models;
+    using ChuckDeviceConfigurator.JobControllers;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -79,44 +83,228 @@
 
         public void Stop()
         {
-            // TODO: JobControllerService.Stop
+            foreach (var (name, jobController) in _instances)
+            {
+                _logger.LogInformation($"[{name}] Stopping job controller");
+                jobController.Stop();
+            }
         }
 
         #region Instances
 
         public async Task AddInstanceAsync(Instance instance)
         {
-            // TODO: JobControllerService.AddInstance
             _logger.LogDebug($"Adding instance {instance.Name}");
+
+            var geofences = GetGeofences(instance.Geofences);
+            if (geofences == null)
+            {
+                _logger.LogError($"[{instance.Name}] Failed to get geofences for instance, make sure it is assigned at least one");
+                return;
+            }
+
+            IJobController? jobController = null;
+            switch (instance.Type)
+            {
+                case InstanceType.CirclePokemon:
+                case InstanceType.CircleSmartPokemon:
+                case InstanceType.CircleRaid:
+                case InstanceType.CircleSmartRaid:
+                    var coords = new List<Coordinate>();
+                    foreach (var geofence in geofences)
+                    {
+                        var area = geofence.Data?.Area;
+                        if (area is null)
+                        {
+                            _logger.LogError($"[{instance.Name}] Failed to parse geofence '{geofence.Name}' coordinates");
+                            continue;
+                        }
+                        string areaJson = Convert.ToString(area);
+                        var coordsArray = (List<Coordinate>)
+                        (
+                            area is List<Coordinate>
+                                ? area
+                                : areaJson.FromJson<List<Coordinate>>()
+                        );
+                        coords.AddRange(coordsArray);
+                    }
+
+                    switch (instance.Type)
+                    {
+                        case InstanceType.CirclePokemon:
+                            jobController = new CircleInstanceController(instance, coords, CircleInstanceType.Pokemon);
+                            break;
+                        case InstanceType.CircleSmartPokemon:
+                            break;
+                        case InstanceType.CircleRaid:
+                            jobController = new CircleInstanceController(instance, coords, CircleInstanceType.Raid);
+                            break;
+                        case InstanceType.CircleSmartRaid:
+                            break;
+                    }
+                    break;
+                case InstanceType.AutoQuest:
+                case InstanceType.PokemonIV:
+                case InstanceType.Bootstrap:
+                case InstanceType.FindTth:
+                    var multiPolygons = new List<MultiPolygon>();
+                    var coordinates = new List<List<Coordinate>>();
+                    foreach (var geofence in geofences)
+                    {
+                        var area = geofence.Data?.Area;
+                        if (area is null)
+                        {
+                            _logger.LogError($"[{instance.Name}] Failed to parse geofence '{geofence.Name}' coordinates");
+                            continue;
+                        }
+                        string areaJson = Convert.ToString(area);
+                        var coordsArray = (List<List<Coordinate>>)
+                        (
+                            area is List<List<Coordinate>>
+                                ? area
+                                : areaJson.FromJson<List<List<Coordinate>>>()
+                        );
+                        coordinates.AddRange(coordsArray);
+
+                        var areaArrayEmptyInner = new List<MultiPolygon>();
+                        foreach (var coord in coordsArray)
+                        {
+                            var multiPolygon = new MultiPolygon();
+                            Coordinate? first = null;
+                            for (var i = 0; i < coord.Count; i++)
+                            {
+                                if (i == 0)
+                                {
+                                    first = coord[i];
+                                }
+                                multiPolygon.Add(new Polygon(coord[i].Latitude, coord[i].Longitude));
+                            }
+                            if (first != null)
+                            {
+                                multiPolygon.Add(new Polygon(first.Latitude, first.Longitude));
+                            }
+                            areaArrayEmptyInner.Add(multiPolygon);
+                        }
+                        multiPolygons.AddRange(areaArrayEmptyInner);
+                    }
+
+                    var minLevel = instance.MinimumLevel;
+                    var maxLevel = instance.MaximumLevel;
+                    switch (instance.Type)
+                    {
+                        case InstanceType.AutoQuest:
+                        case InstanceType.Bootstrap:
+                        case InstanceType.FindTth:
+                        case InstanceType.PokemonIV:
+                            //jobController = new IvInstanceController(instance, multiPolygons, ivList, ivQueueLimit);
+                            break;
+                    }
+                    break;
+            }
+
+            if (jobController == null)
+            {
+                _logger.LogError($"[{instance.Name}] Unable to instantiate job instance controller with instance type '{instance.Type}'");
+                return;
+            }
+
+            // TODO: Lock
+            _instances[instance.Name] = jobController;
+
             await Task.CompletedTask;
         }
 
         public IJobController GetInstanceController(string uuid)
         {
-            // TODO: JobControllerService.GetInstanceController
-            return null;
+            if (string.IsNullOrEmpty(uuid))
+            {
+                // TODO Log error
+                return null;
+            }
+
+            // TODO: Lock _devices
+            if (!_devices.ContainsKey(uuid))
+            {
+                _logger.LogWarning($"[{uuid}] Device is not assigned an instance!");
+                return null;
+            }
+
+            var device = _devices[uuid];
+            var instanceName = device.InstanceName;
+            if (device == null || string.IsNullOrEmpty(instanceName))
+            {
+                return null;
+            }
+
+            return GetInstanceControllerByName(instanceName);
         }
 
         public async Task<string> GetStatusAsync(Instance instance)
         {
-            // TODO: JobControllerService.GetStatus
-            return null;
+            if (!_instances.ContainsKey(instance.Name))
+            {
+                // Instance not started or added to instance cache yet
+                return "Starting...";
+            }
+
+            var instanceController = _instances[instance.Name];
+            if (instanceController != null)
+            {
+                return await instanceController.GetStatusAsync();
+            }
+
+            return "Error";
         }
 
         public void ReloadAll()
         {
-            // TODO: JobControllerService.ReloadAll
+            // TODO: Lock _instances
+            foreach (var (_, instanceController) in _instances)
+            {
+                instanceController?.Reload();
+            }
         }
 
         public async Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName)
         {
-            // TODO: JobControllerService.ReloadInstance
-            await Task.CompletedTask;
+            // TODO: Lock _instances
+            if (!_instances.ContainsKey(oldInstanceName))
+            {
+                _logger.LogError($"[{oldInstanceName}] Instance does not exist in instance cache, skipping instance reload...");
+                return;
+            }
+
+            var oldInstance = _instances[oldInstanceName];
+            if (oldInstance != null)
+            {
+                foreach (var (uuid, device) in _devices)
+                {
+                    if (string.Compare(device.InstanceName, oldInstance.Name, true) == 0)
+                    {
+                        device.InstanceName = newInstance.Name;
+                        _devices[uuid] = device;
+                    }
+                }
+            }
+
+            await RemoveInstanceAsync(oldInstanceName);
+            await AddInstanceAsync(newInstance);
         }
 
         public async Task RemoveInstanceAsync(string instanceName)
         {
-            // TODO: JobControllerService.RemoveInstance
+            // TODO: Lock
+            _instances[instanceName]?.Stop();
+            _instances[instanceName] = null;
+            _instances.Remove(instanceName);
+
+            var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, instanceName, true) == 0);
+            foreach (var device in devices)
+            {
+                _devices[device.Key] = null;
+            }
+
+            // TODO: await _assignmentController.Start();
             await Task.CompletedTask;
         }
 
@@ -126,31 +314,72 @@
 
         public void AddDevice(Device device)
         {
-            // TODO: JobControllerService.AddDevice
+            // TODO: Lock _devices
+            if (!_devices.ContainsKey(device.Uuid))
+            {
+                _devices.Add(device.Uuid, device);
+            }
         }
 
         public List<string> GetDeviceUuidsInInstance(string instanceName)
         {
-            // TODO: JobControllerService.GetDeviceUuidsInInstance
-            return null;
+            // TODO: Lock _devices
+            var uuids = new List<string>();
+            foreach (var (uuid, device) in _devices)
+            {
+                if (string.Compare(device.InstanceName, instanceName, true) == 0)
+                {
+                    uuids.Add(uuid);
+                }
+            }
+            return uuids;
         }
 
-        public void ReloadDevice(Device device, string oldDeviceUuid)
+        public void ReloadDevice(Device newDevice, string oldDeviceUuid)
         {
-            // TODO: JobControllerService.ReloadDevice
+            RemoveDevice(oldDeviceUuid);
+            AddDevice(newDevice);
         }
 
-        public Task RemoveDeviceAsync(Device device)
+        public async Task RemoveDeviceAsync(Device device)
         {
-            // TODO: JobControllerService.RemoveDevice
-            return null;
+            RemoveDevice(device.Uuid);
+            // TODO: await _assignmentController.Start();
+            await Task.CompletedTask;
         }
 
         public void RemoveDevice(string uuid)
         {
-            // TODO: JobControllerService.RemoveDevice
+            // TODO: Lock _devices
+            if (!_devices.ContainsKey(uuid))
+            {
+                _logger.LogError($"[{uuid}] Unable to remove device from cache, it does not exist");
+                return;
+            }
+            _devices.Remove(uuid);
         }
 
         #endregion
+
+        private IJobController GetInstanceControllerByName(string name)
+        {
+            // TODO: Lock _instances
+            if (!_instances.ContainsKey(name))
+            {
+                _logger.LogError($"[{name}] Unable to get instance controller by name, it does not exist in cache");
+                return null;
+            }
+            return _instances[name];
+        }
+
+        private List<Geofence> GetGeofences(List<string> names)
+        {
+            // TODO: Add GeofenceControllerService
+            using (var context = _factory.CreateDbContext())
+            {
+                return context.Geofences.Where(geofence => names.Contains(geofence.Name))
+                                        .ToList();
+            }
+        }
     }
 }

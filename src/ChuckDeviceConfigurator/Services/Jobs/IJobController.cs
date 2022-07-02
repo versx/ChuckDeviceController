@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
+    using ChuckDeviceConfigurator.Services.Tasks;
+
     public interface IJobController
     {
         string Name { get; }
@@ -13,7 +15,11 @@
         bool IsEvent { get; }
 
 
-        Task<string> GetStatus();
+        Task<ITask> GetTaskAsync(string uuid, string accountUsername, bool isStartup);
+
+        Task<string> GetStatusAsync();
+
+        void Stop();
 
         void Reload();
     }

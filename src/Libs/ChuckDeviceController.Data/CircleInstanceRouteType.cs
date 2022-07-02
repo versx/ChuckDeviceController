@@ -3,7 +3,7 @@
     using System.Text.Json.Serialization;
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum CircleRouteType : ushort
+    public enum CircleInstanceRouteType : byte
     {
         Default = 0,
         Split,

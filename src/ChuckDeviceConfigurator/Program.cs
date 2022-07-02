@@ -27,6 +27,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
 builder.WebHost.UseUrls(config["Urls"]);
 
+builder.WebHost.ConfigureLogging(configure =>
+{
+    var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
+    configure.SetMinimumLevel(logLevel);
+    configure.AddSimpleConsole(options =>
+    {
+        options.IncludeScopes = false;
+        options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
+    });
+    configure.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+    configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
+    configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
+});
+
 #region User Identity
 
 // https://codewithmukesh.com/blog/user-management-in-aspnet-core-mvc/
