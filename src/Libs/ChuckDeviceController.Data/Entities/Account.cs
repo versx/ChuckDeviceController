@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
     using System;
+    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,69 +11,125 @@
     public class Account : BaseEntity
     {
         [
+            DisplayName("Username"),
             Column("username"),
             Key,
         ]
         public string Username { get; set; }
 
         [
+            DisplayName("Password"),
             Column("password"),
             Required,
         ]
         public string Password { get; set; }
 
-        [Column("first_warning_timestamp")]
+        [
+            DisplayName("First Warning Timestamp"),
+            Column("first_warning_timestamp"),
+        ]
         public ulong? FirstWarningTimestamp { get; set; }
 
-        [Column("failed_timestamp")]
+        [
+            DisplayName("Failed Timestamp"),
+            Column("failed_timestamp"),
+        ]
         public ulong? FailedTimestamp { get; set; }
 
-        [Column("failed")]
+        [
+            DisplayName("Failed"),
+            Column("failed"),
+        ]
         public string? Failed { get; set; }
 
-        [Column("level")]
+        [
+            DisplayName("Level"),
+            Column("level"),
+        ]
         public ushort Level { get; set; }
 
-        [Column("last_encounter_time")]
+        [
+            DisplayName("Last Encounter Time"),
+            Column("last_encounter_time"),
+        ]
         public ulong? LastEncounterTime { get; set; }
 
-        [Column("last_encounter_lat")]
+        [
+            DisplayName("Last Encounter Latitude"),
+            Column("last_encounter_lat"),
+        ]
         public double? LastEncounterLatitude { get; set; }
 
-        [Column("last_encounter_lon")]
+        [
+            DisplayName("Last Encounter Longitude"),
+            Column("last_encounter_lon"),
+        ]
         public double? LastEncounterLongitude { get; set; }
 
-        [Column("spins")]
+        [
+            DisplayName("Spins"),
+            Column("spins"),
+        ]
         public uint? Spins { get; set; }
 
-        [Column("tutorial")]
+        [
+            DisplayName("Tutorial"),
+            Column("tutorial"),
+        ]
         public ushort? Tutorial { get; set; }
 
-        [Column("creation_timestamp")]
+        [
+            DisplayName("Creation Timestamp"),
+            Column("creation_timestamp"),
+        ]
         public ulong? CreationTimestamp { get; set; }
 
-        [Column("warn")]
+        [
+            DisplayName("Has Warning"),
+            Column("warn"),
+        ]
         public bool? Warn { get; set; }
 
-        [Column("warn_expire_timestamp")]
+        [
+            DisplayName("Warning Expire Timestamp"),
+            Column("warn_expire_timestamp"),
+        ]
         public ulong? WarnExpireTimestamp { get; set; }
 
-        [Column("warn_message_acknowledged")]
+        [
+            DisplayName("Warning Message Acknowledged"),
+            Column("warn_message_acknowledged"),
+        ]
         public bool? WarnMessageAcknowledged { get; set; }
 
-        [Column("suspended_message_acknowledged")]
+        [
+            DisplayName("Suspended Message Acknowledged"),
+            Column("suspended_message_acknowledged"),
+        ]
         public bool? SuspendedMessageAcknowledged { get; set; }
 
-        [Column("was_suspended")]
+        [
+            DisplayName("Was Suspended"),
+            Column("was_suspended"),
+        ]
         public bool? WasSuspended { get; set; }
 
-        [Column("banned")]
+        [
+            DisplayName("Banned"),
+            Column("banned"),
+        ]
         public bool? Banned { get; set; }
 
-        [Column("last_used_timestamp")]
+        [
+            DisplayName("Last Used"),
+            Column("last_used_timestamp"),
+        ]
         public ulong? LastUsedTimestamp { get; set; } = 0;
 
-        [Column("group")]
+        [
+            DisplayName("Group"),
+            Column("group"),
+        ]
         public string? GroupName { get; set; }
 
         public bool IsValid(bool ignoreWarning = false, string? groupName = null)

@@ -318,18 +318,7 @@
                     return CreateSwitchAccountTask(minLevel, maxLevel);
                 }
             }
-            var task = await jobController.GetTaskAsync(device.Uuid, device.AccountUsername, false).ConfigureAwait(false);
-            /*
-            task ??= new CircleTask
-            {
-                Area = "Test Instance",
-                Action = "scan_pokemon",
-                Latitude = 34.01,
-                Longitude = -117.01,
-                MinimumLevel = minLevel,
-                MaximumLevel = maxLevel,
-            };
-            */
+            var task = await jobController.GetTaskAsync(device.Uuid, device.AccountUsername, false);
             if (task == null)
             {
                 _logger.LogWarning($"[{device.Uuid}] No tasks avaialable yet");
@@ -338,6 +327,16 @@
                     Status = "error",
                     Error = "No tasks available yet",
                 };
+            }
+
+            if (device != null)
+            {
+                device.LastLatitude = task.Latitude;
+                device.LastLongitude = task.Longitude;
+                device.LastSeen = DateTime.UtcNow.ToTotalSeconds();
+
+                _context.Update(device);
+                await _context.SaveChangesAsync();
             }
 
             _logger.LogInformation($"[{device.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");

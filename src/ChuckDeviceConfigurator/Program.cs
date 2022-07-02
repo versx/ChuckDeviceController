@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -92,6 +93,16 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
     //options.ReturnUrlParameter=""
 });
+
+/*
+// Set policy that users need to be authenticated to access
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+*/
 
 // Register external 3rd party authentication providers if configured
 var auth = builder.Services.AddAuthentication();
