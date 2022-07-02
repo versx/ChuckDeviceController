@@ -268,8 +268,18 @@ async Task SeedDefaultData(IServiceProvider serviceProvider)
         try
         {
             var context = services.GetRequiredService<UserIdentityContext>();
+            var dcContext = services.GetRequiredService<DeviceControllerContext>();
+            //var mapContext = services.GetRequiredService<MapDataContext>();
+
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+            // Migrate the UserIdentity tables
+            await context.Database.MigrateAsync();
+            // Migrate the device controller tables
+            await dcContext.Database.MigrateAsync();
+            // Migrate the map data tables
+            //await mapContext.Database.MigrateAsync();
 
             // Seed default user roles
             await UserIdentityContextSeed.SeedRolesAsync(userManager, roleManager);
