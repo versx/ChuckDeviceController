@@ -14,7 +14,24 @@
             @foreach (var login in Model.CurrentLogins)
             {
                 <tr>
-                    <td id="@($"login-provider-{login.LoginProvider}")">@login.ProviderDisplayName</td>
+                    <td id="@($"login-provider-{login.LoginProvider}")">
+                        @if (login.ProviderDisplayName == "GitHub")
+                        {
+                            <i class="fab fa-github fa-align-left social-icon"></i> @login.ProviderDisplayName
+                        }
+                        else if (login.ProviderDisplayName == "Google")
+                        {
+                            <i class="fab fa-google fa-align-left social-icon"></i> @login.ProviderDisplayName
+                        }
+                        else if (login.ProviderDisplayName == "Discord")
+                        {
+                            <i class="fab fa-discord fa-align-left social-icon"></i> @login.ProviderDisplayName
+                        }
+                        else
+                        {
+                            @login.ProviderDisplayName
+                        }
+                    </td>
                     <td>
                         @if (Model.ShowRemoveButton)
                         {
@@ -45,7 +62,34 @@
             <p>
                 @foreach (var provider in Model.OtherLogins)
                 {
-                    <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                    if (provider.Name == "GitHub")
+                    {
+                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
+                                title="Log in using your @provider.DisplayName account">
+                            <i class="fab fa-github fa-align-left social-icon"></i> @provider.DisplayName
+                        </button>
+                    }
+                    else if (provider.Name == "Google")
+                    {
+                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
+                                title="Log in using your @provider.DisplayName account">
+                            <i class="fab fa-google fa-align-left social-icon"></i> @provider.DisplayName
+                        </button>
+                    }
+                    else if (provider.Name == "Discord")
+                    {
+                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
+                                title="Log in using your @provider.DisplayName account">
+                            <i class="fab fa-discord fa-align-left social-icon"></i> @provider.DisplayName
+                        </button>
+                    }
+                    else
+                    {
+                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
+                                title="Log in using your @provider.DisplayName account">
+                            @provider.DisplayName
+                        </button>
+                    }
                 }
             </p>
         </div>

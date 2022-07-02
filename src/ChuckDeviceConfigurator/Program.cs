@@ -91,6 +91,7 @@ builder.Services.AddDbContext<DeviceControllerContext>(options =>
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 
 
+
 var app = builder.Build();
 
 // Seed default user and roles

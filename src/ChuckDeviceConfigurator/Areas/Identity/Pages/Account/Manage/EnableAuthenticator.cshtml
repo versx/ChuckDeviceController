@@ -50,4 +50,7 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    @await Html.PartialAsync("_ValidationScriptsPartial");
+    <script type="text/javascript" src="~/lib/davidshimjs-qrcodejs/qrcode.js"></script>
+    <script type="text/javascript" src="~/js/qr.js"></script>
 }

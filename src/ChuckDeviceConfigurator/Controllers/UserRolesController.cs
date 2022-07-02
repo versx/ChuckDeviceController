@@ -61,7 +61,7 @@
                 {
                     RoleId = role.Id,
                     RoleName = role.Name,
-                    Selected = await _userManager.IsInRoleAsync(user, role.Name),
+                    Selected = false,// TODO: Fix "This MySqlConnection is already in use" await _userManager.IsInRoleAsync(user, role.Name),
                 };
                 model.Add(userRolesViewModel);
             }
