@@ -8,7 +8,7 @@
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
 
-    [Authorize(Roles = Strings.SuperAdminRole)]
+    [Authorize(Roles = nameof(Roles.SuperAdmin))]
     public class UserRolesController : Controller
     {
         private readonly ILogger<UserRolesController> _logger;

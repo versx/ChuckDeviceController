@@ -1,14 +1,17 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
     using ChuckDeviceConfigurator.Converters;
+    using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
+    [Authorize(Roles = $"{nameof(Roles.Geofences)},{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)}")]
     public class GeofenceController : Controller
     {
         private readonly ILogger<GeofenceController> _logger;

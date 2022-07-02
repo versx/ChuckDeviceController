@@ -2,11 +2,15 @@
 {
     using System.Diagnostics;
 
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
 
+    // TODO: [Authorize(Roles = nameof(Roles.Registered))]
+    [Authorize(Roles = $"{nameof(Roles.Registered)}, {nameof(Roles.SuperAdmin)}, {nameof(Roles.Admin)}")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

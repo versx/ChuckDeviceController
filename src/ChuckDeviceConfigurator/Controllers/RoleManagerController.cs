@@ -5,7 +5,9 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
-    [Authorize(Roles = Strings.SuperAdminRole)]
+    using ChuckDeviceConfigurator.Data;
+
+    [Authorize(Roles = nameof(Roles.SuperAdmin))]
     public class RoleManagerController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;
