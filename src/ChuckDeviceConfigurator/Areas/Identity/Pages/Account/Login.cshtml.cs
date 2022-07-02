@@ -142,6 +142,13 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
                 else
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+
+                    var user = await _userManager.FindByNameAsync(userName);
+                    if (user != null)
+                    {
+                        // Increment AccessFailedCount for user
+                        await _userManager.AccessFailedAsync(user);
+                    }
                     return Page();
                 }
             }
