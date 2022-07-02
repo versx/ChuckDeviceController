@@ -361,6 +361,8 @@
 
         #endregion
 
+        #region Private Methods
+
         private IJobController GetInstanceControllerByName(string name)
         {
             // TODO: Lock _instances
@@ -381,5 +383,7 @@
                                         .ToList();
             }
         }
+
+        #endregion
     }
 }

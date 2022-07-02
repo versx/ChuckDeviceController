@@ -86,6 +86,9 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Migrate database if needed
+await MigrateDatabase(app.Services);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -121,4 +124,25 @@ IConfigurationRoot LoadConfig(string env = "")
         .AddCommandLine(args)
         .Build();
     return config;
+}
+
+async Task MigrateDatabase(IServiceProvider serviceProvider)
+{
+    using (var scope = serviceProvider.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+        try
+        {
+            var mapContext = services.GetRequiredService<MapDataContext>();
+
+            // Migrate the map data tables
+            await mapContext.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            var logger = loggerFactory.CreateLogger<Program>();
+            logger.LogError(ex, "An error occurred while migrating the database.");
+        }
+    }
 }
