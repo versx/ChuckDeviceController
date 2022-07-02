@@ -69,12 +69,33 @@
         // POST: DeviceController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(IFormCollection collection)
         {
             try
             {
-                // TODO: Create device
-                // TODO: _jobControllerService.AddDevice(device);
+                var uuid = Convert.ToString(collection["Uuid"]);
+                var instanceName = Convert.ToString(collection["InstanceName"]);
+                var accountUsername = Convert.ToString(collection["AccountUsername"]);
+
+                if (_context.Devices.Any(device => device.Uuid == uuid))
+                {
+                    // Device exists already by name
+                    ModelState.AddModelError("Device", $"Device with UUID '{uuid}' already exists.");
+                    return View();
+                }
+
+                var device = new Device
+                {
+                    Uuid = uuid,
+                    InstanceName = instanceName,
+                    AccountUsername = accountUsername,
+                };
+
+                // Add device to database
+                await _context.Devices.AddAsync(device);
+                await _context.SaveChangesAsync();
+
+                _jobControllerService.AddDevice(device);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -96,16 +117,21 @@
                 return View();
             }
 
-            var accountsInUse = _context.Devices.Select(device => device.AccountUsername)
+            var accountsInUse = _context.Devices.ToList()
+                                                .Select(device => device.AccountUsername)
                                                 .ToList();
-            var accounts = _context.Accounts.Where(account => !accountsInUse.Contains(account.Username))
-                                            .Select(account => new SelectListItem(account.Username, account.Username, account.Username == device.AccountUsername))
+            // Filter accounts that are not used by devices unless this device we are editing
+            var accounts = _context.Accounts.Where(account => !accountsInUse.Contains(account.Username) || device.AccountUsername == account.Username)
                                             .ToList();
+            var selectItemAccounts = accounts.Select(account =>
+                new SelectListItem(account.Username, account.Username, string.Compare(account.Username, device.AccountUsername, true) == 0))
+                .ToList();
+            var selectedAccount = accounts.FirstOrDefault(account => string.Compare(account.Username, device.AccountUsername, true) == 0);
             var instances = _context.Instances.ToList();
             var instanceSelectItems = instances.Select(inst => new SelectListItem(inst.Name, inst.Name, inst.Name == device.InstanceName))
                                                .ToList();
             ViewBag.Instances = new SelectList(instances, "Name", "Name");
-            ViewBag.Accounts = new SelectList(accounts, "Username", "Username");
+            ViewBag.Accounts = new SelectList(selectItemAccounts, "Username", "Username");
             return View(device);
         }
 
