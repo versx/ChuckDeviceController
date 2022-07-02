@@ -70,13 +70,13 @@
             DisplayName("Spins"),
             Column("spins"),
         ]
-        public uint? Spins { get; set; }
+        public uint Spins { get; set; } = 0;
 
         [
             DisplayName("Tutorial"),
             Column("tutorial"),
         ]
-        public ushort? Tutorial { get; set; }
+        public ushort Tutorial { get; set; } = 0;
 
         [
             DisplayName("Creation Timestamp"),

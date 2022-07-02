@@ -64,6 +64,7 @@
             {
                 Level = 30,
                 Accounts = string.Empty,
+                Group = null,
             };
             return View(model);
         }
@@ -76,6 +77,7 @@
             try
             {
                 var level = Convert.ToUInt16(collection["Level"]);
+                var group = Convert.ToString(collection["Group"]);
                 var accounts = Convert.ToString(collection["Accounts"]);
                 accounts = accounts.Replace("<br>", "\r\n")
                                    .Replace("\r\n", "\n");
@@ -110,6 +112,9 @@
                         Username = username,
                         Password = password,
                         Level = level,
+                        GroupName = string.IsNullOrEmpty(group)
+                            ? null
+                            : group,
                     };
 
                     await _context.Accounts.AddAsync(account);
@@ -119,7 +124,7 @@
             }
             catch
             {
-                ModelState.AddModelError("Account", $"Unknown error occurred while creating new account.");
+                ModelState.AddModelError("Account", $"Unknown error occurred while creating new account");
                 return View();
             }
         }
@@ -151,6 +156,24 @@
                     ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
                     return View();
                 }
+
+                var username = Convert.ToString(collection["username"]);
+                var password = Convert.ToString(collection["password"]);
+                var level = Convert.ToUInt16(collection["Level"]);
+                var spins = Convert.ToUInt32(collection["Spins"]);
+                var tutorial = Convert.ToUInt16(collection["Tutorial"]);
+                var group = Convert.ToString(collection["Group"]);
+                account.Username = username;
+                account.Password = password;
+                account.Level = level;
+                account.Spins = spins;
+                account.Tutorial = tutorial;
+                account.GroupName = string.IsNullOrEmpty(group)
+                    ? null
+                    : group;
+                _context.Update(account);
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             catch

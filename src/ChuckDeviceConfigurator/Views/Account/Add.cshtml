@@ -15,13 +15,18 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Level" class="control-label"></label>
-                <input asp-for="Level" class="form-control" />
+                <input asp-for="Level" class="form-control" min="0" max="50" />
                 <span asp-validation-for="Level" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Accounts" class="control-label"></label>
                 <textarea asp-for="Accounts" class="form-control"></textarea>
                 <span asp-validation-for="Accounts" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Group" class="control-label"></label>
+                <input asp-for="Group" class="form-control" />
+                <span asp-validation-for="Group" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Add" class="btn btn-primary" />
