@@ -4,13 +4,12 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
     //[FormatFilter]
-    [Authorize(Roles = $"{nameof(Roles.Accounts)},{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)}")]
+    [Authorize(Roles = RoleConsts.AccountsRole)]
     public class AccountController : Controller
     {
         private readonly ILogger<AccountController> _logger;

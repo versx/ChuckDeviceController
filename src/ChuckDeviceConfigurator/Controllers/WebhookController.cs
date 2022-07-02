@@ -4,12 +4,11 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
-    [Authorize(Roles = $"{nameof(Roles.Webhooks)},{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)}")]
+    [Authorize(Roles = RoleConsts.WebhooksRole)]
     public class WebhookController : Controller
     {
         private readonly ILogger<WebhookController> _logger;

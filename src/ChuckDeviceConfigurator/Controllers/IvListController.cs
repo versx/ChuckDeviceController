@@ -4,12 +4,11 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
-    [Authorize(Roles = $"{nameof(Roles.IvLists)},{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)}")]
+    [Authorize(Roles = RoleConsts.IvListsRole)]
     public class IvListController : Controller
     {
         private readonly ILogger<IvListController> _logger;

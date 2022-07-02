@@ -5,9 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Data;
-
-    [Authorize(Roles = nameof(Roles.SuperAdmin))]
+    [Authorize(Roles = RoleConsts.RoleManagerRole)]
     public class RoleManagerController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -63,11 +61,24 @@
                 }
 
                 var name = Convert.ToString(collection["Name"]);
-                // TODO: Check if new name already exists
-                role.Name = name;
 
-                // Update role in database
-                await _roleManager.UpdateAsync(role);
+                // Check if new name already exists
+                var roleExists = await _roleManager.RoleExistsAsync(name);
+                if (roleExists)
+                {
+                    ModelState.AddModelError("Role", $"Role already exists by name '{name}'.");
+                    return View();
+                }
+
+                // Set new role name
+                var result = await _roleManager.SetRoleNameAsync(role, name);
+                if (!result.Succeeded)
+                {
+                    // Failed to set role name
+                    var errors = result.Errors.Select(err => err.Description);
+                    ModelState.AddModelError("Role", $"Failed to update role: {string.Join("\n", errors)}");
+                    return View();
+                }
 
                 return RedirectToAction(nameof(Index));
             }

@@ -5,14 +5,13 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
 
-    using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
-    [Authorize(Roles = $"{nameof(Roles.Instances)},{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)}")]
+    [Authorize(Roles = RoleConsts.InstancesRole)]
     public class InstanceController : Controller
     {
         private readonly ILogger<InstanceController> _logger;
