@@ -96,10 +96,16 @@
                 return View();
             }
 
+            var accountsInUse = _context.Devices.Select(device => device.AccountUsername)
+                                                .ToList();
+            var accounts = _context.Accounts.Where(account => !accountsInUse.Contains(account.Username))
+                                            .Select(account => new SelectListItem(account.Username, account.Username, account.Username == device.AccountUsername))
+                                            .ToList();
             var instances = _context.Instances.ToList();
             var instanceSelectItems = instances.Select(inst => new SelectListItem(inst.Name, inst.Name, inst.Name == device.InstanceName))
                                                .ToList();
             ViewBag.Instances = new SelectList(instances, "Name", "Name");
+            ViewBag.Accounts = new SelectList(accounts, "Username", "Username");
             return View(device);
         }
 
@@ -119,16 +125,26 @@
                 }
 
                 var instanceName = Convert.ToString(collection["InstanceName"]);
+                var accountUsername = Convert.ToString(collection["AccountUsername"]);
                 // Check if device is not already assigned to instance before updating in database
-                if (device.InstanceName != instanceName)
+                if (device.InstanceName != instanceName || device.AccountUsername != accountUsername)
                 {
-                    device.InstanceName = instanceName;
+                    if (device.InstanceName != instanceName)
+                    {
+                        device.InstanceName = instanceName;
+                    }
+                    if (device.AccountUsername != accountUsername)
+                    {
+                        device.AccountUsername = accountUsername;
+
+                        // TODO: If assigned account for device changes, force device to logout/switch accounts
+                    }
 
                     _context.Devices.Update(device);
                     await _context.SaveChangesAsync();
-
-                    _jobControllerService.ReloadDevice(device, id);
                 }
+
+                _jobControllerService.ReloadDevice(device, id);
 
                 return RedirectToAction(nameof(Index));
             }

@@ -124,7 +124,7 @@
             }
             catch
             {
-                ModelState.AddModelError("Account", $"Unknown error occurred while creating new account");
+                ModelState.AddModelError("Account", $"Unknown error occurred while importing new accounts.");
                 return View();
             }
         }
@@ -157,8 +157,8 @@
                     return View();
                 }
 
-                var username = Convert.ToString(collection["username"]);
-                var password = Convert.ToString(collection["password"]);
+                var username = Convert.ToString(collection["Username"]);
+                var password = Convert.ToString(collection["Password"]);
                 var level = Convert.ToUInt16(collection["Level"]);
                 var spins = Convert.ToUInt32(collection["Spins"]);
                 var tutorial = Convert.ToUInt16(collection["Tutorial"]);
