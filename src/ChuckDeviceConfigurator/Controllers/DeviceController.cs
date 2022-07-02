@@ -56,6 +56,13 @@
         // GET: DeviceController/Create
         public ActionResult Create()
         {
+            var accountsInUse = _context.Devices.Select(device => device.AccountUsername)
+                                                .ToList();
+            var accounts = _context.Accounts.Where(account => !accountsInUse.Contains(account.Username))
+                                            .ToList();
+            var instances = _context.Instances.ToList();
+            ViewBag.Instances = instances;
+            ViewBag.Accounts = accounts;
             return View();
         }
 

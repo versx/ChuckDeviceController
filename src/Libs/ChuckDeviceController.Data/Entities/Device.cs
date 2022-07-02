@@ -9,7 +9,7 @@
     public class Device : BaseEntity
     {
         [
-            DisplayName("UUID"),
+            DisplayName("Name"),
             Column("uuid"),
             Key,
             JsonPropertyName("uuid"),

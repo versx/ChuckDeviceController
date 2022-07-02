@@ -1,6 +1,5 @@
 ﻿@using ChuckDeviceController.Data.Entities
 @model Device
-
 @{
     ViewData["Title"] = "Create Device";
 }
@@ -22,12 +21,16 @@
             </div>
             <div class="form-group">
                 <label asp-for="InstanceName" class="control-label"></label>
-                <input asp-for="InstanceName" class="form-control" />
+                <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))">
+                    <option>Please select one</option>
+                </select>
                 <span asp-validation-for="InstanceName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="AccountUsername" class="control-label"></label>
-                <input asp-for="AccountUsername" class="form-control" />
+                <select asp-for="AccountUsername" class="form-control" asp-items="@(new SelectList(ViewBag.Accounts, "Username", "Username"))">
+                    <option>Please select one</option>
+                </select>
                 <span asp-validation-for="AccountUsername" class="text-danger"></span>
             </div>
             <div class="form-group">

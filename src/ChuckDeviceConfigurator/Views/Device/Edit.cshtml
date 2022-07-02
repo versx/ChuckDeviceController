@@ -1,12 +1,11 @@
 ﻿@using ChuckDeviceController.Data;
 @using ChuckDeviceController.Data.Entities
 @model Device
-
 @{
-    ViewData["Title"] = "Edit Device " + Model.Uuid;
+    ViewData["Title"] = "Assign Device " + Model.Uuid;
 }
 
-<h1>Edit Device</h1>
+<h1>Assign Device @Model.Uuid</h1>
 
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
