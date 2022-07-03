@@ -1,10 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Identity;
 @model IdentityRole
 @{
-    ViewData["Title"] = "Edit Role " + Model.Name;
+    ViewData["Title"] = "Edit Role " + Model?.Name;
 }
 
-<h1>Edit Role</h1>
+<h1>Edit Role @Model?.Name</h1>
 
 <p>@Html.ValidationMessage("Role", new { @class = "text-danger" })</p>
 

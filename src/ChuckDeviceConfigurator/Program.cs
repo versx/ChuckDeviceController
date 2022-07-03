@@ -11,6 +11,9 @@ using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceController.Data.Contexts;
 
 
+// TODO: Make configurable
+const bool AutomaticMigrations = true;
+
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = LoadConfig(env);
 if (config.Providers.Count() == 2)
@@ -28,6 +31,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
 builder.WebHost.UseUrls(config["Urls"]);
 
+#region Logger Filtering
+
 builder.WebHost.ConfigureLogging(configure =>
 {
     var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
@@ -41,6 +46,8 @@ builder.WebHost.ConfigureLogging(configure =>
     configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
     configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
 });
+
+#endregion
 
 #region User Identity
 
@@ -115,6 +122,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+#region Database Contexts
+
 builder.Services.AddDbContextFactory<DeviceControllerContext>(options =>
 {
     options.EnableSensitiveDataLogging()
@@ -132,6 +141,8 @@ builder.Services.AddDbContext<DeviceControllerContext>(options =>
                opt.MigrationsAssembly(Strings.AssemblyName);
            });
 }, ServiceLifetime.Scoped);
+
+#endregion
 
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
@@ -267,19 +278,20 @@ async Task SeedDefaultData(IServiceProvider serviceProvider)
         var loggerFactory = services.GetRequiredService<ILoggerFactory>();
         try
         {
-            var context = services.GetRequiredService<UserIdentityContext>();
-            var dcContext = services.GetRequiredService<DeviceControllerContext>();
-            //var mapContext = services.GetRequiredService<MapDataContext>();
-
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-            // Migrate the UserIdentity tables
-            await context.Database.MigrateAsync();
-            // Migrate the device controller tables
-            await dcContext.Database.MigrateAsync();
-            // Migrate the map data tables
-            //await mapContext.Database.MigrateAsync();
+            if (AutomaticMigrations)
+            {
+                var userContext = services.GetRequiredService<UserIdentityContext>();
+                var deviceContext = services.GetRequiredService<DeviceControllerContext>();
+
+                // Migrate the UserIdentity tables
+                await userContext.Database.MigrateAsync();
+
+                // Migrate the device controller tables
+                await deviceContext.Database.MigrateAsync();
+            }
 
             // Seed default user roles
             await UserIdentityContextSeed.SeedRolesAsync(userManager, roleManager);

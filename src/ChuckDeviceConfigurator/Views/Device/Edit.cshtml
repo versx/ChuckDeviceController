@@ -3,10 +3,10 @@
 @model Device
 @{
     Console.WriteLine($"ViewBag Accounts: {ViewBag.Accounts}");
-    ViewData["Title"] = "Assign Device " + Model.Uuid;
+    ViewData["Title"] = "Assign Device " + Model?.Uuid;
 }
 
-<h1>Assign Device @Model.Uuid</h1>
+<h1>Assign Device @Model?.Uuid</h1>
 
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 

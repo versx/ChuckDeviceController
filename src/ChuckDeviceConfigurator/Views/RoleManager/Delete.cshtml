@@ -1,16 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Identity;
 @model IdentityRole
 @{
-    ViewData["Title"] = "Delete Role " + Model.Name;
+    ViewData["Title"] = "Delete Role " + Model?.Name;
 }
 
-<h1>Delete Role</h1>
+<h1>Delete Role @Model?.Name</h1>
 
 <p>@Html.ValidationMessage("Role", new { @class = "text-danger" })</p>
 
 <h3>Are you sure you want to delete this role?</h3>
 <div>
-    <h4>Device '@Model.Name'</h4>
+    <h4>Device '@Model?.Name'</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">

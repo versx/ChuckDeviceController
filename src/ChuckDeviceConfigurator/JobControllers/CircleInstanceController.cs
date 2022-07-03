@@ -12,11 +12,11 @@
     public class CircleInstanceController : IJobController
     {
         private static readonly Random _random = new();
-        private readonly Dictionary<string, DeviceIndex> _lastUuid = new(); // TODO: Use to replace the two fields below
-        private readonly Dictionary<string, int> _currentUuidIndexes = new();
-        private readonly Dictionary<string, ulong> _currentUuidSeenTime = new();
+        private readonly Dictionary<string, DeviceIndex> _currentUuid = new();
+        //private readonly Dictionary<string, int> _currentUuidIndexes = new();
+        //private readonly Dictionary<string, ulong> _currentUuidSeenTime = new();
         private Queue<Coordinate> _scanNextCoords = new();
-        private uint _lastIndex = 0;
+        private uint _lastIndex = 0; // Used for basic leap frog routing
         private double _lastCompletedTime;
         private double _lastLastCompletedTime;
 
@@ -60,11 +60,8 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string accountUsername, bool isStartup)
+        public async Task<ITask> GetTaskAsync(string uuid, string accountUsername, bool isStartup = false)
         {
-            var task = GetNextScanLocation(uuid);
-            return task;
-
             // TODO: AddDevice(uuid);
             Coordinate? currentCoord = null;
             switch (CircleType)
@@ -74,10 +71,18 @@
                     switch (RouteType)
                     {
                         case CircleInstanceRouteType.Default:
-                            //currentCoord = BasicRoute(uuid, isStartup);
+                            // Get default leap frog route
+                            currentCoord = BasicRoute();
                             break;
                         case CircleInstanceRouteType.Split:
+                            // Split route by device count
+                            break;
                         case CircleInstanceRouteType.Circular:
+                            // Circular split route by device count
+                            break;
+                        case CircleInstanceRouteType.Smart:
+                            // Smart routing by device count
+                            currentCoord = GetNextScanLocation(uuid);
                             break;
                     }
                     break;
@@ -143,7 +148,23 @@
             var deadDeviceCutOffTime = now - 60;
             var liveDevices = new List<string>();
             //var indexes = _currentUuidIndexes.sort // TODO: Sort indexes by index
+            foreach (var (currentUuid, index) in _currentUuid)
+            {
+                if (index.LastSeen > 0)
+                {
+                    if (index.LastSeen < deadDeviceCutOffTime)
+                    {
+                        // Device has not updated in the last 60 seconds, assume dead/offline
+                        _currentUuid[currentUuid] = null;
+                    }
+                    else
+                    {
+                        liveDevices.Add(currentUuid);
+                    }
+                }
+            }
 
+            /*
             foreach (var (currentUuid, _) in _currentUuidIndexes)
             {
                 if (!_currentUuidSeenTime.ContainsKey(currentUuid))
@@ -166,6 +187,7 @@
                     }
                 }
             }
+            */
 
             var numLiveDevices = liveDevices.Count;
             double distanceToNext = Coordinates.Count;
@@ -175,21 +197,24 @@
                 {
                     continue;
                 }
+                var currentUuid = _currentUuid[uuid];
                 if (i < numLiveDevices - 1)
                 {
                     var nextDevice = liveDevices[i + 1];
-                    distanceToNext = GetRouteDistance(_currentUuidIndexes[uuid], _currentUuidIndexes[nextDevice]);
+                    var nextUuid = _currentUuid[nextDevice];
+                    distanceToNext = GetRouteDistance(currentUuid.Index, nextUuid.Index);
                 }
                 else
                 {
                     var nextDevice = liveDevices[i]; // TODO: Check, was `0`
-                    distanceToNext = GetRouteDistance(_currentUuidIndexes[uuid], _currentUuidIndexes[nextDevice]);
+                    var nextUuid = _currentUuid[nextDevice];
+                    distanceToNext = GetRouteDistance(currentUuid.Index, nextUuid.Index);
                 }
             }
             return (numLiveDevices, distanceToNext);
         }
 
-        private CircleTask GetNextScanLocation(string uuid)
+        private Coordinate GetNextScanLocation(string uuid)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var currentIndex = 0;
@@ -200,107 +225,80 @@
             if (_scanNextCoords.Count > 0)
             {
                 currentCoord = _scanNextCoords.Dequeue();
-                var task = new CircleTask
-                {
-                    Action = DeviceActionType.ScanPokemon,
-                    Area = Name,
-                    Latitude = currentCoord.Latitude,
-                    Longitude = currentCoord.Longitude,
-                    MinimumLevel = MinimumLevel,
-                    MaximumLevel = MaximumLevel,
-                    LureEncounter = SendTaskForLureEncounter,
-                };
-                return task;
+                return currentCoord;
             }
 
-            if (CircleType == CircleInstanceType.Pokemon) // TODO: Smart Pokemon
+            currentUuidIndex = _currentUuid.ContainsKey(uuid)
+                ? _currentUuid[uuid].Index
+                : _random.Next(0, Coordinates.Count);
+            // TODO: Check if uuid exists in _currentUuidIndexes dictionary
+            _currentUuid[uuid] = new DeviceIndex
             {
-                currentUuidIndex = _currentUuidIndexes.ContainsKey(uuid)
-                    ? _currentUuidIndexes[uuid]
-                    : _random.Next(0, Coordinates.Count);
-                // TODO: Check if uuid exists in _currentUuidIndexes dictionary
-                _currentUuidIndexes[uuid] = currentUuidIndex;
-                _currentUuidSeenTime[uuid] = now;
-                var shouldAdvance = true;
-                var jumpDistance = 0d;
+                Index = currentUuidIndex,
+                LastSeen = now,
+            };
 
-                if (_currentUuidIndexes.Count > 1 && _random.Next(0, 100) < 15)
+            var shouldAdvance = true;
+            var jumpDistance = 0d;
+
+            if (_currentUuid.Count > 1 && _random.Next(0, 100) < 15)
+            {
+                var (numLiveDevices, distanceToNext) = CheckDeviceSpacing(uuid);
+                var dist = 10 * distanceToNext * numLiveDevices + 5;
+                if (dist < 10 * Coordinates.Count)
                 {
-                    var (numLiveDevices, distanceToNext) = CheckDeviceSpacing(uuid);
-                    var dist = 10 * distanceToNext * numLiveDevices + 5;
-                    if (dist < 10 * Coordinates.Count)
-                    {
-                        shouldAdvance = false;
-                    }
-                    if (dist > 12 * Coordinates.Count)
-                    {
-                        jumpDistance = distanceToNext - Coordinates.Count / numLiveDevices - 1;
-                    }
+                    shouldAdvance = false;
                 }
-                if (currentUuidIndex == 0 && Coordinates.Count > 1)
+                if (dist > 12 * Coordinates.Count)
                 {
-                    shouldAdvance = true;
+                    jumpDistance = distanceToNext - Coordinates.Count / numLiveDevices - 1;
                 }
-                if (shouldAdvance)
+            }
+            if (currentUuidIndex == 0 && Coordinates.Count > 1)
+            {
+                shouldAdvance = true;
+            }
+            if (shouldAdvance)
+            {
+                currentUuidIndex += Convert.ToInt32(jumpDistance + 1);
+                if (currentUuidIndex >= Coordinates.Count - 1)
                 {
-                    currentUuidIndex += Convert.ToInt32(jumpDistance + 1);
-                    if (currentUuidIndex >= Coordinates.Count - 1)
-                    {
-                        currentUuidIndex -= Coordinates.Count - 1;
-                        _lastLastCompletedTime = _lastCompletedTime;
-                        _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
-                    }
+                    currentUuidIndex -= Coordinates.Count - 1;
+                    _lastLastCompletedTime = _lastCompletedTime;
+                    _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
                 }
-                else
-                {
-                    currentUuidIndex -= 1;
-                    if (currentUuidIndex < 0)
-                    {
-                        currentUuidIndex = Coordinates.Count - 1;
-                    }
-                }
-                _currentUuidIndexes[uuid] = currentUuidIndex;
-                currentCoord = Coordinates[currentUuidIndex];
-                var task = new CircleTask
-                {
-                    Action = DeviceActionType.ScanPokemon,
-                    Area = Name,
-                    Latitude = currentCoord.Latitude,
-                    Longitude = currentCoord.Longitude,
-                    MinimumLevel = MinimumLevel,
-                    MaximumLevel = MaximumLevel,
-                    LureEncounter = SendTaskForLureEncounter,
-                };
-                return task;
             }
             else
             {
-                currentIndex = (int)_lastIndex;
-                if (_lastIndex + 1 == Coordinates.Count)
+                currentUuidIndex -= 1;
+                if (currentUuidIndex < 0)
                 {
-                    _lastLastCompletedTime = _lastCompletedTime;
-                    _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
-                    _lastIndex = 0;
+                    currentUuidIndex = Coordinates.Count - 1;
                 }
-                else
-                {
-                    _lastIndex++;
-                }
-                currentCoord = Coordinates[currentIndex];
-                var task = new CircleTask
-                {
-                    Action = CircleType == CircleInstanceType.Pokemon
-                        ? DeviceActionType.ScanPokemon
-                        : DeviceActionType.ScanRaid,
-                    Area = Name,
-                    Latitude = currentCoord.Latitude,
-                    Longitude = currentCoord.Longitude,
-                    MinimumLevel = MinimumLevel,
-                    MaximumLevel = MaximumLevel,
-                    LureEncounter = SendTaskForLureEncounter,
-                };
-                return task;
             }
+            _currentUuid[uuid].Index = currentUuidIndex;
+            currentCoord = Coordinates[currentUuidIndex];
+            return currentCoord;
+        }
+
+        private Coordinate BasicRoute()
+        {
+            var currentIndex = (int)_lastIndex;
+            var currentCoord = Coordinates[currentIndex];
+            // Check if current index is last in coordinates list,
+            // if so we've completed the route. Reset route to first
+            // coordinate for next device.
+            if (_lastIndex + 1 == Coordinates.Count)
+            {
+                _lastLastCompletedTime = _lastCompletedTime;
+                _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
+                _lastIndex = 0;
+            }
+            else
+            {
+                _lastIndex++;
+            }
+            return currentCoord;
         }
     }
 
@@ -308,6 +306,6 @@
     {
         public int Index { get; set; }
 
-        public double LastSeen { get; set; }
+        public ulong LastSeen { get; set; }
     }
 }

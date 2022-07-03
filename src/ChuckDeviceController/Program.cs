@@ -6,6 +6,9 @@ using ChuckDeviceController.Services;
 using Microsoft.EntityFrameworkCore;
 
 
+// TODO: Make configurable
+const bool AutomaticMigrations = true;
+
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = LoadConfig(env);
 if (config.Providers.Count() == 2)
@@ -86,8 +89,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Migrate database if needed
-await MigrateDatabase(app.Services);
+if (AutomaticMigrations)
+{
+    // Migrate database if needed
+    await MigrateDatabase(app.Services);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

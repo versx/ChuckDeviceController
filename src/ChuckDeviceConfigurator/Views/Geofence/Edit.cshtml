@@ -2,10 +2,10 @@
 @using ChuckDeviceController.Data.Entities;
 @model Geofence
 @{
-    ViewData["Title"] = "Edit Geofence " + Model.Name;
+    ViewData["Title"] = "Edit Geofence " + Model?.Name;
 }
 
-<h1>Edit Geofence @Model.Name</h1>
+<h1>Edit Geofence @Model?.Name</h1>
 
 <p>@Html.ValidationMessage("Geofence", new { @class = "text-danger" })</p>
 

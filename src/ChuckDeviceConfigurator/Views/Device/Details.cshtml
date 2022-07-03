@@ -1,11 +1,12 @@
 ﻿@using ChuckDeviceController.Data.Entities
 @model Device
-
 @{
-    ViewData["Title"] = "Device Details " + Model.Uuid;
+    ViewData["Title"] = "Device Details " + Model?.Uuid;
 }
 
-<h1>Device Details</h1>
+<h1>Device Details @Model?.Uuid</h1>
+
+<p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
 <div>
     <h4>Device</h4>
@@ -56,6 +57,6 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.Uuid">Edit</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.Uuid">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>

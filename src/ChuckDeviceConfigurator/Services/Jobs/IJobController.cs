@@ -15,7 +15,7 @@
         bool IsEvent { get; }
 
 
-        Task<ITask> GetTaskAsync(string uuid, string accountUsername, bool isStartup);
+        Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, bool isStartup = false);
 
         Task<string> GetStatusAsync();
 

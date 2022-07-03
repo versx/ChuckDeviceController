@@ -8,5 +8,6 @@
         Default = 0,
         Split,
         Circular,
+        Smart,
     }
 }

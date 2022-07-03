@@ -1,13 +1,15 @@
 ﻿@using ChuckDeviceController.Data.Entities;
 @model Geofence
 @{
-    ViewData["Title"] = "Geofence Details " + Model.Name;
+    ViewData["Title"] = "Geofence Details " + Model?.Name;
 }
 
-<h1>Geofence Details</h1>
+<h1>Geofence Details @Model?.Name</h1>
+
+<p>@Html.ValidationMessage("Geofence", new { @class = "text-danger" })</p>
 
 <div>
-    <h4>Device</h4>
+    <h4>Geofence</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -31,6 +33,6 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.Name">Edit</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.Name">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
