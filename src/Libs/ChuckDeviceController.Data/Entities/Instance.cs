@@ -50,11 +50,11 @@
         ]
         public InstanceData Data { get; set; }
 
-        [NotMapped]
+        [
+            DisplayName("Device Count"),
+            NotMapped,
+        ]
         public int DeviceCount { get; set; }
-
-        [NotMapped]
-        public int AreaCount { get; set; }
 
         #endregion
 

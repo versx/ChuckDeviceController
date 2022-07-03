@@ -36,7 +36,7 @@
                 var areasCount = geofence.Type == GeofenceType.Circle
                     ? area.FromJson<List<Coordinate>>().Count
                     : area.FromJson<List<List<Coordinate>>>().Count;
-                geofence.AreasCount = areasCount;
+                geofence.AreasCount = (uint)areasCount;
             });
             return View(new ViewModelsModel<Geofence>
             {

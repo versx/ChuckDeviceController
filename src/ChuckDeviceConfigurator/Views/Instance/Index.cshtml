@@ -29,9 +29,6 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].DeviceCount)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Items[0].AreaCount)
-            </th>
             <th></th>
         </tr>
     </thead>
@@ -53,9 +50,6 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.DeviceCount)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.AreaCount)
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Name">Edit</a> |

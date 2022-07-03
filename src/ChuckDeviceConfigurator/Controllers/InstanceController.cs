@@ -32,6 +32,17 @@
         public ActionResult Index()
         {
             var instances = _context.Instances.ToList();
+            var devices = _context.Devices.ToList();
+            instances.ForEach(instance =>
+            {
+                devices.ForEach(device =>
+                {
+                    if (device.InstanceName == instance.Name)
+                    {
+                        instance.DeviceCount++;
+                    }
+                });
+            });
             var model = new ViewModelsModel<Instance>
             {
                 Items = instances,
