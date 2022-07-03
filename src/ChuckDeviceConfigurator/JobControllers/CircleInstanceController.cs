@@ -13,14 +13,10 @@
     {
         private static readonly Random _random = new();
         private readonly Dictionary<string, DeviceIndex> _currentUuid = new();
-        //private readonly Dictionary<string, int> _currentUuidIndexes = new();
-        //private readonly Dictionary<string, ulong> _currentUuidSeenTime = new();
-        private Queue<Coordinate> _scanNextCoords = new();
+        private Queue<Coordinate> _scanNextCoords = new(); 
         private uint _lastIndex = 0; // Used for basic leap frog routing
         private double _lastCompletedTime;
         private double _lastLastCompletedTime;
-
-        public bool SendTaskForLureEncounter { get; set; } // TODO: Make configurable
 
         #region Properties
 
@@ -39,6 +35,8 @@
         public string? GroupName { get; set; } // TODO: Fix warning
 
         public bool IsEvent { get; }
+
+        public bool SendTaskForLureEncounter { get; set; } // TODO: Make configurable
 
         #endregion
 
@@ -60,10 +58,33 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string accountUsername, bool isStartup = false)
+        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, bool isStartup = false)
         {
-            // TODO: AddDevice(uuid);
+            // Add device to device list
+            AddDevice(uuid);
             Coordinate? currentCoord = null;
+
+            if (Coordinates.Count == 0)
+            {
+                // TODO: Throw error that instance requires at least one coordinate
+                return null;
+            }
+
+            // Check if on demand scanning coordinates list has any to send to workers
+            if (_scanNextCoords.Count > 0)
+            {
+                currentCoord = _scanNextCoords.Dequeue();
+                return new CircleTask
+                {
+                    Action = DeviceActionType.ScanPokemon,
+                    Area = Name,
+                    Latitude = currentCoord.Latitude,
+                    Longitude = currentCoord.Longitude,
+                    MinimumLevel = MinimumLevel,
+                    MaximumLevel = MaximumLevel,
+                };
+            }
+
             switch (CircleType)
             {
                 case CircleInstanceType.Pokemon:
@@ -76,17 +97,19 @@
                             break;
                         case CircleInstanceRouteType.Split:
                             // Split route by device count
+                            currentCoord = SplitRoute(uuid);
                             break;
-                        case CircleInstanceRouteType.Circular:
+                        //case CircleInstanceRouteType.Circular:
                             // Circular split route by device count
-                            break;
                         case CircleInstanceRouteType.Smart:
                             // Smart routing by device count
-                            currentCoord = GetNextScanLocation(uuid);
+                            currentCoord = SmartRoute(uuid);
                             break;
                     }
                     break;
             }
+
+            // Check if we were unable to retrieve a coordinate to send
             if (currentCoord == null)
             {
                 // TODO: Not sure if this will ever hit, need to test
@@ -109,7 +132,8 @@
         public async Task<string> GetStatusAsync()
         {
             var status = "--";
-            if (_lastCompletedTime != default && _lastLastCompletedTime != default)
+            if (//_lastCompletedTime != default && _lastLastCompletedTime != default ||
+                _lastCompletedTime > 0 && _lastLastCompletedTime > 0)
             {
                 var timeDiffSeconds = _lastCompletedTime - _lastLastCompletedTime;
                 if (timeDiffSeconds > 0)
@@ -133,6 +157,149 @@
 
         #endregion
 
+        #region Routing Logic
+
+        private Coordinate BasicRoute()
+        {
+            var currentIndex = (int)_lastIndex;
+            var currentCoord = Coordinates[currentIndex];
+            // Check if current index is last in coordinates list,
+            // if so we've completed the route. Reset route to first
+            // coordinate for next device.
+            if (_lastIndex + 1 == Coordinates.Count)
+            {
+                _lastLastCompletedTime = _lastCompletedTime;
+                _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
+                _lastIndex = 0;
+            }
+            else
+            {
+                _lastIndex++;
+            }
+            return currentCoord;
+        }
+
+        private Coordinate SplitRoute(string uuid, bool isStartup = false)
+        {
+            // TODO: Lock index
+            var currentUuidIndex = _currentUuid.ContainsKey(uuid)
+                ? _currentUuid[uuid].Index
+                : Convert.ToInt32(Math.Round(Convert.ToDouble(_random.Next(ushort.MinValue, ushort.MaxValue) % Coordinates.Count)));
+
+            var shouldAdvance = true;
+            var offsetValue = _random.Next(ushort.MinValue, ushort.MaxValue) % 100;
+            if (offsetValue < 5)
+            {
+                // Use a light hand and 25% of the time try to space out devices
+                // this ensures average round time decreases by at least 10% using
+                // this approach
+                var (numLiveDevices, distanceToNextDevice) = CheckDeviceSpacing(uuid);
+                var dist = Convert.ToInt32((numLiveDevices * distanceToNextDevice) + 0.5);
+                if (dist < Coordinates.Count)
+                {
+                    shouldAdvance = false;
+                }
+            }
+            if (currentUuidIndex == 0)
+            {
+                // Don't back up past 0 to avoid route time inaccuracy
+                shouldAdvance = true;
+            }
+
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (!isStartup)
+            {
+                if (shouldAdvance)
+                {
+                    currentUuidIndex++;
+                    if (currentUuidIndex >= Coordinates.Count)
+                    {
+                        currentUuidIndex = 0;
+                        // This is an approximation of round time.
+                        _lastLastCompletedTime = _lastCompletedTime;
+                        _lastCompletedTime = now;
+                    }
+                }
+                else
+                {
+                    // Back up!
+                    currentUuidIndex--;
+                    if (currentUuidIndex < 0)
+                    {
+                        currentUuidIndex = Coordinates.Count;
+                    }
+                }
+            }
+            _currentUuid[uuid] = new DeviceIndex
+            {
+                Index = currentUuidIndex,
+                LastSeen = now,
+            };
+            var currentCoord = Coordinates[currentUuidIndex];
+            return currentCoord;
+        }
+
+        private Coordinate SmartRoute(string uuid)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var currentUuidIndex = _currentUuid.ContainsKey(uuid)
+                ? _currentUuid[uuid].Index
+                : _random.Next(0, Coordinates.Count);
+
+            _currentUuid[uuid] = new DeviceIndex
+            {
+                Index = currentUuidIndex,
+                LastSeen = now,
+            };
+
+            var shouldAdvance = true;
+            var jumpDistance = 0d;
+
+            if (_currentUuid.Count > 1 && _random.Next(0, 100) < 15)
+            {
+                var (numLiveDevices, distanceToNextDevice) = CheckDeviceSpacing(uuid);
+                var dist = 10 * distanceToNextDevice * numLiveDevices + 5;
+                if (dist < 10 * Coordinates.Count)
+                {
+                    shouldAdvance = false;
+                }
+                if (dist > 12 * Coordinates.Count)
+                {
+                    jumpDistance = distanceToNextDevice - Coordinates.Count / numLiveDevices - 1;
+                }
+            }
+            if (currentUuidIndex == 0 && Coordinates.Count > 1)
+            {
+                shouldAdvance = true;
+            }
+            if (shouldAdvance)
+            {
+                currentUuidIndex += Convert.ToInt32(jumpDistance + 1);
+                if (currentUuidIndex >= Coordinates.Count)
+                {
+                    // Completed route, reset index
+                    currentUuidIndex -= Coordinates.Count;
+                    _lastLastCompletedTime = _lastCompletedTime;
+                    _lastCompletedTime = now;
+                }
+            }
+            else
+            {
+                currentUuidIndex--;
+                if (currentUuidIndex < 0)
+                {
+                    currentUuidIndex = Coordinates.Count;
+                }
+            }
+            _currentUuid[uuid].Index = currentUuidIndex;
+            var currentCoord = Coordinates[currentUuidIndex];
+            return currentCoord;
+        }
+
+        #endregion
+
+        #region Helpers
+
         private double GetRouteDistance(double x, double y)
         {
             if (x < y)
@@ -147,8 +314,13 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             var deadDeviceCutOffTime = now - 60;
             var liveDevices = new List<string>();
-            //var indexes = _currentUuidIndexes.sort // TODO: Sort indexes by index
-            foreach (var (currentUuid, index) in _currentUuid)
+
+            // Sort indexes by current device index
+            var uuidIndexes = _currentUuid.ToList();
+            uuidIndexes.Sort((pair1, pair2) => pair1.Value.Index.CompareTo(pair2.Value.Index));
+            var dict = uuidIndexes.ToDictionary(key => key.Key, value => value.Value);
+
+            foreach (var (currentUuid, index) in dict)
             {
                 if (index.LastSeen > 0)
                 {
@@ -190,7 +362,7 @@
             */
 
             var numLiveDevices = liveDevices.Count;
-            double distanceToNext = Coordinates.Count;
+            double distanceToNextDevice = Coordinates.Count;
             for (var i = 0; i < numLiveDevices; i++)
             {
                 if (uuid != liveDevices[i])
@@ -202,104 +374,32 @@
                 {
                     var nextDevice = liveDevices[i + 1];
                     var nextUuid = _currentUuid[nextDevice];
-                    distanceToNext = GetRouteDistance(currentUuid.Index, nextUuid.Index);
+                    distanceToNextDevice = GetRouteDistance(currentUuid.Index, nextUuid.Index);
                 }
                 else
                 {
                     var nextDevice = liveDevices[i]; // TODO: Check, was `0`
                     var nextUuid = _currentUuid[nextDevice];
-                    distanceToNext = GetRouteDistance(currentUuid.Index, nextUuid.Index);
+                    distanceToNextDevice = GetRouteDistance(currentUuid.Index, nextUuid.Index);
                 }
             }
-            return (numLiveDevices, distanceToNext);
+            return (numLiveDevices, distanceToNextDevice);
         }
 
-        private Coordinate GetNextScanLocation(string uuid)
+        private void AddDevice(string uuid)
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var currentIndex = 0;
-            var currentUuidIndex = 0;
-            // TODO: Ensure Coordinates has at least one coordinate in list
-            var currentCoord = Coordinates[currentIndex];
-            // TODO: Double check logic
-            if (_scanNextCoords.Count > 0)
+            if (!_currentUuid.ContainsKey(uuid))
             {
-                currentCoord = _scanNextCoords.Dequeue();
-                return currentCoord;
-            }
-
-            currentUuidIndex = _currentUuid.ContainsKey(uuid)
-                ? _currentUuid[uuid].Index
-                : _random.Next(0, Coordinates.Count);
-            // TODO: Check if uuid exists in _currentUuidIndexes dictionary
-            _currentUuid[uuid] = new DeviceIndex
-            {
-                Index = currentUuidIndex,
-                LastSeen = now,
-            };
-
-            var shouldAdvance = true;
-            var jumpDistance = 0d;
-
-            if (_currentUuid.Count > 1 && _random.Next(0, 100) < 15)
-            {
-                var (numLiveDevices, distanceToNext) = CheckDeviceSpacing(uuid);
-                var dist = 10 * distanceToNext * numLiveDevices + 5;
-                if (dist < 10 * Coordinates.Count)
+                //var now = DateTime.UtcNow.ToTotalSeconds();
+                _currentUuid.Add(uuid, new DeviceIndex
                 {
-                    shouldAdvance = false;
-                }
-                if (dist > 12 * Coordinates.Count)
-                {
-                    jumpDistance = distanceToNext - Coordinates.Count / numLiveDevices - 1;
-                }
+                    //Index = 0,
+                    //LastSeen = now,
+                });
             }
-            if (currentUuidIndex == 0 && Coordinates.Count > 1)
-            {
-                shouldAdvance = true;
-            }
-            if (shouldAdvance)
-            {
-                currentUuidIndex += Convert.ToInt32(jumpDistance + 1);
-                if (currentUuidIndex >= Coordinates.Count - 1)
-                {
-                    currentUuidIndex -= Coordinates.Count - 1;
-                    _lastLastCompletedTime = _lastCompletedTime;
-                    _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
-                }
-            }
-            else
-            {
-                currentUuidIndex -= 1;
-                if (currentUuidIndex < 0)
-                {
-                    currentUuidIndex = Coordinates.Count - 1;
-                }
-            }
-            _currentUuid[uuid].Index = currentUuidIndex;
-            currentCoord = Coordinates[currentUuidIndex];
-            return currentCoord;
         }
 
-        private Coordinate BasicRoute()
-        {
-            var currentIndex = (int)_lastIndex;
-            var currentCoord = Coordinates[currentIndex];
-            // Check if current index is last in coordinates list,
-            // if so we've completed the route. Reset route to first
-            // coordinate for next device.
-            if (_lastIndex + 1 == Coordinates.Count)
-            {
-                _lastLastCompletedTime = _lastCompletedTime;
-                _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
-                _lastIndex = 0;
-            }
-            else
-            {
-                _lastIndex++;
-            }
-            return currentCoord;
-        }
+        #endregion
     }
 
     public class DeviceIndex

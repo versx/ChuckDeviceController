@@ -7,7 +7,7 @@
     {
         Default = 0,
         Split,
-        Circular,
+        //Circular,
         Smart,
     }
 }
