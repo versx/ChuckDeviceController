@@ -21,6 +21,9 @@
                 @Html.DisplayNameFor(model => model.Items[0].Type)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.Items[0].Status)
+            </th>
+            <th>
                 Level
             </th>
             <th>
@@ -41,6 +44,9 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Status)
                 </td>
                 <td>
                     @item.MinimumLevel-@item.MaximumLevel

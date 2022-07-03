@@ -132,6 +132,13 @@
         ]
         public string? GroupName { get; set; }
 
+        [
+
+            DisplayName("Status"),
+            NotMapped,
+        ]
+        public string Status => GetStatus();
+
         public bool IsValid(bool ignoreWarning = false, string? groupName = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();

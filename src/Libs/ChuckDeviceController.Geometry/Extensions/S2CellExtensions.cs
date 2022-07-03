@@ -42,5 +42,27 @@
             var coord = new Coordinate(latlng.LatDegrees, latlng.LngDegrees);
             return coord;
         }
+
+        public static List<S2CellId> GetLoadedS2CellIds(this S2LatLng latlng)
+        {
+            double radius;
+            if (latlng.LatDegrees <= 39)
+                radius = 715;
+            else if (latlng.LatDegrees >= 69)
+                radius = 330;
+            else
+                radius = -13 * latlng.LatDegrees + 1225;
+
+            var radians = radius / 6378137;
+            var centerNormalizedPoint = latlng.Normalized.ToPoint();
+            var circle = S2Cap.FromAxisHeight(centerNormalizedPoint, (radians * radians) / 2);
+            var coverer = new S2RegionCoverer();
+            coverer.MaxCells = 100;
+            coverer.MinLevel = 15;
+            coverer.MaxLevel = 15;
+            var s2cells = coverer.GetCovering(circle);
+            var list = s2cells.ToList();
+            return list;
+        }
     }
 }

@@ -196,7 +196,7 @@
                     {
                         case InstanceType.AutoQuest:
                             var timezone = instance.Data.TimeZone;
-                            var timezoneOffset = 0;
+                            short timezoneOffset = 0;
                             if (!string.IsNullOrEmpty(timezone) && _timeZoneService.TimeZones.ContainsKey(timezone))
                             {
                                 var tzData = _timeZoneService.TimeZones[timezone];
@@ -205,7 +205,8 @@
                                     : tzData.Utc;
                                 timezoneOffset *= 3600;
                             }
-                            //jobController = new AutoInstanceController(instance, multiPolygons, timezoneOffset, ignoreBootstrap);
+                            var ignoreBootstrap = false; // TODO: Configurable
+                            jobController = new AutoInstanceController(_factory, instance, multiPolygons, timezoneOffset, ignoreBootstrap);
                             break;
                         case InstanceType.Bootstrap:
                             jobController = new BootstrapInstanceController(instance, coordinates);
@@ -249,7 +250,7 @@
             }
 
             var device = _devices[uuid];
-            var instanceName = device.InstanceName;
+            var instanceName = device?.InstanceName;
             if (device == null || string.IsNullOrEmpty(instanceName))
             {
                 return null;

@@ -33,7 +33,7 @@
         {
             var instances = _context.Instances.ToList();
             var devices = _context.Devices.ToList();
-            instances.ForEach(instance =>
+            instances.ForEach(async instance =>
             {
                 devices.ForEach(device =>
                 {
@@ -42,6 +42,8 @@
                         instance.DeviceCount++;
                     }
                 });
+                var status = await _jobControllerService.GetStatusAsync(instance);
+                instance.Status = status;
             });
             var model = new ViewModelsModel<Instance>
             {
@@ -60,6 +62,10 @@
                 ModelState.AddModelError("Instance", $"Instance does not exist with id '{id}'.");
                 return View();
             }
+
+            var status = await _jobControllerService.GetStatusAsync(instance);
+            instance.Status = status;
+
             return View(instance);
         }
 

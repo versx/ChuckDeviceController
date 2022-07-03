@@ -56,6 +56,13 @@
         ]
         public int DeviceCount { get; set; }
 
+        [
+
+            DisplayName("Status"),
+            NotMapped,
+        ]
+        public string Status { get; set; }
+
         #endregion
 
         #region Helper Methods

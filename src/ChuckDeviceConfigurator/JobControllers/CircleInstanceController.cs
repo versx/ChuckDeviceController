@@ -58,7 +58,7 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, bool isStartup = false)
+        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false)
         {
             // Add device to device list
             AddDevice(uuid);

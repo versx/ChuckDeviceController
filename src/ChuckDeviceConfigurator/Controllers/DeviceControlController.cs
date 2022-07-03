@@ -164,11 +164,11 @@
             if (device is not null)
             {
                 // Get instance controller for device and set min/max level variables
-                var instanceController = _jobControllerService.GetInstanceController(device.Uuid);
-                if (instanceController != null)
+                var jobController = _jobControllerService.GetInstanceController(device.Uuid);
+                if (jobController != null)
                 {
-                    minLevel = instanceController.MinimumLevel;
-                    maxLevel = instanceController.MaximumLevel;
+                    minLevel = jobController.MinimumLevel;
+                    maxLevel = jobController.MaximumLevel;
                 }
             }
 
@@ -177,10 +177,11 @@
             {
                 var devices = _context.Devices.ToList();
                 var inUseAccounts = devices.Where(d => !string.IsNullOrEmpty(d.AccountUsername))
+                                           .OrderBy(d => d.LastSeen)
                                            .Select(d => d.AccountUsername.ToLower())
                                            .ToList();
 
-                // Get new account between min/max level and not in inUseAccount list
+                // TODO: Get new account between min/max level and not in inUseAccount list
                 /*
                 account = _context.Accounts.AsEnumerable().FirstOrDefault(x =>
                     x.Level >= minLevel &&
@@ -281,10 +282,11 @@
                 return CreateSwitchAccountTask(minLevel, maxLevel);
             }
 
+            Account? account = null;
             if (!string.IsNullOrEmpty(username))
             {
                 // Get account by username from request payload
-                var account = await _context.Accounts.FindAsync(username);
+                account = await _context.Accounts.FindAsync(username);
                 if (account == null)
                 {
                     // Unable to find account based on payload username, look for device's assigned account username instead
@@ -302,7 +304,8 @@
                     return CreateSwitchAccountTask(minLevel, maxLevel);
                 }
             }
-            var task = await jobController.GetTaskAsync(device.Uuid, device.AccountUsername, false);
+
+            var task = await jobController.GetTaskAsync(device.Uuid, device.AccountUsername, account, false);
             if (task == null)
             {
                 _logger.LogWarning($"[{device.Uuid}] No tasks avaialable yet");

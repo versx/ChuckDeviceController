@@ -54,7 +54,7 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, bool isStartup = false)
+        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false)
         {
             // TODO: Save last index to Instance.Data
             // TODO: Lock _lastIndex

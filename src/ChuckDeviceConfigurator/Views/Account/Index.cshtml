@@ -21,10 +21,13 @@
                 @Html.DisplayNameFor(model => model.Items[0].Level)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].GroupName)
+                @Html.DisplayNameFor(model => model.Items[0].Status)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Failed)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].GroupName)
             </th>
             <th></th>
         </tr>
@@ -40,10 +43,13 @@
                     @Html.DisplayFor(modelItem => item.Level)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.GroupName)
+                    @Html.DisplayFor(modelItem => item.Status)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Failed)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GroupName)
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Username">Edit</a> |
