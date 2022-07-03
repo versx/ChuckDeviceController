@@ -30,6 +30,13 @@
         ]
         public GeofenceData Data { get; set; }
 
+        [
+
+            DisplayName("Count"),
+            NotMapped,
+        ]
+        public uint AreasCount { get; set; }
+
         #endregion
 
         #region Helper Methods

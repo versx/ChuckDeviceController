@@ -8,7 +8,9 @@
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Converters;
+    using ChuckDeviceController.Geometry.Models;
 
     [Authorize(Roles = RoleConsts.GeofencesRole)]
     public class GeofenceController : Controller
@@ -28,6 +30,14 @@
         public ActionResult Index()
         {
             var geofences = _context.Geofences.ToList();
+            geofences.ForEach(geofence =>
+            {
+                string area = Convert.ToString(geofence.Data.Area);
+                var areasCount = geofence.Type == GeofenceType.Circle
+                    ? area.FromJson<List<Coordinate>>().Count
+                    : area.FromJson<List<List<Coordinate>>>().Count;
+                geofence.AreasCount = areasCount;
+            });
             return View(new ViewModelsModel<Geofence>
             {
                 Items = geofences,
