@@ -8,6 +8,7 @@ using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Services;
 using ChuckDeviceConfigurator.Services.Jobs;
+using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceController.Data.Contexts;
 
 
@@ -144,6 +145,7 @@ builder.Services.AddDbContext<DeviceControllerContext>(options =>
 
 #endregion
 
+builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));

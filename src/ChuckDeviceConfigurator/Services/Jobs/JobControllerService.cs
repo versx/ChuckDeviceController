@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
     using ChuckDeviceConfigurator.JobControllers;
+    using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -16,6 +17,7 @@
 
         private readonly ILogger<IJobControllerService> _logger;
         private readonly IDbContextFactory<DeviceControllerContext> _factory;
+        private readonly ITimeZoneService _timeZoneService;
 
         private readonly IDictionary<string, Device> _devices;
         private readonly IDictionary<string, IJobController> _instances;
@@ -40,10 +42,12 @@
 
         public JobControllerService(
             ILogger<IJobControllerService> logger,
-            IDbContextFactory<DeviceControllerContext> factory)
+            IDbContextFactory<DeviceControllerContext> factory,
+            ITimeZoneService timeZoneService)
         {
             _logger = logger;
             _factory = factory;
+            _timeZoneService = timeZoneService;
 
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
@@ -193,27 +197,18 @@
                         case InstanceType.AutoQuest:
                             var timezone = instance.Data.Timezone;
                             var timezoneOffset = 0;
-                            if (!string.IsNullOrEmpty(timezone))
+                            if (!string.IsNullOrEmpty(timezone) && _timeZoneService.TimeZones.ContainsKey(timezone))
                             {
-                                /*
-                                TODO: Timezone list
-                                var tz = TimeZoneService.Instance.Timezones.ContainsKey(timezone)
-                                    ? TimeZoneService.Instance.Timezones[timezone]
-                                    : null;
-                                if (tz != null)
-                                {
-                                    var tzData = TimeZoneService.Instance.Timezones[timezone];
-                                    timezoneOffset = instance.Data.EnableDst
-                                        ? tzData.Dst
-                                        : tzData.Utc;
-                                    timezoneOffset *= 3600;
-                                }
-                                */
+                                var tzData = _timeZoneService.TimeZones[timezone];
+                                timezoneOffset = instance.Data.EnableDst ?? false
+                                    ? tzData.Dst
+                                    : tzData.Utc;
+                                timezoneOffset *= 3600;
                             }
                             //jobController = new AutoInstanceController(instance, multiPolygons, timezoneOffset, ignoreBootstrap);
                             break;
                         case InstanceType.Bootstrap:
-                            //jobController = new BootstrapInstanceController(instance, coordinates);
+                            jobController = new BootstrapInstanceController(instance, coordinates);
                             break;
                         case InstanceType.FindTth:
                             jobController = new TthFinderInstanceController(instance, coordinates);
