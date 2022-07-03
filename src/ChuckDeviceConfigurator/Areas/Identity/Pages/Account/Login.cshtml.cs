@@ -124,10 +124,17 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
 
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(userName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(userName, Input.Password, Input.RememberMe, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    if (userName == Strings.DefaultUserName && Input.Password == Strings.DefaultUserPassword)
+                    {
+                        // Root user account is still using default password, redirect to ChangePassword view
+                        var changePasswordUrl = Url.Content("~" + Strings.DefaultSuccessLoginPath + "/ChangePassword");
+                        return LocalRedirect(changePasswordUrl);
+                    }
+
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
