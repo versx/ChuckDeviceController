@@ -40,11 +40,12 @@
             Name = instance.Name;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
-            //FastBootstrapMode = instance.Data?.FastBootstrapMode
+            FastBootstrapMode = instance.Data?.FastBootstrapMode ?? true;
             GroupName = instance.Data?.AccountGroup;
             IsEvent = instance.Data?.IsEvent ?? false;
 
             _logger = new Logger<BootstrapInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            // TODO: Geofences = Geofence.FromPolygons(coords);
             // TODO: Generate bootstrap route
             //Coordinates = _routeGenerator.GenerateBootstrapRoute((List<Geofence>)coords, circleSize);
         }

@@ -195,7 +195,7 @@
                     switch (instance.Type)
                     {
                         case InstanceType.AutoQuest:
-                            var timezone = instance.Data.Timezone;
+                            var timezone = instance.Data.TimeZone;
                             var timezoneOffset = 0;
                             if (!string.IsNullOrEmpty(timezone) && _timeZoneService.TimeZones.ContainsKey(timezone))
                             {

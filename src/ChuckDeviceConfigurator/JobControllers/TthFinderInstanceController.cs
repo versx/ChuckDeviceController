@@ -80,6 +80,7 @@
                     {
                         _logger.LogWarning($"[{uuid}] No unknown spawnpoints to check, sending 0,0");
                         currentCoord = new Coordinate();
+                        // TODO: Assign instance to chained instance upon completion of tth finder
                     }
                 }
                 else

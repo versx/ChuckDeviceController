@@ -4,6 +4,10 @@
     {
         public const string BasePath = "./bin/debug/";
 
+        public const string WebRoot = "wwwroot";
+
+        public static readonly string DataFolder = Path.Combine(WebRoot, "data");
+
         public const string AppSettings = "appsettings.json";
 
         public const string AppSettingsFormat = "appsettings.{0}.json";

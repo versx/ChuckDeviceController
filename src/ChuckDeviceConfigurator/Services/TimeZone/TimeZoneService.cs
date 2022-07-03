@@ -12,7 +12,7 @@
 
         public TimeZoneService()
         {
-            var filePath = TimeZonesFileName;// Path.Combine(Strings.BasePath, "wwwroot/data/", TimeZonesFileName);
+            var filePath = Path.Combine(Strings.DataFolder, TimeZonesFileName);
             if (!File.Exists(filePath))
             {
                 throw new FileNotFoundException($"{TimeZonesFileName} does not exist!", filePath);

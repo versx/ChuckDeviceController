@@ -11,11 +11,13 @@
         ]
         public CircleInstanceRouteType CircleRouteType { get; set; }
 
+        #region Quest Instance
+
         [
             DisplayName("Time Zone"),
             JsonPropertyName("timezone"),
         ]
-        public string? Timezone { get; set; }
+        public string? TimeZone { get; set; }
 
         [
             DisplayName("Enable DST"),
@@ -24,28 +26,45 @@
         public bool? EnableDst { get; set; }
 
         [
+            DisplayName("Spin Limit"),
+            JsonPropertyName("spin_limit"),
+        ]
+        public ushort? SpinLimit { get; set; }
+
+        #endregion
+
+        #region IV Instance
+
+        [
             DisplayName("IV Queue Limit"),
             JsonPropertyName("iv_queue_limit"),
         ]
-        public ushort? IVQueueLimit { get; set; }
+        public ushort? IvQueueLimit { get; set; }
 
         [
             DisplayName("IV List"),
             JsonPropertyName("iv_list"),
         ]
-        public string? IVList { get; set; }
+        public string? IvList { get; set; }
+
+        #endregion
+
+        #region Bootstrap Instance
 
         [
-            DisplayName("Spin Limit"),
-            JsonPropertyName("spin_limit"),
+
+            DisplayName("Fast Bootstrap Mode"),
+            JsonPropertyName("fast_bootstrap_mode"),
         ]
-        public ushort? SpinLimit { get; set; }
+        public bool? FastBootstrapMode { get; set; }
 
         [
             DisplayName("Circle Size"),
             JsonPropertyName("circle_size"),
         ]
         public ushort? CircleSize { get; set; }
+
+        #endregion
 
         [
             DisplayName("Account Group"),
