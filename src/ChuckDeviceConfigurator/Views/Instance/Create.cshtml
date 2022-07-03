@@ -28,6 +28,13 @@
                 <span asp-validation-for="Type" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Data.CircleRouteType" class="control-label"></label>
+                <select asp-for="Data.CircleRouteType" class="form-control" asp-items="Html.GetEnumSelectList<CircleInstanceRouteType>()">
+                    <option>Please select one</option>
+                </select>
+                <span asp-validation-for="Data.CircleRouteType" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <div class="row">
                     <div class="col">
                         <label asp-for="MinimumLevel" class="control-label"></label>

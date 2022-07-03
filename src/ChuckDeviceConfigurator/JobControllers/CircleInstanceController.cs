@@ -22,7 +22,7 @@
 
         public string Name { get; }
 
-        public List<Coordinate> Coordinates { get; }
+        public IReadOnlyList<Coordinate> Coordinates { get; }
 
         public CircleInstanceType CircleType { get; }
 
@@ -32,7 +32,7 @@
 
         public ushort MaximumLevel { get; }
 
-        public string? GroupName { get; set; } // TODO: Fix warning
+        public string? GroupName { get; } // TODO: Fix warning
 
         public bool IsEvent { get; }
 

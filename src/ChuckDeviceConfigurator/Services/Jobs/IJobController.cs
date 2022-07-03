@@ -2,18 +2,13 @@
 {
     using ChuckDeviceConfigurator.Services.Tasks;
 
-    public interface IJobController
+    public interface IJobController : IEventController
     {
         string Name { get; }
 
         ushort MinimumLevel { get; }
 
         ushort MaximumLevel { get; }
-
-        string GroupName { get; }
-
-        bool IsEvent { get; }
-
 
         Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, bool isStartup = false);
 

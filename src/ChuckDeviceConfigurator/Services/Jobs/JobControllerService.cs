@@ -154,7 +154,7 @@
                         var area = geofence.Data?.Area;
                         if (area is null)
                         {
-                            _logger.LogError($"[{instance.Name}] Failed to parse geofence '{geofence.Name}' coordinates");
+                            _logger.LogError($"[{instance.Name}] Failed to parse coordinates for geofence '{geofence.Name}'");
                             continue;
                         }
                         string areaJson = Convert.ToString(area);
@@ -188,15 +188,39 @@
                         multiPolygons.AddRange(areaArrayEmptyInner);
                     }
 
-                    var minLevel = instance.MinimumLevel;
-                    var maxLevel = instance.MaximumLevel;
                     switch (instance.Type)
                     {
                         case InstanceType.AutoQuest:
+                            var timezone = instance.Data.Timezone;
+                            var timezoneOffset = 0;
+                            if (!string.IsNullOrEmpty(timezone))
+                            {
+                                /*
+                                TODO: Timezone list
+                                var tz = TimeZoneService.Instance.Timezones.ContainsKey(timezone)
+                                    ? TimeZoneService.Instance.Timezones[timezone]
+                                    : null;
+                                if (tz != null)
+                                {
+                                    var tzData = TimeZoneService.Instance.Timezones[timezone];
+                                    timezoneOffset = instance.Data.EnableDst
+                                        ? tzData.Dst
+                                        : tzData.Utc;
+                                    timezoneOffset *= 3600;
+                                }
+                                */
+                            }
+                            //jobController = new AutoInstanceController(instance, multiPolygons, timezoneOffset, ignoreBootstrap);
+                            break;
                         case InstanceType.Bootstrap:
+                            //jobController = new BootstrapInstanceController(instance, coordinates);
+                            break;
                         case InstanceType.FindTth:
+                            jobController = new TthFinderInstanceController(instance, coordinates);
+                            break;
                         case InstanceType.PokemonIV:
-                            //jobController = new IvInstanceController(instance, multiPolygons, ivList, ivQueueLimit);
+                            // TODO: Get IvList from IvListController.Instance
+                            //jobController = new IvInstanceController(instance, multiPolygons, ivList);
                             break;
                     }
                     break;

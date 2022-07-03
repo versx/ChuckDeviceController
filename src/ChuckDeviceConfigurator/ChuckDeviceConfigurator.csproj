@@ -54,8 +54,4 @@
     <None Remove="AspNet.Security.OAuth.GitHub" />
     <None Remove="SendGrid" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="JobControllers\" />
-  </ItemGroup>
 </Project>
