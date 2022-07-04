@@ -160,7 +160,7 @@
                     }
                     if (device.AccountUsername != accountUsername)
                     {
-                        device.AccountUsername = accountUsername;
+                        //device.AccountUsername = accountUsername;
 
                         // TODO: If assigned account for device changes, force device to logout/switch accounts
                     }

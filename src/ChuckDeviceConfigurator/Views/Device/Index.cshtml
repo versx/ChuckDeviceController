@@ -27,6 +27,9 @@
                 @Html.DisplayNameFor(model => model.Items[0].LastHost)
             </th>
             <th>
+                Last Location
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Items[0].LastSeen)
             </th>
             <th></th>
@@ -47,6 +50,9 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.LastHost)
+                </td>
+                <td>
+                    @item.LastLatitude, @item.LastLongitude
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.LastSeen)

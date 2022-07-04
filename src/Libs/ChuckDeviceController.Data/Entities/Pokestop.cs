@@ -361,7 +361,7 @@
                         break;
                     case ConditionType.WithThrowType:
                     case ConditionType.WithThrowTypeInARow:
-                        if (conditionData.WithThrowType.ThrowType != HoloActivityType.ActivityUnknown)
+                        if (conditionData.WithThrowType != null && conditionData.WithThrowType.ThrowType != HoloActivityType.ActivityUnknown)
                         {
                             infoData.Add("throw_type_id", Convert.ToUInt32(conditionData.WithThrowType.ThrowType));
                         }
@@ -391,8 +391,11 @@
                         infoData.Add("level", conditionData.WithPlayerLevel.Level);
                         break;
                     case ConditionType.WithBuddy:
-                        infoData.Add("min_buddy_level", Convert.ToUInt32(conditionData.WithBuddy.MinBuddyLevel));
-                        infoData.Add("must_be_on_map", conditionData.WithBuddy.MustBeOnMap);
+                        if (conditionData.WithBuddy != null)
+                        {
+                            infoData.Add("min_buddy_level", Convert.ToUInt32(conditionData.WithBuddy.MinBuddyLevel));
+                            infoData.Add("must_be_on_map", conditionData.WithBuddy.MustBeOnMap);
+                        }
                         break;
                     case ConditionType.WithDailyBuddyAffection:
                         infoData.Add("min_buddy_affection_earned_today", conditionData.WithDailyBuddyAffection.MinBuddyAffectionEarnedToday);
@@ -564,21 +567,26 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
+            context.Attach(this);
+
             if (oldPokestop != null)
             {
                 if (oldPokestop.CellId > 0 && CellId == 0)
                 {
                     CellId = oldPokestop.CellId;
+                    context.Entry(this).Property(p => p.CellId).IsModified = true;
                 }
 
                 if (oldPokestop.Name != null && Name == null)
                 {
                     Name = oldPokestop.Name;
+                    context.Entry(this).Property(p => p.Name).IsModified = true;
                 }
 
                 if (oldPokestop.Url != null && Url == null)
                 {
                     Url = oldPokestop.Url;
+                    context.Entry(this).Property(p => p.Url).IsModified = true;
                 }
 
                 if (updateQuest && oldPokestop.QuestType != null && QuestType == null)
@@ -590,6 +598,14 @@
                     QuestTimestamp = oldPokestop.QuestTimestamp;
                     QuestTemplate = oldPokestop.QuestTemplate;
                     QuestTitle = oldPokestop.QuestTitle;
+
+                    context.Entry(this).Property(p => p.QuestType).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestTarget).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestConditions).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestRewards).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestTimestamp).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestTemplate).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestTitle).IsModified = true;
                 }
 
                 if (updateQuest && oldPokestop.AlternativeQuestType != null && AlternativeQuestType == null)
@@ -601,11 +617,27 @@
                     AlternativeQuestTimestamp = oldPokestop.AlternativeQuestTimestamp;
                     AlternativeQuestTemplate = oldPokestop.AlternativeQuestTemplate;
                     AlternativeQuestTitle = oldPokestop.AlternativeQuestTitle;
+
+                    context.Entry(this).Property(p => p.QuestType).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestTarget).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestConditions).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestRewards).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestTimestamp).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestTemplate).IsModified = true;
+                    context.Entry(this).Property(p => p.QuestTitle).IsModified = true;
                 }
 
                 if (oldPokestop.LureId > 0 && LureId == 0)
                 {
                     LureId = oldPokestop.LureId;
+                    context.Entry(this).Property(p => p.LureId).IsModified = true;
+                }
+
+                if ((oldPokestop.LureExpireTimestamp != null || oldPokestop.LureExpireTimestamp > 0) &&
+                    (LureExpireTimestamp == null || LureExpireTimestamp == 0))
+                {
+                    LureExpireTimestamp = oldPokestop.LureExpireTimestamp;
+                    context.Entry(this).Property(p => p.LureExpireTimestamp).IsModified = true;
                 }
 
                 // TODO: Check shouldUpdate

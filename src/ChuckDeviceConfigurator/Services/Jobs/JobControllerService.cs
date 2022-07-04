@@ -5,6 +5,7 @@
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
@@ -16,7 +17,9 @@
         #region Variables
 
         private readonly ILogger<IJobControllerService> _logger;
-        private readonly IDbContextFactory<DeviceControllerContext> _factory;
+        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
+        private readonly IDbContextFactory<MapDataContext> _mapFactory;
+        private readonly IConfiguration _configuration;
         private readonly ITimeZoneService _timeZoneService;
 
         private readonly IDictionary<string, Device> _devices;
@@ -42,11 +45,15 @@
 
         public JobControllerService(
             ILogger<IJobControllerService> logger,
-            IDbContextFactory<DeviceControllerContext> factory,
+            IDbContextFactory<DeviceControllerContext> deviceFactory,
+            IDbContextFactory<MapDataContext> mapFactory,
+            IConfiguration configuration,
             ITimeZoneService timeZoneService)
         {
             _logger = logger;
-            _factory = factory;
+            _deviceFactory = deviceFactory;
+            _mapFactory = mapFactory;
+            _configuration = configuration;
             _timeZoneService = timeZoneService;
 
             _devices = new Dictionary<string, Device>();
@@ -57,7 +64,7 @@
 
         public void Start()
         {
-            using (var context = _factory.CreateDbContext())
+            using (var context = _deviceFactory.CreateDbContext())
             {
                 var instances = context.Instances.ToList();
                 var devices = context.Devices.ToList();
@@ -195,18 +202,18 @@
                     switch (instance.Type)
                     {
                         case InstanceType.AutoQuest:
-                            var timezone = instance.Data.TimeZone;
+                            var timezone = instance.Data?.TimeZone;
                             short timezoneOffset = 0;
                             if (!string.IsNullOrEmpty(timezone) && _timeZoneService.TimeZones.ContainsKey(timezone))
                             {
                                 var tzData = _timeZoneService.TimeZones[timezone];
-                                timezoneOffset = instance.Data.EnableDst ?? false
+                                timezoneOffset = instance.Data?.EnableDst ?? false
                                     ? tzData.Dst
                                     : tzData.Utc;
                                 timezoneOffset *= 3600;
                             }
-                            var ignoreBootstrap = false; // TODO: Configurable
-                            jobController = new AutoInstanceController(_factory, instance, multiPolygons, timezoneOffset, ignoreBootstrap);
+                            var ignoreBootstrap = true; // TODO: Make configurable
+                            jobController = new AutoInstanceController(_mapFactory, _deviceFactory, instance, multiPolygons, timezoneOffset, ignoreBootstrap);
                             break;
                         case InstanceType.Bootstrap:
                             jobController = new BootstrapInstanceController(instance, coordinates);
@@ -225,6 +232,11 @@
             if (jobController == null)
             {
                 _logger.LogError($"[{instance.Name}] Unable to instantiate job instance controller with instance type '{instance.Type}'");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(instance.Name))
+            {
                 return;
             }
 
@@ -397,7 +409,7 @@
         private List<Geofence> GetGeofences(List<string> names)
         {
             // TODO: Add GeofenceControllerService
-            using (var context = _factory.CreateDbContext())
+            using (var context = _deviceFactory.CreateDbContext())
             {
                 return context.Geofences.Where(geofence => names.Contains(geofence.Name))
                                         .ToList();

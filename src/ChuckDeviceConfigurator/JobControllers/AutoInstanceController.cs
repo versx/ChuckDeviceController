@@ -43,7 +43,8 @@
         #region Variables
 
         private readonly ILogger<AutoInstanceController> _logger;
-        private readonly IDbContextFactory<DeviceControllerContext> _factory;
+        private readonly IDbContextFactory<MapDataContext> _mapFactory;
+        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
 
         private readonly List<PokestopWithMode> _allStops;
         private readonly List<PokestopWithMode> _todayStops;
@@ -72,9 +73,9 @@
 
         public ushort MaximumLevel { get; }
 
-        public string GroupName  { get; }
+        public string GroupName { get; }
 
-        public bool IsEvent  { get; }
+        public bool IsEvent { get; }
 
         public short TimeZoneOffset { get; }
 
@@ -103,7 +104,8 @@
         #region Constructor
 
         public AutoInstanceController(
-            IDbContextFactory<DeviceControllerContext> factory,
+            IDbContextFactory<MapDataContext> mapFactory,
+            IDbContextFactory<DeviceControllerContext> deviceFactory,
             Instance instance,
             List<MultiPolygon> multiPolygon,
             short timezoneOffset,
@@ -118,8 +120,11 @@
             SpinLimit = instance.Data?.SpinLimit ?? 1000;
             IgnoreS2CellBootstrap = ignoreBootstrap;
 
+            QuestMode = QuestMode.Both; // TODO: Make 'QuestMode' configurable via Instance.Data
+
             _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-            _factory = factory;
+            _mapFactory = mapFactory;
+            _deviceFactory = deviceFactory;
 
             _allStops = new List<PokestopWithMode>();
             _todayStops = new List<PokestopWithMode>();
@@ -192,7 +197,7 @@
                         return null;
                     }
 
-                    if (lastCoord == null)
+                    if (lastCoord != null)
                     {
                         PokestopWithMode? closestOverall = null;
                         double closestOverallDistance = 10000000000000000;
@@ -322,12 +327,11 @@
                     }
 
                     double delay;
-                    uint encounterTime;
+                    ulong encounterTime;
                     try
                     {
-                        var result = Cooldown.SetCooldown(
+                        var result = Cooldown.SetCooldownAsync(
                             account,
-                            uuid,
                             new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude)
                         );
                         delay = result.Delay;
@@ -386,11 +390,13 @@
                     {
                         if (!string.IsNullOrEmpty(accountUsername))
                         {
-                            // TODO: Set spin count await Account.Spin(accountUsername);
+                            // Increment account spin count
+                            await Cooldown.SetSpinCountAsync(_deviceFactory, accountUsername);
                         }
-                        Cooldown.Encounter(
+
+                        await Cooldown.SetEncounterAsync(
+                            _deviceFactory,
                             account,
-                            uuid,
                             new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude),
                             encounterTime
                         );
@@ -466,10 +472,10 @@
 
                     // TODO: Lock _allStops
                     var ids = _allStops.Select(x => x.Pokestop.Id).ToList();
-                    var currentCountDb = 0;// TODO: await Pokestop.GetQuestCountIn(ids, QuestMode);
+                    var currentCountDb = await GetPokestopQuestCount(ids, QuestMode);
                     // TODO: Lock _allStops
                     var maxCount = _allStops.Count;
-                    var currentCount = maxCount - _allStops.Count;
+                    var currentCount = maxCount - _todayStops.Count;
 
                     var percent = maxCount > 0
                         ? Convert.ToDouble((double)currentCount / (double)maxCount) * 100
@@ -480,9 +486,9 @@
 
                     var completedDate = _completionDate.FromSeconds();
                     var status = $"Status: {currentCountDb:N0}|{currentCount:N0}/{maxCount:N0} " +
-                        $"({Math.Round(percentReal, 1)})|" +
+                        $"({Math.Round(percentReal, 1)}|" +
                         $"{Math.Round(percent, 1)}%)" +
-                        $"{(_completionDate != default ? $", Completed @ {completedDate}" : ")")}";
+                        $"{(_completionDate != default ? $", Completed @ {completedDate}" : "")}";
                     return status;
             }
             return null;
@@ -587,14 +593,17 @@
                     _todayStops.Clear();
                     _todayStopsAttempts.Clear();
                     _completionDate = 0;
+                    /* TODO: Check sorting
                     _allStops.Sort((a, b) =>
                     {
                         var coordA = new Coordinate(a.Pokestop.Latitude, a.Pokestop.Longitude);
                         var coordB = new Coordinate(b.Pokestop.Latitude, b.Pokestop.Longitude);
                         var distanceA = coordA.DistanceTo(coordB);
-                        var distanceB = coordA.DistanceTo(coordA);
-                        return Convert.ToInt32(((distanceA + distanceB) * 100) / 2);
+                        var distanceB = coordB.DistanceTo(coordA);
+                        var distance = Convert.ToInt32(((distanceA + distanceB) * 100) / 2);
+                        return distance;
                     });
+                    */
                     foreach (var stop in _allStops)
                     {
                         // Check that the Pokestop does not have quests already found and that it is enabled
@@ -726,33 +735,59 @@
                 return new List<Pokestop>();
             }
 
-            /*
-            using (var context = _factory.CreateDbContext())
+            using (var context = _mapFactory.CreateDbContext())
             {
-                var pokestops = context.Pokestops
+                var pokestops = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id)).ToList();
+                return pokestops;
             }
-            */
-            return new List<Pokestop>();
+            //return new List<Pokestop>();
         }
 
         private async Task<List<Pokestop>> GetPokestopsInBoundsAsync(BoundingBox bbox)
         {
-            /*
-            using (var context = _factory.CreateDbContext())
+            using (var context = _mapFactory.CreateDbContext())
             {
-                var pokestops = context.Pokestops.Where((Pokestop stop) =>
-                {
-                    return stop.Latitude >= bbox.MinimumLatitude &&
-                        stop.Latitude <= bbox.MaximumLatitude &&
-                        stop.Longitude >= bbox.MinimumLongitude &&
-                        stop.Longitude <= bbox.MaximumLongitude &&
-                        // TODO: stop.Updated >= updated &&
-                        !stop.Deleted;
-                }).ToList();
+                var pokestops = context.Pokestops.Where(stop =>
+                    stop.Latitude >= bbox.MinimumLatitude &&
+                    stop.Latitude <= bbox.MaximumLatitude &&
+                    stop.Longitude >= bbox.MinimumLongitude &&
+                    stop.Longitude <= bbox.MaximumLongitude &&
+                    // TODO: stop.Updated >= updated &&
+                    !stop.Deleted
+                ).ToList();
                 return pokestops;
             }
-            */
-            return new List<Pokestop>();
+        }
+
+        private async Task<ulong> GetPokestopQuestCount(List<string> pokestopIds, QuestMode mode)
+        {
+            if (pokestopIds.Count > 10000)
+            {
+                var result = 0ul;
+                var count = Convert.ToInt64(Math.Ceiling(Convert.ToDouble(pokestopIds.Count) / 10000.0));
+                for (var i = 0; i < count; i++)
+                {
+                    var start = 10000 * i;
+                    var end = Math.Min(10000 * (i + 1) - 1, pokestopIds.Count - 1);
+                    var splice = pokestopIds.GetRange(start, end);
+                    var spliceResult = await GetPokestopQuestCount(splice, mode);
+                    result += spliceResult;
+                }
+                return result;
+            }
+
+            using (var context = _mapFactory.CreateDbContext())
+            {
+                var count = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id))
+                                             .Count(stop =>
+                    mode == QuestMode.Normal
+                        ? stop.QuestType != null
+                        : mode == QuestMode.Alternative
+                            ? stop.AlternativeQuestType != null
+                            : stop.QuestType != null || stop.AlternativeQuestType != null
+                );
+                return (ulong)count;
+            }
         }
 
         private async Task CheckIfCompletedAsync(string uuid)
@@ -773,7 +808,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[{Name}] [{uuid}] Failed to get today stops");
+                _logger.LogError($"[{Name}] [{uuid}] Failed to get today stops: {ex}");
                 return;
             }
 
@@ -833,7 +868,13 @@
     {
         public double Delay { get; set; }
 
-        public uint EncounterTime { get; set; }
+        public ulong EncounterTime { get; set; }
+
+        public CooldownResult(double delay, ulong encounterTime)
+        {
+            Delay = delay;
+            EncounterTime = encounterTime;
+        }
     }
 
     public class Cooldown
@@ -859,25 +900,84 @@
             return new Coordinate(lat.Value, lon.Value);
         }
 
-        public static CooldownResult SetCooldown(Account account, string uuid, Coordinate location)
+        public static CooldownResult SetCooldownAsync(Account account, Coordinate location)
         {
             // TODO: SetCooldown
-            return new CooldownResult();
-        }
-
-        public static void Encounter(Account account, string uuid, Coordinate location, uint encounterTime)
-        {
+            double? lastLat = null;
+            double? lastLon = null;
+            ulong? lastEncounterTime = null;
             if (account != null)
             {
-                // TODO: Cooldown.Encounter
-                /*
-                Account.DidEncounter(
-                    account.Username,
-                    location.Latitude,
-                    location.Longitude,
-                    encounterTime
-                );
-                */
+                lastLat = account.LastEncounterLatitude;
+                lastLon = account.LastEncounterLongitude;
+                lastEncounterTime = account.LastEncounterTime;
+            }
+
+            double delay;
+            ulong encounterTime;
+            var now = DateTime.UtcNow.ToTotalSeconds();
+
+            if (lastLat == null || lastLon == null || lastEncounterTime == null)
+            {
+                delay = 0;
+                encounterTime = now;
+            }
+            else
+            {
+                var lastCoord = new Coordinate(lastLat ?? 0, lastLon ?? 0);
+                var distance = lastCoord.DistanceTo(location);
+                var cooldownTime = Convert.ToUInt64(lastEncounterTime + GetCooldownAmount(distance));
+                encounterTime = cooldownTime < now
+                    ? now
+                    : cooldownTime;
+                delay = encounterTime - now;
+            }
+            return new CooldownResult(delay, encounterTime);
+        }
+
+        public static async Task SetEncounterAsync(IDbContextFactory<DeviceControllerContext> factory, Account account, Coordinate location, ulong encounterTime)
+        {
+            if (account == null)
+            {
+                Console.WriteLine($"Failed to set account last encounter info, account was null");
+                return;
+            }
+
+            using (var context = factory.CreateDbContext())
+            {
+                context.Attach(account);
+                account.LastEncounterLatitude = location.Latitude;
+                account.LastEncounterLongitude = location.Longitude;
+                account.LastEncounterTime = encounterTime;
+                context.Entry(account).Property(p => p.LastEncounterLatitude).IsModified = true;
+                context.Entry(account).Property(p => p.LastEncounterLongitude).IsModified = true;
+                context.Entry(account).Property(p => p.LastEncounterTime).IsModified = true;
+
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public static async Task SetSpinCountAsync(IDbContextFactory<DeviceControllerContext> factory, string accountUsername)
+        {
+            if (string.IsNullOrEmpty(accountUsername))
+            {
+                Console.WriteLine($"Failed to set account spin count, account username was null");
+                return;
+            }
+
+            using (var context = factory.CreateDbContext())
+            {
+                var account = await context.Accounts.FindAsync(accountUsername);
+                if (account == null)
+                {
+                    Console.WriteLine($"Failed to increase account spin count, unable to retrieve account");
+                    return;
+                }
+
+                context.Attach(account);
+                account.Spins++;
+                context.Entry(account).Property(p => p.Spins).IsModified = true;
+                await context.SaveChangesAsync();
             }
         }
     }

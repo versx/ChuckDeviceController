@@ -1,21 +1,21 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Tasks
 {
-	using System.Text.Json.Serialization;
+    using System.Text.Json.Serialization;
 
-	public class QuestTask : BaseJobTask
-	{
+    public class QuestTask : BaseJobTask
+    {
         [JsonPropertyName("delay")]
-		public double Delay { get; set; }
+        public double Delay { get; set; }
 
         [JsonPropertyName("deploy_egg")]
         public bool DeployEgg { get; set; }
 
         [JsonPropertyName("quest_type")]
-		public string QuestType { get; set; }
+        public string QuestType { get; set; }
 
-		public QuestTask()
-		{
-			Action = DeviceActionType.ScanQuest;
-		}
-	}
+        public QuestTask()
+        {
+            Action = DeviceActionType.ScanQuest;
+        }
+    }
 }

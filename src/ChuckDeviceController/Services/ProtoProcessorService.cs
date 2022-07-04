@@ -652,6 +652,7 @@
 
         public void Set(string key, T value, ulong timestamp)
         {
+            /*
             if (!_entries.TryGetValue(key, out var list))
             {
                 if (_entries.ContainsKey(key))
@@ -665,6 +666,12 @@
                 list = _entries[key];
             }
             list.Add(new(timestamp, value));
+            */
+            if (!_entries.ContainsKey(key))
+            {
+                _entries.Add(key, new List<KeyValuePair<ulong, T>>());
+            }
+            _entries[key].Add(new(timestamp, value));
         }
 
         public T? Get(string key, ulong timestamp)

@@ -592,14 +592,17 @@
 
                                 if (context.Pokestops.AsNoTracking().Any(stop => stop.Id == pokestop.Id))
                                 {
-                                    context.Update(pokestop);
+                                    // If any Pokestop properties have changed, set which to update,
+                                    // otherwise EF will overwrite properties
+                                    context.UpdatePokestopProperties(pokestop, false);
+                                    //context.Update(pokestop);
                                 }
                                 else
                                 {
                                     await context.AddAsync(pokestop);
                                 }
 
-                                lock (_gymIdsPerCell)
+                                lock (_stopIdsPerCell)
                                 {
                                     if (!_stopIdsPerCell.ContainsKey(cellId))
                                     {
@@ -782,7 +785,11 @@
                             pokestop.AddQuest(title, data, hasAr);
                             await pokestop.UpdateAsync(context, true);
 
-                            context.Update(pokestop);
+                            if (pokestop.HasChanges && (pokestop.HasQuestChanges || pokestop.HasAlternativeQuestChanges))
+                            {
+                                context.UpdatePokestopProperties(pokestop, true);
+                                //context.Update(pokestop);
+                            }
                         }
                     }
 
@@ -921,6 +928,89 @@
             catch (Exception ex)
             {
                 _logger.LogError($"AddOrUpdateAsync: {ex}");
+            }
+        }
+    }
+
+    public static class EntityFrameworkCoreExtensions
+    {
+        public static void UpdatePokestopProperties<T>(this T context, Pokestop pokestop, bool updateQuests = false)
+            where T : DbContext
+        {
+            context.Attach(pokestop);
+            context.Entry(pokestop).Property(p => p.Name).IsModified = true;
+            context.Entry(pokestop).Property(p => p.Url).IsModified = true;
+            context.Entry(pokestop).Property(p => p.LureId).IsModified = true;
+            context.Entry(pokestop).Property(p => p.LureExpireTimestamp).IsModified = true;
+            context.Entry(pokestop).Property(p => p.PowerUpLevel).IsModified = true;
+            context.Entry(pokestop).Property(p => p.PowerUpPoints).IsModified = true;
+            context.Entry(pokestop).Property(p => p.PowerUpEndTimestamp).IsModified = true;
+
+            if (updateQuests)
+            {
+                context.Entry(pokestop).Property(p => p.QuestConditions).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestItemId).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestPokemonId).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestRewardAmount).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestRewards).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestRewardType).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestTarget).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestTemplate).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestTimestamp).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestTitle).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestType).IsModified = true;
+
+                context.Entry(pokestop).Property(p => p.AlternativeQuestConditions).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestItemId).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestPokemonId).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestRewardAmount).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestRewards).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestRewardType).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestTarget).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestTemplate).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestTimestamp).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestTitle).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestType).IsModified = true;
+            }
+        }
+
+        public static void UpdateGymProperties<T>(this T context, Pokestop pokestop, bool updateQuests = false)
+            where T : DbContext
+        {
+            context.Attach(pokestop);
+            context.Entry(pokestop).Property(p => p.Name).IsModified = true;
+            context.Entry(pokestop).Property(p => p.Url).IsModified = true;
+            context.Entry(pokestop).Property(p => p.LureId).IsModified = true;
+            context.Entry(pokestop).Property(p => p.LureExpireTimestamp).IsModified = true;
+            context.Entry(pokestop).Property(p => p.PowerUpLevel).IsModified = true;
+            context.Entry(pokestop).Property(p => p.PowerUpPoints).IsModified = true;
+            context.Entry(pokestop).Property(p => p.PowerUpEndTimestamp).IsModified = true;
+
+            if (updateQuests)
+            {
+                context.Entry(pokestop).Property(p => p.QuestConditions).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestItemId).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestPokemonId).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestRewardAmount).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestRewards).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestRewardType).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestTarget).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestTemplate).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestTimestamp).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestTitle).IsModified = true;
+                context.Entry(pokestop).Property(p => p.QuestType).IsModified = true;
+
+                context.Entry(pokestop).Property(p => p.AlternativeQuestConditions).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestItemId).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestPokemonId).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestRewardAmount).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestRewards).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestRewardType).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestTarget).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestTemplate).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestTimestamp).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestTitle).IsModified = true;
+                context.Entry(pokestop).Property(p => p.AlternativeQuestType).IsModified = true;
             }
         }
     }

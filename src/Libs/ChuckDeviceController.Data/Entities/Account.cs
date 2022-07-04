@@ -169,6 +169,8 @@
                 return "Warning";
             if (WasSuspended ?? false)
                 return "Warning";
+            if (string.Compare(Failed, "suspended", true) == 0)
+                return "Suspended";
             if (string.Compare(Failed, "invalid_credentials", true) == 0)
                 return "Invalid";
             // TODO: Cooldown?

@@ -10,6 +10,7 @@ using ChuckDeviceConfigurator.Services;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceController.Data.Contexts;
+using ChuckDeviceController.Data.Factories;
 
 
 // TODO: Make configurable
@@ -48,7 +49,7 @@ builder.WebHost.ConfigureLogging(configure =>
     configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
 });
 
-#endregion
+#endregion`
 
 #region User Identity
 
@@ -94,7 +95,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.HttpOnly = true;
     //options.Cookie.Expiration 
 
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+    options.ExpireTimeSpan = TimeSpan.FromHours(1);
     options.LoginPath = "/Identity/Account/Login";
     options.LogoutPath = "/Identity/Account/Logout";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
@@ -125,31 +126,39 @@ builder.Services.AddRazorPages();
 
 #region Database Contexts
 
-builder.Services.AddDbContextFactory<DeviceControllerContext>(options =>
-{
-    options.EnableSensitiveDataLogging()
-           .UseMySql(connectionString, serverVersion, opt =>
-           {
-               opt.MigrationsAssembly(Strings.AssemblyName);
-           });
-}, ServiceLifetime.Singleton);
+/*
+var deviceOptions = DbContextFactory.BuildOptions<DeviceControllerContext>(connectionString, Strings.AssemblyName);
+var mapOptions = DbContextFactory.BuildOptions<MapDataContext>(connectionString, Strings.AssemblyName);
 
-builder.Services.AddDbContext<DeviceControllerContext>(options =>
-{
+builder.Services.AddDbContextFactory<DeviceControllerContext>(options => options = deviceOptions, ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<MapDataContext>(options => options = mapOptions, ServiceLifetime.Singleton);
+builder.Services.AddDbContext<DeviceControllerContext>(options => options = deviceOptions, ServiceLifetime.Scoped);
+builder.Services.AddDbContext<MapDataContext>(options => options = mapOptions, ServiceLifetime.Scoped);
+*/
+
+builder.Services.AddDbContextFactory<DeviceControllerContext>(options =>
     options.EnableSensitiveDataLogging()
-           .UseMySql(connectionString, serverVersion, opt =>
-           {
-               opt.MigrationsAssembly(Strings.AssemblyName);
-           });
-}, ServiceLifetime.Scoped);
+           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<MapDataContext>(options =>
+    options.EnableSensitiveDataLogging()
+           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+builder.Services.AddDbContext<DeviceControllerContext>(options =>
+    options.EnableSensitiveDataLogging()
+           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+builder.Services.AddDbContext<MapDataContext>(options =>
+    options.EnableSensitiveDataLogging()
+           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
 
 #endregion
+
+#region Services
 
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
 
+#endregion
 
 
 var app = builder.Build();

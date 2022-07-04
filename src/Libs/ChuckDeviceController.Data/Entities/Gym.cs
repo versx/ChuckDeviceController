@@ -267,27 +267,89 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
+            context.Attach(this);
+
             if (oldGym != null)
             {
                 if (oldGym.CellId > 0 && CellId == 0)
                 {
                     CellId = oldGym.CellId;
+                    context.Entry(this).Property(p => p.CellId).IsModified = true;
                 }
                 if (oldGym.Name != null && Name == null)
                 {
                     Name = oldGym.Name;
+                    context.Entry(this).Property(p => p.Name).IsModified = true;
                 }
                 if (oldGym.Url != null && Url == null)
                 {
                     Url = oldGym.Url;
+                    context.Entry(this).Property(p => p.Url).IsModified = true;
                 }
                 if (oldGym.RaidIsExclusive != null && RaidIsExclusive == null)
                 {
                     RaidIsExclusive = oldGym.RaidIsExclusive;
+                    context.Entry(this).Property(p => p.RaidIsExclusive).IsModified = true;
                 }
                 if (RaidEndTimestamp == null && oldGym.RaidEndTimestamp != null)
                 {
                     RaidEndTimestamp = oldGym.RaidEndTimestamp;
+                    context.Entry(this).Property(p => p.RaidEndTimestamp).IsModified = true;
+                }
+                if (RaidBattleTimestamp == null && oldGym.RaidBattleTimestamp != null)
+                {
+                    RaidBattleTimestamp = oldGym.RaidBattleTimestamp;
+                    context.Entry(this).Property(p => p.RaidBattleTimestamp).IsModified = true;
+                }
+                if (RaidSpawnTimestamp == null && oldGym.RaidSpawnTimestamp != null)
+                {
+                    RaidSpawnTimestamp = oldGym.RaidSpawnTimestamp;
+                    context.Entry(this).Property(p => p.RaidSpawnTimestamp).IsModified = true;
+                }
+                if (RaidLevel == null && oldGym.RaidLevel != null)
+                {
+                    RaidLevel = oldGym.RaidLevel;
+                    context.Entry(this).Property(p => p.RaidLevel).IsModified = true;
+                }
+                if (RaidPokemonId == null && oldGym.RaidPokemonId != null)
+                {
+                    RaidPokemonId = oldGym.RaidPokemonId;
+                    context.Entry(this).Property(p => p.RaidPokemonId).IsModified = true;
+                }
+                if (RaidPokemonForm == null && oldGym.RaidPokemonForm != null)
+                {
+                    RaidPokemonForm = oldGym.RaidPokemonForm;
+                    context.Entry(this).Property(p => p.RaidPokemonForm).IsModified = true;
+                }
+                if (RaidPokemonCostume == null && oldGym.RaidPokemonCostume != null)
+                {
+                    RaidPokemonCostume = oldGym.RaidPokemonCostume;
+                    context.Entry(this).Property(p => p.RaidPokemonCostume).IsModified = true;
+                }
+                if (RaidPokemonGender == null && oldGym.RaidPokemonGender != null)
+                {
+                    RaidPokemonGender = oldGym.RaidPokemonGender;
+                    context.Entry(this).Property(p => p.RaidPokemonGender).IsModified = true;
+                }
+                if (RaidPokemonEvolution == null && oldGym.RaidPokemonEvolution != null)
+                {
+                    RaidPokemonEvolution = oldGym.RaidPokemonEvolution;
+                    context.Entry(this).Property(p => p.RaidPokemonEvolution).IsModified = true;
+                }
+                if (PowerUpEndTimestamp == null && oldGym.PowerUpEndTimestamp != null)
+                {
+                    PowerUpEndTimestamp = oldGym.PowerUpEndTimestamp;
+                    context.Entry(this).Property(p => p.PowerUpEndTimestamp).IsModified = true;
+                }
+                if (PowerUpLevel == null && oldGym.PowerUpLevel != null)
+                {
+                    PowerUpLevel = oldGym.PowerUpLevel;
+                    context.Entry(this).Property(p => p.PowerUpLevel).IsModified = true;
+                }
+                if (PowerUpPoints == null && oldGym.PowerUpPoints != null)
+                {
+                    PowerUpPoints = oldGym.PowerUpPoints;
+                    context.Entry(this).Property(p => p.PowerUpPoints).IsModified = true;
                 }
 
                 // TODO: Check shouldUpdate
