@@ -6,6 +6,7 @@
     using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Services.Jobs;
+    using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -17,15 +18,18 @@
         private readonly ILogger<InstanceController> _logger;
         private readonly DeviceControllerContext _context;
         private readonly IJobControllerService _jobControllerService;
+        private readonly ITimeZoneService _timeZoneService;
 
         public InstanceController(
             ILogger<InstanceController> logger,
             DeviceControllerContext context,
-            IJobControllerService jobControllerService)
+            IJobControllerService jobControllerService,
+            ITimeZoneService timeZoneService)
         {
             _logger = logger;
             _context = context;
             _jobControllerService = jobControllerService;
+            _timeZoneService = timeZoneService;
         }
 
         // GET: InstanceController
@@ -73,6 +77,7 @@
         public ActionResult Create()
         {
             ViewBag.Geofences = _context.Geofences.ToList();
+            ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key }).ToList();
             return View();
         }
 

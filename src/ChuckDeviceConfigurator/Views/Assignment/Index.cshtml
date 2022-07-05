@@ -18,13 +18,22 @@
                 @Html.DisplayNameFor(model => model.Items[0].Id)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].InstanceName)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Items[0].SourceInstanceName)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.Items[0].InstanceName)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Items[0].DeviceUuid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].DeviceGroupName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Date)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Time)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Enabled)
@@ -40,16 +49,25 @@
                     @Html.DisplayFor(modelItem => item.Id)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.InstanceName)
+                    @Html.DisplayFor(modelItem => item.SourceInstanceName)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.SourceInstanceName)
+                    @Html.DisplayFor(modelItem => item.InstanceName)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.DeviceUuid)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Enabled ? "Yes" : "No")
+                    @Html.DisplayFor(modelItem => item.DeviceGroupName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Time)
+                </td>
+                <td>
+                    @(item.Enabled ? "Yes" : "No")
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

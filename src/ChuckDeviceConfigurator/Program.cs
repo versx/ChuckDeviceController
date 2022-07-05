@@ -152,6 +152,7 @@ builder.Services.AddDbContext<MapDataContext>(options =>
 
 #region Services
 
+builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
@@ -290,6 +291,11 @@ async Task SeedDefaultData(IServiceProvider serviceProvider)
         {
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var jobController = services.GetRequiredService<IJobControllerService>();
+            var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
+
+            jobController.Start();
+            assignmentController.Start();
 
             if (AutomaticMigrations)
             {

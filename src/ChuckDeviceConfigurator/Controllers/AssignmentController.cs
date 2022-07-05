@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Services;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -13,13 +14,16 @@
     {
         private readonly ILogger<AssignmentController> _logger;
         private readonly DeviceControllerContext _context;
+        private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentController(
             ILogger<AssignmentController> logger,
-            DeviceControllerContext context)
+            DeviceControllerContext context,
+            IAssignmentControllerService assignmentService)
         {
             _logger = logger;
             _context = context;
+            _assignmentService = assignmentService;
         }
 
         // GET: AssignmentController
@@ -48,16 +52,75 @@
         // GET: AssignmentController/Create
         public ActionResult Create()
         {
+            var devices = _context.Devices.ToList();
+            var instances = _context.Instances.ToList();
+            ViewBag.Devices = devices;
+            ViewBag.Instances = instances;
             return View();
         }
 
         // POST: AssignmentController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(IFormCollection collection)
         {
             try
             {
+                var deviceUuid = Convert.ToString(collection["DeviceUuid"]);
+                var sourceInstanceName = Convert.ToString(collection["SourceInstanceName"]);
+                var instanceName = Convert.ToString(collection["InstanceName"]);
+                var date = Convert.ToString(collection["Date"]);
+                var realDate = string.IsNullOrEmpty(date) ? default : DateTime.Parse(date);
+                var time = Convert.ToString(collection["Time"]);
+                var createOnComplete = collection["OnComplete"].Contains("true");
+                var enabled = collection["Enabled"].Contains("true");
+
+                var timeValue = GetTimeNumeric(time);
+
+                if (_context.Assignments.Any(a => a.DeviceUuid == deviceUuid &&
+                    a.InstanceName == instanceName &&
+                    a.SourceInstanceName == sourceInstanceName &&
+                    //a.Date == date &&
+                    a.Time == timeValue &&
+                    a.Enabled == enabled))
+                {
+                    // Assignment exists already by name
+                    ModelState.AddModelError("Assignment", $"Assignment already exists for device.");
+                    return View();
+                }
+
+                var assignment = new Assignment
+                {
+                    DeviceUuid = deviceUuid,
+                    DeviceGroupName = null,
+                    SourceInstanceName = sourceInstanceName ?? null,
+                    InstanceName = instanceName,
+                    Date = realDate == default ? null : realDate,
+                    Time = timeValue,
+                    Enabled = enabled,
+                };
+                await _context.AddAsync(assignment);
+
+                if (createOnComplete)
+                {
+                    // Create on complete assignment with the same properties
+                    var completeAssignment = new Assignment
+                    {
+                        DeviceUuid = deviceUuid,
+                        DeviceGroupName = null,
+                        SourceInstanceName = sourceInstanceName ?? null,
+                        InstanceName = instanceName,
+                        Date = realDate == default ? null : realDate,
+                        Time = 0,
+                        Enabled = enabled,
+                    };
+                    await _context.AddAsync(completeAssignment);
+                }
+
+                await _context.SaveChangesAsync();
+
+                _assignmentService.AddAssignment(assignment);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -77,6 +140,11 @@
                 ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
                 return View();
             }
+
+            var devices = _context.Devices.ToList();
+            var instances = _context.Instances.ToList();
+            ViewBag.Devices = devices;
+            ViewBag.Instances = instances;
             return View(assignment);
         }
 
@@ -94,6 +162,8 @@
                     ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
                     return View();
                 }
+
+                _assignmentService.EditAssignment(id, assignment);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -136,6 +206,8 @@
                 _context.Assignments.Remove(assignment);
                 await _context.SaveChangesAsync();
 
+                _assignmentService.DeleteAssignment(assignment);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -143,6 +215,34 @@
                 ModelState.AddModelError("Assignment", $"Unknown error occurred while deleting assignment '{id}'.");
                 return View();
             }
+        }
+
+        private uint GetTimeNumeric(string time)
+        {
+            uint value = 0;
+            if (string.IsNullOrEmpty(time))
+            {
+                return value;
+            }
+
+            var split = time.Split(':').ToList();
+            if (split.Count == 2)
+            {
+                split.Add("00");
+            }
+            if (split.Count == 3)
+            {
+                var hours = Convert.ToUInt32(split[0]);
+                var minutes = Convert.ToUInt32(split[1]);
+                var seconds = Convert.ToUInt32(split[2]);
+                var timeValue = hours * 3600 + minutes * 60 + seconds;
+                value = timeValue == 0 ? 1 : timeValue;
+            }
+            else
+            {
+                ModelState.AddModelError("Assingment", "Invalid time provided");
+            }
+            return value;
         }
     }
 }

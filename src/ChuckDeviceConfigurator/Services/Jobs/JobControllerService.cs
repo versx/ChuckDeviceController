@@ -59,7 +59,7 @@
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
 
-            Start();
+            //Start();
         }
 
         public void Start()

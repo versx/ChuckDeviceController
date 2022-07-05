@@ -139,6 +139,15 @@
         ]
         public string Status => GetStatus();
 
+        [
+
+            DisplayName("Last Encounter"),
+            NotMapped,
+        ]
+        public string LastEncounter => LastEncounterTime?.FromSeconds()
+                                                         .ToLocalTime()
+                                                         .ToString("hh:mm:ss tt MM/dd/yyyy") ?? "--";
+
         public bool IsValid(bool ignoreWarning = false, string? groupName = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();

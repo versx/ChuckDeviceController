@@ -122,6 +122,7 @@
                 : instance.Data?.QuestMode == "alternative"
                     ? QuestMode.Alternative
                     : QuestMode.Both;
+            QuestMode = QuestMode.Alternative; // TODO: Dev
 
             _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _mapFactory = mapFactory;
@@ -522,6 +523,7 @@
                     _todayStopsAttempts.Clear();
                     _completionDate = 0;
                     // TODO: Check sorting
+                    /*
                     _allStops.Sort((a, b) =>
                     {
                         var coordA = new Coordinate(a.Pokestop.Latitude, a.Pokestop.Longitude);
@@ -531,6 +533,7 @@
                         var distance = Convert.ToInt32(((distanceA + distanceB) * 100) / 2);
                         return distance;
                     });
+                    */
                     
                     foreach (var stop in _allStops)
                     {
@@ -539,7 +542,7 @@
                             (!stop.IsAlternative && stop.Pokestop.QuestType == null) ||
                             (stop.IsAlternative && stop.Pokestop.AlternativeQuestType == null))
                         {
-                            // Add Pokestop if it's not already in the dictionary
+                            // Add Pokestop if it's not already in the list
                             if (!_todayStops.Contains(stop))
                             {
                                 _todayStops.Add(stop);
