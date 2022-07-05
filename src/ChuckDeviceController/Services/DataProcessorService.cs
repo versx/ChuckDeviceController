@@ -283,7 +283,6 @@
 
                     foreach (var cellModel in cellModels)
                     {
-                        /*
                         if (context.Cells.AsNoTracking().Any(cell => cell.Id == cellModel.Id))
                         {
                             context.Update(cellModel);
@@ -292,7 +291,6 @@
                         {
                             await context.AddAsync(cellModel);
                         }
-                        */
 
                         lock (_gymIdsPerCell)
                         {
@@ -310,7 +308,7 @@
                         }
                     }
 
-                    await context.BulkMergeAsync(cellModels);
+                    //await context.BulkMergeAsync(cellModels);
                     await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} S2 cells");
@@ -794,7 +792,7 @@
                     }
 
                     var inserted = await context.SaveChangesAsync();
-                    //_logger.LogInformation($"Inserted {inserted:N0} Pokestop quests");
+                    _logger.LogInformation($"Inserted {inserted:N0} Pokestop quests");
                 }
                 catch (Exception ex)
                 {

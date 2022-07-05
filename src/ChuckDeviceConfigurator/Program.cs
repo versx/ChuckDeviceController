@@ -10,7 +10,6 @@ using ChuckDeviceConfigurator.Services;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceController.Data.Contexts;
-using ChuckDeviceController.Data.Factories;
 
 
 // TODO: Make configurable

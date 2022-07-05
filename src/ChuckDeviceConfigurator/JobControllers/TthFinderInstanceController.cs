@@ -34,7 +34,6 @@
 
         public TthFinderInstanceController()
         {
-            // TODO: Init logger
             Coordinates = new List<Coordinate>();
             Geofences = new List<List<Coordinate>>();
 

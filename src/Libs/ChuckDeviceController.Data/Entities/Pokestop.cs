@@ -618,13 +618,13 @@
                     AlternativeQuestTemplate = oldPokestop.AlternativeQuestTemplate;
                     AlternativeQuestTitle = oldPokestop.AlternativeQuestTitle;
 
-                    context.Entry(this).Property(p => p.QuestType).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestTarget).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestConditions).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestRewards).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestTimestamp).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestTemplate).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestTitle).IsModified = true;
+                    context.Entry(this).Property(p => p.AlternativeQuestType).IsModified = true;
+                    context.Entry(this).Property(p => p.AlternativeQuestTarget).IsModified = true;
+                    context.Entry(this).Property(p => p.AlternativeQuestConditions).IsModified = true;
+                    context.Entry(this).Property(p => p.AlternativeQuestRewards).IsModified = true;
+                    context.Entry(this).Property(p => p.AlternativeQuestTimestamp).IsModified = true;
+                    context.Entry(this).Property(p => p.AlternativeQuestTemplate).IsModified = true;
+                    context.Entry(this).Property(p => p.AlternativeQuestTitle).IsModified = true;
                 }
 
                 if (oldPokestop.LureId > 0 && LureId == 0)

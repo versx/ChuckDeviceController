@@ -4,6 +4,7 @@
     using System.Diagnostics;
 
     using Microsoft.AspNetCore.Mvc;
+    using POGOProtos.Rpc;
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -94,60 +95,31 @@
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
+
+            var now = DateTime.UtcNow.ToTotalSeconds();
             var device = await _context.Devices.FindAsync(payload.Uuid);
             if (device != null)
             {
                 device.LastLatitude = payload.LatitudeTarget;
                 device.LastLongitude = payload.LongitudeTarget;
-                device.LastSeen = DateTime.UtcNow.ToTotalSeconds();
+                device.LastSeen = now;
 
                 _context.Update(device);
                 await _context.SaveChangesAsync();
             }
             else
             {
-                // TODO: Remove dev code
                 device = new Device
                 {
                     Uuid = payload.Uuid,
                     AccountUsername = payload.Username,
                     LastLatitude = payload.LatitudeTarget,
                     LastLongitude = payload.LongitudeTarget,
-                    LastSeen = DateTime.UtcNow.ToTotalSeconds(),
+                    LastSeen = now,
                 };
                 await _context.AddAsync(device);
                 await _context.SaveChangesAsync();
             }
-            /*
-            var device = await _deviceRepository.GetByIdAsync(payload.Uuid).ConfigureAwait(false);
-            try
-            {
-                if (device != null)
-                {
-                    device.LastLatitude = payload.LatitudeTarget;
-                    device.LastLongitude = payload.LongitudeTarget;
-                    device.LastSeen = DateTime.UtcNow.ToTotalSeconds();
-                    await _deviceRepository.UpdateAsync(device).ConfigureAwait(false);
-                }
-                else
-                {
-                    device = await _deviceRepository.AddOrUpdateAsync(new Device
-                    {
-                        Uuid = payload.Uuid,
-                        AccountUsername = payload.Username,
-                        InstanceName = "",
-                        LastHost = "127.0.0.1",
-                        LastLatitude = payload.LatitudeTarget,
-                        LastLongitude = payload.LongitudeTarget,
-                        LastSeen = DateTime.UtcNow.ToTotalSeconds(),
-                    }).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error: {ex}");
-            }
-            */
 
             if (!string.IsNullOrEmpty(payload.Username) && payload.Level > 0)
             {
@@ -167,14 +139,6 @@
                             await _context.SaveChangesAsync();
                             _logger.LogInformation($"Account {payload.Username} on {payload.Uuid} from {oldLevel} to {payload.Level} with {payload.TrainerXp}");
                         }
-                        /*
-                        var account = await _accountRepository.GetByIdAsync(payload.Username).ConfigureAwait(false);
-                        if (account != null)
-                        {
-                            account.Level = payload.Level;
-                            await _accountRepository.UpdateAsync(account).ConfigureAwait(false);
-                        }
-                        */
                         _levelCache[payload.Username] = payload.Level;
                     }
                 }
@@ -193,10 +157,27 @@
                 Device = device,
             });
 
+            var hasGmo = payload.Contents?.Any(content => content.Method == (int)Method.GetMapObjects) ?? false;
             return new ProtoResponse
             {
                 Status = "ok",
-                Data = new ProtoDataDetails(),
+                // TODO: Provide actual response details
+                Data = new ProtoDataDetails
+                {
+                    InArea = true,
+                    ContainsGmos = hasGmo,
+                    Encounters = payload.Contents?.Count(content => content.Method == (int)Method.Encounter) ?? 0,
+                    Forts = 1,
+                    FortSearch = payload.Contents?.Count(content => content.Method == (int)Method.FortSearch) ?? 0,
+                    LatitudeTarget = payload.LatitudeTarget,
+                    LongitudeTarget = payload.LongitudeTarget,
+                    Level = payload.Level,
+                    Nearby = 1,
+                    OnlyEmptyGmos = !hasGmo,
+                    OnlyInvalidGmos = !hasGmo,
+                    Quests = 1,
+                    Wild = 1,
+                },
             };
         }
 

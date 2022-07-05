@@ -596,7 +596,7 @@
             return stoppingToken;
         }
 
-        private static void SetArQuestTarget(string uuid, ulong timestamp, bool isAr)
+        public static void SetArQuestTarget(string uuid, ulong timestamp, bool isAr)
         {
             _arQuestTargetMap.Set(uuid, isAr, timestamp);
             if (isAr)

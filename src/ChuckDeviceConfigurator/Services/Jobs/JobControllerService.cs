@@ -212,8 +212,7 @@
                                     : tzData.Utc;
                                 timezoneOffset *= 3600;
                             }
-                            var ignoreBootstrap = true; // TODO: Make configurable
-                            jobController = new AutoInstanceController(_mapFactory, _deviceFactory, instance, multiPolygons, timezoneOffset, ignoreBootstrap);
+                            jobController = new AutoInstanceController(_mapFactory, _deviceFactory, instance, multiPolygons, timezoneOffset);
                             break;
                         case InstanceType.Bootstrap:
                             jobController = new BootstrapInstanceController(instance, coordinates);

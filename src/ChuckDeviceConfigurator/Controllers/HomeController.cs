@@ -14,16 +14,19 @@
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly DeviceControllerContext _deviceContext;
+        private readonly MapDataContext _mapContext;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public HomeController(
             ILogger<HomeController> logger,
-            DeviceControllerContext context,
+            DeviceControllerContext deviceContext,
+            MapDataContext mapContext,
             UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
-            _context = context;
+            _deviceContext = deviceContext;
+            _mapContext = mapContext;
             _userManager = userManager;
         }
 
@@ -31,14 +34,24 @@
         {
             var model = new DashboardViewModel
             {
-                Accounts = (uint)_context.Accounts.Count(),
-                Assignments = (uint)_context.Assignments.Count(),
-                Devices = (uint)_context.Devices.Count(),
-                Geofences = (uint)_context.Geofences.Count(),
-                Instances = (uint)_context.Instances.Count(),
-                IvLists = (uint)_context.IvLists.Count(),
-                Webhooks = (uint)_context.Webhooks.Count(),
+                Accounts = (uint)_deviceContext.Accounts.Count(),
+                Assignments = (uint)_deviceContext.Assignments.Count(),
+                Devices = (uint)_deviceContext.Devices.Count(),
+                Geofences = (uint)_deviceContext.Geofences.Count(),
+                Instances = (uint)_deviceContext.Instances.Count(),
+                IvLists = (uint)_deviceContext.IvLists.Count(),
+                Webhooks = (uint)_deviceContext.Webhooks.Count(),
                 Users = (uint)_userManager.Users.Count(),
+
+                Gyms = (uint)_mapContext.Gyms.Count(),
+                GymDefenders = (uint)_mapContext.GymDefenders.Count(),
+                GymTrainers = (uint)_mapContext.GymTrainers.Count(),
+                Incidents = (uint)_mapContext.Incidents.Count(),
+                Pokemon = (uint)_mapContext.Pokemon.Count(),
+                Pokestops = (uint)_mapContext.Pokestops.Count(),
+                Cells = (uint)_mapContext.Cells.Count(),
+                Spawnpoints = (uint)_mapContext.Spawnpoints.Count(),
+                Weather = (uint)_mapContext.Weather.Count(),
             };
             return View(model);
         }

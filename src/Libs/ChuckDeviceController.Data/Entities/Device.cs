@@ -57,5 +57,12 @@
             JsonPropertyName("last_seen"),
         ]
         public ulong? LastSeen { get; set; } = 0;
+
+        [
+
+            DisplayName("Last Seen"),
+            NotMapped,
+        ]
+        public string LastSeenTime { get; set; }
     }
 }

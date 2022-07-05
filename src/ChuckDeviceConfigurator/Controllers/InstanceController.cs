@@ -173,7 +173,10 @@
                 instance.MinimumLevel = minLevel;
                 instance.MaximumLevel = maxLevel;
                 instance.Geofences = geofences;
-                // TODO: Check if Data is null
+                if (instance.Data == null)
+                {
+                    instance.Data = new InstanceData();
+                }
                 instance.Data.AccountGroup = accountGroup;
                 instance.Data.IsEvent = false;
 

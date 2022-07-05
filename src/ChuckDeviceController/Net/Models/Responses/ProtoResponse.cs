@@ -59,6 +59,6 @@
         public double? PokemonLongitude { get; set; }
 
         [JsonPropertyName("pokemon_encounter_id")]
-        public string PokemonEncounterId { get; set; }
+        public string? PokemonEncounterId { get; set; }
     }
 }

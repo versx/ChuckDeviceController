@@ -9,7 +9,7 @@
             DisplayName("Circle Instance Route Type"),
             JsonPropertyName("circle_route_type"),
         ]
-        public CircleInstanceRouteType CircleRouteType { get; set; }
+        public CircleInstanceRouteType? CircleRouteType { get; set; }
 
         #region Quest Instance
 
@@ -30,6 +30,24 @@
             JsonPropertyName("spin_limit"),
         ]
         public ushort? SpinLimit { get; set; }
+
+        [
+            DisplayName("Ignore S2 Cell Bootstrapping"),
+            JsonPropertyName("ignore_s2_cell_bootstrap"),
+        ]
+        public bool? IgnoreS2CellBootstrap { get; set; }
+
+        [
+            DisplayName("Use Red Warning Accounts"),
+            JsonPropertyName("use_warning_accounts"),
+        ]
+        public bool? UseWarningAccounts { get; set; }
+
+        [
+            DisplayName("Quest Mode"),
+            JsonPropertyName("quest_mode"),
+        ]
+        public string? QuestMode { get; set; }
 
         #endregion
 

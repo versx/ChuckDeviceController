@@ -24,7 +24,7 @@
         public double LongitudeTarget { get; set; }
 
         [JsonPropertyName("contents")]
-        public List<ProtoData> Contents { get; set; }
+        public IReadOnlyList<ProtoData> Contents { get; set; }
 
         [JsonPropertyName("username")]
         public string Username { get; set; }

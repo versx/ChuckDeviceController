@@ -1,5 +1,6 @@
 ﻿@using ChuckDeviceConfigurator.ViewModels
 @using ChuckDeviceController.Data.Entities
+@using ChuckDeviceController.Extensions
 @model ViewModelsModel<Device>
 @{
     ViewData["Title"] = "Devices";
@@ -55,7 +56,7 @@
                     @item.LastLatitude, @item.LastLongitude
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.LastSeen)
+                    @Html.DisplayFor(modelItem => item.LastSeenTime)
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Uuid">Edit</a> |

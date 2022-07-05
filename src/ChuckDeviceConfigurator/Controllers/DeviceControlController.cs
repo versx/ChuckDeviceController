@@ -173,32 +173,19 @@
             }
 
             Account? account = null;
-            if (string.IsNullOrEmpty(device.AccountUsername))
+            if (string.IsNullOrEmpty(device?.AccountUsername))
             {
                 var devices = _context.Devices.ToList();
                 var inUseAccounts = devices.Where(d => !string.IsNullOrEmpty(d.AccountUsername))
                                            .OrderBy(d => d.LastSeen)
-                                           .Select(d => d.AccountUsername.ToLower())
+                                           .Select(d => d.AccountUsername?.ToLower())
                                            .ToList();
 
-                // TODO: Get new account between min/max level and not in inUseAccount list
-                /*
-                account = _context.Accounts.AsEnumerable().FirstOrDefault(x =>
-                    x.Level >= minLevel &&
-                    x.Level <= maxLevel &&
-                    string.IsNullOrEmpty(x.Failed) &&
-                    x.Spins < 3500 &&
-                    x.FirstWarningTimestamp == null &&
-                    x.Warn == null &&
-                    (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
-                    x.Banned == null &&
-                    !inUseAccounts.Contains(x.Username.ToLower())
-                );
-                */
+                // Get new account between min/max level and not in inUseAccount list
+                // TODO: Make configurable SpinLimit
+                account = _context.GetNewAccount(minLevel, maxLevel, 3500, inUseAccounts);
 
-                account = _context.Accounts.FirstOrDefault();// TODO: Fix get new account x => x.Banned == null && x.Failed == null && x.FirstWarningTimestamp == null);
-
-                _logger.LogDebug($"[{device.Uuid}] GetNewAccount '{account?.Username}'");
+                _logger.LogDebug($"[{device?.Uuid}] GetNewAccount '{account?.Username}'");
                 if (account == null)
                 {
                     // Failed to get new account from database
@@ -322,7 +309,7 @@
                 await _context.SaveChangesAsync();
             }
 
-            _logger.LogInformation($"[{device.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
+            _logger.LogInformation($"[{device?.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
             return new DeviceResponse
             {
                 Status = "ok",
@@ -460,6 +447,25 @@
                 Error = error,
                 Data = data,
             };
+        }
+    }
+
+    public static class DbContextEntityExtensions
+    {
+        public static Account GetNewAccount(this DeviceControllerContext context, ushort minLevel, ushort maxLevel, uint maxSpins = 3500, IReadOnlyList<string> accountsInUse = null)
+        {
+            var account = context.Accounts.FirstOrDefault(x =>
+                x.Level >= minLevel &&
+                x.Level <= maxLevel &&
+                string.IsNullOrEmpty(x.Failed) &&
+                x.Spins < maxSpins &&
+                x.FirstWarningTimestamp == null &&
+                (x.Warn == null || !(x.Warn ?? false)) &&
+                (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
+                x.Banned == null &&
+                !accountsInUse.Contains(x.Username.ToLower())
+            );
+            return account;
         }
     }
 }

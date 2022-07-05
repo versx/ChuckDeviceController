@@ -9,6 +9,7 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     [Controller]
     [Authorize(Roles = RoleConsts.DevicesRole)]
@@ -32,6 +33,13 @@
         public ActionResult Index()
         {
             var devices = _context.Devices.ToList();
+            foreach (var device in devices)
+            {
+                var lastSeen = device.LastSeen.Value.FromSeconds()
+                                                    .ToLocalTime()
+                                                    .ToString("hh:mm:ss tt MM/dd/yyyy");
+                device.LastSeenTime = lastSeen;
+            }
             var model = new ViewModelsModel<Device>
             {
                 Items = devices,

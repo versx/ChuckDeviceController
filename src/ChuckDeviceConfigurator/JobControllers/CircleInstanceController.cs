@@ -49,9 +49,9 @@
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
             CircleType = circleType;
-            RouteType = instance.Data.CircleRouteType;
-            GroupName = instance.Data.AccountGroup ?? null;
-            IsEvent = instance.Data.IsEvent;
+            RouteType = instance.Data?.CircleRouteType ?? CircleInstanceRouteType.Default;
+            GroupName = instance.Data?.AccountGroup ?? null;
+            IsEvent = instance.Data?.IsEvent ?? false;
         }
 
         #endregion

@@ -164,7 +164,10 @@
 
                 geofence.Name = name;
                 geofence.Type = type;
-                // TODO: Check if Data is null
+                if (geofence.Data == null)
+                {
+                    geofence.Data = new GeofenceData();
+                }
                 geofence.Data.Area = area;
 
                 // Update geofence in database
