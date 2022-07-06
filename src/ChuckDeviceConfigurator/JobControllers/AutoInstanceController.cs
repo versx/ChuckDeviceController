@@ -115,7 +115,7 @@
             SpinLimit = instance.Data?.SpinLimit ?? 1000;
             Type = AutoInstanceType.Quest;
             IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? false;
-            TimeZoneOffset = -7; // TODO: timezoneOffset;
+            TimeZoneOffset = timezoneOffset;
             UseWarningAccounts = instance.Data?.UseWarningAccounts ?? false;
             QuestMode = instance.Data?.QuestMode == "normal"
                 ? QuestMode.Normal
