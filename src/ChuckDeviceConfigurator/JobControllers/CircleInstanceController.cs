@@ -36,7 +36,7 @@
 
         public bool IsEvent { get; }
 
-        public bool SendTaskForLureEncounter { get; set; } // TODO: Make configurable
+        public bool SendTaskForLureEncounter { get; set; } // TODO: Make 'SendTaskForLureEncounter' configurable via Instance.Data
 
         #endregion
 

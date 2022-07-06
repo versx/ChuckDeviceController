@@ -12,6 +12,7 @@
         private readonly IDbContextFactory<DeviceControllerContext> _factory;
         private readonly ILogger<IAssignmentControllerService> _logger;
 
+        private readonly object _assignmentsLock = new();
         private readonly System.Timers.Timer _timer;
         private List<Assignment> _assignments;
         private bool _initialized;
@@ -41,7 +42,10 @@
         {
             // Get assignments
             var assignments = GetAssignments();
-            _assignments = assignments;
+            lock (_assignmentsLock)
+            {
+                _assignments = assignments;
+            }
 
             if (!_initialized)
             {
@@ -58,8 +62,10 @@
 
         public void AddAssignment(Assignment assignment)
         {
-            // TODO: Lock _assignments
-            _assignments.Add(assignment);
+            lock (_assignmentsLock)
+            {
+                _assignments.Add(assignment);
+            }
         }
 
         public void EditAssignment(uint oldAssignmentId, Assignment newAssignment)
@@ -70,17 +76,15 @@
 
         public void DeleteAssignment(Assignment assignment)
         {
-            // TODO: Lock _assignments
-            _assignments.Remove(assignment);
+            DeleteAssignment(assignment.Id);
         }
 
         public void DeleteAssignment(uint id)
         {
-            // TODO: Lock _assignments
-            var assignment = _assignments.Find(x => x.Id == id);
-            if (assignment != null)
+            lock (_assignmentsLock)
             {
-                DeleteAssignment(assignment);
+                _assignments = _assignments.Where(x => x.Id != id)
+                                           .ToList();
             }
         }
 
@@ -101,8 +105,11 @@
                 _lastUpdated = -1;
             }
 
-            // TODO: Lock _assignments
-            var assignments = _assignments;
+            var assignments = new List<Assignment>();
+            lock (_assignmentsLock)
+            {
+                assignments = _assignments;
+            }
             foreach (var assignment in assignments)
             {
                 if (assignment.Enabled && assignment.Time != 0 && now > assignment.Time && _lastUpdated < assignment.Time)

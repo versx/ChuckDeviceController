@@ -961,7 +961,6 @@
                     stop.Latitude <= bbox.MaximumLatitude &&
                     stop.Longitude >= bbox.MinimumLongitude &&
                     stop.Longitude <= bbox.MaximumLongitude &&
-                    // TODO: stop.Updated >= updated &&
                     !stop.Deleted
                 ).ToList();
                 return await Task.FromResult(pokestops);

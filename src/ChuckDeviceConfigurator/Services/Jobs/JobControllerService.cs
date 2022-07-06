@@ -5,7 +5,6 @@
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
@@ -24,6 +23,9 @@
 
         private readonly IDictionary<string, Device> _devices;
         private readonly IDictionary<string, IJobController> _instances;
+
+        private readonly object _devicesLock = new();
+        private readonly object _instancesLock = new();
 
         #endregion
 
@@ -210,7 +212,6 @@
                                 timezoneOffset = instance.Data?.EnableDst ?? false
                                     ? tzData.Dst
                                     : tzData.Utc;
-                                timezoneOffset *= 3600;
                             }
                             jobController = new AutoInstanceController(_mapFactory, _deviceFactory, instance, multiPolygons, timezoneOffset);
                             break;
@@ -239,8 +240,10 @@
                 return;
             }
 
-            // TODO: Lock
-            _instances[instance.Name] = jobController;
+            lock (_instancesLock)
+            {
+                _instances[instance.Name] = jobController;
+            }
 
             await Task.CompletedTask;
         }
@@ -253,35 +256,41 @@
                 return null;
             }
 
-            // TODO: Lock _devices
-            if (!_devices.ContainsKey(uuid))
+            lock (_devicesLock)
             {
-                _logger.LogWarning($"[{uuid}] Device is not assigned an instance!");
-                return null;
-            }
+                if (!_devices.ContainsKey(uuid))
+                {
+                    _logger.LogWarning($"[{uuid}] Device is not assigned an instance!");
+                    return null;
+                }
 
-            var device = _devices[uuid];
-            var instanceName = device?.InstanceName;
-            if (device == null || string.IsNullOrEmpty(instanceName))
-            {
-                return null;
-            }
+                var device = _devices[uuid];
+                var instanceName = device?.InstanceName;
+                if (device == null || string.IsNullOrEmpty(instanceName))
+                {
+                    return null;
+                }
 
-            return GetInstanceControllerByName(instanceName);
+                return GetInstanceControllerByName(instanceName);
+            }
         }
 
         public async Task<string> GetStatusAsync(Instance instance)
         {
-            if (!_instances.ContainsKey(instance.Name))
+            IJobController jobController;
+            lock (_instancesLock)
             {
-                // Instance not started or added to instance cache yet
-                return "Starting...";
-            }
+                if (!_instances.ContainsKey(instance.Name))
+                {
+                    // Instance not started or added to instance cache yet
+                    return "Starting...";
+                }
 
-            var instanceController = _instances[instance.Name];
-            if (instanceController != null)
+                jobController = _instances[instance.Name];
+            }
+            if (jobController != null)
             {
-                return await instanceController.GetStatusAsync();
+                return await jobController.GetStatusAsync();
             }
 
             return "Error";
@@ -289,10 +298,12 @@
 
         public void ReloadAll()
         {
-            // TODO: Lock _instances
-            foreach (var (_, instanceController) in _instances)
+            lock (_instancesLock)
             {
-                instanceController?.Reload();
+                foreach (var (_, instanceController) in _instances)
+                {
+                    instanceController?.Reload();
+                }
             }
         }
 
@@ -324,10 +335,12 @@
 
         public async Task RemoveInstanceAsync(string instanceName)
         {
-            // TODO: Lock
-            _instances[instanceName]?.Stop();
-            _instances[instanceName] = null;
-            _instances.Remove(instanceName);
+            lock (_instancesLock)
+            {
+                _instances[instanceName]?.Stop();
+                _instances[instanceName] = null;
+                _instances.Remove(instanceName);
+            }
 
             var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, instanceName, true) == 0);
             foreach (var device in devices)
@@ -345,22 +358,26 @@
 
         public void AddDevice(Device device)
         {
-            // TODO: Lock _devices
-            if (!_devices.ContainsKey(device.Uuid))
+            lock (_devicesLock)
             {
-                _devices.Add(device.Uuid, device);
+                if (!_devices.ContainsKey(device.Uuid))
+                {
+                    _devices.Add(device.Uuid, device);
+                }
             }
         }
 
         public List<string> GetDeviceUuidsInInstance(string instanceName)
         {
-            // TODO: Lock _devices
             var uuids = new List<string>();
-            foreach (var (uuid, device) in _devices)
+            lock (_devicesLock)
             {
-                if (string.Compare(device.InstanceName, instanceName, true) == 0)
+                foreach (var (uuid, device) in _devices)
                 {
-                    uuids.Add(uuid);
+                    if (string.Compare(device.InstanceName, instanceName, true) == 0)
+                    {
+                        uuids.Add(uuid);
+                    }
                 }
             }
             return uuids;
@@ -381,13 +398,15 @@
 
         public void RemoveDevice(string uuid)
         {
-            // TODO: Lock _devices
-            if (!_devices.ContainsKey(uuid))
+            lock (_devicesLock)
             {
-                _logger.LogError($"[{uuid}] Unable to remove device from cache, it does not exist");
-                return;
+                if (!_devices.ContainsKey(uuid))
+                {
+                    _logger.LogError($"[{uuid}] Unable to remove device from cache, it does not exist");
+                    return;
+                }
+                _devices.Remove(uuid);
             }
-            _devices.Remove(uuid);
         }
 
         #endregion
@@ -396,13 +415,15 @@
 
         private IJobController GetInstanceControllerByName(string name)
         {
-            // TODO: Lock _instances
-            if (!_instances.ContainsKey(name))
+            lock (_instancesLock)
             {
-                _logger.LogError($"[{name}] Unable to get instance controller by name, it does not exist in cache");
-                return null;
+                if (!_instances.ContainsKey(name))
+                {
+                    _logger.LogError($"[{name}] Unable to get instance controller by name, it does not exist in cache");
+                    return null;
+                }
+                return _instances[name];
             }
-            return _instances[name];
         }
 
         private List<Geofence> GetGeofences(List<string> names)
