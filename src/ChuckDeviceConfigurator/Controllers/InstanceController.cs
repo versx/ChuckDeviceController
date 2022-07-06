@@ -11,6 +11,7 @@
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     [Authorize(Roles = RoleConsts.InstancesRole)]
     public class InstanceController : Controller
@@ -97,18 +98,19 @@
                 var accountGroup = Convert.ToString(collection["Data.AccountGroup"]);
                 var isEvent = collection["Data.IsEvent"].Contains("true");
 
-                var circleRouteType = (CircleInstanceRouteType)Convert.ToUInt16(collection["Data.CircleRouteType"]);
+                var circleRouteType = (Convert.ToString(collection["Data.CircleRouteType"]) ?? "Default").StringToObject<CircleInstanceRouteType>();
 
-                var questMode = Convert.ToString(collection["Data.QuestMode"]);
+                var questMode = (Convert.ToString(collection["Data.QuestMode"]) ?? "Normal").StringToObject<QuestMode>();
                 var timeZone = Convert.ToString(collection["Data.TimeZone"]);
                 var enableDst = collection["Data.EnableDst"].Contains("true");
                 var spinLimit = Convert.ToUInt16(collection["Data.SpinLimit"]);
                 var useWarningAccounts = collection["Data.UseWarningAccounts"].Contains("true");
                 var ignoreS2CellBootstrap = collection["Data.IgnoreS2CellBootstrap"].Contains("true");
 
-                var circleSize = Convert.ToUInt16(Convert.ToString(collection["Data.CircleSize"]) ?? "70");
+                var circleSize = Convert.ToString(collection["Data.CircleSize"]);
                 var fastBootstrapMode = collection["Data.FastBootstrap"].Contains("true");
 
+                var ivList = Convert.ToString(collection["Data.IvList"]);
                 var ivQueueLimit = Convert.ToUInt16(Convert.ToString(collection["Data.IvQueueLimit"]) ?? "100");
 
                 if (_context.Instances.Any(inst => inst.Name == name))
@@ -137,9 +139,9 @@
                         FastBootstrapMode = fastBootstrapMode,
                         
                         CircleRouteType = circleRouteType,
-                        CircleSize = circleSize,
+                        CircleSize = Convert.ToUInt16(circleSize == "" ? "70" : circleSize),
 
-                        //IvList = null,
+                        IvList = ivList,
                         IvQueueLimit = ivQueueLimit,
 
                         AccountGroup = accountGroup,
@@ -173,12 +175,12 @@
                 return View();
             }
 
-            var geofences = _context.Geofences.ToList();
             /*
             var selectedGeofences = geofences.Select(g => new SelectListItem("Name", g.Name, instance.Geofences.Contains(g.Name)))
                                              .ToList();
             */
-            ViewBag.Geofences = geofences;// new MultiSelectList(geofences, "Name", "Name", selectedGeofences);
+            ViewBag.Geofences = _context.Geofences.ToList();// new MultiSelectList(geofences, "Name", "Name", selectedGeofences);
+            ViewBag.IvLists = _context.IvLists.ToList();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key });
             return View(instance);
         }
@@ -206,18 +208,19 @@
                 var accountGroup = Convert.ToString(collection["Data.AccountGroup"]);
                 var isEvent = collection["Data.IsEvent"].Contains("on");
 
-                var circleRouteType = (CircleInstanceRouteType)Convert.ToUInt16(Convert.ToString(collection["Data.CircleRouteType"]) ?? "0");
+                var circleRouteType = (Convert.ToString(collection["Data.CircleRouteType"]) ?? "0").StringToObject<CircleInstanceRouteType>();
 
-                var questMode = (QuestMode)Convert.ToUInt16(Convert.ToString(collection["Daa.QuestMode"]) ?? "0");
+                var questMode = (Convert.ToString(collection["Daa.QuestMode"]) ?? "0").StringToObject<QuestMode>();
                 var timeZone = Convert.ToString(collection["Data.TimeZone"]);
                 var enableDst = collection["Data.EnableDst"].Contains("on");
                 var spinLimit = Convert.ToUInt16(collection["Data.SpinLimit"]);
                 var useWarningAccounts = collection["Data.UseWarningAccounts"].Contains("on");
                 var ignoreS2CellBootstrap = collection["Data.IgnoreS2CellBootstrap"].Contains("on");
 
-                var circleSize = Convert.ToUInt16(Convert.ToString(collection["Data.CircleSize"]) ?? "70");
+                var circleSize = Convert.ToString(collection["Data.CircleSize"]);
                 var fastBootstrapMode = collection["Data.FastBootstrap"].Contains("on");
 
+                var ivList = Convert.ToString(collection["Data.IvList"]);
                 var ivQueueLimit = Convert.ToUInt16(Convert.ToString(collection["Data.IvQueueLimit"]) ?? "100");
 
                 instance.Name = name;
@@ -229,7 +232,7 @@
                 {
                     instance.Data = new InstanceData();
                 }
-                instance.Data.QuestMode = Convert.ToString(questMode);
+                instance.Data.QuestMode = questMode;
                 instance.Data.TimeZone = timeZone;
                 instance.Data.EnableDst = enableDst;
                 instance.Data.SpinLimit = spinLimit;
@@ -237,11 +240,11 @@
                 instance.Data.IgnoreS2CellBootstrap = ignoreS2CellBootstrap;
 
                 instance.Data.FastBootstrapMode = fastBootstrapMode;
-                instance.Data.CircleSize = circleSize;
+                instance.Data.CircleSize = Convert.ToUInt16(circleSize == "" ? "70" : circleSize);
 
                 instance.Data.CircleRouteType = circleRouteType;
 
-                //IvList = null;
+                instance.Data.IvList = ivList;
                 instance.Data.IvQueueLimit = ivQueueLimit;
 
                 instance.Data.AccountGroup = accountGroup;

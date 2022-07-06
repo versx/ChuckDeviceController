@@ -117,11 +117,14 @@
             IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? false;
             TimeZoneOffset = timezoneOffset;
             UseWarningAccounts = instance.Data?.UseWarningAccounts ?? false;
+            /*
             QuestMode = instance.Data?.QuestMode == "normal"
                 ? QuestMode.Normal
                 : instance.Data?.QuestMode == "alternative"
                     ? QuestMode.Alternative
                     : QuestMode.Both;
+            */
+            QuestMode = instance.Data?.QuestMode ?? QuestMode.Normal;
             QuestMode = QuestMode.Alternative; // TODO: Dev
 
             _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));

@@ -73,7 +73,7 @@
             {
                 var name = Convert.ToString(collection["Name"]);
                 var type = (GeofenceType)Convert.ToUInt16(collection["Type"]);
-                var data = Convert.ToString(collection["Data"]);
+                var data = Convert.ToString(collection["Data.Area"]);
                 var lines = data.Replace("<br>", "\r\n").Replace("\r\n", "\n");
 
                 dynamic area = type == GeofenceType.Circle

@@ -47,7 +47,7 @@
             DisplayName("Quest Mode"),
             JsonPropertyName("quest_mode"),
         ]
-        public string? QuestMode { get; set; }
+        public QuestMode? QuestMode { get; set; }
 
         #endregion
 
@@ -99,6 +99,7 @@
         public InstanceData()
         {
             CircleRouteType = CircleInstanceRouteType.Default;
+            QuestMode = Data.QuestMode.Normal;
         }
     }
 }

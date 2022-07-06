@@ -54,10 +54,36 @@
         // POST: IvListController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(IFormCollection collection)
         {
             try
             {
+                var name = Convert.ToString(collection["Name"]);
+                var pokemonIds = Convert.ToString(collection["PokemonIds"]);
+                var list = pokemonIds.Replace("<br>", "\r\n")
+                                     .Replace("\r\n", "\n")
+                                     .Split('\n')
+                                     .Select(uint.Parse)
+                                     .ToList();
+
+                if (_context.IvLists.Any(iv => iv.Name == name))
+                {
+                    // IV list exists already by name
+                    ModelState.AddModelError("IvList", $"IV list with name '{name}' already exists.");
+                    return View();
+                }
+
+                var ivList = new IvList
+                {
+                    Name = name,
+                    PokemonIds = list,
+                };
+
+                await _context.IvLists.AddAsync(ivList);
+                await _context.SaveChangesAsync();
+
+                // TODO: IV list controller
+
                 return RedirectToAction(nameof(Index));
             }
             catch

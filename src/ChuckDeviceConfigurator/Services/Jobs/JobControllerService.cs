@@ -145,14 +145,14 @@
                     switch (instance.Type)
                     {
                         case InstanceType.CirclePokemon:
-                            jobController = new CircleInstanceController(instance, coords, CircleInstanceType.Pokemon);
-                            break;
                         case InstanceType.CircleSmartPokemon:
+                            jobController = new CircleInstanceController(instance, coords, CircleInstanceType.Pokemon);
                             break;
                         case InstanceType.CircleRaid:
                             jobController = new CircleInstanceController(instance, coords, CircleInstanceType.Raid);
                             break;
                         case InstanceType.CircleSmartRaid:
+                            // TODO: CircleSmartRaid job controller instance
                             break;
                     }
                     break;
