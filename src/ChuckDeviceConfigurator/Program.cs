@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Services;
+using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceController.Data.Contexts;
@@ -153,6 +154,7 @@ builder.Services.AddDbContext<MapDataContext>(options =>
 #region Services
 
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
+builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();

@@ -53,5 +53,9 @@
     <None Remove="AspNet.Security.OAuth.Discord" />
     <None Remove="AspNet.Security.OAuth.GitHub" />
     <None Remove="SendGrid" />
+    <None Remove="Services\Geofences\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\Geofences\" />
   </ItemGroup>
 </Project>

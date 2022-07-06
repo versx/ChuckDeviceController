@@ -20,6 +20,7 @@
         private readonly IDbContextFactory<MapDataContext> _mapFactory;
         private readonly IConfiguration _configuration;
         private readonly ITimeZoneService _timeZoneService;
+        private readonly IGeofenceControllerService _geofenceService;
 
         private readonly IDictionary<string, Device> _devices;
         private readonly IDictionary<string, IJobController> _instances;
@@ -50,13 +51,15 @@
             IDbContextFactory<DeviceControllerContext> deviceFactory,
             IDbContextFactory<MapDataContext> mapFactory,
             IConfiguration configuration,
-            ITimeZoneService timeZoneService)
+            ITimeZoneService timeZoneService,
+            IGeofenceControllerService geofenceService)
         {
             _logger = logger;
             _deviceFactory = deviceFactory;
             _mapFactory = mapFactory;
             _configuration = configuration;
             _timeZoneService = timeZoneService;
+            _geofenceService = geofenceService;
 
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
@@ -109,7 +112,7 @@
         {
             _logger.LogDebug($"Adding instance {instance.Name}");
 
-            var geofences = GetGeofences(instance.Geofences);
+            var geofences = _geofenceService.GetGeofences(instance.Geofences);
             if (geofences == null)
             {
                 _logger.LogError($"[{instance.Name}] Failed to get geofences for instance, make sure it is assigned at least one");
@@ -435,16 +438,6 @@
                     return null;
                 }
                 return _instances[name];
-            }
-        }
-
-        private List<Geofence> GetGeofences(List<string> names)
-        {
-            // TODO: Add GeofenceControllerService
-            using (var context = _deviceFactory.CreateDbContext())
-            {
-                return context.Geofences.Where(geofence => names.Contains(geofence.Name))
-                                        .ToList();
             }
         }
 

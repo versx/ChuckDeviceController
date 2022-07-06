@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -17,13 +18,16 @@
     {
         private readonly ILogger<GeofenceController> _logger;
         private readonly DeviceControllerContext _context;
+        private readonly IGeofenceControllerService _geofenceService;
 
         public GeofenceController(
             ILogger<GeofenceController> logger,
-            DeviceControllerContext context)
+            DeviceControllerContext context,
+            IGeofenceControllerService geofenceService)
         {
             _logger = logger;
             _context = context;
+            _geofenceService = geofenceService;
         }
 
         // GET: GeofenceController
@@ -100,6 +104,8 @@
                 await _context.AddAsync(geofence);
                 await _context.SaveChangesAsync();
 
+                _geofenceService.AddGeofence(geofence);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -174,6 +180,8 @@
                 _context.Update(geofence);
                 await _context.SaveChangesAsync();
 
+                _geofenceService.EditGeofence(geofence, id);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -215,6 +223,8 @@
                 // Delete geofence from database
                 _context.Geofences.Remove(geofence);
                 await _context.SaveChangesAsync();
+
+                _geofenceService.DeleteGeofence(id);
 
                 return RedirectToAction(nameof(Index));
             }
