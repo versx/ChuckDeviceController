@@ -55,6 +55,16 @@
                 </select>
                 <span asp-validation-for="Geofences" class="text-danger"></span>
             </div>
+            <div class="form-group pokemon_iv">
+                <label asp-for="Data.IvQueueLimit" class="control-label"></label>
+                <input asp-for="Data.IvQueueLimit" class="form-control" min="1" max="1000" step="1" />
+                <span asp-validation-for="Data.IvQueueLimit" class="text-danger"></span>
+            </div>
+            <div class="form-group bootstrap">
+                <label asp-for="Data.CircleSize" class="control-label"></label> (meters i.e: `70, 500, 750, etc`)
+                <input asp-for="Data.CircleSize" class="form-control" min="5" max="1000" step="1" />
+                <span asp-validation-for="Data.CircleSize" class="text-danger"></span>
+            </div>
             <div class="form-group quests">
                 <label asp-for="Data.QuestMode" class="control-label"></label>
                 <select asp-for="Data.QuestMode" class="form-control" asp-items="Html.GetEnumSelectList<QuestMode>()">
@@ -108,7 +118,7 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 <script>
-hideAllElements(@((int)Model.Type));
+hideAllElements(@((int)Model?.Type));
 
 $('#Type').change(function() {
     hideAllElements(this.value);
@@ -116,13 +126,15 @@ $('#Type').change(function() {
 
 function hideAllElements(instanceTypeId) {
     console.log('instance type:', instanceTypeId);
-    const isQuest = instanceTypeId == @((int)InstanceType.AutoQuest) && instanceTypeId != -1;
-    const isBootstrap = instanceTypeId == @((int)InstanceType.Bootstrap) && instanceTypeId != -1;
+    const isQuest = instanceTypeId == @((int)InstanceType.AutoQuest);
+    const isBootstrap = instanceTypeId == @((int)InstanceType.Bootstrap);
+    const isPokemonIV = instanceTypeId == @((int)InstanceType.PokemonIV);
     const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
         instanceTypeId == @((int)InstanceType.CircleRaid) ||
         instanceTypeId == @((int)InstanceType.CircleSmartPokemon);
     hideElements('bootstrap', isBootstrap);
-    hideElements('circles', isCircle && instanceTypeId != -1);
+    hideElements('pokemon_iv', isPokemonIV);
+    hideElements('circles', isCircle);
     hideElements('quests', isQuest);
 }
 

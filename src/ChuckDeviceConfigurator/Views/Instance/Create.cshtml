@@ -55,13 +55,15 @@
                 </select>
                 <span asp-validation-for="Geofences" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Data.AccountGroup" class="control-label"></label>
-                <input asp-for="Data.AccountGroup" class="form-control" maxlength="50">
-                <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
+            <div class="form-group pokemon_iv">
+                <label asp-for="Data.IvQueueLimit" class="control-label"></label>
+                <input asp-for="Data.IvQueueLimit" class="form-control" min="1" max="1000" step="1" value="100" />
+                <span asp-validation-for="Data.IvQueueLimit" class="text-danger"></span>
             </div>
-            <div class="checkbox">
-                <label><input type="checkbox" asp-for="Data.IsEvent"> Is Unique Event</label>
+            <div class="form-group bootstrap">
+                <label asp-for="Data.CircleSize" class="control-label"></label> (meters i.e: `70, 500, 750, etc`)
+                <input asp-for="Data.CircleSize" class="form-control" min="5" max="1000" step="1" />
+                <span asp-validation-for="Data.CircleSize" class="text-danger"></span>
             </div>
             <div class="form-group quests">
                 <label asp-for="Data.QuestMode" class="control-label"></label>
@@ -95,6 +97,14 @@
                 <label><input type="checkbox" id="Data.FastBootstrap" name="Data.FastBootstrap"> Enable Fast Bootstrapping</label>
             </div>
             <div class="form-group">
+                <label asp-for="Data.AccountGroup" class="control-label"></label>
+                <input asp-for="Data.AccountGroup" class="form-control" maxlength="50">
+                <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" id="Data.IsEvent" name="Data.IsEvent"> Is Unique Event</label>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
@@ -110,6 +120,7 @@
 <script>
 hideElements('bootstrap', false);
 hideElements('circles', false);
+hideElements('pokemon_iv', false);
 hideElements('quests', false);
 
 $('#Type').change(function() {
@@ -119,10 +130,12 @@ $('#Type').change(function() {
 function hideAllElements(instanceTypeId) {
     const isQuest = instanceTypeId == @((int)InstanceType.AutoQuest);
     const isBootstrap = instanceTypeId == @((int)InstanceType.Bootstrap);
+    const isPokemonIV = instanceTypeId == @((int)InstanceType.PokemonIV);
     const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
         instanceTypeId == @((int)InstanceType.CircleRaid) ||
         instanceTypeId == @((int)InstanceType.CircleSmartPokemon);
     hideElements('bootstrap', isBootstrap);
+    hideElements('pokemon_iv', isPokemonIV);
     hideElements('circles', isCircle);
     hideElements('quests', isQuest);
 }

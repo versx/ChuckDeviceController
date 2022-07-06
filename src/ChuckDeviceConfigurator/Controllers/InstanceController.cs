@@ -77,6 +77,7 @@
         public ActionResult Create()
         {
             ViewBag.Geofences = _context.Geofences.ToList();
+            ViewBag.IvLists = _context.IvLists.ToList();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key }).ToList();
             return View();
         }
@@ -105,7 +106,10 @@
                 var useWarningAccounts = collection["Data.UseWarningAccounts"].Contains("true");
                 var ignoreS2CellBootstrap = collection["Data.IgnoreS2CellBootstrap"].Contains("true");
 
+                var circleSize = Convert.ToUInt16(Convert.ToString(collection["Data.CircleSize"]) ?? "70");
                 var fastBootstrapMode = collection["Data.FastBootstrap"].Contains("true");
+
+                var ivQueueLimit = Convert.ToUInt16(Convert.ToString(collection["Data.IvQueueLimit"]) ?? "100");
 
                 if (_context.Instances.Any(inst => inst.Name == name))
                 {
@@ -133,9 +137,10 @@
                         FastBootstrapMode = fastBootstrapMode,
                         
                         CircleRouteType = circleRouteType,
-                        //CircleSize = 70,
+                        CircleSize = circleSize,
+
                         //IvList = null,
-                        //IvQueueLimit = 100,
+                        IvQueueLimit = ivQueueLimit,
 
                         AccountGroup = accountGroup,
                         IsEvent = false,
@@ -210,7 +215,10 @@
                 var useWarningAccounts = collection["Data.UseWarningAccounts"].Contains("on");
                 var ignoreS2CellBootstrap = collection["Data.IgnoreS2CellBootstrap"].Contains("on");
 
+                var circleSize = Convert.ToUInt16(Convert.ToString(collection["Data.CircleSize"]) ?? "70");
                 var fastBootstrapMode = collection["Data.FastBootstrap"].Contains("on");
+
+                var ivQueueLimit = Convert.ToUInt16(Convert.ToString(collection["Data.IvQueueLimit"]) ?? "100");
 
                 instance.Name = name;
                 instance.Type = type;
@@ -229,11 +237,12 @@
                 instance.Data.IgnoreS2CellBootstrap = ignoreS2CellBootstrap;
 
                 instance.Data.FastBootstrapMode = fastBootstrapMode;
+                instance.Data.CircleSize = circleSize;
 
                 instance.Data.CircleRouteType = circleRouteType;
-                //CircleSize = 70;
+
                 //IvList = null;
-                //IvQueueLimit = 100;
+                instance.Data.IvQueueLimit = ivQueueLimit;
 
                 instance.Data.AccountGroup = accountGroup;
                 instance.Data.IsEvent = false;

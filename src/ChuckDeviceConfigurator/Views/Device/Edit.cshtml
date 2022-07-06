@@ -19,7 +19,7 @@
             <div class="form-group">
                 <label asp-for="InstanceName" class="control-label"></label>
                 <select asp-for="InstanceName" class="form-control" asp-items="@(ViewBag.Instances)">
-                    <option>Please select one</option>
+                    <option value="">Please select one</option>
                 </select>
                 <span asp-validation-for="InstanceName" class="text-danger"></span>
             </div>
