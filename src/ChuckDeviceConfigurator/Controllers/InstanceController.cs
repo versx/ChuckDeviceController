@@ -96,6 +96,17 @@
                 var accountGroup = Convert.ToString(collection["Data.AccountGroup"]);
                 var isEvent = collection["Data.IsEvent"].Contains("true");
 
+                var circleRouteType = (CircleInstanceRouteType)Convert.ToUInt16(collection["Data.CircleRouteType"]);
+
+                var questMode = Convert.ToString(collection["Data.QuestMode"]);
+                var timeZone = Convert.ToString(collection["Data.TimeZone"]);
+                var enableDst = collection["Data.EnableDst"].Contains("true");
+                var spinLimit = Convert.ToUInt16(collection["Data.SpinLimit"]);
+                var useWarningAccounts = collection["Data.UseWarningAccounts"].Contains("true");
+                var ignoreS2CellBootstrap = collection["Data.IgnoreS2CellBootstrap"].Contains("true");
+
+                var fastBootstrapMode = collection["Data.FastBootstrap"].Contains("true");
+
                 if (_context.Instances.Any(inst => inst.Name == name))
                 {
                     // Instance exists already by name
@@ -112,6 +123,20 @@
                     Geofences = geofences,
                     Data = new InstanceData
                     {
+                        QuestMode = questMode,
+                        TimeZone = timeZone,
+                        EnableDst = enableDst,
+                        SpinLimit = spinLimit,
+                        UseWarningAccounts = useWarningAccounts,
+                        IgnoreS2CellBootstrap = ignoreS2CellBootstrap,
+                        
+                        FastBootstrapMode = fastBootstrapMode,
+                        
+                        CircleRouteType = circleRouteType,
+                        //CircleSize = 70,
+                        //IvList = null,
+                        //IvQueueLimit = 100,
+
                         AccountGroup = accountGroup,
                         IsEvent = false,
                     },
@@ -144,9 +169,12 @@
             }
 
             var geofences = _context.Geofences.ToList();
+            /*
             var selectedGeofences = geofences.Select(g => new SelectListItem("Name", g.Name, instance.Geofences.Contains(g.Name)))
                                              .ToList();
-            ViewBag.Geofences = new MultiSelectList(geofences, "Name", "Name", selectedGeofences);
+            */
+            ViewBag.Geofences = geofences;// new MultiSelectList(geofences, "Name", "Name", selectedGeofences);
+            ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key });
             return View(instance);
         }
 
@@ -171,7 +199,18 @@
                 var maxLevel = Convert.ToUInt16(collection["MaximumLevel"]);
                 var geofences = Convert.ToString(collection["Geofences"]).Split(',').ToList();
                 var accountGroup = Convert.ToString(collection["Data.AccountGroup"]);
-                var isEvent = collection["Data.IsEvent"].Contains("true");
+                var isEvent = collection["Data.IsEvent"].Contains("on");
+
+                var circleRouteType = (CircleInstanceRouteType)Convert.ToUInt16(Convert.ToString(collection["Data.CircleRouteType"]) ?? "0");
+
+                var questMode = (QuestMode)Convert.ToUInt16(Convert.ToString(collection["Daa.QuestMode"]) ?? "0");
+                var timeZone = Convert.ToString(collection["Data.TimeZone"]);
+                var enableDst = collection["Data.EnableDst"].Contains("on");
+                var spinLimit = Convert.ToUInt16(collection["Data.SpinLimit"]);
+                var useWarningAccounts = collection["Data.UseWarningAccounts"].Contains("on");
+                var ignoreS2CellBootstrap = collection["Data.IgnoreS2CellBootstrap"].Contains("on");
+
+                var fastBootstrapMode = collection["Data.FastBootstrap"].Contains("on");
 
                 instance.Name = name;
                 instance.Type = type;
@@ -182,6 +221,20 @@
                 {
                     instance.Data = new InstanceData();
                 }
+                instance.Data.QuestMode = Convert.ToString(questMode);
+                instance.Data.TimeZone = timeZone;
+                instance.Data.EnableDst = enableDst;
+                instance.Data.SpinLimit = spinLimit;
+                instance.Data.UseWarningAccounts = useWarningAccounts;
+                instance.Data.IgnoreS2CellBootstrap = ignoreS2CellBootstrap;
+
+                instance.Data.FastBootstrapMode = fastBootstrapMode;
+
+                instance.Data.CircleRouteType = circleRouteType;
+                //CircleSize = 70;
+                //IvList = null;
+                //IvQueueLimit = 100;
+
                 instance.Data.AccountGroup = accountGroup;
                 instance.Data.IsEvent = false;
 

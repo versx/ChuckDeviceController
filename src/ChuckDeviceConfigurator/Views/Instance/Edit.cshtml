@@ -22,10 +22,17 @@
             </div>
             <div class="form-group">
                 <label asp-for="Type" class="control-label"></label>
-                <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()">
-                    <option>Please select one</option>
+                <select asp-for="Type" id="Type" name="Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()">
+                    <option value="">Please select one</option>
                 </select>
                 <span asp-validation-for="Type" class="text-danger"></span>
+            </div>
+            <div class="form-group circles">
+                <label asp-for="Data.CircleRouteType" class="control-label"></label>
+                <select asp-for="Data.CircleRouteType" class="form-control" asp-items="Html.GetEnumSelectList<CircleInstanceRouteType>()">
+                    <option value="">Please select one</option>
+                </select>
+                <span asp-validation-for="Data.CircleRouteType" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <div class="row">
@@ -43,10 +50,41 @@
             </div>
             <div class="form-group">
                 <label asp-for="Geofences" class="control-label"></label>
-                <select asp-for="Geofences" class="form-control" asp-items="@(ViewBag.Geofences)">
-                    <option>Please select one</option>
+                <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))">
+                    <option value="">Please select one</option>
                 </select>
                 <span asp-validation-for="Geofences" class="text-danger"></span>
+            </div>
+            <div class="form-group quests">
+                <label asp-for="Data.QuestMode" class="control-label"></label>
+                <select asp-for="Data.QuestMode" class="form-control" asp-items="Html.GetEnumSelectList<QuestMode>()">
+                    <option value="">Please select one</option>
+                </select>
+                <span asp-validation-for="Data.QuestMode" class="text-danger"></span>
+            </div>
+            <div class="form-group quests">
+                <label asp-for="Data.SpinLimit" class="control-label"></label>
+                <input asp-for="Data.SpinLimit" class="form-control" min="1" max="100000" value="10000">
+                <span asp-validation-for="Data.SpinLimit" class="text-danger"></span>
+            </div>
+            <div class="form-group quests">
+                <label asp-for="Data.TimeZone" class="control-label"></label>
+                <select asp-for="Data.TimeZone" class="form-control" asp-items="@(new SelectList(ViewBag.TimeZones, "Name", "Name"))">
+                    <option value="">Please select one</option>
+                </select>
+                <span asp-validation-for="Data.TimeZone" class="text-danger"></span>
+            </div>
+            <div class="checkbox quests">
+                <label><input type="checkbox" id="Data.EnableDst" name="Data.EnableDst" checked="@((Model?.Data?.EnableDst ?? false) ? "checked" : "")"> Enable Daylight Savings Time</label>
+            </div>
+            <div class="checkbox quests">
+                <label><input type="checkbox" id="Data.UseWarningAccounts" name="Data.UseWarningAccounts" checked="@((Model?.Data?.UseWarningAccounts ?? false) ? "checked" : "")"> Use Warning Accounts</label>
+            </div>
+            <div class="checkbox quests">
+                <label><input type="checkbox" id="Data.IgnoreS2CellBootstrap" name="Data.IgnoreS2CellBootstrap" checked="@((Model?.Data?.IgnoreS2CellBootstrap ?? false) ? "checked" : "")"> Ignore S2 Cell Bootstrapping</label>
+            </div>
+            <div class="checkbox bootstrap">
+                <label><input type="checkbox" id="Data.FastBootstrap" name="Data.FastBootstrap" checked="@((Model?.Data?.FastBootstrapMode ?? false) ? "checked" : "")"> Enable Fast Bootstrapping</label>
             </div>
             <div class="form-group">
                 <label asp-for="Data.AccountGroup" class="control-label"></label>
@@ -54,10 +92,10 @@
                 <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
             </div>
             <div class="checkbox">
-                <label><input type="checkbox" asp-for="Data.IsEvent" value="true"> Is Unique Event</label>
+                <label><input type="checkbox" id="Data.IsEvent" name="Data.IsEvent" checked="@((Model?.Data?.IsEvent ?? false) ? "checked" : "")"> Is Unique Event</label>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -69,4 +107,30 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<script>
+hideAllElements(@((int)Model.Type));
+
+$('#Type').change(function() {
+    hideAllElements(this.value);
+});
+
+function hideAllElements(instanceTypeId) {
+    console.log('instance type:', instanceTypeId);
+    const isQuest = instanceTypeId == @((int)InstanceType.AutoQuest) && instanceTypeId != -1;
+    const isBootstrap = instanceTypeId == @((int)InstanceType.Bootstrap) && instanceTypeId != -1;
+    const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
+        instanceTypeId == @((int)InstanceType.CircleRaid) ||
+        instanceTypeId == @((int)InstanceType.CircleSmartPokemon);
+    hideElements('bootstrap', isBootstrap);
+    hideElements('circles', isCircle && instanceTypeId != -1);
+    hideElements('quests', isQuest);
+}
+
+function hideElements(className, show) {
+    const elements = document.getElementsByClassName(className);
+    for (const element of elements) {
+        element.style.display = show ? 'block' : 'none';
+    }
+}
+</script>
 }

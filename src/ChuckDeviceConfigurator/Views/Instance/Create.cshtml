@@ -108,13 +108,13 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 <script>
-$('#Type').change(function() {
-    hideAllElements(this.value);
-});
-
 hideElements('bootstrap', false);
 hideElements('circles', false);
 hideElements('quests', false);
+
+$('#Type').change(function() {
+    hideAllElements(this.value);
+});
 
 function hideAllElements(instanceTypeId) {
     const isQuest = instanceTypeId == @((int)InstanceType.AutoQuest);

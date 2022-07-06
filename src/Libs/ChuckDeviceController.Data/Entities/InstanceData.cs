@@ -94,7 +94,7 @@
             DisplayName("Is Event"),
             JsonPropertyName("is_event"),
         ]
-        public bool IsEvent { get; set; }
+        public bool? IsEvent { get; set; }
 
         public InstanceData()
         {

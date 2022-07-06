@@ -76,11 +76,10 @@
                 var enabled = collection["Enabled"].Contains("true");
 
                 var timeValue = GetTimeNumeric(time);
-
                 if (_context.Assignments.Any(a => a.DeviceUuid == deviceUuid &&
                     a.InstanceName == instanceName &&
                     a.SourceInstanceName == sourceInstanceName &&
-                    //a.Date == date &&
+                    a.Date == (realDate == default ? null : realDate) &&
                     a.Time == timeValue &&
                     a.Enabled == enabled))
                 {
@@ -162,6 +161,26 @@
                     ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
                     return View();
                 }
+
+                // TODO: Device group
+                var sourceInstanceName = Convert.ToString(collection["SourceInstanceName"]);
+                var instanceName = Convert.ToString(collection["SourceInstanceName"]);
+                var deviceUuid = Convert.ToString(collection["DeviceUuid"]);
+                var date = Convert.ToString(collection["Date"]);
+                var time = Convert.ToString(collection["Time"]);
+                var realDate = string.IsNullOrEmpty(date) ? default : DateTime.Parse(date);
+                var enabled = collection["Enabled"].Contains("on");
+                var timeValue = GetTimeNumeric(time);
+
+                assignment.SourceInstanceName = sourceInstanceName;
+                assignment.InstanceName = instanceName;
+                assignment.DeviceUuid = deviceUuid;
+                assignment.Date = realDate;
+                assignment.Time = timeValue;
+                assignment.Enabled = enabled;
+
+                _context.Assignments.Update(assignment);
+                await _context.SaveChangesAsync();
 
                 _assignmentService.EditAssignment(id, assignment);
 
