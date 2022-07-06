@@ -5,11 +5,14 @@
 
     public class InstanceData
     {
+        #region Pokemon Circle Instance
         [
             DisplayName("Circle Instance Route Type"),
             JsonPropertyName("circle_route_type"),
         ]
         public CircleInstanceRouteType? CircleRouteType { get; set; }
+
+        #endregion
 
         #region Quest Instance
 
@@ -64,6 +67,13 @@
             JsonPropertyName("iv_list"),
         ]
         public string? IvList { get; set; }
+
+        [
+
+            DisplayName("Enable Lure Encounters"),
+            JsonPropertyName("enable_lure_encounters"),
+        ]
+        public bool? EnableLureEncounters { get; set; }
 
         #endregion
 

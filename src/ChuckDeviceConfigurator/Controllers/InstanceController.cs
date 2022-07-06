@@ -112,6 +112,7 @@
 
                 var ivList = Convert.ToString(collection["Data.IvList"]);
                 var ivQueueLimit = Convert.ToUInt16(Convert.ToString(collection["Data.IvQueueLimit"]) ?? "100");
+                var enableLureEncounters = collection["Data.EnableLureEncounters"].Contains("true");
 
                 if (_context.Instances.Any(inst => inst.Name == name))
                 {
@@ -143,6 +144,7 @@
 
                         IvList = ivList,
                         IvQueueLimit = ivQueueLimit,
+                        EnableLureEncounters = enableLureEncounters,
 
                         AccountGroup = accountGroup,
                         IsEvent = false,
@@ -222,6 +224,7 @@
 
                 var ivList = Convert.ToString(collection["Data.IvList"]);
                 var ivQueueLimit = Convert.ToUInt16(Convert.ToString(collection["Data.IvQueueLimit"]) ?? "100");
+                var enableLureEncounters = collection["Data.EnableLureEncounters"].Contains("on");
 
                 instance.Name = name;
                 instance.Type = type;
@@ -246,6 +249,7 @@
 
                 instance.Data.IvList = ivList;
                 instance.Data.IvQueueLimit = ivQueueLimit;
+                instance.Data.EnableLureEncounters = enableLureEncounters;
 
                 instance.Data.AccountGroup = accountGroup;
                 instance.Data.IsEvent = false;

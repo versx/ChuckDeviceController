@@ -9,11 +9,10 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    public class CircleInstanceController : IJobController
+    public class CircleInstanceController : IJobController, IScanNext
     {
         private static readonly Random _random = new();
         private readonly Dictionary<string, DeviceIndex> _currentUuid = new();
-        private Queue<Coordinate> _scanNextCoords = new(); 
         private uint _lastIndex = 0; // Used for basic leap frog routing
         private double _lastCompletedTime;
         private double _lastLastCompletedTime;
@@ -38,6 +37,8 @@
 
         public bool SendTaskForLureEncounter { get; set; } // TODO: Make 'SendTaskForLureEncounter' configurable via Instance.Data
 
+        public Queue<Coordinate> ScanNextCoordinates { get; set; }
+
         #endregion
 
         #region Constructor
@@ -52,6 +53,8 @@
             RouteType = instance.Data?.CircleRouteType ?? CircleInstanceRouteType.Default;
             GroupName = instance.Data?.AccountGroup ?? null;
             IsEvent = instance.Data?.IsEvent ?? false;
+
+            ScanNextCoordinates = new Queue<Coordinate>();
         }
 
         #endregion
@@ -71,9 +74,9 @@
             }
 
             // Check if on demand scanning coordinates list has any to send to workers
-            if (_scanNextCoords.Count > 0)
+            if (ScanNextCoordinates.Count > 0)
             {
-                currentCoord = _scanNextCoords.Dequeue();
+                currentCoord = ScanNextCoordinates.Dequeue();
                 return new CircleTask
                 {
                     Action = DeviceActionType.ScanPokemon,

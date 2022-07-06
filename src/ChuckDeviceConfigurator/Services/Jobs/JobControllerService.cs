@@ -223,7 +223,19 @@
                             break;
                         case InstanceType.PokemonIV:
                             // TODO: Get IvList from IvListController.Instance
-                            //jobController = new IvInstanceController(instance, multiPolygons, ivList);
+                            var ivListName = instance.Data?.IvList ?? null;
+                            if (string.IsNullOrEmpty(ivListName))
+                            {
+                                _logger.LogError($"IV list name for instance {instance.Name} is null, skipping controller instantiation...");
+                                return;
+                            }
+                            var ivList = await GetIvListAsync(ivListName);
+                            if (ivList == null)
+                            {
+                                _logger.LogError($"Failed to fetch IV list for instance {instance.Name}, skipping controller instantiation...");
+                                return;
+                            }
+                            jobController = new IvInstanceController(instance, multiPolygons, ivList.PokemonIds);
                             break;
                     }
                     break;
@@ -433,6 +445,15 @@
             {
                 return context.Geofences.Where(geofence => names.Contains(geofence.Name))
                                         .ToList();
+            }
+        }
+
+        private async Task<IvList> GetIvListAsync(string name)
+        {
+            using (var context = _deviceFactory.CreateDbContext())
+            {
+                var ivList = await context.IvLists.FindAsync(name);
+                return ivList;
             }
         }
 
