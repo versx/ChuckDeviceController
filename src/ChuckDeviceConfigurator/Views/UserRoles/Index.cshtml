@@ -1,10 +1,15 @@
 ﻿@using ChuckDeviceConfigurator.ViewModels
 @model List<UserRolesViewModel>
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "User Roles";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <h1>User Roles</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -20,7 +25,7 @@
             <tr>
                 <td>@user.UserName</td>
                 <td>@user.Email</td>
-                <td>@string.Join(" , ", user.Roles.ToList())</td>
+                <td>@string.Join(", ", user.Roles.ToList())</td>
                 <td>
                     <a class="btn btn-primary" asp-controller="UserRoles" asp-action="Manage" asp-route-userId="@user.UserId">Manage Roles</a>
                 </td>

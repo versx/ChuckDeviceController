@@ -94,6 +94,43 @@
             return RedirectToAction("Index");
         }
 
+        public ActionResult Create()
+        {
+            var roles = new List<ManageUserRolesViewModel>();
+            foreach (var role in _roleManager.Roles)
+            {
+                var userRolesViewModel = new ManageUserRolesViewModel
+                {
+                    RoleId = role.Id,
+                    RoleName = role.Name,
+                    Selected = false,
+                };
+                roles.Add(userRolesViewModel);
+            }
+            var model = new CreateUserViewModel
+            {
+                Roles = roles,
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Create(CreateUserViewModel model)
+        {
+            try
+            {
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                ModelState.AddModelError("User", $"Unknown error occurred while creating new user account.");
+                return View();
+            }
+            return null;
+        }
+
         private async Task<List<string>> GetUserRoles(ApplicationUser user)
         {
             return new List<string>(await _userManager.GetRolesAsync(user));
