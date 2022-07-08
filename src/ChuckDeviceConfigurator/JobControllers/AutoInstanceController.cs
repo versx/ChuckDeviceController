@@ -27,6 +27,7 @@
         #region Constants
 
         private const uint OneHourS = 3600;
+        private const uint OneDayS = OneHourS * 24;
         private const ushort MaxSpinAttempts = 5; // TODO: Make 'MaxSpinAttempts' configurable via Instance.Data
         private const uint DelayLogoutS = 900; // TODO: Make 'DelayLogout' configurable via Instance.Data
         private const ushort SpinRangeM = 80; // TODO: Revert back to 40m once reverted ingame
@@ -561,7 +562,9 @@
             _timer.Stop();
             var (localTime, timeLeft) = GetSecondsUntilMidnight();
             var now = localTime.ToTotalSeconds();
-            _timer.Interval = timeLeft * 1000;
+            // Timer interval cannot be set to 0, calculate one full day
+            // in seconds to use for the next quest clearing interval.
+            _timer.Interval = (timeLeft == 0 ? OneDayS : timeLeft) * 1000;
             _timer.Start();
 
             if (_shouldExit)
