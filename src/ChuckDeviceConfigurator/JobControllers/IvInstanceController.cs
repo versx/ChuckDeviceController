@@ -91,7 +91,7 @@
             if (ScanNextCoordinates.Count > 0)
             {
                 var currentCoord = ScanNextCoordinates.Dequeue();
-                return new IvTask
+                var scanNextTask = new IvTask
                 {
                     Area = Name,
                     Action = DeviceActionType.ScanPokemon,
@@ -101,6 +101,7 @@
                     Longitude = currentCoord.Longitude,
                     LureEncounter = EnableLureEncounters,
                 };
+                return await Task.FromResult(scanNextTask);
             }
 
             Pokemon? pokemon = null;
@@ -120,6 +121,15 @@
                 return null;
             }
 
+            // Check if Pokemon was first seen more than 10 minutes ago,
+            // if so call the GetTask method again to fetch a new Pokemon
+            // to IV scan.
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (now - (pokemon.FirstSeenTimestamp ?? 1) >= 600)
+            {
+                return await GetTaskAsync(uuid, accountUsername, account, isStartup);
+            }
+
             lock (_scannedLock)
             {
                 _scannedPokemon.Add(new ScannedPokemon
@@ -129,7 +139,7 @@
                 });
             }
 
-            return new IvTask
+            var task = new IvTask
             {
                 Area = Name,
                 Action = DeviceActionType.ScanIV,
@@ -139,7 +149,9 @@
                 Latitude = pokemon.Latitude,
                 Longitude = pokemon.Longitude,
                 IsSpawnpoint = pokemon.SpawnId > 0,
+                LureEncounter = EnableLureEncounters,
             };
+            return await Task.FromResult(task);
         }
 
         public async Task<string> GetStatusAsync()
