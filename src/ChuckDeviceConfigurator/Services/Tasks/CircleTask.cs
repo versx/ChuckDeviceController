@@ -5,5 +5,5 @@
 	public class CircleTask : BaseJobTask
 	{
         [JsonPropertyName("lure_encounter")]    
-		public bool LureEncounter { get; set; }}
+		public bool? LureEncounter { get; set; }}
 }

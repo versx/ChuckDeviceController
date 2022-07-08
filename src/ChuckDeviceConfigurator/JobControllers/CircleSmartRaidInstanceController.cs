@@ -20,14 +20,21 @@
         public Coordinate Coordinate { get; set; }
     }
 
+    public class GymsResult
+    {
+        public List<SmartRaidGym> NoBoss { get; set; } = new();
+
+        public List<SmartRaidGym> NoRaid { get; set; } = new();
+    }
+
     public class CircleSmartRaidInstanceController : IJobController
     {
         #region Constants
 
-        private const ushort RaidInfoBeforeHatch = 120; // 2 minutes
-        private const ushort IgnoreTimeEgg = 150; // 2.5 minutes
-        private const ushort IgnoreTimeBoss = 60; // 1 minute
-        private const ushort NoRaidTime = 1800; // 30 minutes
+        private const ushort RaidInfoBeforeHatchS = 120; // 2 minutes
+        private const ushort IgnoreTimeEggS = 150; // 2.5 minutes
+        private const ushort IgnoreTimeBossS = 60; // 1 minute
+        private const ushort NoRaidTimeS = 1800; // 30 minutes
 
         #endregion
 
@@ -81,10 +88,12 @@
             _smartRaidGymsInPoint = new Dictionary<Coordinate, List<string>>();
             _smartRaidPointsUpdated = new Dictionary<Coordinate, ulong>();
 
-            LoadGyms();
+            LoadGymsAsync();
 
-            _timer = new System.Timers.Timer();
-            _timer.Interval = 30 * 1000; // 30 second interval
+            _timer = new System.Timers.Timer
+            {
+                Interval = 30 * 1000, // 30 second interval
+            };
             _timer.Elapsed += async (sender, e) => await RaidUpdateHandlerAsync();
             _timer.Start();
         }
@@ -95,94 +104,14 @@
 
         public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false)
         {
-            // Build list of gyms to check
-            var gymsNoRaid = new List<SmartRaidGym>();
-            var gymsNoBoss = new List<SmartRaidGym>();
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            foreach (var (point, gyms) in _smartRaidGymsInPoint)
-            {
-                var updated = _smartRaidPointsUpdated[point];
-                var shouldUpdateEgg = updated == 0 || now >= updated + IgnoreTimeEgg;
-                var shouldUpdateBoss = updated == 0 || now >= updated + IgnoreTimeBoss;
-                foreach (var id in gyms)
-                {
-                    if (!_smartRaidGyms.ContainsKey(id))
-                    {
-                        // TODO: Does not contain smart raid by gym id
-                        continue;
-                    }
-                    var gym = _smartRaidGyms[id];
-                    if (shouldUpdateEgg && gym.RaidEndTimestamp == null ||
-                        now >= gym.RaidEndTimestamp + NoRaidTime)
-                    {
-                        gymsNoRaid.Add(new SmartRaidGym
-                        {
-                            Gym = gym,
-                            Updated = updated,
-                            Coordinate = point,
-                        });
-                    } else if (shouldUpdateBoss &&
-                        (gym.RaidPokemonId == null || gym.RaidPokemonId == 0) &&
-                        gym.RaidBattleTimestamp != null &&
-                        gym.RaidEndTimestamp != null &&
-                        now > gym.RaidBattleTimestamp -
-                        RaidInfoBeforeHatch &&
-                        now <= gym.RaidEndTimestamp)
-                    {
-                        gymsNoBoss.Add(new SmartRaidGym
-                        {
-                            Gym = gym,
-                            Updated = updated,
-                            Coordinate = point,
-                        });
-                    }
-                }
-            }
-
-            Coordinate? coord = null;
-            var timestamp = DateTime.UtcNow.ToTotalSeconds();
-            if (gymsNoBoss.Count > 0)
-            {
-                gymsNoBoss.Sort((gym1, gym2) => gym1.Updated.CompareTo(gym2.Updated));
-                var raid = gymsNoBoss.FirstOrDefault();
-                if (raid != null)
-                {
-                    _smartRaidPointsUpdated[raid.Coordinate] = timestamp;
-                    coord = raid.Coordinate;
-                }
-            }
-            else if (gymsNoRaid.Count > 0)
-            {
-                gymsNoRaid.Sort((gym1, gym2) => gym1.Updated.CompareTo(gym2.Updated));
-                var raid = gymsNoRaid.FirstOrDefault();
-                if (raid != null)
-                {
-                    _smartRaidPointsUpdated[raid.Coordinate] = timestamp;
-                    coord = raid.Coordinate;
-                }
-            }
-
+            var coord = GetNextScanLocation();
             if (coord == null)
             {
+                // Unable to retrieve coordinate for next gym to check
                 return null;
             }
 
-            lock (_statsLock)
-            {
-                if (_startDate == 0)
-                {
-                    _startDate = timestamp;
-                }
-                if (_count == ulong.MaxValue)
-                {
-                    _count = 0;
-                    _startDate = timestamp;
-                }
-                else
-                {
-                    _count++;
-                }
-            }
+            UpdateGymStats();
 
             var task = new CircleTask
             {
@@ -204,9 +133,8 @@
             {
                 if (_startDate > 0)
                 {
-                    double start = _startDate;
-                    double count = _count;
-                    scansPerHour = Convert.ToUInt32(_count / (now - start) * 3600);
+                    var delta = now - _startDate;
+                    scansPerHour = Convert.ToUInt32(_count / delta * 3600);
                 }
             }
             var scansStatus = scansPerHour == null
@@ -218,7 +146,12 @@
 
         public void Reload()
         {
-            // TODO: Clear gyms and load gyms again
+            // Clear gyms cache and load gyms again
+            _smartRaidGyms.Clear();
+            _smartRaidGymsInPoint.Clear();
+            _smartRaidPointsUpdated.Clear();
+
+            LoadGymsAsync();
         }
 
         public void Stop()
@@ -233,7 +166,7 @@
 
         #region Private Methods
 
-        private async void LoadGyms()
+        private async void LoadGymsAsync()
         {
             foreach (var coord in Coordinates)
             {
@@ -247,6 +180,7 @@
                     var gymIds = gyms.Select(gym => gym.Id).ToList();
                     _smartRaidGymsInPoint[coord] = gymIds;
                     _smartRaidPointsUpdated[coord] = 0;
+
                     foreach (var gym in gyms)
                     {
                         if (!_smartRaidGyms.ContainsKey(gym.Id) || _smartRaidGyms[gym.Id] == null)
@@ -257,11 +191,104 @@
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"LoadGyms: {ex}");
+                    _logger.LogError($"LoadGymsAsync: {ex}");
                     // Sleep for 5 seconds
                     Thread.Sleep(5000);
                 }
             }
+        }
+
+        private GymsResult GetGymsToCheck()
+        {
+            var noRaid = new List<SmartRaidGym>();
+            var noBoss = new List<SmartRaidGym>();
+            var now = DateTime.UtcNow.ToTotalSeconds();
+
+            foreach (var (point, gymIds) in _smartRaidGymsInPoint)
+            {
+                var updated = _smartRaidPointsUpdated[point];
+                var shouldUpdateEgg = updated == 0 || now >= updated + IgnoreTimeEggS;
+                var shouldUpdateBoss = updated == 0 || now >= updated + IgnoreTimeBossS;
+
+                foreach (var gymId in gymIds)
+                {
+                    if (!_smartRaidGyms.ContainsKey(gymId))
+                    {
+                        // TODO: Does not contain smart raid by gym id
+                        continue;
+                    }
+                    var gym = _smartRaidGyms[gymId];
+                    if ((shouldUpdateEgg && gym.RaidEndTimestamp == null) ||
+                        now >= gym.RaidEndTimestamp + NoRaidTimeS)
+                    {
+                        noRaid.Add(new SmartRaidGym
+                        {
+                            Gym = gym,
+                            Updated = updated,
+                            Coordinate = point,
+                        });
+                    }
+                    else if (shouldUpdateBoss &&
+                        (gym.RaidPokemonId == null || gym.RaidPokemonId == 0) &&
+                        gym.RaidBattleTimestamp != null &&
+                        gym.RaidEndTimestamp != null &&
+                        now > gym.RaidBattleTimestamp -
+                        RaidInfoBeforeHatchS &&
+                        now <= gym.RaidEndTimestamp)
+                    {
+                        noBoss.Add(new SmartRaidGym
+                        {
+                            Gym = gym,
+                            Updated = updated,
+                            Coordinate = point,
+                        });
+                    }
+                }
+            }
+
+            return new GymsResult
+            {
+                NoBoss = noBoss,
+                NoRaid = noRaid,
+            };
+        }
+
+        private Coordinate? GetNextScanLocation()
+        {
+            // Build list of gyms to check
+            var gyms = GetGymsToCheck();
+
+            Coordinate? coord = null;
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (gyms.NoBoss.Count > 0)
+            {
+                // Sort gyms with no raid boss by last updated timestamp
+                gyms.NoBoss.Sort((gym1, gym2) => gym1.Updated.CompareTo(gym2.Updated));
+                // Get first gym with no raid boss from list
+                var raid = gyms.NoBoss.FirstOrDefault();
+                if (raid != null)
+                {
+                    // Set last updated timestamp for gym to now
+                    _smartRaidPointsUpdated[raid.Coordinate] = now;
+                    // Set return result to gym location which will be the next task
+                    coord = raid.Coordinate;
+                }
+            }
+            else if (gyms.NoRaid.Count > 0)
+            {
+                // Sort gyms with no active raid by last updated timestamp
+                gyms.NoRaid.Sort((gym1, gym2) => gym1.Updated.CompareTo(gym2.Updated));
+                // Get first gym with no active raid from list
+                var raid = gyms.NoRaid.FirstOrDefault();
+                if (raid != null)
+                {
+                    // Set last updated timestamp for gym to now
+                    _smartRaidPointsUpdated[raid.Coordinate] = now;
+                    // Set return result to gym location which will be the next task
+                    coord = raid.Coordinate;
+                }
+            }
+            return coord;
         }
 
         private async Task RaidUpdateHandlerAsync()
@@ -270,7 +297,8 @@
             var gyms = await GetGymsByIdsAsync(gymIds);
             if (gyms == null)
             {
-                // TODO: Failed to get gyms with ids
+                // Failed to get gyms by ids
+                _logger.LogWarning($"Failed to get list of gyms by ids");
                 Thread.Sleep(5000);
                 return;
             }
@@ -278,6 +306,27 @@
             foreach (var gym in gyms)
             {
                 _smartRaidGyms[gym.Id] = gym;
+            }
+        }
+
+        private void UpdateGymStats()
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            lock (_statsLock)
+            {
+                if (_startDate == 0)
+                {
+                    _startDate = now;
+                }
+                if (_count == ulong.MaxValue)
+                {
+                    _count = 0;
+                    _startDate = now;
+                }
+                else
+                {
+                    _count++;
+                }
             }
         }
 
