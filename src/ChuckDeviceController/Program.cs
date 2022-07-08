@@ -76,6 +76,10 @@ builder.Services.AddDbContext<DeviceControllerContext>(options =>
            });
 }, ServiceLifetime.Scoped);
 
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 100;
+});
 
 // Register available hosted services
 builder.Services.AddHostedService<ProtoProcessorService>();

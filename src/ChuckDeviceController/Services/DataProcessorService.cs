@@ -1,10 +1,12 @@
 ﻿namespace ChuckDeviceController.Services
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Transactions;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Memory;
     using POGOProtos.Rpc;
     using Z.BulkOperations;
 
@@ -49,6 +51,7 @@
         //private readonly IConfiguration _config;
         private readonly IDbContextFactory<MapDataContext> _dbFactory;
         //private readonly MapDataContext _context;
+        private readonly IMemoryCache _diskCache;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell;
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell;
@@ -56,8 +59,9 @@
         public DataProcessorService(
             ILogger<IProtoProcessorService> logger,
             IBackgroundTaskQueue taskQueue,
-            IConfiguration config,
-            IDbContextFactory<MapDataContext> factory)
+            //IConfiguration config,
+            IDbContextFactory<MapDataContext> factory,
+            IMemoryCache diskCache)
         {
             _logger = logger;
             _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
@@ -65,6 +69,7 @@
             //_config = config;
             _dbFactory = factory;
             //_context = _dbFactory.CreateDbContext();
+            _diskCache = diskCache;
             _gymIdsPerCell = new Dictionary<ulong, List<string>>();
             _stopIdsPerCell = new Dictionary<ulong, List<string>>();
         }
@@ -370,7 +375,7 @@
                         var username = wild.username;
                         var isEvent = wild.isEvent;
                         var pokemon = new Pokemon(context, data, cellId, timestampMs, username, isEvent);
-                        await pokemon.UpdateAsync(context);
+                        await pokemon.UpdateAsync(context, updateIv: false);
 
                         pokemonToUpsert.Add(pokemon);
                         /*
@@ -411,7 +416,7 @@
                         var username = nearby.username;
                         var isEvent = nearby.isEvent;
                         var pokemon = new Pokemon(context, data, cellId, username, isEvent);
-                        await pokemon.UpdateAsync(context);
+                        await pokemon.UpdateAsync(context, updateIv: false);
                         pokemonToUpsert.Add(pokemon);
 
                         /*
@@ -452,9 +457,26 @@
                         var username = map.username;
                         var isEvent = map.isEvent;
                         var pokemon = new Pokemon(context, data, cellId, username, isEvent);
-                        await pokemon.UpdateAsync(context);
+                        await pokemon.UpdateAsync(context, updateIv: false);
 
                         pokemonToUpsert.Add(pokemon);
+
+                        // Check if we have a pending disk encounter cache
+                        var displayId = data.PokemonDisplay.DisplayId;
+                        var cachedDiskEncounter = _diskCache.Get<DiskEncounterOutProto>(displayId);
+                        if (cachedDiskEncounter == null)
+                        {
+                            // Failed to get DiskEncounter from cache
+                            _logger.LogWarning($"Failed to fetch cached disk encounter with id '{displayId}' from cache");
+                            continue;
+                        }
+
+                        // Thanks Fabio <3
+                        pokemon.AddDiskEncounter(cachedDiskEncounter, username);
+                        await pokemon.UpdateAsync(context, updateIv: true);
+                        _logger.LogDebug($"Found Pokemon disk encounter in cache with id '{displayId}'");
+                        // TODO: Remove above upsert list addition: pokemonToUpsert.Add(pokemon);
+
                         /*
                         if (context.Pokemon.AsNoTracking().Any(pkmn => pkmn.Id == pokemon.Id))
                         {
@@ -865,6 +887,7 @@
                         var isEvent = diskEncounter.isEvent;
                         //if (data.Status != EncounterOutProto.Types.Status.EncounterSuccess)
                         //{
+                        //    continue;
                         //}
                         var displayId = data.Pokemon.PokemonDisplay.DisplayId;
                         var pokemon = await context.Pokemon.FindAsync(displayId);
@@ -878,7 +901,8 @@
                         }
                         else
                         {
-                            // No pokestop info from disk encounter
+                            _diskCache.Set(displayId, data, TimeSpan.FromMinutes(30));
+                            _logger.LogInformation($"Disk encounter with id '{displayId}' added to cache");
                         }
                     }
 
@@ -1009,6 +1033,19 @@
                 context.Entry(pokestop).Property(p => p.AlternativeQuestTimestamp).IsModified = true;
                 context.Entry(pokestop).Property(p => p.AlternativeQuestTitle).IsModified = true;
                 context.Entry(pokestop).Property(p => p.AlternativeQuestType).IsModified = true;
+            }
+        }
+
+        public static void UpdatePokemonProperties<T>(this T context, Pokemon pokemon, bool updateIv = false)
+            where T : DbContext
+        {
+            context.Attach(pokemon);
+            context.Entry(pokemon).Property(p => p.PokemonId).IsModified = true;
+            context.Entry(pokemon).Property(p => p.Form).IsModified = true;
+
+            if (updateIv)
+            {
+                context.Entry(pokemon).Property(p => p.AttackIV).IsModified = true;
             }
         }
     }

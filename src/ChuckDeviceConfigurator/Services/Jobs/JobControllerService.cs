@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
     using ChuckDeviceConfigurator.JobControllers;
+    using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -149,13 +150,13 @@
                     {
                         case InstanceType.CirclePokemon:
                         case InstanceType.CircleSmartPokemon:
-                            jobController = new CircleInstanceController(instance, coords, CircleInstanceType.Pokemon);
+                            jobController = CreateCircleJobController(instance, CircleInstanceType.Pokemon, coords);
                             break;
                         case InstanceType.CircleRaid:
-                            jobController = new CircleInstanceController(instance, coords, CircleInstanceType.Raid);
+                            jobController = CreateCircleJobController(instance, CircleInstanceType.Raid, coords);
                             break;
                         case InstanceType.CircleSmartRaid:
-                            // TODO: CircleSmartRaid job controller instance
+                            jobController = CreateCircleSmartRaidJobController(_mapFactory, instance, coords);
                             break;
                     }
                     break;
@@ -320,6 +321,8 @@
                     instanceController?.Reload();
                 }
             }
+
+            // TODO: Reload all assignments. _assignmentControllerService.Setup();
         }
 
         public async Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName)
@@ -363,7 +366,7 @@
                 _devices[device.Key] = null;
             }
 
-            // TODO: await _assignmentController.Start();
+            // TODO: Reload all assignments. await _assignmentControllerService.Start();
             await Task.CompletedTask;
         }
 
@@ -380,6 +383,7 @@
                     _devices.Add(device.Uuid, device);
                 }
             }
+            // TODO: Reload all assignments. await _assignmentControllerService.Start();
         }
 
         public List<string> GetDeviceUuidsInInstance(string instanceName)
@@ -407,7 +411,7 @@
         public async Task RemoveDeviceAsync(Device device)
         {
             RemoveDevice(device.Uuid);
-            // TODO: await _assignmentController.Start();
+            // TODO: Reload all assignments. _assignmentControllerService.Setup();
             await Task.CompletedTask;
         }
 
@@ -422,6 +426,7 @@
                 }
                 _devices.Remove(uuid);
             }
+            // TODO: Reload all assignments. _assignmentControllerService.Setup();
         }
 
         #endregion
@@ -449,6 +454,42 @@
                 return ivList;
             }
         }
+
+        private static IJobController CreateCircleJobController(Instance instance, CircleInstanceType circleInstanceType, List<Coordinate> coords)
+        {
+            var jobController = new CircleInstanceController(
+                instance,
+                coords,
+                circleInstanceType
+            );
+            return jobController;
+        }
+
+        private static IJobController CreateCircleSmartRaidJobController(IDbContextFactory<MapDataContext> factory, Instance instance, List<Coordinate> coords)
+        {
+            var jobController = new CircleSmartRaidInstanceController(
+                factory,
+                instance,
+                coords
+            );
+            return jobController;
+        }
+
+        /*
+        private static IJobController CreateAutoQuestJobController(IDbContextFactory<MapDataContext> mapFactory, IDbContextFactory<DeviceControllerContext> deviceFactory, Instance instance, List<MultiPolygon> multiPolygons, short timezoneOffset)
+        {
+            var timezone = instance.Data?.TimeZone;
+            short timezoneOffset = 0;
+            if (!string.IsNullOrEmpty(timezone) && _timeZoneService.TimeZones.ContainsKey(timezone))
+            {
+                var tzData = _timeZoneService.TimeZones[timezone];
+                timezoneOffset = instance.Data?.EnableDst ?? false
+                                            ? tzData.Dst
+                                            : tzData.Utc;
+            }
+            var jobController = new AutoInstanceController(mapFactory, deviceFactory, instance, multiPolygons, timezoneOffset);
+        }
+        */
 
         #endregion
     }

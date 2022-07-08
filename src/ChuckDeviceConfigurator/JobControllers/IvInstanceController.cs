@@ -34,7 +34,7 @@
 
         public string Name { get; set; }
 
-        public List<MultiPolygon> MultiPolygon { get; set; }
+        public IReadOnlyList<MultiPolygon> MultiPolygon { get; set; }
 
         public ushort MinimumLevel { get; set; }
 
