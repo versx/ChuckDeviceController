@@ -35,7 +35,7 @@
 
         public bool IsEvent { get; }
 
-        public bool SendTaskForLureEncounter { get; set; } // TODO: Make 'SendTaskForLureEncounter' configurable via Instance.Data
+        public bool EnableLureEncounters { get; set; }
 
         public Queue<Coordinate> ScanNextCoordinates { get; set; }
 
@@ -53,7 +53,7 @@
             RouteType = instance.Data?.CircleRouteType ?? CircleInstanceRouteType.Default;
             GroupName = instance.Data?.AccountGroup ?? null;
             IsEvent = instance.Data?.IsEvent ?? false;
-
+            EnableLureEncounters = instance.Data?.EnableLureEncounters ?? false;
             ScanNextCoordinates = new Queue<Coordinate>();
         }
 
@@ -67,25 +67,18 @@
             AddDevice(uuid);
             Coordinate? currentCoord = null;
 
-            if (Coordinates.Count == 0)
-            {
-                // TODO: Throw error that instance requires at least one coordinate
-                return null;
-            }
-
             // Check if on demand scanning coordinates list has any to send to workers
             if (ScanNextCoordinates.Count > 0)
             {
                 currentCoord = ScanNextCoordinates.Dequeue();
-                return new CircleTask
-                {
-                    Action = DeviceActionType.ScanPokemon,
-                    Area = Name,
-                    Latitude = currentCoord.Latitude,
-                    Longitude = currentCoord.Longitude,
-                    MinimumLevel = MinimumLevel,
-                    MaximumLevel = MaximumLevel,
-                };
+                var scanNextTask = CreateTask(currentCoord, CircleType);
+                return await Task.FromResult(scanNextTask);
+            }
+
+            if (Coordinates.Count == 0)
+            {
+                // TODO: Throw error that instance requires at least one coordinate
+                return null;
             }
 
             switch (CircleType)
@@ -119,17 +112,8 @@
                 return null;
             }
 
-            return await Task.FromResult(new CircleTask
-            {
-                Action = CircleType == CircleInstanceType.Pokemon
-                    ? DeviceActionType.ScanPokemon
-                    : DeviceActionType.ScanRaid,
-                Area = Name,
-                Latitude = currentCoord.Latitude,
-                Longitude = currentCoord.Longitude,
-                MinimumLevel = MinimumLevel,
-                MaximumLevel = MaximumLevel,
-            });
+            var task = CreateTask(currentCoord, CircleType);
+            return await Task.FromResult(task);
         }
 
         public async Task<string> GetStatusAsync()
@@ -159,6 +143,22 @@
         }
 
         #endregion
+
+        private ITask CreateTask(Coordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
+        {
+            return new CircleTask
+            {
+                Area = Name,
+                Action = circleType == CircleInstanceType.Pokemon
+                    ? DeviceActionType.ScanPokemon
+                    : DeviceActionType.ScanRaid,
+                Latitude = coord.Latitude,
+                Longitude = coord.Longitude,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+                LureEncounter = EnableLureEncounters,
+            };
+        }
 
         #region Routing Logic
 

@@ -70,7 +70,11 @@
 
 		public Geofence GetGeofence(string name)
 		{
-			var geofence = _geofences.Find(x => x.Name == name);
+			Geofence? geofence = null;
+			lock (_geofencesLock)
+			{
+				geofence = _geofences.Find(x => x.Name == name);
+			}
 			return geofence;
 		}
 
