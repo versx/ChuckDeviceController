@@ -1,12 +1,12 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
+    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
     using Microsoft.EntityFrameworkCore;
@@ -19,7 +19,7 @@
         private readonly ILogger<IJobControllerService> _logger;
         private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
         private readonly IDbContextFactory<MapDataContext> _mapFactory;
-        private readonly IConfiguration _configuration;
+        //private readonly IConfiguration _configuration;
         private readonly ITimeZoneService _timeZoneService;
         private readonly IGeofenceControllerService _geofenceService;
 
@@ -47,11 +47,13 @@
 
         #endregion
 
+        #region Constructor
+
         public JobControllerService(
             ILogger<IJobControllerService> logger,
             IDbContextFactory<DeviceControllerContext> deviceFactory,
             IDbContextFactory<MapDataContext> mapFactory,
-            IConfiguration configuration,
+            //IConfiguration configuration,
             ITimeZoneService timeZoneService,
             IGeofenceControllerService geofenceService)
         {
@@ -64,9 +66,11 @@
 
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
-
-            //Start();
         }
+
+        #endregion
+
+        #region Public Methods
 
         public void Start()
         {
@@ -107,11 +111,19 @@
             }
         }
 
+        #endregion
+
         #region Instances
 
         public async Task AddInstanceAsync(Instance instance)
         {
             _logger.LogDebug($"Adding instance {instance.Name}");
+
+            if (string.IsNullOrEmpty(instance.Name))
+            {
+                _logger.LogError($"No instance name set, skipping instance creation...");
+                return;
+            }
 
             var geofences = _geofenceService.GetGeofences(instance.Geofences);
             if (geofences == null)
@@ -127,25 +139,7 @@
                 case InstanceType.CircleSmartPokemon:
                 case InstanceType.CircleRaid:
                 case InstanceType.CircleSmartRaid:
-                    var coords = new List<Coordinate>();
-                    foreach (var geofence in geofences)
-                    {
-                        var area = geofence.Data?.Area;
-                        if (area is null)
-                        {
-                            _logger.LogError($"[{instance.Name}] Failed to parse geofence '{geofence.Name}' coordinates");
-                            continue;
-                        }
-                        string areaJson = Convert.ToString(area);
-                        var coordsArray = (List<Coordinate>)
-                        (
-                            area is List<Coordinate>
-                                ? area
-                                : areaJson.FromJson<List<Coordinate>>()
-                        );
-                        coords.AddRange(coordsArray);
-                    }
-
+                    var coords = geofences.ConvertToCoordinates();
                     switch (instance.Type)
                     {
                         case InstanceType.CirclePokemon:
@@ -164,60 +158,13 @@
                 case InstanceType.PokemonIV:
                 case InstanceType.Bootstrap:
                 case InstanceType.FindTth:
-                    var multiPolygons = new List<MultiPolygon>();
-                    var coordinates = new List<List<Coordinate>>();
-                    foreach (var geofence in geofences)
-                    {
-                        var area = geofence.Data?.Area;
-                        if (area is null)
-                        {
-                            _logger.LogError($"[{instance.Name}] Failed to parse coordinates for geofence '{geofence.Name}'");
-                            continue;
-                        }
-                        string areaJson = Convert.ToString(area);
-                        var coordsArray = (List<List<Coordinate>>)
-                        (
-                            area is List<List<Coordinate>>
-                                ? area
-                                : areaJson.FromJson<List<List<Coordinate>>>()
-                        );
-                        coordinates.AddRange(coordsArray);
-
-                        var areaArrayEmptyInner = new List<MultiPolygon>();
-                        foreach (var coord in coordsArray)
-                        {
-                            var multiPolygon = new MultiPolygon();
-                            Coordinate? first = null;
-                            for (var i = 0; i < coord.Count; i++)
-                            {
-                                if (i == 0)
-                                {
-                                    first = coord[i];
-                                }
-                                multiPolygon.Add(new Polygon(coord[i].Latitude, coord[i].Longitude));
-                            }
-                            if (first != null)
-                            {
-                                multiPolygon.Add(new Polygon(first.Latitude, first.Longitude));
-                            }
-                            areaArrayEmptyInner.Add(multiPolygon);
-                        }
-                        multiPolygons.AddRange(areaArrayEmptyInner);
-                    }
-
+                    var (multiPolygons, coordinates) = geofences.ConvertToMultiPolygons();
                     switch (instance.Type)
                     {
                         case InstanceType.AutoQuest:
                             var timezone = instance.Data?.TimeZone;
-                            short timezoneOffset = 0;
-                            if (!string.IsNullOrEmpty(timezone) && _timeZoneService.TimeZones.ContainsKey(timezone))
-                            {
-                                var tzData = _timeZoneService.TimeZones[timezone];
-                                timezoneOffset = instance.Data?.EnableDst ?? false
-                                    ? tzData.Dst
-                                    : tzData.Utc;
-                            }
-                            jobController = new AutoInstanceController(_mapFactory, _deviceFactory, instance, multiPolygons, timezoneOffset);
+                            var timezoneOffset = ConvertTimeZoneToOffset(timezone, instance.Data?.EnableDst ?? false);
+                            jobController = CreateAutoQuestJobController(_mapFactory, _deviceFactory, instance, multiPolygons, timezoneOffset);
                             break;
                         case InstanceType.Bootstrap:
                             jobController = new BootstrapInstanceController(instance, coordinates);
@@ -226,20 +173,13 @@
                             jobController = new TthFinderInstanceController(instance, coordinates);
                             break;
                         case InstanceType.PokemonIV:
-                            // TODO: Get IvList from IvListController.Instance
-                            var ivListName = instance.Data?.IvList ?? null;
-                            if (string.IsNullOrEmpty(ivListName))
-                            {
-                                _logger.LogError($"IV list name for instance {instance.Name} is null, skipping controller instantiation...");
-                                return;
-                            }
-                            var ivList = await GetIvListAsync(ivListName);
+                            var ivList = await GetIvListAsync(instance.Data?.IvList);
                             if (ivList == null)
                             {
                                 _logger.LogError($"Failed to fetch IV list for instance {instance.Name}, skipping controller instantiation...");
                                 return;
                             }
-                            jobController = new IvInstanceController(instance, multiPolygons, ivList.PokemonIds);
+                            jobController = CreateIvJobController(instance, multiPolygons, ivList);
                             break;
                     }
                     break;
@@ -247,12 +187,7 @@
 
             if (jobController == null)
             {
-                _logger.LogError($"[{instance.Name}] Unable to instantiate job instance controller with instance type '{instance.Type}'");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(instance.Name))
-            {
+                _logger.LogError($"[{instance.Name}] Unable to instantiate job instance controller with instance name '{instance.Name}' and type '{instance.Type}'");
                 return;
             }
 
@@ -268,7 +203,7 @@
         {
             if (string.IsNullOrEmpty(uuid))
             {
-                // TODO Log error
+                _logger.LogError($"Failed to get job controller instance for device, UUID was null");
                 return null;
             }
 
@@ -284,6 +219,7 @@
                 var instanceName = device?.InstanceName;
                 if (device == null || string.IsNullOrEmpty(instanceName))
                 {
+                    _logger.LogWarning($"Device or device instance name was null, unable to retrieve job controller instance");
                     return null;
                 }
 
@@ -448,12 +384,41 @@
 
         private async Task<IvList> GetIvListAsync(string name)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                _logger.LogError($"IV list name for IV instance is null, skipping controller instantiation...");
+                return null;
+            }
+
             using (var context = _deviceFactory.CreateDbContext())
             {
                 var ivList = await context.IvLists.FindAsync(name);
                 return ivList;
             }
         }
+
+        private short ConvertTimeZoneToOffset(string timezone, bool enableDst = false)
+        {
+            short timezoneOffset = 0;
+            // Check if timezone is set, if not return UTC offset
+            if (string.IsNullOrEmpty(timezone))
+            {
+                return timezoneOffset;
+            }
+
+            if (!string.IsNullOrEmpty(timezone) && _timeZoneService.TimeZones.ContainsKey(timezone))
+            {
+                var tzData = _timeZoneService.TimeZones[timezone];
+                timezoneOffset = enableDst
+                    ? tzData.Dst
+                    : tzData.Utc;
+            }
+            return timezoneOffset;
+        }
+
+        #endregion
+
+        #region Static Methods
 
         private static IJobController CreateCircleJobController(Instance instance, CircleInstanceType circleInstanceType, List<Coordinate> coords)
         {
@@ -475,21 +440,27 @@
             return jobController;
         }
 
-        /*
         private static IJobController CreateAutoQuestJobController(IDbContextFactory<MapDataContext> mapFactory, IDbContextFactory<DeviceControllerContext> deviceFactory, Instance instance, List<MultiPolygon> multiPolygons, short timezoneOffset)
         {
-            var timezone = instance.Data?.TimeZone;
-            short timezoneOffset = 0;
-            if (!string.IsNullOrEmpty(timezone) && _timeZoneService.TimeZones.ContainsKey(timezone))
-            {
-                var tzData = _timeZoneService.TimeZones[timezone];
-                timezoneOffset = instance.Data?.EnableDst ?? false
-                                            ? tzData.Dst
-                                            : tzData.Utc;
-            }
-            var jobController = new AutoInstanceController(mapFactory, deviceFactory, instance, multiPolygons, timezoneOffset);
+            var jobController = new AutoInstanceController(
+                mapFactory,
+                deviceFactory,
+                instance,
+                multiPolygons,
+                timezoneOffset
+            );
+            return jobController;
         }
-        */
+
+        private static IJobController CreateIvJobController(Instance instance, List<MultiPolygon> multiPolygons, IvList ivList)
+        {
+            var jobController = new IvInstanceController(
+                instance,
+                multiPolygons,
+                ivList.PokemonIds
+            );
+            return jobController;
+        }
 
         #endregion
     }

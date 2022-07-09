@@ -20,7 +20,7 @@
 
         public const string WebhooksRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Webhooks)}";
 
-        public const string UserRolesRole = nameof(Roles.SuperAdmin);
+        public const string UsersRole = nameof(Roles.SuperAdmin);
 
         public const string RoleManagerRole = nameof(Roles.SuperAdmin);
     }

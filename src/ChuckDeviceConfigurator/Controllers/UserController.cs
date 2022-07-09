@@ -8,15 +8,15 @@
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
 
-    [Authorize(Roles = RoleConsts.UserRolesRole)]
-    public class UserRolesController : Controller
+    [Authorize(Roles = RoleConsts.UsersRole)]
+    public class UserController : Controller
     {
-        private readonly ILogger<UserRolesController> _logger;
+        private readonly ILogger<UserController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public UserRolesController(
-            ILogger<UserRolesController> logger,
+        public UserController(
+            ILogger<UserController> logger,
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager)
         {
@@ -69,6 +69,7 @@
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Manage(List<ManageUserRolesViewModel> model, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
