@@ -2,6 +2,9 @@
 [![GitHub Release](https://img.shields.io/github/release/versx/ChuckDeviceController.svg)](https://github.com/versx/ChuckDeviceController/releases/)
 [![GitHub Contributors](https://img.shields.io/github/contributors/versx/ChuckDeviceController.svg)](https://github.com/versx/ChuckDeviceController/graphs/contributors/)
 [![Discord](https://img.shields.io/discord/552003258000998401.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/zZ9h9Xa)  
+
+![](https://raw.githubusercontent.com/versx/ChuckDeviceController/master/src/ChuckDeviceController/wwwroot/static/favicons/chuck.gif)
+
 # Chuck Device Controller  
 ChuckDeviceController is a C# based backend using Redis, ASP.NET Core, and EntityFramework Core to control and parse data from iOS devices running Pokemon Go.
 
@@ -115,13 +118,15 @@ View profiler results:
 }
 ```
 
-## TODO:
+## TODO
 - Finish MAD support
-- Token/IP whilelist auth
 - Environment variables
 - Webhooks don't currently implement the geofences property
 - Localization
 
 
-## Previews:  
-![image](https://user-images.githubusercontent.com/1327440/111721034-57e4b400-881c-11eb-97dc-22196ef9e25e.png)
+## Previews  
+![image](https://user-images.githubusercontent.com/1327440/112744187-a3047280-8f52-11eb-8de9-ebc8eae2d833.png)
+
+## Dedication  
+- In remembrance of [Chuckleslove](https://github.com/Chuckleslove) - rest in peace brother.  

@@ -634,6 +634,55 @@
         }
     }
 
+    public enum ConditionType
+    {
+        Unset = 0,
+        WithPokemonType = 1,
+        WithPokemonCategory = 2,
+        WithWeatherBoost = 3,
+        WithDailyCaptureBonus = 4,
+        WithDailySpinBonus = 5,
+        WithWinRaidStatus = 6,
+        WithRaidLevel = 7,
+        WithThrowType = 8,
+        WithWinGymBattleStatus = 9,
+        WithSuperEffectiveCharge = 10,
+        WithItem = 11,
+        WithUniquePokestop = 12,
+        WithQuestContext = 13,
+        WithThrowTypeInARow = 14,
+        WithCurveBall = 15,
+        WithBadgeType = 16,
+        WithPlayerLevel = 17,
+        WithWinBattleStatus = 18,
+        WithNewFriend = 19,
+        WithDaysInARow = 20,
+        WithUniquePokemon = 21,
+        WithNpcCombat = 22,
+        WithPvpCombat = 23,
+        WithLocation = 24,
+        WithDistance = 25,
+        WithPokemonAlignment = 26,
+        WithInvasionCharacter = 27,
+        WithBuddy = 28,
+        WithBuddyInterestingPoi = 29,
+        WithDailyBuddyAffection = 30,
+        WithPokemonLevel = 31,
+        WithSingleDay = 32,
+        WithUniquePokemonTeam = 33,
+        WithMaxCp = 34,
+        WithLuckyPokemon = 35,
+        WithLegendaryPokemon = 36,
+        WithTempEvoPokemon = 37,
+        WithGblRank = 38,
+        WithCatchesInARow = 39,
+        WithEncounterType = 40,
+        WithCombatType = 41,
+        WithGeotargetedPoi = 42,
+        WithItemType = 43,
+        WithRaidElapsedTime = 44,
+    }
+
     public class PokestopResult
     {
         public bool IsNewOrHasChanges { get; set; }

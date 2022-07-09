@@ -12,6 +12,7 @@
     using Chuck.Data.Factories;
     using Chuck.Data.Repositories;
 
+    // TODO: Create DI singleton service
     public class GeofenceController
     {
         #region Variables
