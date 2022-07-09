@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
-    using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
@@ -181,13 +180,12 @@
                         return null;
                     }
 
-                    // TODO: Lock _todayStops
                     if (_allStops.Count == 0)
                     {
                         return null;
                     }
 
-                    await CheckIfCompletedAsync(uuid);
+                    await CheckCompletionStatusAsync(uuid);
 
                     PokestopWithMode? pokestop = null;
                     Coordinate? lastCoord = null;
@@ -324,13 +322,7 @@
                             _logger.LogError($"[{Name}] [{uuid}] Failed to get account for device in advance");
                         }
 
-                        return new SwitchAccountTask
-                        {
-                            Area = Name,
-                            Action = DeviceActionType.SwitchAccount,
-                            MinimumLevel = MinimumLevel,
-                            MaximumLevel = MaximumLevel,
-                        };
+                        return GetSwitchAccountTask();
                     }
                     else if (delay >= DelayLogoutS)
                     {
@@ -363,7 +355,7 @@
                     // TODO: Lock _todayStopsAttempts
                     IncrementSpinAttempt(pokestop);
 
-                    await CheckIfCompletedAsync(uuid);
+                    await CheckCompletionStatusAsync(uuid);
 
                     // TODO: Lock _lastMode
                     var modeKey = accountUsername ?? uuid;
@@ -572,13 +564,14 @@
 
             if (_allStops.Count == 0)
             {
-                _logger.LogWarning($"[{Name}] Tried clearing quests but no pokestops.");
+                _logger.LogWarning($"[{Name}] Tried clearing quests but no pokestops with quests.");
                 return;
             }
 
             // Clear quests
-            _logger.LogInformation($"[{Name}] Clearing Pokestop Quests...");
             var pokestopIds = _allStops.Select(stop => stop.Pokestop.Id).ToList();
+            _logger.LogInformation($"[{Name}] Clearing Quests for {pokestopIds.Count:N0} Pokestops...");
+
             using (var context = _mapFactory.CreateDbContext())
             {
                 var pokestops = context.Pokestops.Where(pokestop => pokestopIds.Contains(pokestop.Id))
@@ -603,72 +596,10 @@
                     context.Update(pokestop);
                 });
                 await context.SaveChangesAsync();
+                _logger.LogInformation($"[{Name}] {pokestopIds.Count:N0} Pokestop Quests have been cleared");
             }
 
             await UpdateAsync();
-        }
-
-        private async Task<BootstrapTask> GetBootstrapTaskAsync()
-        {
-            var target = _bootstrapCellIds.LastOrDefault();
-            if (target == default)
-            {
-                return null;
-            }
-
-            _bootstrapCellIds.RemoveAt(_bootstrapCellIds.Count - 1);
-
-            var center = target.S2LatLngFromId();
-            var coord = new Coordinate(center.LatDegrees, center.LngDegrees);
-            var cellIds = center.GetLoadedS2CellIds();
-
-            // TODO: Lock _bootstrapCellIds
-            foreach (var cellId in cellIds)
-            {
-                var index = _bootstrapCellIds.IndexOf(cellId.Id);
-                if (index > 0)
-                {
-                    _bootstrapCellIds.RemoveAt(index);
-                }
-            }
-
-            if (_bootstrapCellIds.Count == 0)
-            {
-                // TODO: Lock _bootstrapCellIds
-                await BootstrapAsync();
-                if (_bootstrapCellIds.Count == 0)
-                {
-                    await UpdateAsync();
-                }
-            }
-
-            return new BootstrapTask
-            {
-                Area = Name,
-                Action = DeviceActionType.ScanRaid,
-                Latitude = coord.Latitude,
-                Longitude = coord.Longitude,
-                MinimumLevel = MinimumLevel,
-                MaximumLevel = MaximumLevel,
-            };
-        }
-
-        private QuestTask GetQuestTask(PokestopWithMode pokestop, double delay = 0)
-        {
-            return new QuestTask
-            {
-                Area = Name,
-                Action = DeviceActionType.ScanQuest,
-                DeployEgg = false,
-                Latitude = pokestop?.Pokestop?.Latitude ?? 0,
-                Longitude = pokestop?.Pokestop?.Longitude ?? 0,
-                Delay = delay,
-                MinimumLevel = MinimumLevel,
-                MaximumLevel = MaximumLevel,
-                QuestType = (pokestop?.IsAlternative ?? false)
-                    ? "ar"
-                    : "normal",
-            };
         }
 
         private (PokestopWithMode?, bool?) GetNextClosestPokestop(Coordinate lastCoord, string modeKey)
@@ -732,7 +663,7 @@
             return (closest, mode);
         }
 
-        private async Task CheckIfCompletedAsync(string uuid)
+        private async Task CheckCompletionStatusAsync(string uuid)
         {
             if (_todayStops.Count > 0)
             {
@@ -838,16 +769,16 @@
             }
         }
 
-        private void IncrementSpinAttempt(PokestopWithMode pokestop)
+        private void IncrementSpinAttempt(PokestopWithMode pokestop, byte amount = 1)
         {
             if (_todayStopsAttempts.ContainsKey(pokestop))
             {
                 var tries = _todayStopsAttempts[pokestop];
-                _todayStopsAttempts[pokestop] = Convert.ToByte(tries == byte.MaxValue ? 10 : tries + 1);
+                _todayStopsAttempts[pokestop] = Convert.ToByte(tries == byte.MaxValue ? 10 : tries + amount);
             }
             else
             {
-                _todayStopsAttempts.Add(pokestop, 1);
+                _todayStopsAttempts.Add(pokestop, amount);
             }
         }
 
@@ -857,6 +788,85 @@
             var timeLeft = DateTime.Today.AddDays(1).Subtract(localTime).TotalSeconds;
             var seconds = Math.Round(timeLeft);
             return (localTime, seconds);
+        }
+
+        #endregion
+
+        #region Task Creators
+
+        private async Task<BootstrapTask> GetBootstrapTaskAsync()
+        {
+            var target = _bootstrapCellIds.LastOrDefault();
+            if (target == default)
+            {
+                return null;
+            }
+
+            _bootstrapCellIds.Remove(target);
+            //_bootstrapCellIds.RemoveAt(_bootstrapCellIds.Count - 1);
+
+            var center = target.S2LatLngFromId();
+            var coord = new Coordinate(center.LatDegrees, center.LngDegrees);
+            var cellIds = center.GetLoadedS2CellIds();
+
+            // TODO: Lock _bootstrapCellIds
+            foreach (var cellId in cellIds)
+            {
+                var index = _bootstrapCellIds.IndexOf(cellId.Id);
+                if (index > 0)
+                {
+                    _bootstrapCellIds.RemoveAt(index);
+                }
+            }
+
+            if (_bootstrapCellIds.Count == 0)
+            {
+                // TODO: Lock _bootstrapCellIds
+                await BootstrapAsync();
+                if (_bootstrapCellIds.Count == 0)
+                {
+                    await UpdateAsync();
+                }
+            }
+
+            return new BootstrapTask
+            {
+                Area = Name,
+                Action = DeviceActionType.ScanRaid,
+                Latitude = coord.Latitude,
+                Longitude = coord.Longitude,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+            };
+        }
+
+        private QuestTask GetQuestTask(PokestopWithMode pokestop, double delay = 0)
+        {
+            return new QuestTask
+            {
+                Area = Name,
+                Action = DeviceActionType.ScanQuest,
+                DeployEgg = false,
+                Latitude = pokestop?.Pokestop?.Latitude ?? 0,
+                Longitude = pokestop?.Pokestop?.Longitude ?? 0,
+                Delay = delay,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+                QuestType = (pokestop?.IsAlternative ?? false)
+                    ? "ar"
+                    : "normal",
+            };
+        }
+
+        private SwitchAccountTask GetSwitchAccountTask()
+        {
+            return new SwitchAccountTask
+            {
+                Area = Name,
+                Action = DeviceActionType.SwitchAccount,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+            };
         }
 
         #endregion
