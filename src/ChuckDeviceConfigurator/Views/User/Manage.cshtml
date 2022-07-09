@@ -9,7 +9,7 @@
 
 <p>@Html.ValidationMessage("User", new { @class = "text-danger" })</p>
 
-<h4>Manage User @Model?.UserName</h4>
+<h4>Manage user account for @Model?.UserName</h4>
 <hr />
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -36,8 +36,7 @@
     <br />
     <div class="card">
         <div class="card-header">
-            <h2>Manage User Roles</h2>
-            Add/Remove Roles for User '@(ViewBag.UserName)'.
+            <b>Manage User Roles</b>
         </div>
         <div class="card-body">
             @for (var i = 0; i < Model.Roles.Count; i++)

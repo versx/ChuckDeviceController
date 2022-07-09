@@ -182,12 +182,12 @@
         {
             try
             {
-                if (_userManager.FindByNameAsync(model.UserName) != null)
+                if (await _userManager.FindByNameAsync(model.UserName) != null)
                 {
                     ModelState.AddModelError("User", $"User account by name '{model.UserName}' already exists, please choose a different username. It is also possible to use your email address as your username.");
                     return View(model);
                 }
-                if (_userManager.FindByEmailAsync(model.Email) != null)
+                if (await _userManager.FindByEmailAsync(model.Email) != null)
                 {
                     ModelState.AddModelError("User", $"User account with email '{model.Email}' already exists, please use a different email address.");
                     return View(model);
@@ -228,7 +228,8 @@
                 }
                 else
                 {
-                    var roleNames = model.Roles.Where(role => role.Selected).Select(role => role.RoleName);
+                    var roleNames = model.Roles.Where(role => role.Selected)
+                                               .Select(role => role.RoleName);
                     var rolesResult = await _userManager.AddToRolesAsync(user, roleNames);
                     if (!rolesResult.Succeeded)
                     {
