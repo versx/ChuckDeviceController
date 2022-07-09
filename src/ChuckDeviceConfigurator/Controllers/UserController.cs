@@ -25,6 +25,7 @@
             _userManager = userManager;
         }
 
+        // GET: UserController
         public async Task<IActionResult> Index()
         {
             var users = await _userManager.Users.ToListAsync();
@@ -36,13 +37,114 @@
                     UserId = user.Id,
                     Email = user.Email,
                     UserName = user.UserName,
-                    Roles = await GetUserRoles(user),
+                    Roles = await _userManager.GetRolesAsync(user),
                 };
                 userRolesViewModel.Add(viewModel);
             }
             return View(userRolesViewModel);
         }
 
+        // GET: UserController/Create
+        public IActionResult Create()
+        {
+            var roles = new List<ManageUserRolesViewModel>();
+            foreach (var role in _roleManager.Roles)
+            {
+                var userRolesViewModel = new ManageUserRolesViewModel
+                {
+                    RoleId = role.Id,
+                    RoleName = role.Name,
+                    Selected = false,
+                };
+                roles.Add(userRolesViewModel);
+            }
+            var model = new CreateUserViewModel
+            {
+                Roles = roles,
+            };
+            return View(model);
+        }
+
+        // POST: UserController/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateUserViewModel model)
+        {
+            try
+            {
+                if (await _userManager.FindByNameAsync(model.UserName) != null)
+                {
+                    ModelState.AddModelError("User", $"User account by name '{model.UserName}' already exists, please choose a different username. It is also possible to use your email address as your username.");
+                    return View(model);
+                }
+                if (await _userManager.FindByEmailAsync(model.Email) != null)
+                {
+                    ModelState.AddModelError("User", $"User account with email '{model.Email}' already exists, please use a different email address.");
+                    return View(model);
+                }
+                if (model.Password != model.ConfirmPassword)
+                {
+                    ModelState.AddModelError("User", $"Provided password and confirm password do not match.");
+                    return View(model);
+                }
+
+                var user = new ApplicationUser
+                {
+                    UserName = model.UserName,
+                    Email = model.Email,
+                };
+
+                var userResult = await _userManager.CreateAsync(user, model.Password);
+                if (!userResult.Succeeded)
+                {
+                    var errors = string.Join("\n", userResult.Errors.Select(err => err.Description));
+                    ModelState.AddModelError("User", errors);
+                    return View(model);
+                }
+
+                async Task AssignDefaultRegisteredRole(ApplicationUser user)
+                {
+                    await _userManager.AddToRoleAsync(user, Roles.Registered.ToString());
+                }
+
+                // TODO: Might need to send confirmation email so user can login, since we have non-confirmed
+                // accounts set unable to login unless confirmed.
+
+                // Assign the default registered user role if no roles specified so the user can manage
+                // their account at the very least until given more permissions/access by an Admin.
+                if (model.Roles.Count == 0)
+                {
+                    await AssignDefaultRegisteredRole(user);
+                }
+                else
+                {
+                    var roleNames = model.Roles.Where(role => role.Selected)
+                                               .Select(role => role.RoleName);
+                    var rolesResult = await _userManager.AddToRolesAsync(user, roleNames);
+                    if (!rolesResult.Succeeded)
+                    {
+                        var errors = string.Join("\n", rolesResult.Errors.Select(err => err.Description));
+                        _logger.LogError($"Failed to assign roles to user account '{model.UserName}'. Returned errors: {errors}");
+                    }
+
+                    // REVIEW: Might want to make this configurable, unsure at the moment
+                    if (!await _userManager.IsInRoleAsync(user, Roles.Registered.ToString()))
+                    {
+                        // User not assigned default registered role, assign it
+                        await AssignDefaultRegisteredRole(user);
+                    }
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                ModelState.AddModelError("User", $"Unknown error occurred while creating new user account.");
+                return View(model);
+            }
+        }
+
+        // GET: UserController/Manage?userId=123
         public async Task<IActionResult> Manage(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -75,6 +177,7 @@
             return View(model);
         }
 
+        // POST: UserController/Manage?userId=123
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Manage(ManageUserViewModel model, string userId)
@@ -159,104 +262,7 @@
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Create()
-        {
-            var roles = new List<ManageUserRolesViewModel>();
-            foreach (var role in _roleManager.Roles)
-            {
-                var userRolesViewModel = new ManageUserRolesViewModel
-                {
-                    RoleId = role.Id,
-                    RoleName = role.Name,
-                    Selected = false,
-                };
-                roles.Add(userRolesViewModel);
-            }
-            var model = new CreateUserViewModel
-            {
-                Roles = roles,
-            };
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateUserViewModel model)
-        {
-            try
-            {
-                if (await _userManager.FindByNameAsync(model.UserName) != null)
-                {
-                    ModelState.AddModelError("User", $"User account by name '{model.UserName}' already exists, please choose a different username. It is also possible to use your email address as your username.");
-                    return View(model);
-                }
-                if (await _userManager.FindByEmailAsync(model.Email) != null)
-                {
-                    ModelState.AddModelError("User", $"User account with email '{model.Email}' already exists, please use a different email address.");
-                    return View(model);
-                }
-                if (model.Password != model.ConfirmPassword)
-                {
-                    ModelState.AddModelError("User", $"Provided password and confirm password do not match.");
-                    return View(model);
-                }
-
-                var user = new ApplicationUser
-                {
-                    UserName = model.UserName,
-                    Email = model.Email,
-                };
-
-                var userResult = await _userManager.CreateAsync(user, model.Password);
-                if (!userResult.Succeeded)
-                {
-                    var errors = string.Join("\n", userResult.Errors.Select(err => err.Description));
-                    ModelState.AddModelError("User", errors);
-                    return View(model);
-                }
-
-                async Task AssignDefaultRegisteredRole(ApplicationUser user)
-                {
-                    await _userManager.AddToRoleAsync(user, Roles.Registered.ToString());
-                }
-
-                // TODO: Might need to send confirmation email so user can login, since we have non-confirmed
-                // accounts set unable to login unless confirmed.
-
-                // Assign the default registered user role if no roles specified so the user can manage
-                // their account at the very least until given more permissions/access by an Admin.
-                if (model.Roles.Count == 0)
-                {
-                    await AssignDefaultRegisteredRole(user);
-                }
-                else
-                {
-                    var roleNames = model.Roles.Where(role => role.Selected)
-                                               .Select(role => role.RoleName);
-                    var rolesResult = await _userManager.AddToRolesAsync(user, roleNames);
-                    if (!rolesResult.Succeeded)
-                    {
-                        var errors = string.Join("\n", rolesResult.Errors.Select(err => err.Description));
-                        _logger.LogError($"Failed to assign roles to user account '{model.UserName}'. Returned errors: {errors}");
-                    }
-
-                    // REVIEW: Might want to make this configurable, unsure at the moment
-                    if (!await _userManager.IsInRoleAsync(user, Roles.Registered.ToString()))
-                    {
-                        // User not assigned default registered role, assign it
-                        await AssignDefaultRegisteredRole(user);
-                    }
-                }
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                ModelState.AddModelError("User", $"Unknown error occurred while creating new user account.");
-                return View(model);
-            }
-        }
-
+        // GET: UserController/Delete?userId=123
         public async Task<IActionResult> Delete(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -269,6 +275,7 @@
             return View(user);
         }
 
+        // POST: UserController/Delete?userId=123
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Delete(ApplicationUser user, string userId)
@@ -287,6 +294,8 @@
                 var result = await _userManager.DeleteAsync(userAccount);
                 if (!result.Succeeded)
                 {
+                    var errors = string.Join("\n", result.Errors.Select(err => err.Description));
+                    ModelState.AddModelError("User", errors);
                     return View(userAccount);
                 }
 
@@ -297,11 +306,6 @@
                 ModelState.AddModelError("User", $"Unknown error occurred while deleting user account '{userId}'.");
                 return View(user);
             }
-        }
-
-        private async Task<List<string>> GetUserRoles(ApplicationUser user)
-        {
-            return new List<string>(await _userManager.GetRolesAsync(user));
         }
     }
 }

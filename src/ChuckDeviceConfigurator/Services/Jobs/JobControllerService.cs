@@ -22,6 +22,7 @@
         //private readonly IConfiguration _configuration;
         private readonly ITimeZoneService _timeZoneService;
         private readonly IGeofenceControllerService _geofenceService;
+        //private readonly IAssignmentControllerService _assignmentService;
 
         private readonly IDictionary<string, Device> _devices;
         private readonly IDictionary<string, IJobController> _instances;
@@ -56,6 +57,7 @@
             //IConfiguration configuration,
             ITimeZoneService timeZoneService,
             IGeofenceControllerService geofenceService)
+            //IAssignmentControllerService assignmentService)
         {
             _logger = logger;
             _deviceFactory = deviceFactory;
@@ -63,6 +65,7 @@
             //_configuration = configuration;
             _timeZoneService = timeZoneService;
             _geofenceService = geofenceService;
+            //_assignmentService = assignmentService;
 
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
@@ -248,7 +251,7 @@
             return "Error";
         }
 
-        public void ReloadAll()
+        public void ReloadAllInstances()
         {
             lock (_instancesLock)
             {
@@ -257,8 +260,7 @@
                     instanceController?.Reload();
                 }
             }
-
-            // TODO: Reload all assignments. _assignmentControllerService.Setup();
+            // TODO: _assignmentService.Reload();
         }
 
         public async Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName)
@@ -308,7 +310,7 @@
                 }
             }
 
-            // TODO: Reload all assignments. await _assignmentControllerService.Start();
+            // TODO: _assignmentService.Reload();
             await Task.CompletedTask;
         }
 
@@ -325,7 +327,7 @@
                     _devices.Add(device.Uuid, device);
                 }
             }
-            // TODO: Reload all assignments. await _assignmentControllerService.Start();
+            // TODO: _assignmentService.Reload();
         }
 
         public List<string> GetDeviceUuidsInInstance(string instanceName)
@@ -353,7 +355,8 @@
         public async Task RemoveDeviceAsync(Device device)
         {
             RemoveDevice(device.Uuid);
-            // TODO: Reload all assignments. _assignmentControllerService.Setup();
+
+            // TODO: _assignmentService.Reload();
             await Task.CompletedTask;
         }
 
@@ -368,7 +371,7 @@
                 }
                 _devices.Remove(uuid);
             }
-            // TODO: Reload all assignments. _assignmentControllerService.Setup();
+            // TODO: _assignmentService.Reload();
         }
 
         #endregion

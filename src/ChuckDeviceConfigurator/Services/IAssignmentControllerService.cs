@@ -8,6 +8,8 @@
 
         void Stop();
 
+        void Reload();
+
         void AddAssignment(Assignment assignment);
 
         void EditAssignment(uint oldAssignmentId, Assignment newAssignment);

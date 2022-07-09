@@ -50,12 +50,7 @@
 
         public void Start()
         {
-            // Get assignments
-            var assignments = GetAssignments();
-            lock (_assignmentsLock)
-            {
-                _assignments = assignments;
-            }
+            Reload();
 
             if (!_initialized)
             {
@@ -68,6 +63,16 @@
         public void Stop()
         {
             _timer.Stop();
+        }
+
+        public void Reload()
+        {
+            // Reload all available device assignments
+            var assignments = GetAssignments();
+            lock (_assignmentsLock)
+            {
+                _assignments = assignments;
+            }
         }
 
         public void AddAssignment(Assignment assignment)

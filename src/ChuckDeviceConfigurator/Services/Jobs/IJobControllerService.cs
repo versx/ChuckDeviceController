@@ -18,7 +18,7 @@
 
         Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName);
 
-        void ReloadAll();
+        void ReloadAllInstances();
 
         Task RemoveInstanceAsync(string instanceName);
 
