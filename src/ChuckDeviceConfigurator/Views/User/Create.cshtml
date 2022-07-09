@@ -26,12 +26,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="Password" class="control-label"></label>
-                <input asp-for="Password" class="form-control" />
+                <input asp-for="Password" type="password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="ConfirmPassword" class="control-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control" />
+                <input asp-for="ConfirmPassword" type="password" class="form-control" />
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
             <br />
@@ -40,18 +40,18 @@
                     <b>Roles</b>
                 </div>
                 <div class="card-body">
-                    @foreach (var role in Model.Roles)
+                    @for (var i = 0; i < Model?.Roles?.Count; i++)
                     {
                         <div class="form-check m-1">
-                            <input type="hidden" asp-for="@role.RoleId" />
-                            <input type="hidden" asp-for="@role.RoleName" />
-                            <input asp-for="@role.Selected" class="form-check-input" />
-                            <label class="form-check-label" asp-for="@role.Selected">
-                                @role.RoleName
+                            <input type="hidden" asp-for="@Model.Roles[i].RoleId" />
+                            <input type="hidden" asp-for="@Model.Roles[i].RoleName" />
+                            <input asp-for="@Model.Roles[i].Selected" class="form-check-input" />
+                            <label class="form-check-label" asp-for="@Model.Roles[i].Selected">
+                                @Model.Roles[i].RoleName
                             </label>
                         </div>
                     }
-                    <div asp-validation-summary="All" class="text-danger"></div>
+                    @*<div asp-validation-summary="All" class="text-danger"></div>*@
                 </div>
             </div>
             <div class="form-group">
