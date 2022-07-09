@@ -2,6 +2,7 @@
 {
     using Microsoft.EntityFrameworkCore;
 
+    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -11,6 +12,7 @@
 
         private readonly IDbContextFactory<DeviceControllerContext> _factory;
         private readonly ILogger<IAssignmentControllerService> _logger;
+        private readonly IJobControllerService _jobControllerService;
 
         private readonly object _assignmentsLock = new();
         private readonly System.Timers.Timer _timer;
@@ -20,21 +22,29 @@
 
         #endregion
 
+        #region Constructor
+
         public AssignmentControllerService(
             ILogger<IAssignmentControllerService> logger,
-            IDbContextFactory<DeviceControllerContext> factory)
+            IDbContextFactory<DeviceControllerContext> factory,
+            IJobControllerService jobControllerService)
         {
             _logger = logger;
             _factory = factory;
+            _jobControllerService = jobControllerService;
 
             _lastUpdated = -2;
             _assignments = new List<Assignment>();
-            _timer = new System.Timers.Timer();
-            _timer.Interval = 5000;
+            _timer = new System.Timers.Timer
+            {
+                Interval = 5000,
+            };
             _timer.Elapsed += async (sender, e) => await CheckAssignments();
 
             Start();
         }
+
+        #endregion
 
         #region Public Methods
 
@@ -112,7 +122,7 @@
             }
             foreach (var assignment in assignments)
             {
-                if (assignment.Enabled && assignment.Time != 0 && now > assignment.Time && _lastUpdated < assignment.Time)
+                if (assignment.Enabled && assignment.Time != 0 && now >= assignment.Time && _lastUpdated < assignment.Time)
                 {
                     await TriggerAssignment(assignment, string.Empty);
                 }
@@ -132,7 +142,8 @@
                 return;
             }
 
-            using (var context = _factory.CreateDbContext())
+            var devicesToUpdate = new List<Device>();
+            //using (var context = _factory.CreateDbContext())
             {
                 foreach (var device in devices)
                 {
@@ -144,15 +155,32 @@
                     )
                     {
                         _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
-                        // TODO: await _jobControllerService.RemoveDevice(device);
+                        
+                        //_jobControllerService.RemoveDevice(device.Uuid);
                         device.InstanceName = assignment.InstanceName;
-                        context.Update(device);
+                        //context.Update(device);
+
                         // TODO: Get list of devices and save changes before 
-                        // TODO: _jobControllerService.AddDevice(device);
+                        //_jobControllerService.AddDevice(device);
+
+                        devicesToUpdate.Add(device);
                     }
                 }
 
+                //await context.SaveChangesAsync();
+            }
+
+            using (var context = _factory.CreateDbContext())
+            {
+                // Save/update all device's new assigned instance at once
+                context.UpdateRange(devicesToUpdate);
                 await context.SaveChangesAsync();
+            }
+
+            // Reload all triggered devices
+            foreach (var device in devicesToUpdate)
+            {
+                _jobControllerService.ReloadDevice(device, device.Uuid);
             }
         }
 
