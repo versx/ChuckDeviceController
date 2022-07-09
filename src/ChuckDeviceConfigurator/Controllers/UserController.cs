@@ -95,7 +95,7 @@
             return RedirectToAction("Index");
         }
 
-        public ActionResult Create()
+        public IActionResult Create()
         {
             var roles = new List<ManageUserRolesViewModel>();
             foreach (var role in _roleManager.Roles)
@@ -117,7 +117,7 @@
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(CreateUserViewModel model)
+        public async Task<IActionResult> Create(CreateUserViewModel model)
         {
             try
             {
