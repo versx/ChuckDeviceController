@@ -52,23 +52,26 @@
                 return View("NotFound");
             }
 
-            ViewBag.userId = userId;
-            ViewBag.UserName = user.UserName;
             var model = new ManageUserViewModel
             {
                 UserName = user.UserName,
                 Email = user.Email,
             };
+
+            var roles = await _userManager.GetRolesAsync(user);
             foreach (var role in _roleManager.Roles)
             {
                 var userRolesViewModel = new ManageUserRolesViewModel
                 {
                     RoleId = role.Id,
                     RoleName = role.Name,
-                    Selected = false,// TODO: Fix "This MySqlConnection is already in use" await _userManager.IsInRoleAsync(user, role.Name),
+                    Selected = roles.Contains(role.Name),
                 };
                 model.Roles.Add(userRolesViewModel);
             }
+
+            ViewBag.userId = userId;
+            ViewBag.UserName = user.UserName;
             return View(model);
         }
 
