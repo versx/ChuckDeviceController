@@ -27,7 +27,11 @@
                 <td>@user.Email</td>
                 <td>@string.Join(", ", user.Roles.ToList())</td>
                 <td>
-                    <a class="btn btn-primary" asp-controller="User" asp-action="Manage" asp-route-userId="@user.UserId">Manage Roles</a>
+                    <a class="btn btn-primary" asp-controller="User" asp-action="Manage" asp-route-userId="@user.UserId">Manage</a>
+                    @if (user.UserName != "root")
+                    {
+                        <a class="btn btn-danger" asp-controller="User" asp-action="Delete" asp-route-userId="@user.UserId">Delete</a>
+                    }
                 </td>
             </tr>
         }

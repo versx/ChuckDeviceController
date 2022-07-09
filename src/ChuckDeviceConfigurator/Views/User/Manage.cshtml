@@ -1,33 +1,61 @@
 ﻿@using ChuckDeviceConfigurator.ViewModels
-@model List<ManageUserRolesViewModel>
+@model ManageUserViewModel
 @{
-    ViewData["Title"] = "Manage";
+    ViewData["Title"] = "Manage User " + Model?.UserName;
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
+<h1>Manage User @Model?.UserName</h1>
+
+<p>@Html.ValidationMessage("User", new { @class = "text-danger" })</p>
+
+<h4>Manage User @Model?.UserName</h4>
+<hr />
 <form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group">
+        <label asp-for="UserName" class="control-label"></label>
+        <input asp-for="UserName" class="form-control" maxlength="255" readonly />
+        <span asp-validation-for="UserName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Email" class="control-label"></label>
+        <input asp-for="Email" class="form-control" maxlength="255" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Password" class="control-label"></label>
+        <input asp-for="Password" type="password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="ConfirmPassword" class="control-label"></label>
+        <input asp-for="ConfirmPassword" type="password" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+    <br />
     <div class="card">
         <div class="card-header">
             <h2>Manage User Roles</h2>
             Add/Remove Roles for User '@(ViewBag.UserName)'.
         </div>
         <div class="card-body">
-            @for (var i = 0; i < Model.Count; i++)
+            @for (var i = 0; i < Model.Roles.Count; i++)
             {
                 <div class="form-check m-1">
-                    <input type="hidden" asp-for="@Model[i].RoleId" />
-                    <input type="hidden" asp-for="@Model[i].RoleName" />
-                    <input asp-for="@Model[i].Selected" class="form-check-input" />
-                    <label class="form-check-label" asp-for="@Model[i].Selected">
-                        @Model[i].RoleName
+                    <input type="hidden" asp-for="@Model.Roles[i].RoleId" />
+                    <input type="hidden" asp-for="@Model.Roles[i].RoleName" />
+                    <input asp-for="@Model.Roles[i].Selected" class="form-check-input" />
+                    <label class="form-check-label" asp-for="@Model.Roles[i].Selected">
+                        @Model.Roles[i].RoleName
                     </label>
                 </div>
             }
-            <div asp-validation-summary="All" class="text-danger"></div>
         </div>
         <div class="card-footer">
             <input type="submit" value="Update" class="btn btn-primary"
                    style="width:auto" />
-            <a asp-action="EditUser" asp-route-id="@ViewBag.userId"
+            <a asp-action="Index" asp-route-id="@ViewBag.userId"
                class="btn btn-primary" style="width:auto">Cancel</a>
         </div>
     </div>
