@@ -60,7 +60,7 @@
             _logger = logger;
             _deviceFactory = deviceFactory;
             _mapFactory = mapFactory;
-            _configuration = configuration;
+            //_configuration = configuration;
             _timeZoneService = timeZoneService;
             _geofenceService = geofenceService;
 

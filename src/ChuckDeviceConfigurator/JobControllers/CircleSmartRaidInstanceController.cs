@@ -88,13 +88,14 @@
             _smartRaidGymsInPoint = new Dictionary<Coordinate, List<string>>();
             _smartRaidPointsUpdated = new Dictionary<Coordinate, ulong>();
 
+            // Load/build gyms list for smart raid cache
             LoadGymsAsync();
 
             _timer = new System.Timers.Timer
             {
                 Interval = 30 * 1000, // 30 second interval
             };
-            _timer.Elapsed += async (sender, e) => await RaidUpdateHandlerAsync();
+            _timer.Elapsed += async (sender, e) => await UpdateGymInfoAsync();
             _timer.Start();
         }
 
@@ -108,10 +109,12 @@
             if (coord == null)
             {
                 // Unable to retrieve coordinate for next gym to check
+                _logger.LogWarning($"[{Name}] [{uuid}] Failed to retrieve gym coordinates for next job task.");
                 return null;
             }
 
-            UpdateGymStats();
+            // Update smart raid statistics for Dashboard status
+            UpdateStats();
 
             var task = new CircleTask
             {
@@ -151,6 +154,7 @@
             _smartRaidGymsInPoint.Clear();
             _smartRaidPointsUpdated.Clear();
 
+            // Load/gym gyms list for smart raid cache
             LoadGymsAsync();
         }
 
@@ -168,6 +172,14 @@
 
         private async void LoadGymsAsync()
         {
+            // Instead of running a query for each coordinate,
+            // retrieve all gyms from the database and filter which
+            // are in the S2 cell. _Should increase SQL performance._
+            //
+            // Benchmark - (query all vs individual)
+            // All: 0.157 0.1368 0.1696 vs Individual: 0.9209 0.9139 0.9386
+            // Roughly about 6 times faster.
+            var allGyms = await GetAllGyms();
             foreach (var coord in Coordinates)
             {
                 var latlng = S2LatLng.FromDegrees(coord.Latitude, coord.Longitude);
@@ -176,7 +188,9 @@
                                     .ToList();
                 try
                 {
-                    var gyms = await GetGymsByCellIdsAsync(cellIds);
+                    //var gyms = await GetGymsByCellIdsAsync(cellIds);
+                    var gyms = allGyms.Where(gym => cellIds.Contains(gym.CellId))
+                                      .ToList();
                     var gymIds = gyms.Select(gym => gym.Id).ToList();
                     _smartRaidGymsInPoint[coord] = gymIds;
                     _smartRaidPointsUpdated[coord] = 0;
@@ -185,6 +199,9 @@
                     {
                         if (!_smartRaidGyms.ContainsKey(gym.Id) || _smartRaidGyms[gym.Id] == null)
                         {
+                            // REVIEW: Shoot, when did .NET allow setting dictionary value without
+                            // adding key to dictionary first and just using key index.
+                            // :thinking: Finally! <3
                             _smartRaidGyms[gym.Id] = gym;
                         }
                     }
@@ -204,12 +221,15 @@
             var noBoss = new List<SmartRaidGym>();
             var now = DateTime.UtcNow.ToTotalSeconds();
 
+            // Loop through gym/raid list for specified coordinates
             foreach (var (point, gymIds) in _smartRaidGymsInPoint)
             {
+                // Ch
                 var updated = _smartRaidPointsUpdated[point];
                 var shouldUpdateEgg = updated == 0 || now >= updated + IgnoreTimeEggS;
                 var shouldUpdateBoss = updated == 0 || now >= updated + IgnoreTimeBossS;
 
+                // Loop through gyms within proximity of gym coordinates
                 foreach (var gymId in gymIds)
                 {
                     if (!_smartRaidGyms.ContainsKey(gymId))
@@ -291,10 +311,20 @@
             return coord;
         }
 
-        private async Task RaidUpdateHandlerAsync()
+        private async Task UpdateGymInfoAsync()
         {
+            // Instead of running a query for all gyms and filtering,
+            // retrieve all gyms from the database and filter which
+            // are gym id matches. _Should increase SQL performance._
+            //
+            // Benchmark - (query all vs individual)
+            // All: 0.0216 0.0188 0.0202 vs Individual: 0.071 0.0648 0.06
+            // Roughly about 3-4 times faster. Although it's pretty much
+            // the same logic. :thinking:
             var gymIds = _smartRaidGyms.Keys.ToList();
-            var gyms = await GetGymsByIdsAsync(gymIds);
+            //var gyms = await GetGymsByIdsAsync(gymIds);
+            var allGyms = await GetAllGyms();
+            var gyms = allGyms.Where(gym => gymIds.Contains(gym.Id)).ToList();
             if (gyms == null)
             {
                 // Failed to get gyms by ids
@@ -303,21 +333,25 @@
                 return;
             }
 
+            // Retrieve and sync all gyms/gym info from the database that match
+            // the gym ids from the smart raid gyms cache.
             foreach (var gym in gyms)
             {
                 _smartRaidGyms[gym.Id] = gym;
             }
         }
 
-        private void UpdateGymStats()
+        private void UpdateStats()
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             lock (_statsLock)
             {
+                // Set start date if not set already
                 if (_startDate == 0)
                 {
                     _startDate = now;
                 }
+                // If count is at it's maximum value, reset to 0
                 if (_count == ulong.MaxValue)
                 {
                     _count = 0;
@@ -325,6 +359,7 @@
                 }
                 else
                 {
+                    // Increment gym stat count
                     _count++;
                 }
             }
@@ -334,6 +369,16 @@
 
         #region Database Helpers
 
+        private async Task<List<Gym>> GetAllGyms()
+        {
+            using (var context = _factory.CreateDbContext())
+            {
+                var gyms = context.Gyms.ToList();
+                return await Task.FromResult(gyms);
+            }
+        }
+
+        /*
         private async Task<List<Gym>> GetGymsByIdsAsync(List<string> gymIds)
         {
             using (var context = _factory.CreateDbContext())
@@ -351,6 +396,7 @@
                 return await Task.FromResult(gyms);
             }
         }
+        */
 
         #endregion
     }
