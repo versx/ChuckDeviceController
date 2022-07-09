@@ -160,27 +160,15 @@
                     )
                     {
                         _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
-                        
-                        //_jobControllerService.RemoveDevice(device.Uuid);
+
                         device.InstanceName = assignment.InstanceName;
-                        //context.Update(device);
-
-                        // TODO: Get list of devices and save changes before 
-                        //_jobControllerService.AddDevice(device);
-
                         devicesToUpdate.Add(device);
                     }
                 }
-
-                //await context.SaveChangesAsync();
             }
 
-            using (var context = _factory.CreateDbContext())
-            {
-                // Save/update all device's new assigned instance at once
-                context.UpdateRange(devicesToUpdate);
-                await context.SaveChangesAsync();
-            }
+            // Save/update all device's new assigned instance at once
+            await SaveDevicesAsync(devicesToUpdate);
 
             // Reload all triggered devices
             foreach (var device in devicesToUpdate)
@@ -228,6 +216,15 @@
                 _logger.LogError($"Error: {ex}");
             }
             return devices;
+        }
+
+        private async Task SaveDevicesAsync(List<Device> devices)
+        {
+            using (var context = _factory.CreateDbContext())
+            {
+                context.UpdateRange(devices);
+                await context.SaveChangesAsync();
+            }
         }
 
         private List<Assignment> GetAssignments()
