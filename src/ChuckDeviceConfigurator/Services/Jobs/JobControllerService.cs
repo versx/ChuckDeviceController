@@ -273,12 +273,15 @@
             var oldInstance = _instances[oldInstanceName];
             if (oldInstance != null)
             {
-                foreach (var (uuid, device) in _devices)
+                lock (_devicesLock)
                 {
-                    if (string.Compare(device.InstanceName, oldInstance.Name, true) == 0)
+                    foreach (var (uuid, device) in _devices)
                     {
-                        device.InstanceName = newInstance.Name;
-                        _devices[uuid] = device;
+                        if (string.Compare(device.InstanceName, oldInstance.Name, true) == 0)
+                        {
+                            device.InstanceName = newInstance.Name;
+                            _devices[uuid] = device;
+                        }
                     }
                 }
             }
@@ -296,10 +299,13 @@
                 _instances.Remove(instanceName);
             }
 
-            var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, instanceName, true) == 0);
-            foreach (var device in devices)
+            lock (_devicesLock)
             {
-                _devices[device.Key] = null;
+                var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, instanceName, true) == 0);
+                foreach (var device in devices)
+                {
+                    _devices[device.Key] = null;
+                }
             }
 
             // TODO: Reload all assignments. await _assignmentControllerService.Start();

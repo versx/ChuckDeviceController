@@ -124,21 +124,14 @@
                 return View();
             }
 
-            var accountsInUse = _context.Devices.ToList()
-                                                .Select(device => device.AccountUsername)
+            var accountsInUse = _context.Devices.Select(device => device.AccountUsername)
                                                 .ToList();
             // Filter accounts that are not used by devices unless this device we are editing
             var accounts = _context.Accounts.Where(account => !accountsInUse.Contains(account.Username) || device.AccountUsername == account.Username)
                                             .ToList();
-            var selectItemAccounts = accounts.Select(account =>
-                new SelectListItem(account.Username, account.Username, string.Compare(account.Username, device.AccountUsername, true) == 0))
-                .ToList();
-            var selectedAccount = accounts.FirstOrDefault(account => string.Compare(account.Username, device.AccountUsername, true) == 0);
             var instances = _context.Instances.ToList();
-            var instanceSelectItems = instances.Select(inst => new SelectListItem(inst.Name, inst.Name, inst.Name == device.InstanceName))
-                                               .ToList();
             ViewBag.Instances = new SelectList(instances, "Name", "Name");
-            ViewBag.Accounts = new SelectList(selectItemAccounts, "Username", "Username");
+            ViewBag.Accounts = new SelectList(accounts, "Username", "Username");
             return View(device);
         }
 
@@ -159,23 +152,21 @@
 
                 var instanceName = Convert.ToString(collection["InstanceName"]);
                 var accountUsername = Convert.ToString(collection["AccountUsername"]);
+
                 // Check if device is not already assigned to instance before updating in database
-                if (device.InstanceName != instanceName || device.AccountUsername != accountUsername)
+                if (device.InstanceName != instanceName)
                 {
-                    if (device.InstanceName != instanceName)
-                    {
-                        device.InstanceName = instanceName;
-                    }
-                    if (device.AccountUsername != accountUsername)
-                    {
-                        //device.AccountUsername = accountUsername;
-
-                        // TODO: If assigned account for device changes, force device to logout/switch accounts
-                    }
-
-                    _context.Devices.Update(device);
-                    await _context.SaveChangesAsync();
+                    device.InstanceName = instanceName;
                 }
+
+                // TODO: If assigned account for device changes, force device to logout/switch accounts
+                if (device.AccountUsername != accountUsername)
+                {
+                    device.AccountUsername = accountUsername;
+                }
+
+                _context.Devices.Update(device);
+                await _context.SaveChangesAsync();
 
                 _jobControllerService.ReloadDevice(device, id);
 
