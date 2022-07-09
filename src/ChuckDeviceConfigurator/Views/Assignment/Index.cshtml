@@ -1,4 +1,5 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
+﻿@using ChuckDeviceConfigurator.Utilities;
+@using ChuckDeviceConfigurator.ViewModels
 @using ChuckDeviceController.Data.Entities
 @model ViewModelsModel<Assignment>
 @{
@@ -64,7 +65,7 @@
                     @Html.DisplayFor(modelItem => item.Date)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Time)
+                    @Utils.FormatAssignmentTime(item.Time);
                 </td>
                 <td>
                     @(item.Enabled ? "Yes" : "No")

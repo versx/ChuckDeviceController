@@ -34,22 +34,17 @@
         }
 
         // GET: InstanceController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
             var instances = _context.Instances.ToList();
             var devices = _context.Devices.ToList();
-            instances.ForEach(async instance =>
+            foreach (var instance in instances)
             {
-                devices.ForEach(device =>
-                {
-                    if (device.InstanceName == instance.Name)
-                    {
-                        instance.DeviceCount++;
-                    }
-                });
+                var deviceCount = devices.Count(device => device.InstanceName == instance.Name);
+                instance.DeviceCount += deviceCount;
                 var status = await _jobControllerService.GetStatusAsync(instance);
                 instance.Status = status;
-            });
+            }
             var model = new ViewModelsModel<Instance>
             {
                 Items = instances,
