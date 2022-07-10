@@ -90,6 +90,7 @@
             }
             catch
             {
+                ModelState.AddModelError("DeviceGroup", $"Unknown error occurred while creating new device group.");
                 return View();
             }
         }
@@ -186,7 +187,7 @@
                     return View();
                 }
 
-                // Delete device from database
+                // Delete device group from database
                 _context.DeviceGroups.Remove(deviceGroup);
                 await _context.SaveChangesAsync();
 

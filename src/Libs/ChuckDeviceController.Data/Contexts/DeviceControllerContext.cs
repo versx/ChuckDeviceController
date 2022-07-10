@@ -20,7 +20,7 @@
 
         public DbSet<Assignment> Assignments { get; set; }
 
-        // TODO: AssignmentGroups
+        public DbSet<AssignmentGroup> AssignmentGroups { get; set; }
 
         public DbSet<Device> Devices { get; set; }
 
@@ -36,6 +36,10 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<AssignmentGroup>()
+                        .Property(p => p.AssignmentIds)
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
+
             modelBuilder.Entity<DeviceGroup>()
                         .Property(p => p.Devices)
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());

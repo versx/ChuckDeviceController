@@ -11,6 +11,9 @@
         [DisplayName("Assignments")]
         public uint Assignments { get; set; }
 
+        [DisplayName("Assignment Groups")]
+        public uint AssignmentGroups { get; set; }
+
         [DisplayName("Devices")]
         public uint Devices { get; set; }
 

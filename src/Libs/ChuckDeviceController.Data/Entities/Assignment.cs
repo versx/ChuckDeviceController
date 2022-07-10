@@ -27,7 +27,7 @@
         public string? SourceInstanceName { get; set; }
 
         [
-            DisplayName("Device Uuid"),
+            DisplayName("Device"),
             Column("device_uuid"),
         ]
         public string? DeviceUuid { get; set; }

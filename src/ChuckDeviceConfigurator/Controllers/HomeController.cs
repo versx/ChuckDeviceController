@@ -36,6 +36,7 @@
             {
                 Accounts = (uint)_deviceContext.Accounts.Count(),
                 Assignments = (uint)_deviceContext.Assignments.Count(),
+                AssignmentGroups = (uint)_deviceContext.AssignmentGroups.Count(),
                 Devices = (uint)_deviceContext.Devices.Count(),
                 DeviceGroups = (uint)_deviceContext.DeviceGroups.Count(),
                 Geofences = (uint)_deviceContext.Geofences.Count(),

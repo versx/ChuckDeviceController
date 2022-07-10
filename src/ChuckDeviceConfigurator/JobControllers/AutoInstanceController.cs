@@ -393,7 +393,15 @@
 
                     // TODO: Lock _allStops
                     var ids = _allStops.Select(x => x.Pokestop.Id).ToList();
+
+                    // TODO: Remove debug code
+                    var stopwatch = new System.Diagnostics.Stopwatch();
+                    stopwatch.Start();
                     var currentCountDb = await GetPokestopQuestCountAsync(ids, QuestMode);
+                    stopwatch.Stop();
+                    var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+                    _logger.LogInformation($"Took {totalSeconds}s");
+
                     // TODO: Lock _allStops
                     var maxCount = _allStops.Count;
                     var currentCount = maxCount - _todayStops.Count;
@@ -948,7 +956,7 @@
                 for (var i = 0; i < count; i++)
                 {
                     var start = 10000 * i;
-                    var end = Math.Min(10000 * (i + 1) - 1, pokestopIds.Count - 1);
+                    var end = Math.Max(10000 * i, pokestopIds.Count - 1);
                     var splice = pokestopIds.GetRange(start, end);
                     var spliceResult = await GetPokestopsByIdsAsync(splice);
                     if (spliceResult != null)
@@ -969,7 +977,6 @@
                 var pokestops = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id)).ToList();
                 return pokestops;
             }
-            //return new List<Pokestop>();
         }
 
         private async Task<List<Pokestop>> GetPokestopsInBoundsAsync(BoundingBox bbox)
@@ -989,6 +996,7 @@
 
         private async Task<ulong> GetPokestopQuestCountAsync(List<string> pokestopIds, QuestMode mode)
         {
+            /*
             if (pokestopIds.Count > 10000)
             {
                 var result = 0ul;
@@ -996,13 +1004,14 @@
                 for (var i = 0; i < count; i++)
                 {
                     var start = 10000 * i;
-                    var end = Math.Min(10000 * (i + 1) - 1, pokestopIds.Count - 1);
+                    var end = Math.Max(10000 * i, pokestopIds.Count - 1);
                     var splice = pokestopIds.GetRange(start, end);
                     var spliceResult = await GetPokestopQuestCountAsync(splice, mode);
                     result += spliceResult;
                 }
                 return result;
             }
+            */
 
             using (var context = _mapFactory.CreateDbContext())
             {
