@@ -57,7 +57,7 @@
             //IConfiguration configuration,
             ITimeZoneService timeZoneService,
             IGeofenceControllerService geofenceService)
-            //IAssignmentControllerService assignmentService)
+        //IAssignmentControllerService assignmentService)
         {
             _logger = logger;
             _deviceFactory = deviceFactory;
@@ -265,7 +265,8 @@
 
         public async Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName)
         {
-            // TODO: Lock _instances
+            lock (_instancesLock)
+            {
                 if (!_instances.ContainsKey(oldInstanceName))
                 {
                     _logger.LogError($"[{oldInstanceName}] Instance does not exist in instance cache, skipping instance reload...");
@@ -273,22 +274,20 @@
                 }
 
                 var oldInstance = _instances[oldInstanceName];
-            if (oldInstance != null)
-            {
-                lock (_devicesLock)
+                if (oldInstance != null)
                 {
-                    foreach (var (uuid, device) in _devices)
+                    var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, oldInstance.Name, true) == 0);
+                    foreach (var (uuid, device) in devices)
                     {
-                        if (string.Compare(device.InstanceName, oldInstance.Name, true) == 0)
-                        {
-                            device.InstanceName = newInstance.Name;
-                            _devices[uuid] = device;
-                        }
+                        device.InstanceName = newInstance.Name;
+                        _devices[uuid] = device;
                     }
+                    _instances[oldInstanceName]?.Stop();
+                    _instances[oldInstanceName] = null;
                 }
             }
 
-            await RemoveInstanceAsync(oldInstanceName);
+            //await RemoveInstanceAsync(oldInstanceName);
             await AddInstanceAsync(newInstance);
         }
 
