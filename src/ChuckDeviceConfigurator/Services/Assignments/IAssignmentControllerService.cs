@@ -17,5 +17,7 @@
         void DeleteAssignment(uint oldAssignmentId);
 
         void DeleteAssignment(Assignment assignment);
+
+        Task InstanceControllerComplete(string name);
     }
 }

@@ -57,7 +57,7 @@
             //IConfiguration configuration,
             ITimeZoneService timeZoneService,
             IGeofenceControllerService geofenceService)
-        //IAssignmentControllerService assignmentService)
+            //IAssignmentControllerService assignmentService)
         {
             _logger = logger;
             _deviceFactory = deviceFactory;
@@ -168,6 +168,8 @@
                             var timeZone = instance.Data?.TimeZone;
                             var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
                             jobController = CreateAutoQuestJobController(_mapFactory, _deviceFactory, instance, multiPolygons, timeZoneOffset);
+                            // TODO: Implement AutoInstanceController.InstanceComplete event
+                            // ((AutoInstanceController)jobController).InstanceComplete += (sender, e) => _assignmentService.InstanceControllerDone(e.InstanceName);
                             break;
                         case InstanceType.Bootstrap:
                             jobController = new BootstrapInstanceController(instance, coordinates);
@@ -176,7 +178,7 @@
                             jobController = new TthFinderInstanceController(instance, coordinates);
                             break;
                         case InstanceType.PokemonIV:
-                            var ivList = await GetIvListAsync(instance.Data?.IvList);
+                            var ivList = await GetIvListAsync(instance.Data?.IvList ?? null);
                             if (ivList == null)
                             {
                                 _logger.LogError($"Failed to fetch IV list for instance {instance.Name}, skipping controller instantiation...");
@@ -390,11 +392,11 @@
             }
         }
 
-        private async Task<IvList> GetIvListAsync(string name)
+        private async Task<IvList> GetIvListAsync(string? name)
         {
             if (string.IsNullOrEmpty(name))
             {
-                _logger.LogError($"IV list name for IV instance is null, skipping controller instantiation...");
+                _logger.LogError($"IV list name for IV instance is null, skipping job controller instantiation...");
                 return null;
             }
 
@@ -405,23 +407,28 @@
             }
         }
 
-        private short ConvertTimeZoneToOffset(string timezone, bool enableDst = false)
+        private short ConvertTimeZoneToOffset(string? timeZone = null, bool enableDst = false)
         {
-            short timezoneOffset = 0;
-            // Check if timezone is set, if not return UTC offset
-            if (string.IsNullOrEmpty(timezone))
+            short timeZoneOffset = 0;
+            // Check if time zone is set
+            if (string.IsNullOrEmpty(timeZone))
             {
-                return timezoneOffset;
+                // If no time zone set, return UTC offset
+                return timeZoneOffset;
             }
 
-            if (!string.IsNullOrEmpty(timezone) && _timeZoneService.TimeZones.ContainsKey(timezone))
+            // Check if time zone service contains out time zone name
+            if (!_timeZoneService.TimeZones.ContainsKey(timeZone))
             {
-                var tzData = _timeZoneService.TimeZones[timezone];
-                timezoneOffset = enableDst
-                    ? tzData.Dst
-                    : tzData.Utc;
+                // If it does not, return UTC offset
+                return timeZoneOffset;
             }
-            return timezoneOffset;
+
+            var tzData = _timeZoneService.TimeZones[timeZone];
+            timeZoneOffset = enableDst
+                ? tzData.Dst
+                : tzData.Utc;
+            return timeZoneOffset;
         }
 
         #endregion

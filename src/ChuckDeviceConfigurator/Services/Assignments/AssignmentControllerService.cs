@@ -36,7 +36,7 @@
             _lastUpdated = -2;
             _assignments = new List<Assignment>();
             _timer = new System.Timers.Timer(5 * 1000); // 5 second interval
-            _timer.Elapsed += async (sender, e) => await CheckAssignments();
+            _timer.Elapsed += async (sender, e) => await CheckAssignmentsAsync();
         }
 
         #endregion
@@ -98,11 +98,23 @@
             }
         }
 
+        public async Task InstanceControllerComplete(string name)
+        {
+            foreach (var assignment in _assignments)
+            {
+                // Only trigger enabled on-complete assignments
+                if (assignment.Enabled && assignment.Time == 0)
+                {
+                    await TriggerAssignmentAsync(assignment, name);
+                }
+            }
+        }
+
         #endregion
 
         #region Private Methods
 
-        private async Task CheckAssignments()
+        private async Task CheckAssignmentsAsync()
         {
             var dateNow = DateTime.Now;
             var now = dateNow.Hour * 3600 + dateNow.Minute * 60 + dateNow.Second;
@@ -124,13 +136,13 @@
             {
                 if (assignment.Enabled && assignment.Time != 0 && now >= assignment.Time && _lastUpdated < assignment.Time)
                 {
-                    await TriggerAssignment(assignment, string.Empty);
+                    await TriggerAssignmentAsync(assignment, string.Empty);
                 }
             }
             _lastUpdated = now;
         }
 
-        private async Task TriggerAssignment(Assignment assignment, string instanceName, bool force = false)
+        private async Task TriggerAssignmentAsync(Assignment assignment, string instanceName, bool force = false)
         {
             if (!(force || assignment.Enabled && (assignment.Date == null || assignment.Date == DateTime.UtcNow)))
                 return;

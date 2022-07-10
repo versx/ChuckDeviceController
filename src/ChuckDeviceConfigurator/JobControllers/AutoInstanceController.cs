@@ -92,9 +92,9 @@
         #region Events
 
         public event EventHandler<AutoInstanceCompleteEventArgs> InstanceComplete;
-        private void OnInstanceComplete(string instanceName, ulong completionTimestamp)
+        private void OnInstanceComplete(string instanceName, ulong completionTimestamp, AutoInstanceType instanceType = AutoInstanceType.Quest)
         {
-            InstanceComplete?.Invoke(this, new AutoInstanceCompleteEventArgs(instanceName, completionTimestamp));
+            InstanceComplete?.Invoke(this, new AutoInstanceCompleteEventArgs(instanceName, completionTimestamp, instanceType));
         }
 
         #endregion
@@ -1037,10 +1037,18 @@
 
         public ulong CompletionTimestamp { get; }
 
+        public AutoInstanceType InstanceType { get; }
+
         public AutoInstanceCompleteEventArgs(string instanceName, ulong completionTimestamp)
+            : this(instanceName, completionTimestamp, AutoInstanceType.Quest)
+        {
+        }
+
+        public AutoInstanceCompleteEventArgs(string instanceName, ulong completionTimestamp, AutoInstanceType instanceType = AutoInstanceType.Quest)
         {
             InstanceName = instanceName;
             CompletionTimestamp = completionTimestamp;
+            InstanceType = instanceType;
         }
     }
 
