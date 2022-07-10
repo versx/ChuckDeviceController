@@ -172,20 +172,42 @@
                 return View();
             }
 
-            /*
-            var selectedGeofences = geofences.Select(g => new SelectListItem("Name", g.Name, instance.Geofences.Contains(g.Name)))
-                                             .ToList();
-            */
+            var model = new EditInstanceViewModel
+            {
+                Name = instance.Name,
+                Type = instance.Type,
+                MinimumLevel = instance.MinimumLevel,
+                MaximumLevel = instance.MaximumLevel,
+                Geofences = instance.Geofences,
+                Data = new EditInstanceDataViewModel
+                {
+                    AccountGroup = instance.Data?.AccountGroup ?? null,
+                    IsEvent = instance.Data?.IsEvent ?? false,
+                    UseWarningAccounts = instance.Data?.UseWarningAccounts ?? false,
+                    CircleRouteType = instance.Data?.CircleRouteType ?? CircleInstanceRouteType.Default,
+                    CircleSize = instance.Data?.CircleSize ?? 70,
+                    EnableDst = instance.Data?.EnableDst ?? false,
+                    EnableLureEncounters = instance.Data?.EnableLureEncounters ?? false,
+                    FastBootstrapMode = instance.Data?.FastBootstrapMode ?? false,
+                    IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? false,
+                    IvList = instance.Data?.IvList ?? null,
+                    IvQueueLimit = instance.Data?.IvQueueLimit ?? 100,
+                    QuestMode = instance.Data?.QuestMode ?? QuestMode.Normal,
+                    SpinLimit = instance.Data?.SpinLimit ?? 3500,
+                    TimeZone = instance.Data?.TimeZone ?? null,
+                },
+            };
+
             ViewBag.Geofences = _context.Geofences.ToList();// new MultiSelectList(geofences, "Name", "Name", selectedGeofences);
             ViewBag.IvLists = _context.IvLists.ToList();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key });
-            return View(instance);
+            return View(model);
         }
 
         // POST: InstanceController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(string id, IFormCollection collection)
+        public async Task<ActionResult> Edit(string id, EditInstanceViewModel model) //IFormCollection collection)
         {
             try
             {
@@ -197,64 +219,40 @@
                     return View();
                 }
 
-                var name = Convert.ToString(collection["Name"]);
-                var type = (InstanceType)Convert.ToUInt16(collection["Type"]);
-                var minLevel = Convert.ToUInt16(collection["MinimumLevel"]);
-                var maxLevel = Convert.ToUInt16(collection["MaximumLevel"]);
-                var geofences = Convert.ToString(collection["Geofences"]).Split(',').ToList();
-                var accountGroup = Convert.ToString(collection["Data.AccountGroup"]);
-                var isEvent = collection["Data.IsEvent"].Contains("on");
-
-                var circleRouteType = (Convert.ToString(collection["Data.CircleRouteType"]) ?? "0").StringToObject<CircleInstanceRouteType>();
-
-                var questMode = (Convert.ToString(collection["Daa.QuestMode"]) ?? "0").StringToObject<QuestMode>();
-                var timeZone = Convert.ToString(collection["Data.TimeZone"]);
-                var enableDst = collection["Data.EnableDst"].Contains("on");
-                var spinLimit = Convert.ToUInt16(collection["Data.SpinLimit"]);
-                var useWarningAccounts = collection["Data.UseWarningAccounts"].Contains("on");
-                var ignoreS2CellBootstrap = collection["Data.IgnoreS2CellBootstrap"].Contains("on");
-
-                var circleSize = Convert.ToString(collection["Data.CircleSize"]);
-                var fastBootstrapMode = collection["Data.FastBootstrap"].Contains("on");
-
-                var ivList = Convert.ToString(collection["Data.IvList"]);
-                var ivQueueLimit = Convert.ToUInt16(Convert.ToString(collection["Data.IvQueueLimit"]) ?? "100");
-                var enableLureEncounters = collection["Data.EnableLureEncounters"].Contains("on");
-
-                instance.Name = name;
-                instance.Type = type;
-                instance.MinimumLevel = minLevel;
-                instance.MaximumLevel = maxLevel;
-                instance.Geofences = geofences;
+                instance.Name = model.Name;
+                instance.Type = model.Type;
+                instance.MinimumLevel = model.MinimumLevel;
+                instance.MaximumLevel = model.MaximumLevel;
+                instance.Geofences = model.Geofences;
                 if (instance.Data == null)
                 {
                     instance.Data = new InstanceData();
                 }
-                instance.Data.QuestMode = questMode;
-                instance.Data.TimeZone = timeZone;
-                instance.Data.EnableDst = enableDst;
-                instance.Data.SpinLimit = spinLimit;
-                instance.Data.UseWarningAccounts = useWarningAccounts;
-                instance.Data.IgnoreS2CellBootstrap = ignoreS2CellBootstrap;
+                instance.Data.QuestMode = model.Data.QuestMode;
+                instance.Data.TimeZone = model.Data.TimeZone;
+                instance.Data.EnableDst = model.Data.EnableDst;
+                instance.Data.SpinLimit = model.Data.SpinLimit;
+                instance.Data.UseWarningAccounts = model.Data.UseWarningAccounts;
+                instance.Data.IgnoreS2CellBootstrap = model.Data.IgnoreS2CellBootstrap;
 
-                instance.Data.FastBootstrapMode = fastBootstrapMode;
-                instance.Data.CircleSize = Convert.ToUInt16(circleSize == "" ? "70" : circleSize);
+                instance.Data.FastBootstrapMode = model.Data.FastBootstrapMode;
+                instance.Data.CircleSize = model.Data.CircleSize;
 
-                instance.Data.CircleRouteType = circleRouteType;
+                instance.Data.CircleRouteType = model.Data.CircleRouteType;
 
-                instance.Data.IvList = ivList;
-                instance.Data.IvQueueLimit = ivQueueLimit;
-                instance.Data.EnableLureEncounters = enableLureEncounters;
+                instance.Data.IvList = model.Data.IvList;
+                instance.Data.IvQueueLimit = model.Data.IvQueueLimit;
+                instance.Data.EnableLureEncounters = model.Data.EnableLureEncounters;
 
-                instance.Data.AccountGroup = accountGroup;
-                instance.Data.IsEvent = false;
+                instance.Data.AccountGroup = model.Data.AccountGroup;
+                instance.Data.IsEvent = model.Data.IsEvent;
 
                 // Update instance in database
                 _context.Instances.Update(instance);
                 await _context.SaveChangesAsync();
 
                 await _jobControllerService.ReloadInstanceAsync(instance, id);
-
+                
                 return RedirectToAction(nameof(Index));
             }
             catch

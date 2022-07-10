@@ -69,7 +69,6 @@
         public string? IvList { get; set; }
 
         [
-
             DisplayName("Enable Lure Encounters"),
             JsonPropertyName("enable_lure_encounters"),
         ]
@@ -80,7 +79,6 @@
         #region Bootstrap Instance
 
         [
-
             DisplayName("Fast Bootstrap Mode"),
             JsonPropertyName("fast_bootstrap_mode"),
         ]

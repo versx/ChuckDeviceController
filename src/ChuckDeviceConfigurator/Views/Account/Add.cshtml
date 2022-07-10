@@ -1,10 +1,10 @@
 ﻿@using ChuckDeviceConfigurator.ViewModels
 @model AddAccountsViewModel
 @{
-    ViewData["Title"] = "Add Accounts";
+    ViewData["Title"] = "Import Accounts";
 }
 
-<h1>Add Accounts</h1>
+<h1>Import Accounts</h1>
 
 <p>@Html.ValidationMessage("Account", new { @class = "text-danger" })</p>
 
@@ -20,7 +20,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Accounts" class="control-label"></label>
-                <textarea asp-for="Accounts" class="form-control"></textarea>
+                <textarea asp-for="Accounts" class="form-control" rows="10"></textarea>
                 <span asp-validation-for="Accounts" class="text-danger"></span>
             </div>
             <div class="form-group">

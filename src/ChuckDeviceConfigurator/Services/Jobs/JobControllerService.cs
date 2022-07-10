@@ -266,13 +266,13 @@
         public async Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName)
         {
             // TODO: Lock _instances
-            if (!_instances.ContainsKey(oldInstanceName))
-            {
-                _logger.LogError($"[{oldInstanceName}] Instance does not exist in instance cache, skipping instance reload...");
-                return;
-            }
+                if (!_instances.ContainsKey(oldInstanceName))
+                {
+                    _logger.LogError($"[{oldInstanceName}] Instance does not exist in instance cache, skipping instance reload...");
+                    return;
+                }
 
-            var oldInstance = _instances[oldInstanceName];
+                var oldInstance = _instances[oldInstanceName];
             if (oldInstance != null)
             {
                 lock (_devicesLock)
