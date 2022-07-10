@@ -6,25 +6,15 @@
 
     using Google.Common.Geometry;
 
+    using ChuckDeviceController.Geometry.Extensions;
+
     public class MultiPolygon : List<Polygon>
     {
-        public List<S2CellId> GetS2CellIds(ushort level, int maxCells)
+        public List<S2CellId> GetS2CellIds(ushort minLevel, ushort maxLevel, int maxCells)
         {
-            //var geofence = Geofence.FromMultiPolygon(this);
             var bbox = GetBoundingBox();
-            var regionCoverer = new S2RegionCoverer
-            {
-                MinLevel = level,
-                MaxLevel = level,
-                MaxCells = maxCells,
-            };
-            var region = new S2LatLngRect(
-                S2LatLng.FromDegrees(bbox.MinimumLatitude, bbox.MinimumLongitude),
-                S2LatLng.FromDegrees(bbox.MaximumLatitude, bbox.MaximumLongitude)
-            );
-            var coverage = new List<S2CellId>();
-            regionCoverer.GetCovering(region, coverage);
             var result = new List<S2CellId>();
+            var coverage = bbox.GetS2CellCoverage(minLevel, maxLevel, maxCells);
             foreach (var cellId in coverage)
             {
                 var cell = new S2Cell(cellId);
@@ -40,6 +30,13 @@
                 }
             }
             return result;
+        }
+
+        public List<Coordinate> ConvertToCoordinates()
+        {
+            var coords = this.Select(polygon => new Coordinate(polygon[0], polygon[1]))
+                             .ToList();
+            return coords;
         }
 
         public BoundingBox GetBoundingBox()

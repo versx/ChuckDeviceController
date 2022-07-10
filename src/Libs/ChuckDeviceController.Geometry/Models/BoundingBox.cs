@@ -9,5 +9,13 @@
         public double MinimumLongitude { get; set; } // minY
 
         public double MaximumLongitude { get; set; } // maxY
+
+        public bool IsInBoundingBox(double lat, double lon)
+        {
+            var result = 
+                lat >= MinimumLatitude && lon >= MinimumLongitude &&
+                lat <= MaximumLatitude && lon <= MaximumLongitude;
+            return result;
+        }
     }
 }

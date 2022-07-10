@@ -30,5 +30,22 @@
 
             return 6376500.0 * (2.0 * Math.Atan2(Math.Sqrt(d3), Math.Sqrt(1.0 - d3)));
         }
+
+        public static BoundingBox GetBoundingBox(this List<Coordinate> coordinates)
+        {
+            // Add checks here, if necessary, to make sure that points is not null,
+            // and that it contains at least one (or perhaps two?) elements
+            var minX = coordinates.Min(c => c.Latitude);
+            var minY = coordinates.Min(c => c.Longitude);
+            var maxX = coordinates.Max(c => c.Latitude);
+            var maxY = coordinates.Max(c => c.Longitude);
+            return new BoundingBox
+            {
+                MinimumLatitude = minX,
+                MaximumLatitude = maxX,
+                MinimumLongitude = minY,
+                MaximumLongitude = maxY,
+            };
+        }
     }
 }

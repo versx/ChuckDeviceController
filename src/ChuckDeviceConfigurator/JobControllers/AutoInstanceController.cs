@@ -460,7 +460,7 @@
             foreach (var polygon in MultiPolygon)
             {
                 // Get maximum amount of S2 level 15 cells within this geofence
-                var s2Cells = polygon.GetS2CellIds(15, int.MaxValue);
+                var s2Cells = polygon.GetS2CellIds(15, 15, int.MaxValue);
                 var s2CellIds = s2Cells.Select(cell => cell.Id).ToList();
                 total += s2CellIds.Count;
                 allCellIds.AddRange(s2CellIds);
@@ -985,8 +985,8 @@
             {
                 var pokestops = context.Pokestops.Where(stop =>
                     stop.Latitude >= bbox.MinimumLatitude &&
-                    stop.Latitude <= bbox.MaximumLatitude &&
                     stop.Longitude >= bbox.MinimumLongitude &&
+                    stop.Latitude <= bbox.MaximumLatitude &&
                     stop.Longitude <= bbox.MaximumLongitude &&
                     !stop.Deleted
                 ).ToList();

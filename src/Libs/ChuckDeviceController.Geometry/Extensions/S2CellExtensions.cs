@@ -64,5 +64,45 @@
             var list = s2cells.ToList();
             return list;
         }
+
+        public static List<Coordinate> GetS2CellCoordinates(this BoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, ushort maxCells = 100)
+        {
+            var regionCoverer = new S2RegionCoverer
+            {
+                MinLevel = minLevel,
+                MaxLevel = maxLevel,
+                MaxCells = maxCells,
+            };
+            var region = bbox.GetS2Region();
+            var cellIds = regionCoverer.GetCovering(region);
+            var coordinates = new List<Coordinate>();
+            foreach (var cellId in cellIds)
+            {
+                var center = cellId.ToLatLng();
+                coordinates.Add(new Coordinate(center.LatDegrees, center.LngDegrees));
+            }
+            return coordinates;
+        }
+
+        public static S2CellUnion GetS2CellCoverage(this BoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = int.MaxValue)
+        {
+            var regionCoverer = new S2RegionCoverer
+            {
+                MinLevel = minLevel,
+                MaxLevel = maxLevel,
+                MaxCells = maxCells,
+            };
+            var region = bbox.GetS2Region();
+            var coverage = regionCoverer.GetCovering(region);
+            return coverage;
+        }
+
+        public static S2LatLngRect GetS2Region(this BoundingBox bbox)
+        {
+            var min = S2LatLng.FromDegrees(bbox.MinimumLatitude, bbox.MinimumLongitude);
+            var max = S2LatLng.FromDegrees(bbox.MaximumLatitude, bbox.MaximumLongitude);
+            var rect = new S2LatLngRect(max, min);
+            return rect;
+        }
     }
 }

@@ -3,6 +3,7 @@
     using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Geofences;
+    using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -23,6 +24,7 @@
         private readonly ITimeZoneService _timeZoneService;
         private readonly IGeofenceControllerService _geofenceService;
         //private readonly IAssignmentControllerService _assignmentService;
+        private readonly IRouteGenerator _routeGenerator;
 
         private readonly IDictionary<string, Device> _devices;
         private readonly IDictionary<string, IJobController> _instances;
@@ -56,7 +58,8 @@
             IDbContextFactory<MapDataContext> mapFactory,
             //IConfiguration configuration,
             ITimeZoneService timeZoneService,
-            IGeofenceControllerService geofenceService)
+            IGeofenceControllerService geofenceService,
+            IRouteGenerator routeGenerator)
             //IAssignmentControllerService assignmentService)
         {
             _logger = logger;
@@ -65,6 +68,7 @@
             //_configuration = configuration;
             _timeZoneService = timeZoneService;
             _geofenceService = geofenceService;
+            _routeGenerator = routeGenerator;
             //_assignmentService = assignmentService;
 
             _devices = new Dictionary<string, Device>();
@@ -134,6 +138,47 @@
                 _logger.LogError($"[{instance.Name}] Failed to get geofences for instance, make sure it is assigned at least one");
                 return;
             }
+
+            /*
+            try
+            {
+                foreach (var geofence in geofences)
+                {
+                    if (geofence.Name == "CircleTestCalc")
+                    {
+                        var coords = geofence.ConvertToCoordinates();
+                        var calc = new RouteCalculator(coords);
+                        var routeCoords = calc.CalculateShortestRoute(coords.FirstOrDefault());
+                        _logger.LogInformation($"RouteCoords: {routeCoords}");
+                    }
+                    else if (geofence.Name == "Montclair Geofence")
+                    {
+                        var stopwatch = new System.Diagnostics.Stopwatch();
+                        stopwatch.Start();
+                        var area = geofence.ConvertToMultiPolygons();
+                        var multiPolygons = area.Item1;
+                        var route = _routeGenerator.GenerateBootstrapRoute(multiPolygons);
+                        stopwatch.Stop();
+                        var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+                        _logger.LogInformation($"Took {totalSeconds}s");
+
+                        var randomRoute = _routeGenerator.GenerateRandomRoute(multiPolygons);
+                        _logger.LogInformation($"Random: {randomRoute}");
+
+                        var calc = new RouteCalculator(randomRoute);
+                        var optimizedRoute = calc.CalculateShortestRoute(randomRoute.FirstOrDefault());
+                        _logger.LogInformation($"Optimized: {optimizedRoute}");
+
+                        //var route = _routeGenerator.GenerateOptimizedRoute(multiPolygon, 300);
+                        _logger.LogDebug($"Route: {route}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+            }
+            */
 
             IJobController? jobController = null;
             switch (instance.Type)
