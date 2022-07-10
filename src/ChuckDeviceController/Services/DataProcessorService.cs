@@ -16,6 +16,7 @@
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.HostedServices;
 
+    /*
     public interface IDataConsumer
     {
     }
@@ -42,6 +43,7 @@
         {
         }
     }
+    */
 
     public class DataProcessorService : BackgroundService, IDataProcessorService
     {
@@ -70,6 +72,7 @@
             _dbFactory = factory;
             //_context = _dbFactory.CreateDbContext();
             _diskCache = diskCache;
+
             _gymIdsPerCell = new Dictionary<ulong, List<string>>();
             _stopIdsPerCell = new Dictionary<ulong, List<string>>();
         }
@@ -402,7 +405,7 @@
             }
         }
 
-        public async Task UpdateNearbyPokemonAsync(List<dynamic> nearbyPokemon)
+        private async Task UpdateNearbyPokemonAsync(List<dynamic> nearbyPokemon)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
@@ -443,7 +446,7 @@
             }
         }
 
-        public async Task UpdateMapPokemonAsync(List<dynamic> mapPokemon)
+        private async Task UpdateMapPokemonAsync(List<dynamic> mapPokemon)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
@@ -501,7 +504,8 @@
             }
         }
 
-        public async Task UpdatePokemonAsync(List<dynamic> wildPokemon, List<dynamic> nearbyPokemon, List<dynamic> mapPokemon)
+        /*
+        private async Task UpdatePokemonAsync(List<dynamic> wildPokemon, List<dynamic> nearbyPokemon, List<dynamic> mapPokemon)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
@@ -575,6 +579,7 @@
                 }
             }
         }
+        */
 
         private async Task UpdateFortsAsync(List<dynamic> forts)
         {
@@ -950,102 +955,6 @@
             catch (Exception ex)
             {
                 _logger.LogError($"AddOrUpdateAsync: {ex}");
-            }
-        }
-    }
-
-    public static class EntityFrameworkCoreExtensions
-    {
-        public static void UpdatePokestopProperties<T>(this T context, Pokestop pokestop, bool updateQuests = false)
-            where T : DbContext
-        {
-            context.Attach(pokestop);
-            context.Entry(pokestop).Property(p => p.Name).IsModified = true;
-            context.Entry(pokestop).Property(p => p.Url).IsModified = true;
-            context.Entry(pokestop).Property(p => p.LureId).IsModified = true;
-            context.Entry(pokestop).Property(p => p.LureExpireTimestamp).IsModified = true;
-            context.Entry(pokestop).Property(p => p.PowerUpLevel).IsModified = true;
-            context.Entry(pokestop).Property(p => p.PowerUpPoints).IsModified = true;
-            context.Entry(pokestop).Property(p => p.PowerUpEndTimestamp).IsModified = true;
-
-            if (updateQuests)
-            {
-                context.Entry(pokestop).Property(p => p.QuestConditions).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestItemId).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestPokemonId).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestRewardAmount).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestRewards).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestRewardType).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestTarget).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestTemplate).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestTimestamp).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestTitle).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestType).IsModified = true;
-
-                context.Entry(pokestop).Property(p => p.AlternativeQuestConditions).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestItemId).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestPokemonId).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestRewardAmount).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestRewards).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestRewardType).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestTarget).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestTemplate).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestTimestamp).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestTitle).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestType).IsModified = true;
-            }
-        }
-
-        public static void UpdateGymProperties<T>(this T context, Pokestop pokestop, bool updateQuests = false)
-            where T : DbContext
-        {
-            context.Attach(pokestop);
-            context.Entry(pokestop).Property(p => p.Name).IsModified = true;
-            context.Entry(pokestop).Property(p => p.Url).IsModified = true;
-            context.Entry(pokestop).Property(p => p.LureId).IsModified = true;
-            context.Entry(pokestop).Property(p => p.LureExpireTimestamp).IsModified = true;
-            context.Entry(pokestop).Property(p => p.PowerUpLevel).IsModified = true;
-            context.Entry(pokestop).Property(p => p.PowerUpPoints).IsModified = true;
-            context.Entry(pokestop).Property(p => p.PowerUpEndTimestamp).IsModified = true;
-
-            if (updateQuests)
-            {
-                context.Entry(pokestop).Property(p => p.QuestConditions).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestItemId).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestPokemonId).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestRewardAmount).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestRewards).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestRewardType).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestTarget).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestTemplate).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestTimestamp).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestTitle).IsModified = true;
-                context.Entry(pokestop).Property(p => p.QuestType).IsModified = true;
-
-                context.Entry(pokestop).Property(p => p.AlternativeQuestConditions).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestItemId).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestPokemonId).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestRewardAmount).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestRewards).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestRewardType).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestTarget).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestTemplate).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestTimestamp).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestTitle).IsModified = true;
-                context.Entry(pokestop).Property(p => p.AlternativeQuestType).IsModified = true;
-            }
-        }
-
-        public static void UpdatePokemonProperties<T>(this T context, Pokemon pokemon, bool updateIv = false)
-            where T : DbContext
-        {
-            context.Attach(pokemon);
-            context.Entry(pokemon).Property(p => p.PokemonId).IsModified = true;
-            context.Entry(pokemon).Property(p => p.Form).IsModified = true;
-
-            if (updateIv)
-            {
-                context.Entry(pokemon).Property(p => p.AttackIV).IsModified = true;
             }
         }
     }
