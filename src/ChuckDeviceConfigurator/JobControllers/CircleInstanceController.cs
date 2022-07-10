@@ -67,10 +67,10 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false)
+        public async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
             // Add device to device list
-            AddDevice(uuid);
+            AddDevice(options.Uuid);
             Coordinate? currentCoord = null;
 
             // Check if on demand scanning coordinates list has any to send to workers
@@ -100,13 +100,13 @@
                             break;
                         case CircleInstanceRouteType.Split:
                             // Split route by device count
-                            currentCoord = SplitRoute(uuid);
+                            currentCoord = SplitRoute(options.Uuid);
                             break;
                         //case CircleInstanceRouteType.Circular:
                             // Circular split route by device count
                         case CircleInstanceRouteType.Smart:
                             // Smart routing by device count
-                            currentCoord = SmartRoute(uuid);
+                            currentCoord = SmartRoute(options.Uuid);
                             break;
                     }
                     break;

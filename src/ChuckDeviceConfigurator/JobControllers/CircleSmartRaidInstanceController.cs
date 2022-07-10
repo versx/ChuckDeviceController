@@ -103,13 +103,13 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false)
+        public async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
             var coord = GetNextScanLocation();
             if (coord == null)
             {
                 // Unable to retrieve coordinate for next gym to check
-                _logger.LogWarning($"[{Name}] [{uuid}] Failed to retrieve gym coordinates for next job task.");
+                _logger.LogWarning($"[{Name}] [{options.Uuid}] Failed to retrieve gym coordinates for next job task.");
                 return null;
             }
 

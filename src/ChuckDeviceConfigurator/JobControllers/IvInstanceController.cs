@@ -85,7 +85,7 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false)
+        public async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
             if (ScanNextCoordinates.Count > 0)
             {
@@ -126,7 +126,7 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             if (now - (pokemon.FirstSeenTimestamp ?? 1) >= 600)
             {
-                return await GetTaskAsync(uuid, accountUsername, account, isStartup);
+                return await GetTaskAsync(options);
             }
 
             lock (_scannedLock)

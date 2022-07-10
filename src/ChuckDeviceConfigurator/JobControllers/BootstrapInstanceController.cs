@@ -56,13 +56,13 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false)
+        public async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
             // TODO: Save last index to Instance.Data
             // TODO: Lock _lastIndex
             var currentIndex = (int)_lastIndex;
             var currentCoord = Coordinates[currentIndex];
-            if (!isStartup)
+            if (!options.IsStartup)
             {
                 if (_lastIndex + 1 == Coordinates.Count)
                 {

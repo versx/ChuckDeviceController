@@ -292,7 +292,13 @@
                 }
             }
 
-            var task = await jobController.GetTaskAsync(device.Uuid, device.AccountUsername, account, false);
+            var task = await jobController.GetTaskAsync(new GetTaskOptions
+            {
+                Uuid = device.Uuid,
+                AccountUsername = device.AccountUsername,
+                Account = account,
+                IsStartup = false,
+            });
             if (task == null)
             {
                 _logger.LogWarning($"[{device.Uuid}] No tasks avaialable yet");

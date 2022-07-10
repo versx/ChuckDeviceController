@@ -1,7 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
     using ChuckDeviceConfigurator.Services.Tasks;
-    using ChuckDeviceController.Data.Entities;
 
     public interface IJobController : IEventController
     {
@@ -11,8 +10,7 @@
 
         ushort MaximumLevel { get; }
 
-        // TODO: GetTaskOptions
-        Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false);
+        Task<ITask> GetTaskAsync(GetTaskOptions options);
 
         Task<string> GetStatusAsync();
 

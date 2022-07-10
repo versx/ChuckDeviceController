@@ -153,7 +153,7 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false)
+        public async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
             switch (Type)
             {
@@ -164,15 +164,15 @@
                         return bootstrapTask;
                     }
 
-                    if (string.IsNullOrEmpty(accountUsername) && RequireAccountEnabled)
+                    if (string.IsNullOrEmpty(options.AccountUsername) && RequireAccountEnabled)
                     {
-                        _logger.LogWarning($"[{Name}] No username specified for device '{uuid}', ignoring...");
+                        _logger.LogWarning($"[{Name}] No username specified for device '{options.Uuid}', ignoring...");
                         return null;
                     }
 
-                    if (account == null && RequireAccountEnabled)
+                    if (options.Account == null && RequireAccountEnabled)
                     {
-                        _logger.LogWarning($"[{Name}] No account specified for device '{uuid}', ignoring...");
+                        _logger.LogWarning($"[{Name}] No account specified for device '{options.Uuid}', ignoring...");
                         return null;
                     }
 
@@ -181,23 +181,23 @@
                         return null;
                     }
 
-                    await CheckCompletionStatusAsync(uuid);
+                    await CheckCompletionStatusAsync(options.Uuid);
 
                     PokestopWithMode? pokestop = null;
                     Coordinate? lastCoord = null;
                     try
                     {
-                        lastCoord = Cooldown.GetLastLocation(account, uuid);
+                        lastCoord = Cooldown.GetLastLocation(options.Account, options.Uuid);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{Name}] Failed to get last location for device '{uuid}'");
+                        _logger.LogError($"[{Name}] Failed to get last location for device '{options.Uuid}'");
                         return null;
                     }
 
                     if (lastCoord != null)
                     {
-                        var (closest, mode) = GetNextClosestPokestop(lastCoord, accountUsername ?? uuid);
+                        var (closest, mode) = GetNextClosestPokestop(lastCoord, options.AccountUsername ?? options.Uuid);
                         if (closest == null)
                         {
                             return null;
@@ -205,7 +205,7 @@
 
                         if ((mode ?? false) && !(closest?.IsAlternative ?? false))
                         {
-                            _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] Switching quest mode from {((mode ?? false) ? "alternative" : "none")} to normal.");
+                            _logger.LogDebug($"[{Name}] [{options.AccountUsername ?? "?"}] Switching quest mode from {((mode ?? false) ? "alternative" : "none")} to normal.");
                             PokestopWithMode? closestAr = null;
                             double closestArDistance = DefaultDistance;
                             var arStops = _allStops.Where(x => x.Pokestop.IsArScanEligible)
@@ -226,11 +226,11 @@
                             {
                                 closestAr.IsAlternative = closest?.IsAlternative ?? false;
                                 closest = closestAr;
-                                _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] Scanning AR eligible Pokestop {closest?.Pokestop?.Id}");
+                                _logger.LogDebug($"[{Name}] [{options.AccountUsername ?? "?"}] Scanning AR eligible Pokestop {closest?.Pokestop?.Id}");
                             }
                             else
                             {
-                                _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] No AR eligible Pokestop found to scan");
+                                _logger.LogDebug($"[{Name}] [{options.AccountUsername ?? "?"}] No AR eligible Pokestop found to scan");
                             }
                         }
 
@@ -276,7 +276,7 @@
                     try
                     {
                         var result = Cooldown.SetCooldownAsync(
-                            account,
+                            options.Account,
                             new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude)
                         );
                         delay = result.Delay;
@@ -284,13 +284,13 @@
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{Name}] [{uuid}] Failed to calculate cooldown time for device");
+                        _logger.LogError($"[{Name}] [{options.Uuid}] Failed to calculate cooldown time for device");
                         // TODO: Lock _todayStops
                         _todayStops.Add(pokestop);
                         return null;
                     }
 
-                    if (delay >= DelayLogoutS && account != null)
+                    if (delay >= DelayLogoutS && options.Account != null)
                     {
                         // TODO: Lock _todayStops
                         _todayStops.Add(pokestop);
@@ -299,50 +299,50 @@
                         try
                         {
                             var newAccount = await GetAccountAsync(
-                                uuid,
+                                options.Uuid,
                                 new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude)
                             );
-                            if (!_accounts.ContainsKey(uuid))
+                            if (!_accounts.ContainsKey(options.Uuid))
                             {
                                 newUsername = newAccount?.Username;
-                                _accounts.Add(uuid, newAccount?.Username);
-                                _logger.LogDebug($"[{Name}] [{uuid}] Over logout delay. Switching account from {accountUsername ?? "?"} to {newUsername ?? "?"}");
+                                _accounts.Add(options.Uuid, newAccount?.Username);
+                                _logger.LogDebug($"[{Name}] [{options.Uuid}] Over logout delay. Switching account from {options.AccountUsername ?? "?"} to {newUsername ?? "?"}");
                             }
                             else
                             {
-                                newUsername = _accounts[uuid];
+                                newUsername = _accounts[options.Uuid];
                             }
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[{Name}] [{uuid}] Failed to get account for device in advance");
+                            _logger.LogError($"[{Name}] [{options.Uuid}] Failed to get account for device in advance: {ex}");
                         }
 
                         return GetSwitchAccountTask();
                     }
                     else if (delay >= DelayLogoutS)
                     {
-                        _logger.LogWarning($"[{Name}] [{uuid}] Ignoring over logout delay, because no account is specified");
+                        _logger.LogWarning($"[{Name}] [{options.Uuid}] Ignoring over logout delay, because no account is specified");
                     }
 
                     try
                     {
-                        if (!string.IsNullOrEmpty(accountUsername))
+                        if (!string.IsNullOrEmpty(options.AccountUsername))
                         {
                             // Increment account spin count
-                            await Cooldown.SetSpinCountAsync(_deviceFactory, accountUsername);
+                            await Cooldown.SetSpinCountAsync(_deviceFactory, options.AccountUsername);
                         }
 
                         await Cooldown.SetEncounterAsync(
                             _deviceFactory,
-                            account,
+                            options.Account,
                             new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude),
                             encounterTime
                         );
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{Name}] [{uuid}] Failed to store cooldown: {ex}");
+                        _logger.LogError($"[{Name}] [{options.Uuid}] Failed to store cooldown: {ex}");
                         // TODO: Lock _todayStops
                         _todayStops.Add(pokestop);
                         return null;
@@ -351,10 +351,10 @@
                     // TODO: Lock _todayStopsAttempts
                     IncrementSpinAttempt(pokestop);
 
-                    await CheckCompletionStatusAsync(uuid);
+                    await CheckCompletionStatusAsync(options.Uuid);
 
                     // TODO: Lock _lastMode
-                    var modeKey = accountUsername ?? uuid;
+                    var modeKey = options.AccountUsername ?? options.Uuid;
                     if (!_lastMode.ContainsKey(modeKey))
                     {
                         _lastMode.Add(modeKey, pokestop.IsAlternative);

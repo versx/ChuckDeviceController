@@ -50,11 +50,11 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false)
+        public async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
             if (Coordinates.Count == 0)
             {
-                _logger.LogWarning($"[{uuid}] No spawnpoints available to find TTH!");
+                _logger.LogWarning($"[{options.Uuid}] No spawnpoints available to find TTH!");
                 return null;
             }
 
@@ -62,7 +62,7 @@
             // TODO: Lock _lastIndex
             var currentIndex = (int)_lastIndex;
             currentCoord = Coordinates[currentIndex];
-            if (!isStartup)
+            if (!options.IsStartup)
             {
                 if (_lastIndex + 1 == Coordinates.Count)
                 {
@@ -70,7 +70,7 @@
                     _lastIndex = 0;
                     if (Coordinates.Count == 0)
                     {
-                        _logger.LogWarning($"[{uuid}] No unknown spawnpoints to check, sending 0,0");
+                        _logger.LogWarning($"[{options.Uuid}] No unknown spawnpoints to check, sending 0,0");
                         currentCoord = new Coordinate();
                         // TODO: Assign instance to chained instance upon completion of tth finder
                     }
