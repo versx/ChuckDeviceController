@@ -79,9 +79,9 @@
 
         public bool IgnoreS2CellBootstrap { get; }
 
-        public bool RequireAccountEnabled { get; set; } // TODO: Make 'RequireAccountEnabled' configurable via Instance.Data
+        public bool RequireAccountEnabled { get; } // TODO: Make 'RequireAccountEnabled' configurable via Instance.Data
 
-        public bool UseWarningAccounts { get; set; }
+        public bool UseWarningAccounts { get; }
 
         public QuestMode QuestMode { get; }
 

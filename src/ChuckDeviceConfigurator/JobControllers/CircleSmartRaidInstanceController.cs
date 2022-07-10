@@ -57,17 +57,17 @@
 
         #region Properties
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public IReadOnlyList<Coordinate> Coordinates { get; set; }
+        public IReadOnlyList<Coordinate> Coordinates { get; }
 
-        public ushort MinimumLevel { get; set; }
+        public ushort MinimumLevel { get; }
 
-        public ushort MaximumLevel { get; set; }
+        public ushort MaximumLevel { get; }
 
-        public string GroupName { get; set; }
+        public string GroupName { get; }
 
-        public bool IsEvent { get; set; }
+        public bool IsEvent { get; }
 
         #endregion
 

@@ -35,9 +35,9 @@
 
         public bool IsEvent { get; }
 
-        public bool EnableLureEncounters { get; set; }
+        public bool EnableLureEncounters { get; }
 
-        public Queue<Coordinate> ScanNextCoordinates { get; set; }
+        public Queue<Coordinate> ScanNextCoordinates { get; }
 
         #endregion
 

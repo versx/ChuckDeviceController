@@ -32,25 +32,25 @@
 
         #region Properties
 
-        public string Name { get; set; }
+        public string Name { get; }
 
-        public IReadOnlyList<MultiPolygon> MultiPolygon { get; set; }
+        public IReadOnlyList<MultiPolygon> MultiPolygon { get; }
 
-        public ushort MinimumLevel { get; set; }
+        public ushort MinimumLevel { get; }
 
-        public ushort MaximumLevel { get; set; }
+        public ushort MaximumLevel { get; }
 
-        public string GroupName { get; set; }
+        public string GroupName { get; }
 
-        public bool IsEvent { get; set; }
+        public bool IsEvent { get; }
 
-        public ushort QueueLimit { get; set; }
+        public ushort QueueLimit { get; }
 
-        public IReadOnlyList<uint> PokemonIds { get; set; }
+        public IReadOnlyList<uint> PokemonIds { get; }
 
-        public bool EnableLureEncounters { get; set; }
+        public bool EnableLureEncounters { get; }
 
-        public Queue<Coordinate> ScanNextCoordinates { get; set; }
+        public Queue<Coordinate> ScanNextCoordinates { get; }
 
         #endregion
 
