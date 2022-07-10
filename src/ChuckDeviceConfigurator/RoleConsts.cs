@@ -10,7 +10,11 @@
 
         public const string AssignmentsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Assignments)}";
 
+        public const string AssignmentGroupsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.AssignmentGroups)}";
+
         public const string DevicesRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Devices)}";
+
+        public const string DeviceGroupsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.DeviceGroups)}";
 
         public const string GeofencesRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Geofences)}";
 

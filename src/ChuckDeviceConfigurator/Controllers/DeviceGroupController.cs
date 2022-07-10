@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,8 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
+    [Controller]
+    [Authorize(Roles = RoleConsts.DeviceGroupsRole)]
     public class DeviceGroupController : Controller
     {
         private readonly ILogger<DeviceGroupController> _logger;

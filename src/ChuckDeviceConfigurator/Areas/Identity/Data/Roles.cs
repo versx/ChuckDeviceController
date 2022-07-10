@@ -29,9 +29,19 @@
         Assignments,
 
         /// <summary>
+        /// Access to ASsignment Groups management pages.
+        /// </summary>
+        AssignmentGroups,
+
+        /// <summary>
         /// Access to Devices management pages.
         /// </summary>
         Devices,
+
+        /// <summary>
+        /// Access to Device Groups management pages.
+        /// </summary>
+        DeviceGroups,
 
         /// <summary>
         /// Access to Geofences management pages.
