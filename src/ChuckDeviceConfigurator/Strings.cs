@@ -34,6 +34,8 @@ namespace ChuckDeviceConfigurator
         public const bool DefaultIgnoreS2CellBootstrap = false;
         public const bool DefaultUseWarningAccounts = false;
         public const QuestMode DefaultQuestMode = QuestMode.Normal;
+        public const byte DefaultMaximumSpinAttempts = 5;
+        public const ushort DefaultLogoutDelay = 900;
 
         public const ushort DefaultIvQueueLimit = 100;
         public const string DefaultIvList = null;

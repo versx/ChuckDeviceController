@@ -27,8 +27,6 @@
 
         private const uint OneHourS = 3600;
         private const uint OneDayS = OneHourS * 24;
-        private const ushort MaxSpinAttempts = 5; // TODO: Make 'MaxSpinAttempts' configurable via Instance.Data
-        private const uint DelayLogoutS = 900; // TODO: Make 'DelayLogout' configurable via Instance.Data
         private const ushort SpinRangeM = 80; // TODO: Revert back to 40m once reverted ingame
         private const ulong DefaultDistance = 10000000000000000;
         private const ushort CooldownLimitS = 7200; // Two hours
@@ -85,8 +83,9 @@
 
         public QuestMode QuestMode { get; }
 
-        // TODO: LogoutDelay
-        // TODO: MaxSpinAttempts
+        public byte MaximumSpinAttempts { get; }
+
+        public ushort LogoutDelay { get; }
 
         #endregion
 
@@ -122,6 +121,8 @@
             UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts;
             QuestMode = instance.Data?.QuestMode ?? Strings.DefaultQuestMode;
             QuestMode = QuestMode.Alternative; // TODO: Remove dev
+            MaximumSpinAttempts = instance.Data?.MaxSpinAttempts ?? Strings.DefaultMaximumSpinAttempts;
+            LogoutDelay = instance.Data?.LogoutDelay ?? Strings.DefaultLogoutDelay;
 
             _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _mapFactory = mapFactory;
@@ -290,7 +291,7 @@
                         return null;
                     }
 
-                    if (delay >= DelayLogoutS && options.Account != null)
+                    if (delay >= LogoutDelay && options.Account != null)
                     {
                         // TODO: Lock _todayStops
                         _todayStops.Add(pokestop);
@@ -320,7 +321,7 @@
 
                         return GetSwitchAccountTask();
                     }
-                    else if (delay >= DelayLogoutS)
+                    else if (delay >= LogoutDelay)
                     {
                         _logger.LogWarning($"[{Name}] [{options.Uuid}] Ignoring over logout delay, because no account is specified");
                     }
@@ -712,7 +713,7 @@
                     var count = _todayStopsAttempts.ContainsKey(pokestopWithMode)
                         ? _todayStopsAttempts[pokestopWithMode]
                         : 0;
-                    if (stop.Enabled && count <= MaxSpinAttempts &&
+                    if (stop.Enabled && count <= MaximumSpinAttempts &&
                         (
                             stop.QuestType == null ||
                             stop.AlternativeQuestType == null

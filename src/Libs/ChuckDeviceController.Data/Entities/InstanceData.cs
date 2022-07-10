@@ -52,6 +52,18 @@
         ]
         public QuestMode? QuestMode { get; set; }
 
+        [
+            DisplayName("Maximum Pokestop Spin Attempts"),
+            JsonPropertyName("max_spin_attempts"),
+        ]
+        public byte MaxSpinAttempts { get; set; }
+
+        [
+            DisplayName("Logout Delay"),
+            JsonPropertyName("logout_delay"),
+        ]
+        public ushort LogoutDelay { get; set; }
+
         #endregion
 
         #region IV Instance

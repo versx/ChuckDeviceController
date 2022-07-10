@@ -158,8 +158,8 @@
 
         private async Task<DeviceResponse> HandleGetAccountAsync(Device device)
         {
-            ushort minLevel = Strings.DefaultMinimumLevel;
-            ushort maxLevel = Strings.DefaultMaximumLevel;
+            var minLevel = Strings.DefaultMinimumLevel;
+            var maxLevel = Strings.DefaultMaximumLevel;
 
             if (device is not null)
             {

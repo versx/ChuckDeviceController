@@ -51,6 +51,12 @@
         [DisplayName("Quest Mode")]
         public QuestMode? QuestMode { get; set; } = Strings.DefaultQuestMode;
 
+        [DisplayName("Maximum Pokestop Spin Attempts")]
+        public byte MaximumSpinAttempts { get; set; } = Strings.DefaultMaximumSpinAttempts;
+
+        [DisplayName("Account Logout Delay")]
+        public ushort LogoutDelay { get; set; } = Strings.DefaultLogoutDelay;
+
 
         // IV Instance
         [DisplayName("IV Queue Limit")]

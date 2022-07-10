@@ -84,8 +84,18 @@
             </div>
             <div class="form-group quests">
                 <label asp-for="Data.SpinLimit" class="control-label"></label>
-                <input asp-for="Data.SpinLimit" class="form-control" min="1" max="100000">
+                <input asp-for="Data.SpinLimit" class="form-control" min="1" max="10000">
                 <span asp-validation-for="Data.SpinLimit" class="text-danger"></span>
+            </div>
+            <div class="form-group quests">
+                <label asp-for="Data.MaximumSpinAttempts" class="control-label"></label>
+                <input asp-for="Data.MaximumSpinAttempts" class="form-control" min="1" max="255">
+                <span asp-validation-for="Data.MaximumSpinAttempts" class="text-danger"></span>
+            </div>
+            <div class="form-group quests">
+                <label asp-for="Data.LogoutDelay" class="control-label"></label>
+                <input asp-for="Data.LogoutDelay" class="form-control" min="1" max="65535">
+                <span asp-validation-for="Data.LogoutDelay" class="text-danger"></span>
             </div>
             <div class="form-group quests">
                 <label asp-for="Data.TimeZone" class="control-label"></label>

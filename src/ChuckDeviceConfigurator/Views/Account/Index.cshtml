@@ -27,6 +27,9 @@
                 @Html.DisplayNameFor(model => model.Items[0].LastEncounter)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.Items[0].Spins)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Items[0].GroupName)
             </th>
             <th></th>
@@ -47,6 +50,9 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.LastEncounter)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Spins)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.GroupName)
