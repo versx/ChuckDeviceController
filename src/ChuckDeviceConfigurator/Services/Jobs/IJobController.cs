@@ -11,6 +11,7 @@
 
         ushort MaximumLevel { get; }
 
+        // TODO: GetTaskOptions
         Task<ITask> GetTaskAsync(string uuid, string? accountUsername = null, Account? account = null, bool isStartup = false);
 
         Task<string> GetStatusAsync();

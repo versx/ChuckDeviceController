@@ -11,11 +11,16 @@
 
     public class CircleInstanceController : IJobController, IScanNext
     {
+        #region Variables
+
         private static readonly Random _random = new();
+        private readonly ILogger<CircleInstanceController> _logger;
         private readonly Dictionary<string, DeviceIndex> _currentUuid = new();
         private uint _lastIndex = 0; // Used for basic leap frog routing
         private double _lastCompletedTime;
         private double _lastLastCompletedTime;
+
+        #endregion
 
         #region Properties
 
@@ -31,13 +36,13 @@
 
         public ushort MaximumLevel { get; }
 
-        public string? GroupName { get; } // TODO: Fix warning
+        public string GroupName { get; }
 
         public bool IsEvent { get; }
 
         public bool EnableLureEncounters { get; }
 
-        public Queue<Coordinate> ScanNextCoordinates { get; }
+        public Queue<Coordinate> ScanNextCoordinates { get; } = new();
 
         #endregion
 
@@ -50,11 +55,12 @@
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
             CircleType = circleType;
-            RouteType = instance.Data?.CircleRouteType ?? CircleInstanceRouteType.Default;
-            GroupName = instance.Data?.AccountGroup ?? null;
-            IsEvent = instance.Data?.IsEvent ?? false;
-            EnableLureEncounters = instance.Data?.EnableLureEncounters ?? false;
-            ScanNextCoordinates = new Queue<Coordinate>();
+            RouteType = instance.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType;
+            GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
+            IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
+            EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
+
+            _logger = new Logger<CircleInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
         }
 
         #endregion
@@ -78,6 +84,7 @@
             if (Coordinates.Count == 0)
             {
                 // TODO: Throw error that instance requires at least one coordinate
+                _logger.LogError($"[{Name}] Instance requires at least one coordinate, please edit it to contain one.");
                 return null;
             }
 
@@ -134,12 +141,15 @@
 
         public void Reload()
         {
+            _logger.LogDebug($"[{Name}] Reloading instance");
+
             // TODO: Lock lastIndex
             _lastIndex = 0;
         }
 
         public void Stop()
         {
+            _logger.LogDebug($"[{Name}] Stopping instance");
         }
 
         #endregion

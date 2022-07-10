@@ -85,6 +85,9 @@
 
         public QuestMode QuestMode { get; }
 
+        // TODO: LogoutDelay
+        // TODO: MaxSpinAttempts
+
         #endregion
 
         #region Events
@@ -104,28 +107,21 @@
             IDbContextFactory<DeviceControllerContext> deviceFactory,
             Instance instance,
             List<MultiPolygon> multiPolygon,
-            short timezoneOffset)
+            short timeZoneOffset = Strings.DefaultTimeZoneOffset)
         {
             Name = instance.Name;
             MultiPolygon = multiPolygon;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
-            GroupName = instance.Data?.AccountGroup ?? null;
-            IsEvent = instance.Data?.IsEvent ?? false;
-            SpinLimit = instance.Data?.SpinLimit ?? 1000;
+            GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
+            IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
+            SpinLimit = instance.Data?.SpinLimit ?? Strings.DefaultSpinLimit;
             Type = AutoInstanceType.Quest;
-            IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? false;
-            TimeZoneOffset = timezoneOffset;
-            UseWarningAccounts = instance.Data?.UseWarningAccounts ?? false;
-            /*
-            QuestMode = instance.Data?.QuestMode == "normal"
-                ? QuestMode.Normal
-                : instance.Data?.QuestMode == "alternative"
-                    ? QuestMode.Alternative
-                    : QuestMode.Both;
-            */
-            QuestMode = instance.Data?.QuestMode ?? QuestMode.Normal;
-            QuestMode = QuestMode.Alternative; // TODO: Dev
+            IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap;
+            TimeZoneOffset = timeZoneOffset;
+            UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts;
+            QuestMode = instance.Data?.QuestMode ?? Strings.DefaultQuestMode;
+            QuestMode = QuestMode.Alternative; // TODO: Remove dev
 
             _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _mapFactory = mapFactory;
@@ -419,11 +415,16 @@
 
         public void Reload()
         {
+            _logger.LogDebug($"[{Name}] Reloading instance");
+
+            // TODO: Change method signature to async Task
             UpdateAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public void Stop()
         {
+            _logger.LogDebug($"[{Name}] Stopping instance");
+
             _shouldExit = true;
             _timer.Stop();
         }

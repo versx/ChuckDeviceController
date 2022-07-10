@@ -165,9 +165,9 @@
                     switch (instance.Type)
                     {
                         case InstanceType.AutoQuest:
-                            var timezone = instance.Data?.TimeZone;
-                            var timezoneOffset = ConvertTimeZoneToOffset(timezone, instance.Data?.EnableDst ?? false);
-                            jobController = CreateAutoQuestJobController(_mapFactory, _deviceFactory, instance, multiPolygons, timezoneOffset);
+                            var timeZone = instance.Data?.TimeZone;
+                            var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
+                            jobController = CreateAutoQuestJobController(_mapFactory, _deviceFactory, instance, multiPolygons, timeZoneOffset);
                             break;
                         case InstanceType.Bootstrap:
                             jobController = new BootstrapInstanceController(instance, coordinates);
@@ -448,14 +448,14 @@
             return jobController;
         }
 
-        private static IJobController CreateAutoQuestJobController(IDbContextFactory<MapDataContext> mapFactory, IDbContextFactory<DeviceControllerContext> deviceFactory, Instance instance, List<MultiPolygon> multiPolygons, short timezoneOffset)
+        private static IJobController CreateAutoQuestJobController(IDbContextFactory<MapDataContext> mapFactory, IDbContextFactory<DeviceControllerContext> deviceFactory, Instance instance, List<MultiPolygon> multiPolygons, short timeZoneOffset)
         {
             var jobController = new AutoInstanceController(
                 mapFactory,
                 deviceFactory,
                 instance,
                 multiPolygons,
-                timezoneOffset
+                timeZoneOffset
             );
             return jobController;
         }

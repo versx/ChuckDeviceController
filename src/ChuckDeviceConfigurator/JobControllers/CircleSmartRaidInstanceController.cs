@@ -79,8 +79,8 @@
             Coordinates = coords;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
-            GroupName = instance.Data?.AccountGroup ?? null;
-            IsEvent = instance.Data?.IsEvent ?? false;
+            GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
+            IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
 
             _factory = factory;
             _logger = new Logger<CircleSmartRaidInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
@@ -149,6 +149,8 @@
 
         public void Reload()
         {
+            _logger.LogDebug($"[{Name}] Reloading instance");
+
             // Clear gyms cache and load gyms again
             _smartRaidGyms.Clear();
             _smartRaidGymsInPoint.Clear();
@@ -160,10 +162,9 @@
 
         public void Stop()
         {
-            if (_timer != null)
-            {
-                _timer.Stop();
-            }
+            _logger.LogDebug($"[{Name}] Stopping instance");
+
+            _timer.Stop();
         }
 
         #endregion

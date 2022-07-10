@@ -35,19 +35,21 @@
 
         #region Constructor
 
-        public BootstrapInstanceController(Instance instance, List<List<Coordinate>> coords)
+        public BootstrapInstanceController(Instance instance, List<List<Coordinate>> geofences)
         {
             Name = instance.Name;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
-            FastBootstrapMode = instance.Data?.FastBootstrapMode ?? true;
-            GroupName = instance.Data?.AccountGroup;
-            IsEvent = instance.Data?.IsEvent ?? false;
+            FastBootstrapMode = instance.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode;
+            GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
+            IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
 
             _logger = new Logger<BootstrapInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-            // TODO: Geofences = Geofence.FromPolygons(coords);
             // TODO: Generate bootstrap route
-            //Coordinates = _routeGenerator.GenerateBootstrapRoute((List<Geofence>)coords, circleSize);
+            //_geofences = Geofence.FromPolygons(geofences);
+            //_routeGenerator = new RouteGenerator();
+            Coordinates = new List<Coordinate>();
+            //Coordinates = _routeGenerator.GenerateBootstrapRoute((List<Geofence>)_geofences, circleSize);
         }
 
         #endregion
@@ -95,11 +97,14 @@
 
         public void Reload()
         {
+            _logger.LogDebug($"[{Name}] Reloading instance");
+
             _lastIndex = 0;
         }
 
         public void Stop()
         {
+            _logger.LogDebug($"[{Name}] Stopping instance");
         }
 
         #endregion

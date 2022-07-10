@@ -50,7 +50,7 @@
 
         public bool EnableLureEncounters { get; }
 
-        public Queue<Coordinate> ScanNextCoordinates { get; }
+        public Queue<Coordinate> ScanNextCoordinates { get; } = new();
 
         #endregion
 
@@ -62,22 +62,21 @@
             MultiPolygon = multiPolygon;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
-            GroupName = instance.Data?.AccountGroup ?? null;
-            IsEvent = instance.Data?.IsEvent ?? false;
-            QueueLimit = instance.Data?.IvQueueLimit ?? 100;
+            GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
+            IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
+            QueueLimit = instance.Data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit;
             PokemonIds = pokemonIds;
-            EnableLureEncounters = instance.Data?.EnableLureEncounters ?? false;
-
-            ScanNextCoordinates = new Queue<Coordinate>();
+            EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
 
             _pokemonQueue = new Queue<Pokemon>();
             _scannedPokemon = new List<ScannedPokemon>();
-
             _startDate = DateTime.UtcNow.ToTotalSeconds();
             _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 
-            _timer = new System.Timers.Timer();
-            _timer.Interval = 1000;
+            _timer = new System.Timers.Timer
+            {
+                Interval = 1000
+            };
             _timer.Elapsed += (sender, e) => CheckScannedPokemonHistory();
             _timer.Start();
         }
@@ -176,10 +175,13 @@
 
         public void Reload()
         {
+            _logger.LogDebug($"[{Name}] Reloading instance");
         }
 
         public void Stop()
         {
+            _logger.LogDebug($"[{Name}] Stopping instance");
+
             _timer.Stop();
         }
 

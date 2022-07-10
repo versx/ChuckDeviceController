@@ -33,34 +33,22 @@ namespace ChuckDeviceConfigurator
 
         public const CircleInstanceRouteType DefaultCircleRouteType = CircleInstanceRouteType.Default;
 
-
+        public const short DefaultTimeZoneOffset = 0;
         public const string DefaultTimeZone = null;
-
         public const bool DefaultEnableDst = false;
-
         public const ushort DefaultSpinLimit = 3500;
-
         public const bool DefaultIgnoreS2CellBootstrap = false;
-
         public const bool DefaultUseWarningAccounts = false;
-
         public const QuestMode DefaultQuestMode = QuestMode.Normal;
 
-
         public const ushort DefaultIvQueueLimit = 100;
-
         public const string DefaultIvList = null;
-
         public const bool DefaultEnableLureEncounters = false;
 
-
         public const bool DefaultFastBootstrapMode = false;
-
         public const ushort DefaultCircleSize = 70;
 
-
         public const string DefaultAccountGroup = null;
-
         public const bool DefaultIsEvent = false;
     }
 }

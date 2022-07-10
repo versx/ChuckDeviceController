@@ -32,25 +32,18 @@
 
         #region Constructors
 
-        public TthFinderInstanceController()
-        {
-            Coordinates = new List<Coordinate>();
-            Geofences = new List<List<Coordinate>>();
-
-            _logger = new Logger<TthFinderInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-        }
-
         public TthFinderInstanceController(Instance instance, List<List<Coordinate>> geofences)
-            : this()
         {
             Name = instance.Name;
+            Geofences = geofences;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
-            GroupName = instance.Data?.AccountGroup ?? null;
-            IsEvent = instance.Data?.IsEvent ?? false;
+            GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
+            IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
 
-            Geofences = geofences;
             Coordinates = Bootstrap();
+
+            _logger = new Logger<TthFinderInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
         }
 
         #endregion
@@ -111,16 +104,19 @@
 
         public void Reload()
         {
+            _logger.LogDebug($"[{Name}] Reloading instance");
+
             _lastIndex = 0;
         }
 
         public void Stop()
         {
+            _logger.LogDebug($"[{Name}] Stopping instance");
         }
 
         #endregion
 
-        private List<Coordinate> Bootstrap()
+        private IReadOnlyList<Coordinate> Bootstrap()
         {
             var list = new List<Coordinate>();
             foreach (var geofence in Geofences)
