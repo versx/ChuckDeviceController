@@ -81,68 +81,44 @@
         // POST: InstanceController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(IFormCollection collection)
+        public async Task<ActionResult> Create(ManageInstanceViewModel model) //IFormCollection collection)
         {
             try
             {
-                var name = Convert.ToString(collection["Name"]);
-                var type = (InstanceType)Convert.ToUInt16(collection["Type"]);
-                var minLevel = Convert.ToUInt16(collection["MinimumLevel"]);
-                var maxLevel = Convert.ToUInt16(collection["MaximumLevel"]);
-                var geofences = Convert.ToString(collection["Geofences"]).Split(',').ToList();
-                var accountGroup = Convert.ToString(collection["Data.AccountGroup"]);
-                var isEvent = collection["Data.IsEvent"].Contains("true");
-
-                var circleRouteType = (Convert.ToString(collection["Data.CircleRouteType"]) ?? "Default").StringToObject<CircleInstanceRouteType>();
-
-                var questMode = (Convert.ToString(collection["Data.QuestMode"]) ?? "Normal").StringToObject<QuestMode>();
-                var timeZone = Convert.ToString(collection["Data.TimeZone"]);
-                var enableDst = collection["Data.EnableDst"].Contains("true");
-                var spinLimit = Convert.ToUInt16(collection["Data.SpinLimit"]);
-                var useWarningAccounts = collection["Data.UseWarningAccounts"].Contains("true");
-                var ignoreS2CellBootstrap = collection["Data.IgnoreS2CellBootstrap"].Contains("true");
-
-                var circleSize = Convert.ToString(collection["Data.CircleSize"]);
-                var fastBootstrapMode = collection["Data.FastBootstrap"].Contains("true");
-
-                var ivList = Convert.ToString(collection["Data.IvList"]);
-                var ivQueueLimit = Convert.ToUInt16(Convert.ToString(collection["Data.IvQueueLimit"]) ?? "100");
-                var enableLureEncounters = collection["Data.EnableLureEncounters"].Contains("true");
-
-                if (_context.Instances.Any(inst => inst.Name == name))
+                if (_context.Instances.Any(inst => inst.Name == model.Name))
                 {
                     // Instance exists already by name
-                    ModelState.AddModelError("Instance", $"Instance with name '{name}' already exists.");
+                    ModelState.AddModelError("Instance", $"Instance with name '{model.Name}' already exists.");
                     return View();
                 }
 
                 var instance = new Instance
                 {
-                    Name = name,
-                    Type = type,
-                    MinimumLevel = minLevel,
-                    MaximumLevel = maxLevel,
-                    Geofences = geofences,
+                    Name = model.Name,
+                    Type = model.Type,
+                    MinimumLevel = model.MinimumLevel,
+                    MaximumLevel = model.MaximumLevel,
+                    Geofences = model.Geofences,
                     Data = new InstanceData
                     {
-                        QuestMode = questMode,
-                        TimeZone = timeZone,
-                        EnableDst = enableDst,
-                        SpinLimit = spinLimit,
-                        UseWarningAccounts = useWarningAccounts,
-                        IgnoreS2CellBootstrap = ignoreS2CellBootstrap,
+                        QuestMode = model.Data?.QuestMode ?? Strings.DefaultQuestMode,
+                        TimeZone = model.Data?.TimeZone ?? Strings.DefaultTimeZone,
+                        EnableDst = model.Data?.EnableDst ?? Strings.DefaultEnableDst,
+                        SpinLimit = model.Data?.SpinLimit ?? Strings.DefaultSpinLimit,
+                        UseWarningAccounts = model.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts,
+                        IgnoreS2CellBootstrap = model.Data?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap,
                         
-                        FastBootstrapMode = fastBootstrapMode,
+                        FastBootstrapMode = model.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
                         
-                        CircleRouteType = circleRouteType,
-                        CircleSize = Convert.ToUInt16(circleSize == "" ? "70" : circleSize),
+                        CircleRouteType = model.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType,
+                        CircleSize = model.Data?.CircleSize ?? Strings.DefaultCircleSize,
 
-                        IvList = ivList,
-                        IvQueueLimit = ivQueueLimit,
-                        EnableLureEncounters = enableLureEncounters,
+                        IvList = model.Data?.IvList ?? Strings.DefaultIvList,
+                        IvQueueLimit = model.Data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
+                        EnableLureEncounters = model.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
 
-                        AccountGroup = accountGroup,
-                        IsEvent = false,
+                        AccountGroup = model.Data?.AccountGroup ?? Strings.DefaultAccountGroup,
+                        IsEvent = model.Data?.IsEvent ?? Strings.DefaultIsEvent,
                     },
                 };
 
@@ -172,15 +148,16 @@
                 return View();
             }
 
-            var model = new EditInstanceViewModel
+            var model = new ManageInstanceViewModel
             {
                 Name = instance.Name,
                 Type = instance.Type,
                 MinimumLevel = instance.MinimumLevel,
                 MaximumLevel = instance.MaximumLevel,
                 Geofences = instance.Geofences,
-                Data = new EditInstanceDataViewModel
+                Data = new ManageInstanceDataViewModel
                 {
+                    // TODO: Group default instance property values somewhere
                     AccountGroup = instance.Data?.AccountGroup ?? null,
                     IsEvent = instance.Data?.IsEvent ?? false,
                     UseWarningAccounts = instance.Data?.UseWarningAccounts ?? false,
@@ -207,7 +184,7 @@
         // POST: InstanceController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(string id, EditInstanceViewModel model) //IFormCollection collection)
+        public async Task<ActionResult> Edit(string id, ManageInstanceViewModel model) //IFormCollection collection)
         {
             try
             {
@@ -216,7 +193,14 @@
                 {
                     // Failed to retrieve instance from database, does it exist?
                     ModelState.AddModelError("Instance", $"Instance does not exist with id '{id}'.");
-                    return View();
+                    return View(model);
+                }
+
+                // Check if new name already exists and not current instance
+                if (_context.Instances.Any(inst => inst.Name == model.Name && inst.Name != id))
+                {
+                    ModelState.AddModelError("Instance", $"Instance with name '{model.Name}' already exists, please choose a different name.");
+                    return View(model);
                 }
 
                 instance.Name = model.Name;
@@ -228,23 +212,23 @@
                 {
                     instance.Data = new InstanceData();
                 }
-                instance.Data.QuestMode = model.Data.QuestMode;
-                instance.Data.TimeZone = model.Data.TimeZone;
+                instance.Data.QuestMode = model.Data.QuestMode ?? Strings.DefaultQuestMode;
+                instance.Data.TimeZone = model.Data.TimeZone ?? Strings.DefaultTimeZone;
                 instance.Data.EnableDst = model.Data.EnableDst;
-                instance.Data.SpinLimit = model.Data.SpinLimit;
+                instance.Data.SpinLimit = model.Data.SpinLimit ?? Strings.DefaultSpinLimit;
                 instance.Data.UseWarningAccounts = model.Data.UseWarningAccounts;
                 instance.Data.IgnoreS2CellBootstrap = model.Data.IgnoreS2CellBootstrap;
 
                 instance.Data.FastBootstrapMode = model.Data.FastBootstrapMode;
-                instance.Data.CircleSize = model.Data.CircleSize;
+                instance.Data.CircleSize = model.Data.CircleSize ?? Strings.DefaultCircleSize;
 
-                instance.Data.CircleRouteType = model.Data.CircleRouteType;
+                instance.Data.CircleRouteType = model.Data.CircleRouteType ?? Strings.DefaultCircleRouteType;
 
-                instance.Data.IvList = model.Data.IvList;
-                instance.Data.IvQueueLimit = model.Data.IvQueueLimit;
+                instance.Data.IvList = model.Data.IvList ?? Strings.DefaultIvList;
+                instance.Data.IvQueueLimit = model.Data.IvQueueLimit ?? Strings.DefaultIvQueueLimit;
                 instance.Data.EnableLureEncounters = model.Data.EnableLureEncounters;
 
-                instance.Data.AccountGroup = model.Data.AccountGroup;
+                instance.Data.AccountGroup = model.Data.AccountGroup ?? Strings.DefaultAccountGroup;
                 instance.Data.IsEvent = model.Data.IsEvent;
 
                 // Update instance in database
@@ -258,7 +242,7 @@
             catch
             {
                 ModelState.AddModelError("Instance", $"Unknown error occurred while editing instance '{id}'.");
-                return View();
+                return View(model);
             }
         }
 

@@ -1,6 +1,6 @@
-﻿@using ChuckDeviceController.Data
-@using ChuckDeviceController.Data.Entities;
-@model Instance
+﻿@using ChuckDeviceConfigurator.ViewModels
+@using ChuckDeviceController.Data
+@model ManageInstanceViewModel
 @{
     ViewData["Title"] = "Create Instance";
 }
@@ -68,7 +68,7 @@
                 <span asp-validation-for="Data.IvQueueLimit" class="text-danger"></span>
             </div>
             <div class="checkbox pokemon_iv">
-                <label><input type="checkbox" id="Data.EnableLureEncounters" name="Data.EnableLureEncounters"> Enable Lure Encounters</label>
+                <label><input type="checkbox" asp-for="Data.EnableLureEncounters"> Enable Lure Encounters</label>
             </div>
             <div class="form-group bootstrap">
                 <label asp-for="Data.CircleSize" class="control-label"></label> (meters i.e: `70, 500, 750, etc`)
@@ -95,16 +95,16 @@
                 <span asp-validation-for="Data.TimeZone" class="text-danger"></span>
             </div>
             <div class="checkbox quests">
-                <label><input type="checkbox" id="Data.EnableDst" name="Data.EnableDst"> Enable Daylight Savings Time</label>
+                <label><input type="checkbox" asp-for="Data.EnableDst"> Enable Daylight Savings Time</label>
             </div>
             <div class="checkbox quests">
-                <label><input type="checkbox" id="Data.UseWarningAccounts" name="Data.UseWarningAccounts"> Use Warning Accounts</label>
+                <label><input type="checkbox" asp-for="Data.UseWarningAccounts"> Use Warning Accounts</label>
             </div>
             <div class="checkbox quests">
-                <label><input type="checkbox" id="Data.IgnoreS2CellBootstrap" name="Data.IgnoreS2CellBootstrap"> Ignore S2 Cell Bootstrapping</label>
+                <label><input type="checkbox" asp-for="Data.IgnoreS2CellBootstrap"> Ignore S2 Cell Bootstrapping</label>
             </div>
             <div class="checkbox bootstrap">
-                <label><input type="checkbox" id="Data.FastBootstrap" name="Data.FastBootstrap"> Enable Fast Bootstrapping</label>
+                <label><input type="checkbox" asp-for="Data.FastBootstrapMode"> Enable Fast Bootstrapping</label>
             </div>
             <div class="form-group">
                 <label asp-for="Data.AccountGroup" class="control-label"></label>
@@ -112,7 +112,7 @@
                 <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
             </div>
             <div class="checkbox">
-                <label><input type="checkbox" id="Data.IsEvent" name="Data.IsEvent"> Is Unique Event</label>
+                <label><input type="checkbox" asp-for="Data.IsEvent"> Is Unique Event</label>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
