@@ -158,8 +158,8 @@
 
         private async Task<DeviceResponse> HandleGetAccountAsync(Device device)
         {
-            ushort minLevel = 0;
-            ushort maxLevel = 29;
+            ushort minLevel = Strings.DefaultMinimumLevel;
+            ushort maxLevel = Strings.DefaultMaximumLevel;
 
             if (device is not null)
             {
@@ -182,8 +182,7 @@
                                            .ToList();
 
                 // Get new account between min/max level and not in inUseAccount list
-                // TODO: Make configurable SpinLimit
-                account = _context.GetNewAccount(minLevel, maxLevel, 3500, inUseAccounts);
+                account = _context.GetNewAccount(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts);
 
                 _logger.LogDebug($"[{device?.Uuid}] GetNewAccount '{account?.Username}'");
                 if (account == null)
@@ -303,16 +302,6 @@
             {
                 _logger.LogWarning($"[{device.Uuid}] No tasks avaialable yet");
                 return CreateErrorResponse("No tasks available yet");
-            }
-
-            if (device != null)
-            {
-                device.LastLatitude = task.Latitude;
-                device.LastLongitude = task.Longitude;
-                device.LastSeen = DateTime.UtcNow.ToTotalSeconds();
-
-                _context.Update(device);
-                await _context.SaveChangesAsync();
             }
 
             _logger.LogInformation($"[{device?.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
