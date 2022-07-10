@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Services
+﻿namespace ChuckDeviceConfigurator.Services.Assignments
 {
     using ChuckDeviceController.Data.Entities;
 

@@ -10,6 +10,8 @@ using ChuckDeviceConfigurator.Services;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.TimeZone;
+using ChuckDeviceConfigurator.Services.Assignments;
+using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 
 
@@ -17,12 +19,12 @@ using ChuckDeviceController.Data.Contexts;
 const bool AutomaticMigrations = true;
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-var config = LoadConfig(env);
+var config = Config.LoadConfig(args, env);
 if (config.Providers.Count() == 2)
 {
     // Only environment variables and command line providers added,
     // failed to load config provider.
-    Environment.FailFast($"Failed to find or load {Strings.AppSettings} configuration file, exiting...");
+    Environment.FailFast($"Failed to find or load configuration file, exiting...");
 }
 
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -126,16 +128,6 @@ builder.Services.AddRazorPages();
 
 #region Database Contexts
 
-/*
-var deviceOptions = DbContextFactory.BuildOptions<DeviceControllerContext>(connectionString, Strings.AssemblyName);
-var mapOptions = DbContextFactory.BuildOptions<MapDataContext>(connectionString, Strings.AssemblyName);
-
-builder.Services.AddDbContextFactory<DeviceControllerContext>(options => options = deviceOptions, ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<MapDataContext>(options => options = mapOptions, ServiceLifetime.Singleton);
-builder.Services.AddDbContext<DeviceControllerContext>(options => options = deviceOptions, ServiceLifetime.Scoped);
-builder.Services.AddDbContext<MapDataContext>(options => options = mapOptions, ServiceLifetime.Scoped);
-*/
-
 builder.Services.AddDbContextFactory<DeviceControllerContext>(options =>
     options.EnableSensitiveDataLogging()
            .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
@@ -188,7 +180,6 @@ app.UseCookiePolicy(new CookiePolicyOptions()
 
 //app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
 // User authentication
@@ -202,29 +193,6 @@ app.MapRazorPages();
 
 app.Run();
 
-
-
-// TODO: Move to shared class
-IConfigurationRoot LoadConfig(string env = "")
-{
-    var baseFilePath = Path.Combine(Strings.BasePath, Strings.AppSettings);
-    var envFilePath = Path.Combine(Strings.BasePath, string.Format(Strings.AppSettingsFormat, env));
-
-    var configBuilder = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory());
-    if (File.Exists(baseFilePath))
-    {
-        configBuilder = configBuilder.AddJsonFile(baseFilePath, optional: false, reloadOnChange: true);
-    }
-    if (File.Exists(envFilePath))
-    {
-        configBuilder = configBuilder.AddJsonFile(envFilePath, optional: true, reloadOnChange: true);
-    }
-    var config = configBuilder.AddEnvironmentVariables()
-        .AddCommandLine(args)
-        .Build();
-    return config;
-}
 
 void RegisterAuthProviders(AuthenticationBuilder auth)
 {

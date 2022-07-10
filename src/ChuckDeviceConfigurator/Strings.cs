@@ -2,17 +2,11 @@
 
 namespace ChuckDeviceConfigurator
 {
-    public static class Strings
+    public static partial class Strings
     {
-        public const string BasePath = "./bin/debug/";
-
         public const string WebRoot = "wwwroot";
 
         public static readonly string DataFolder = Path.Combine(WebRoot, "data");
-
-        public const string AppSettings = "appsettings.json";
-
-        public const string AppSettingsFormat = "appsettings.{0}.json";
 
         public static readonly string AssemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
 

@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Services
+﻿namespace ChuckDeviceConfigurator.Services.Assignments
 {
     using Microsoft.EntityFrameworkCore;
 
@@ -35,13 +35,8 @@
 
             _lastUpdated = -2;
             _assignments = new List<Assignment>();
-            _timer = new System.Timers.Timer
-            {
-                Interval = 5000,
-            };
+            _timer = new System.Timers.Timer(5 * 1000); // 5 second interval
             _timer.Elapsed += async (sender, e) => await CheckAssignments();
-
-            Start();
         }
 
         #endregion
@@ -54,7 +49,7 @@
 
             if (!_initialized)
             {
-                _logger.LogInformation($"Starting AssignmentControllerService...");
+                _logger.LogInformation($"Starting {nameof(AssignmentControllerService)}...");
                 _timer.Start();
                 _initialized = true;
             }
@@ -137,7 +132,7 @@
 
         private async Task TriggerAssignment(Assignment assignment, string instanceName, bool force = false)
         {
-            if (!(force || (assignment.Enabled && (assignment.Date == null || assignment.Date == DateTime.UtcNow))))
+            if (!(force || assignment.Enabled && (assignment.Date == null || assignment.Date == DateTime.UtcNow)))
                 return;
 
             var devices = await GetDevicesAsync(assignment);
@@ -152,11 +147,11 @@
             {
                 foreach (var device in devices)
                 {
-                    if (force || (
+                    if (force ||
                         (string.IsNullOrEmpty(instanceName) || string.Compare(device.InstanceName, instanceName, true) == 0) &&
                         string.Compare(device.InstanceName, assignment.InstanceName, true) != 0 &&
                         (string.IsNullOrEmpty(assignment.SourceInstanceName) || string.Compare(assignment.SourceInstanceName, device.InstanceName, true) == 0)
-                        )
+
                     )
                     {
                         _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");

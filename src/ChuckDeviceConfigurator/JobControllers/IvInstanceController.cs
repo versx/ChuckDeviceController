@@ -73,10 +73,7 @@
             _startDate = DateTime.UtcNow.ToTotalSeconds();
             _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 
-            _timer = new System.Timers.Timer
-            {
-                Interval = 1000
-            };
+            _timer = new System.Timers.Timer(5 * 1000); // 5 second interval
             _timer.Elapsed += (sender, e) => CheckScannedPokemonHistory();
             _timer.Start();
         }
@@ -210,6 +207,8 @@
                 Thread.Sleep(Convert.ToInt32(120 - timeSince) * 1000);
                 // TODO: Should exit
             }
+
+            // TODO: Spawn new thread instead of timer
             var success = false;
             Pokemon? pokemonReal = null;
             while (!success)

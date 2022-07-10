@@ -91,10 +91,7 @@
             // Load/build gyms list for smart raid cache
             LoadGymsAsync();
 
-            _timer = new System.Timers.Timer
-            {
-                Interval = 30 * 1000, // 30 second interval
-            };
+            _timer = new System.Timers.Timer(30 * 1000); // 30 second interval
             _timer.Elapsed += async (sender, e) => await UpdateGymInfoAsync();
             _timer.Start();
         }
