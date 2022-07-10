@@ -7,7 +7,7 @@ using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Services;
 
 
-// TODO: Make configurable
+// TODO: Make 'AutomaticMigrations' configurable
 const bool AutomaticMigrations = true;
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");

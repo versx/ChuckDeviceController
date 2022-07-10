@@ -133,14 +133,12 @@
         public string? GroupName { get; set; }
 
         [
-
             DisplayName("Status"),
             NotMapped,
         ]
         public string Status => GetStatus();
 
         [
-
             DisplayName("Last Encounter"),
             NotMapped,
         ]

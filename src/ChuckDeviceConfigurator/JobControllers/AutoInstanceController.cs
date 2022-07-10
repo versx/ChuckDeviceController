@@ -120,9 +120,10 @@
             TimeZoneOffset = timeZoneOffset;
             UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts;
             QuestMode = instance.Data?.QuestMode ?? Strings.DefaultQuestMode;
-            QuestMode = QuestMode.Alternative; // TODO: Remove dev
             MaximumSpinAttempts = instance.Data?.MaxSpinAttempts ?? Strings.DefaultMaximumSpinAttempts;
-            LogoutDelay = instance.Data?.LogoutDelay ?? Strings.DefaultLogoutDelay;
+            LogoutDelay = instance.Data?.LogoutDelay == 0
+                ? Strings.DefaultLogoutDelay
+                : instance.Data?.LogoutDelay ?? Strings.DefaultLogoutDelay;
 
             _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _mapFactory = mapFactory;

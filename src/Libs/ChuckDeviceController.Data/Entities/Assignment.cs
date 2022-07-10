@@ -8,7 +8,6 @@
     public class Assignment : BaseEntity
     {
         [
-
             Column("id"),
             Key,
             DatabaseGenerated(DatabaseGeneratedOption.Identity),
@@ -30,7 +29,7 @@
         [
             DisplayName("Device Uuid"),
             Column("device_uuid"),
-         ]
+        ]
         public string? DeviceUuid { get; set; }
 
         [
