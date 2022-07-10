@@ -160,7 +160,10 @@
             if (_startDate > 0)
             {
                 var now = DateTime.UtcNow.ToTotalSeconds();
-                ivh = (_count / (now - _startDate)) * 3600;
+                // Prevent dividing by zero
+                ivh = _count == 0
+                    ? _count / (now - _startDate) * 3600
+                    : 0;
             }
             var ivhStr = "--";
             if (ivh != -1)
