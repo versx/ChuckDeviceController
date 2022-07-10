@@ -625,6 +625,7 @@
 
             foreach (var stop in todayStopsC)
             {
+                // TODO: Look into `stop` being null for some reason. :thinking:
                 var coord = new Coordinate(stop.Pokestop.Latitude, stop.Pokestop.Longitude);
                 var dist = lastCoord.DistanceTo(coord);
                 if (dist < closestOverallDistance)

@@ -14,6 +14,9 @@
         [DisplayName("Devices")]
         public uint Devices { get; set; }
 
+        [DisplayName("Device Groups")]
+        public uint DeviceGroups { get; set; }
+
         [DisplayName("Geofences")]
         public uint Geofences { get; set; }
 

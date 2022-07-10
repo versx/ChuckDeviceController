@@ -24,7 +24,7 @@
 
         public DbSet<Device> Devices { get; set; }
 
-        // TODO: DeviceGroups
+        public DbSet<DeviceGroup> DeviceGroups { get; set; }
 
         public DbSet<Geofence> Geofences { get; set; }
 
@@ -36,6 +36,10 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<DeviceGroup>()
+                        .Property(p => p.Devices)
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+
             modelBuilder.Entity<Geofence>()
                         .Property(p => p.Type)
                         .HasConversion(x => Geofence.GeofenceTypeToString(x), x => Geofence.StringToGeofenceType(x));

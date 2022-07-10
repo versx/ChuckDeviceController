@@ -155,29 +155,26 @@
             }
 
             var devicesToUpdate = new List<Device>();
-            //using (var context = _factory.CreateDbContext())
+            foreach (var device in devices)
             {
-                foreach (var device in devices)
+                if (force ||
+                    (string.IsNullOrEmpty(instanceName) || string.Compare(device.InstanceName, instanceName, true) == 0) &&
+                    string.Compare(device.InstanceName, assignment.InstanceName, true) != 0 &&
+                    (string.IsNullOrEmpty(assignment.SourceInstanceName) || string.Compare(assignment.SourceInstanceName, device.InstanceName, true) == 0)
+
+                )
                 {
-                    if (force ||
-                        (string.IsNullOrEmpty(instanceName) || string.Compare(device.InstanceName, instanceName, true) == 0) &&
-                        string.Compare(device.InstanceName, assignment.InstanceName, true) != 0 &&
-                        (string.IsNullOrEmpty(assignment.SourceInstanceName) || string.Compare(assignment.SourceInstanceName, device.InstanceName, true) == 0)
+                    _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
 
-                    )
-                    {
-                        _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
-
-                        device.InstanceName = assignment.InstanceName;
-                        devicesToUpdate.Add(device);
-                    }
+                    device.InstanceName = assignment.InstanceName;
+                    devicesToUpdate.Add(device);
                 }
             }
 
-            // Save/update all device's new assigned instance at once
+            // Save/update all device's new assigned instance at once.
             await SaveDevicesAsync(devicesToUpdate);
 
-            // Reload all triggered devices
+            // Reload all triggered devices.
             foreach (var device in devicesToUpdate)
             {
                 _jobControllerService.ReloadDevice(device, device.Uuid);
@@ -191,7 +188,7 @@
             {
                 using (var context = _factory.CreateDbContext())
                 {
-                    // If assignment assigned to device, add to devices list
+                    // If assignment assigned to device, pull from database and add to devices list.
                     if (!string.IsNullOrEmpty(assignment.DeviceUuid))
                     {
                         var device = await context.Devices.FindAsync(assignment.DeviceUuid);
@@ -200,21 +197,25 @@
                             devices.Add(device);
                         }
                     }
-                    // If assignment assigned to device group, add all devices to devices list
+
+                    // If assignment assigned to device group, pull from database and add all devices
+                    // to devices list.
                     if (!string.IsNullOrEmpty(assignment.DeviceGroupName))
                     {
-                        /*
-                        // TODO: Device Groups
+                        // Get device group from database.
                         var deviceGroup = await context.DeviceGroups.FindAsync(assignment.DeviceGroupName);
+                        // Redundant check since device groups are required to have at least one device,
+                        // but better safe than sorry.
                         if (deviceGroup?.Devices?.Count > 0)
                         {
-                            var devicesInGroup = await context.DeviceGroups.FindAsync(deviceGroup.Devices);
-                            if (devicesInGroup?.Count > 0)
+                            // Get device entities from uuids.
+                            var devicesInGroup = context.Devices.Where(d => deviceGroup.Devices.Contains(d.Uuid))
+                                                                .ToList();
+                            if (devicesInGroup != null && devicesInGroup?.Count > 0)
                             {
                                 devices.AddRange(devicesInGroup);
                             }
                         }
-                        */
                     }
                 }
             }

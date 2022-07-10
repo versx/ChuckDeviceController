@@ -104,7 +104,7 @@ namespace ChuckDeviceController.Migrations
 
                     b.HasKey("Username");
 
-                    b.ToTable("account");
+                    b.ToTable("account", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Assignment", b =>
@@ -148,7 +148,7 @@ namespace ChuckDeviceController.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("assignment");
+                    b.ToTable("assignment", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Device", b =>
@@ -186,7 +186,7 @@ namespace ChuckDeviceController.Migrations
 
                     b.HasKey("Uuid");
 
-                    b.ToTable("device");
+                    b.ToTable("device", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Geofence", b =>
@@ -207,7 +207,7 @@ namespace ChuckDeviceController.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("geofence");
+                    b.ToTable("geofence", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Instance", b =>
@@ -241,7 +241,7 @@ namespace ChuckDeviceController.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("instance");
+                    b.ToTable("instance", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.IvList", b =>
@@ -257,7 +257,7 @@ namespace ChuckDeviceController.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("iv_list");
+                    b.ToTable("iv_list", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Webhook", b =>
@@ -296,7 +296,7 @@ namespace ChuckDeviceController.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("webhook");
+                    b.ToTable("webhook", (string)null);
                 });
 #pragma warning restore 612, 618
         }

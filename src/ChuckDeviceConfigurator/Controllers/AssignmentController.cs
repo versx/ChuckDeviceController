@@ -3,10 +3,12 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Rendering;
+
+    using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceConfigurator.Services.Assignments;
 
     [Authorize(Roles = RoleConsts.AssignmentsRole)]
     public class AssignmentController : Controller
@@ -51,9 +53,10 @@
         // GET: AssignmentController/Create
         public ActionResult Create()
         {
-            var devices = _context.Devices.ToList();
             var instances = _context.Instances.ToList();
-            ViewBag.Devices = devices;
+            var devicesAndDeviceGroups = BuildDevicesSelectList();
+
+            ViewBag.Devices = devicesAndDeviceGroups;
             ViewBag.Instances = instances;
             return View();
         }
@@ -65,7 +68,14 @@
         {
             try
             {
-                var deviceUuid = Convert.ToString(collection["DeviceUuid"]);
+                var deviceOrDeviceGroupName = Convert.ToString(collection["DeviceUuid"]);
+                var uuid = deviceOrDeviceGroupName.StartsWith("device:")
+                    ? new string(deviceOrDeviceGroupName.Skip(7).ToArray())
+                    : null;
+                var deviceGroupName = deviceOrDeviceGroupName.StartsWith("group:")
+                    ? new string(deviceOrDeviceGroupName.Skip(6).ToArray())
+                    : null;
+
                 var sourceInstanceName = Convert.ToString(collection["SourceInstanceName"]);
                 var instanceName = Convert.ToString(collection["InstanceName"]);
                 var date = Convert.ToString(collection["Date"]);
@@ -75,22 +85,25 @@
                 var enabled = collection["Enabled"].Contains("true");
 
                 var timeValue = GetTimeNumeric(time);
-                if (_context.Assignments.Any(a => a.DeviceUuid == deviceUuid &&
+                if (_context.Assignments.Any(a =>
+                    a.DeviceUuid == uuid &&
+                    a.DeviceGroupName == deviceGroupName &&
                     a.InstanceName == instanceName &&
                     a.SourceInstanceName == sourceInstanceName &&
                     a.Date == (realDate == default ? null : realDate) &&
                     a.Time == timeValue &&
-                    a.Enabled == enabled))
+                    a.Enabled == enabled
+                ))
                 {
-                    // Assignment exists already by name
-                    ModelState.AddModelError("Assignment", $"Assignment already exists for device.");
+                    // Assignment exists already with provided details
+                    ModelState.AddModelError("Assignment", $"Assignment already exists for device with provided details.");
                     return View();
                 }
 
                 var assignment = new Assignment
                 {
-                    DeviceUuid = deviceUuid,
-                    DeviceGroupName = null,
+                    DeviceUuid = uuid,
+                    DeviceGroupName = deviceGroupName,
                     SourceInstanceName = sourceInstanceName ?? null,
                     InstanceName = instanceName,
                     Date = realDate == default ? null : realDate,
@@ -104,8 +117,8 @@
                     // Create on complete assignment with the same properties
                     var completeAssignment = new Assignment
                     {
-                        DeviceUuid = deviceUuid,
-                        DeviceGroupName = null,
+                        DeviceUuid = uuid,
+                        DeviceGroupName = deviceGroupName,
                         SourceInstanceName = sourceInstanceName ?? null,
                         InstanceName = instanceName,
                         Date = realDate == default ? null : realDate,
@@ -139,8 +152,9 @@
                 return View();
             }
 
-            var devices = _context.Devices.ToList();
+            var devices = BuildDevicesSelectList(assignment.DeviceUuid, assignment.DeviceGroupName);
             var instances = _context.Instances.ToList();
+
             ViewBag.Devices = devices;
             ViewBag.Instances = instances;
             return View(assignment);
@@ -161,19 +175,41 @@
                     return View();
                 }
 
-                // TODO: Device group
+                var deviceOrDeviceGroupName = Convert.ToString(collection["DeviceUuid"]);
+                var uuid = deviceOrDeviceGroupName.StartsWith("device:")
+                    ? new string(deviceOrDeviceGroupName.Skip(7).ToArray())
+                    : null;
+                var deviceGroupName = deviceOrDeviceGroupName.StartsWith("group:")
+                    ? new string(deviceOrDeviceGroupName.Skip(6).ToArray())
+                    : null;
+
                 var sourceInstanceName = Convert.ToString(collection["SourceInstanceName"]);
                 var instanceName = Convert.ToString(collection["SourceInstanceName"]);
-                var deviceUuid = Convert.ToString(collection["DeviceUuid"]);
                 var date = Convert.ToString(collection["Date"]);
                 var time = Convert.ToString(collection["Time"]);
                 var realDate = string.IsNullOrEmpty(date) ? default : DateTime.Parse(date);
                 var enabled = collection["Enabled"].Contains("on");
                 var timeValue = GetTimeNumeric(time);
 
+                if (_context.Assignments.Any(a =>
+                    a.DeviceUuid == uuid &&
+                    a.DeviceGroupName == deviceGroupName &&
+                    a.InstanceName == instanceName &&
+                    a.SourceInstanceName == sourceInstanceName &&
+                    a.Date == (realDate == default ? null : realDate) &&
+                    a.Time == timeValue &&
+                    a.Enabled == enabled
+                ))
+                {
+                    // Assignment exists already with provided details
+                    ModelState.AddModelError("Assignment", $"Assignment already exists for device with provided details.");
+                    return View();
+                }
+
                 assignment.SourceInstanceName = sourceInstanceName;
                 assignment.InstanceName = instanceName;
-                assignment.DeviceUuid = deviceUuid;
+                assignment.DeviceUuid = uuid;
+                assignment.DeviceGroupName = deviceGroupName;
                 assignment.Date = realDate;
                 assignment.Time = timeValue;
                 assignment.Enabled = enabled;
@@ -261,6 +297,38 @@
                 ModelState.AddModelError("Assingment", "Invalid time provided");
             }
             return value;
+        }
+
+        private List<SelectListItem> BuildDevicesSelectList(string? selectedDevice = null, string? selectedDeviceGroup = null)
+        {
+            var devices = _context.Devices.ToList();
+            var deviceGroups = _context.DeviceGroups.ToList();
+
+            var devicesAndDeviceGroups = new List<SelectListItem>();
+            var devicesGroup = new SelectListGroup { Name = "Devices" };
+            var deviceGroupsGroup = new SelectListGroup { Name = "Device Groups" };
+
+            devices.ForEach(device =>
+            {
+                devicesAndDeviceGroups.Add(new SelectListItem
+                {
+                    Text = device.Uuid,
+                    Value = "device:" + device.Uuid,
+                    Selected = device.Uuid == selectedDevice,
+                    Group = devicesGroup,
+                });
+            });
+            deviceGroups.ForEach(deviceGroup =>
+            {
+                devicesAndDeviceGroups.Add(new SelectListItem
+                {
+                    Text = deviceGroup.Name,
+                    Value = "group:" + deviceGroup.Name,
+                    Selected = deviceGroup.Name == selectedDeviceGroup,
+                    Group = deviceGroupsGroup,
+                });
+            });
+            return devicesAndDeviceGroups;
         }
     }
 }
