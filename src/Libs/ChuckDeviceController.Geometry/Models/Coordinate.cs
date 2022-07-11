@@ -2,7 +2,7 @@
 {
     using System.Text.Json.Serialization;
 
-    public class Coordinate
+    public class Coordinate : IComparable
     {
         [JsonPropertyName("lat")]
         public double Latitude { get; set; }
@@ -18,6 +18,28 @@
         {
             Latitude = latitude;
             Longitude = longitude;
+        }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj == null)
+                return -1;
+
+            var other = (Coordinate)obj;
+
+            var latResult = Latitude.CompareTo(other.Latitude);
+            if (latResult != 0)
+            {
+                return latResult;
+            }
+
+            var lonResult = Longitude.CompareTo(other.Longitude);
+            if (lonResult != 0)
+            {
+                return lonResult;
+            }
+
+            return 0;
         }
 
         public override string ToString()

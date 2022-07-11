@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing
 {
+    using ChuckDeviceConfigurator.Utilities;
+    using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
     public class RouteCalculator : IRouteCalculator
@@ -7,6 +9,8 @@
         private const ushort DefaultCircleSize = 70;
 
         private readonly List<Coordinate> _coordinates;
+
+        #region Constructors
 
         public RouteCalculator()
         {
@@ -17,6 +21,8 @@
         {
             _coordinates = coordinates;
         }
+
+        #endregion
 
         #region Public Methods
 
@@ -29,26 +35,32 @@
             _coordinates.Add(coordinate);
         }
 
-        public Queue<Coordinate> CalculateShortestRoute(Coordinate start)
+        public void AddCoordinates(List<Coordinate> coordinates)
         {
-            if (start == null)
+            if (coordinates?.Count == 0)
             {
-                throw new ArgumentNullException(nameof(start));
+                throw new ArgumentNullException(nameof(coordinates));
             }
+            foreach (var coordinate in coordinates)
+            {
+                AddCoordinate(coordinate);
+            }
+        }
 
+        public void ClearCoordinates()
+        {
+            _coordinates.Clear();
+        }
+
+        public Queue<Coordinate> CalculateShortestRoute()
+        {
             if (_coordinates.Count == 0)
             {
                 throw new InvalidOperationException("No coordinates entered");
             }
 
-            //var route = new Queue<Coordinate>(_coordinates.Count);
             var sorted = _coordinates;
-            sorted.Sort((a, b) =>
-            {
-                var d1 = Math.Pow(a.Latitude, 2) + Math.Pow(a.Longitude, 2);
-                var d2 = Math.Pow(b.Latitude, 2) + Math.Pow(b.Longitude, 2);
-                return d1.CompareTo(d2);
-            });
+            sorted.Sort(Utils.CompareCoordinates);
             var ordered = OrderByDistance(sorted);
             var queue = new Queue<Coordinate>(ordered);
             return queue;
@@ -57,16 +69,6 @@
         #endregion
 
         #region Private Methods
-
-        private static double GetDistance(Coordinate coord1, Coordinate coord2)
-        {
-            var distance = Math.Sqrt
-            (
-                Math.Pow(coord2.Latitude - coord1.Latitude, 2) +
-                Math.Pow(coord2.Longitude - coord1.Longitude, 2)
-            );
-            return distance;
-        }
 
         private static double GetDistanceQuick(Coordinate coord1, Coordinate coord2)
         {
@@ -91,10 +93,12 @@
                 for (var i = 0; i < coordinates.Count; i++)
                 {
                     var distanceQuick = GetDistanceQuick(currentPoint, coordinates[i]) + (circleSize / 2);
+                    //var distanceQuick = currentPoint.DistanceTo(coordinates[i]) + (circleSize / 2);
                     if (distanceQuick > closestDistance)
                         continue;
 
-                    var distance = GetDistance(currentPoint, coordinates[i]) + (circleSize / 2);
+                    //var distance = GetDistance(currentPoint, coordinates[i]) + (circleSize / 2);
+                    var distance = currentPoint.DistanceTo(coordinates[i]) + (circleSize / 2);
                     if (distance < closestDistance)
                     {
                         closestPointIndex = i;

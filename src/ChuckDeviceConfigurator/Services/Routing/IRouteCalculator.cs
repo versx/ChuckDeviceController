@@ -6,6 +6,10 @@
     {
         void AddCoordinate(Coordinate coordinate);
 
-        Queue<Coordinate> CalculateShortestRoute(Coordinate start);
+        void AddCoordinates(List<Coordinate> coordinates);
+
+        void ClearCoordinates();
+
+        Queue<Coordinate> CalculateShortestRoute();
     }
 }

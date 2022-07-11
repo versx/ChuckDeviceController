@@ -34,14 +34,16 @@
         */
 
         // GET: AccountController
-        public ActionResult Index(int page = 1)
+        public ActionResult Index(int page = 1, int pageSize = 100)
         {
             var accounts = _context.Accounts.ToList();
             var count = accounts.Count;
-            var pageSize = 100;
-            var data = accounts.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            //var pageSize = 100;
+            var data = accounts.Skip((page - 1) * pageSize)
+                               .Take(pageSize)
+                               .ToList();
 
-            ViewBag.MaxPage = (count / pageSize) - (count % pageSize == 0 ? 1 : 0);
+            ViewBag.MaxPage = ((count / pageSize) - (count % pageSize == 0 ? 1 : 0)) + 1;
             ViewBag.Page = page;
             return View(new ViewModelsModel<Account>
             {

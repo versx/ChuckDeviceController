@@ -25,7 +25,6 @@
                     {
                         await userManager.CreateAsync(defaultUser, Strings.DefaultUserPassword);
                         await userManager.AddToRoleAsync(defaultUser, Roles.Registered.ToString());
-                        //await userManager.AddToRoleAsync(defaultUser, Roles.Moderator.ToString());
                         await userManager.AddToRoleAsync(defaultUser, Roles.Admin.ToString());
                         await userManager.AddToRoleAsync(defaultUser, Roles.SuperAdmin.ToString());
                     }

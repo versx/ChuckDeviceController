@@ -8,21 +8,29 @@
 
     public static class GeofenceService
     {
-        public static bool InMultiPolygon(List<MultiPolygon> multiPolygon, double latitude, double longitude)
+        public static bool InMultiPolygon(List<MultiPolygon> multiPolygons, Coordinate point)
         {
-            foreach (var polygon in multiPolygon)
-            {
-                if (InPolygon(polygon, latitude, longitude))
-                    return true;
-            }
-            return false;
+            var result = InMultiPolygon(multiPolygons, point.Latitude, point.Longitude);
+            return result;
         }
 
-        public static bool InPolygon(MultiPolygon polygon, double latitude, double longitude)
+        public static bool InMultiPolygon(List<MultiPolygon> multiPolygons, double latitude, double longitude)
         {
-            var numOfPoints = polygon.Count;
-            var lats = polygon.Select(x => x[0]).ToList();
-            var lngs = polygon.Select(x => x[1]).ToList();
+            var result = multiPolygons.Any(multiPolygon => InPolygon(multiPolygon, latitude, longitude));
+            return result;
+        }
+
+        public static bool InPolygon(MultiPolygon multiPolygon, Coordinate point)
+        {
+            var result = InPolygon(multiPolygon, point.Latitude, point.Longitude);
+            return result;
+        }
+
+        public static bool InPolygon(MultiPolygon multiPolygon, double latitude, double longitude)
+        {
+            var numOfPoints = multiPolygon.Count;
+            var lats = multiPolygon.Select(x => x[0]).ToList();
+            var lngs = multiPolygon.Select(x => x[1]).ToList();
             var polygonContainsPoint = false;
             for (int node = 0, altNode = (numOfPoints - 1); node < numOfPoints; altNode = node++)
             {

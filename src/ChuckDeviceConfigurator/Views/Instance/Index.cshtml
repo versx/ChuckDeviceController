@@ -47,7 +47,7 @@
                     @Html.DisplayFor(modelItem => item.Type)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Status)
+                    @Html.Raw(item.Status)
                 </td>
                 <td>
                     @item.MinimumLevel-@item.MaximumLevel

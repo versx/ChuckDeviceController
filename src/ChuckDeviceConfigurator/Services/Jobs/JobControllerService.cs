@@ -20,11 +20,11 @@
         private readonly ILogger<IJobControllerService> _logger;
         private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
         private readonly IDbContextFactory<MapDataContext> _mapFactory;
-        //private readonly IConfiguration _configuration;
         private readonly ITimeZoneService _timeZoneService;
         private readonly IGeofenceControllerService _geofenceService;
         //private readonly IAssignmentControllerService _assignmentService;
         private readonly IRouteGenerator _routeGenerator;
+        private readonly IRouteCalculator _routeCalculator;
 
         private readonly IDictionary<string, Device> _devices;
         private readonly IDictionary<string, IJobController> _instances;
@@ -56,19 +56,19 @@
             ILogger<IJobControllerService> logger,
             IDbContextFactory<DeviceControllerContext> deviceFactory,
             IDbContextFactory<MapDataContext> mapFactory,
-            //IConfiguration configuration,
             ITimeZoneService timeZoneService,
             IGeofenceControllerService geofenceService,
-            IRouteGenerator routeGenerator)
+            IRouteGenerator routeGenerator,
+            IRouteCalculator routeCalculator)
             //IAssignmentControllerService assignmentService)
         {
             _logger = logger;
             _deviceFactory = deviceFactory;
             _mapFactory = mapFactory;
-            //_configuration = configuration;
             _timeZoneService = timeZoneService;
             _geofenceService = geofenceService;
             _routeGenerator = routeGenerator;
+            _routeCalculator = routeCalculator;
             //_assignmentService = assignmentService;
 
             _devices = new Dictionary<string, Device>();
@@ -217,7 +217,8 @@
                             // ((AutoInstanceController)jobController).InstanceComplete += (sender, e) => _assignmentService.InstanceControllerDone(e.InstanceName);
                             break;
                         case InstanceType.Bootstrap:
-                            jobController = new BootstrapInstanceController(instance, coordinates);
+                            jobController = new BootstrapInstanceController(_mapFactory, instance, multiPolygons, _routeGenerator, _routeCalculator);
+                            //jobController = new BootstrapInstanceController(instance, multiPolygons, _routeGenerator, _routeCalculator);
                             break;
                         case InstanceType.FindTth:
                             jobController = new TthFinderInstanceController(instance, coordinates);

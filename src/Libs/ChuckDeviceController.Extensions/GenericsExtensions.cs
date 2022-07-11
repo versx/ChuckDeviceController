@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Extensions
 {
     using System.Diagnostics;
+    using System.Security.Cryptography;
 
     public static class GenericsExtensions
     {
@@ -72,6 +73,20 @@
             }
 
             return data.FromJson<T>();
+        }
+
+        public static void Shuffle<T>(this IList<T> list)
+        {
+            var generator = RandomNumberGenerator.Create();
+            var count = list.Count;
+            while (count > 1)
+            {
+                var random = generator.Next(0, count);
+                var remainder = random % count;
+                count--;
+
+                (list[count], list[remainder]) = (list[remainder], list[count]);
+            }
         }
     }
 }

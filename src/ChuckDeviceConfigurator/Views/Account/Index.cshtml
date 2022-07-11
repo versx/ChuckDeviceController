@@ -3,6 +3,9 @@
 @model ViewModelsModel<Account>
 @{
     ViewData["Title"] = "Accounts";
+    var pageSize = Context.Request.Query.ContainsKey("pageSize")
+        ? Convert.ToInt32(Context.Request.Query["pageSize"])
+        : 100;
 }
 
 <h1>Accounts</h1>
@@ -67,21 +70,22 @@
     </tbody>
 </table>
 
-@if (ViewBag.Page > 0)
+<label>
+    Page: @ViewBag.Page / @ViewBag.MaxPage
+</label>
+
+@if (ViewBag.Page > 1)
 {
-    <a href="@Url.Action("Index", new { page = ViewBag.Page - 1 })" 
+    <a href="@Url.Action("Index", new { page = ViewBag.Page - 1, pageSize = pageSize })" 
        class="btn btn-default">
         &laquo; Prev
     </a>
 }
-@if (ViewBag.Page < ViewBag.MaxPage)
+@if (ViewBag.Page - 1 < ViewBag.MaxPage - 1)
 {
-    <a href="@Url.Action("Index", new { page = ViewBag.Page + 1 })" 
+    <a href="@Url.Action("Index", new { page = ViewBag.Page + 1, pageSize = pageSize })" 
        class="btn btn-default">
         Next &raquo;
     </a>
 }
 <br />
-<label>
-    Page: @ViewBag.Page / @ViewBag.MaxPage
-</label>
