@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
+    using Microsoft.EntityFrameworkCore;
+
     using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Geofences;
@@ -9,8 +11,6 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry.Models;
-
-    using Microsoft.EntityFrameworkCore;
 
     // TODO: HostedService?
     public class JobControllerService : IJobControllerService
