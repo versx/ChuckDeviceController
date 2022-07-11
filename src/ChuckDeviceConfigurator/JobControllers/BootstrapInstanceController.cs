@@ -46,6 +46,8 @@
 
         public ushort CircleSize { get; }
 
+        public bool OptimizeRoute { get; }
+
         #endregion
 
         #region Constructor
@@ -62,6 +64,7 @@
             MaximumLevel = instance.MaximumLevel;
             FastBootstrapMode = instance.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode;
             CircleSize = instance.Data?.CircleSize ?? Strings.DefaultCircleSize;
+            OptimizeRoute = instance.Data?.OptimizeBootstrapRoute ?? Strings.DefaultOptimizeBootstrapRoute;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
 
@@ -73,7 +76,7 @@
 
             // Generate bootstrap route
             var bootstrapRoute = GenerateBootstrapCoordinates();
-            Coordinates = bootstrapRoute.ToList();
+            Coordinates = bootstrapRoute;
         }
 
         #endregion
@@ -155,19 +158,32 @@
             });
         }
 
-        private Queue<Coordinate> GenerateBootstrapCoordinates()
+        private List<Coordinate> GenerateBootstrapCoordinates()
         {
             //TestRouting();
 
-            var bootstrapRoute = _routeGenerator.GenerateBootstrapRoute(_multiPolygons, CircleSize);
+            //var bootstrapRoute = _routeGenerator.GenerateBootstrapRoute(_multiPolygons, CircleSize);
+            var bootstrapRoute = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
+            {
+                MultiPolygons = _multiPolygons,
+                MaximumPoints = 500,
+                RouteType = RouteGenerationType.Bootstrap,
+                CircleSize = CircleSize,
+            });
+
             if (bootstrapRoute?.Count == 0)
             {
                 throw new Exception($"No bootstrap coordinates generated!");
             }
 
-            _routeCalculator.AddCoordinates(bootstrapRoute);
-            var optimizedRoute = _routeCalculator.CalculateShortestRoute();
-            return optimizedRoute;
+            if (OptimizeRoute)
+            {
+                _routeCalculator.AddCoordinates(bootstrapRoute);
+                var optimizedRoute = _routeCalculator.CalculateShortestRoute();
+                return optimizedRoute.ToList();
+            }
+
+            return bootstrapRoute;
         }
 
         private void TestRouting()

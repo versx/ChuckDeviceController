@@ -99,7 +99,7 @@
             {
                 do
                 {
-                    var distance = currentLatLng.DistanceTo(minLine);
+                    var distance = GetDistance(currentLatLng, minLine);
                     var isInGeofence = GeofenceService.IsPointInPolygon(currentLatLng, polygon);
                     if ((distance <= circleSize || distance == 0) && isInGeofence)
                     {
@@ -239,6 +239,13 @@
             return null;
         }
         */
+
+        private static double GetDistance(Coordinate source, Coordinate destination)
+        {
+            var dx = source.Latitude - destination.Latitude;
+            var dy = source.Longitude - destination.Longitude;
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
 
         /// <summary>
         /// Notes: Expects geofence coordinates
