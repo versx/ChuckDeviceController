@@ -388,7 +388,7 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
-                    await context.BulkSaveChangesAsync();
+                    //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Wild Pokemon");
                 }
@@ -429,7 +429,7 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
-                    await context.BulkSaveChangesAsync();
+                    //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Nearby Pokemon");
                 }
@@ -487,7 +487,7 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
-                    await context.BulkSaveChangesAsync();
+                    //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Map Pokemon");
                 }
@@ -812,6 +812,7 @@
                         }
                     }
 
+                    // TODO: BulkSaveChangesAsync
                     var inserted = await context.SaveChangesAsync();
                     _logger.LogInformation($"Inserted {inserted:N0} Pokestop quests");
                 }
@@ -861,7 +862,6 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
-                    await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Pokemon encounters");
                 }
@@ -906,7 +906,6 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
-                    await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Lured Pokemon encounters");
                 }
