@@ -85,9 +85,16 @@
 
         public async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
+            if (Coordinates?.Count == 0)
+            {
+                _logger.LogWarning($"[{Name}] [{options.Uuid}] No bootstrap coordinates available!");
+                return null;
+            }
+
             // TODO: Save last index to Instance.Data
             // TODO: Lock _lastIndex
-            var currentCoord = Coordinates[_lastIndex];
+            var currentIndex = _lastIndex;
+            var currentCoord = Coordinates[currentIndex];
             if (!options.IsStartup)
             {
                 if (_startTime == 0)
@@ -99,6 +106,7 @@
                 {
                     _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
                     _timesCompleted++;
+
                     Reload();
                     // TODO: Assign instance to chained instance upon completion of bootstrap
                 }
@@ -108,7 +116,7 @@
                 }
             }
 
-            var task = await GetBootstrapTask(currentCoord);
+            var task = await GetBootstrapTaskAsync(currentCoord);
             return task;
         }
 
@@ -117,9 +125,9 @@
             var position = (double)_lastIndex / (double)Coordinates.Count;
             var percent = Math.Round(position * 100.00, 2);
             var completed = _lastCompletedTime > 0
-                ? $", Completed @ {_lastCompletedTime.FromSeconds()} ({_timesCompleted} times)"
+                ? $", Last Completed @ {_lastCompletedTime.FromSeconds()} ({_timesCompleted} times)"
                 : "";
-            var status = $"{_lastIndex:N0}/{Coordinates.Count:N0} ({percent}%){completed}";
+            var status = $"Bootstrapping: {_lastIndex:N0}/{Coordinates.Count:N0} ({percent}%){completed}";
             return await Task.FromResult(status);
         }
 
@@ -143,7 +151,7 @@
 
         #region Private Methods
 
-        private async Task<BootstrapTask> GetBootstrapTask(Coordinate currentCoord)
+        private async Task<BootstrapTask> GetBootstrapTaskAsync(Coordinate currentCoord)
         {
             return await Task.FromResult(new BootstrapTask
             {
@@ -162,7 +170,6 @@
         {
             //TestRouting();
 
-            //var bootstrapRoute = _routeGenerator.GenerateBootstrapRoute(_multiPolygons, CircleSize);
             var bootstrapRoute = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
             {
                 MultiPolygons = _multiPolygons,
@@ -195,7 +202,7 @@
                     bootstrapRoute.ForEach(coord => _routeCalculator.AddCoordinate(coord));
                     var optimizedRoute = _routeCalculator.CalculateShortestRoute();
                 };
-                var seconds = BenchmarkAction(action);
+                var seconds = Utils.BenchmarkAction(action);
             */
 
             var optimizer = new RouteOptimizer(_factory, _multiPolygons)

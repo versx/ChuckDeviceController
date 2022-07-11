@@ -9,11 +9,19 @@
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
 
-    // TODO: Make 'OnlyUnknownSpawnpoints' configurable
-    // TODO: Make 'OptimizeRoute' configurable
+    /*
+     * TODO: TthFinder logic
+     * - Keep running until all spawnpoint tth are found
+     * - Keep running until x amount of times to complete visit of spawnpoints
+     * - Add chained instance once x amount of completes are reached
+     * - All of the above
+    */
+
+    // TODO: Keep list of spawnpoint ids, check how many have been found in this session and display in status
 
     public class TthFinderInstanceController : IJobController
     {
@@ -22,7 +30,9 @@
         private readonly ILogger<TthFinderInstanceController> _logger;
         private readonly IDbContextFactory<MapDataContext> _factory;
         private readonly IRouteCalculator _routeCalculator;
-        private uint _lastIndex = 0;
+        private int _lastIndex = 0;
+        private ulong _startTime = 0;
+        private ulong _lastCompletedTime = 0;
 
         #endregion
 
@@ -48,9 +58,13 @@
 
         #endregion
 
-        #region Constructors
+        #region Constructor
 
-        public TthFinderInstanceController(IDbContextFactory<MapDataContext> factory, Instance instance, List<MultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
+        public TthFinderInstanceController(
+            IDbContextFactory<MapDataContext> factory,
+            Instance instance,
+            List<MultiPolygon> multiPolygons,
+            IRouteCalculator routeCalculator)
         {
             Name = instance.Name;
             MultiPolygons = multiPolygons;
@@ -65,7 +79,7 @@
             _factory = factory;
             _routeCalculator = routeCalculator;
 
-            SpawnpointCoordinates = Bootstrap();
+            SpawnpointCoordinates = GenerateSpawnpointCoordinates();
         }
 
         #endregion
@@ -74,25 +88,31 @@
 
         public async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
-            if (SpawnpointCoordinates.Count == 0)
+            if (SpawnpointCoordinates?.Count == 0)
             {
-                _logger.LogWarning($"[{options.Uuid}] No spawnpoints available to find TTH!");
+                _logger.LogWarning($"[{Name}] [{options.Uuid}] No spawnpoints available to find TTH!");
                 return null;
             }
 
-            Coordinate currentCoord;
             // TODO: Lock _lastIndex
-            var currentIndex = (int)_lastIndex;
-            currentCoord = SpawnpointCoordinates[currentIndex];
+            var currentIndex = _lastIndex;
+            var currentCoord = SpawnpointCoordinates[currentIndex];
             if (!options.IsStartup)
             {
+                if (_startTime == 0)
+                {
+                    _startTime = DateTime.UtcNow.ToTotalSeconds();
+                }
+
                 if (_lastIndex + 1 == SpawnpointCoordinates.Count)
                 {
-                    SpawnpointCoordinates = Bootstrap();
-                    _lastIndex = 0;
+                    _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
+
+                    Reload();
+
                     if (SpawnpointCoordinates.Count == 0)
                     {
-                        _logger.LogWarning($"[{options.Uuid}] No unknown spawnpoints to check, sending 0,0");
+                        _logger.LogWarning($"[{Name}] [{options.Uuid}] No unknown spawnpoints to check, sending 0,0");
                         currentCoord = new Coordinate();
                         // TODO: Assign instance to chained instance upon completion of tth finder
                     }
@@ -102,15 +122,9 @@
                     _lastIndex++;
                 }
             }
-            return await Task.FromResult(new CircleTask
-            {
-                Action = DeviceActionType.ScanPokemon,
-                Area = Name,
-                Latitude = currentCoord.Latitude,
-                Longitude = currentCoord.Longitude,
-                MinimumLevel = MinimumLevel,
-                MaximumLevel = MaximumLevel,
-            });
+
+            var task = await GetSpawnpointTaskAsync(currentCoord);
+            return task;
         }
 
         public async Task<string> GetStatusAsync()
@@ -121,7 +135,10 @@
             }
             var position = (double)_lastIndex / (double)SpawnpointCoordinates.Count;
             var percent = Math.Round(position * 100.0, 2);
-            var status = $"Spawnpoints: {_lastIndex:N0}/{SpawnpointCoordinates.Count:N0} ({percent}%)";
+            var completed = _lastCompletedTime > 0
+                ? $", Last Completed @ {_lastCompletedTime.FromSeconds()}"
+                : "";
+            var status = $"Spawnpoints: {_lastIndex:N0}/{SpawnpointCoordinates.Count:N0} ({percent}%){completed}";
             return await Task.FromResult(status);
         }
 
@@ -130,6 +147,9 @@
             _logger.LogDebug($"[{Name}] Reloading instance");
 
             _lastIndex = 0;
+
+            // Generate spawnpoint coordinates route again
+            SpawnpointCoordinates = GenerateSpawnpointCoordinates();
         }
 
         public void Stop()
@@ -141,13 +161,26 @@
 
         #region Private Methods
 
-        private IReadOnlyList<Coordinate> Bootstrap()
+        private async Task<BootstrapTask> GetSpawnpointTaskAsync(Coordinate currentCoord)
+        {
+            return await Task.FromResult(new BootstrapTask
+            {
+                Area = Name,
+                Action = DeviceActionType.ScanPokemon,
+                Latitude = currentCoord.Latitude,
+                Longitude = currentCoord.Longitude,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+            });
+        }
+
+        private IReadOnlyList<Coordinate> GenerateSpawnpointCoordinates()
         {
             var coordinates = new List<Coordinate>();
             foreach (var multiPolygon in MultiPolygons)
             {
                 var bbox = multiPolygon.GetBoundingBox();
-                var spawnpointCoords = GetSpawnpoints(bbox, true);
+                var spawnpointCoords = GetSpawnpointCoordinates(bbox, OnlyUnknownSpawnpoints);
                 var polygon = multiPolygon.ConvertToCoordinates();
                 // Filter spawnpoint coordinates that are within the geofence
                 var coordsInArea = spawnpointCoords.Where(coord => GeofenceService.IsPointInPolygon(coord, polygon))
@@ -166,10 +199,11 @@
                 return optimized.ToList();
             }
 
-            return coordinates;
+            var filtered = coordinates.Take(15).ToList();
+            return filtered;
         }
 
-        private List<Coordinate> GetSpawnpoints(BoundingBox bbox, bool onlyUnknown)
+        private List<Coordinate> GetSpawnpointCoordinates(BoundingBox bbox, bool onlyUnknown)
         {
             using (var context = _factory.CreateDbContext())
             {

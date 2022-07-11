@@ -103,6 +103,7 @@
                 ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
                 return View();
             }
+            // TODO: Fix issue displaying Pokemon Ids
             return View(ivList);
         }
 
