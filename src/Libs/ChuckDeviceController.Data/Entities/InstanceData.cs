@@ -56,7 +56,7 @@
             DisplayName("Maximum Pokestop Spin Attempts"),
             JsonPropertyName("max_spin_attempts"),
         ]
-        public byte MaxSpinAttempts { get; set; }
+        public byte MaximumSpinAttempts { get; set; }
 
         [
             DisplayName("Logout Delay"),
@@ -101,6 +101,12 @@
             JsonPropertyName("circle_size"),
         ]
         public ushort? CircleSize { get; set; }
+
+        [
+            DisplayName("Optimize Bootstrap Route"),
+            JsonPropertyName("optimize_bootstrap_route"),
+        ]
+        public bool OptimizeBootstrapRoute { get; set; }
 
         #endregion
 

@@ -120,7 +120,7 @@
             TimeZoneOffset = timeZoneOffset;
             UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts;
             QuestMode = instance.Data?.QuestMode ?? Strings.DefaultQuestMode;
-            MaximumSpinAttempts = instance.Data?.MaxSpinAttempts ?? Strings.DefaultMaximumSpinAttempts;
+            MaximumSpinAttempts = instance.Data?.MaximumSpinAttempts ?? Strings.DefaultMaximumSpinAttempts;
             LogoutDelay = instance.Data?.LogoutDelay == 0
                 ? Strings.DefaultLogoutDelay
                 : instance.Data?.LogoutDelay ?? Strings.DefaultLogoutDelay;

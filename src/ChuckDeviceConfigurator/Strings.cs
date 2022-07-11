@@ -43,6 +43,7 @@ namespace ChuckDeviceConfigurator
 
         public const bool DefaultFastBootstrapMode = false;
         public const ushort DefaultCircleSize = 70;
+        public const bool DefaultOptimizeBootstrapRoute = true;
 
         public const string DefaultAccountGroup = null;
         public const bool DefaultIsEvent = false;

@@ -3,7 +3,6 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
@@ -11,7 +10,6 @@
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
 
     [Authorize(Roles = RoleConsts.InstancesRole)]
     public class InstanceController : Controller
@@ -81,7 +79,7 @@
         // POST: InstanceController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(ManageInstanceViewModel model) //IFormCollection collection)
+        public async Task<ActionResult> Create(ManageInstanceViewModel model)
         {
             try
             {
@@ -99,27 +97,7 @@
                     MinimumLevel = model.MinimumLevel,
                     MaximumLevel = model.MaximumLevel,
                     Geofences = model.Geofences,
-                    Data = new InstanceData
-                    {
-                        QuestMode = model.Data?.QuestMode ?? Strings.DefaultQuestMode,
-                        TimeZone = model.Data?.TimeZone ?? Strings.DefaultTimeZone,
-                        EnableDst = model.Data?.EnableDst ?? Strings.DefaultEnableDst,
-                        SpinLimit = model.Data?.SpinLimit ?? Strings.DefaultSpinLimit,
-                        UseWarningAccounts = model.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts,
-                        IgnoreS2CellBootstrap = model.Data?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap,
-                        
-                        FastBootstrapMode = model.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
-                        
-                        CircleRouteType = model.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType,
-                        CircleSize = model.Data?.CircleSize ?? Strings.DefaultCircleSize,
-
-                        IvList = model.Data?.IvList ?? Strings.DefaultIvList,
-                        IvQueueLimit = model.Data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
-                        EnableLureEncounters = model.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
-
-                        AccountGroup = model.Data?.AccountGroup ?? Strings.DefaultAccountGroup,
-                        IsEvent = model.Data?.IsEvent ?? Strings.DefaultIsEvent,
-                    },
+                    Data = PopulateInstanceDataFromModel(model.Data),
                 };
 
                 // Add instance to database
@@ -184,7 +162,7 @@
         // POST: InstanceController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(string id, ManageInstanceViewModel model) //IFormCollection collection)
+        public async Task<ActionResult> Edit(string id, ManageInstanceViewModel model)
         {
             try
             {
@@ -208,28 +186,7 @@
                 instance.MinimumLevel = model.MinimumLevel;
                 instance.MaximumLevel = model.MaximumLevel;
                 instance.Geofences = model.Geofences;
-                if (instance.Data == null)
-                {
-                    instance.Data = new InstanceData();
-                }
-                instance.Data.QuestMode = model.Data.QuestMode ?? Strings.DefaultQuestMode;
-                instance.Data.TimeZone = model.Data.TimeZone ?? Strings.DefaultTimeZone;
-                instance.Data.EnableDst = model.Data.EnableDst;
-                instance.Data.SpinLimit = model.Data.SpinLimit ?? Strings.DefaultSpinLimit;
-                instance.Data.UseWarningAccounts = model.Data.UseWarningAccounts;
-                instance.Data.IgnoreS2CellBootstrap = model.Data.IgnoreS2CellBootstrap;
-
-                instance.Data.FastBootstrapMode = model.Data.FastBootstrapMode;
-                instance.Data.CircleSize = model.Data.CircleSize ?? Strings.DefaultCircleSize;
-
-                instance.Data.CircleRouteType = model.Data.CircleRouteType ?? Strings.DefaultCircleRouteType;
-
-                instance.Data.IvList = model.Data.IvList ?? Strings.DefaultIvList;
-                instance.Data.IvQueueLimit = model.Data.IvQueueLimit ?? Strings.DefaultIvQueueLimit;
-                instance.Data.EnableLureEncounters = model.Data.EnableLureEncounters;
-
-                instance.Data.AccountGroup = model.Data.AccountGroup ?? Strings.DefaultAccountGroup;
-                instance.Data.IsEvent = model.Data.IsEvent;
+                instance.Data = PopulateInstanceDataFromModel(model.Data);
 
                 // Update instance in database
                 _context.Instances.Update(instance);
@@ -286,6 +243,40 @@
                 ModelState.AddModelError("Instance", $"Unknown error occurred while deleting instance '{id}'.");
                 return View();
             }
+        }
+
+        private static InstanceData PopulateInstanceDataFromModel(ManageInstanceDataViewModel model)
+        {
+            var instanceData = new InstanceData
+            {
+                // Quests
+                QuestMode = model?.QuestMode ?? Strings.DefaultQuestMode,
+                TimeZone = model?.TimeZone ?? Strings.DefaultTimeZone,
+                EnableDst = model?.EnableDst ?? Strings.DefaultEnableDst,
+                SpinLimit = model?.SpinLimit ?? Strings.DefaultSpinLimit,
+                UseWarningAccounts = model?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts,
+                IgnoreS2CellBootstrap = model?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap,
+                LogoutDelay = model?.LogoutDelay ?? Strings.DefaultLogoutDelay,
+                MaximumSpinAttempts = model?.MaximumSpinAttempts ?? Strings.DefaultMaximumSpinAttempts,
+
+                // Bootstrap
+                FastBootstrapMode = model?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
+                CircleSize = model?.CircleSize ?? Strings.DefaultCircleSize,
+                OptimizeBootstrapRoute = model?.OptimizeBootstrapRoute ?? Strings.DefaultOptimizeBootstrapRoute,
+
+                // Circle
+                CircleRouteType = model?.CircleRouteType ?? Strings.DefaultCircleRouteType,
+
+                // IV
+                IvList = model?.IvList ?? Strings.DefaultIvList,
+                IvQueueLimit = model?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
+                EnableLureEncounters = model?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
+
+                // All
+                AccountGroup = model?.AccountGroup ?? Strings.DefaultAccountGroup,
+                IsEvent = model?.IsEvent ?? Strings.DefaultIsEvent,
+            };
+            return instanceData;
         }
     }
 }

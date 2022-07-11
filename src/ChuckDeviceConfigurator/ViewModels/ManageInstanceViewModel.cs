@@ -52,10 +52,10 @@
         public QuestMode? QuestMode { get; set; } = Strings.DefaultQuestMode;
 
         [DisplayName("Maximum Pokestop Spin Attempts")]
-        public byte MaximumSpinAttempts { get; set; } = Strings.DefaultMaximumSpinAttempts;
+        public byte? MaximumSpinAttempts { get; set; } = Strings.DefaultMaximumSpinAttempts;
 
         [DisplayName("Account Logout Delay")]
-        public ushort LogoutDelay { get; set; } = Strings.DefaultLogoutDelay;
+        public ushort? LogoutDelay { get; set; } = Strings.DefaultLogoutDelay;
 
 
         // IV Instance
@@ -75,6 +75,9 @@
 
         [DisplayName("Circle Size")]
         public ushort? CircleSize { get; set; } = Strings.DefaultCircleSize;
+
+        [DisplayName("Optimize Bootstrap Route")]
+        public bool OptimizeBootstrapRoute { get; set; } = Strings.DefaultOptimizeBootstrapRoute;
 
 
         // All

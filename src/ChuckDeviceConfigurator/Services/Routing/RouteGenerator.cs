@@ -13,8 +13,6 @@
     using ChuckDeviceController.Geometry.Models;
 
     // TODO: Find clusters to use with dynamic route
-    // TODO: Check if Geofence type is Circle or Geofence
-    // TODO: Add method signatures for List<MultiPolygon>, List<Geofence>, and List<Coordinate> as well as their singular variants
 
     public class RouteGenerator : IRouteGenerator
     {
@@ -91,8 +89,8 @@
             var maxLon = bbox.MaximumLongitude;
             var currentLatLng = new Coordinate(maxLat, maxLon);
             var lastLatLng = new Coordinate(minLat, minLon);
-            var startLatLng = GetDestination(currentLatLng, 90, circleSize * 1.5);
-            var endLatLng = GetDestination(GetDestination(lastLatLng, 270, circleSize * 1.5), 180, circleSize);
+            var startLatLng = GetNextCoordinate(currentLatLng, 90, circleSize * 1.5);
+            var endLatLng = GetNextCoordinate(GetNextCoordinate(lastLatLng, 270, circleSize * 1.5), 180, circleSize);
             var row = 0;
             var heading = 270;
             var i = 0;
@@ -107,15 +105,15 @@
                     {
                         points.Add(currentLatLng);
                     }
-                    currentLatLng = GetDestination(currentLatLng, heading, xMod * circleSize * 2);
+                    currentLatLng = GetNextCoordinate(currentLatLng, heading, xMod * circleSize * 2);
                     i++;
                 } while ((heading == 270 && currentLatLng.Longitude > endLatLng.Longitude) || (heading == 90 && currentLatLng.Longitude < startLatLng.Longitude));
 
-                currentLatLng = GetDestination(currentLatLng, 180, yMod * circleSize * 2);
+                currentLatLng = GetNextCoordinate(currentLatLng, 180, yMod * circleSize * 2);
                 heading = row % 2 == 1
                     ? 270
                     : 90;
-                currentLatLng = GetDestination(currentLatLng, heading, xMod * circleSize * 3);
+                currentLatLng = GetNextCoordinate(currentLatLng, heading, xMod * circleSize * 3);
                 row++;
             }
             return points;
@@ -281,30 +279,30 @@
         /// Returns the point that is a distance and heading away from
         /// the given origin point.
         /// </summary>
-        /// <param name="latlng">Origin coordinate</param>
+        /// <param name="coordinate">Origin coordinate</param>
         /// <param name="heading">Heading in degrees, clockwise from 0 degrees north.</param>
         /// <param name="distance">Distance in meters</param>
         /// <returns>The destination coordinate</returns>
-        private static Coordinate GetDestination(Coordinate latlng, double heading, double distance)
+        private static Coordinate GetNextCoordinate(Coordinate coordinate, double heading, double distance)
         {
             heading = (heading + 360) % 360;
-            const double earthRadius = 6378137; // approximation of Earth's radius
+            const double earthRadius = 6378137; // Approximation of Earth's radius
             const double rad = Math.PI / 180;
             const double radInv = 180 / Math.PI;
-            var lon1 = latlng.Longitude * rad;
-            var lat1 = latlng.Latitude * rad;
+            var lat1 = coordinate.Latitude * rad;
+            var lon1 = coordinate.Longitude * rad;
             var rheading = heading * rad;
             var sinLat1 = Math.Sin(lat1);
             var cosLat1 = Math.Cos(lat1);
             var cosDistR = Math.Cos(distance / earthRadius);
             var sinDistR = Math.Sin(distance / earthRadius);
-            var lat2 = Math.Asin((sinLat1 * cosDistR) + (cosLat1 *
-                    sinDistR * Math.Cos(rheading)));
-            var lon2 = lon1 + Math.Atan2(Math.Sin(rheading) * sinDistR *
-                    cosLat1, cosDistR - (sinLat1 * Math.Sin(lat2)));
-            lon2 *= radInv;
-            lon2 = lon2 > 180 ? lon2 - 360 : lon2 < -180 ? lon2 + 360 : lon2;
-            var coord = new Coordinate(lat2 * radInv, lon2);
+            var latAngle = Math.Asin((sinLat1 * cosDistR) + (cosLat1 *
+                sinDistR * Math.Cos(rheading)));
+            var lonAngle = lon1 + Math.Atan2(Math.Sin(rheading) * sinDistR *
+                cosLat1, cosDistR - (sinLat1 * Math.Sin(latAngle)));
+            lonAngle *= radInv;
+            lonAngle = lonAngle > 180 ? lonAngle - 360 : lonAngle < -180 ? lonAngle + 360 : lonAngle;
+            var coord = new Coordinate(latAngle * radInv, lonAngle);
             return coord;
         }
 
