@@ -3,6 +3,7 @@
 @model IvList
 @{
     ViewData["Title"] = "Edit IV List " + Model?.Name;
+    var pokemonIds = string.Join(Environment.NewLine, Model?.PokemonIds ?? new List<uint>());
 }
 
 <h1>Edit IV List @Model?.Name</h1>
@@ -22,7 +23,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="PokemonIds" class="control-label"></label>
-                <textarea asp-for="PokemonIds" class="form-control" rows="30"></textarea>
+                <textarea id="PokemonIds" name="PokemonIds" class="form-control" rows="30">@pokemonIds</textarea>
                 <span asp-validation-for="PokemonIds" class="text-danger"></span>
             </div>
             <div class="form-group">

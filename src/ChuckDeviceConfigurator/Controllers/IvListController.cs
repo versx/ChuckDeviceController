@@ -121,6 +121,39 @@
                     ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
                     return View();
                 }
+
+                // Check if new name already exists
+                var name = Convert.ToString(collection["Name"]);
+                if (_context.IvLists.Any(list => list.Name == name && ivList.Name != name))
+                {
+                    ModelState.AddModelError("IvList", $"IV list by name '{name}' already exists, please choose another.");
+                    return View();
+                }
+
+                var pokemonIds = Convert.ToString(collection["PokemonIds"])
+                                        .Replace("<br>", "\n")
+                                        .Replace("<br />", "\n")
+                                        .Replace("\r\n", "\n")
+                                        .Split('\n')
+                                        .Select(s => Convert.ToUInt32(s))
+                                        .ToList();
+
+
+                if (ivList.Name != name)
+                {
+                    ivList.Name = name;
+                }
+
+                if (ivList.PokemonIds.Count != pokemonIds.Count)
+                {
+                    ivList.PokemonIds = pokemonIds;
+                }
+                
+                // TODO: Compare lists
+
+                _context.Update(ivList);
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             catch
