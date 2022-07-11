@@ -1,0 +1,54 @@
+﻿@using ChuckDeviceConfigurator.ViewModels
+@using ChuckDeviceController.Data.Entities
+@model IvQueueViewModel
+@{
+    ViewData["Title"] = "IV Queue " + Model?.Name;
+}
+
+<h1>IV Queue @Model?.Name</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                #
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].PokemonId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].Id)
+            </th>
+            <th>
+                Location
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @{
+        var index = 1;
+        foreach (var item in Model.Queue)
+        {
+            <tr>
+                <td>
+                    @index
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Math.Round(item.Latitude, 5), @Math.Round(item.Longitude, 5)
+                </td>
+                <td>
+                    <a asp-action="Remove" asp-route-id="@item.Id">Remove</a> |
+                </td>
+            </tr>
+            index++;
+        }
+    }
+    </tbody>
+</table>

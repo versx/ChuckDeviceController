@@ -22,6 +22,8 @@
 
         Task RemoveInstanceAsync(string instanceName);
 
+        IReadOnlyList<Pokemon> GetIvQueue(string name);
+
         #endregion
 
         #region Devices

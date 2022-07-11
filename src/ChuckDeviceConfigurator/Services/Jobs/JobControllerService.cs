@@ -361,6 +361,23 @@
             await Task.CompletedTask;
         }
 
+        public IReadOnlyList<Pokemon> GetIvQueue(string name)
+        {
+            var queue = new List<Pokemon>();
+            lock (_instancesLock)
+            {
+                if (_instances.ContainsKey(name))
+                {
+                    var instance = _instances[name];
+                    if (instance is IvInstanceController iv)
+                    {
+                        queue = (List<Pokemon>)iv.GetQueue();
+                    }
+                }
+            }
+            return queue;
+        }
+
         #endregion
 
         #region Devices

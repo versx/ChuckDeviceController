@@ -245,6 +245,19 @@
             }
         }
 
+        // GET: InstanceController/IVQueue/test
+        [Route("/Instance/IvQueue/{name}")]
+        public ActionResult IvQueue(string name)
+        {
+            var ivQueue = _jobControllerService.GetIvQueue(name);
+            var model = new IvQueueViewModel
+            {
+                Name = name,
+                Queue = ivQueue.ToList(),
+            };
+            return View(model);
+        }
+
         private static InstanceData PopulateInstanceDataFromModel(ManageInstanceDataViewModel model)
         {
             var instanceData = new InstanceData

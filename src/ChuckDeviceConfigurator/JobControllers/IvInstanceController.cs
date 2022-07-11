@@ -166,8 +166,14 @@
             {
                 ivhStr = Math.Round(ivh).ToString("N0");
             }
-            var status = $"<a href='/Instance/IvQueue/{Uri.EscapeDataString(Name)}'>Queue</a>: {_pokemonQueue.Count}, IV/h: {ivhStr}";
+            var html = $"<a href='/Instance/IvQueue/{Uri.EscapeDataString(Name)}'>Queue</a>";
+            var status = $"{html}: {_pokemonQueue.Count}, IV/h: {ivhStr}";
             return await Task.FromResult(status);
+        }
+
+        public IReadOnlyList<Pokemon> GetQueue()
+        {
+            return _pokemonQueue.ToList();
         }
 
         public void Reload()
