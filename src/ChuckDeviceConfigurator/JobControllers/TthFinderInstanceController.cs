@@ -17,7 +17,7 @@
      * TODO: TthFinder logic
      * - Keep running until all spawnpoint tth are found
      * - Keep running until x amount of times to complete visit of spawnpoints
-     * - Add chained instance once x amount of completes are reached
+     * - Add chained instance once x amount of completes are reached or if all spawnpoints are found
      * - All of the above
     */
 

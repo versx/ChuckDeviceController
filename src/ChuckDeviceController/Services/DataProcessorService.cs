@@ -45,14 +45,13 @@
     }
     */
 
+    // TODO: Use/benchmark Dapper Micro ORM
+
     public class DataProcessorService : BackgroundService, IDataProcessorService
     {
         private readonly ILogger<IProtoProcessorService> _logger;
         private readonly IBackgroundTaskQueue _taskQueue;
-        //private readonly IDataConsumer _consumer;
-        //private readonly IConfiguration _config;
         private readonly IDbContextFactory<MapDataContext> _dbFactory;
-        //private readonly MapDataContext _context;
         private readonly IMemoryCache _diskCache;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell;
@@ -61,16 +60,12 @@
         public DataProcessorService(
             ILogger<IProtoProcessorService> logger,
             IBackgroundTaskQueue taskQueue,
-            //IConfiguration config,
             IDbContextFactory<MapDataContext> factory,
             IMemoryCache diskCache)
         {
             _logger = logger;
             _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
-            //_consumer = consumer;
-            //_config = config;
             _dbFactory = factory;
-            //_context = _dbFactory.CreateDbContext();
             _diskCache = diskCache;
 
             _gymIdsPerCell = new Dictionary<ulong, List<string>>();
@@ -352,7 +347,6 @@
                     */
 
                     await context.BulkMergeAsync(weatherModels);
-                    await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Client weather cells");
                 }

@@ -12,6 +12,8 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry.Models;
 
+    // TODO: Allow admin to see queue of all coords rather than just Pokemon IV queue
+    // TODO: Chain Bootstrap and TthFinder when complete to separate job controllers
     // TODO: HostedService?
     public class JobControllerService : IJobControllerService
     {
