@@ -39,6 +39,7 @@
         public uint Time { get; set; }
 
         [
+            DisplayFormat(DataFormatString = "{0:yyyy/MM/dd}", ApplyFormatInEditMode = true),
             DisplayName("Date"),
             Column("date"),
             DataType(DataType.Date),
