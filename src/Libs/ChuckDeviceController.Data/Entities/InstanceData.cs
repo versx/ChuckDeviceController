@@ -110,6 +110,22 @@
 
         #endregion
 
+        #region Spawnpoint Instance
+
+        [
+            DisplayName("Optimize Spawnpoints Route"),
+            JsonPropertyName("optimize_spawnpoints_route"),
+        ]
+        public bool OptimizeSpawnpointsRoute { get; set; }
+
+        [
+            DisplayName("Only Unknown Spawnpoints"),
+            JsonPropertyName("only_unknown_spawnpoints"),
+        ]
+        public bool OnlyUnknownSpawnpoints { get; set; }
+
+        #endregion
+
         [
             DisplayName("Account Group"),
             JsonPropertyName("account_group"),

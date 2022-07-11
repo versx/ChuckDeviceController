@@ -119,6 +119,12 @@
             <div class="checkbox bootstrap">
                 <label><input type="checkbox" asp-for="Data.OptimizeBootstrapRoute"> Optimize Bootstrap Route</label>
             </div>
+            <div class="checkbox spawnpoints">
+                <label><input type="checkbox" asp-for="Data.OptimizeSpawnpointsRoute"> Optimize Spawnpoints Route</label>
+            </div>
+            <div class="checkbox spawnpoints">
+                <label><input type="checkbox" asp-for="Data.OnlyUnknownSpawnpoints"> Only Unknown Spawnpoints</label>
+            </div>
             <div class="form-group">
                 <label asp-for="Data.AccountGroup" class="control-label"></label>
                 <input asp-for="Data.AccountGroup" class="form-control" maxlength="50">
@@ -155,10 +161,12 @@ function hideAllElements(instanceTypeId) {
     const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
         instanceTypeId == @((int)InstanceType.CircleRaid) ||
         instanceTypeId == @((int)InstanceType.CircleSmartPokemon);
+    const isSpawnpoint = instanceTypeId == @((int)InstanceType.FindTth);
     hideElements('bootstrap', isBootstrap);
     hideElements('pokemon_iv', isPokemonIV);
     hideElements('circles', isCircle);
     hideElements('quests', isQuest);
+    hideElements('spawnpoints', isSpawnpoint);
 }
 
 function hideElements(className, show) {

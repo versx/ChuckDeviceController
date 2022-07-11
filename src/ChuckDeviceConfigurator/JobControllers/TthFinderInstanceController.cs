@@ -58,6 +58,8 @@
             MaximumLevel = instance.MaximumLevel;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
+            OnlyUnknownSpawnpoints = instance.Data?.OnlyUnknownSpawnpoints ?? Strings.DefaultOnlyUnknownSpawnpoints;
+            OptimizeRoute = instance.Data?.OptimizeSpawnpointsRoute ?? Strings.DefaultOptimizeSpawnpointRoute;
 
             _logger = new Logger<TthFinderInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _factory = factory;
@@ -119,7 +121,7 @@
             }
             var position = (double)_lastIndex / (double)SpawnpointCoordinates.Count;
             var percent = Math.Round(position * 100.0, 2);
-            var status = $"Spawnpoints {_lastIndex:N0}/{SpawnpointCoordinates.Count:N0} ({percent}%";
+            var status = $"Spawnpoints: {_lastIndex:N0}/{SpawnpointCoordinates.Count:N0} ({percent}%)";
             return await Task.FromResult(status);
         }
 
@@ -156,7 +158,11 @@
             // Optimize spawnpoints list by distance with IRouteCalculator
             if (OptimizeRoute)
             {
+                _routeCalculator.ClearCoordinates();
+                _routeCalculator.AddCoordinates(coordinates);
                 var optimized = _routeCalculator.CalculateShortestRoute();
+                _routeCalculator.ClearCoordinates();
+
                 return optimized.ToList();
             }
 

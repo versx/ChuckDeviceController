@@ -272,6 +272,10 @@
                 IvQueueLimit = model?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
                 EnableLureEncounters = model?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
 
+                // Spawnpoint
+                OnlyUnknownSpawnpoints = model?.OnlyUnknownSpawnpoints ?? Strings.DefaultOnlyUnknownSpawnpoints,
+                OptimizeSpawnpointsRoute = model?.OptimizeSpawnpointsRoute ?? Strings.DefaultOptimizeSpawnpointRoute,
+
                 // All
                 AccountGroup = model?.AccountGroup ?? Strings.DefaultAccountGroup,
                 IsEvent = model?.IsEvent ?? Strings.DefaultIsEvent,

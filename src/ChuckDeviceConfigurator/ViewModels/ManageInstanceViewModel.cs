@@ -80,6 +80,14 @@
         public bool OptimizeBootstrapRoute { get; set; } = Strings.DefaultOptimizeBootstrapRoute;
 
 
+        // Spawnpoint Instance
+        [DisplayName("Only Unknown Spawnpoints")]
+        public bool OnlyUnknownSpawnpoints { get; set; } = Strings.DefaultOnlyUnknownSpawnpoints;
+
+        [DisplayName("Optimize Spawnpoints Route")]
+        public bool OptimizeSpawnpointsRoute { get; set; } = Strings.DefaultOptimizeBootstrapRoute;
+
+
         // All
         [DisplayName("Account Group")]
         public string? AccountGroup { get; set; } = Strings.DefaultAccountGroup;
