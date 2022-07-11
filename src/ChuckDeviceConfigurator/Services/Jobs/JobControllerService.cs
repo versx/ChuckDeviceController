@@ -221,7 +221,7 @@
                             //jobController = new BootstrapInstanceController(instance, multiPolygons, _routeGenerator, _routeCalculator);
                             break;
                         case InstanceType.FindTth:
-                            jobController = new TthFinderInstanceController(instance, coordinates);
+                            jobController = new TthFinderInstanceController(_mapFactory, instance, multiPolygons, _routeCalculator);
                             break;
                         case InstanceType.PokemonIV:
                             var ivList = await GetIvListAsync(instance.Data?.IvList ?? null);
