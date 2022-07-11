@@ -124,10 +124,15 @@
 
                 // Check if new name already exists
                 var name = Convert.ToString(collection["Name"]);
-                if (_context.IvLists.Any(list => list.Name == name && ivList.Name != name))
+                if (ivList.Name != name)
                 {
-                    ModelState.AddModelError("IvList", $"IV list by name '{name}' already exists, please choose another.");
-                    return View();
+                    if (_context.IvLists.Any(list => list.Name == name && list.Name != id))
+                    {
+                        ModelState.AddModelError("IvList", $"IV list by name '{name}' already exists, please choose another.");
+                        return View();
+                    }
+
+                    ivList.Name = name;
                 }
 
                 var pokemonIds = Convert.ToString(collection["PokemonIds"])
@@ -138,18 +143,10 @@
                                         .Select(s => Convert.ToUInt32(s))
                                         .ToList();
 
-
-                if (ivList.Name != name)
-                {
-                    ivList.Name = name;
-                }
-
-                if (ivList.PokemonIds.Count != pokemonIds.Count)
+                if (ivList.PokemonIds.Count != pokemonIds.Count) // TODO: Compare whole lists
                 {
                     ivList.PokemonIds = pokemonIds;
                 }
-                
-                // TODO: Compare lists
 
                 _context.Update(ivList);
                 await _context.SaveChangesAsync();
