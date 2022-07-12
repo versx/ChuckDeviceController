@@ -71,6 +71,13 @@
                 <label><input type="checkbox" asp-for="Data.EnableLureEncounters"> Enable Lure Encounters</label>
             </div>
             <div class="form-group bootstrap">
+                <label asp-for="Data.BootstrapCompleteInstanceName" class="control-label"></label>
+                <select asp-for="Data.BootstrapCompleteInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))">
+                    <option value="">Please select one</option>
+                </select>
+                <span asp-validation-for="Data.BootstrapCompleteInstanceName" class="text-danger"></span>
+            </div>
+            <div class="form-group bootstrap">
                 <label asp-for="Data.CircleSize" class="control-label"></label> (meters i.e: `70, 500, 750, etc`)
                 <input asp-for="Data.CircleSize" class="form-control" min="5" max="1000" step="1" />
                 <span asp-validation-for="Data.CircleSize" class="text-danger"></span>

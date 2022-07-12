@@ -44,6 +44,7 @@ namespace ChuckDeviceConfigurator
         public const bool DefaultFastBootstrapMode = false;
         public const ushort DefaultCircleSize = 70;
         public const bool DefaultOptimizeBootstrapRoute = true;
+        public const string DefaultBootstrapCompleteInstanceName = null;
 
         public const bool DefaultOnlyUnknownSpawnpoints = true;
         public const bool DefaultOptimizeSpawnpointRoute = true;

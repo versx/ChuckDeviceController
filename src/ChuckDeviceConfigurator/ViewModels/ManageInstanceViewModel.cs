@@ -79,6 +79,9 @@
         [DisplayName("Optimize Bootstrap Route")]
         public bool OptimizeBootstrapRoute { get; set; } = Strings.DefaultOptimizeBootstrapRoute;
 
+        [DisplayName("Bootstrap Complete Instance Name")]
+        public string? BootstrapCompleteInstanceName { get; set; } = Strings.DefaultBootstrapCompleteInstanceName;
+
 
         // Spawnpoint Instance
         [DisplayName("Only Unknown Spawnpoints")]

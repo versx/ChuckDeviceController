@@ -108,6 +108,12 @@
         ]
         public bool OptimizeBootstrapRoute { get; set; }
 
+        [
+            DisplayName("Bootstrap Complete Instance Name"),
+            JsonPropertyName("bootstrap_complete_instance_name"),
+        ]
+        public string? BootstrapCompleteInstanceName { get; set; }
+
         #endregion
 
         #region Spawnpoint Instance

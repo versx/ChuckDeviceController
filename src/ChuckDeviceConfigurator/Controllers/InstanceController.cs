@@ -71,6 +71,7 @@
         public ActionResult Create()
         {
             ViewBag.Geofences = _context.Geofences.ToList();
+            ViewBag.Instances = _context.Instances.ToList();
             ViewBag.IvLists = _context.IvLists.ToList();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key }).ToList();
             return View();
