@@ -17,14 +17,15 @@
         #region Variables
 
         private readonly ILogger<BootstrapInstanceController> _logger;
-        private readonly IDbContextFactory<MapDataContext> _factory;
+        private readonly IDbContextFactory<MapDataContext> _mapFactory;
+        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
         private readonly IRouteGenerator _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
         private readonly List<MultiPolygon> _multiPolygons;
         private int _lastIndex = 0;
         private ulong _startTime = 0;
         private ulong _lastCompletedTime = 0;
-        private int _timesCompleted = 0;
+        //private int _timesCompleted = 0;
 
         #endregion
 
@@ -48,12 +49,25 @@
 
         public bool OptimizeRoute { get; }
 
+        public string OnCompleteInstanceName { get; set; }
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler<BootstrapInstanceCompleteEventArgs> InstanceComplete;
+        private void OnInstanceComplete(string instanceName, string deviceUuid, ulong completionTimestamp)
+        {
+            InstanceComplete?.Invoke(this, new BootstrapInstanceCompleteEventArgs(instanceName, deviceUuid, completionTimestamp));
+        }
+
         #endregion
 
         #region Constructor
 
         public BootstrapInstanceController(
-            IDbContextFactory<MapDataContext> factory,
+            IDbContextFactory<MapDataContext> mapFactory,
+            IDbContextFactory<DeviceControllerContext> deviceContext,
             Instance instance,
             List<MultiPolygon> multiPolygons,
             IRouteGenerator routeGenerator,
@@ -65,11 +79,13 @@
             FastBootstrapMode = instance.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode;
             CircleSize = instance.Data?.CircleSize ?? Strings.DefaultCircleSize;
             OptimizeRoute = instance.Data?.OptimizeBootstrapRoute ?? Strings.DefaultOptimizeBootstrapRoute;
+            OnCompleteInstanceName = instance.Data?.BootstrapCompleteInstanceName ?? Strings.DefaultBootstrapCompleteInstanceName;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
 
             _logger = new Logger<BootstrapInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-            _factory = factory;
+            _mapFactory = mapFactory;
+            _deviceFactory = deviceContext;
             _multiPolygons = multiPolygons;
             _routeGenerator = routeGenerator;
             _routeCalculator = routeCalculator;
@@ -95,6 +111,8 @@
             // TODO: Lock _lastIndex
             var currentIndex = _lastIndex;
             var currentCoord = Coordinates[currentIndex];
+            _lastIndex++;
+
             if (!options.IsStartup)
             {
                 if (_startTime == 0)
@@ -102,17 +120,23 @@
                     _startTime = DateTime.UtcNow.ToTotalSeconds();
                 }
 
-                if (_lastIndex + 1 == Coordinates.Count)
+                if (_lastIndex == Coordinates.Count)
                 {
                     _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
-                    _timesCompleted++;
 
-                    Reload();
-                    // TODO: Assign instance to chained instance upon completion of bootstrap
-                }
-                else
-                {
-                    _lastIndex++;
+                    // Assign instance to chained instance upon completion of bootstrap,
+                    // if specified
+                    if (string.IsNullOrEmpty(OnCompleteInstanceName))
+                    {
+                        // Just keep reloading bootstrap route if no chained instance specified
+                        //_timesCompleted++;
+                        Reload();
+                    }
+                    else
+                    {
+                        // Trigger OnComplete event
+                        OnInstanceComplete(OnCompleteInstanceName, options.Uuid, _lastCompletedTime);
+                    }
                 }
             }
 
@@ -125,7 +149,8 @@
             var position = (double)_lastIndex / (double)Coordinates.Count;
             var percent = Math.Round(position * 100.00, 2);
             var completed = _lastCompletedTime > 0
-                ? $", Last Completed @ {_lastCompletedTime.FromSeconds()} ({_timesCompleted} times)"
+                //? $", Last Completed @ {_lastCompletedTime.FromSeconds()} ({_timesCompleted} times)"
+                ? $", Last Completed @ {_lastCompletedTime.FromSeconds()}"
                 : "";
             var status = $"Bootstrapping: {_lastIndex:N0}/{Coordinates.Count:N0} ({percent}%){completed}";
             return await Task.FromResult(status);
@@ -173,7 +198,6 @@
             var bootstrapRoute = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
             {
                 MultiPolygons = _multiPolygons,
-                MaximumPoints = 500,
                 RouteType = RouteGenerationType.Bootstrap,
                 CircleSize = CircleSize,
             });
@@ -205,7 +229,7 @@
                 var seconds = Utils.BenchmarkAction(action);
             */
 
-            var optimizer = new RouteOptimizer(_factory, _multiPolygons)
+            var optimizer = new RouteOptimizer(_mapFactory, _multiPolygons)
             {
                 IncludeSpawnpoints = true,
                 IncludeGyms = true,
@@ -256,5 +280,21 @@
         }
 
         #endregion
+    }
+
+    public sealed class BootstrapInstanceCompleteEventArgs : EventArgs
+    {
+        public string InstanceName { get; }
+
+        public string DeviceUuid { get; set; }
+
+        public ulong CompletionTimestamp { get; }
+
+        public BootstrapInstanceCompleteEventArgs(string instanceName, string deviceUuid, ulong completionTimestamp)
+        {
+            InstanceName = instanceName;
+            DeviceUuid = deviceUuid;
+            CompletionTimestamp = completionTimestamp;
+        }
     }
 }

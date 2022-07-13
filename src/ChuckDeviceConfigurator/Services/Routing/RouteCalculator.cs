@@ -70,6 +70,14 @@
 
         #region Private Methods
 
+        private static double GetDistance(Coordinate coord1, Coordinate coord2)
+        {
+            return Math.Sqrt(
+                Math.Pow(coord2.Latitude - coord1.Latitude, 2) +
+                Math.Pow(coord2.Longitude - coord1.Longitude, 2)
+            );
+        }
+
         private static double GetDistanceQuick(Coordinate coord1, Coordinate coord2)
         {
             var deltaX = Math.Abs(coord2.Latitude - coord1.Latitude);
@@ -97,8 +105,8 @@
                     if (distanceQuick > closestDistance)
                         continue;
 
-                    //var distance = GetDistance(currentPoint, coordinates[i]) + (circleSize / 2);
-                    var distance = currentPoint.DistanceTo(coordinates[i]) + (circleSize / 2);
+                    var distance = GetDistance(currentPoint, coordinates[i]) + (circleSize / 2);
+                    //var distance = currentPoint.DistanceTo(coordinates[i]) + (circleSize / 2);
                     if (distance < closestDistance)
                     {
                         closestPointIndex = i;

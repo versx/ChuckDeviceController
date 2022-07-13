@@ -155,6 +155,7 @@
             };
 
             ViewBag.Geofences = _context.Geofences.ToList();// new MultiSelectList(geofences, "Name", "Name", selectedGeofences);
+            ViewBag.Instances = _context.Instances.ToList();
             ViewBag.IvLists = _context.IvLists.ToList();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key });
             return View(model);
@@ -277,6 +278,7 @@
                 FastBootstrapMode = model?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
                 CircleSize = model?.CircleSize ?? Strings.DefaultCircleSize,
                 OptimizeBootstrapRoute = model?.OptimizeBootstrapRoute ?? Strings.DefaultOptimizeBootstrapRoute,
+                BootstrapCompleteInstanceName = model?.BootstrapCompleteInstanceName ?? Strings.DefaultBootstrapCompleteInstanceName,
 
                 // Circle
                 CircleRouteType = model?.CircleRouteType ?? Strings.DefaultCircleRouteType,

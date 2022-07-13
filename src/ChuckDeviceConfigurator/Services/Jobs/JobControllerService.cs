@@ -219,8 +219,8 @@
                             // ((AutoInstanceController)jobController).InstanceComplete += (sender, e) => _assignmentService.InstanceControllerDone(e.InstanceName);
                             break;
                         case InstanceType.Bootstrap:
-                            jobController = new BootstrapInstanceController(_mapFactory, instance, multiPolygons, _routeGenerator, _routeCalculator);
-                            //jobController = new BootstrapInstanceController(instance, multiPolygons, _routeGenerator, _routeCalculator);
+                            jobController = new BootstrapInstanceController(_mapFactory, _deviceFactory, instance, multiPolygons, _routeGenerator, _routeCalculator);
+                            ((BootstrapInstanceController)jobController).InstanceComplete += OnBootstrapInstanceComplete;
                             break;
                         case InstanceType.FindTth:
                             jobController = new TthFinderInstanceController(_mapFactory, instance, multiPolygons, _routeCalculator);
@@ -438,6 +438,30 @@
                 _devices.Remove(uuid);
             }
             // TODO: _assignmentService.Reload();
+        }
+
+        #endregion
+
+        #region OnInstanceComplete Event Handlers
+
+        private async void OnBootstrapInstanceComplete(object? sender, BootstrapInstanceCompleteEventArgs e)
+        {
+            if (!_devices.ContainsKey(e.DeviceUuid))
+            {
+                _logger.LogWarning($"[{e.DeviceUuid}] Device does not exist in device list");
+                return;
+            }
+
+            _logger.LogInformation($"[{e.DeviceUuid}] Device finished bootstrapping, switching to chained instance {e.InstanceName}");
+
+            var device = _devices[e.DeviceUuid];
+            device.InstanceName = e.InstanceName;
+            using (var context = _deviceFactory.CreateDbContext())
+            {
+                context.Update(device);
+                await context.SaveChangesAsync();
+            }
+            ReloadDevice(device, e.DeviceUuid);
         }
 
         #endregion
