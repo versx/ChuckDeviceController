@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
@@ -136,21 +137,23 @@
                 Geofences = instance.Geofences,
                 Data = new ManageInstanceDataViewModel
                 {
-                    // TODO: Group default instance property values somewhere
-                    AccountGroup = instance.Data?.AccountGroup ?? null,
-                    IsEvent = instance.Data?.IsEvent ?? false,
-                    UseWarningAccounts = instance.Data?.UseWarningAccounts ?? false,
-                    CircleRouteType = instance.Data?.CircleRouteType ?? CircleInstanceRouteType.Default,
-                    CircleSize = instance.Data?.CircleSize ?? 70,
-                    EnableDst = instance.Data?.EnableDst ?? false,
-                    EnableLureEncounters = instance.Data?.EnableLureEncounters ?? false,
-                    FastBootstrapMode = instance.Data?.FastBootstrapMode ?? false,
-                    IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? false,
-                    IvList = instance.Data?.IvList ?? null,
-                    IvQueueLimit = instance.Data?.IvQueueLimit ?? 100,
-                    QuestMode = instance.Data?.QuestMode ?? QuestMode.Normal,
-                    SpinLimit = instance.Data?.SpinLimit ?? 3500,
-                    TimeZone = instance.Data?.TimeZone ?? null,
+                    AccountGroup = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup,
+                    IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent,
+                    UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts,
+                    CircleRouteType = instance.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType,
+                    CircleSize = instance.Data?.CircleSize ?? Strings.DefaultCircleSize,
+                    EnableDst = instance.Data?.EnableDst ?? Strings.DefaultEnableDst,
+                    EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
+                    FastBootstrapMode = instance.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
+                    IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap,
+                    IvList = instance.Data?.IvList ?? Strings.DefaultIvList,
+                    IvQueueLimit = instance.Data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
+                    QuestMode = instance.Data?.QuestMode ?? Strings.DefaultQuestMode,
+                    SpinLimit = instance.Data?.SpinLimit ?? Strings.DefaultSpinLimit,
+                    TimeZone = instance.Data?.TimeZone ?? Strings.DefaultTimeZone,
+                    LogoutDelay = instance.Data?.LogoutDelay ?? Strings.DefaultLogoutDelay,
+                    MaximumSpinAttempts = instance.Data?.MaximumSpinAttempts ?? Strings.DefaultMaximumSpinAttempts,
+                    BootstrapCompleteInstanceName = instance.Data?.BootstrapCompleteInstanceName,
                 },
             };
 
