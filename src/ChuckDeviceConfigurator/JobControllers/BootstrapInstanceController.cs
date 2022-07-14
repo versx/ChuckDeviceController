@@ -6,6 +6,7 @@
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Routing;
+    using ChuckDeviceConfigurator.Services.Routing.Utilities;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -198,7 +199,8 @@
             var bootstrapRoute = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
             {
                 MultiPolygons = _multiPolygons,
-                RouteType = RouteGenerationType.Bootstrap,
+                //RouteType = RouteGenerationType.Bootstrap,
+                RouteType = RouteGenerationType.Randomized,
                 CircleSize = CircleSize,
             });
 
@@ -209,8 +211,9 @@
 
             if (OptimizeRoute)
             {
-                _routeCalculator.AddCoordinates(bootstrapRoute);
-                var optimizedRoute = _routeCalculator.CalculateShortestRoute();
+                //_routeCalculator.AddCoordinates(bootstrapRoute);
+                //var optimizedRoute = _routeCalculator.CalculateShortestRoute();
+                var optimizedRoute = RouteOptimizeUtil.Optimize(bootstrapRoute);
                 return optimizedRoute.ToList();
             }
 
