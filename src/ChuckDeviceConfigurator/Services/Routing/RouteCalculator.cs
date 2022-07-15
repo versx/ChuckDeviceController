@@ -1,7 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing
 {
     using ChuckDeviceConfigurator.Utilities;
-    using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
     public class RouteCalculator : IRouteCalculator
@@ -10,11 +9,26 @@
 
         private readonly List<Coordinate> _coordinates;
 
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value determining whether to clear the list of
+        /// coordinates after optimizing the route. Default value is <c>true</c>
+        /// </summary>
+        public bool ClearCoordinatesAfterOptimization { get; set; } = true;
+
+        /// <summary>
+        /// Gets a read only list of <seealso cref="Coordinate"/>.
+        /// </summary>
+        public IReadOnlyList<Coordinate> Coordinates => _coordinates;
+
+        #endregion
+
         #region Constructors
 
         public RouteCalculator()
+            : this(new List<Coordinate>())
         {
-            _coordinates = new List<Coordinate>();
         }
 
         public RouteCalculator(List<Coordinate> coordinates)
@@ -62,6 +76,12 @@
             var sorted = _coordinates;
             sorted.Sort(Utils.CompareCoordinates);
             var ordered = OrderByDistance(sorted);
+
+            if (ClearCoordinatesAfterOptimization)
+            {
+                ClearCoordinates();
+            }
+
             var queue = new Queue<Coordinate>(ordered);
             return queue;
         }

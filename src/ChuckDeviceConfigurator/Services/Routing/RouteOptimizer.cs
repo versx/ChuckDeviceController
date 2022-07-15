@@ -76,7 +76,7 @@
                 //var radius = 3750;//550;//options.CircleSize;
                 foreach (var entityCoord in filtered)
                 {
-                    //var distance = entityCoord.DistanceTo(filtered);
+                    //var distance = entityCoord.DistanceTo(centerCoord);
                     //if (distance <= radius)
                     {
                         coordinates.Add(entityCoord);
