@@ -198,8 +198,8 @@
             var bootstrapRoute = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
             {
                 MultiPolygons = _multiPolygons,
-                //RouteType = RouteGenerationType.Bootstrap,
-                RouteType = RouteGenerationType.Randomized,
+                RouteType = RouteGenerationType.Bootstrap,
+                //RouteType = RouteGenerationType.Randomized,
                 CircleSize = CircleSize,
             });
 
