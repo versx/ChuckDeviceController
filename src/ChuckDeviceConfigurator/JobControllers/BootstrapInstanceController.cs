@@ -213,7 +213,7 @@
                 //_routeCalculator.AddCoordinates(bootstrapRoute);
                 //var optimizedRoute = _routeCalculator.CalculateShortestRoute();
                 var optimizedRoute = RouteOptimizeUtil.Optimize(bootstrapRoute);
-                return optimizedRoute.ToList();
+                return optimizedRoute;
             }
 
             return bootstrapRoute;

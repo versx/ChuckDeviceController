@@ -62,19 +62,21 @@
                 //var newCircle, currentLatLng, point;
                 var coords = multiPolygon.ConvertToCoordinates();
                 var bbox = multiPolygon.GetBoundingBox();
-                var center = new Coordinate
+                /*
+                var centerCoord = new Coordinate
                 (
                     (bbox.MinimumLatitude + bbox.MaximumLatitude) / 2,
                     (bbox.MinimumLongitude + bbox.MaximumLongitude) / 2
                 );
+                */
                 var enityCoords = await GetEntityCoordinatesAsync(bbox);
                 // Filter all entities within geofence
                 var filtered = enityCoords.Where(coord => GeofenceService.IsPointInPolygon(coord, coords))
                                           .ToList();
                 //var radius = 3750;//550;//options.CircleSize;
-                foreach (var entityCoord in enityCoords)
+                foreach (var entityCoord in filtered)
                 {
-                    //var distance = entityCoord.DistanceTo(center);
+                    //var distance = entityCoord.DistanceTo(filtered);
                     //if (distance <= radius)
                     {
                         coordinates.Add(entityCoord);
@@ -82,7 +84,7 @@
                 }
             }
 
-            // TODO: Check if coords touching gym/stop/spawnpoint, if not remove it from route
+            // TODO: Check if coords touching gym/stop/spawnpoint or within x meters, if not remove it from route
 
             if (options.OptimizeTsp)
             {
