@@ -14,8 +14,8 @@
 
         Task<string> GetStatusAsync();
 
-        void Stop();
+        Task Stop();
 
-        void Reload();
+        Task Reload();
     }
 }

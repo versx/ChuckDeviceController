@@ -176,16 +176,18 @@
             return _pokemonQueue.ToList();
         }
 
-        public void Reload()
+        public Task Reload()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
+            return Task.CompletedTask;
         }
 
-        public void Stop()
+        public Task Stop()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 
             _timer.Stop();
+            return Task.CompletedTask;
         }
 
         #endregion

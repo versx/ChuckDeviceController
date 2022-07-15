@@ -144,7 +144,7 @@
             return await Task.FromResult(status);
         }
 
-        public void Reload()
+        public Task Reload()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
@@ -155,13 +155,15 @@
 
             // Load/gym gyms list for smart raid cache
             LoadGymsAsync();
+            return Task.CompletedTask;
         }
 
-        public void Stop()
+        public Task Stop()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 
             _timer.Stop();
+            return Task.CompletedTask;
         }
 
         #endregion
@@ -182,7 +184,7 @@
             {
                 var latlng = S2LatLng.FromDegrees(coord.Latitude, coord.Longitude);
                 var cellIds = latlng.GetLoadedS2CellIds()
-                                    .Select(x => x.Id)
+                                    .Select(cell => cell.Id)
                                     .ToList();
                 try
                 {

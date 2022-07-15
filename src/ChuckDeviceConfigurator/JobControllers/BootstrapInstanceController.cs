@@ -157,7 +157,7 @@
             return await Task.FromResult(status);
         }
 
-        public void Reload()
+        public Task Reload()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
@@ -165,11 +165,13 @@
 
             // Generate bootstrap coordinates route again
             Coordinates = GenerateBootstrapCoordinates();
+            return Task.CompletedTask;
         }
 
-        public void Stop()
+        public Task Stop()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
+            return Task.CompletedTask;
         }
 
         #endregion
@@ -212,6 +214,7 @@
             {
                 //_routeCalculator.AddCoordinates(bootstrapRoute);
                 //var optimizedRoute = _routeCalculator.CalculateShortestRoute();
+                // TODO: Benchmark RouteOptimizeUtil
                 var optimizedRoute = RouteOptimizeUtil.Optimize(bootstrapRoute);
                 return optimizedRoute;
             }

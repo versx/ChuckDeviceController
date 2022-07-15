@@ -143,7 +143,7 @@
             return await Task.FromResult(status);
         }
 
-        public void Reload()
+        public Task Reload()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
@@ -151,11 +151,13 @@
 
             // Generate spawnpoint coordinates route again
             SpawnpointCoordinates = GenerateSpawnpointCoordinates();
+            return Task.CompletedTask;
         }
 
-        public void Stop()
+        public Task Stop()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
+            return Task.CompletedTask;
         }
 
         #endregion

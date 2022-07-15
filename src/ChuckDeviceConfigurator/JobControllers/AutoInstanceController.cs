@@ -423,20 +423,21 @@
             return null;
         }
 
-        public void Reload()
+        public async Task Reload()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
-            // TODO: Change method signature to async Task
-            UpdateAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            await UpdateAsync();
         }
 
-        public void Stop()
+        public Task Stop()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 
             _shouldExit = true;
             _timer.Stop();
+
+            return Task.CompletedTask;
         }
 
         #endregion
