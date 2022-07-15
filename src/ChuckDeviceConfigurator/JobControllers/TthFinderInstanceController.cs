@@ -207,20 +207,17 @@
         {
             using (var context = _factory.CreateDbContext())
             {
-                if (onlyUnknown)
-                {
-                    var unknownSpawnpoints = context.Spawnpoints.AsEnumerable()
-                                                                .Where(spawn => spawn.DespawnSecond == null)
-                                                                .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude))
-                                                                .Select(spawn => new Coordinate(spawn.Latitude, spawn.Longitude))
-                                                                .ToList();
-                    return unknownSpawnpoints;
-                }
                 var spawnpoints = context.Spawnpoints.AsEnumerable()
-                                                     .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude))
-                                                     .Select(spawn => new Coordinate(spawn.Latitude, spawn.Longitude))
-                                                     .ToList();
-                return spawnpoints;
+                                                     .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude));
+                var coords =
+                (
+                    onlyUnknown
+                        ? spawnpoints.Where(spawn => spawn.DespawnSecond == null)
+                        : spawnpoints
+                )
+                                     .Select(spawn => new Coordinate(spawn.Latitude, spawn.Longitude))
+                                     .ToList();
+                return coords;
             }
         }
 
