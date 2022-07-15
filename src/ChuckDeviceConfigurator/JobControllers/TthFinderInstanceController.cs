@@ -22,6 +22,7 @@
     */
 
     // TODO: Keep list of spawnpoint ids, check how many have been found in this session and display in status
+    // TODO: Notify admin that bootstrapping the area before using this type of job controller instance is highly recommended.
 
     public class TthFinderInstanceController : IJobController
     {
@@ -196,11 +197,11 @@
                 var optimized = _routeCalculator.CalculateShortestRoute();
                 _routeCalculator.ClearCoordinates();
 
-                return optimized.ToList();
+                // Convert Queue to List for now
+                coordinates = optimized.ToList();
             }
 
-            var filtered = coordinates.Take(15).ToList();
-            return filtered;
+            return coordinates;
         }
 
         private List<Coordinate> GetSpawnpointCoordinates(BoundingBox bbox, bool onlyUnknown)

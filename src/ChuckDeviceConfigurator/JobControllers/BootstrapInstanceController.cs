@@ -92,8 +92,7 @@
             _routeCalculator = routeCalculator;
 
             // Generate bootstrap route
-            var bootstrapRoute = GenerateBootstrapCoordinates();
-            Coordinates = bootstrapRoute;
+            Coordinates = GenerateBootstrapCoordinates();
         }
 
         #endregion
@@ -104,6 +103,7 @@
         {
             if (Coordinates?.Count == 0)
             {
+                // TODO: If no Coordinates (bootstrap gen possibly failed, invalid geofence, etc) try and regenerate with retry limit?
                 _logger.LogWarning($"[{Name}] [{options.Uuid}] No bootstrap coordinates available!");
                 return null;
             }
@@ -164,8 +164,7 @@
             _lastIndex = 0;
 
             // Generate bootstrap coordinates route again
-            var bootstrapRoute = GenerateBootstrapCoordinates();
-            Coordinates = bootstrapRoute.ToList();
+            Coordinates = GenerateBootstrapCoordinates();
         }
 
         public void Stop()
