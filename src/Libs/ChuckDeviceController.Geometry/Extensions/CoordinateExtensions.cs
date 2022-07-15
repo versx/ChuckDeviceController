@@ -49,5 +49,15 @@
                 MaximumLongitude = maxY,
             };
         }
+
+        public static bool IsValidCoordinate(this Coordinate coordinate) =>
+            IsValidCoordinate(coordinate.Latitude, coordinate.Longitude);
+
+        public static bool IsValidCoordinate(this double latitude, double longitude)
+        {
+            return
+                latitude <= 90 && latitude >= -90 &&
+                longitude >= -180 && longitude <= 180;
+        }
     }
 }
