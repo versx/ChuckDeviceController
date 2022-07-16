@@ -152,3 +152,6 @@ View all available API routes:
 
 ## Previews:  
 ![image](https://user-images.githubusercontent.com/1327440/112744187-a3047280-8f52-11eb-8de9-ebc8eae2d833.png)
+
+## Dedication  
+- In remembrance of [Chuckleslove](https://github.com/Chuckleslove) - rest in peace brother.  
