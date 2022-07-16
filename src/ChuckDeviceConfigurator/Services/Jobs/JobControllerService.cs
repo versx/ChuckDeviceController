@@ -27,8 +27,8 @@
         private readonly IRouteGenerator _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
 
-        private readonly IDictionary<string, Device> _devices;
-        private readonly IDictionary<string, IJobController> _instances;
+        private readonly Dictionary<string, Device> _devices;
+        private readonly Dictionary<string, IJobController> _instances;
 
         private readonly object _devicesLock = new();
         private readonly object _instancesLock = new();
@@ -40,14 +40,12 @@
         /// <summary>
         /// Gets a dictionary of active and configured devices.
         /// </summary>
-        public IReadOnlyDictionary<string, Device> Devices =>
-            (IReadOnlyDictionary<string, Device>)_devices;
+        public IReadOnlyDictionary<string, Device> Devices => _devices;
 
         /// <summary>
         /// Gets a dictionary of all loaded job controller instances.
         /// </summary>
-        public IReadOnlyDictionary<string, IJobController> Instances =>
-            (IReadOnlyDictionary<string, IJobController>)_instances;
+        public IReadOnlyDictionary<string, IJobController> Instances => _instances;
 
         #endregion
 
@@ -71,6 +69,7 @@
             _routeGenerator = routeGenerator;
             _routeCalculator = routeCalculator;
             _assignmentService = assignmentService;
+            _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
 
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
@@ -96,7 +95,7 @@
                         _logger.LogInformation($"Started instance {instance.Name}");
 
                         var newDevices = devices.AsEnumerable()
-                                                .Where(d => string.Compare(d.InstanceName, instance.Name, true) == 0);
+                                                .Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
                         foreach (var device in newDevices)
                         {
                             AddDevice(device);
@@ -427,12 +426,18 @@
             await _assignmentService.InstanceControllerComplete(e.InstanceName);
         }
 
+        private void OnAssignmentDeviceReloaded(object? sender, AssignmentDeviceReloadedEventArgs e)
+        {
+            ReloadDevice(e.Device, e.Device.Uuid);
+        }
+
         #endregion
 
         #region Private Methods
 
         private IJobController GetInstanceControllerByName(string name)
         {
+            IJobController jobController;
             lock (_instancesLock)
             {
                 if (!_instances.ContainsKey(name))
@@ -440,8 +445,9 @@
                     _logger.LogError($"[{name}] Unable to get instance controller by name, it does not exist in cache");
                     return null;
                 }
-                return _instances[name];
+                jobController = _instances[name];
             }
+            return jobController;
         }
 
         private async Task<IvList> GetIvListAsync(string? name)

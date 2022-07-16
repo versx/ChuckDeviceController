@@ -2,7 +2,6 @@
 {
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -18,6 +17,16 @@
         private List<Assignment> _assignments;
         private bool _initialized;
         private long _lastUpdated;
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler<AssignmentDeviceReloadedEventArgs> DeviceReloaded;
+        private void OnDeviceReloaded(Device device)
+        {
+            DeviceReloaded?.Invoke(this, new AssignmentDeviceReloadedEventArgs(device));
+        }
 
         #endregion
 
@@ -141,7 +150,7 @@
 
         private async Task TriggerAssignmentAsync(Assignment assignment, string instanceName, bool force = false)
         {
-            if (!(force || assignment.Enabled && (assignment.Date == null || assignment.Date == DateTime.UtcNow)))
+            if (!(force || assignment.Enabled && (assignment.Date == null || assignment.Date == default || assignment.Date == DateTime.UtcNow)))
                 return;
 
             var devices = await GetDevicesAsync(assignment);
@@ -176,8 +185,8 @@
             // Reload all triggered devices.
             foreach (var device in devicesToUpdate)
             {
-                // TODO: Trigger device reload _jobControllerService.ReloadDevice(device, device.Uuid);
-                Console.WriteLine($"Reloading device: {device.Uuid}");
+                _logger.LogDebug($"Reloading device: {device.Uuid}");
+                OnDeviceReloaded(device);
             }
         }
 
@@ -246,5 +255,15 @@
         }
 
         #endregion
+    }
+
+    public sealed class AssignmentDeviceReloadedEventArgs : EventArgs
+    {
+        public Device Device { get; }
+
+        public AssignmentDeviceReloadedEventArgs(Device device)
+        {
+            Device = device;
+        }
     }
 }

@@ -4,6 +4,8 @@
 
     public interface IAssignmentControllerService
     {
+        event EventHandler<AssignmentDeviceReloadedEventArgs> DeviceReloaded;
+
         void Start();
 
         void Stop();
