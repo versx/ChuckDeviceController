@@ -4,6 +4,7 @@
 
     using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.JobControllers;
+    using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.TimeZone;
@@ -13,8 +14,6 @@
     using ChuckDeviceController.Geometry.Models;
 
     // TODO: Allow admin to see queue of all coords rather than just Pokemon IV queue
-    // TODO: Chain Bootstrap and TthFinder when complete to separate job controllers
-    // TODO: HostedService?
     public class JobControllerService : IJobControllerService
     {
         #region Variables
@@ -24,7 +23,7 @@
         private readonly IDbContextFactory<MapDataContext> _mapFactory;
         private readonly ITimeZoneService _timeZoneService;
         private readonly IGeofenceControllerService _geofenceService;
-        //private readonly IAssignmentControllerService _assignmentService;
+        private readonly IAssignmentControllerService _assignmentService;
         private readonly IRouteGenerator _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
 
@@ -39,13 +38,13 @@
         #region Properties
 
         /// <summary>
-        /// 
+        /// Gets a dictionary of active and configured devices.
         /// </summary>
         public IReadOnlyDictionary<string, Device> Devices =>
             (IReadOnlyDictionary<string, Device>)_devices;
 
         /// <summary>
-        /// 
+        /// Gets a dictionary of all loaded job controller instances.
         /// </summary>
         public IReadOnlyDictionary<string, IJobController> Instances =>
             (IReadOnlyDictionary<string, IJobController>)_instances;
@@ -61,8 +60,8 @@
             ITimeZoneService timeZoneService,
             IGeofenceControllerService geofenceService,
             IRouteGenerator routeGenerator,
-            IRouteCalculator routeCalculator)
-            //IAssignmentControllerService assignmentService)
+            IRouteCalculator routeCalculator,
+            IAssignmentControllerService assignmentService)
         {
             _logger = logger;
             _deviceFactory = deviceFactory;
@@ -71,7 +70,7 @@
             _geofenceService = geofenceService;
             _routeGenerator = routeGenerator;
             _routeCalculator = routeCalculator;
-            //_assignmentService = assignmentService;
+            _assignmentService = assignmentService;
 
             _devices = new Dictionary<string, Device>();
             _instances = new Dictionary<string, IJobController>();
@@ -141,47 +140,6 @@
                 return;
             }
 
-            /*
-            try
-            {
-                foreach (var geofence in geofences)
-                {
-                    if (geofence.Name == "CircleTestCalc")
-                    {
-                        var coords = geofence.ConvertToCoordinates();
-                        var calc = new RouteCalculator(coords);
-                        var routeCoords = calc.CalculateShortestRoute(coords.FirstOrDefault());
-                        _logger.LogInformation($"RouteCoords: {routeCoords}");
-                    }
-                    else if (geofence.Name == "Montclair Geofence")
-                    {
-                        var stopwatch = new System.Diagnostics.Stopwatch();
-                        stopwatch.Start();
-                        var area = geofence.ConvertToMultiPolygons();
-                        var multiPolygons = area.Item1;
-                        var route = _routeGenerator.GenerateBootstrapRoute(multiPolygons);
-                        stopwatch.Stop();
-                        var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                        _logger.LogInformation($"Took {totalSeconds}s");
-
-                        var randomRoute = _routeGenerator.GenerateRandomRoute(multiPolygons);
-                        _logger.LogInformation($"Random: {randomRoute}");
-
-                        var calc = new RouteCalculator(randomRoute);
-                        var optimizedRoute = calc.CalculateShortestRoute(randomRoute.FirstOrDefault());
-                        _logger.LogInformation($"Optimized: {optimizedRoute}");
-
-                        //var route = _routeGenerator.GenerateOptimizedRoute(multiPolygon, 300);
-                        _logger.LogDebug($"Route: {route}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error: {ex}");
-            }
-            */
-
             IJobController? jobController = null;
             switch (instance.Type)
             {
@@ -215,8 +173,7 @@
                             var timeZone = instance.Data?.TimeZone;
                             var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
                             jobController = CreateAutoQuestJobController(_mapFactory, _deviceFactory, instance, multiPolygons, timeZoneOffset);
-                            // TODO: Implement AutoInstanceController.InstanceComplete event
-                            // ((AutoInstanceController)jobController).InstanceComplete += (sender, e) => _assignmentService.InstanceControllerDone(e.InstanceName);
+                            ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
                             break;
                         case InstanceType.Bootstrap:
                             jobController = new BootstrapInstanceController(_mapFactory, _deviceFactory, instance, multiPolygons, _routeGenerator, _routeCalculator);
@@ -233,6 +190,7 @@
                                 return;
                             }
                             jobController = CreateIvJobController(instance, multiPolygons, ivList);
+                            // TODO: Event for Pokemon found with/out IV
                             break;
                     }
                     break;
@@ -310,7 +268,7 @@
                     instanceController?.Reload();
                 }
             }
-            // TODO: _assignmentService.Reload();
+            _assignmentService.Reload();
         }
 
         public async Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName)
@@ -359,7 +317,7 @@
                 }
             }
 
-            // TODO: _assignmentService.Reload();
+            _assignmentService.Reload();
             await Task.CompletedTask;
         }
 
@@ -393,7 +351,7 @@
                     _devices.Add(device.Uuid, device);
                 }
             }
-            // TODO: _assignmentService.Reload();
+            _assignmentService.Reload();
         }
 
         public List<string> GetDeviceUuidsInInstance(string instanceName)
@@ -422,7 +380,7 @@
         {
             RemoveDevice(device.Uuid);
 
-            // TODO: _assignmentService.Reload();
+            _assignmentService.Reload();
             await Task.CompletedTask;
         }
 
@@ -437,7 +395,7 @@
                 }
                 _devices.Remove(uuid);
             }
-            // TODO: _assignmentService.Reload();
+            _assignmentService.Reload();
         }
 
         #endregion
@@ -462,6 +420,11 @@
                 await context.SaveChangesAsync();
             }
             ReloadDevice(device, e.DeviceUuid);
+        }
+
+        private async void OnAutoInstanceComplete(object? sender, AutoInstanceCompleteEventArgs e)
+        {
+            await _assignmentService.InstanceControllerComplete(e.InstanceName);
         }
 
         #endregion

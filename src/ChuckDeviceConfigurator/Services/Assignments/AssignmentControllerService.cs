@@ -12,7 +12,6 @@
 
         private readonly IDbContextFactory<DeviceControllerContext> _factory;
         private readonly ILogger<IAssignmentControllerService> _logger;
-        private readonly IJobControllerService _jobControllerService;
 
         private readonly object _assignmentsLock = new();
         private readonly System.Timers.Timer _timer;
@@ -26,12 +25,10 @@
 
         public AssignmentControllerService(
             ILogger<IAssignmentControllerService> logger,
-            IDbContextFactory<DeviceControllerContext> factory,
-            IJobControllerService jobControllerService)
+            IDbContextFactory<DeviceControllerContext> factory)
         {
             _logger = logger;
             _factory = factory;
-            _jobControllerService = jobControllerService;
 
             _lastUpdated = -2;
             _assignments = new List<Assignment>();
@@ -158,10 +155,12 @@
             foreach (var device in devices)
             {
                 if (force ||
+                    // Check if provided instance is null or if device is assigned to provided instance
                     (string.IsNullOrEmpty(instanceName) || string.Compare(device.InstanceName, instanceName, true) == 0) &&
+                    // Check that the device isn't already assigned to the assignment instance
                     string.Compare(device.InstanceName, assignment.InstanceName, true) != 0 &&
+                    // Check if the specified source assignment instance is null or if the device is switching from the desired source instance
                     (string.IsNullOrEmpty(assignment.SourceInstanceName) || string.Compare(assignment.SourceInstanceName, device.InstanceName, true) == 0)
-
                 )
                 {
                     _logger.LogInformation($"Assigning device {device.Uuid} to {assignment.InstanceName}");
@@ -177,7 +176,8 @@
             // Reload all triggered devices.
             foreach (var device in devicesToUpdate)
             {
-                _jobControllerService.ReloadDevice(device, device.Uuid);
+                // TODO: Trigger device reload _jobControllerService.ReloadDevice(device, device.Uuid);
+                Console.WriteLine($"Reloading device: {device.Uuid}");
             }
         }
 
@@ -230,6 +230,7 @@
         {
             using (var context = _factory.CreateDbContext())
             {
+                // TODO: Use EfCore.BulkExtensions BulkChangesAsync method
                 context.UpdateRange(devices);
                 await context.SaveChangesAsync();
             }
