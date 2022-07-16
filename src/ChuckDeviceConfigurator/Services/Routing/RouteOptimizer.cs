@@ -54,7 +54,7 @@
 
         #region Public Methods
 
-        public async Task<List<Coordinate>> GenerateRouteAsync(RouteOptimizerOptions options)
+        public async Task<List<Coordinate>> OptimizeRouteAsync(RouteOptimizerOptions options)
         {
             var coordinates = new List<Coordinate>();
             foreach (var multiPolygon in MultiPolygons)

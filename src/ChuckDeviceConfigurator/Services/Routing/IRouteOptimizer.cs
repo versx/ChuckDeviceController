@@ -20,6 +20,6 @@
 
         IReadOnlyList<MultiPolygon> MultiPolygons { get; }
 
-        Task<List<Coordinate>> GenerateRouteAsync(RouteOptimizerOptions options);
+        Task<List<Coordinate>> OptimizeRouteAsync(RouteOptimizerOptions options);
     }
 }
