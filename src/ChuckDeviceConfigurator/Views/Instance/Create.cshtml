@@ -132,6 +132,9 @@
             <div class="checkbox spawnpoints">
                 <label><input type="checkbox" asp-for="Data.OnlyUnknownSpawnpoints"> Only Unknown Spawnpoints</label>
             </div>
+            <div class="checkbox dynamic">
+                <label><input type="checkbox" asp-for="Data.OptimizeDynamicRoute"> Optimize Dynamic Route</label>
+            </div>
             <div class="form-group">
                 <label asp-for="Data.AccountGroup" class="control-label"></label>
                 <input asp-for="Data.AccountGroup" class="form-control" maxlength="50">
@@ -159,6 +162,7 @@ hideElements('circles', false);
 hideElements('pokemon_iv', false);
 hideElements('quests', false);
 hideElements('spawnpoints', false);
+hideElements('dynamic', false);
 
 $('#Type').change(function() {
     hideAllElements(this.value);
@@ -172,11 +176,13 @@ function hideAllElements(instanceTypeId) {
         instanceTypeId == @((int)InstanceType.CircleRaid) ||
         instanceTypeId == @((int)InstanceType.CircleSmartPokemon);
     const isSpawnpoint = instanceTypeId == @((int)InstanceType.FindTth);
+    const isDynamic = instanceTypeId == @((int)InstanceType.DynamicPokemon);
     hideElements('bootstrap', isBootstrap);
     hideElements('pokemon_iv', isPokemonIV);
     hideElements('circles', isCircle);
     hideElements('quests', isQuest);
     hideElements('spawnpoints', isSpawnpoint);
+    hideElements('dynamic', isDynamic);
 }
 
 function hideElements(className, show) {

@@ -42,6 +42,11 @@
             var maxPoints = options.MaximumPoints;
             var circleSize = options.CircleSize;
 
+            if ((geofences?.Count ?? 0) == 0)
+            {
+                throw new Exception($"Unable to generate route, at least one geofence is required.");
+            }
+
             switch (options.RouteType)
             {
                 case RouteGenerationType.Bootstrap:

@@ -10,7 +10,17 @@
             DisplayName("Circle Instance Route Type"),
             JsonPropertyName("circle_route_type"),
         ]
-        public CircleInstanceRouteType? CircleRouteType { get; set; }
+        public CircleInstanceRouteType? CircleRouteType { get; set; } = CircleInstanceRouteType.Default;
+
+        #endregion
+
+        #region Dynamic Route Instance
+
+        [
+            DisplayName("Optimize Dynamic Route"),
+            JsonPropertyName("optimize_dynamic_route"),
+        ]
+        public bool OptimizeDynamicRoute { get; set; }
 
         #endregion
 
@@ -50,7 +60,7 @@
             DisplayName("Quest Mode"),
             JsonPropertyName("quest_mode"),
         ]
-        public QuestMode? QuestMode { get; set; }
+        public QuestMode? QuestMode { get; set; } = Data.QuestMode.Normal;
 
         [
             DisplayName("Maximum Pokestop Spin Attempts"),
@@ -143,11 +153,5 @@
             JsonPropertyName("is_event"),
         ]
         public bool? IsEvent { get; set; }
-
-        public InstanceData()
-        {
-            CircleRouteType = CircleInstanceRouteType.Default;
-            QuestMode = Data.QuestMode.Normal;
-        }
     }
 }

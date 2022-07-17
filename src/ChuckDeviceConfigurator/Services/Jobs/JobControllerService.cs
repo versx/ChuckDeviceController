@@ -166,9 +166,10 @@
                     }
                     break;
                 case InstanceType.AutoQuest:
-                case InstanceType.PokemonIV:
                 case InstanceType.Bootstrap:
+                case InstanceType.DynamicPokemon:
                 case InstanceType.FindTth:
+                case InstanceType.PokemonIV:
                     var (multiPolygons, coordinates) = geofences.ConvertToMultiPolygons();
                     switch (instance.Type)
                     {
@@ -181,6 +182,9 @@
                         case InstanceType.Bootstrap:
                             jobController = new BootstrapInstanceController(_mapFactory, instance, multiPolygons, _routeGenerator, _routeCalculator);
                             ((BootstrapInstanceController)jobController).InstanceComplete += OnBootstrapInstanceComplete;
+                            break;
+                        case InstanceType.DynamicPokemon:
+                            jobController = new DynamicRouteInstanceController(instance, multiPolygons, _routeGenerator, _routeCalculator);
                             break;
                         case InstanceType.FindTth:
                             jobController = new TthFinderInstanceController(_mapFactory, instance, multiPolygons, _routeCalculator);
@@ -403,7 +407,7 @@
 
         #endregion
 
-        #region OnInstanceComplete Event Handlers
+        #region Job Controller Event Handlers
 
         private async void OnBootstrapInstanceComplete(object? sender, BootstrapInstanceCompleteEventArgs e)
         {

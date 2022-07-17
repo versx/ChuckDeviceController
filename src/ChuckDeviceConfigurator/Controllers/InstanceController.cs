@@ -3,12 +3,10 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceConfigurator.ViewModels;
-    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -141,6 +139,7 @@
                     IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent,
                     UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts,
                     CircleRouteType = instance.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType,
+                    OptimizeDynamicRoute = instance.Data?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute,
                     CircleSize = instance.Data?.CircleSize ?? Strings.DefaultCircleSize,
                     EnableDst = instance.Data?.EnableDst ?? Strings.DefaultEnableDst,
                     EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
@@ -285,6 +284,7 @@
 
                 // Circle
                 CircleRouteType = model?.CircleRouteType ?? Strings.DefaultCircleRouteType,
+                OptimizeDynamicRoute = model?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute,
 
                 // IV
                 IvList = model?.IvList ?? Strings.DefaultIvList,

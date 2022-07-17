@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Data
 {
-    using System.ComponentModel;
     using System.Text.Json.Serialization;
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -8,6 +7,7 @@
     {
         CirclePokemon,
         CircleSmartPokemon,
+        DynamicPokemon,
         CircleRaid,
         CircleSmartRaid,
         AutoQuest,

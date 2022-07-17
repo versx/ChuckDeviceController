@@ -26,6 +26,7 @@ namespace ChuckDeviceConfigurator
         public const ushort DefaultMaximumLevel = 29;
 
         public const CircleInstanceRouteType DefaultCircleRouteType = CircleInstanceRouteType.Default;
+        public const bool DefaultOptimizeDynamicRoute = true;
 
         public const short DefaultTimeZoneOffset = 0;
         public const string DefaultTimeZone = null;

@@ -32,6 +32,11 @@
         public CircleInstanceRouteType? CircleRouteType { get; set; } = Strings.DefaultCircleRouteType;
 
 
+        // Dynamic Route Instance
+        [DisplayName("Optimize Dynamic Route")]
+        public bool OptimizeDynamicRoute { get; set; } = Strings.DefaultOptimizeDynamicRoute;
+
+
         // Quest Instance
         [DisplayName("Time Zone")]
         public string? TimeZone { get; set; } = Strings.DefaultTimeZone;

@@ -1,22 +1,21 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
-    using System.Threading.Tasks;
-
     using ChuckDeviceConfigurator.Services.Jobs;
+    using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Tasks;
-    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    // TODO: Create CirclePokemonDynamic InstanceType since we need to specify a geofence to dynamically generate the route vs circle points
-
-    public class CircleInstanceController : IJobController, IScanNext
+    // TODO: Inherit most from CircleInstanceController
+    public class DynamicRouteInstanceController : /*CircleInstanceController */IJobController, IScanNext
     {
         #region Variables
 
         private static readonly Random _random = new();
         private readonly ILogger<CircleInstanceController> _logger;
+        private readonly IRouteGenerator _routeGenerator;
+        private readonly IRouteCalculator _routeCalculator;
         private readonly Dictionary<string, DeviceIndex> _currentUuid = new();
         private uint _lastIndex = 0; // Used for basic leap frog routing
         private double _lastCompletedTime;
@@ -30,9 +29,7 @@
 
         public IReadOnlyList<Coordinate> Coordinates { get; }
 
-        public CircleInstanceType CircleType { get; }
-
-        public CircleInstanceRouteType RouteType { get; }
+        public IReadOnlyList<MultiPolygon> MultiPolygons { get; }
 
         public ushort MinimumLevel { get; }
 
@@ -44,25 +41,33 @@
 
         public bool EnableLureEncounters { get; }
 
+        public bool OptimizeDynamicRoute { get; }
+
         public Queue<Coordinate> ScanNextCoordinates { get; } = new();
 
         #endregion
 
         #region Constructor
 
-        public CircleInstanceController(Instance instance, List<Coordinate> coords, CircleInstanceType circleType)
+        public DynamicRouteInstanceController(
+            Instance instance,
+            List<MultiPolygon> multiPolygons,
+            IRouteGenerator routeGenerator,
+            IRouteCalculator routeCalculator)
         {
+            _logger = new Logger<CircleInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            _routeGenerator = routeGenerator;
+            _routeCalculator = routeCalculator;
+
             Name = instance.Name;
-            Coordinates = coords;
+            MultiPolygons = multiPolygons;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
-            CircleType = circleType;
-            RouteType = instance.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
             EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
-
-            _logger = new Logger<CircleInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            OptimizeDynamicRoute = instance.Data?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute;
+            Coordinates = GenerateDynamicRoute();
         }
 
         #endregion
@@ -79,7 +84,7 @@
             if (ScanNextCoordinates.Count > 0)
             {
                 currentCoord = ScanNextCoordinates.Dequeue();
-                var scanNextTask = CreateTask(currentCoord, CircleType);
+                var scanNextTask = CreateTask(currentCoord);
                 return await Task.FromResult(scanNextTask);
             }
 
@@ -90,29 +95,8 @@
                 return null;
             }
 
-            switch (CircleType)
-            {
-                case CircleInstanceType.Pokemon:
-                case CircleInstanceType.Raid:
-                    switch (RouteType)
-                    {
-                        case CircleInstanceRouteType.Default:
-                            // Get default leap frog route
-                            currentCoord = BasicRoute();
-                            break;
-                        case CircleInstanceRouteType.Split:
-                            // Split route by device count
-                            currentCoord = SplitRoute(options.Uuid);
-                            break;
-                        //case CircleInstanceRouteType.Circular:
-                            // Circular split route by device count
-                        case CircleInstanceRouteType.Smart:
-                            // Smart routing by device count
-                            currentCoord = SmartRoute(options.Uuid);
-                            break;
-                    }
-                    break;
-            }
+            // Get coordinates
+            currentCoord = GetNextLocation(options.Uuid);
 
             // Check if we were unable to retrieve a coordinate to send
             if (currentCoord == null)
@@ -121,7 +105,7 @@
                 return null;
             }
 
-            var task = CreateTask(currentCoord, CircleType);
+            var task = CreateTask(currentCoord);
             return await Task.FromResult(task);
         }
 
@@ -157,89 +141,23 @@
 
         #endregion
 
-        #region Routing Logic
+        #region Private Methods
 
-        private Coordinate BasicRoute()
+        private ITask CreateTask(Coordinate coord)
         {
-            var currentIndex = (int)_lastIndex;
-            var currentCoord = Coordinates[currentIndex];
-            // Check if current index is last in coordinates list,
-            // if so we've completed the route. Reset route to first
-            // coordinate for next device.
-            if (_lastIndex + 1 == Coordinates.Count)
+            return new CircleTask
             {
-                _lastLastCompletedTime = _lastCompletedTime;
-                _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
-                _lastIndex = 0;
-            }
-            else
-            {
-                _lastIndex++;
-            }
-            return currentCoord;
-        }
-
-        private Coordinate SplitRoute(string uuid, bool isStartup = false)
-        {
-            // TODO: Lock index
-            var currentUuidIndex = _currentUuid.ContainsKey(uuid)
-                ? _currentUuid[uuid].Index
-                : Convert.ToInt32(Math.Round(Convert.ToDouble(_random.Next(ushort.MinValue, ushort.MaxValue) % Coordinates.Count)));
-
-            var shouldAdvance = true;
-            var offsetValue = _random.Next(ushort.MinValue, ushort.MaxValue) % 100;
-            if (offsetValue < 5)
-            {
-                // Use a light hand and 25% of the time try to space out devices
-                // this ensures average round time decreases by at least 10% using
-                // this approach
-                (uint numLiveDevices, double distanceToNextDevice) = GetDeviceSpacing(uuid);
-                var dist = Convert.ToInt32((numLiveDevices * distanceToNextDevice) + 0.5);
-                if (dist < Coordinates.Count)
-                {
-                    shouldAdvance = false;
-                }
-            }
-            if (currentUuidIndex == 0)
-            {
-                // Don't back up past 0 to avoid route time inaccuracy
-                shouldAdvance = true;
-            }
-
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            if (!isStartup)
-            {
-                if (shouldAdvance)
-                {
-                    currentUuidIndex++;
-                    if (currentUuidIndex >= Coordinates.Count)
-                    {
-                        currentUuidIndex = 0;
-                        // This is an approximation of round time.
-                        _lastLastCompletedTime = _lastCompletedTime;
-                        _lastCompletedTime = now;
-                    }
-                }
-                else
-                {
-                    // Back up!
-                    currentUuidIndex--;
-                    if (currentUuidIndex < 0)
-                    {
-                        currentUuidIndex = Coordinates.Count;
-                    }
-                }
-            }
-            _currentUuid[uuid] = new DeviceIndex
-            {
-                Index = currentUuidIndex,
-                LastSeen = now,
+                Area = Name,
+                Action = DeviceActionType.ScanPokemon,
+                Latitude = coord.Latitude,
+                Longitude = coord.Longitude,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+                LureEncounter = EnableLureEncounters,
             };
-            var currentCoord = Coordinates[currentUuidIndex];
-            return currentCoord;
         }
 
-        private Coordinate SmartRoute(string uuid)
+        private Coordinate GetNextLocation(string uuid)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var currentUuidIndex = _currentUuid.ContainsKey(uuid)
@@ -294,26 +212,6 @@
             _currentUuid[uuid].Index = currentUuidIndex;
             var currentCoord = Coordinates[currentUuidIndex];
             return currentCoord;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private ITask CreateTask(Coordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
-        {
-            return new CircleTask
-            {
-                Area = Name,
-                Action = circleType == CircleInstanceType.Pokemon
-                    ? DeviceActionType.ScanPokemon
-                    : DeviceActionType.ScanRaid,
-                Latitude = coord.Latitude,
-                Longitude = coord.Longitude,
-                MinimumLevel = MinimumLevel,
-                MaximumLevel = MaximumLevel,
-                LureEncounter = EnableLureEncounters,
-            };
         }
 
         private double GetRouteDistance(double x, double y)
@@ -384,6 +282,27 @@
             {
                 LastSeen = DateTime.UtcNow.ToTotalSeconds(),
             });
+        }
+
+        private List<Coordinate> GenerateDynamicRoute()
+        {
+            var route = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
+            {
+                CircleSize = Strings.DefaultCircleSize,
+                RouteType = RouteGenerationType.Randomized,
+                MultiPolygons = (List<MultiPolygon>)MultiPolygons,
+                MaximumPoints = 500,
+            });
+
+            if (OptimizeDynamicRoute)
+            {
+                _routeCalculator.ClearCoordinates();
+                _routeCalculator.AddCoordinates(route);
+                var optimized = _routeCalculator.CalculateShortestRoute();
+                _routeCalculator.ClearCoordinates();
+                return optimized.ToList();
+            }
+            return route;
         }
 
         #endregion
