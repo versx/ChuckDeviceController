@@ -79,18 +79,20 @@
                 var sourceInstanceName = Convert.ToString(collection["SourceInstanceName"]);
                 var instanceName = Convert.ToString(collection["InstanceName"]);
                 var date = Convert.ToString(collection["Date"]);
-                var realDate = string.IsNullOrEmpty(date) ? default : DateTime.Parse(date);
+                DateTime? realDate = string.IsNullOrEmpty(date)
+                    ? null
+                    : DateTime.Parse(date);
                 var time = Convert.ToString(collection["Time"]);
+                var timeValue = GetTimeNumeric(time);
                 var createOnComplete = collection["OnComplete"].Contains("true");
                 var enabled = collection["Enabled"].Contains("true");
 
-                var timeValue = GetTimeNumeric(time);
                 if (_context.Assignments.Any(a =>
                     a.DeviceUuid == uuid &&
                     a.DeviceGroupName == deviceGroupName &&
                     a.InstanceName == instanceName &&
                     a.SourceInstanceName == sourceInstanceName &&
-                    a.Date == (realDate == default ? null : realDate) &&
+                    a.Date == realDate &&
                     a.Time == timeValue &&
                     a.Enabled == enabled
                 ))
@@ -106,7 +108,7 @@
                     DeviceGroupName = deviceGroupName,
                     SourceInstanceName = sourceInstanceName ?? null,
                     InstanceName = instanceName,
-                    Date = realDate == default ? null : realDate,
+                    Date = realDate,
                     Time = timeValue,
                     Enabled = enabled,
                 };
@@ -121,7 +123,7 @@
                         DeviceGroupName = deviceGroupName,
                         SourceInstanceName = sourceInstanceName ?? null,
                         InstanceName = instanceName,
-                        Date = realDate == default ? null : realDate,
+                        Date = realDate,
                         Time = 0,
                         Enabled = enabled,
                     };
@@ -188,17 +190,19 @@
                 var sourceInstanceName = Convert.ToString(collection["SourceInstanceName"]);
                 var instanceName = Convert.ToString(collection["InstanceName"]);
                 var date = Convert.ToString(collection["Date"]);
+                DateTime? realDate = string.IsNullOrEmpty(date)
+                    ? null
+                    : DateTime.Parse(date);
                 var time = Convert.ToString(collection["Time"]);
-                var realDate = string.IsNullOrEmpty(date) ? default : DateTime.Parse(date); // TODO: Utc?
-                var enabled = collection["Enabled"].Contains("on");
                 var timeValue = GetTimeNumeric(time);
+                var enabled = collection["Enabled"].Contains("on");
 
                 if (_context.Assignments.Any(a =>
                     a.DeviceUuid == uuid &&
                     a.DeviceGroupName == deviceGroupName &&
                     a.InstanceName == instanceName &&
                     a.SourceInstanceName == sourceInstanceName &&
-                    a.Date == (realDate == default ? null : realDate) &&
+                    a.Date == realDate &&
                     a.Time == timeValue &&
                     a.Enabled == enabled
                 ))
@@ -212,7 +216,7 @@
                 assignment.InstanceName = instanceName;
                 assignment.DeviceUuid = uuid;
                 assignment.DeviceGroupName = deviceGroupName;
-                assignment.Date = realDate == default ? null : realDate;
+                assignment.Date = realDate;
                 assignment.Time = timeValue;
                 assignment.Enabled = enabled;
 

@@ -8,6 +8,7 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     [Authorize(Roles = RoleConsts.IvListsRole)]
     public class IvListController : Controller
@@ -100,7 +101,6 @@
         // GET: IvListController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
-            // TODO: Get IV list from IvListControllerService?
             var ivList = await _context.IvLists.FindAsync(id);
             if (ivList == null)
             {
@@ -108,7 +108,6 @@
                 ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
                 return View();
             }
-            // TODO: Fix issue displaying Pokemon Ids
             return View(ivList);
         }
 
@@ -133,7 +132,7 @@
                 {
                     if (_context.IvLists.Any(list => list.Name == name && list.Name != id))
                     {
-                        ModelState.AddModelError("IvList", $"IV list by name '{name}' already exists, please choose another.");
+                        ModelState.AddModelError("IvList", $"IV list by name '{name}' already exists, please choose another name.");
                         return View();
                     }
 
@@ -141,14 +140,16 @@
                 }
 
                 var pokemonIds = Convert.ToString(collection["PokemonIds"])
-                                        .Replace("<br>", "\n")
-                                        .Replace("<br />", "\n")
-                                        .Replace("\r\n", "\n")
-                                        .Split('\n')
-                                        .Select(s => Convert.ToUInt32(s))
-                                        .ToList();
+                                      .Replace("<br>", "\n")
+                                      .Replace("<br />", "\n")
+                                      .Replace("\r\n", "\n")
+                                      .Split('\n')
+                                      .Select(s => Convert.ToUInt32(s))
+                                      .ToList();
 
-                if (ivList.PokemonIds.Count != pokemonIds.Count) // TODO: Compare whole lists
+                // Compare list counts or if any elements are different
+                if (ivList.PokemonIds.Count != pokemonIds.Count ||
+                    ivList.PokemonIds.IsEqual(pokemonIds, ignoreOrder: true))
                 {
                     ivList.PokemonIds = pokemonIds;
                 }

@@ -88,5 +88,27 @@
                 (list[count], list[remainder]) = (list[remainder], list[count]);
             }
         }
+
+        /// <summary>
+        /// Compare two list objects for equality, ignoring order of lists if specified
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list1"></param>
+        /// <param name="list2"></param>
+        /// <param name="ignoreOrder"></param>
+        /// <returns></returns>
+        public static bool IsEqual<T>(this List<T> list1, List<T> list2, bool ignoreOrder = true)
+        {
+            var listA = ignoreOrder
+                ? list1
+                : new List<T>(list1).OrderBy(x => x)
+                                    .ToList();
+            var listB = ignoreOrder
+                ? list2
+                :  new List<T>(list2).OrderBy(x => x)
+                                     .ToList();
+            var isEqual = Enumerable.SequenceEqual(listA, listB);
+            return isEqual;
+        }
     }
 }
