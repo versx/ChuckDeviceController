@@ -183,8 +183,8 @@
             {
                 Area = Name,
                 Action = FastBootstrapMode
-                    ? DeviceActionType.ScanRaid
-                    : DeviceActionType.ScanPokemon,
+                    ? DeviceActionType.ScanRaid // 5 second loads
+                    : DeviceActionType.ScanPokemon, // 10 second loads
                 Latitude = currentCoord.Latitude,
                 Longitude = currentCoord.Longitude,
                 MinimumLevel = MinimumLevel,

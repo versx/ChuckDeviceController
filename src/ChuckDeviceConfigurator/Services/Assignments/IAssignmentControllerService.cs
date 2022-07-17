@@ -10,16 +10,6 @@
 
         void Stop();
 
-        /*
-        void Reload();
-
-        void Add(Assignment assignment);
-
-        void Edit(uint oldAssignmentId, Assignment newAssignment);
-
-        void Delete(uint oldAssignmentId);
-        */
-
         void Delete(Assignment assignment);
 
         Task InstanceControllerComplete(string name);

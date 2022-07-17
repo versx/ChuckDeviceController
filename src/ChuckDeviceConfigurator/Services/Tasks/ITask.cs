@@ -13,7 +13,7 @@
         /// produced the job task.
         /// </summary>
         [JsonPropertyName("area")]
-        string Area { get; }
+        string Area { get; } // TODO: Can probably remove since this isn't used anymore with current provider
 
         /// <summary>
         /// Gets the action type the device is expected to
