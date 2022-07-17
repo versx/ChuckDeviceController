@@ -104,7 +104,7 @@
                 await _context.AddAsync(geofence);
                 await _context.SaveChangesAsync();
 
-                _geofenceService.AddGeofence(geofence);
+                _geofenceService.Add(geofence);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -180,7 +180,7 @@
                 _context.Update(geofence);
                 await _context.SaveChangesAsync();
 
-                _geofenceService.EditGeofence(geofence, id);
+                _geofenceService.Edit(geofence, id);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -224,7 +224,7 @@
                 _context.Geofences.Remove(geofence);
                 await _context.SaveChangesAsync();
 
-                _geofenceService.DeleteGeofence(id);
+                _geofenceService.Delete(id);
 
                 return RedirectToAction(nameof(Index));
             }

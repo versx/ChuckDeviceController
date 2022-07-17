@@ -114,7 +114,6 @@
         public ushort? QuestRewardAmount { get; set; }
 
         [
-
             DatabaseGenerated(DatabaseGeneratedOption.Computed),
             Column("quest_pokemon_id"),
         ]
@@ -164,7 +163,6 @@
         public ushort? AlternativeQuestRewardAmount { get; set; }
 
         [
-
             DatabaseGenerated(DatabaseGeneratedOption.Computed),
             Column("alternative_quest_pokemon_id"),
         ]

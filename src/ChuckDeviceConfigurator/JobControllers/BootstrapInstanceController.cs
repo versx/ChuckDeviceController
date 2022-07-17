@@ -103,7 +103,6 @@
         {
             if (Coordinates?.Count == 0)
             {
-                // TODO: If no Coordinates (bootstrap gen possibly failed, invalid geofence, etc) try and regenerate with retry limit?
                 _logger.LogWarning($"[{Name}] [{options.Uuid}] No bootstrap coordinates available!");
                 return null;
             }
@@ -212,9 +211,14 @@
 
             if (OptimizeRoute)
             {
+                //_routeCalculator.ClearCoordinates();
                 //_routeCalculator.AddCoordinates(bootstrapRoute);
-                //var optimizedRoute = _routeCalculator.CalculateShortestRoute();
-                // TODO: Benchmark RouteOptimizeUtil
+                //var optimizedRoute2 = _routeCalculator.CalculateShortestRoute();
+                //_routeCalculator.ClearCoordinates();
+
+                // Benchmark - Roughly 60.4414-64.7969 :(
+                //Utilities.Utils.BenchmarkAction(() => RouteOptimizeUtil.Optimize(bootstrapRoute));
+
                 var optimizedRoute = RouteOptimizeUtil.Optimize(bootstrapRoute);
                 return optimizedRoute;
             }
@@ -244,7 +248,7 @@
                 OptimizeCircles = true,
                 OptimizePolygons = true,
             };
-            var optimizerRoute = optimizer.GenerateRouteAsync(new RouteOptimizerOptions
+            var optimizerRoute = optimizer.OptimizeRouteAsync(new RouteOptimizerOptions
             {
                 OptimizationAttempts = 2,
                 CircleSize = CircleSize,

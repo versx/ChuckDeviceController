@@ -234,7 +234,7 @@
                 {
                     if (!_smartRaidGyms.ContainsKey(gymId))
                     {
-                        // TODO: Does not contain smart raid by gym id
+                        // Does not contain smart raid by gym id
                         continue;
                     }
                     var gym = _smartRaidGyms[gymId];

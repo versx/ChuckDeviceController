@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Services.IvLists;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -13,13 +14,16 @@
     {
         private readonly ILogger<IvListController> _logger;
         private readonly DeviceControllerContext _context;
+        private readonly IIvListControllerService _ivListService;
 
         public IvListController(
             ILogger<IvListController> logger,
-            DeviceControllerContext context)
+            DeviceControllerContext context,
+            IIvListControllerService ivListService)
         {
             _logger = logger;
             _context = context;
+            _ivListService = ivListService;
         }
 
         // GET: IvListController
@@ -82,7 +86,7 @@
                 await _context.IvLists.AddAsync(ivList);
                 await _context.SaveChangesAsync();
 
-                // TODO: IV list controller
+                _ivListService.Add(ivList);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -96,6 +100,7 @@
         // GET: IvListController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
+            // TODO: Get IV list from IvListControllerService?
             var ivList = await _context.IvLists.FindAsync(id);
             if (ivList == null)
             {
@@ -151,6 +156,8 @@
                 _context.Update(ivList);
                 await _context.SaveChangesAsync();
 
+                _ivListService.Edit(ivList, id);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -191,6 +198,8 @@
                 // Delete IV list from database
                 _context.IvLists.Remove(ivList);
                 await _context.SaveChangesAsync();
+
+                _ivListService.Delete(id);
 
                 return RedirectToAction(nameof(Index));
             }

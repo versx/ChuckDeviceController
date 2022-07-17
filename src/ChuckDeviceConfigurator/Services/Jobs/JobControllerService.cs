@@ -6,6 +6,7 @@
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.Services.Geofences;
+    using ChuckDeviceConfigurator.Services.IvLists;
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceController.Data;
@@ -23,6 +24,7 @@
         private readonly IDbContextFactory<MapDataContext> _mapFactory;
         private readonly ITimeZoneService _timeZoneService;
         private readonly IGeofenceControllerService _geofenceService;
+        private readonly IIvListControllerService _ivListService;
         private readonly IAssignmentControllerService _assignmentService;
         private readonly IRouteGenerator _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
@@ -57,6 +59,7 @@
             IDbContextFactory<MapDataContext> mapFactory,
             ITimeZoneService timeZoneService,
             IGeofenceControllerService geofenceService,
+            IIvListControllerService ivListService,
             IRouteGenerator routeGenerator,
             IRouteCalculator routeCalculator,
             IAssignmentControllerService assignmentService)
@@ -66,6 +69,7 @@
             _mapFactory = mapFactory;
             _timeZoneService = timeZoneService;
             _geofenceService = geofenceService;
+            _ivListService = ivListService;
             _routeGenerator = routeGenerator;
             _routeCalculator = routeCalculator;
             _assignmentService = assignmentService;
@@ -132,7 +136,7 @@
                 return;
             }
 
-            var geofences = _geofenceService.GetGeofences(instance.Geofences);
+            var geofences = _geofenceService.GetByNames(instance.Geofences);
             if (geofences == null)
             {
                 _logger.LogError($"[{instance.Name}] Failed to get geofences for instance, make sure it is assigned at least one");
@@ -182,14 +186,14 @@
                             jobController = new TthFinderInstanceController(_mapFactory, instance, multiPolygons, _routeCalculator);
                             break;
                         case InstanceType.PokemonIV:
-                            var ivList = await GetIvListAsync(instance.Data?.IvList ?? null);
+                            var ivList = _ivListService.GetByName(instance.Data?.IvList ?? Strings.DefaultIvList);
                             if (ivList == null)
                             {
                                 _logger.LogError($"Failed to fetch IV list for instance {instance.Name}, skipping controller instantiation...");
                                 return;
                             }
                             jobController = CreateIvJobController(instance, multiPolygons, ivList);
-                            // TODO: Event for Pokemon found with/out IV
+                            // TODO: Add event for Pokemon found with/out IV
                             break;
                     }
                     break;
@@ -450,21 +454,6 @@
             return jobController;
         }
 
-        private async Task<IvList> GetIvListAsync(string? name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                _logger.LogError($"IV list name for IV instance is null, skipping job controller instantiation...");
-                return null;
-            }
-
-            using (var context = _deviceFactory.CreateDbContext())
-            {
-                var ivList = await context.IvLists.FindAsync(name);
-                return ivList;
-            }
-        }
-
         private short ConvertTimeZoneToOffset(string? timeZone = null, bool enableDst = false)
         {
             short timeZoneOffset = 0;
@@ -491,7 +480,7 @@
 
         #endregion
 
-        #region Static Methods
+        #region Job Controller Methods
 
         private static IJobController CreateCircleJobController(Instance instance, CircleInstanceType circleInstanceType, List<Coordinate> coords)
         {

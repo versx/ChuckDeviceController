@@ -216,7 +216,7 @@
                 // TODO: Should exit
             }
 
-            // TODO: Spawn new thread instead of timer
+            // TODO: Spawn new thread instead of timer since it is continously checked within this scope
             var success = false;
             Pokemon? pokemonReal = null;
             while (!success)

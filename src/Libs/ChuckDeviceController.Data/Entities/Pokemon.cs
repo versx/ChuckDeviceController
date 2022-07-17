@@ -62,7 +62,6 @@
         public ushort? StaminaIV { get; set; }
 
         [
-
             DatabaseGenerated(DatabaseGeneratedOption.Computed),
             Column("iv"),
         ]

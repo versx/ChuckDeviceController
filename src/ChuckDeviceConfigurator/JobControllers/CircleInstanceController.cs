@@ -351,31 +351,6 @@
                 }
             }
 
-            /*
-            foreach (var (currentUuid, _) in _currentUuidIndexes)
-            {
-                if (!_currentUuidSeenTime.ContainsKey(currentUuid))
-                {
-                    continue;
-                }
-                var lastSeen = _currentUuidSeenTime[currentUuid];
-                if (lastSeen != default)
-                {
-                    var lastSeenSeconds = lastSeen;//.ToTotalSeconds();
-                    if (lastSeenSeconds < deadDeviceCutOffTime)
-                    {
-                        // TODO: Null
-                        _currentUuidIndexes[currentUuid] = default;
-                        _currentUuidSeenTime[currentUuid] = default;
-                    }
-                    else
-                    {
-                        liveDevices.Add(currentUuid);
-                    }
-                }
-            }
-            */
-
             var numLiveDevices = liveDevices.Count;
             double distanceToNextDevice = Coordinates.Count;
             for (var i = 0; i < numLiveDevices; i++)

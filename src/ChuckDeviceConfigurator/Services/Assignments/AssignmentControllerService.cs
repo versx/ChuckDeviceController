@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Assignments
 {
+    using System.Collections.Generic;
+
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceController.Data.Contexts;
@@ -76,7 +78,7 @@
             }
         }
 
-        public void AddAssignment(Assignment assignment)
+        public void Add(Assignment assignment)
         {
             lock (_assignmentsLock)
             {
@@ -84,24 +86,34 @@
             }
         }
 
-        public void EditAssignment(uint oldAssignmentId, Assignment newAssignment)
+        public void Edit(Assignment newAssignment, uint oldAssignmentId)
         {
-            DeleteAssignment(oldAssignmentId);
-            AddAssignment(newAssignment);
+            Delete(oldAssignmentId);
+            Add(newAssignment);
         }
 
-        public void DeleteAssignment(Assignment assignment)
+        public void Delete(Assignment assignment)
         {
-            DeleteAssignment(assignment.Id);
+            Delete(assignment.Id);
         }
 
-        public void DeleteAssignment(uint id)
+        public void Delete(uint id)
         {
             lock (_assignmentsLock)
             {
                 _assignments = _assignments.Where(x => x.Id != id)
                                            .ToList();
             }
+        }
+
+        public Assignment GetByName(uint name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IReadOnlyList<Assignment> GetByNames(IReadOnlyList<uint> names)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task InstanceControllerComplete(string name)

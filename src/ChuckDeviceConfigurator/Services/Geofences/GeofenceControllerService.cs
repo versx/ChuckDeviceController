@@ -9,7 +9,7 @@
 	{
         #region Variables
 
-        private readonly ILogger<IGeofenceControllerService> _logger;
+        //private readonly ILogger<IGeofenceControllerService> _logger;
         private readonly IDbContextFactory<DeviceControllerContext> _factory;
 
 		private readonly object _geofencesLock = new();
@@ -20,20 +20,21 @@
         #region Constructor
 
         public GeofenceControllerService(
-			ILogger<IGeofenceControllerService> logger,
+			//ILogger<IGeofenceControllerService> logger,
 			IDbContextFactory<DeviceControllerContext> factory)
 		{
-			_logger = logger;
+			//_logger = logger;
 			_factory = factory;
+			_geofences = new();
 
-			Load();
+			Reload();
 		}
 
         #endregion
 
         #region Public Methods
 
-        public void Load()
+        public void Reload()
 		{
 			lock (_geofencesLock)
             {
@@ -41,7 +42,7 @@
             }
 		}
 
-		public void AddGeofence(Geofence geofence)
+		public void Add(Geofence geofence)
 		{
 			lock (_geofencesLock)
 			{
@@ -54,21 +55,22 @@
 			}
 		}
 
-		public void EditGeofence(Geofence newGeofence, string oldGeofenceName)
+		public void Edit(Geofence newGeofence, string oldGeofenceName)
 		{
-			DeleteGeofence(oldGeofenceName);
-			AddGeofence(newGeofence);
+			Delete(oldGeofenceName);
+			Add(newGeofence);
 		}
 
-		public void DeleteGeofence(string name)
+		public void Delete(string name)
 		{
 			lock (_geofencesLock)
 			{
-				_geofences = _geofences.Where(x => x.Name != name).ToList();
+				_geofences = _geofences.Where(x => x.Name != name)
+									   .ToList();
 			}
 		}
 
-		public Geofence GetGeofence(string name)
+		public Geofence GetByName(string name)
 		{
 			Geofence? geofence = null;
 			lock (_geofencesLock)
@@ -78,19 +80,11 @@
 			return geofence;
 		}
 
-		public IReadOnlyList<Geofence> GetGeofences(IReadOnlyList<string> names)
+		public IReadOnlyList<Geofence> GetByNames(IReadOnlyList<string> names)
         {
-			return names.Select(name => GetGeofence(name))
+			return names.Select(name => GetByName(name))
 						.ToList();
         }
-
-		public void Reload()
-		{
-			lock (_geofencesLock)
-			{
-				_geofences = GetGeofences();
-			}
-		}
 
         #endregion
 

@@ -130,7 +130,7 @@
 
                 await _context.SaveChangesAsync();
 
-                _assignmentService.AddAssignment(assignment);
+                _assignmentService.Add(assignment);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -217,7 +217,7 @@
                 _context.Assignments.Update(assignment);
                 await _context.SaveChangesAsync();
 
-                _assignmentService.EditAssignment(id, assignment);
+                _assignmentService.Edit(assignment, id);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -260,7 +260,7 @@
                 _context.Assignments.Remove(assignment);
                 await _context.SaveChangesAsync();
 
-                _assignmentService.DeleteAssignment(assignment);
+                _assignmentService.Delete(assignment);
 
                 return RedirectToAction(nameof(Index));
             }

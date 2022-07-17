@@ -2,7 +2,7 @@
 {
     using ChuckDeviceController.Data.Entities;
 
-    public interface IAssignmentControllerService
+    public interface IAssignmentControllerService : IControllerService<Assignment, uint>
     {
         event EventHandler<AssignmentDeviceReloadedEventArgs> DeviceReloaded;
 
@@ -10,15 +10,17 @@
 
         void Stop();
 
+        /*
         void Reload();
 
-        void AddAssignment(Assignment assignment);
+        void Add(Assignment assignment);
 
-        void EditAssignment(uint oldAssignmentId, Assignment newAssignment);
+        void Edit(uint oldAssignmentId, Assignment newAssignment);
 
-        void DeleteAssignment(uint oldAssignmentId);
+        void Delete(uint oldAssignmentId);
+        */
 
-        void DeleteAssignment(Assignment assignment);
+        void Delete(Assignment assignment);
 
         Task InstanceControllerComplete(string name);
     }

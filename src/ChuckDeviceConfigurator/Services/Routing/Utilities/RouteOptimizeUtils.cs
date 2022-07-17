@@ -4,6 +4,8 @@
 
     public static class RouteOptimizeUtil
     {
+        private const double EarthRadius = 6371e3;
+
         public static List<Coordinate> Optimize(List<Coordinate> coords)
         {
             var start = coords.FirstOrDefault();
@@ -11,19 +13,22 @@
             return route;
         }
 
-        public static List<Coordinate> Optimize(List<Coordinate> coords, double lat, double lng)
+        public static List<Coordinate> Optimize(List<Coordinate> coords, double lat, double lon)
         {
             var optimizedRoute = new List<Coordinate>(coords);
             // NN
-            var nn = FindNn(optimizedRoute, lat, lng);
+            var nn = FindNext(optimizedRoute, lat, lon);
             optimizedRoute.Remove(nn);
             optimizedRoute.Insert(0, nn);
+
+            // Reorder based on distance to next coordinate
             for (var i = 1; i < coords.Count; i++)
             {
-                nn = FindNn(optimizedRoute.Skip(i), nn.Latitude, nn.Longitude);
+                nn = FindNext(optimizedRoute.Skip(i), nn.Latitude, nn.Longitude);
                 optimizedRoute.Remove(nn);
                 optimizedRoute.Insert(i, nn);
             }
+
             // 2-Opt
             bool isOptimized;
             do
@@ -36,7 +41,7 @@
         private static List<Coordinate> Optimize2Opt(List<Coordinate> coords, out bool isOptimized)
         {
             var count = coords.Count;
-            float bestGain = 0;
+            var bestGain = 0f;
             var bestI = -1;
             var bestJ = -1;
 
@@ -100,10 +105,12 @@
             return coords;
         }
 
-        private static Coordinate FindNn(IEnumerable<Coordinate> coords, double cLatitude, double cLongitude)
+        // FindNn
+        private static Coordinate FindNext(IEnumerable<Coordinate> coords, double lat, double lon)
         {
-            return coords.OrderBy(coord => GetDistance(cLatitude, cLongitude, coord.Latitude, coord.Longitude))
-                         .FirstOrDefault();
+            var coord = coords.OrderBy(coord => GetDistance(lat, lon, coord.Latitude, coord.Longitude))
+                              .FirstOrDefault();
+            return coord;
         }
 
         private static float GetDistance(Coordinate coord1, Coordinate coord2)
@@ -111,16 +118,19 @@
             return GetDistance(coord1.Latitude, coord1.Longitude, coord2.Latitude, coord2.Longitude);
         }
 
-        private static float GetDistance(double lat1, double lng1, double lat2, double lng2)
+        private static float GetDistance(double lat1, double lon1, double lat2, double lon2)
         {
-            const double R = 6371e3;
-            lat1 = toRad(lat1);
-            lat2 = toRad(lat2);
-            var dLng = toRad(lng2 - lng1);
-
-            return (float)(Math.Acos(Math.Sin(lat1) * Math.Sin(lat2) + Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(dLng)) * R);
+            lat1 = ToRad(lat1);
+            lat2 = ToRad(lat2);
+            var delta = ToRad(lon2 - lon1);
+            var distance = (float)(Math.Acos
+            (
+                Math.Sin(lat1) * Math.Sin(lat2) +
+                Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(delta)
+            ) * EarthRadius);
+            return distance;
         }
 
-        static float toRad(double x) => (float)(x * (Math.PI / 180));
+        private static float ToRad(double value) => (float)(value * (Math.PI / 180));
     }
 }
