@@ -43,6 +43,7 @@
             DisplayName("Date"),
             Column("date"),
             DataType(DataType.Date),
+            DefaultValue(null),
         ]
         public DateTime? Date { get; set; }
 

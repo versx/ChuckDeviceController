@@ -152,8 +152,10 @@
                 return View();
             }
 
-            var devices = BuildDevicesSelectList(assignment.DeviceUuid, assignment.DeviceGroupName);
+            var devices = BuildDevicesSelectList(assignment);
             var instances = _context.Instances.ToList();
+
+            // TODO: Fix loading time value into element
 
             ViewBag.Devices = devices;
             ViewBag.Instances = instances;
@@ -184,10 +186,10 @@
                     : null;
 
                 var sourceInstanceName = Convert.ToString(collection["SourceInstanceName"]);
-                var instanceName = Convert.ToString(collection["SourceInstanceName"]);
+                var instanceName = Convert.ToString(collection["InstanceName"]);
                 var date = Convert.ToString(collection["Date"]);
                 var time = Convert.ToString(collection["Time"]);
-                var realDate = string.IsNullOrEmpty(date) ? default : DateTime.Parse(date);
+                var realDate = string.IsNullOrEmpty(date) ? default : DateTime.Parse(date); // TODO: Utc?
                 var enabled = collection["Enabled"].Contains("on");
                 var timeValue = GetTimeNumeric(time);
 
@@ -210,7 +212,7 @@
                 assignment.InstanceName = instanceName;
                 assignment.DeviceUuid = uuid;
                 assignment.DeviceGroupName = deviceGroupName;
-                assignment.Date = realDate;
+                assignment.Date = realDate == default ? null : realDate;
                 assignment.Time = timeValue;
                 assignment.Enabled = enabled;
 
@@ -299,10 +301,12 @@
             return value;
         }
 
-        private List<SelectListItem> BuildDevicesSelectList(string? selectedDevice = null, string? selectedDeviceGroup = null)
+        private List<SelectListItem> BuildDevicesSelectList(Assignment? assignment = null)
         {
             var devices = _context.Devices.ToList();
             var deviceGroups = _context.DeviceGroups.ToList();
+            var selectedDevice = assignment?.DeviceUuid;
+            var selectedDeviceGroup = assignment?.DeviceGroupName;
 
             var devicesAndDeviceGroups = new List<SelectListItem>();
             var devicesGroup = new SelectListGroup { Name = "Devices" };
