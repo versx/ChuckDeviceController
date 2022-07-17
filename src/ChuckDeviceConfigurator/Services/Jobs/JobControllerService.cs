@@ -179,7 +179,7 @@
                             ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
                             break;
                         case InstanceType.Bootstrap:
-                            jobController = new BootstrapInstanceController(_mapFactory, _deviceFactory, instance, multiPolygons, _routeGenerator, _routeCalculator);
+                            jobController = new BootstrapInstanceController(_mapFactory, instance, multiPolygons, _routeGenerator, _routeCalculator);
                             ((BootstrapInstanceController)jobController).InstanceComplete += OnBootstrapInstanceComplete;
                             break;
                         case InstanceType.FindTth:

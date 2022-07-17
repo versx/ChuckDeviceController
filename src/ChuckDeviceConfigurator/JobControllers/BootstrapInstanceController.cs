@@ -19,7 +19,7 @@
 
         private readonly ILogger<BootstrapInstanceController> _logger;
         private readonly IDbContextFactory<MapDataContext> _mapFactory;
-        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
+        //private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
         private readonly IRouteGenerator _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
         private readonly List<MultiPolygon> _multiPolygons;
@@ -68,7 +68,7 @@
 
         public BootstrapInstanceController(
             IDbContextFactory<MapDataContext> mapFactory,
-            IDbContextFactory<DeviceControllerContext> deviceContext,
+            //IDbContextFactory<DeviceControllerContext> deviceFactory,
             Instance instance,
             List<MultiPolygon> multiPolygons,
             IRouteGenerator routeGenerator,
@@ -86,7 +86,7 @@
 
             _logger = new Logger<BootstrapInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _mapFactory = mapFactory;
-            _deviceFactory = deviceContext;
+            //_deviceFactory = deviceFactory;
             _multiPolygons = multiPolygons;
             _routeGenerator = routeGenerator;
             _routeCalculator = routeCalculator;

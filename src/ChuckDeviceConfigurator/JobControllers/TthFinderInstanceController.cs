@@ -34,6 +34,7 @@
         private int _lastIndex = 0;
         private ulong _startTime = 0;
         private ulong _lastCompletedTime = 0;
+        private Dictionary<ulong, uint?> _spawnpoints;
 
         #endregion
 
@@ -79,6 +80,7 @@
             _logger = new Logger<TthFinderInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _factory = factory;
             _routeCalculator = routeCalculator;
+            _spawnpoints = new Dictionary<ulong, uint?>();
 
             SpawnpointCoordinates = GenerateSpawnpointCoordinates();
         }
@@ -139,6 +141,8 @@
             var completed = _lastCompletedTime > 0
                 ? $", Last Completed @ {_lastCompletedTime.FromSeconds()}"
                 : "";
+
+            // TODO: Get count of spawnpoints found for instance session
             var status = $"Spawnpoints: {_lastIndex:N0}/{SpawnpointCoordinates.Count:N0} ({percent}%){completed}";
             return await Task.FromResult(status);
         }
@@ -210,16 +214,22 @@
         {
             using (var context = _factory.CreateDbContext())
             {
+                // Get all spawnpoints within area's bounding box
                 var spawnpoints = context.Spawnpoints.AsEnumerable()
                                                      .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude));
-                var coords =
+                // Get all spawnpoints or only spawnpoints with unknown despawn times if specified
+                var list =
                 (
                     onlyUnknown
                         ? spawnpoints.Where(spawn => spawn.DespawnSecond == null)
                         : spawnpoints
-                )
-                                     .Select(spawn => new Coordinate(spawn.Latitude, spawn.Longitude))
-                                     .ToList();
+                ).ToList();
+
+                // Cache all existing spawnpoints
+                _spawnpoints = list.ToDictionary(x => x.Id, y => y.DespawnSecond);
+
+                var coords = list.Select(spawn => new Coordinate(spawn.Latitude, spawn.Longitude))
+                                 .ToList();
                 return coords;
             }
         }
