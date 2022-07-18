@@ -8,11 +8,8 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
-
-    // TODO: Change to expect geofences instead of circle points, get all gyms within geofences
 
     public class SmartRaidGym
     {
@@ -132,7 +129,7 @@
 
         public async Task<string> GetStatusAsync()
         {
-            // TODO: Check how many gyms haven't been updated in the last x (30) minutes?
+            // Check how many gyms haven't been updated in the last x (30) minutes?
             //var gymsToCheck = GetGymsToCheck();
             var now = DateTime.UtcNow.ToTotalSeconds();
             var gymsTotal = _smartRaidGyms.Count;
@@ -202,8 +199,8 @@
             // New logic: 0.1884 0.1743 0.1913357 - Still faster
             // Roughly about 6 times faster.
 
-            var sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
+            //var sw = new System.Diagnostics.Stopwatch();
+            //sw.Start();
 
             var allGyms = await GetGymsAsync();
             var routeGenerator = new Services.Routing.RouteGenerator(_factory);
@@ -251,112 +248,10 @@
                 }
             }
 
-            sw.Stop();
-            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-            _logger.LogDebug($"Took: {totalSeconds}s");
+            //sw.Stop();
+            //var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            //_logger.LogDebug($"Took: {totalSeconds}s");
         }
-
-        /*
-        private async void LoadGymsAsync3()
-        {
-            // Instead of running a query for each coordinate,
-            // retrieve all gyms from the database and filter which
-            // are in the S2 cell. _Should increase SQL performance._
-            //
-            // Benchmark - (query all vs individual)
-            // All: 0.157 0.1368 0.1696 vs Individual: 0.9209 0.9139 0.9386
-            // Roughly about 6 times faster.
-
-            var sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-
-            var allGyms = await GetGymsAsync();
-            //var gyms = await GetGymsAsync((List<MultiPolygon>)MultiPolygons);
-            foreach (var multiPolygon in MultiPolygons)
-            {
-                // TODO: Get S2 cells within multi polygon bounding box
-                //var latlng = S2LatLng.FromDegrees(coord.Latitude, coord.Longitude);
-                //var cellIds = latlng.GetLoadedS2CellIds()
-                //                    .Select(cell => cell.Id)
-                //                    .ToList();
-
-                try
-                {
-                    var bbox = multiPolygon.GetBoundingBox();
-                    var cells = bbox.GetS2CellCoverage();
-                    //var cells2 = multiPolygon.GetS2CellIds();
-                    var cellIds = cells.Select(cell => cell.Id).ToList();
-                    var gymsInBbox = await GetGymsAsync(bbox);
-                    var cellCoords = cellIds.Select(cell => cell.ToCoordinate())
-                                            .ToList();
-                    //foreach (var cell in cells)
-                    //foreach (var cellCoord in cellCoords)
-                    foreach (var cell in cells)
-                    {
-                        var cellId = cell.Id;
-                        var cellCoord = cell.ToCoordinate();
-                        var gyms = allGyms.Where(gym => gym.CellId == cellId)
-                                          .ToList();
-                        var gymIds = gyms.Select(gym => gym.Id).ToList();
-
-                        //var gyms = await GetGymsByCellIdsAsync(cellIds);
-                        //var cellCoord = gym.CellId.ToCoordinate();
-                        //var gymCoord = new Coordinate(gym.Latitude, gym.Longitude);
-                        //var dist = cellCoord.DistanceTo(gymCoord);
-                        //_logger.LogInformation($"Gym ({gymCoord}) distance from S2 cell ({cellCoord}): {dist}");
-                        // Check if distance between gym and cell is less than 70m
-                        //if (dist <= 750)//70)
-                        //{
-                        //if (!_smartRaidGymsInPoint.ContainsKey(cellCoord))
-                        //{
-                        //    _smartRaidGymsInPoint.Add(cellCoord, new List<string>());
-                        //}
-
-                        _smartRaidGymsInPoint[cellCoord] = gymIds; //.Add(gym.Id);
-                        _smartRaidPointsUpdated[cellCoord] = 0;
-                        //}
-
-                        foreach (var gym in gyms)
-                        {
-                            // REVIEW: Shoot, when did .NET allow setting dictionary value without
-                            // adding key to dictionary first and just using key index.
-                            // :thinking: Finally! <3
-                            _smartRaidGyms[gym.Id] = gym;
-                        }
-                    }
-
-                    //foreach (var gym in gyms)
-                    //{
-                    //    var gymCoord = new Coordinate(gym.Latitude, gym.Longitude);
-                    //    var cellCoord = gym.CellId.ToCoordinate();
-                    //    if (!_smartRaidGymsInPoint.ContainsKey(cellCoord))
-                    //    {
-                    //        _smartRaidGymsInPoint.Add(cellCoord, new List<string>());
-                    //    }
-                    //    _smartRaidGymsInPoint[cellCoord].Add(gym.Id);
-                    //    _smartRaidPointsUpdated[cellCoord] = 0;
-
-                    //    // REVIEW: Shoot, when did .NET allow setting dictionary value without
-                    //    // adding key to dictionary first and just using key index.
-                    //    // :thinking: Finally! <3
-                    //    _smartRaidGyms[gym.Id] = gym;
-                    //}
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"LoadGymsAsync: {ex}");
-                    // Sleep for 5 seconds
-                    Thread.Sleep(5000);
-                }
-            }
-
-            var coords = _smartRaidGyms.Values.Select(gym => new Coordinate(gym.Latitude, gym.Longitude)).ToList();
-
-            sw.Stop();
-            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-            _logger.LogDebug($"Took: {totalSeconds}s");
-        }
-        */
 
         private GymsResult GetGymsToCheck()
         {
@@ -459,14 +354,8 @@
 
         private async Task UpdateGymInfoAsync()
         {
-            // Instead of running a query for all gyms and filtering,
-            // retrieve all gyms from the database and filter which
-            // are gym id matches. _Should increase SQL performance._
-            //
-            // Benchmark - (query all vs individual)
-            // All: 0.0216 0.0188 0.0202 vs Individual: 0.071 0.0648 0.06
-            // Roughly about 3-4 times faster. Although it's pretty much
-            // the same logic. :thinking:
+            //var sw = new System.Diagnostics.Stopwatch();
+            //sw.Start();
 
             var gymIds = _smartRaidGyms.Keys.ToList();
             var gyms = await GetGymsAsync(gymIds);
@@ -529,30 +418,6 @@
                 return gyms;
             }
         }
-
-        /*
-        private async Task<List<Gym>> GetGymsAsync(BoundingBox bbox)
-        {
-            using (var context = _factory.CreateDbContext())
-            {
-                var gyms = context.Gyms.AsEnumerable()
-                                       .Where(gym => bbox.IsInBoundingBox(gym.Latitude, gym.Longitude))
-                                       .ToList();
-                return await Task.FromResult(gyms);
-            }
-        }
-
-        private async Task<List<Gym>> GetGymsAsync(List<MultiPolygon> multiPolygons)
-        {
-            using (var context = _factory.CreateDbContext())
-            {
-                var gyms = context.Gyms.AsEnumerable()
-                                       .Where(gym => GeofenceService.InMultiPolygon(multiPolygons, gym.Latitude, gym.Longitude))
-                                       .ToList();
-                return await Task.FromResult(gyms);
-            }
-        }
-        */
 
         #endregion
     }
