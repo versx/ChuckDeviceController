@@ -80,6 +80,15 @@
             return await Task.FromResult(task);
         }
 
+        public override async Task<string> GetStatusAsync()
+        {
+            var circleStatus = await base.GetStatusAsync();
+            var status = circleStatus == Strings.DefaultInstanceStatus
+                ? Strings.DefaultInstanceStatus
+                : $"{circleStatus}, (Coordinates: {Coordinates.Count:N0})";
+            return await Task.FromResult(status);
+        }
+
         private List<Coordinate> GenerateDynamicRoute()
         {
             var route = _routeGenerator.GenerateRoute(new RouteGeneratorOptions

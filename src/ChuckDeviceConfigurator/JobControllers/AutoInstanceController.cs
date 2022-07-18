@@ -25,8 +25,7 @@
     {
         #region Constants
 
-        private const uint OneHourS = 3600;
-        private const uint OneDayS = OneHourS * 24;
+        private const uint OneDayS = Strings.SixtyMinutesS * 24;
         private const ushort SpinRangeM = 80; // TODO: Revert back to 40m once reverted ingame
         private const ulong DefaultDistance = 10000000000000000;
         private const ushort CooldownLimitS = 7200; // Two hours
@@ -47,7 +46,7 @@
         private readonly System.Timers.Timer _timer;
         private int _bootstrapTotalCount = 0;
         private ulong _completionDate = 0;
-        private ulong _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds() - OneHourS;
+        private ulong _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds() - Strings.SixtyMinutesS;
         private bool _shouldExit;
 
         private readonly Dictionary<string, string> _accounts;

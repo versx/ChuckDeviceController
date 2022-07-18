@@ -20,6 +20,11 @@ namespace ChuckDeviceConfigurator
 
         public const string DefaultSuccessLoginPath = "/Identity/Account/Manage";
 
+        public const string DefaultInstanceStatus = "--";
+
+        public const ushort ThirtyMinutesS = 1800;
+        public const ushort SixtyMinutesS = ThirtyMinutesS * 2;
+
 
         // Default Instance Property Values
         public const ushort DefaultMinimumLevel = 0;

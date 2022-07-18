@@ -34,7 +34,7 @@
         private const ushort RaidInfoBeforeHatchS = 120; // 2 minutes
         private const ushort IgnoreTimeEggS = 150; // 2.5 minutes
         private const ushort IgnoreTimeBossS = 60; // 1 minute
-        private const ushort NoRaidTimeS = 1800; // 30 minutes
+        private const ushort NoRaidTimeS = Strings.ThirtyMinutesS; // 30 minutes
 
         #endregion
 
@@ -136,7 +136,7 @@
             var gymsWithActiveRaidsCount = _smartRaidGyms.Count(gym => gym.Value.RaidEndTimestamp > now);
             var gymsWithoutActiveRaidsCount = gymsTotal - gymsWithActiveRaidsCount;
             //var gymsWithRaidsUpdatedRecently = _smar
-            //var gymsUpdated = _smartRaidPointsUpdated.Values.Count(gymUpdated => gymUpdated > 0 && (now - gymUpdated) <= 1800);
+            //var gymsUpdated = _smartRaidPointsUpdated.Values.Count(gymUpdated => gymUpdated > 0 && (now - gymUpdated) <= Strings.ThirtyMinutesS);
             //var gymsNotUpdated = gymsTotal - gymsUpdated;
 
             uint? scansPerHour = null;
@@ -145,15 +145,16 @@
                 if (_startDate > 0)
                 {
                     var delta = now - _startDate;
+                    // Prevent dividing by zero
                     if (_count > 0 && delta > 0)
                     {
-                        scansPerHour = Convert.ToUInt32((double)_count / (double)delta * 3600);
+                        scansPerHour = Convert.ToUInt32((double)_count / (double)delta * Strings.SixtyMinutesS);
                     }
                 }
             }
             var scansStatus = scansPerHour > 0
                 ? Convert.ToString(scansPerHour ?? 0)
-                : "--";
+                : Strings.DefaultInstanceStatus;
             //var gymsUpdatedCount = gymsTotal - (gymsToCheck.NoRaid.Count + gymsToCheck.NoBoss.Count);
             //var gymsStatus = $", (Gyms Updated: {gymsUpdated:N0}/{gymsTotal:N0})";
             //var gymsStatus = $", (Raids Updated: {gymsUpdatedCount:N0}/{gymsTotal:N0})";

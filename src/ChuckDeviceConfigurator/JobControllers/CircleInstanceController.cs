@@ -13,12 +13,12 @@
     {
         #region Variables
 
-        internal static readonly Random _random = new();
+        private static readonly Random _random = new();
         private readonly ILogger<CircleInstanceController> _logger;
-        internal readonly Dictionary<string, DeviceIndex> _currentUuid = new();
-        internal uint _lastIndex = 0; // Used for basic leap frog routing
-        internal double _lastCompletedTime;
-        internal double _lastLastCompletedTime;
+        private readonly Dictionary<string, DeviceIndex> _currentUuid = new();
+        private uint _lastIndex = 0; // Used for basic leap frog routing
+        private double _lastCompletedTime;
+        private double _lastLastCompletedTime;
 
         #endregion
 
@@ -123,9 +123,9 @@
             return await Task.FromResult(task);
         }
 
-        public async Task<string> GetStatusAsync()
+        public virtual async Task<string> GetStatusAsync()
         {
-            var status = "--";
+            var status = Strings.DefaultInstanceStatus;
             if (_lastCompletedTime > 0 && _lastLastCompletedTime > 0)
             {
                 var timeDiffSeconds = _lastCompletedTime - _lastLastCompletedTime;

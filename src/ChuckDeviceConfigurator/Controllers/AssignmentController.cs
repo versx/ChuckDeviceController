@@ -295,7 +295,7 @@
                 var hours = Convert.ToUInt32(split[0]);
                 var minutes = Convert.ToUInt32(split[1]);
                 var seconds = Convert.ToUInt32(split[2]);
-                var timeValue = hours * 3600 + minutes * 60 + seconds;
+                var timeValue = hours * Strings.SixtyMinutesS + minutes * 60 + seconds;
                 value = timeValue == 0 ? 1 : timeValue;
             }
             else

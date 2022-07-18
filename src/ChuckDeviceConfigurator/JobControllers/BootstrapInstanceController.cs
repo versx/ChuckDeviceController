@@ -152,7 +152,11 @@
                 //? $", Last Completed @ {_lastCompletedTime.FromSeconds()} ({_timesCompleted} times)"
                 ? $", Last Completed @ {_lastCompletedTime.FromSeconds()}"
                 : "";
-            var status = $"Bootstrapping: {_lastIndex:N0}/{Coordinates.Count:N0} ({percent}%){completed}";
+            var status = $"Bootstrapping: {Strings.DefaultInstanceStatus}";
+            if (_lastCompletedTime > 0)
+            {
+                status = $"Bootstrapping: {_lastIndex:N0}/{Coordinates.Count:N0} ({percent}%){completed}";
+            }
             return await Task.FromResult(status);
         }
 

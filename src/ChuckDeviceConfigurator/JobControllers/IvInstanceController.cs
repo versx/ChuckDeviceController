@@ -158,10 +158,10 @@
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 // Prevent dividing by zero
                 ivh = _count == 0
-                    ? _count / (now - _startDate) * 3600
+                    ? _count / (now - _startDate) * Strings.SixtyMinutesS
                     : 0;
             }
-            var ivhStr = "--";
+            var ivhStr = Strings.DefaultInstanceStatus;
             if (ivh != -1)
             {
                 ivhStr = Math.Round(ivh).ToString("N0");

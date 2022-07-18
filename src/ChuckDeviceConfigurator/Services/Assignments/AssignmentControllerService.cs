@@ -135,7 +135,7 @@
         private async Task CheckAssignmentsAsync()
         {
             var dateNow = DateTime.Now;
-            var now = dateNow.Hour * 3600 + dateNow.Minute * 60 + dateNow.Second;
+            var now = dateNow.Hour * Strings.SixtyMinutesS + dateNow.Minute * 60 + dateNow.Second;
             if (_lastUpdated == -2)
             {
                 _lastUpdated = now;
