@@ -158,7 +158,9 @@
             //var gymsUpdatedCount = gymsTotal - (gymsToCheck.NoRaid.Count + gymsToCheck.NoBoss.Count);
             //var gymsStatus = $", (Gyms Updated: {gymsUpdated:N0}/{gymsTotal:N0})";
             //var gymsStatus = $", (Raids Updated: {gymsUpdatedCount:N0}/{gymsTotal:N0})";
-            var gymsStatus = $", (Active: {gymsWithActiveRaidsCount:N0}/{gymsWithoutActiveRaidsCount:N0}|{gymsTotal:N0})";
+            var gymsStatus = scansStatus == Strings.DefaultInstanceStatus
+                ? ""
+                : $", (Active: {gymsWithActiveRaidsCount:N0}/{gymsWithoutActiveRaidsCount:N0}|{gymsTotal:N0})";
             var status = $"Scans/h: {scansStatus}{gymsStatus}";
             return await Task.FromResult(status);
         }
