@@ -9,18 +9,16 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    // TODO: Create CirclePokemonDynamic InstanceType since we need to specify a geofence to dynamically generate the route vs circle points
-
     public class CircleInstanceController : IJobController, IScanNext
     {
         #region Variables
 
-        private static readonly Random _random = new();
+        internal static readonly Random _random = new();
         private readonly ILogger<CircleInstanceController> _logger;
-        private readonly Dictionary<string, DeviceIndex> _currentUuid = new();
-        private uint _lastIndex = 0; // Used for basic leap frog routing
-        private double _lastCompletedTime;
-        private double _lastLastCompletedTime;
+        internal readonly Dictionary<string, DeviceIndex> _currentUuid = new();
+        internal uint _lastIndex = 0; // Used for basic leap frog routing
+        internal double _lastCompletedTime;
+        internal double _lastLastCompletedTime;
 
         #endregion
 
@@ -28,7 +26,7 @@
 
         public string Name { get; }
 
-        public IReadOnlyList<Coordinate> Coordinates { get; }
+        public IReadOnlyList<Coordinate> Coordinates { get; internal set; }
 
         public CircleInstanceType CircleType { get; }
 
@@ -69,7 +67,7 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(GetTaskOptions options)
+        public virtual async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
             // Add device to device list
             AddDevice(options.Uuid);
@@ -239,7 +237,7 @@
             return currentCoord;
         }
 
-        private Coordinate SmartRoute(string uuid)
+        internal Coordinate SmartRoute(string uuid)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var currentUuidIndex = _currentUuid.ContainsKey(uuid)
@@ -300,7 +298,7 @@
 
         #region Private Methods
 
-        private ITask CreateTask(Coordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
+        internal ITask CreateTask(Coordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
         {
             return new CircleTask
             {
@@ -374,7 +372,7 @@
             return (numLiveDevices, distanceToNextDevice);
         }
 
-        private void AddDevice(string uuid)
+        internal void AddDevice(string uuid)
         {
             // Check if device already exists
             if (_currentUuid.ContainsKey(uuid))
@@ -387,12 +385,12 @@
         }
 
         #endregion
+    }
 
-        private class DeviceIndex
-        {
-            public int Index { get; set; }
+    internal class DeviceIndex
+    {
+        public int Index { get; set; }
 
-            public ulong LastSeen { get; set; }
-        }
+        public ulong LastSeen { get; set; }
     }
 }
