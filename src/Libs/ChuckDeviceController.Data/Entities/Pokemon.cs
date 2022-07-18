@@ -207,7 +207,7 @@
                 {
                     return;
                 }
-                var latlng = cellId.CoordinateFromS2CellId();
+                var latlng = cellId.ToCoordinate();
                 lat = latlng.Latitude;
                 lon = latlng.Longitude;
                 SeenType = SeenType.NearbyCell;

@@ -46,6 +46,7 @@
             {
                 Items = instances,
             };
+            Response.Headers["Refresh"] = "5"; // TODO: Make table refresh configurable (implement a better way actually)
             return View(model);
         }
 

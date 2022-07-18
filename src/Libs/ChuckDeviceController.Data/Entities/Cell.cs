@@ -53,7 +53,7 @@
 
         public Cell(ulong cellId)
         {
-            var latlng = cellId.CoordinateFromS2CellId();
+            var latlng = cellId.ToCoordinate();
             Id = cellId;
             Latitude = latlng.Latitude;
             Longitude = latlng.Longitude;

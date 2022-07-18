@@ -6,8 +6,17 @@
 
     using ChuckDeviceController.Geometry.Models;
 
+    /// <summary>
+    /// Coordinate and geofence value converters
+    /// </summary>
     public static class AreaConverters
     {
+        /// <summary>
+        /// Converts JSON formatted coordinate points column data to dashboard
+        /// compatible text value
+        /// </summary>
+        /// <param name="area">JSON formatted coordinate points</param>
+        /// <returns>Returns JSON coordinates as text value</returns>
         public static string CoordinatesToAreaString(dynamic area)
         {
             var coords = string.Empty;
@@ -22,6 +31,12 @@
             return coords;
         }
 
+        /// <summary>
+        /// Converts JSON formatted geofence column data to dashboard
+        /// compatible text value
+        /// </summary>
+        /// <param name="area">JSON formatted geofence</param>
+        /// <returns>Returns JSON geofences as text value</returns>
         public static string MultiPolygonToAreaString(dynamic area)
         {
             var index = 1;
@@ -42,6 +57,11 @@
             return coords;
         }
 
+        /// <summary>
+        /// Converts coordinate points text as coordinate list
+        /// </summary>
+        /// <param name="area">Text value of coordinates list</param>
+        /// <returns>Returns list of coordinate points</returns>
         public static List<Coordinate> AreaStringToCoordinates(string area)
         {
             var rows = area.Split('\n');
@@ -60,6 +80,11 @@
             return coords;
         }
 
+        /// <summary>
+        /// Converts geofences text to geofences
+        /// </summary>
+        /// <param name="area">Text value of geofences list</param>
+        /// <returns>Returns list of geofence coordinates</returns>
         public static List<List<Coordinate>> AreaStringToMultiPolygon(string area)
         {
             var rows = area.Split('\n');
