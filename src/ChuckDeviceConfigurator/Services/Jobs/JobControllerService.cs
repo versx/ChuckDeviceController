@@ -502,7 +502,7 @@
 
         private static IJobController CreateCircleSmartRaidJobController(IDbContextFactory<MapDataContext> factory, Instance instance, List<MultiPolygon> multiPolygons)
         {
-            var jobController = new CircleSmartRaidInstanceController(
+            var jobController = new SmartRaidInstanceController(
                 factory,
                 instance,
                 multiPolygons

@@ -30,7 +30,7 @@
         public List<SmartRaidGym> NoRaid { get; set; } = new();
     }
 
-    public class CircleSmartRaidInstanceController : IJobController
+    public class SmartRaidInstanceController : IJobController
     {
         #region Constants
 
@@ -43,7 +43,7 @@
 
         #region Variables
 
-        private readonly ILogger<CircleSmartRaidInstanceController> _logger;
+        private readonly ILogger<SmartRaidInstanceController> _logger;
         private readonly IDbContextFactory<MapDataContext> _factory;
         private readonly System.Timers.Timer _timer;
 
@@ -78,7 +78,7 @@
 
         #region Constructor
 
-        public CircleSmartRaidInstanceController(IDbContextFactory<MapDataContext> factory, Instance instance, List<MultiPolygon> multiPolygons)
+        public SmartRaidInstanceController(IDbContextFactory<MapDataContext> factory, Instance instance, List<MultiPolygon> multiPolygons)
         {
             Name = instance.Name;
             MultiPolygons = multiPolygons;
@@ -88,7 +88,7 @@
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
 
             _factory = factory;
-            _logger = new Logger<CircleSmartRaidInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            _logger = new Logger<SmartRaidInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _smartRaidGyms = new Dictionary<string, Gym>();
             _smartRaidGymsInPoint = new Dictionary<Coordinate, List<string>>();
             _smartRaidPointsUpdated = new Dictionary<Coordinate, ulong>();
