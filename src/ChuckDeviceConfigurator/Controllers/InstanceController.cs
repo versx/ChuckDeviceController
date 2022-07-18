@@ -31,7 +31,7 @@
         }
 
         // GET: InstanceController
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(bool autoRefresh = false)
         {
             var instances = _context.Instances.ToList();
             var devices = _context.Devices.ToList();
@@ -44,9 +44,14 @@
             }
             var model = new ViewModelsModel<Instance>
             {
+                AutoRefresh = autoRefresh,
                 Items = instances,
             };
-            Response.Headers["Refresh"] = "5"; // TODO: Make table refresh configurable (implement a better way actually)
+            if (autoRefresh)
+            {
+                // TODO: Make table refresh configurable (implement a better way actually)
+                Response.Headers["Refresh"] = "5";
+            }
             return View(model);
         }
 

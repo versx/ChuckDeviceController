@@ -11,6 +11,10 @@
     <a asp-action="Create">Create New</a>
 </p>
 
+<div class="checkbox">
+    <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
+</div>
+
 <table class="table">
     <thead>
         <tr>
@@ -67,3 +71,16 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+<script>
+const handleAutoRefresh = (e) => {
+    const isChecked = $(e).is(':checked');
+    if (isChecked) {
+        location.href = '@Url.Action("Index", new { autoRefresh = true })';
+    } else {
+        location.href = '@Url.Action("Index", new { autoRefresh = false })';
+    }
+};
+</script>
+}
