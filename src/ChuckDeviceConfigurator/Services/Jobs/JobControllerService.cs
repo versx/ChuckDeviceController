@@ -149,7 +149,6 @@
                 case InstanceType.CirclePokemon:
                 case InstanceType.CircleSmartPokemon:
                 case InstanceType.CircleRaid:
-                //case InstanceType.CircleSmartRaid:
                     var coords = geofences.ConvertToCoordinates();
                     switch (instance.Type)
                     {
@@ -160,17 +159,14 @@
                         case InstanceType.CircleRaid:
                             jobController = CreateCircleJobController(instance, CircleInstanceType.Raid, coords);
                             break;
-                        //case InstanceType.CircleSmartRaid:
-                        //    jobController = CreateCircleSmartRaidJobController(_mapFactory, instance, coords);
-                        //    break;
                     }
                     break;
                 case InstanceType.AutoQuest:
                 case InstanceType.Bootstrap:
-                case InstanceType.CircleSmartRaid:
                 case InstanceType.DynamicPokemon:
                 case InstanceType.FindTth:
                 case InstanceType.PokemonIV:
+                case InstanceType.SmartRaid:
                     var (multiPolygons, coordinates) = geofences.ConvertToMultiPolygons();
                     switch (instance.Type)
                     {
@@ -200,8 +196,8 @@
                             jobController = CreateIvJobController(instance, multiPolygons, ivList);
                             // TODO: Add event for Pokemon found with/out IV
                             break;
-                        case InstanceType.CircleSmartRaid:
-                            jobController = CreateCircleSmartRaidJobController(_mapFactory, instance, multiPolygons);
+                        case InstanceType.SmartRaid:
+                            jobController = CreateSmartRaidJobController(_mapFactory, instance, multiPolygons);
                             break;
                     }
                     break;
@@ -500,7 +496,7 @@
             return jobController;
         }
 
-        private static IJobController CreateCircleSmartRaidJobController(IDbContextFactory<MapDataContext> factory, Instance instance, List<MultiPolygon> multiPolygons)
+        private static IJobController CreateSmartRaidJobController(IDbContextFactory<MapDataContext> factory, Instance instance, List<MultiPolygon> multiPolygons)
         {
             var jobController = new SmartRaidInstanceController(
                 factory,

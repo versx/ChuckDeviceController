@@ -9,7 +9,7 @@
         CircleSmartPokemon,
         DynamicPokemon,
         CircleRaid,
-        CircleSmartRaid, // TODO: Rename to SmartRaid
+        SmartRaid,
         AutoQuest,
         PokemonIV,
         Bootstrap,
