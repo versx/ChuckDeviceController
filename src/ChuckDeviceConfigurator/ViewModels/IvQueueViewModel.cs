@@ -1,11 +1,32 @@
 ﻿namespace ChuckDeviceConfigurator.ViewModels
 {
-    using ChuckDeviceController.Data.Entities;
+    using System.ComponentModel;
 
     public class IvQueueViewModel
     {
         public string Name { get; set; }
 
-        public List<Pokemon> Queue { get; set; } = new();
+        public List<IvQueueItemViewModel> Queue { get; set; } = new();
+    }
+
+    public class IvQueueItemViewModel
+    {
+        [DisplayName("#")]
+        public uint Index { get; set; }
+
+        [DisplayName("Image")]
+        public string Image { get; set; }
+
+        [DisplayName("ID")]
+        public uint PokemonId { get; set; }
+
+        [DisplayName("Name")]
+        public string PokemonName { get; set; }
+
+        [DisplayName("Encounter ID")]
+        public string EncounterId { get; set; }
+
+        [DisplayName("Location")]
+        public string Location { get; set; }
     }
 }

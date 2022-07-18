@@ -11,16 +11,22 @@
     <thead>
         <tr>
             <th>
-                #
+                @Html.DisplayNameFor(model => model.Queue[0].Index)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].Image)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].PokemonName)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Queue[0].PokemonId)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Queue[0].Id)
+                @Html.DisplayNameFor(model => model.Queue[0].EncounterId)
             </th>
             <th>
-                Location
+                @Html.DisplayNameFor(model => model.Queue[0].Location)
             </th>
             <th></th>
         </tr>
@@ -35,16 +41,22 @@
                     @index
                 </td>
                 <td>
+                    @Html.DisplayFor(modelItem => item.Image)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonName)
+                </td>
+                <td>
                     @Html.DisplayFor(modelItem => item.PokemonId)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Id)
+                    @Html.DisplayFor(modelItem => item.EncounterId)
                 </td>
                 <td>
-                    @Math.Round(item.Latitude, 5), @Math.Round(item.Longitude, 5)
+                    @Html.DisplayFor(modelItem => item.Location)
                 </td>
                 <td>
-                    <a asp-action="Remove" asp-route-id="@item.Id">Remove</a> |
+                    <a asp-action="Remove" asp-route-id="@item.Index">Remove</a> |
                 </td>
             </tr>
             index++;

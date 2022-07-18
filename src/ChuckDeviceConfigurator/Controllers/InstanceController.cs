@@ -260,10 +260,18 @@
         public ActionResult IvQueue(string name)
         {
             var ivQueue = _jobControllerService.GetIvQueue(name);
+            var queueItems = ivQueue.Select(item => new IvQueueItemViewModel
+            {
+                Image = string.Empty,
+                EncounterId = item.Id,
+                PokemonId = item.PokemonId,
+                PokemonName = item.PokemonId.ToString(),
+                Location = $"{Math.Round(item.Latitude, 5)},{Math.Round(item.Longitude, 5)}",
+            }).ToList();
             var model = new IvQueueViewModel
             {
                 Name = name,
-                Queue = ivQueue.ToList(),
+                Queue = queueItems,
             };
             return View(model);
         }
