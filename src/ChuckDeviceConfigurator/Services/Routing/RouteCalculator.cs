@@ -77,10 +77,12 @@
             sorted.Sort(Utils.CompareCoordinates);
             var ordered = OrderByDistance(sorted);
 
+            /* TODO: Fix race condition issue, make scoped service instead of singleton
             if (ClearCoordinatesAfterOptimization)
             {
                 ClearCoordinates();
             }
+            */
 
             var queue = new Queue<Coordinate>(ordered);
             return queue;

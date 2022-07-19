@@ -212,14 +212,16 @@
 
             if (OptimizeRoute)
             {
+                // Optimized route but contains a couple big jumps
                 //_routeCalculator.ClearCoordinates();
                 //_routeCalculator.AddCoordinates(bootstrapRoute);
-                //var optimizedRoute2 = _routeCalculator.CalculateShortestRoute();
+                //var optimizedRoute = _routeCalculator.CalculateShortestRoute();
                 //_routeCalculator.ClearCoordinates();
 
                 // Benchmark - Roughly 60.4414-64.7969 :(
                 //Utilities.Utils.BenchmarkAction(() => RouteOptimizeUtil.Optimize(bootstrapRoute));
 
+                // Optimized route with no big jumps, although takes a lot longer to generate
                 var optimizedRoute = RouteOptimizeUtil.Optimize(bootstrapRoute);
                 return optimizedRoute;
             }

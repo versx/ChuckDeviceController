@@ -16,7 +16,7 @@
         private static readonly Random _random = new();
         private readonly ILogger<CircleInstanceController> _logger;
         private readonly Dictionary<string, DeviceIndex> _currentUuid = new();
-        private int _lastIndex = 0; // Used for basic leap frog routing
+        private int _lastIndex = 0; // Used for basic leap frog routing only
         private double _lastCompletedTime;
         private double _lastLastCompletedTime;
 
@@ -145,11 +145,12 @@
             {
                 // TODO: Get total average of all devices last completed time
                 // Get the sum of all route round times for all devices if they have completed the
-                // route at least once. (maybe average too?)
+                // route at least once. Twice so that LastCompleted and LastCompletedWholeRoute are
+                // both set. (maybe average too?)
                 var totalRoundTime = _currentUuid.Values.Sum(device =>
                     // If device hasn't completed the route yet, or rather its assigned coordinates
                     // list, use 0 for route last completed sum calculation.
-                    device.LastCompleted == 0 && device.LastCompletedWholeRoute == 0
+                    device.LastCompleted == 0 || device.LastCompletedWholeRoute == 0
                     ? 0
                     : (double)device.LastCompleted - (double)device.LastCompletedWholeRoute
                 );
@@ -177,6 +178,9 @@
 
             // TODO: Lock lastIndex
             _lastIndex = 0;
+            // Clear all existing devices from route index cache
+            _currentUuid.Clear();
+
             return Task.CompletedTask;
         }
 
@@ -292,7 +296,7 @@
 
             if (_currentUuid.Count > 1 && _random.Next(0, 100) < 15)
             {
-                // This looks like some wizardry which could possibly be optimized,
+                // TODO: This looks like some wizardry which could possibly be optimized,
                 // and potentially calculated better. :thinking:
                 (uint numLiveDevices, double distanceToNextDevice) = GetDeviceSpacing(uuid);
                 var dist = 10 * distanceToNextDevice * numLiveDevices + 5;
