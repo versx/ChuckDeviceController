@@ -386,7 +386,7 @@
                             ? Convert.ToDouble((double)count / (double)totalCount) * 100
                             : 100;
 
-                        var bootstrapStatus = $"Bootstrapping {count:N0}/{totalCount:N0} ({Math.Round(percentage, 1)}%)";
+                        var bootstrapStatus = $"Bootstrapping: {count:N0}/{totalCount:N0} ({Math.Round(percentage, 1)}%)";
                         return bootstrapStatus;
                     }
 
