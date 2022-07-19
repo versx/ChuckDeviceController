@@ -21,10 +21,5 @@
         /// Smart circular spaced routing logic.
         /// </summary>
         Smart,
-
-        /// <summary>
-        /// Dynamic route generation
-        /// </summary>
-        Dynamic,
     }
 }

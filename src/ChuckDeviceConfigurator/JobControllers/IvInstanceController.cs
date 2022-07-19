@@ -228,6 +228,7 @@
                 }
                 catch (Exception ex)
                 {
+                    _logger.LogError($"Error: {ex}");
                     Thread.Sleep(1000);
                     // TODO: Should exit
                 }

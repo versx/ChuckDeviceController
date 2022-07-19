@@ -180,6 +180,8 @@
                 _context.Update(geofence);
                 await _context.SaveChangesAsync();
 
+                // TODO: Update any existing instances if geofence name changed
+
                 _geofenceService.Edit(geofence, id);
 
                 return RedirectToAction(nameof(Index));

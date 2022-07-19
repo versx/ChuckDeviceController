@@ -66,6 +66,8 @@
                 return View();
             }
 
+            // TODO: Get devices assigned to instance and list them
+
             var status = await _jobControllerService.GetStatusAsync(instance);
             instance.Status = status;
 

@@ -56,7 +56,9 @@
             Column("last_seen"),
             JsonPropertyName("last_seen"),
         ]
-        public ulong? LastSeen { get; set; } = 0;
+        public ulong? LastSeen { get; set; } = 0; // Last job request received
+
+        // TODO: Last received data
 
         [
 
