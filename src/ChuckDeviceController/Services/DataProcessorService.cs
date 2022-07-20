@@ -617,6 +617,16 @@
             {
                 try
                 {
+                    // Send found/nearby forts with gRPC service for leveling instance
+                    var lvlForts = forts.Where(fort => fort.data.FortType == FortType.Gym)
+                                        .Select(fort => fort.data)
+                                        .Select(fort => (PokemonFortProto)fort)
+                                        .ToList();
+                    if (lvlForts.Count > 0)
+                    {
+                        await HandleGymsAsync(lvlForts, "test"); // TODO: Get username
+                    }
+
                     // Convert fort protos to Pokestop/Gym models
                     foreach (var fort in forts)
                     {
@@ -669,9 +679,6 @@
                                 }
                                 break;
                             case FortType.Gym:
-                                // Send found/nearby forts with gRPC service for leveling instance
-                                await HandleGymAsync(data, username);
-
                                 // Init Gym model from fort proto data
                                 var gym = new Gym(data, cellId);
                                 await gym.UpdateAsync(context);
@@ -1010,25 +1017,25 @@
 
         private static async Task HandlePokemonAsync(List<Pokemon> pokemon)
         {
-            foreach (var pkmn in pokemon)
-            {
-                if (pkmn.IsNewPokemon)
-                {
-                    // Send got Pokemon proto message
-                    await GrpcClientService.SendRpcPayloadAsync(pkmn, PayloadType.Pokemon);
-                }
+            var newPokemon = pokemon.Where(pkmn => pkmn.IsNewPokemon).ToList();
+            var newPokemonWithIV = pokemon.Where(pkmn => pkmn.IsNewPokemonWithIV).ToList();
 
-                if (pkmn.IsNewPokemonWithIV)
-                {
-                    // Send got Pokemon IV proto message
-                    await GrpcClientService.SendRpcPayloadAsync(pkmn, PayloadType.Pokemon, hasIV: true);
-                }
+            if (newPokemon.Count > 0)
+            {
+                // Send got Pokemon proto message
+                await GrpcClientService.SendRpcPayloadAsync(newPokemon, PayloadType.PokemonList, null, false);
+            }
+
+            if (newPokemonWithIV.Count > 0)
+            {
+                // Send got Pokemon IV proto message
+                await GrpcClientService.SendRpcPayloadAsync(newPokemonWithIV, PayloadType.PokemonList, null, true);
             }
         }
 
-        private static async Task HandleGymAsync(PokemonFortProto fort, string username)
+        private static async Task HandleGymsAsync(List<PokemonFortProto> forts, string username)
         {
-            await GrpcClientService.SendRpcPayloadAsync(fort, PayloadType.Fort, username);
+            await GrpcClientService.SendRpcPayloadAsync(forts, PayloadType.FortList, username);
         }
 
         private static async Task HandlePlayerDataAsync(string username, ushort level, uint xp)

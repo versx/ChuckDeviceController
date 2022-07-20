@@ -30,6 +30,8 @@ enum PayloadStatus {
 
 enum PayloadType {
 	Pokemon = 0;
-	Fort = 1;
-	PlayerData = 2;
+    PokemonList = 1;
+	Fort = 2;
+    FortList = 3;
+	PlayerData = 4;
 }
