@@ -229,10 +229,10 @@
         {
             var isNotLure = !string.IsNullOrEmpty(pokemon.PokestopId) || pokemon.SpawnId > 0;
             var matchesEvent = pokemon.IsEvent == IsEvent;
-            var inPokemonList = IsInPokemonList(pokemon);
+            var isDesiredPokemon = IsDesiredPokemon(pokemon);
             var pkmnCoord = new Coordinate(pokemon.Latitude, pokemon.Longitude);
             var inGeofence = GeofenceService.InMultiPolygon((List<MultiPolygon>)MultiPolygons, pkmnCoord);
-            if (!(isNotLure && matchesEvent && inPokemonList && inGeofence))
+            if (!(isNotLure && matchesEvent && isDesiredPokemon && inGeofence))
                 return;
 
             lock (_queueLock)
@@ -251,7 +251,8 @@
                 {
                     if (index != null)
                     {
-                        _pokemonQueue.Insert((int)index, pokemon);
+                        //_pokemonQueue.Insert((int)index, pokemon);
+                        _pokemonQueue.Set((int)index, pokemon);
                         // Remove last item in the queue
                         _ = _pokemonQueue.PopLast();
                     }
@@ -346,7 +347,7 @@
             }
         }
 
-        private bool IsInPokemonList(Pokemon pokemon)
+        private bool IsDesiredPokemon(Pokemon pokemon)
         {
             if (PokemonIds.Contains(pokemon.PokemonId.ToString()))
                 return true;
@@ -360,7 +361,7 @@
             return false;
         }
 
-        private int? FindFirstIndexInList(uint pokemonId, ushort formId)
+        private int? GetPriorityIndex(uint pokemonId, ushort formId)
         {
             var key = formId > 0
                 ? $"{pokemonId}_f{formId}"
@@ -381,7 +382,7 @@
 
         private uint? GetLastIndexOf(uint pokemonId, ushort formId)
         {
-            var targetPriority = FindFirstIndexInList(pokemonId, formId);
+            var targetPriority = GetPriorityIndex(pokemonId, formId);
             if (targetPriority == null)
             {
                 return null;
@@ -390,7 +391,7 @@
             var i = 0u;
             foreach (var pokemon in _pokemonQueue.Values)
             {
-                var priority = FindFirstIndexInList(pokemon.PokemonId, formId);
+                var priority = GetPriorityIndex(pokemon.PokemonId, formId);
                 if (targetPriority < priority)
                 {
                     return i;
