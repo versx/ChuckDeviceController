@@ -351,6 +351,74 @@
             return queue;
         }
 
+        public void RemoveFromIvQueue(string name, string encounterId)
+        {
+            lock (_instancesLock)
+            {
+                var jobController = GetInstanceControllerByName(name);
+                if (jobController is IvInstanceController ivController)
+                {
+                    ivController.RemoveFromQueue(encounterId);
+                }
+            }
+        }
+
+        public void GotPokemon(Pokemon pokemon)
+        {
+            lock (_instancesLock)
+            {
+                foreach (var (_, jobController) in _instances)
+                {
+                    if (jobController is IvInstanceController ivController)
+                    {
+                        ivController.GotPokemon(pokemon);
+                    }
+                }
+            }
+        }
+
+        public void GotPokemonIV(Pokemon pokemon)
+        {
+            lock (_instancesLock)
+            {
+                foreach (var (_, jobController) in _instances)
+                {
+                    if (jobController is IvInstanceController ivController)
+                    {
+                        ivController.GotPokemonIV(pokemon);
+                    }
+                }
+            }
+        }
+
+        public void GotFort(PokemonFortProto fort, string username)
+        {
+            lock (_instancesLock)
+            {
+                foreach (var (_, jobController) in _instances)
+                {
+                    if (jobController is LevelingInstanceController levelController)
+                    {
+                        levelController.GotFort(fort, username);
+                    }
+                }
+            }
+        }
+
+        public void GotPlayerData(string username, ushort level, ulong xp)
+        {
+            lock (_instancesLock)
+            {
+                foreach (var (_, jobController) in _instances)
+                {
+                    if (jobController is LevelingInstanceController levelController)
+                    {
+                        levelController.SetPlayerInfo(username, level, xp);
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region Devices
@@ -535,73 +603,5 @@
         }
 
         #endregion
-
-        public void GotPokemon(Pokemon pokemon)
-        {
-            lock (_instancesLock)
-            {
-                foreach (var (_, jobController) in _instances)
-                {
-                    if (jobController is IvInstanceController ivController)
-                    {
-                        ivController.GotPokemon(pokemon);
-                    }
-                }
-            }
-        }
-
-        public void GotPokemonIV(Pokemon pokemon)
-        {
-            lock (_instancesLock)
-            {
-                foreach (var (_, jobController) in _instances)
-                {
-                    if (jobController is IvInstanceController ivController)
-                    {
-                        ivController.GotPokemonIV(pokemon);
-                    }
-                }
-            }
-        }
-
-        public void GotFort(PokemonFortProto fort, string username)
-        {
-            lock (_instancesLock)
-            {
-                foreach (var (_, jobController) in _instances)
-                {
-                    if (jobController is LevelingInstanceController levelController)
-                    {
-                        levelController.GotFort(fort, username);
-                    }
-                }
-            }
-        }
-
-        public void GotPlayerData(string username, ushort level, ulong xp)
-        {
-            lock (_instancesLock)
-            {
-                foreach (var (_, jobController) in _instances)
-                {
-                    if (jobController is LevelingInstanceController levelController)
-                    {
-                        levelController.SetPlayerInfo(username, level, xp);
-                    }
-                }
-            }
-        }
-
-        public void RemoveFromIvQueue(string name, string encounterId)
-        {
-            lock (_instancesLock)
-            {
-                var jobController = GetInstanceControllerByName(name);
-                if (jobController is IvInstanceController ivController)
-                {
-                    ivController.RemoveFromQueue(encounterId);
-                }
-            }
-        }
     }
 }

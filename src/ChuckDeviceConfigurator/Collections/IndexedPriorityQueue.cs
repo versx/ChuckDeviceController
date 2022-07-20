@@ -151,6 +151,7 @@
             {
                 _objects.RemoveAt(index);
             }
+            SortHeapDownward(1);
         }
 
         public int IndexOf(T obj) => _objects.IndexOf(obj);
@@ -296,9 +297,7 @@
         private void Swap(int i, int j)
         {
             // swap elements in heap
-            int temp = _heap[i];
-            _heap[i] = _heap[j];
-            _heap[j] = temp;
+            (_heap[j], _heap[i]) = (_heap[i], _heap[j]);
 
             // reset inverses
             _heapInverse[_heap[i]] = i;
@@ -307,7 +306,7 @@
 
         private static int Parent(int heapIndex)
         {
-            return (heapIndex / 2);
+            return heapIndex / 2;
         }
 
         private static int FirstChild(int heapIndex)
