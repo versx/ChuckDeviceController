@@ -12,6 +12,7 @@ using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.Routing;
+using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
@@ -158,6 +159,13 @@ builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddSingleton<IRouteCalculator, RouteCalculator>();
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
 
+builder.Services.AddGrpc(options =>
+{
+    options.IgnoreUnknownServices = true;
+    options.EnableDetailedErrors = true;
+    options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
+});
+
 #endregion
 
 
@@ -192,6 +200,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGrpcService<GrpcServerService>();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

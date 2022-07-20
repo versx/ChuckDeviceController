@@ -32,8 +32,8 @@
         [JsonPropertyName("trainerlvl")]
         public ushort Level { get; set; }
 
-        [JsonPropertyName("trainerxp")]
-        public uint? TrainerXp { get; set; }
+        [JsonPropertyName("trainerexp")]
+        public ulong? TrainerXp { get; set; }
 
         [JsonPropertyName("target_max_distnace")] // TODO: Typflo, fix eventually
         public uint? TargetMaxDistance { get; set; }

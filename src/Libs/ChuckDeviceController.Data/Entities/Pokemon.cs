@@ -12,7 +12,7 @@
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("pokemon")]
-    public class Pokemon : BaseEntity
+    public class Pokemon : BaseEntity, IComparable
     {
         #region Constants
 
@@ -155,6 +155,12 @@
 
         [NotMapped]
         public bool HasIvChanges { get; set; }
+
+        [NotMapped]
+        public bool IsNewPokemon { get; set; }
+
+        [NotMapped]
+        public bool IsNewPokemonWithIV { get; set; }
 
         #endregion
 
@@ -476,8 +482,7 @@
 
         public async Task UpdateAsync(MapDataContext context, bool updateIv = false)
         {
-            bool setIvForWeather;
-
+            var setIvForWeather = false;
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
@@ -643,6 +648,26 @@
                     }
                 }
             }
+
+            if (setIvForWeather)
+            {
+                // TODO: Webhook
+                IsNewPokemon = true;
+            }
+            else if (oldPokemon == null)
+            {
+                // TODO: Webhook
+                IsNewPokemon = true;
+                IsNewPokemonWithIV = AttackIV != null;
+            }
+            else if (updateIv && ((oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon.HasIvChanges))
+            {
+                oldPokemon.HasIvChanges = false;
+                // TODO: Webhook
+                IsNewPokemonWithIV = true;
+            }
+
+            // TODO: Cache pokemon
         }
 
         #endregion
@@ -820,7 +845,7 @@
 
         public static SeenType StringToSeenType(string seenType)
         {
-            return (seenType.ToLower()) switch
+            return seenType.ToLower() switch
             {
                 "unset" => SeenType.Unset,
                 "encounter" => SeenType.Encounter,
@@ -834,5 +859,20 @@
         }
 
         #endregion
+
+        public int CompareTo(object? obj)
+        {
+            if (obj == null)
+                return -1;
+
+            var other = (Pokemon)obj;
+            var result = Id.CompareTo(other.Id);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            return 0;
+        }
     }
 }

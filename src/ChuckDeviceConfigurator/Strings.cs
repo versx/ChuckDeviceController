@@ -25,6 +25,9 @@ namespace ChuckDeviceConfigurator
         public const ushort ThirtyMinutesS = 1800;
         public const ushort SixtyMinutesS = ThirtyMinutesS * 2;
 
+        public const string PokemonImageUrl = "https://raw.githubusercontent.com/WatWowMap/wwm-uicons/main/pokemon/";
+        public const string GoogleMapsLinkFormat = "https://maps.google.com/maps?q={0},{1}";
+
 
         // Default Instance Property Values
         public const ushort DefaultMinimumLevel = 0;

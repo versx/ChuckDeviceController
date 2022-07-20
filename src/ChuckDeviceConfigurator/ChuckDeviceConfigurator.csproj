@@ -29,6 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.47.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.6" />
@@ -47,6 +48,11 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\payload.proto" GrpcServices="Server" />
   </ItemGroup>
 
   <ItemGroup>

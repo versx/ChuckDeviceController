@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="EFCore.BulkExtensions" Version="6.5.3" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.47.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.6">
       <PrivateAssets>all</PrivateAssets>
@@ -52,6 +53,11 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\payload.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>

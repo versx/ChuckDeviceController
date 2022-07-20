@@ -276,7 +276,7 @@
                     ulong encounterTime;
                     try
                     {
-                        var result = Cooldown.SetCooldownAsync(
+                        var result = Cooldown.SetCooldown(
                             options.Account,
                             new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude)
                         );
@@ -1085,7 +1085,7 @@
             return new Coordinate(lat.Value, lon.Value);
         }
 
-        public static CooldownResult SetCooldownAsync(Account account, Coordinate location)
+        public static CooldownResult SetCooldown(Account account, Coordinate location)
         {
             double? lastLat = null;
             double? lastLon = null;
@@ -1121,6 +1121,12 @@
 
         public static async Task SetEncounterAsync(IDbContextFactory<DeviceControllerContext> factory, Account account, Coordinate location, ulong encounterTime)
         {
+            if (factory == null)
+            {
+                Console.WriteLine($"Failed to set account last encounter info, provided database factory was null!");
+                return;
+            }
+
             if (account == null)
             {
                 Console.WriteLine($"Failed to set account last encounter info, account was null");

@@ -80,6 +80,7 @@
                 InstanceType.PokemonIV => "pokemon_iv",
                 InstanceType.Bootstrap => "bootstrap",
                 InstanceType.FindTth => "find_tth",
+                InstanceType.Leveling => "leveling",
                 _ => type.ToString(),
             };
         }
@@ -97,6 +98,7 @@
                 "pokemon_iv" => InstanceType.PokemonIV,
                 "bootstrap" => InstanceType.Bootstrap,
                 "find_tth" => InstanceType.FindTth,
+                "leveling" => InstanceType.Leveling,
                 _ => InstanceType.CirclePokemon,
             };
         }

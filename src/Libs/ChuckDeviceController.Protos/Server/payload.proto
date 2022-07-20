@@ -1,0 +1,35 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "ChuckDeviceController.Protos";
+
+package payload;
+
+// The proto payload service definition.
+service Payload {
+    // Sends a proto payload
+    rpc ReceivedPayload (PayloadRequest) returns (PayloadResponse);
+}
+
+// The request message containing the JSON payload.
+message PayloadRequest {
+    string payload = 1;
+    PayloadType payloadType = 2;
+    string username = 3;
+    bool hasIV = 4;
+}
+
+// The response message containing the status of the request.
+message PayloadResponse {
+    PayloadStatus status = 1;
+}
+
+enum PayloadStatus {
+	Ok = 0;
+	Error = 1;
+}
+
+enum PayloadType {
+	Pokemon = 0;
+	Fort = 1;
+	PlayerData = 2;
+}

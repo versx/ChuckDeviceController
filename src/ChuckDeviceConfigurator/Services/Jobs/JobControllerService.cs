@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
     using Microsoft.EntityFrameworkCore;
+    using POGOProtos.Rpc;
 
     using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.JobControllers;
@@ -165,6 +166,7 @@
                 case InstanceType.Bootstrap:
                 case InstanceType.DynamicPokemon:
                 case InstanceType.FindTth:
+                case InstanceType.Leveling:
                 case InstanceType.PokemonIV:
                 case InstanceType.SmartRaid:
                     var (multiPolygons, coordinates) = geofences.ConvertToMultiPolygons();
@@ -185,6 +187,10 @@
                             break;
                         case InstanceType.FindTth:
                             jobController = new TthFinderInstanceController(_mapFactory, instance, multiPolygons, _routeCalculator);
+                            break;
+                        case InstanceType.Leveling:
+                            var startingCoord = coordinates[0][0];
+                            jobController = new LevelingInstanceController(instance, multiPolygons, startingCoord, true, 10000);
                             break;
                         case InstanceType.PokemonIV:
                             var ivList = _ivListService.GetByName(instance.Data?.IvList ?? Strings.DefaultIvList);
@@ -529,5 +535,73 @@
         }
 
         #endregion
+
+        public void GotPokemon(Pokemon pokemon)
+        {
+            lock (_instancesLock)
+            {
+                foreach (var (_, jobController) in _instances)
+                {
+                    if (jobController is IvInstanceController ivController)
+                    {
+                        ivController.GotPokemon(pokemon);
+                    }
+                }
+            }
+        }
+
+        public void GotPokemonIV(Pokemon pokemon)
+        {
+            lock (_instancesLock)
+            {
+                foreach (var (_, jobController) in _instances)
+                {
+                    if (jobController is IvInstanceController ivController)
+                    {
+                        ivController.GotPokemonIV(pokemon);
+                    }
+                }
+            }
+        }
+
+        public void GotFort(PokemonFortProto fort, string username)
+        {
+            lock (_instancesLock)
+            {
+                foreach (var (_, jobController) in _instances)
+                {
+                    if (jobController is LevelingInstanceController levelController)
+                    {
+                        levelController.GotFort(fort, username);
+                    }
+                }
+            }
+        }
+
+        public void GotPlayerData(string username, ushort level, ulong xp)
+        {
+            lock (_instancesLock)
+            {
+                foreach (var (_, jobController) in _instances)
+                {
+                    if (jobController is LevelingInstanceController levelController)
+                    {
+                        levelController.SetPlayerInfo(username, level, xp);
+                    }
+                }
+            }
+        }
+
+        public void RemoveFromIvQueue(string name, string encounterId)
+        {
+            lock (_instancesLock)
+            {
+                var jobController = GetInstanceControllerByName(name);
+                if (jobController is IvInstanceController ivController)
+                {
+                    ivController.RemoveFromQueue(encounterId);
+                }
+            }
+        }
     }
 }

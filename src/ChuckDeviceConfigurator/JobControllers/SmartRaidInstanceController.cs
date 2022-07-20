@@ -388,7 +388,7 @@
                 {
                     _startDate = now;
                 }
-                // If count is at it's maximum value, reset to 0
+                // If count is at the maximum value, reset to 0
                 if (_count == ulong.MaxValue)
                 {
                     _count = 0;

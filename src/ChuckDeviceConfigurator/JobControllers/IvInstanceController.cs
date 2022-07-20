@@ -2,15 +2,17 @@
 {
     using System.Threading.Tasks;
 
+    using ChuckDeviceConfigurator.Collections;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
 
     public class ScannedPokemon
     {
-        public DateTime Date { get; set; }
+        public ulong DateScanned { get; set; }
 
         public Pokemon Pokemon { get; set; }
     }
@@ -20,10 +22,11 @@
         #region Variables
 
         private readonly ILogger<IvInstanceController> _logger;
-        private readonly Queue<Pokemon> _pokemonQueue;
+        private readonly IndexedPriorityQueue<Pokemon> _pokemonQueue;
         private readonly List<ScannedPokemon> _scannedPokemon;
         private readonly object _queueLock = new();
         private readonly object _scannedLock = new();
+        private readonly object _statsLock = new();
         private readonly System.Timers.Timer _timer;
         private ulong _count = 0;
         private ulong _startDate;
@@ -34,7 +37,7 @@
 
         public string Name { get; }
 
-        public IReadOnlyList<MultiPolygon> MultiPolygon { get; }
+        public IReadOnlyList<MultiPolygon> MultiPolygons { get; }
 
         public ushort MinimumLevel { get; }
 
@@ -46,7 +49,8 @@
 
         public ushort QueueLimit { get; }
 
-        public IReadOnlyList<uint> PokemonIds { get; }
+        //public IReadOnlyList<uint> PokemonIds { get; }
+        public List<string> PokemonIds { get; }
 
         public bool EnableLureEncounters { get; }
 
@@ -56,19 +60,20 @@
 
         #region Constructor
 
-        public IvInstanceController(Instance instance, List<MultiPolygon> multiPolygon, List<uint> pokemonIds)
+        public IvInstanceController(Instance instance, List<MultiPolygon> multiPolygons, List<uint> pokemonIds)
         {
             Name = instance.Name;
-            MultiPolygon = multiPolygon;
+            MultiPolygons = multiPolygons;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
             QueueLimit = instance.Data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit;
-            PokemonIds = pokemonIds;
+            PokemonIds = pokemonIds.Select(id => Convert.ToString(id))
+                                   .ToList();
             EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
 
-            _pokemonQueue = new Queue<Pokemon>();
+            _pokemonQueue = new IndexedPriorityQueue<Pokemon>(QueueLimit);
             _scannedPokemon = new List<ScannedPokemon>();
             _startDate = DateTime.UtcNow.ToTotalSeconds();
             _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
@@ -108,9 +113,7 @@
                     return null;
                 }
 
-                //pokemon = _pokemonQueue.FirstOrDefault();
-                //_pokemonQueue.Remove(pokemon);
-                pokemon = _pokemonQueue.Dequeue();
+                pokemon = _pokemonQueue.Pop();
             }
             if (pokemon == null)
             {
@@ -130,7 +133,7 @@
             {
                 _scannedPokemon.Add(new ScannedPokemon
                 {
-                    Date = DateTime.UtcNow,
+                    DateScanned = now,
                     Pokemon = pokemon,
                 });
             }
@@ -157,7 +160,7 @@
             {
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 // Prevent dividing by zero
-                ivh = _count == 0
+                ivh = _count > 0
                     ? _count / (now - _startDate) * Strings.SixtyMinutesS
                     : 0;
             }
@@ -171,14 +174,16 @@
             return await Task.FromResult(status);
         }
 
-        public IReadOnlyList<Pokemon> GetQueue()
-        {
-            return _pokemonQueue.ToList();
-        }
+        public IReadOnlyList<Pokemon> GetQueue() => _pokemonQueue.Values;
 
         public Task Reload()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
+
+            // Clear existing lists
+            _pokemonQueue.Clear();
+            _scannedPokemon.Clear();
+
             return Task.CompletedTask;
         }
 
@@ -188,6 +193,101 @@
 
             _timer.Stop();
             return Task.CompletedTask;
+        }
+
+        internal void GotPokemonIV(Pokemon pokemon)
+        {
+            var pkmnCoord = new Coordinate(pokemon.Latitude, pokemon.Longitude);
+            if (!GeofenceService.InMultiPolygon((List<MultiPolygon>)MultiPolygons, pkmnCoord))
+            {
+                // Pokemon outside of geofence area for job controller, skipping...
+                return;
+            }
+
+            lock (_queueLock)
+            {
+                var index = _pokemonQueue.IndexOf(pokemon);
+                if (index > -1)
+                {
+                    _pokemonQueue.RemoveAt(index);                    
+                }
+
+                if (IsEvent && !pokemon.IsEvent && (
+                    pokemon.AttackIV == 15 || pokemon.AttackIV == 0 || pokemon.AttackIV == 1) &&
+                    pokemon.DefenseIV == 15 && pokemon.StaminaIV == 15)
+                {
+                    pokemon.IsEvent = true;
+                    // Add Pokemon to first in list
+                    _pokemonQueue.Insert(0, pokemon);
+                }
+            }
+
+            UpdateStats();
+        }
+
+        internal void GotPokemon(Pokemon pokemon)
+        {
+            var isNotLure = !string.IsNullOrEmpty(pokemon.PokestopId) || pokemon.SpawnId > 0;
+            var matchesEvent = pokemon.IsEvent == IsEvent;
+            var inPokemonList = IsInPokemonList(pokemon);
+            var pkmnCoord = new Coordinate(pokemon.Latitude, pokemon.Longitude);
+            var inGeofence = GeofenceService.InMultiPolygon((List<MultiPolygon>)MultiPolygons, pkmnCoord);
+            if (!(isNotLure && matchesEvent && inPokemonList && inGeofence))
+                return;
+
+            lock (_queueLock)
+            {
+                if (_pokemonQueue.Contains(pokemon))
+                {
+                    return;
+                }
+
+                var index = GetLastIndexOf(pokemon.PokemonId, pokemon.Form ?? 0);
+                if (_pokemonQueue.Count >= QueueLimit && index == null)
+                {
+                    _logger.LogWarning($"[{Name}] Queue is full!");
+                }
+                else if (_pokemonQueue.Count >= QueueLimit)
+                {
+                    if (index != null)
+                    {
+                        _pokemonQueue.Insert((int)index, pokemon);
+                        // Remove last item in the queue
+                        _ = _pokemonQueue.PopLast();
+                    }
+                }
+                else if (index != null)
+                {
+                    _pokemonQueue.Insert((int)index, pokemon);
+                }
+                else
+                {
+                    _pokemonQueue.Insert(0, pokemon);
+                }
+            }
+        }
+
+        internal void RemoveFromQueue(string encounterId)
+        {
+            // Remove Pokemon from IV queue based on encounterId
+            lock (_queueLock)
+            {
+                int index = -1;
+                var items = _pokemonQueue.Values;
+                for (var i = 0; i < _pokemonQueue.Count; i++)
+                {
+                    var pokemon = _pokemonQueue[i];
+                    if (pokemon.Id == encounterId)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index > -1)
+                {
+                    _pokemonQueue.RemoveAt(index);
+                }
+            }
         }
 
         #endregion
@@ -209,7 +309,7 @@
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var timeSince = now - scannedPokemon.Date.ToTotalSeconds();
+            var timeSince = now - scannedPokemon.DateScanned;
             if (timeSince < 120)
             {
                 Thread.Sleep(Convert.ToInt32(120 - timeSince) * 1000);
@@ -242,6 +342,85 @@
                 else
                 {
                     _logger.LogInformation($"[{Name}]Checked Pokemon {pokemonReal.Id} has IV");
+                }
+            }
+        }
+
+        private bool IsInPokemonList(Pokemon pokemon)
+        {
+            if (PokemonIds.Contains(pokemon.PokemonId.ToString()))
+                return true;
+
+            if (pokemon.Form != null && pokemon.Form > 0)
+            {
+                var key = $"{pokemon.PokemonId}_f{pokemon.Form}";
+                return PokemonIds.Contains(key);
+            }
+
+            return false;
+        }
+
+        private int? FindFirstIndexInList(uint pokemonId, ushort formId)
+        {
+            var key = formId > 0
+                ? $"{pokemonId}_f{formId}"
+                : $"{pokemonId}";
+            var priority = PokemonIds.IndexOf(key);
+            if (priority != -1)
+            {
+                return priority;
+            }
+
+            if (formId > 0)
+            {
+                var index = PokemonIds.IndexOf($"{pokemonId}");
+                return index;
+            }
+            return null;
+        }
+
+        private uint? GetLastIndexOf(uint pokemonId, ushort formId)
+        {
+            var targetPriority = FindFirstIndexInList(pokemonId, formId);
+            if (targetPriority == null)
+            {
+                return null;
+            }
+
+            var i = 0u;
+            foreach (var pokemon in _pokemonQueue.Values)
+            {
+                var priority = FindFirstIndexInList(pokemon.PokemonId, formId);
+                if (targetPriority < priority)
+                {
+                    return i;
+                }
+                i++;
+            }
+
+            return null;
+        }
+
+        private void UpdateStats()
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            lock (_statsLock)
+            {
+                // Set start date if not set already
+                if (_startDate == 0)
+                {
+                    _startDate = now;
+                }
+                // If count is at the maximum value, reset to 0
+                if (_count == ulong.MaxValue)
+                {
+                    _count = 0;
+                    _startDate = now;
+                }
+                else
+                {
+                    // Increment IV stat count
+                    _count++;
                 }
             }
         }

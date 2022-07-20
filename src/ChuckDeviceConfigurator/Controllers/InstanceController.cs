@@ -257,18 +257,26 @@
             }
         }
 
-        // GET: InstanceController/IVQueue/test
+        // GET: InstanceController/IvQueue/test
         [Route("/Instance/IvQueue/{name}")]
         public ActionResult IvQueue(string name)
         {
             var ivQueue = _jobControllerService.GetIvQueue(name);
-            var queueItems = ivQueue.Select(item => new IvQueueItemViewModel
+            var queueItems = ivQueue.Select(item =>
             {
-                Image = string.Empty,
-                EncounterId = item.Id,
-                PokemonId = item.PokemonId,
-                PokemonName = item.PokemonId.ToString(),
-                Location = $"{Math.Round(item.Latitude, 5)},{Math.Round(item.Longitude, 5)}",
+                var lat = Math.Round(item.Latitude, 5);
+                var lon = Math.Round(item.Longitude, 5);
+                var imageUrl = $"<img src='{Strings.PokemonImageUrl}/{item.PokemonId}.png' width='auto' height='32' />";
+                var locationUrl = $"<a href='{string.Format(Strings.GoogleMapsLinkFormat, lat, lon)}'>{lat}, {lon}</a>";
+                return new IvQueueItemViewModel
+                {
+                    // TODO: Include forms and make image url configurable
+                    Image = imageUrl,
+                    EncounterId = item.Id,
+                    PokemonId = item.PokemonId,
+                    PokemonName = item.PokemonId.ToString(), // TODO: Get pokemon name
+                    Location = locationUrl,
+                };
             }).ToList();
             var model = new IvQueueViewModel
             {
@@ -276,6 +284,15 @@
                 Queue = queueItems,
             };
             return View(model);
+        }
+
+        // GET: InstanceController/IvQueue/test/Remove/5
+        [Route("/Instance/IvQueue/{name}/Remove/{id}")]
+        public ActionResult IvQueueRemove(string name, string id)
+        {
+            // Remove Pokemon with index from IV queue list by name
+            _jobControllerService.RemoveFromIvQueue(name, id);
+            return RedirectToAction(nameof(IvQueue), new { name });
         }
 
         private static InstanceData PopulateInstanceDataFromModel(ManageInstanceDataViewModel model)

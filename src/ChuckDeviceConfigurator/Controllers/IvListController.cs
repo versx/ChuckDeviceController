@@ -65,11 +65,13 @@
             {
                 var name = Convert.ToString(collection["Name"]);
                 var pokemonIds = Convert.ToString(collection["PokemonIds"]);
-                var list = pokemonIds.Replace("<br>", "\r\n")
-                                     .Replace("\r\n", "\n")
-                                     .Split('\n')
-                                     .Select(uint.Parse)
-                                     .ToList();
+                var list = pokemonIds == "*"
+                    ? GeneratePokemonList()
+                    : pokemonIds.Replace("<br>", "\r\n")
+                                .Replace("\r\n", "\n")
+                                .Split('\n')
+                                .Select(uint.Parse)
+                                .ToList();
 
                 if (_context.IvLists.Any(iv => iv.Name == name))
                 {
@@ -139,19 +141,21 @@
                     ivList.Name = name;
                 }
 
-                var pokemonIds = Convert.ToString(collection["PokemonIds"])
-                                      .Replace("<br>", "\n")
-                                      .Replace("<br />", "\n")
-                                      .Replace("\r\n", "\n")
-                                      .Split('\n')
-                                      .Select(s => Convert.ToUInt32(s))
-                                      .ToList();
+                var pokemonIds = Convert.ToString(collection["PokemonIds"]);
+                var list = pokemonIds == "*"
+                    ? GeneratePokemonList()
+                    : pokemonIds.Replace("<br>", "\n")
+                                .Replace("<br />", "\n")
+                                .Replace("\r\n", "\n")
+                                .Split('\n')
+                                .Select(uint.Parse)
+                                .ToList();
 
                 // Compare list counts or if any elements are different
-                if (ivList.PokemonIds.Count != pokemonIds.Count ||
-                    ivList.PokemonIds.IsEqual(pokemonIds, ignoreOrder: true))
+                if (ivList.PokemonIds.Count != list.Count ||
+                    ivList.PokemonIds.IsEqual(list, ignoreOrder: true))
                 {
-                    ivList.PokemonIds = pokemonIds;
+                    ivList.PokemonIds = list;
                 }
 
                 _context.Update(ivList);
@@ -209,6 +213,14 @@
                 ModelState.AddModelError("IvList", $"Unknown error occurred while deleting IV list '{id}'.");
                 return View();
             }
+        }
+
+        private static List<uint> GeneratePokemonList(int start = 1, int end = 999)
+        {
+            var pokemonIds = Enumerable.Range(start, end - start)
+                                       .Select(Convert.ToUInt32)
+                                       .ToList();
+            return pokemonIds;
         }
     }
 }

@@ -15,6 +15,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.HostedServices;
+    using ChuckDeviceController.Protos;
 
     /*
     public interface IDataConsumer
@@ -49,6 +50,8 @@
 
     public class DataProcessorService : BackgroundService, IDataProcessorService
     {
+        #region Variables
+
         private readonly ILogger<IProtoProcessorService> _logger;
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly IDbContextFactory<MapDataContext> _dbFactory;
@@ -56,6 +59,10 @@
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell;
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell;
+
+        #endregion
+
+        #region Constructor
 
         public DataProcessorService(
             ILogger<IProtoProcessorService> logger,
@@ -71,6 +78,8 @@
             _gymIdsPerCell = new Dictionary<ulong, List<string>>();
             _stopIdsPerCell = new Dictionary<ulong, List<string>>();
         }
+
+        #endregion
 
         #region Background Service
 
@@ -152,13 +161,22 @@
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            var playerData = data.Where(x => x.type == ProtoDataType.PlayerData)
+                                 .Select(x => x.data)
+                                 .ToList();
+            if (playerData.Count > 0)
+            {
+                // Insert account player data
+                await UpdatePlayerDataAsync(playerData);
+            }
+
             var cells = data.Where(x => x.type == ProtoDataType.Cell)
                             .Select(x => x.cell)
                             .Distinct()
                             .ToList();
             if (cells.Count > 0)
             {
-                // Insert s3 cells
+                // Insert S2 cells
                 await UpdateCellsAsync(cells);
             }
 
@@ -261,15 +279,25 @@
 
         #endregion
 
-        private void CheckQueueLength()
+        #region Data Handling Methods
+
+        private async Task UpdatePlayerDataAsync(List<dynamic> playerData)
         {
-            if (_taskQueue.Count == Strings.MaximumQueueCapacity)
+            try
             {
-                _logger.LogWarning($"Data processing queue is at maximum capacity! {_taskQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}");
+                foreach (var data in playerData)
+                {
+                    /*
+                    string username = data.username;
+                    ushort level = data.level;
+                    uint xp = data.xp;
+                    await HandlePlayerDataAsync(username, level, xp);
+                    */
+                }
             }
-            else if (_taskQueue.Count > Strings.MaximumQueueSizeWarning)
+            catch (Exception ex)
             {
-                _logger.LogWarning($"Data processing queue is {_taskQueue.Count:N0} items long.");
+                _logger.LogError($"UpdatePlayerDataAsync: {ex}");
             }
         }
 
@@ -373,7 +401,6 @@
                         var isEvent = wild.isEvent;
                         var pokemon = new Pokemon(context, data, cellId, timestampMs, username, isEvent);
                         await pokemon.UpdateAsync(context, updateIv: false);
-
                         pokemonToUpsert.Add(pokemon);
                         /*
                         if (context.Pokemon.AsNoTracking().Any(pkmn => pkmn.Id == pokemon.Id))
@@ -388,6 +415,9 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
+
+                    await HandlePokemonAsync(pokemonToUpsert);
+
                     //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Wild Pokemon");
@@ -429,6 +459,9 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
+
+                    await HandlePokemonAsync(pokemonToUpsert);
+
                     //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Nearby Pokemon");
@@ -487,6 +520,9 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
+
+                    await HandlePokemonAsync(pokemonToUpsert);
+
                     //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Map Pokemon");
@@ -586,6 +622,8 @@
                     {
                         var cellId = (ulong)fort.cell;
                         var data = (PokemonFortProto)fort.data;
+                        var username = (string)fort.username;
+
                         switch (data.FortType)
                         {
                             case FortType.Checkpoint:
@@ -631,6 +669,9 @@
                                 }
                                 break;
                             case FortType.Gym:
+                                // Send found/nearby forts with gRPC service for leveling instance
+                                await HandleGymAsync(data, username);
+
                                 // Init Gym model from fort proto data
                                 var gym = new Gym(data, cellId);
                                 await gym.UpdateAsync(context);
@@ -916,6 +957,22 @@
             }
         }
 
+        #endregion
+
+        #region Private Methods
+
+        private void CheckQueueLength()
+        {
+            if (_taskQueue.Count == Strings.MaximumQueueCapacity)
+            {
+                _logger.LogWarning($"Data processing queue is at maximum capacity! {_taskQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}");
+            }
+            else if (_taskQueue.Count > Strings.MaximumQueueSizeWarning)
+            {
+                _logger.LogWarning($"Data processing queue is {_taskQueue.Count:N0} items long.");
+            }
+        }
+
         private async Task AddOrUpdateAsync<T>(List<T> entities) where T : BaseEntity
         {
             try
@@ -950,5 +1007,41 @@
                 _logger.LogError($"AddOrUpdateAsync: {ex}");
             }
         }
+
+        private static async Task HandlePokemonAsync(List<Pokemon> pokemon)
+        {
+            foreach (var pkmn in pokemon)
+            {
+                if (pkmn.IsNewPokemon)
+                {
+                    // Send got Pokemon proto message
+                    await GrpcClientService.SendRpcPayloadAsync(pkmn, PayloadType.Pokemon);
+                }
+
+                if (pkmn.IsNewPokemonWithIV)
+                {
+                    // Send got Pokemon IV proto message
+                    await GrpcClientService.SendRpcPayloadAsync(pkmn, PayloadType.Pokemon, hasIV: true);
+                }
+            }
+        }
+
+        private static async Task HandleGymAsync(PokemonFortProto fort, string username)
+        {
+            await GrpcClientService.SendRpcPayloadAsync(fort, PayloadType.Fort, username);
+        }
+
+        private static async Task HandlePlayerDataAsync(string username, ushort level, uint xp)
+        {
+            var payload = new
+            {
+                username,
+                level,
+                xp,
+            };
+            await GrpcClientService.SendRpcPayloadAsync(payload, PayloadType.PlayerData, username);
+        }
+
+        #endregion
     }
 }

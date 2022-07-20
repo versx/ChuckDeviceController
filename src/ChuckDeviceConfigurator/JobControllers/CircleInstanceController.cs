@@ -165,7 +165,10 @@
                 {
                     // No assigned devices have completed the route yet, show their current route indexes out
                     // of the total amount of coordinates for the route until one has fully completed it.
-                    var indexesStatus = string.Join(", ", _currentUuid.Values.Select(uuid => uuid.LastRouteIndex));
+                    var indexes = _currentUuid.Values.Select(uuid => uuid.LastRouteIndex).ToList();
+                    var indexesStatus = indexes.Count == 0
+                        ? "0"
+                        : string.Join(", ", _currentUuid.Values.Select(uuid => uuid.LastRouteIndex));
                     status = $"Route Indexes: {indexesStatus}/{Coordinates.Count}";
                 }
             }

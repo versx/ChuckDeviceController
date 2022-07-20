@@ -10,6 +10,8 @@
 
 		public const string ScanIV = "scan_iv";
 
+		public const string SpinPokestop = "spin_pokestop";
+
 		public const string SwitchAccount = "switch_account";
 	}
 }

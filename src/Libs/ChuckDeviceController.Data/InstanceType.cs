@@ -14,5 +14,6 @@
         PokemonIV,
         Bootstrap,
         FindTth,
+        Leveling,
     }
 }

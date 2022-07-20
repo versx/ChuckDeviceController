@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
+    using POGOProtos.Rpc;
+
     using ChuckDeviceController.Data.Entities;
 
     public interface IJobControllerService
@@ -24,6 +26,8 @@
 
         IReadOnlyList<Pokemon> GetIvQueue(string name);
 
+        void RemoveFromIvQueue(string name, string encounterId);
+
         #endregion
 
         #region Devices
@@ -39,5 +43,13 @@
         List<string> GetDeviceUuidsInInstance(string instanceName);
 
         #endregion
+
+        void GotPokemon(Pokemon pokemon);
+
+        void GotPokemonIV(Pokemon pokemon);
+
+        void GotFort(PokemonFortProto fort, string username);
+
+        void GotPlayerData(string username, ushort level, ulong xp);
     }
 }

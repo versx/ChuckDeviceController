@@ -12,6 +12,7 @@
     using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Net.Models.Requests;
+    using ChuckDeviceController.Protos;
 
     public class ProtoPayloadItem
     {
@@ -138,6 +139,7 @@
             var uuid = payload.Payload.Uuid;
             var username = payload.Payload.Username;
             var level = payload.Payload.Level;
+            var xp = payload.Payload.TrainerXp ?? 0;
             var timestamp = payload.Payload.Timestamp ?? DateTime.UtcNow.ToTotalSeconds();
             var hasArQuestReqGlobal = payload.Payload.HaveAr;
 
@@ -165,13 +167,11 @@
 
             var processedProtos = new List<dynamic>();
 
-            uint trainerXp;
-
             foreach (var rawData in payload.Payload.Contents)
             {
                 if (string.IsNullOrEmpty(rawData.Data))
                 {
-                    _logger.LogWarning($"[{uuid}] Unhandled proto {rawData.Method}: {rawData.Data}");
+                    _logger.LogWarning($"[{uuid}] Unhandled proto {rawData.Method}: Proto data is null '{rawData.Data}'");
                     continue;
                 }
                 var data = rawData.Data;
@@ -179,11 +179,12 @@
                 var hasArQuestReq = rawData.HaveAr;
                 switch (method)
                 {
+                    /*
                     case Method.GetPlayer:
                         try
                         {
                             var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (gpr?.Success == true)
+                            if (gpr?.Success ?? false)
                             {
                                 processedProtos.Add(new
                                 {
@@ -202,39 +203,39 @@
                             _logger.LogError($"[{uuid}] Unable to decode GetPlayerOutProto: {ex}");
                         }
                         break;
+                    */
                     case Method.GetHoloholoInventory:
                         try
                         {
                             var ghi = GetHoloholoInventoryOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (ghi?.Success == true)
+                            if (!(ghi?.Success ?? false))
                             {
-                                if (ghi.InventoryDelta.InventoryItem?.Count > 0)
-                                {
-                                    foreach (var item in ghi.InventoryDelta.InventoryItem)
-                                    {
-                                        if (item.InventoryItemData.PlayerStats?.Experience > 0)
-                                        {
-                                            trainerXp = Convert.ToUInt32(item.InventoryItemData.PlayerStats.Experience);
-                                        }
+                                _logger.LogError($"[{uuid}] Malformed GetHoloholoInventoryOutProto");
+                                continue;
+                            }
 
-                                        var quests = item.InventoryItemData.Quests?.Quest;
-                                        if (uuid != null && (quests?.Count ?? 0) > 0)
+                            if ((ghi.InventoryDelta?.InventoryItem?.Count ?? 0) == 0)
+                                continue;
+
+                            foreach (var item in ghi.InventoryDelta.InventoryItem)
+                            {
+                                if (item.InventoryItemData.PlayerStats?.Experience > 0)
+                                {
+                                    xp = Convert.ToUInt32(item.InventoryItemData.PlayerStats.Experience);
+                                }
+
+                                var quests = item.InventoryItemData.Quests?.Quest;
+                                if (uuid != null && (quests?.Count ?? 0) > 0)
+                                {
+                                    foreach (var quest in quests)
+                                    {
+                                        if (quest.QuestContext == QuestProto.Types.Context.ChallengeQuest &&
+                                            quest.QuestType == QuestType.QuestGeotargetedArScan)
                                         {
-                                            foreach (var quest in quests)
-                                            {
-                                                if (quest.QuestContext == QuestProto.Types.Context.ChallengeQuest &&
-                                                    quest.QuestType == QuestType.QuestGeotargetedArScan)
-                                                {
-                                                    _arQuestActualMap.Set(uuid, true, timestamp);
-                                                }
-                                            }
+                                            _arQuestActualMap.Set(uuid, true, timestamp);
                                         }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                _logger.LogError($"[{uuid}] Malformed GetHoloholoInventoryOutProto");
                             }
                         }
                         catch (Exception ex)
@@ -425,6 +426,7 @@
                                             type = ProtoDataType.Fort,
                                             cell = mapCell.S2CellId,
                                             data = fort,
+                                            username,
                                         });
                                         if (ProcessMapPokemon && fort.ActivePokemon != null)
                                         {
@@ -580,6 +582,17 @@
                         _logger.LogDebug($"[{uuid}] Invalid method or data provided. {method}:{data}");
                         break;
                 }
+            }
+
+            if (!string.IsNullOrEmpty(username) && xp > 0 && level > 0)
+            {
+                var playerData = new
+                {
+                    username,
+                    xp,
+                    level,
+                };
+                await GrpcClientService.SendRpcPayloadAsync(playerData, PayloadType.PlayerData, username);
             }
 
             stopwatch.Stop();
