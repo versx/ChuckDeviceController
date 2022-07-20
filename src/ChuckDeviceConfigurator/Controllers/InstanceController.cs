@@ -266,7 +266,7 @@
             {
                 var lat = Math.Round(item.Latitude, 5);
                 var lon = Math.Round(item.Longitude, 5);
-                var imageUrl = $"<img src='{Strings.PokemonImageUrl}/{item.PokemonId}.png' width='auto' height='32' />";
+                var imageUrl = $"<img src='{Strings.PokemonImageUrl}/{item.PokemonId}.png' width='32' height='32' />";
                 var locationUrl = $"<a href='{string.Format(Strings.GoogleMapsLinkFormat, lat, lon)}'>{lat}, {lon}</a>";
                 return new IvQueueItemViewModel
                 {

@@ -219,12 +219,12 @@
 
                             foreach (var item in ghi.InventoryDelta.InventoryItem)
                             {
-                                if (item.InventoryItemData.PlayerStats?.Experience > 0)
+                                if ((item.InventoryItemData?.PlayerStats?.Experience ?? 0) > 0)
                                 {
                                     xp = Convert.ToUInt32(item.InventoryItemData.PlayerStats.Experience);
                                 }
 
-                                var quests = item.InventoryItemData.Quests?.Quest;
+                                var quests = item.InventoryItemData?.Quests?.Quest;
                                 if (uuid != null && (quests?.Count ?? 0) > 0)
                                 {
                                     foreach (var quest in quests)

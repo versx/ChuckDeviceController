@@ -63,6 +63,12 @@
                            string.Format("IndexedPriorityQueue.Insert: Index '{0}' out of range", index));
             */
 
+            if (index < _objects.Count && index > _count)
+            {
+                // TODO: Fix index out of range error
+                index = _count;
+            }
+
             ++_count;
 
             if (_objects.Contains(value))
