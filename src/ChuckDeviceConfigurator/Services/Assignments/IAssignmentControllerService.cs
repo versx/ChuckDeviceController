@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Assignments
 {
+    using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
     using ChuckDeviceController.Data.Entities;
 
     public interface IAssignmentControllerService : IControllerService<Assignment, uint>
