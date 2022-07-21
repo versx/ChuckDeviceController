@@ -138,7 +138,7 @@
 
             //if (_lastIndex == Coordinates.Count)
             // TODO: Keep track of coordinates visited, if all visited call InstanceComplete event
-            if (_coordsCompleted.All(coord => coord.Value == true))
+            if (_coordsCompleted.All(coord => coord.Value == true) && _coordsCompleted.Count == Coordinates.Count)
             {
                 _lastCompletedTime = now;
 
@@ -168,7 +168,7 @@
             var position = (double)_lastIndex / (double)Coordinates.Count;
             var percent = Math.Round(position * 100.00, 2);
             var lastCompletedTime = Convert.ToUInt64(_lastCompletedTime);
-            var completed = _lastCompletedTime > 0
+            var completed = lastCompletedTime > 0
                 //? $", Last Completed @ {_lastCompletedTime.FromSeconds()} ({_timesCompleted} times)"
                 ? $", Last Completed @ {lastCompletedTime.FromSeconds()}"
                 : "";
