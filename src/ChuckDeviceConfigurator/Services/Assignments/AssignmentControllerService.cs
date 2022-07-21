@@ -4,6 +4,7 @@
 
     using Microsoft.EntityFrameworkCore;
 
+    using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -267,15 +268,5 @@
         }
 
         #endregion
-    }
-
-    public sealed class AssignmentDeviceReloadedEventArgs : EventArgs
-    {
-        public Device Device { get; }
-
-        public AssignmentDeviceReloadedEventArgs(Device device)
-        {
-            Device = device;
-        }
     }
 }

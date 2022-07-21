@@ -1,35 +1,44 @@
-﻿using ChuckDeviceController.Data;
-
-namespace ChuckDeviceConfigurator
+﻿namespace ChuckDeviceConfigurator
 {
+    using System.Reflection;
+
+    using ChuckDeviceController.Data;
+
     public static partial class Strings
     {
-        public const string WebRoot = "wwwroot";
+        private static readonly AssemblyName StrongAssemblyName = Assembly.GetExecutingAssembly().GetName();
 
+        // File assembly details
+        public static readonly string AssemblyName = StrongAssemblyName?.Name ?? "ChuckDeviceConfigurator";
+        public static readonly string AssemblyVersion = StrongAssemblyName?.Version?.ToString() ?? "v1.0.0";
+
+        // Folder paths
+        public const string WebRoot = "wwwroot";
         public static readonly string DataFolder = Path.Combine(WebRoot, "data");
 
-        public static readonly string AssemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-
-        public static readonly string AssemblyVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
-        public const string SuperAdminRole = "SuperAdmin";
-
+        // Default user properties
         public const string DefaultUserName = "root";
-
         public const string DefaultUserPassword = "123Pa$$word.";
-
         public const string DefaultSuccessLoginPath = "/Identity/Account/Manage";
 
         public const string DefaultInstanceStatus = "--";
 
+        // Time properties
         public const ushort ThirtyMinutesS = 1800;
         public const ushort SixtyMinutesS = ThirtyMinutesS * 2;
+        public const uint OneDayS = SixtyMinutesS * 24;
 
         public const string PokemonImageUrl = "https://raw.githubusercontent.com/WatWowMap/wwm-uicons/main/pokemon/";
         public const string GoogleMapsLinkFormat = "https://maps.google.com/maps?q={0},{1}";
 
+        // Instance constants
+        public const ushort SpinRangeM = 80; // NOTE: Revert back to 40m once reverted ingame
+        public const ulong DefaultDistance = 10000000000000000;
+        public const ushort CooldownLimitS = 7200; // Two hours
+        public const uint SuspensionTimeLimitS = 2592000; // Account suspension time period
 
-        // Default Instance Property Values
+        #region Default Instance Property Values
+
         public const ushort DefaultMinimumLevel = 0;
         public const ushort DefaultMaximumLevel = 29;
 
@@ -60,5 +69,7 @@ namespace ChuckDeviceConfigurator
 
         public const string DefaultAccountGroup = null;
         public const bool DefaultIsEvent = false;
+
+        #endregion
     }
 }

@@ -4,6 +4,7 @@
 
     using Microsoft.EntityFrameworkCore;
 
+    using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data;
@@ -14,25 +15,8 @@
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    public class PokestopWithMode
-    {
-        public Pokestop? Pokestop { get; set; }
-
-        public bool IsAlternative { get; set; }
-    }
-
     public class AutoInstanceController : IJobController
     {
-        #region Constants
-
-        private const uint OneDayS = Strings.SixtyMinutesS * 24;
-        private const ushort SpinRangeM = 80; // TODO: Revert back to 40m once reverted ingame
-        private const ulong DefaultDistance = 10000000000000000;
-        private const ushort CooldownLimitS = 7200; // Two hours
-        private const uint SuspensionTimeLimitS = 2592000; // Account suspension time period
-
-        #endregion
-
         #region Variables
 
         private readonly ILogger<AutoInstanceController> _logger;
@@ -90,7 +74,7 @@
 
         #region Events
 
-        public event EventHandler<AutoInstanceCompleteEventArgs> InstanceComplete;
+        public event EventHandler<AutoInstanceCompleteEventArgs>? InstanceComplete;
         private void OnInstanceComplete(string instanceName, ulong completionTimestamp, AutoInstanceType instanceType = AutoInstanceType.Quest)
         {
             InstanceComplete?.Invoke(this, new AutoInstanceCompleteEventArgs(instanceName, completionTimestamp, instanceType));
@@ -161,7 +145,7 @@
                 case AutoInstanceType.Quest:
                     if (_bootstrapCellIds.Count > 0)
                     {
-                        var bootstrapTask = await GetBootstrapTaskAsync();
+                        var bootstrapTask = await CreateBootstrapTaskAsync();
                         return bootstrapTask;
                     }
 
@@ -208,7 +192,7 @@
                         {
                             _logger.LogDebug($"[{Name}] [{options.AccountUsername ?? "?"}] Switching quest mode from {((mode ?? false) ? "alternative" : "none")} to normal.");
                             PokestopWithMode? closestAr = null;
-                            double closestArDistance = DefaultDistance;
+                            double closestArDistance = Strings.DefaultDistance;
                             var arStops = _allStops.Where(x => x.Pokestop.IsArScanEligible)
                                                    .ToList();
 
@@ -243,7 +227,7 @@
                         foreach (var stop in todayStopsC)
                         {
                             var distance = pokestopCoord.DistanceTo(new Coordinate(stop.Pokestop.Latitude, stop.Pokestop.Longitude));
-                            if (pokestop.IsAlternative == stop.IsAlternative && distance <= SpinRangeM)
+                            if (pokestop.IsAlternative == stop.IsAlternative && distance <= Strings.SpinRangeM)
                             {
                                 nearbyStops.Add(stop);
                             }
@@ -285,7 +269,7 @@
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{Name}] [{options.Uuid}] Failed to calculate cooldown time for device");
+                        _logger.LogError($"[{Name}] [{options.Uuid}] Failed to calculate cooldown time for device: {ex}");
                         // TODO: Lock _todayStops
                         _todayStops.Add(pokestop);
                         return null;
@@ -319,7 +303,7 @@
                             _logger.LogError($"[{Name}] [{options.Uuid}] Failed to get account for device in advance: {ex}");
                         }
 
-                        return GetSwitchAccountTask();
+                        return CreateSwitchAccountTask();
                     }
                     else if (delay >= LogoutDelay)
                     {
@@ -366,7 +350,7 @@
                     }
 
                     // TODO: setArQuestTarget(uuid, timestamp, pokestop.IsAlternative);
-                    var task = GetQuestTask(pokestop, delay);
+                    var task = CreateQuestTask(pokestop, delay);
                     return task;
             }
             return null;
@@ -567,7 +551,7 @@
             var now = localTime.ToTotalSeconds();
             // Timer interval cannot be set to 0, calculate one full day
             // in seconds to use for the next quest clearing interval.
-            _timer.Interval = (timeLeft == 0 ? OneDayS : timeLeft) * 1000;
+            _timer.Interval = (timeLeft == 0 ? Strings.OneDayS : timeLeft) * 1000;
             _timer.Start();
 
             if (_shouldExit)
@@ -616,13 +600,13 @@
         private (PokestopWithMode?, bool?) GetNextClosestPokestop(Coordinate lastCoord, string modeKey)
         {
             PokestopWithMode? closestOverall = null;
-            double closestOverallDistance = DefaultDistance;
+            double closestOverallDistance = Strings.DefaultDistance;
 
             PokestopWithMode? closestNormal = null;
-            double closestNormalDistance = DefaultDistance;
+            double closestNormalDistance = Strings.DefaultDistance;
 
             PokestopWithMode? closestAlternative = null;
-            double closestAlternativeDistance = DefaultDistance;
+            double closestAlternativeDistance = Strings.DefaultDistance;
 
             // TODO: Lock _todayStops
             var todayStopsC = _todayStops;
@@ -806,7 +790,7 @@
 
         #region Task Creators
 
-        private async Task<BootstrapTask> GetBootstrapTaskAsync()
+        private async Task<BootstrapTask> CreateBootstrapTaskAsync()
         {
             var target = _bootstrapCellIds.LastOrDefault();
             if (target == default)
@@ -852,7 +836,7 @@
             };
         }
 
-        private QuestTask GetQuestTask(PokestopWithMode pokestop, double delay = 0)
+        private QuestTask CreateQuestTask(PokestopWithMode pokestop, double delay = 0)
         {
             return new QuestTask
             {
@@ -870,7 +854,7 @@
             };
         }
 
-        private SwitchAccountTask GetSwitchAccountTask()
+        private SwitchAccountTask CreateSwitchAccountTask()
         {
             return new SwitchAccountTask
             {
@@ -887,7 +871,7 @@
 
         #region Account
 
-        private async Task<Account> GetAccountAsync(string uuid, Coordinate encounterTarget)
+        private async Task<Account?> GetAccountAsync(string uuid, Coordinate encounterTarget)
         {
             if (_accounts.ContainsKey(uuid))
             {
@@ -907,7 +891,7 @@
             return account;
         }
 
-        private async Task<Account> GetAccountAsync(string username)
+        private async Task<Account?> GetAccountAsync(string username)
         {
             using (var context = _deviceFactory.CreateDbContext())
             {
@@ -916,28 +900,32 @@
             }
         }
 
-        private async Task<Account> GetNewAccountAsync(ushort minLevel = 0, ushort maxLevel = 35, bool ignoreWarning = false, uint spins = 3500, bool noCooldown = true, string? group = null)
+        private async Task<Account?> GetNewAccountAsync(ushort minLevel = 0, ushort maxLevel = 35, bool ignoreWarning = false, uint spins = 3500, bool noCooldown = true, string? group = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
 
             using (var context = _deviceFactory.CreateDbContext())
             {
                 var account = context.Accounts.FirstOrDefault(a =>
-                    a.Level >= minLevel &&
-                    a.Level <= maxLevel &&
+                    // Meet level requirements for instance
+                    a.Level >= minLevel && a.Level <= maxLevel &&
+                    // Is under total spins
                     a.Spins < spins &&
+                    // Matches event group name
                     !string.IsNullOrEmpty(group)
                         ? a.GroupName == group
                         : string.IsNullOrEmpty(a.GroupName) &&
+                    // 
                     noCooldown
-                        ? (a.LastEncounterTime == null || now - a.LastEncounterTime >= CooldownLimitS)
+                        ? (a.LastEncounterTime == null || now - a.LastEncounterTime >= Strings.CooldownLimitS)
                         : (a.LastEncounterTime == null || a.LastEncounterTime != null) &&
                     ignoreWarning
+                        // Has warning 
                         ? string.IsNullOrEmpty(a.Failed) || a.Failed == "GPR_RED_WARNING"
+                        // Has no account warnings or are expired already
                         : (a.Failed == null && a.FirstWarningTimestamp == null) ||
-                          (a.Failed == "GPR_RED_WARNING" && a.WarnExpireTimestamp != null &&
-                           a.WarnExpireTimestamp != 0 && a.WarnExpireTimestamp <= now) ||
-                          (a.Failed == "suspended" && a.FailedTimestamp <= now - SuspensionTimeLimitS)
+                          (a.Failed == "GPR_RED_WARNING" && a.WarnExpireTimestamp > 0 && a.WarnExpireTimestamp <= now) ||
+                          (a.Failed == "suspended" && a.FailedTimestamp <= now - Strings.SuspensionTimeLimitS)
                 );
                 return await Task.FromResult(account);
             }
@@ -1039,26 +1027,12 @@
         }
 
         #endregion
-    }
 
-    public sealed class AutoInstanceCompleteEventArgs : EventArgs
-    {
-        public string InstanceName { get; }
-
-        public ulong CompletionTimestamp { get; }
-
-        public AutoInstanceType InstanceType { get; }
-
-        public AutoInstanceCompleteEventArgs(string instanceName, ulong completionTimestamp)
-            : this(instanceName, completionTimestamp, AutoInstanceType.Quest)
+        private class PokestopWithMode
         {
-        }
+            public Pokestop? Pokestop { get; set; }
 
-        public AutoInstanceCompleteEventArgs(string instanceName, ulong completionTimestamp, AutoInstanceType instanceType = AutoInstanceType.Quest)
-        {
-            InstanceName = instanceName;
-            CompletionTimestamp = completionTimestamp;
-            InstanceType = instanceType;
+            public bool IsAlternative { get; set; }
         }
     }
 
@@ -1085,7 +1059,7 @@
             return new Coordinate(lat.Value, lon.Value);
         }
 
-        public static CooldownResult SetCooldown(Account account, Coordinate location)
+        public static CooldownResult SetCooldown(Account? account, Coordinate location)
         {
             double? lastLat = null;
             double? lastLon = null;
@@ -1174,9 +1148,9 @@
 
     public class CooldownResult
     {
-        public double Delay { get; set; }
+        public double Delay { get; }
 
-        public ulong EncounterTime { get; set; }
+        public ulong EncounterTime { get; }
 
         public CooldownResult(double delay, ulong encounterTime)
         {

@@ -4,6 +4,7 @@
 
     using Microsoft.EntityFrameworkCore;
 
+    using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Routing.Utilities;
@@ -55,7 +56,7 @@
 
         #region Events
 
-        public event EventHandler<BootstrapInstanceCompleteEventArgs> InstanceComplete;
+        public event EventHandler<BootstrapInstanceCompleteEventArgs>? InstanceComplete;
         private void OnInstanceComplete(string instanceName, string deviceUuid, ulong completionTimestamp)
         {
             InstanceComplete?.Invoke(this, new BootstrapInstanceCompleteEventArgs(instanceName, deviceUuid, completionTimestamp));
@@ -98,7 +99,7 @@
 
         public async Task<ITask> GetTaskAsync(GetTaskOptions options)
         {
-            if (Coordinates?.Count == 0)
+            if ((Coordinates?.Count ?? 0) == 0)
             {
                 _logger.LogWarning($"[{Name}] [{options.Uuid}] No bootstrap coordinates available!");
                 return null;
@@ -112,14 +113,15 @@
 
             if (!options.IsStartup)
             {
+                var now = DateTime.UtcNow.ToTotalSeconds();
                 if (_startTime == 0)
                 {
-                    _startTime = DateTime.UtcNow.ToTotalSeconds();
+                    _startTime = now;
                 }
 
                 if (_lastIndex == Coordinates.Count)
                 {
-                    _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
+                    _lastCompletedTime = now;
 
                     // Assign instance to chained instance upon completion of bootstrap,
                     // if specified
@@ -292,21 +294,5 @@
         }
 
         #endregion
-    }
-
-    public sealed class BootstrapInstanceCompleteEventArgs : EventArgs
-    {
-        public string InstanceName { get; }
-
-        public string DeviceUuid { get; set; }
-
-        public ulong CompletionTimestamp { get; }
-
-        public BootstrapInstanceCompleteEventArgs(string instanceName, string deviceUuid, ulong completionTimestamp)
-        {
-            InstanceName = instanceName;
-            DeviceUuid = deviceUuid;
-            CompletionTimestamp = completionTimestamp;
-        }
     }
 }

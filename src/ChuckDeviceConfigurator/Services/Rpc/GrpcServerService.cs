@@ -29,9 +29,11 @@
 
         #endregion
 
+        #region Event Handlers
+
         public override Task<PayloadResponse> ReceivedPayload(PayloadRequest request, ServerCallContext context)
         {
-            _logger.LogInformation($"Received {request.PayloadType} proto message");
+            //_logger.LogInformation($"Received {request.PayloadType} proto message");
 
             var json = request.Payload;
             if (string.IsNullOrEmpty(json))
@@ -54,8 +56,8 @@
                 case PayloadType.FortList:
                     HandleFortListPayload(json, request.Username);
                     break;
-                case PayloadType.PlayerData:
-                    HandlePlayerPayload(json);
+                case PayloadType.PlayerInfo:
+                    HandlePlayerInfoPayload(json);
                     break;
             }
 
@@ -65,6 +67,10 @@
             };
             return Task.FromResult(response);
         }
+
+        #endregion
+
+        #region Payload Handlers
 
         private void HandlePokemonPayload(string json, bool hasIV)
         {
@@ -93,6 +99,8 @@
                 _logger.LogError($"Failed to deserialize JSON payload to list of PokemonFortProto proto: {json}");
                 return;
             }
+
+            _logger.LogInformation($"Received {pokemon.Count:N0} {PayloadType.Pokemon} proto messages");
 
             foreach (var pkmn in pokemon)
             {
@@ -130,13 +138,15 @@
                 return;
             }
 
+            _logger.LogInformation($"Received {forts.Count:N0} {PayloadType.Fort} proto messages");
+
             foreach (var fort in forts)
             {
                 _jobControllerService.GotFort(fort, username);
             }
         }
 
-        private void HandlePlayerPayload(string json)
+        private void HandlePlayerInfoPayload(string json)
         {
             var data = json.FromJson<Dictionary<string, object>>();
             if (data == null)
@@ -146,11 +156,15 @@
                 return;
             }
 
-            string username = Convert.ToString(data["username"]);
-            ushort level = Convert.ToUInt16(Convert.ToString(data["level"]));
-            ulong xp = Convert.ToUInt64(Convert.ToString(data["xp"]));
+            _logger.LogInformation($"Received {PayloadType.PlayerInfo} proto message");
 
-            _jobControllerService.GotPlayerData(username, level, xp);
+            var username = Convert.ToString(data["username"]);
+            var level = Convert.ToUInt16(Convert.ToString(data["level"]));
+            var xp = Convert.ToUInt64(Convert.ToString(data["xp"]));
+
+            _jobControllerService.GotPlayerInfo(username, level, xp);
         }
+
+        #endregion
     }
 }

@@ -24,10 +24,6 @@
 
         Task RemoveInstanceAsync(string instanceName);
 
-        IReadOnlyList<Pokemon> GetIvQueue(string name);
-
-        void RemoveFromIvQueue(string name, string encounterId);
-
         #endregion
 
         #region Devices
@@ -44,12 +40,24 @@
 
         #endregion
 
+        #region IV Queue
+
+        IReadOnlyList<Pokemon> GetIvQueue(string name);
+
+        void RemoveFromIvQueue(string name, string encounterId);
+
+        #endregion
+
+        #region Receivers
+
         void GotPokemon(Pokemon pokemon);
 
         void GotPokemonIV(Pokemon pokemon);
 
         void GotFort(PokemonFortProto fort, string username);
 
-        void GotPlayerData(string username, ushort level, ulong xp);
+        void GotPlayerInfo(string username, ushort level, ulong xp);
+
+        #endregion
     }
 }

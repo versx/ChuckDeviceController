@@ -299,6 +299,8 @@
             {
                 _logger.LogError($"UpdatePlayerDataAsync: {ex}");
             }
+
+            await Task.CompletedTask;
         }
 
         private async Task UpdateCellsAsync(List<dynamic> cells)
@@ -416,7 +418,7 @@
 
                     await context.BulkMergeAsync(pokemonToUpsert);
 
-                    await HandlePokemonAsync(pokemonToUpsert);
+                    await SendPokemonAsync(pokemonToUpsert);
 
                     //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
@@ -460,7 +462,7 @@
 
                     await context.BulkMergeAsync(pokemonToUpsert);
 
-                    await HandlePokemonAsync(pokemonToUpsert);
+                    await SendPokemonAsync(pokemonToUpsert);
 
                     //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
@@ -521,7 +523,7 @@
 
                     await context.BulkMergeAsync(pokemonToUpsert);
 
-                    await HandlePokemonAsync(pokemonToUpsert);
+                    await SendPokemonAsync(pokemonToUpsert);
 
                     //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
@@ -624,7 +626,7 @@
                                         .ToList();
                     if (lvlForts.Count > 0)
                     {
-                        await HandleGymsAsync(lvlForts, "test"); // TODO: Get username
+                        await SendGymsAsync(lvlForts, "test"); // TODO: Get username
                     }
 
                     // Convert fort protos to Pokestop/Gym models
@@ -910,6 +912,9 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
+
+                    await SendPokemonAsync(pokemonToUpsert);
+
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Pokemon encounters");
                 }
@@ -954,6 +959,9 @@
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
+
+                    await SendPokemonAsync(pokemonToUpsert);
+
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Lured Pokemon encounters");
                 }
@@ -1015,7 +1023,11 @@
             }
         }
 
-        private static async Task HandlePokemonAsync(List<Pokemon> pokemon)
+        #endregion
+
+        #region Grpc Senders
+
+        private static async Task SendPokemonAsync(List<Pokemon> pokemon)
         {
             var newPokemon = pokemon.Where(pkmn => pkmn.IsNewPokemon).ToList();
             var newPokemonWithIV = pokemon.Where(pkmn => pkmn.IsNewPokemonWithIV).ToList();
@@ -1033,12 +1045,12 @@
             }
         }
 
-        private static async Task HandleGymsAsync(List<PokemonFortProto> forts, string username)
+        private static async Task SendGymsAsync(List<PokemonFortProto> forts, string username)
         {
             await GrpcClientService.SendRpcPayloadAsync(forts, PayloadType.FortList, username);
         }
 
-        private static async Task HandlePlayerDataAsync(string username, ushort level, uint xp)
+        private static async Task SendPlayerDataAsync(string username, ushort level, uint xp)
         {
             var payload = new
             {
@@ -1046,7 +1058,7 @@
                 level,
                 xp,
             };
-            await GrpcClientService.SendRpcPayloadAsync(payload, PayloadType.PlayerData, username);
+            await GrpcClientService.SendRpcPayloadAsync(payload, PayloadType.PlayerInfo, username);
         }
 
         #endregion

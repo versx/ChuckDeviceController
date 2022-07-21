@@ -20,18 +20,18 @@
         {
             get
             {
-                /*
-                Assert.IsTrue(index < _objects.Length && index >= 0,
-                               string.Format("IndexedPriorityQueue.[]: Index '{0}' out of range", index));
-                */
+                if (index > _objects.Count || index < 0)
+                {
+                    throw new IndexOutOfRangeException($"IndexedPriorityQueue.[]: Index '{index}' out of range");
+                }
                 return _objects[index];
             }
             set
             {
-                /*
-                Assert.IsTrue(index < _objects.Length && index >= 0,
-                               string.Format("IndexedPriorityQueue.[]: Index '{0}' out of range", index));
-                */
+                if (index > _objects.Count || index < 0)
+                {
+                    throw new IndexOutOfRangeException($"IndexedPriorityQueue.[]: Index '{index}' out of range");
+                }
                 Set(index, value);
             }
         }
@@ -44,7 +44,13 @@
 
         public IndexedPriorityQueue(int maxSize)
         {
+            // Note: Does the same as below variable instantiations but removes warning
             Resize(maxSize);
+
+            _objects = new List<T>(maxSize);
+            _heap = new int[maxSize + 1];
+            _heapInverse = new int[maxSize];
+            _count = 0;
         }
 
         #endregion
@@ -58,12 +64,12 @@
         /// <param name="value">value to insert</param>
         public void Insert(int index, T value)
         {
-            /*
-            Assert.IsTrue(index < _objects.Length && index >= 0,
-                           string.Format("IndexedPriorityQueue.Insert: Index '{0}' out of range", index));
-            */
+            if (index > _objects.Count || index < 0)
+            {
+                throw new IndexOutOfRangeException($"IndexedPriorityQueue.Insert: Index '{index}' out of range");
+            }
 
-            if (index < _objects.Count && index > _count)
+            if (index < _objects.Count && index > _count) // TODO: Use OR instead
             {
                 // TODO: Fix index out of range error
                 index = _count;
@@ -106,8 +112,6 @@
         /// <returns>The removed element</returns>
         public T Pop()
         {
-            //Assert.IsTrue(_count > 0, "IndexedPriorityQueue.Pop: Queue is empty");
-
             if (_count == 0)
             {
                 return default(T);
@@ -123,6 +127,10 @@
             return _objects[_heap[_count + 1]];
         }
 
+        /// <summary>
+        /// Removes the last element from the queue
+        /// </summary>
+        /// <returns>The removed element</returns>
         public T PopLast()
         {
             if (_count == 0)
@@ -136,14 +144,24 @@
             var last = _objects[_heap[_count]];
 
             // re-sort heap
-            SortHeapDownward(1);
+            SortHeapUpward(_count);
 
             // return popped object
             return _objects[_heap[_count + 1]];
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the element already exists in the queue,
+        /// otherwise returns <c>false</c>.
+        /// </summary>
+        /// <param name="obj">value to compare</param>
+        /// <returns>Returns true if it exists, otherwise false.</returns>
         public bool Contains(T obj) => _objects.Contains(obj);
 
+        /// <summary>
+        /// Removes an element from the queue based on the index
+        /// </summary>
+        /// <param name="index"></param>
         public void RemoveAt(int index)
         {
             // TODO: Potentially need to lock _objects
@@ -154,6 +172,11 @@
             SortHeapDownward(1);
         }
 
+        /// <summary>
+        /// Gets the first index of an element in the queue
+        /// </summary>
+        /// <param name="obj">value to search for</param>
+        /// <returns></returns>
         public int IndexOf(T obj) => _objects.IndexOf(obj);
 
         /// <summary>
@@ -182,14 +205,14 @@
         /// <param name="obj">new value</param>
         public void DecreaseIndex(int index, T obj)
         {
-            /*
-            Assert.IsTrue(index < _objects.Length && index >= 0,
-                           string.Format("IndexedPriorityQueue.DecreaseIndex: Index '{0}' out of range",
-                           index));
-            Assert.IsTrue(obj.CompareTo(_objects[index]) <= 0,
-                           string.Format("IndexedPriorityQueue.DecreaseIndex: object '{0}' isn't less than current value '{1}'",
-                           obj, _objects[index]));
-            */
+            if (index > _objects.Count || index < 0)
+            {
+                throw new IndexOutOfRangeException($"IndexedPriorityQueue.DecreaseIndex: Index '{index}' out of range");
+            }
+            if (obj.CompareTo(_objects[index]) != 0)
+            {
+                throw new IndexOutOfRangeException($"IndexedPriorityQueue.DecreaseIndex: object '{obj}' isn't less than current value '{_objects[index]}'");
+            }
 
             _objects[index] = obj;
             SortUpward(index);
@@ -202,22 +225,26 @@
         /// <param name="obj">new value</param>
         public void IncreaseIndex(int index, T obj)
         {
-            /*
-            Assert.IsTrue(index < _objects.Length && index >= 0,
-                          string.Format("IndexedPriorityQueue.DecreaseIndex: Index '{0}' out of range",
-                          index));
-            Assert.IsTrue(obj.CompareTo(_objects[index]) >= 0,
-                           string.Format("IndexedPriorityQueue.DecreaseIndex: object '{0}' isn't greater than current value '{1}'",
-                           obj, _objects[index]));
-            */
+            if (index > _objects.Count || index < 0)
+            {
+                throw new IndexOutOfRangeException($"IndexedPriorityQueue.IncreaseIndex: Index '{index}' out of range");
+            }
+            if (obj.CompareTo(_objects[index]) != 0)
+            {
+                throw new IndexOutOfRangeException($"IndexedPriorityQueue.IncreaseIndex: object '{obj}' isn't greater than current value '{_objects[index]}'");
+            }
 
             _objects[index] = obj;
             SortDownward(index);
         }
 
+        /// <summary>
+        /// Clears all items in the priority queue
+        /// </summary>
         public void Clear()
         {
-            _count = 0;
+            _objects.Clear();
+            _count = _objects.Count;
         }
 
         /// <summary>
@@ -226,10 +253,10 @@
         /// <param name="maxSize">new maximum capacity</param>
         public void Resize(int maxSize)
         {
-            /*
-            Assert.IsTrue(maxSize >= 0,
-                           string.Format("IndexedPriorityQueue.Resize: Invalid size '{0}'", maxSize));
-            */
+            if (maxSize < 0)
+            {
+                throw new ArgumentException($"IndexedPriorityQueue.Resize: Invalid size '{maxSize}'");
+            }
 
             _objects = new List<T>(maxSize);
             _heap = new int[maxSize + 1];
@@ -316,7 +343,7 @@
 
         private static int SecondChild(int heapIndex)
         {
-            return heapIndex * 2 + 1;
+            return FirstChild(heapIndex) + 1;
         }
 
         #endregion

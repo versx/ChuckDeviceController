@@ -33,5 +33,5 @@ enum PayloadType {
     PokemonList = 1;
 	Fort = 2;
     FortList = 3;
-	PlayerData = 4;
+	PlayerInfo = 4;
 }

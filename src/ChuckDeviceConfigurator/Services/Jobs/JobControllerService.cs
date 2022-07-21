@@ -5,7 +5,9 @@
 
     using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.JobControllers;
+    using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Assignments;
+    using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
     using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceConfigurator.Services.IvLists;
     using ChuckDeviceConfigurator.Services.Routing;
@@ -93,7 +95,7 @@
 
                 foreach (var instance in instances)
                 {
-                    if (!ThreadPool.QueueUserWorkItem(async _ =>
+                    var callback = new WaitCallback(async _ =>
                     {
                         _logger.LogInformation($"Starting instance {instance.Name}");
                         await AddInstanceAsync(instance);
@@ -105,7 +107,9 @@
                         {
                             AddDevice(device);
                         }
-                    }))
+                    });
+
+                    if (!ThreadPool.QueueUserWorkItem(callback))
                     {
                         _logger.LogError($"Failed to start instance {instance.Name}");
                     }
@@ -240,7 +244,7 @@
                 }
 
                 var device = _devices[uuid];
-                var instanceName = device?.InstanceName;
+                var instanceName = device.InstanceName;
                 if (device == null || string.IsNullOrEmpty(instanceName))
                 {
                     _logger.LogWarning($"Device or device instance name was null, unable to retrieve job controller instance");
@@ -334,6 +338,10 @@
             await Task.CompletedTask;
         }
 
+        #endregion
+
+        #region IV Queue
+
         public IReadOnlyList<Pokemon> GetIvQueue(string name)
         {
             var queue = new List<Pokemon>();
@@ -362,6 +370,10 @@
                 }
             }
         }
+
+        #endregion
+
+        #region Receivers
 
         public void GotPokemon(Pokemon pokemon)
         {
@@ -405,7 +417,7 @@
             }
         }
 
-        public void GotPlayerData(string username, ushort level, ulong xp)
+        public void GotPlayerInfo(string username, ushort level, ulong xp)
         {
             lock (_instancesLock)
             {
@@ -545,13 +557,15 @@
             // Check if time zone service contains out time zone name
             if (!_timeZoneService.TimeZones.ContainsKey(timeZone))
             {
-                // If it does not, return UTC offset
+                // If it does not, return UTC+0 offset
                 return timeZoneOffset;
             }
 
             var tzData = _timeZoneService.TimeZones[timeZone];
             timeZoneOffset = enableDst
+                // Return DST offset for time zone
                 ? tzData.Dst
+                // Return non-DST offset for time zone
                 : tzData.Utc;
             return timeZoneOffset;
         }

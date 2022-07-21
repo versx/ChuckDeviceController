@@ -101,6 +101,7 @@
 
         public Coordinate StartingCoordinate { get; }
 
+        // NOTE: 'StorePlayerData' is used by proto processor to ignore encountered/received leveling data
         public bool StorePlayerData { get; } // TODO: Make 'StorePlayerData' configurable via Instance.Data
 
         public ulong Radius { get; set; } // TODO: Make 'Radius' configurable via Instance.Data
@@ -146,7 +147,13 @@
                 return null;
             }
 
-            Coordinate? currentCoord = GetNextScanLocation(options.AccountUsername, options.Account);
+            var currentCoord = GetNextScanLocation(options.AccountUsername, options.Account);
+            if (currentCoord == null)
+            {
+                _logger.LogError($"[{Name}] [{options.Uuid}] Failed to get next scan location for leveling instance");
+                return null;
+            }
+
             var delay = await GetDelayAsync(currentCoord, options.Uuid, options.Account);
 
             lock (_playersLock)
@@ -176,7 +183,10 @@
                     var xpTarget = LevelXp[Math.Min(Math.Max(MaximumLevel + 1, 0), 40)];
                     var xpStart = LevelXp[Math.Min(Math.Max(MinimumLevel, (ushort)0), (ushort)40)];
                     var xpCurrent = _players[player].XP;
-                    var xpPercentage = Convert.ToDouble((double)xpCurrent - (double)xpStart) / Convert.ToDouble((double)xpTarget - (double)xpStart) * 100;
+                    var xpReceived = Convert.ToDouble((double)xpCurrent - (double)xpStart);
+                    var xpRemaining = Convert.ToDouble((double)xpTarget - (double)xpStart);
+                    var xpPercentage = xpReceived / xpRemaining  * 100;
+
                     var startXp = 0ul;
                     var startTime = DateTime.UtcNow.ToTotalSeconds();
 
@@ -220,7 +230,7 @@
 
                 foreach (var player in data)
                 {
-                    if (!string.IsNullOrEmpty(status))// && status != Strings.DefaultInstanceStatus)
+                    if (!string.IsNullOrEmpty(status))
                     {
                         status += "<br />";
                     }
@@ -239,8 +249,7 @@
 
                     if (player.Level > MaximumLevel)
                     {
-                        status += $"{player.Username}: Lvl.{player.Level} Complete";
-                        // TODO: Check if max level is reached and trigger OnCompleteEvent in GetNextScanLocation or GetTaskAsync
+                        status += $"{player.Username}: Lvl {player.Level} Complete";
                     }
                     else
                     {
@@ -295,31 +304,40 @@
 
             if (fort.FortType != FortType.Gym)
             {
-                // Do not process Pokestops
+                // Do not process Pokestop forts, we should not be receiving them anyways
+                // but better safe than sorry I guess
                 return;
             }
 
             var coord = new Coordinate(fort.Latitude, fort.Longitude);
-            if (coord.DistanceTo(StartingCoordinate) <= Radius)
-            {
-                lock (_playersLock)
-                {
-                    if (!_players.ContainsKey(username))
-                    {
-                        AddPlayer(username);
-                    }
+            // Check if distance between starting coordinate and fort is within configured
+            // radius amount
+            if (coord.DistanceTo(StartingCoordinate) > Radius)
+                return;
 
-                    var player = _players[username];
-                    lock (player.UnspunPokestopsLock)
+            lock (_playersLock)
+            {
+                // Add player if it does not exist incase we receive the fort data before
+                // the device asks for a task and is added to the player cache
+                if (!_players.ContainsKey(username))
+                {
+                    AddPlayer(username);
+                }
+
+                var player = _players[username];
+                lock (player.UnspunPokestopsLock)
+                {
+                    // Check if fort has been visited already and unspun Pokestop cache
+                    // for player still contains the fort
+                    if (fort.Visited && player.UnspunPokestops.ContainsKey(fort.FortId))
                     {
-                        if (fort.Visited && player.UnspunPokestops.ContainsKey(fort.FortId))
-                        {
-                            player.UnspunPokestops.Remove(fort.FortId);
-                        }
-                        else
-                        {
-                            player.UnspunPokestops[fort.FortId] = fort;
-                        }
+                        // Pokestop already spun, remove fort
+                        player.UnspunPokestops.Remove(fort.FortId);
+                    }
+                    else
+                    {
+                        // Pokestop has not been spun yet, add to unspun Pokestop cache
+                        player.UnspunPokestops[fort.FortId] = fort;
                     }
                 }
             }
@@ -344,38 +362,38 @@
             };
         }
 
-        private Coordinate GetNextScanLocation(string username, Account? account = null)
+        private Coordinate? GetNextScanLocation(string username, Account? account = null)
         {
             AddPlayer(username);
 
-            var playerData = _players[username];
+            var player = _players[username];
             Coordinate? currentCoord = null;
 
-            lock (playerData.UnspunPokestopsLock)
+            lock (player.UnspunPokestopsLock)
             {
-                if ((playerData.UnspunPokestops?.Count ?? 0) > 0)
+                if (player.UnspunPokestops.Count == 0)
                 {
-                    // TODO: Reverse unspun Pokestop id list by Pokestop id
-                    var closestPokestop = FindClosestPokestop(
-                        playerData.UnspunPokestops?.Values?.ToList() ?? new List<PokemonFortProto>(),
-                        playerData.LastPokestopsSpun,
-                        username,
-                        account
-                    );
-                    if (closestPokestop != null)
-                    {
-                        currentCoord = new Coordinate(closestPokestop.Latitude, closestPokestop.Longitude);
-                        playerData.UnspunPokestops[closestPokestop.FortId] = null;
-                        while (playerData.LastPokestopsSpun.Count > 5)
-                        {
-                            playerData.LastPokestopsSpun.RemoveAt(0);
-                        }
-                        playerData.LastPokestopsSpun.Add(currentCoord);
-                    }
+                    // No unspun Pokestops received/cached yet, return starting location
+                    return StartingCoordinate;
                 }
-                else
+
+                var reversedUnspunPokestops = player.UnspunPokestops.Values.Reverse().ToList();
+                var closestPokestop = FindClosestPokestop(
+                    reversedUnspunPokestops,
+                    player.LastPokestopsSpun,
+                    account
+                );
+                if (closestPokestop != null)
                 {
-                    currentCoord = StartingCoordinate;
+                    currentCoord = new Coordinate(closestPokestop.Latitude, closestPokestop.Longitude);
+                    // Remove Pokestop from unspun Pokestop cache and add to last Pokestops
+                    // spun cache
+                    player.UnspunPokestops.Remove(closestPokestop.FortId);
+                    while (player.LastPokestopsSpun.Count > 5)
+                    {
+                        player.LastPokestopsSpun.RemoveAt(0);
+                    }
+                    player.LastPokestopsSpun.Add(currentCoord);
                 }
             }
             return currentCoord;
@@ -412,10 +430,10 @@
             return delay;
         }
 
-        private PokemonFortProto FindClosestPokestop(List<PokemonFortProto> unspunPokestops, List<Coordinate> excludeCoordinates, string username, Account account)
+        private PokemonFortProto? FindClosestPokestop(List<PokemonFortProto> unspunPokestops, List<Coordinate> excludeCoordinates, Account? account = null)
         {
             PokemonFortProto? closest = null;
-            var closestDistance = 10000000000000000d;
+            double closestDistance = Strings.DefaultDistance;
             var currentCoord = new Coordinate(
                 account?.LastEncounterLatitude ?? StartingCoordinate.Latitude,
                 account?.LastEncounterLongitude ?? StartingCoordinate.Longitude
@@ -423,17 +441,13 @@
 
             foreach (var stop in unspunPokestops)
             {
-                if (stop == null)
-                {
-                    // TODO: Remove Pokestops that are null
-                    continue;
-                }
-
                 var stopCoord = new Coordinate(stop.Latitude, stop.Longitude);
                 foreach (var lastCoord in excludeCoordinates)
                 {
-                    // Revert back to 40m once reverted in-game
-                    if (stopCoord.DistanceTo(lastCoord) <= 80)
+                    // TODO: Hmm, not sure if this is correct logic or not,
+                    // skipping Pokestop if it's not within spin range. :thinking:
+                    // Need to double check
+                    if (stopCoord.DistanceTo(lastCoord) <= Strings.SpinRangeM)
                     {
                         continue;
                     }
@@ -459,21 +473,19 @@
 
         private static string FormatTimeRemaining(double hours, double minutes)
         {
-            var status = Strings.DefaultInstanceStatus;
-            var roundedHours = Math.Round(hours, 2);
-            var roundedMinutes = Math.Round(minutes, 2);
-            if (hours > 0 && minutes > 0)
-            {
-                status = $"{roundedHours}h:{roundedMinutes}m";
-            }
-            else if (hours > 0 && minutes == 0)
-            {
-                status = roundedHours + "h";
-            }
-            else if (hours == 0 && minutes > 0)
-            {
-                status = roundedMinutes + "m";
-            }
+            var roundedHours = Math.Round(hours, 1);
+            var roundedMinutes = Math.Round(minutes, 1);
+            var status = hours > 0 && minutes > 0
+                // Return hours and minutes if both are set
+                ? $"{roundedHours}h:{roundedMinutes}m"
+                : hours > 0 && minutes == 0
+                    // Return only hours if hours set but not minutes
+                    ? $"{roundedHours}h"
+                    : hours == 0 && minutes > 0
+                        // Return only minutes if hours not set but minutes are
+                        ? $"{roundedMinutes}m"
+                        // Return default instance status `--`
+                        : Strings.DefaultInstanceStatus;
             return status;
         }
 
