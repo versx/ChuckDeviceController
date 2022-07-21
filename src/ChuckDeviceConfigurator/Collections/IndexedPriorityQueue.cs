@@ -9,6 +9,7 @@
         private int[] _heap;
         private int[] _heapInverse;
         private int _count;
+        private int _maxSize;
 
         #endregion
 
@@ -44,6 +45,8 @@
 
         public IndexedPriorityQueue(int maxSize)
         {
+            _maxSize = maxSize;
+
             // Note: Does the same as below variable instantiations but removes warning
             Resize(maxSize);
 
@@ -68,6 +71,8 @@
             {
                 throw new IndexOutOfRangeException($"IndexedPriorityQueue.Insert: Index '{index}' out of range");
             }
+
+            RemoveExcess();
 
             if (index < _objects.Count && index > _count) // TODO: Use OR instead
             {
@@ -117,6 +122,8 @@
                 return default(T);
             }
 
+            RemoveExcess();
+
             // swap front to back for removal
             Swap(1, _count--);
 
@@ -141,13 +148,13 @@
             // swap front to back for removal
             Swap(1, _count--);
 
-            var last = _objects[_heap[_count]];
+            var last = _objects[_count];
 
             // re-sort heap
             SortHeapUpward(_count);
 
             // return popped object
-            return _objects[_heap[_count + 1]];
+            return last;// _objects[_heap[_count + 1]];
         }
 
         /// <summary>
@@ -209,10 +216,10 @@
             {
                 throw new IndexOutOfRangeException($"IndexedPriorityQueue.DecreaseIndex: Index '{index}' out of range");
             }
-            if (obj.CompareTo(_objects[index]) != 0)
-            {
-                throw new IndexOutOfRangeException($"IndexedPriorityQueue.DecreaseIndex: object '{obj}' isn't less than current value '{_objects[index]}'");
-            }
+            //if (obj.CompareTo(_objects[index]) != 0)
+            //{
+            //    throw new IndexOutOfRangeException($"IndexedPriorityQueue.DecreaseIndex: object '{obj}' isn't less than current value '{_objects[index]}'");
+            //}
 
             _objects[index] = obj;
             SortUpward(index);
@@ -229,10 +236,10 @@
             {
                 throw new IndexOutOfRangeException($"IndexedPriorityQueue.IncreaseIndex: Index '{index}' out of range");
             }
-            if (obj.CompareTo(_objects[index]) != 0)
-            {
-                throw new IndexOutOfRangeException($"IndexedPriorityQueue.IncreaseIndex: object '{obj}' isn't greater than current value '{_objects[index]}'");
-            }
+            //if (obj.CompareTo(_objects[index]) != 0)
+            //{
+            //    throw new IndexOutOfRangeException($"IndexedPriorityQueue.IncreaseIndex: object '{obj}' isn't greater than current value '{_objects[index]}'");
+            //}
 
             _objects[index] = obj;
             SortDownward(index);
@@ -344,6 +351,16 @@
         private static int SecondChild(int heapIndex)
         {
             return FirstChild(heapIndex) + 1;
+        }
+
+        private void RemoveExcess()
+        {
+            // TODO: Work around for now
+            if (_objects.Count > _maxSize)
+            {
+                // Remove any objects passed max size allowed
+                _objects = _objects.GetRange(0, _maxSize);
+            }
         }
 
         #endregion

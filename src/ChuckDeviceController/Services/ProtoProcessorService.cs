@@ -605,7 +605,7 @@
             if (processedProtos.Count > 0)
             {
                 var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                _logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
+                // _logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
                 await _dataProcessor.ConsumeDataAsync(processedProtos);
             }

@@ -433,9 +433,9 @@
             };
         }
 
-        private static DeviceResponse CreateErrorResponse(string error, dynamic? data = null)
+        private DeviceResponse CreateErrorResponse(string error, dynamic? data = null)
         {
-            //_logger.LogError(error);
+            _logger.LogError(error);
             return new DeviceResponse
             {
                 Status = "error",
@@ -449,11 +449,14 @@
     {
         public static Account GetNewAccount(this DeviceControllerContext context, ushort minLevel, ushort maxLevel, uint maxSpins = 3500, IReadOnlyList<string> accountsInUse = null)
         {
+            var now = DateTime.UtcNow.ToTotalSeconds();
             var account = context.Accounts.FirstOrDefault(x =>
                 x.Level >= minLevel &&
                 x.Level <= maxLevel &&
                 string.IsNullOrEmpty(x.Failed) &&
                 x.Spins < maxSpins &&
+                x.LastEncounterTime == null &&
+                (x.LastUsedTimestamp == null || (x.LastUsedTimestamp > 0 && now - x.LastUsedTimestamp >= Strings.ThirtyMinutesS)) &&
                 x.FirstWarningTimestamp == null &&
                 (x.Warn == null || !(x.Warn ?? false)) &&
                 (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&

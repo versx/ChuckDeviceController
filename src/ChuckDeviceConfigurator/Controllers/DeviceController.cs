@@ -221,5 +221,27 @@
                 return View();
             }
         }
+
+        // GET: DeviceController/ForceAccountSwitch/5
+        public async Task<ActionResult> ForceAccountSwitch(string id)
+        {
+            // Set Device.AccountUsername to null, GetJobTask will handle the
+            // rest, no need for extra database column
+            var device = await _context.Devices.FindAsync(id);
+            if (device == null)
+            {
+                // Failed to retrieve device from database, does it exist?
+                ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                return View();
+            }
+
+            // Set assigned account for device to null so a new one is fetched upon next job request
+            device.AccountUsername = null;
+
+            _context.Update(device);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

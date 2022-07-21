@@ -10,6 +10,8 @@
     [Table("account")]
     public class Account : BaseEntity
     {
+        #region Properties
+
         [
             DisplayName("Username"),
             Column("username"),
@@ -145,6 +147,8 @@
         public string LastEncounter => LastEncounterTime?.FromSeconds()
                                                          .ToLocalTime()
                                                          .ToString("hh:mm:ss tt MM/dd/yyyy") ?? "--";
+
+        #endregion
 
         public bool IsValid(bool ignoreWarning = false, string? groupName = null)
         {
