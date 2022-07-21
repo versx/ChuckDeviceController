@@ -9,17 +9,16 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    /*
-    public class CircleInstanceController : IJobController, IScanNextController
+    public abstract class BaseSmartInstanceController : IJobController, IScanNextInstanceController
     {
         #region Variables
 
         private static readonly Random _random = new();
-        private readonly ILogger<CircleInstanceController> _logger;
-        private readonly Dictionary<string, DeviceIndex> _currentUuid = new();
-        private int _lastIndex = 0; // Used for basic leap frog routing only
-        private double _lastCompletedTime;
-        private double _lastLastCompletedTime;
+        private readonly ILogger<BaseSmartInstanceController> _logger;
+        internal readonly Dictionary<string, DeviceIndex> _currentUuid = new();
+        internal int _lastIndex = 0; // Used for basic leap frog routing only
+        internal double _lastCompletedTime;
+        internal double _lastLastCompletedTime;
 
         #endregion
 
@@ -27,7 +26,7 @@
 
         public string Name { get; }
 
-        public IReadOnlyList<Coordinate> Coordinates { get; internal set; }
+        public abstract IReadOnlyList<Coordinate> Coordinates { get; internal set; }
 
         public CircleInstanceType CircleType { get; }
 
@@ -49,7 +48,7 @@
 
         #region Constructor
 
-        public CircleInstanceController(Instance instance, List<Coordinate> coords, CircleInstanceType circleType)
+        public BaseSmartInstanceController(Instance instance, List<Coordinate> coords, CircleInstanceType circleType)
         {
             Name = instance.Name;
             Coordinates = coords;
@@ -61,69 +60,14 @@
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
             EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
 
-            _logger = new Logger<CircleInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            _logger = new Logger<BaseSmartInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
         }
 
         #endregion
 
         #region Public Methods
 
-        public virtual async Task<ITask> GetTaskAsync(GetTaskOptions options)
-        {
-            // Add device to device list
-            AddDevice(options.Uuid);
-            Coordinate? currentCoord = null;
-
-            // Check if on demand scanning coordinates list has any to send to workers
-            if (ScanNextCoordinates.Count > 0)
-            {
-                currentCoord = ScanNextCoordinates.Dequeue();
-                var scanNextTask = CreateTask(currentCoord, CircleType);
-                return await Task.FromResult(scanNextTask);
-            }
-
-            if (Coordinates.Count == 0)
-            {
-                // TODO: Throw error that instance requires at least one coordinate
-                _logger.LogError($"[{Name}] Instance requires at least one coordinate, please edit it to contain one.");
-                return null;
-            }
-
-            switch (CircleType)
-            {
-                case CircleInstanceType.Pokemon:
-                case CircleInstanceType.Raid:
-                    switch (RouteType)
-                    {
-                        // TODO: Eventually remove leap frog routing logic (cough, remove all circle routing instances all together)
-                        case CircleInstanceRouteType.Default:
-                            // Get default leap frog route
-                            currentCoord = BasicRoute();
-                            break;
-                        case CircleInstanceRouteType.Split:
-                            // Split route by device count
-                            currentCoord = SplitRoute(options.Uuid);
-                            break;
-                        //case CircleInstanceRouteType.Circular:
-                            // Circular split route by device count
-                        case CircleInstanceRouteType.Smart:
-                            // Smart routing by device count
-                            currentCoord = SmartRoute(options.Uuid);
-                            break;
-                    }
-                    break;
-            }
-
-            // Check if we were unable to retrieve a coordinate to send
-            if (currentCoord == null)
-            {
-                // TODO: Not sure if this will ever hit, need to test
-                return null;
-            }
-
-            var task = CreateTask(currentCoord, CircleType);
-            return await Task.FromResult(task);
-        }
+        public abstract Task<ITask> GetTaskAsync(GetTaskOptions options);
 
         public virtual async Task<string> GetStatusAsync()
         {
@@ -176,29 +120,15 @@
             return await Task.FromResult(status);
         }
 
-        public Task Reload()
-        {
-            _logger.LogDebug($"[{Name}] Reloading instance");
+        public abstract Task Reload();
 
-            // TODO: Lock lastIndex
-            _lastIndex = 0;
-            // Clear all existing devices from route index cache
-            _currentUuid.Clear();
-
-            return Task.CompletedTask;
-        }
-
-        public Task Stop()
-        {
-            _logger.LogDebug($"[{Name}] Stopping instance");
-            return Task.CompletedTask;
-        }
+        public abstract Task Stop();
 
         #endregion
 
         #region Routing Logic
 
-        private Coordinate BasicRoute()
+        internal Coordinate BasicRoute()
         {
             var currentIndex = _lastIndex;
             var currentCoord = Coordinates[currentIndex];
@@ -218,7 +148,7 @@
             return currentCoord;
         }
 
-        private Coordinate SplitRoute(string uuid, bool isStartup = false)
+        internal Coordinate SplitRoute(string uuid, bool isStartup = false)
         {
             // TODO: Lock index
             var currentUuidIndex = _currentUuid.ContainsKey(uuid)
@@ -353,7 +283,7 @@
 
         #region Private Methods
 
-        internal ITask CreateTask(Coordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
+        internal virtual ITask CreateTask(Coordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
         {
             return new CircleTask
             {
@@ -437,7 +367,7 @@
                 if (index.LastSeen < deadDeviceCutOffTime)
                 {
                     // Device has not updated in the last 60 seconds, assume dead/offline
-                    _currentUuid[currentUuid] = null;
+                    _currentUuid.Remove(currentUuid);
                 }
                 else
                 {
@@ -458,167 +388,5 @@
         }
 
         #endregion
-    }
-    */
-
-    public class CircleInstanceController : BaseSmartInstanceController
-    {
-        private readonly ILogger<CircleInstanceController> _logger;
-
-        public override IReadOnlyList<Coordinate> Coordinates { get; internal set; }
-
-        #region Constructor
-
-        public CircleInstanceController(Instance instance, List<Coordinate> coords, CircleInstanceType circleType = CircleInstanceType.Pokemon)
-            : base(instance, coords, circleType)
-        {
-            Coordinates = coords;
-            _logger = new Logger<CircleInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        public override async Task<ITask> GetTaskAsync(GetTaskOptions options)
-        {
-            // Add device to device list
-            AddDevice(options.Uuid);
-            Coordinate? currentCoord = null;
-
-            // Check if on demand scanning coordinates list has any to send to workers
-            if (ScanNextCoordinates.Count > 0)
-            {
-                currentCoord = ScanNextCoordinates.Dequeue();
-                var scanNextTask = CreateTask(currentCoord, CircleType);
-                return await Task.FromResult(scanNextTask);
-            }
-
-            if (Coordinates.Count == 0)
-            {
-                // TODO: Throw error that instance requires at least one coordinate
-                _logger.LogError($"[{Name}] Instance requires at least one coordinate, please edit it to contain one.");
-                return null;
-            }
-
-            switch (CircleType)
-            {
-                case CircleInstanceType.Pokemon:
-                case CircleInstanceType.Raid:
-                    switch (RouteType)
-                    {
-                        // TODO: Eventually remove leap frog routing logic (cough, remove all circle routing instances all together)
-                        case CircleInstanceRouteType.Default:
-                            // Get default leap frog route
-                            currentCoord = BasicRoute();
-                            break;
-                        case CircleInstanceRouteType.Split:
-                            // Split route by device count
-                            currentCoord = SplitRoute(options.Uuid);
-                            break;
-                        //case CircleInstanceRouteType.Circular:
-                        // Circular split route by device count
-                        case CircleInstanceRouteType.Smart:
-                            // Smart routing by device count
-                            currentCoord = SmartRoute(options.Uuid);
-                            break;
-                    }
-                    break;
-            }
-
-            // Check if we were unable to retrieve a coordinate to send
-            if (currentCoord == null)
-            {
-                // TODO: Not sure if this will ever hit, need to test
-                return null;
-            }
-
-            var task = CreateTask(currentCoord, CircleType);
-            return await Task.FromResult(task);
-        }
-
-        public override async Task<string> GetStatusAsync()
-        {
-            var status = Strings.DefaultInstanceStatus;
-            if (RouteType == CircleInstanceRouteType.Default)
-            {
-                // Gets the basic leap frog routing logic round time of any (the last) completed
-                // device assigned to the route that has completed it.
-                if (_lastCompletedTime > 0 && _lastLastCompletedTime > 0)
-                {
-                    var timeDiffSeconds = _lastCompletedTime - _lastLastCompletedTime;
-                    if (timeDiffSeconds > 0)
-                    {
-                        var time = Math.Round(timeDiffSeconds, 2);
-                        status = $"Round Time: {time:N0}s";
-                    }
-                }
-            }
-            else
-            {
-                // TODO: Get total average of all devices last completed time
-                // Get the sum of all route round times for all devices if they have completed the
-                // route at least once. Twice so that LastCompleted and LastCompletedWholeRoute are
-                // both set. (maybe average too?)
-                var totalRoundTime = _currentUuid.Values.Sum(device =>
-                    // If device hasn't completed the route yet, or rather its assigned coordinates
-                    // list, use 0 for route last completed sum calculation.
-                    device.LastCompleted == 0 || device.LastCompletedWholeRoute == 0
-                    ? 0
-                    : (double)device.LastCompleted - (double)device.LastCompletedWholeRoute
-                );
-                if (totalRoundTime > 0)
-                {
-                    // Only show average route round time if at least one device has completed it.
-                    var time = Math.Round(totalRoundTime);
-                    // TODO: Format round trip time status by hours/minutes/seconds instead of just seconds.
-                    status = $"Round Time: {time:N0}s";
-                }
-                else
-                {
-                    // No assigned devices have completed the route yet, show their current route indexes out
-                    // of the total amount of coordinates for the route until one has fully completed it.
-                    var indexes = _currentUuid.Values.Select(uuid => uuid.LastRouteIndex).ToList();
-                    var indexesStatus = indexes.Count == 0
-                        ? "0"
-                        : string.Join(", ", _currentUuid.Values.Select(uuid => uuid.LastRouteIndex));
-                    status = $"Route Indexes: {indexesStatus}/{Coordinates.Count}";
-                }
-            }
-            return await Task.FromResult(status);
-        }
-
-        public override Task Reload()
-        {
-            _logger.LogDebug($"[{Name}] Reloading instance");
-
-            // TODO: Lock lastIndex
-            _lastIndex = 0;
-            // Clear all existing devices from route index cache
-            _currentUuid.Clear();
-
-            return Task.CompletedTask;
-        }
-
-        public override Task Stop()
-        {
-            _logger.LogDebug($"[{Name}] Stopping instance");
-            return Task.CompletedTask;
-        }
-
-        #endregion
-    }
-
-    internal class DeviceIndex
-    {
-        public int LastRouteIndex { get; set; }
-
-        public ulong LastSeen { get; set; }
-
-        public ulong LastCompleted { get; set; }
-
-        // TODO: Actually implement this by checking if device has visited all coordinates,
-        // keep track of coordinates visited I suppose?
-        public ulong LastCompletedWholeRoute { get; set; }
     }
 }

@@ -79,9 +79,10 @@
                     return await HandleGetAccountAsync(device);
                 case "get_job":
                     return await HandleGetJobRequestAsync(device, payload.Username);
-                case "account_banned":
-                case "account_warning":
-                case "account_invalid_credentials":
+                case "account_banned" or
+                     "account_warning" or
+                     "account_invalid_credentials" or
+                     "account_suspended":
                     return await HandleAccountStatusRequestAsync(device, payload.Type);
                 case "tutorial_done":
                     return await HandleTutorialStatusAsync(device);
@@ -296,7 +297,6 @@
                 Uuid = device.Uuid,
                 AccountUsername = device.AccountUsername,
                 Account = account,
-                IsStartup = false,
             });
             if (task == null)
             {

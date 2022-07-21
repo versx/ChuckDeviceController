@@ -9,7 +9,5 @@
         public string? AccountUsername { get; set; } = null;
 
         public Account? Account { get; set; } = null;
-
-        public bool IsStartup { get; set; } = false;
     }
 }

@@ -111,31 +111,28 @@
             var currentCoord = Coordinates[currentIndex];
             _lastIndex++;
 
-            if (!options.IsStartup)
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (_startTime == 0)
             {
-                var now = DateTime.UtcNow.ToTotalSeconds();
-                if (_startTime == 0)
+                _startTime = now;
+            }
+
+            if (_lastIndex == Coordinates.Count)
+            {
+                _lastCompletedTime = now;
+
+                // Assign instance to chained instance upon completion of bootstrap,
+                // if specified
+                if (string.IsNullOrEmpty(OnCompleteInstanceName))
                 {
-                    _startTime = now;
+                    // Just keep reloading bootstrap route if no chained instance specified
+                    //_timesCompleted++;
+                    await Reload();
                 }
-
-                if (_lastIndex == Coordinates.Count)
+                else
                 {
-                    _lastCompletedTime = now;
-
-                    // Assign instance to chained instance upon completion of bootstrap,
-                    // if specified
-                    if (string.IsNullOrEmpty(OnCompleteInstanceName))
-                    {
-                        // Just keep reloading bootstrap route if no chained instance specified
-                        //_timesCompleted++;
-                        await Reload();
-                    }
-                    else
-                    {
-                        // Trigger OnComplete event
-                        OnInstanceComplete(OnCompleteInstanceName, options.Uuid, _lastCompletedTime);
-                    }
+                    // Trigger OnComplete event
+                    OnInstanceComplete(OnCompleteInstanceName, options.Uuid, _lastCompletedTime);
                 }
             }
 

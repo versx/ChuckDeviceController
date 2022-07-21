@@ -59,7 +59,7 @@
                 return await Task.FromResult(scanNextTask);
             }
 
-            if (Coordinates.Count == 0)
+            if ((Coordinates?.Count ?? 0) == 0)
             {
                 // TODO: Throw error that instance requires at least one coordinate
                 _logger.LogError($"[{Name}] Instance requires at least one coordinate, please edit it to contain one.");

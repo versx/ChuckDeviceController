@@ -2,7 +2,7 @@
 {
     using ChuckDeviceController.Geometry.Models;
 
-    public interface IScanNext
+    public interface IScanNextInstanceController
     {
         Queue<Coordinate> ScanNextCoordinates { get; }
     }

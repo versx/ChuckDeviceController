@@ -10,15 +10,11 @@
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
 
-    public class ScannedPokemon
-    {
-        public ulong DateScanned { get; set; }
 
-        public Pokemon Pokemon { get; set; }
-    }
-
-    public class IvInstanceController : IJobController, IScanNext
+    public class IvInstanceController : IJobController, IScanNextInstanceController
     {
+        private const uint CheckScannedIntervalS = 5;
+
         #region Variables
 
         private readonly ILogger<IvInstanceController> _logger;
@@ -49,7 +45,6 @@
 
         public ushort QueueLimit { get; }
 
-        //public IReadOnlyList<uint> PokemonIds { get; }
         public List<string> PokemonIds { get; }
 
         public bool EnableLureEncounters { get; }
@@ -78,7 +73,7 @@
             _startDate = DateTime.UtcNow.ToTotalSeconds();
             _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 
-            _timer = new System.Timers.Timer(5 * 1000); // 5 second interval
+            _timer = new System.Timers.Timer(CheckScannedIntervalS * 1000); // 5 second interval
             _timer.Elapsed += (sender, e) => CheckScannedPokemonHistory();
             _timer.Start();
         }
@@ -92,16 +87,7 @@
             if (ScanNextCoordinates.Count > 0)
             {
                 var currentCoord = ScanNextCoordinates.Dequeue();
-                var scanNextTask = new IvTask
-                {
-                    Area = Name,
-                    Action = DeviceActionType.ScanPokemon,
-                    MinimumLevel = MinimumLevel,
-                    MaximumLevel = MaximumLevel,
-                    Latitude = currentCoord.Latitude,
-                    Longitude = currentCoord.Longitude,
-                    LureEncounter = EnableLureEncounters,
-                };
+                var scanNextTask = CreateScanNextTask(currentCoord);
                 return await Task.FromResult(scanNextTask);
             }
 
@@ -120,11 +106,8 @@
                 return null;
             }
 
-            // Check if Pokemon was first seen more than 10 minutes ago,
-            // if so call the GetTask method again to fetch a new Pokemon
-            // to IV scan.
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            if (now - (pokemon.FirstSeenTimestamp ?? 1) >= 600)
+
+            if (IsPokemonCloseToExpire(pokemon))
             {
                 return await GetTaskAsync(options);
             }
@@ -133,23 +116,12 @@
             {
                 _scannedPokemon.Add(new ScannedPokemon
                 {
-                    DateScanned = now,
+                    DateScanned = DateTime.UtcNow.ToTotalSeconds(),
                     Pokemon = pokemon,
                 });
             }
 
-            var task = new IvTask
-            {
-                Area = Name,
-                Action = DeviceActionType.ScanIV,
-                MinimumLevel = MinimumLevel,
-                MaximumLevel = MaximumLevel,
-                EncounterId = pokemon.Id,
-                Latitude = pokemon.Latitude,
-                Longitude = pokemon.Longitude,
-                IsSpawnpoint = pokemon.SpawnId > 0,
-                LureEncounter = EnableLureEncounters,
-            };
+            var task = CreateIVTask(pokemon);
             return await Task.FromResult(task);
         }
 
@@ -195,6 +167,10 @@
             return Task.CompletedTask;
         }
 
+        #endregion
+
+        #region IV Queue Management
+
         internal void GotPokemonIV(Pokemon pokemon)
         {
             var pkmnCoord = new Coordinate(pokemon.Latitude, pokemon.Longitude);
@@ -209,7 +185,7 @@
                 var index = _pokemonQueue.IndexOf(pokemon);
                 if (index > -1)
                 {
-                    _pokemonQueue.RemoveAt(index);                    
+                    _pokemonQueue.RemoveAt(index);
                 }
 
                 if (IsEvent && !pokemon.IsEvent && (
@@ -294,6 +270,36 @@
         #endregion
 
         #region Private Methods
+
+        private ITask CreateIVTask(Pokemon pokemon)
+        {
+            return new IvTask
+            {
+                Area = Name,
+                Action = DeviceActionType.ScanIV,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+                EncounterId = pokemon.Id,
+                Latitude = pokemon.Latitude,
+                Longitude = pokemon.Longitude,
+                IsSpawnpoint = pokemon.SpawnId > 0,
+                LureEncounter = EnableLureEncounters,
+            };
+        }
+
+        private ITask CreateScanNextTask(Coordinate currentCoord)
+        {
+            return new CircleTask
+            {
+                Area = Name,
+                Action = DeviceActionType.ScanPokemon,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+                Latitude = currentCoord.Latitude,
+                Longitude = currentCoord.Longitude,
+                LureEncounter = EnableLureEncounters,
+            };
+        }
 
         private void CheckScannedPokemonHistory()
         {
@@ -426,6 +432,24 @@
             }
         }
 
+        private static bool IsPokemonCloseToExpire(Pokemon pokemon)
+        {
+            // Check if Pokemon was first seen more than 10 minutes ago,
+            // if so call the GetTask method again to fetch a new Pokemon
+            // to IV scan.
+
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var isCloseToExpire = now - (pokemon.FirstSeenTimestamp ?? 1) >= 600;
+            return isCloseToExpire;
+        }
+
         #endregion
+
+        private class ScannedPokemon
+        {
+            public ulong DateScanned { get; set; }
+
+            public Pokemon Pokemon { get; set; }
+        }
     }
 }

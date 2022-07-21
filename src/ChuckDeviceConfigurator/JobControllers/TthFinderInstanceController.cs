@@ -100,30 +100,28 @@
             // TODO: Lock _lastIndex
             var currentIndex = _lastIndex;
             var currentCoord = SpawnpointCoordinates[currentIndex];
-            if (!options.IsStartup)
+
+            if (_startTime == 0)
             {
-                if (_startTime == 0)
-                {
-                    _startTime = DateTime.UtcNow.ToTotalSeconds();
-                }
+                _startTime = DateTime.UtcNow.ToTotalSeconds();
+            }
 
-                if (_lastIndex + 1 == SpawnpointCoordinates.Count)
-                {
-                    _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
+            if (_lastIndex + 1 == SpawnpointCoordinates.Count)
+            {
+                _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
 
-                    Reload();
+                await Reload();
 
-                    if (SpawnpointCoordinates.Count == 0)
-                    {
-                        _logger.LogWarning($"[{Name}] [{options.Uuid}] No unknown spawnpoints to check, sending 0,0");
-                        currentCoord = new Coordinate();
-                        // TODO: Assign instance to chained instance upon completion of tth finder
-                    }
-                }
-                else
+                if (SpawnpointCoordinates.Count == 0)
                 {
-                    _lastIndex++;
+                    _logger.LogWarning($"[{Name}] [{options.Uuid}] No unknown spawnpoints to check, sending 0,0");
+                    currentCoord = new Coordinate();
+                    // TODO: Assign instance to chained instance upon completion of tth finder
                 }
+            }
+            else
+            {
+                _lastIndex++;
             }
 
             var task = await GetSpawnpointTaskAsync(currentCoord);
