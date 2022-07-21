@@ -170,7 +170,7 @@
             var lastCompletedTime = Convert.ToUInt64(_lastCompletedTime);
             var completed = lastCompletedTime > 0
                 //? $", Last Completed @ {_lastCompletedTime.FromSeconds()} ({_timesCompleted} times)"
-                ? $", Last Completed @ {lastCompletedTime.FromSeconds()}"
+                ? $", Last Completed @ {lastCompletedTime.FromSeconds().ToLocalTime()}"
                 : "";
             var status = $"Bootstrapping: {Strings.DefaultInstanceStatus}";
             if (_lastCompletedTime > 0)
