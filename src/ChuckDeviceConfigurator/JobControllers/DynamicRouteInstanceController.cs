@@ -32,7 +32,7 @@
             List<MultiPolygon> multiPolygons,
             IRouteGenerator routeGenerator,
             IRouteCalculator routeCalculator)
-            : base(instance, new List<Coordinate>(), CircleInstanceType.Pokemon)
+            : base(instance, new(), CircleInstanceType.Pokemon)
         {
             _logger = new Logger<DynamicRouteInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _routeGenerator = routeGenerator;

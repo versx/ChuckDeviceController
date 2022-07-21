@@ -10,15 +10,15 @@
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
 
-
     public class IvInstanceController : IJobController, IScanNextInstanceController
     {
-        private const uint CheckScannedIntervalS = 5;
+        private const uint CheckScanHistoryIntervalS = 5;
 
         #region Variables
 
         private readonly ILogger<IvInstanceController> _logger;
-        private readonly IndexedPriorityQueue<Pokemon> _pokemonQueue;
+        //private readonly IndexedPriorityQueue<Pokemon> _pokemonQueue;
+        private readonly PokemonPriorityQueue<Pokemon> _pokemonQueue;
         private readonly List<ScannedPokemon> _scannedPokemon;
         private readonly object _queueLock = new();
         private readonly object _scannedLock = new();
@@ -68,12 +68,12 @@
                                    .ToList();
             EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
 
-            _pokemonQueue = new IndexedPriorityQueue<Pokemon>(QueueLimit);
+            _pokemonQueue = new PokemonPriorityQueue<Pokemon>(QueueLimit);
             _scannedPokemon = new List<ScannedPokemon>();
             _startDate = DateTime.UtcNow.ToTotalSeconds();
             _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
 
-            _timer = new System.Timers.Timer(CheckScannedIntervalS * 1000); // 5 second interval
+            _timer = new System.Timers.Timer(CheckScanHistoryIntervalS * 1000); // 5 second interval
             _timer.Elapsed += (sender, e) => CheckScannedPokemonHistory();
             _timer.Start();
         }
@@ -106,7 +106,7 @@
                 return null;
             }
 
-
+            // Check if Pokemon is close to expiring, if so fetch another from queue
             if (IsPokemonCloseToExpire(pokemon))
             {
                 return await GetTaskAsync(options);
@@ -146,7 +146,7 @@
             return await Task.FromResult(status);
         }
 
-        public IReadOnlyList<Pokemon> GetQueue() => _pokemonQueue.Values;
+        public IReadOnlyList<Pokemon> GetQueue() => _pokemonQueue.ToList();
 
         public Task Reload()
         {
@@ -227,8 +227,8 @@
                 {
                     if (index != null)
                     {
-                        //_pokemonQueue.Insert((int)index, pokemon);
-                        _pokemonQueue.Set((int)index, pokemon);
+                        _pokemonQueue.Insert((int)index, pokemon);
+                        //_pokemonQueue.Set((int)index, pokemon);
                         // Remove last item in the queue
                         _ = _pokemonQueue.PopLast();
                     }
@@ -250,7 +250,6 @@
             lock (_queueLock)
             {
                 int index = -1;
-                var items = _pokemonQueue.Values;
                 for (var i = 0; i < _pokemonQueue.Count; i++)
                 {
                     var pokemon = _pokemonQueue[i];
@@ -394,17 +393,19 @@
                 return null;
             }
 
-            var i = 0u;
-            foreach (var pokemon in _pokemonQueue.Values)
+            lock (_queueLock)
             {
-                var priority = GetPriorityIndex(pokemon.PokemonId, formId);
-                if (targetPriority < priority)
+                var i = 0u;
+                foreach (var pokemon in _pokemonQueue)
                 {
-                    return i;
+                    var priority = GetPriorityIndex(pokemon.PokemonId, formId);
+                    if (targetPriority < priority)
+                    {
+                        return i;
+                    }
+                    i++;
                 }
-                i++;
             }
-
             return null;
         }
 

@@ -148,7 +148,7 @@
             return currentCoord;
         }
 
-        internal Coordinate SplitRoute(string uuid, bool isStartup = false)
+        internal Coordinate SplitRoute(string uuid)
         {
             // TODO: Lock index
             var currentUuidIndex = _currentUuid.ContainsKey(uuid)
@@ -164,6 +164,13 @@
                 // this ensures average round time decreases by at least 10% using
                 // this approach
                 (uint numLiveDevices, double distanceToNextDevice) = GetDeviceSpacing(uuid);
+                if (numLiveDevices == 0 && distanceToNextDevice == 0)
+                {
+                    // Failed to calculate device spacing, probably no devices
+                    _logger.LogError($"[{Name}] [{uuid}] Failed to calculate spacing between devices in order to get next location, skipping device...");
+                    return null;
+                }
+
                 var dist = Convert.ToInt32((numLiveDevices * distanceToNextDevice) + 0.5);
                 if (dist < Coordinates.Count)
                 {
@@ -177,27 +184,24 @@
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-            if (!isStartup)
+            if (shouldAdvance)
             {
-                if (shouldAdvance)
+                currentUuidIndex++;
+                if (currentUuidIndex >= Coordinates.Count)
                 {
-                    currentUuidIndex++;
-                    if (currentUuidIndex >= Coordinates.Count)
-                    {
-                        currentUuidIndex = 0;
-                        // This is an approximation of round time per device
-                        _currentUuid[uuid].LastCompletedWholeRoute = _currentUuid[uuid].LastCompleted;
-                        _currentUuid[uuid].LastCompleted = now;
-                    }
+                    currentUuidIndex = 0;
+                    // This is an approximation of round time per device
+                    _currentUuid[uuid].LastCompletedWholeRoute = _currentUuid[uuid].LastCompleted;
+                    _currentUuid[uuid].LastCompleted = now;
                 }
-                else
+            }
+            else
+            {
+                // Back up!
+                currentUuidIndex--;
+                if (currentUuidIndex < 0)
                 {
-                    // Back up!
-                    currentUuidIndex--;
-                    if (currentUuidIndex < 0)
-                    {
-                        currentUuidIndex = Coordinates.Count;
-                    }
+                    currentUuidIndex = Coordinates.Count;
                 }
             }
 
@@ -214,6 +218,7 @@
             // TODO: ContainsKey check is probably redundant since we add the device to the current
             // device list in the GetTaskAsync method. Need to confirm but 99.99% possitive the random
             // index is never used.
+            // Which I guess if we remove AddDevice from GetTask, random index would be generated.
 
             // Check if current device cache contains device and that the last route index is greater
             // than 0 as well as more than one device is assigned to the instance. Otherwise give the
@@ -230,9 +235,16 @@
 
             if (_currentUuid.Count > 1 && _random.Next(0, 100) < 15)
             {
+                (uint numLiveDevices, double distanceToNextDevice) = GetDeviceSpacing(uuid);
+                if (numLiveDevices == 0 && distanceToNextDevice == 0)
+                {
+                    // Failed to calculate device spacing, probably no devices
+                    _logger.LogError($"[{Name}] [{uuid}] Failed to calculate spacing between devices in order to get next location, skipping device...");
+                    return null;
+                }
+
                 // TODO: This looks like some wizardry which could possibly be optimized,
                 // and potentially calculated better. :thinking:
-                (uint numLiveDevices, double distanceToNextDevice) = GetDeviceSpacing(uuid);
                 var dist = 10 * distanceToNextDevice * numLiveDevices + 5;
                 if (dist < 10 * Coordinates.Count)
                 {
@@ -299,7 +311,7 @@
             };
         }
 
-        private double GetRouteDistance(double x, double y)
+        private double GetRouteDistanceToNextDevice(double x, double y)
         {
             return x < y
                 ? y - x
@@ -331,7 +343,7 @@
                 var nextDeviceUuid = liveDevices[nextDeviceIndex];
                 var currentUuidIndex = _currentUuid[uuid].LastRouteIndex;
                 var nextUuidIndex = _currentUuid[nextDeviceUuid].LastRouteIndex;
-                distanceToNextDevice = GetRouteDistance(currentUuidIndex, nextUuidIndex);
+                distanceToNextDevice = GetRouteDistanceToNextDevice(currentUuidIndex, nextUuidIndex);
             }
 
             return ((uint)numLiveDevices, distanceToNextDevice);

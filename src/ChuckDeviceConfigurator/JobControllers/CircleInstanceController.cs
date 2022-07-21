@@ -6,7 +6,6 @@
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
     /*
@@ -607,18 +606,5 @@
         }
 
         #endregion
-    }
-
-    internal class DeviceIndex
-    {
-        public int LastRouteIndex { get; set; }
-
-        public ulong LastSeen { get; set; }
-
-        public ulong LastCompleted { get; set; }
-
-        // TODO: Actually implement this by checking if device has visited all coordinates,
-        // keep track of coordinates visited I suppose?
-        public ulong LastCompletedWholeRoute { get; set; }
     }
 }
