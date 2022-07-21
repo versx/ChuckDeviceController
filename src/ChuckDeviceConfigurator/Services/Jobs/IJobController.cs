@@ -10,7 +10,7 @@
 
         ushort MaximumLevel { get; }
 
-        Task<ITask> GetTaskAsync(GetTaskOptions options);
+        Task<ITask> GetTaskAsync(TaskOptions options);
 
         Task<string> GetStatusAsync();
 

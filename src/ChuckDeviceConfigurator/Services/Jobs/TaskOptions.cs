@@ -2,7 +2,7 @@
 {
     using ChuckDeviceController.Data.Entities;
 
-    public class GetTaskOptions
+    public class TaskOptions
     {
         public string Uuid { get; set; }
 

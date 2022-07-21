@@ -292,7 +292,7 @@
                 }
             }
 
-            var task = await jobController.GetTaskAsync(new GetTaskOptions
+            var task = await jobController.GetTaskAsync(new TaskOptions
             {
                 Uuid = device.Uuid,
                 AccountUsername = device.AccountUsername,

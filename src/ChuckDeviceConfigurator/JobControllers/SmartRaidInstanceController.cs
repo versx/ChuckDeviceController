@@ -102,7 +102,7 @@
 
         #region Public Methods
 
-        public async Task<ITask> GetTaskAsync(GetTaskOptions options)
+        public async Task<ITask> GetTaskAsync(TaskOptions options)
         {
             var coord = GetNextScanLocation();
             if (coord == null)

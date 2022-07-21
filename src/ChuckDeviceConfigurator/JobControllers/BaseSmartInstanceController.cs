@@ -67,7 +67,7 @@
 
         #region Public Methods
 
-        public abstract Task<ITask> GetTaskAsync(GetTaskOptions options);
+        public abstract Task<ITask> GetTaskAsync(TaskOptions options);
 
         public virtual async Task<string> GetStatusAsync()
         {

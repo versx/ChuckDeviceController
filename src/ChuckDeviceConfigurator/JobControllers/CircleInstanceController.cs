@@ -480,7 +480,7 @@
 
         #region Public Methods
 
-        public override async Task<ITask> GetTaskAsync(GetTaskOptions options)
+        public override async Task<ITask> GetTaskAsync(TaskOptions options)
         {
             // Add device to device list
             AddDevice(options.Uuid);
