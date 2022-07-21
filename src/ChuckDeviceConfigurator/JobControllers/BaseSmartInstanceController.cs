@@ -9,7 +9,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    public abstract class BaseSmartInstanceController : IJobController, IScanNextInstanceController
+    public abstract class BaseSmartInstanceController : IJobController
     {
         #region Variables
 
@@ -40,22 +40,20 @@
 
         public bool IsEvent { get; }
 
-        public bool EnableLureEncounters { get; }
-
-        public Queue<Coordinate> ScanNextCoordinates { get; } = new();
+        public bool EnableLureEncounters { get; } // TODO: Make ILureJobController interface, remove from Base controller
 
         #endregion
 
         #region Constructor
 
-        public BaseSmartInstanceController(Instance instance, List<Coordinate> coords, CircleInstanceType circleType)
+        public BaseSmartInstanceController(Instance instance, List<Coordinate> coords, CircleInstanceType circleType, CircleInstanceRouteType routeType)
         {
             Name = instance.Name;
             Coordinates = coords;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
             CircleType = circleType;
-            RouteType = instance.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType;
+            RouteType = instance.Data?.CircleRouteType ?? routeType; // Strings.DefaultCircleRouteType;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
             EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
@@ -295,7 +293,7 @@
 
         #region Private Methods
 
-        internal virtual ITask CreateTask(Coordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
+        internal virtual CircleTask CreateTask(Coordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
         {
             return new CircleTask
             {

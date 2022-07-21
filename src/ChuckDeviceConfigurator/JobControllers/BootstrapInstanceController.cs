@@ -1,19 +1,275 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
+    using System.Collections.Generic;
     using System.Threading.Tasks;
-
-    using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Routing.Utilities;
     using ChuckDeviceConfigurator.Services.Tasks;
-    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Models;
 
+    public class BootstrapInstanceController : BaseSmartInstanceController, IScanNextInstanceController
+    {
+        #region Variables
+
+        private readonly ILogger<BootstrapInstanceController> _logger;
+        private readonly IRouteGenerator _routeGenerator;
+        private readonly IRouteCalculator _routeCalculator;
+        private readonly List<MultiPolygon> _multiPolygons;
+        private ulong _startTime = 0;
+        private readonly Dictionary<Coordinate, bool> _coordsCompleted;
+
+        #endregion
+
+        #region Properties
+
+        public override IReadOnlyList<Coordinate> Coordinates { get; internal set; }
+
+        public bool FastBootstrapMode { get; }
+
+        public ushort CircleSize { get; }
+
+        public bool OptimizeRoute { get; }
+
+        public string OnCompleteInstanceName { get; set; }
+
+        public Queue<Coordinate> ScanNextCoordinates { get; } = new();
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler<BootstrapInstanceCompleteEventArgs>? InstanceComplete;
+        private void OnInstanceComplete(string instanceName, string deviceUuid, ulong completionTimestamp)
+        {
+            InstanceComplete?.Invoke(this, new BootstrapInstanceCompleteEventArgs(instanceName, deviceUuid, completionTimestamp));
+        }
+
+        #endregion
+
+        #region Constructor
+
+        public BootstrapInstanceController(
+            Instance instance,
+            List<MultiPolygon> multiPolygons,
+            IRouteGenerator routeGenerator,
+            IRouteCalculator routeCalculator)
+            : base(instance, new(), CircleInstanceType.Pokemon, CircleInstanceRouteType.Smart)
+        {
+            FastBootstrapMode = instance.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode;
+            CircleSize = instance.Data?.CircleSize ?? Strings.DefaultCircleSize;
+            OptimizeRoute = instance.Data?.OptimizeBootstrapRoute ?? Strings.DefaultOptimizeBootstrapRoute;
+            OnCompleteInstanceName = instance.Data?.BootstrapCompleteInstanceName ?? Strings.DefaultBootstrapCompleteInstanceName;
+
+            _logger = new Logger<BootstrapInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            _coordsCompleted = new Dictionary<Coordinate, bool>();
+            _multiPolygons = multiPolygons;
+            _routeGenerator = routeGenerator;
+            _routeCalculator = routeCalculator;
+
+            // Generate bootstrap route
+            Coordinates = GenerateBootstrapCoordinates();
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public override async Task<ITask> GetTaskAsync(TaskOptions options)
+        {
+            Coordinate? currentCoord = null;
+
+            if (ScanNextCoordinates.Count > 0)
+            {
+                currentCoord = ScanNextCoordinates.Dequeue();
+                var scanNextTask = CreateScanNextTask(currentCoord);
+                return await Task.FromResult(scanNextTask);
+            }
+
+            if ((Coordinates?.Count ?? 0) == 0)
+            {
+                _logger.LogWarning($"[{Name}] [{options.Uuid}] No bootstrap coordinates available!");
+                return null;
+            }
+
+            switch (CircleType)
+            {
+                case CircleInstanceType.Pokemon:
+                case CircleInstanceType.Raid:
+                    switch (RouteType)
+                    {
+                        // TODO: Eventually remove leap frog routing logic (cough, remove all circle routing instances all together)
+                        case CircleInstanceRouteType.Default:
+                            // Get default leap frog route
+                            currentCoord = BasicRoute();
+                            break;
+                        case CircleInstanceRouteType.Split:
+                            // Split route by device count
+                            currentCoord = SplitRoute(options.Uuid);
+                            break;
+                        //case CircleInstanceRouteType.Circular:
+                        // Circular split route by device count
+                        case CircleInstanceRouteType.Smart:
+                            // Smart routing by device count
+                            currentCoord = SmartRoute(options.Uuid);
+                            break;
+                    }
+                    break;
+            }
+
+            // Check if we were unable to retrieve a coordinate to send
+            if (currentCoord == null)
+            {
+                // TODO: Not sure if this will ever hit, need to test
+                return null;
+            }
+            _coordsCompleted[currentCoord] = true;
+
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (_startTime == 0)
+            {
+                _startTime = now;
+            }
+
+            //if (_lastIndex == Coordinates.Count)
+            // TODO: Keep track of coordinates visited, if all visited call InstanceComplete event
+            if (_coordsCompleted.All(coord => coord.Value == true))
+            {
+                _lastCompletedTime = now;
+
+                // Assign instance to chained instance upon completion of bootstrap,
+                // if specified
+                if (string.IsNullOrEmpty(OnCompleteInstanceName))
+                {
+                    // Just keep reloading bootstrap route if no chained instance specified
+                    //_timesCompleted++;
+                    await Reload();
+                }
+                else
+                {
+                    // Trigger OnComplete event
+                    var lastCompletedTime = Convert.ToUInt64(_lastCompletedTime);
+                    // TODO: Trigger all devices in _currentUuid not just the one fetching the job currently
+                    OnInstanceComplete(OnCompleteInstanceName, options.Uuid, lastCompletedTime);
+                }
+            }
+
+            var task = await CreateBootstrapTaskAsync(currentCoord);
+            return task;
+        }
+
+        public override async Task<string> GetStatusAsync()
+        {
+            var position = (double)_lastIndex / (double)Coordinates.Count;
+            var percent = Math.Round(position * 100.00, 2);
+            var lastCompletedTime = Convert.ToUInt64(_lastCompletedTime);
+            var completed = _lastCompletedTime > 0
+                //? $", Last Completed @ {_lastCompletedTime.FromSeconds()} ({_timesCompleted} times)"
+                ? $", Last Completed @ {lastCompletedTime.FromSeconds()}"
+                : "";
+            var status = $"Bootstrapping: {Strings.DefaultInstanceStatus}";
+            if (_lastCompletedTime > 0)
+            {
+                status = $"Bootstrapping: {_lastIndex:N0}/{Coordinates.Count:N0} ({percent}%){completed}";
+            }
+            return await Task.FromResult(status);
+        }
+
+        public override Task Reload()
+        {
+            _logger.LogDebug($"[{Name}] Reloading instance");
+
+            _lastIndex = 0;
+
+            // Generate bootstrap coordinates route again
+            Coordinates = GenerateBootstrapCoordinates();
+            return Task.CompletedTask;
+        }
+
+        public override Task Stop()
+        {
+            _logger.LogDebug($"[{Name}] Stopping instance");
+            return Task.CompletedTask;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private async Task<BootstrapTask> CreateBootstrapTaskAsync(Coordinate currentCoord)
+        {
+            return await Task.FromResult(new BootstrapTask
+            {
+                Area = Name,
+                Action = FastBootstrapMode
+                    ? DeviceActionType.ScanRaid // 5 second loads
+                    : DeviceActionType.ScanPokemon, // 10 second loads
+                Latitude = currentCoord.Latitude,
+                Longitude = currentCoord.Longitude,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+            });
+        }
+
+        private CircleTask CreateScanNextTask(Coordinate currentCoord)
+        {
+            return new CircleTask
+            {
+                Area = Name,
+                Action = DeviceActionType.ScanPokemon,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+                Latitude = currentCoord.Latitude,
+                Longitude = currentCoord.Longitude,
+                LureEncounter = EnableLureEncounters,
+            };
+        }
+
+        private List<Coordinate> GenerateBootstrapCoordinates()
+        {
+            //TestRouting();
+
+            var bootstrapRoute = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
+            {
+                MultiPolygons = _multiPolygons,
+                RouteType = RouteGenerationType.Bootstrap,
+                //RouteType = RouteGenerationType.Randomized,
+                CircleSize = CircleSize,
+            });
+
+            if (bootstrapRoute?.Count == 0)
+            {
+                throw new Exception($"No bootstrap coordinates generated!");
+            }
+
+            if (OptimizeRoute)
+            {
+                // Optimized route but contains a couple big jumps
+                //_routeCalculator.ClearCoordinates();
+                //_routeCalculator.AddCoordinates(bootstrapRoute);
+                //var optimizedRoute = _routeCalculator.CalculateShortestRoute();
+                //_routeCalculator.ClearCoordinates();
+
+                // Benchmark - Roughly 60.4414-64.7969 :(
+                //Utilities.Utils.BenchmarkAction(() => RouteOptimizeUtil.Optimize(bootstrapRoute));
+
+                // Optimized route with no big jumps, although takes a lot longer to generate
+                var optimizedRoute = RouteOptimizeUtil.Optimize(bootstrapRoute);
+                return optimizedRoute;
+            }
+
+            return bootstrapRoute;
+        }
+
+        #endregion
+    }
+
+    /*
     public class BootstrapInstanceController : IJobController
     {
         #region Variables
@@ -230,15 +486,13 @@
 
         private void TestRouting()
         {
-            /*
-                var action = () =>
-                {
-                    var bootstrapRoute = _routeGenerator.GenerateBootstrapRoute(_multiPolygons, CircleSize);
-                    bootstrapRoute.ForEach(coord => _routeCalculator.AddCoordinate(coord));
-                    var optimizedRoute = _routeCalculator.CalculateShortestRoute();
-                };
-                var seconds = Utils.BenchmarkAction(action);
-            */
+            //var action = () =>
+            //{
+            //    var bootstrapRoute = _routeGenerator.GenerateBootstrapRoute(_multiPolygons, CircleSize);
+            //    bootstrapRoute.ForEach(coord => _routeCalculator.AddCoordinate(coord));
+            //    var optimizedRoute = _routeCalculator.CalculateShortestRoute();
+            //};
+            //var seconds = Utils.BenchmarkAction(action);
 
             var optimizer = new RouteOptimizer(_mapFactory, _multiPolygons)
             {
@@ -292,4 +546,5 @@
 
         #endregion
     }
+    */
 }

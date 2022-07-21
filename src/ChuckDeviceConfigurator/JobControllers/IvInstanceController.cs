@@ -121,7 +121,7 @@
                 });
             }
 
-            var task = CreateIVTask(pokemon);
+            var task = CreateIvTask(pokemon);
             return await Task.FromResult(task);
         }
 
@@ -270,7 +270,7 @@
 
         #region Private Methods
 
-        private ITask CreateIVTask(Pokemon pokemon)
+        private IvTask CreateIvTask(Pokemon pokemon)
         {
             return new IvTask
             {
@@ -286,7 +286,7 @@
             };
         }
 
-        private ITask CreateScanNextTask(Coordinate currentCoord)
+        private CircleTask CreateScanNextTask(Coordinate currentCoord)
         {
             return new CircleTask
             {
