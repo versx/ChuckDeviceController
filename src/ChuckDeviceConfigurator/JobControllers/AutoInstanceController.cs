@@ -366,33 +366,26 @@
                     {
                         var totalCount = _bootstrapTotalCount;
                         var count = totalCount - _bootstrapCellIds.Count;
-                        var percentage = totalCount > 0
+                        var percentage = count > 0 && totalCount > 0
                             ? Convert.ToDouble((double)count / (double)totalCount) * 100
                             : 100;
 
-                        var bootstrapStatus = $"Bootstrapping: {count:N0}/{totalCount:N0} ({Math.Round(percentage, 1)}%)";
+                        var bootstrapStatus = $"Bootstrapping: {count:N0}/{totalCount:N0} ({Math.Round(percentage, 4)}%)";
                         return bootstrapStatus;
                     }
 
                     // TODO: Lock _allStops
                     var ids = _allStops.Select(x => x.Pokestop.Id).ToList();
-
-                    // TODO: Remove debug code
-                    var stopwatch = new System.Diagnostics.Stopwatch();
-                    stopwatch.Start();
                     var currentCountDb = await GetPokestopQuestCountAsync(ids, QuestMode);
-                    stopwatch.Stop();
-                    var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                    _logger.LogInformation($"Took {totalSeconds}s");
 
                     // TODO: Lock _allStops
                     var maxCount = _allStops.Count;
                     var currentCount = maxCount - _todayStops.Count;
 
-                    var percent = maxCount > 0
+                    var percent = currentCount > 0 && maxCount > 0
                         ? Convert.ToDouble((double)currentCount / (double)maxCount) * 100
                         : 100;
-                    var percentReal = maxCount > 0
+                    var percentReal = currentCountDb > 0 && maxCount > 0
                         ? Convert.ToDouble((double)currentCountDb / (double)maxCount) * 100
                         : 100;
 
@@ -431,7 +424,9 @@
         {
             _logger.LogInformation($"[{Name}] Checking Bootstrap Status...");
 
-            var start = DateTime.UtcNow;
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+
             var total = 0;
             var missingCellIds = new List<ulong>();
             var allCellIds = new List<ulong>();
@@ -461,8 +456,10 @@
             }
 
             var found = total - missingCellIds.Count;
-            var time = DateTime.UtcNow.Subtract(start).TotalSeconds;
-            _logger.LogInformation($"[{Name}] Bootstrap Status: {found:N0}/{total:N0} after {time:N0} seconds");
+
+            stopwatch.Stop();
+            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{Name}] Bootstrap Status: {found:N0}/{total:N0} after {totalSeconds} seconds");
 
             // TODO: Lock _bootstrapCellIds
             _bootstrapCellIds = missingCellIds.Distinct().ToList();

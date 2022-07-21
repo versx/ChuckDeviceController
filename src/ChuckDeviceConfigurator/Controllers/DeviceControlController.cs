@@ -405,7 +405,19 @@
 
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
-                return CreateErrorResponse("Account does not exist");
+                var jobController = _jobControllerService.GetInstanceController(device.Uuid);
+                if (jobController == null)
+                {
+                    _logger.LogError($"[{device.Uuid}] Failed to get job instance controller to handle logout request");
+                    return CreateErrorResponse($"Failed to get job instance controller to handle logout request");
+                }
+
+                var minLevel = jobController.MinimumLevel;
+                var maxLevel = jobController.MaximumLevel;
+
+                // Return switch account task
+                return CreateSwitchAccountTask(minLevel, maxLevel);
+                //return CreateErrorResponse("Device is not assigned an account, unable handle logout request");
             }
 
             device.AccountUsername = null;
