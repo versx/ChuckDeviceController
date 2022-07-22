@@ -27,7 +27,7 @@
                 </select>
                 <span asp-validation-for="Type" class="text-danger"></span>
             </div>
-            <div class="form-group circles">
+            <div class="form-group circle_route">
                 <label asp-for="Data.CircleRouteType" class="control-label"></label>
                 <select asp-for="Data.CircleRouteType" class="form-control" asp-items="Html.GetEnumSelectList<CircleInstanceRouteType>()">
                     <option value="">Please select one</option>
@@ -67,7 +67,7 @@
                 <input asp-for="Data.IvQueueLimit" class="form-control" min="1" max="1000" step="1" />
                 <span asp-validation-for="Data.IvQueueLimit" class="text-danger"></span>
             </div>
-            <div class="checkbox pokemon_iv">
+            <div class="checkbox lure_encounters">
                 <label><input type="checkbox" asp-for="Data.EnableLureEncounters"> Enable Lure Encounters</label>
             </div>
             <div class="form-group bootstrap">
@@ -179,6 +179,8 @@ function hideAllElements(instanceTypeId) {
     hideElements('quests', isQuest);
     hideElements('spawnpoints', isSpawnpoint);
     hideElements('dynamic', isDynamic);
+    hideElements('lure_encounters', isCircle || isDynamic || isPokemonIV);
+    hideElements('circle_route', isCircle || isDynamic || isBootstrap);
 }
 
 function hideElements(className, show) {

@@ -171,6 +171,7 @@
                 Longitude = currentCoord.Longitude,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
+                // TODO: EnableLureEncounters for bootstrap job controller?
             };
         }
 
