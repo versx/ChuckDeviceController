@@ -101,10 +101,11 @@
 
         public Coordinate StartingCoordinate { get; }
 
-        // NOTE: 'StorePlayerData' is used by proto processor to ignore encountered/received leveling data
-        public bool StorePlayerData { get; } // TODO: Make 'StorePlayerData' configurable via Instance.Data
+        // NOTE: 'StoreLevelData' is used by proto processor to ignore encountered/received leveling data
+        // TODO: Use gRPC to get property value from leveling job controller instance.
+        public bool StoreLevelData { get; }
 
-        public ulong Radius { get; set; } // TODO: Make 'Radius' configurable via Instance.Data
+        public ulong Radius { get; set; }
 
         #endregion
 
@@ -112,7 +113,10 @@
 
         #region Constructor
 
-        public LevelingInstanceController(Instance instance, List<MultiPolygon> multiPolygons, Coordinate startingCoord, bool storePlayerData, ulong radius)
+        public LevelingInstanceController(
+            Instance instance,
+            List<MultiPolygon> multiPolygons,
+            Coordinate startingCoord)
         {
             Name = instance.Name;
             MultiPolygons = multiPolygons;
@@ -120,10 +124,9 @@
             MaximumLevel = instance.MaximumLevel;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
-
             StartingCoordinate = startingCoord;
-            StorePlayerData = storePlayerData;
-            Radius = radius;
+            StoreLevelData = instance.Data?.StoreLevelingData ?? Strings.DefaultStoreLevelingData;
+            Radius = instance.Data?.LevelingRadius ?? Strings.DefaultLevelingRadius;
 
             _logger = new Logger<CircleInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _players = new Dictionary<string, PlayerLevelingData>();
@@ -347,7 +350,7 @@
 
         #region Private Methods
 
-        private ITask CreateTask(Coordinate coord, double delay, bool deployEgg = true)
+        private LevelingTask CreateTask(Coordinate coord, double delay, bool deployEgg = true)
         {
             return new LevelingTask
             {

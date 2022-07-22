@@ -96,6 +96,14 @@
         public bool OptimizeSpawnpointsRoute { get; set; } = Strings.DefaultOptimizeBootstrapRoute;
 
 
+        // Leveling Instance
+        [DisplayName("Leveling Radius")]
+        public uint LevelingRadius { get; set; } = Strings.DefaultLevelingRadius;
+
+        [DisplayName("Save Leveling Data")]
+        public bool StoreLevelingData { get; set; } = Strings.DefaultStoreLevelingData;
+
+
         // All
         [DisplayName("Account Group")]
         public string? AccountGroup { get; set; } = Strings.DefaultAccountGroup;

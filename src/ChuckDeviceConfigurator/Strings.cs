@@ -39,12 +39,15 @@
 
         #region Default Instance Property Values
 
+        // All
         public const ushort DefaultMinimumLevel = 0;
         public const ushort DefaultMaximumLevel = 29;
 
+        // Circle/Dynamic/Bootstrap
         public const CircleInstanceRouteType DefaultCircleRouteType = CircleInstanceRouteType.Smart;
         public const bool DefaultOptimizeDynamicRoute = true;
 
+        // Quests
         public const short DefaultTimeZoneOffset = 0;
         public const string DefaultTimeZone = null;
         public const bool DefaultEnableDst = false;
@@ -55,18 +58,26 @@
         public const byte DefaultMaximumSpinAttempts = 5;
         public const ushort DefaultLogoutDelay = 900;
 
+        // IV
         public const ushort DefaultIvQueueLimit = 100;
         public const string DefaultIvList = null;
         public const bool DefaultEnableLureEncounters = false;
 
+        // Bootstrap
         public const bool DefaultFastBootstrapMode = false;
         public const ushort DefaultCircleSize = 70;
         public const bool DefaultOptimizeBootstrapRoute = true;
         public const string DefaultBootstrapCompleteInstanceName = null;
 
+        // Tth Finder
         public const bool DefaultOnlyUnknownSpawnpoints = true;
         public const bool DefaultOptimizeSpawnpointRoute = true;
 
+        // Leveling
+        public const uint DefaultLevelingRadius = 10000; // TODO: 10000 or 100000?
+        public const bool DefaultStoreLevelingData = false;
+
+        // All
         public const string DefaultAccountGroup = null;
         public const bool DefaultIsEvent = false;
 

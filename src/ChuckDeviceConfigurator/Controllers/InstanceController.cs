@@ -70,11 +70,7 @@
             var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
                                                   .Select(device => device.Uuid) // TODO: Include last seen?
                                                   .ToList();
-            devicesAssigned.Add("Test");
-            devicesAssigned.Add("Test2");
-
             var status = await _jobControllerService.GetStatusAsync(instance);
-
             var model = new InstanceDetailsViewModel
             {
                 Name = instance.Name,
@@ -160,24 +156,39 @@
                 Geofences = instance.Geofences,
                 Data = new ManageInstanceDataViewModel
                 {
+                    // All
                     AccountGroup = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup,
                     IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent,
-                    UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts,
+                    
+                    // Circle
                     CircleRouteType = instance.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType,
-                    OptimizeDynamicRoute = instance.Data?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute,
-                    CircleSize = instance.Data?.CircleSize ?? Strings.DefaultCircleSize,
-                    EnableDst = instance.Data?.EnableDst ?? Strings.DefaultEnableDst,
                     EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
+
+                    // Dynamic
+                    OptimizeDynamicRoute = instance.Data?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute,
+
+                    // Bootstrap
                     FastBootstrapMode = instance.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
-                    IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap,
+                    CircleSize = instance.Data?.CircleSize ?? Strings.DefaultCircleSize,
+                    BootstrapCompleteInstanceName = instance.Data?.BootstrapCompleteInstanceName,
+
+                    // IV
                     IvList = instance.Data?.IvList ?? Strings.DefaultIvList,
                     IvQueueLimit = instance.Data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
+
+                    // Quests
                     QuestMode = instance.Data?.QuestMode ?? Strings.DefaultQuestMode,
                     SpinLimit = instance.Data?.SpinLimit ?? Strings.DefaultSpinLimit,
+                    EnableDst = instance.Data?.EnableDst ?? Strings.DefaultEnableDst,
                     TimeZone = instance.Data?.TimeZone ?? Strings.DefaultTimeZone,
                     LogoutDelay = instance.Data?.LogoutDelay ?? Strings.DefaultLogoutDelay,
                     MaximumSpinAttempts = instance.Data?.MaximumSpinAttempts ?? Strings.DefaultMaximumSpinAttempts,
-                    BootstrapCompleteInstanceName = instance.Data?.BootstrapCompleteInstanceName,
+                    IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap,
+                    UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts,
+
+                    // Leveling
+                    LevelingRadius = instance.Data?.LevelingRadius ?? Strings.DefaultLevelingRadius,
+                    StoreLevelingData = instance.Data?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
                 },
             };
 
@@ -278,37 +289,52 @@
         [Route("/Instance/IvQueue/{name}")]
         public ActionResult IvQueue(string name)
         {
-            var ivQueue = _jobControllerService.GetIvQueue(name);
-            var queueItems = ivQueue.Select(item =>
+            try
             {
-                var lat = Math.Round(item.Latitude, 5);
-                var lon = Math.Round(item.Longitude, 5);
-                var imageUrl = $"<img src='{Strings.PokemonImageUrl}/{item.PokemonId}.png' width='32' height='32' />";
-                var locationUrl = $"<a href='{string.Format(Strings.GoogleMapsLinkFormat, lat, lon)}'>{lat}, {lon}</a>";
-                return new IvQueueItemViewModel
+                var ivQueue = _jobControllerService.GetIvQueue(name);
+                var queueItems = ivQueue.Select(item =>
                 {
-                    // TODO: Include forms and make image url configurable
-                    Image = imageUrl,
-                    EncounterId = item.Id,
-                    PokemonId = item.PokemonId,
-                    PokemonName = item.PokemonId.ToString(), // TODO: Get pokemon name
-                    Location = locationUrl,
+                    var lat = Math.Round(item.Latitude, 5);
+                    var lon = Math.Round(item.Longitude, 5);
+                    var imageUrl = $"<img src='{Strings.PokemonImageUrl}/{item.PokemonId}.png' width='32' height='32' />";
+                    var locationUrl = $"<a href='{string.Format(Strings.GoogleMapsLinkFormat, lat, lon)}'>{lat}, {lon}</a>";
+                    return new IvQueueItemViewModel
+                    {
+                        // TODO: Include forms and make image url configurable
+                        Image = imageUrl,
+                        EncounterId = item.Id,
+                        PokemonId = item.PokemonId,
+                        PokemonName = item.PokemonId.ToString(), // TODO: Get pokemon name
+                        Location = locationUrl,
+                    };
+                }).ToList();
+                var model = new IvQueueViewModel
+                {
+                    Name = name,
+                    Queue = queueItems,
                 };
-            }).ToList();
-            var model = new IvQueueViewModel
+                return View(model);
+            }
+            catch
             {
-                Name = name,
-                Queue = queueItems,
-            };
-            return View(model);
+                _logger.LogError($"Unknown error occurred while retrieving IV queue '{name}'.");
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // GET: InstanceController/IvQueue/test/Remove/5
         [Route("/Instance/IvQueue/{name}/Remove/{id}")]
         public ActionResult IvQueueRemove(string name, string id)
         {
-            // Remove Pokemon with index from IV queue list by name
-            _jobControllerService.RemoveFromIvQueue(name, id);
+            try
+            {
+                // Remove Pokemon with index from IV queue list by name
+                _jobControllerService.RemoveFromIvQueue(name, id);
+            }
+            catch
+            {
+                _logger.LogError($"Unknown error occurred while removing Pokemon encounter ({id}) from IV queue '{name}'.");
+            }
             return RedirectToAction(nameof(IvQueue), new { name });
         }
 
@@ -344,6 +370,10 @@
                 // Spawnpoint
                 OnlyUnknownSpawnpoints = model?.OnlyUnknownSpawnpoints ?? Strings.DefaultOnlyUnknownSpawnpoints,
                 OptimizeSpawnpointsRoute = model?.OptimizeSpawnpointsRoute ?? Strings.DefaultOptimizeSpawnpointRoute,
+
+                // Leveling
+                LevelingRadius = model?.LevelingRadius ?? Strings.DefaultLevelingRadius,
+                StoreLevelingData = model?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
 
                 // All
                 AccountGroup = model?.AccountGroup ?? Strings.DefaultAccountGroup,

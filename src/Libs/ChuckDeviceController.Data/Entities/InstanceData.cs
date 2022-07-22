@@ -3,6 +3,11 @@
     using System.ComponentModel;
     using System.Text.Json.Serialization;
 
+    /* TODO: Possibly use the same `OptimizeRoute` property between Dynamic/Bootstrap/Spawnpoint
+     * job controllers for ease. Can't think of any conflicts/issues unless someone edits an
+     * existing instance the UI will display the previous value instead of using the default,
+     * which is fine. :)
+    */
     public class InstanceData
     {
         #region Pokemon Circle Instance
@@ -139,6 +144,22 @@
             JsonPropertyName("only_unknown_spawnpoints"),
         ]
         public bool OnlyUnknownSpawnpoints { get; set; }
+
+        #endregion
+
+        #region Leveling Instance
+
+        [
+            DisplayName("Leveling Radius"),
+            JsonPropertyName("leveling_radius"),
+        ]
+        public uint LevelingRadius { get; set; }
+
+        [
+            DisplayName("Save Leveling Data"),
+            JsonPropertyName("store_leveling_data"),
+        ]
+        public bool StoreLevelingData { get; set; }
 
         #endregion
 

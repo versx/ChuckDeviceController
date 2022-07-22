@@ -248,7 +248,7 @@
                 var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
                 if (assignmentGroup == null)
                 {
-                    // Failed to retrieve geofence from database, does it exist?
+                    // Failed to retrieve assignment group from database, does it exist?
                     ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with id '{id}'.");
                     return View(assignmentGroup);
                 }

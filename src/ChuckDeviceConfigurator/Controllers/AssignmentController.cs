@@ -285,7 +285,7 @@
                 var assignment = await _context.Assignments.FindAsync(id);
                 if (assignment == null)
                 {
-                    // Failed to retrieve geofence from database, does it exist?
+                    // Failed to retrieve assignment from database, does it exist?
                     ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
                     return View(assignment);
                 }
