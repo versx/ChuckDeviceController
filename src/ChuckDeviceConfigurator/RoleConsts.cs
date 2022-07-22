@@ -25,5 +25,7 @@
         public const string WebhooksRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Webhooks)}";
 
         public const string UsersRole = nameof(Roles.SuperAdmin);
+
+        public const string UtilitiesRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Utilities)}";
     }
 }

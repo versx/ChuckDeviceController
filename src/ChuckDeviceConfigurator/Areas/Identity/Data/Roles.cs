@@ -62,5 +62,10 @@
         /// Access to Webhooks management pages.
         /// </summary>
         Webhooks,
+
+        /// <summary>
+        /// Access to Utiliies page.
+        /// </summary>
+        Utilities,
     }
 }
