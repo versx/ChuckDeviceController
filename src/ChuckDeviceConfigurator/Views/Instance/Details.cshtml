@@ -1,5 +1,5 @@
-﻿@using ChuckDeviceController.Data.Entities;
-@model Instance
+﻿@using ChuckDeviceConfigurator.ViewModels;
+@model InstanceDetailsViewModel
 @{
     ViewData["Title"] = "Instance Details " + Model?.Name;
 }
@@ -59,6 +59,12 @@
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Data.IsEvent)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Devices)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.Raw(string.Join("<br>", Model?.Devices ?? new()))
         </dd>
     </dl>
 </div>

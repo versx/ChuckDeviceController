@@ -66,12 +66,29 @@
                 return View();
             }
 
-            // TODO: Get devices assigned to instance and list them
+            // Get devices assigned to instance
+            var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
+                                                  .Select(device => device.Uuid) // TODO: Include last seen?
+                                                  .ToList();
+            devicesAssigned.Add("Test");
+            devicesAssigned.Add("Test2");
 
             var status = await _jobControllerService.GetStatusAsync(instance);
-            instance.Status = status;
 
-            return View(instance);
+            var model = new InstanceDetailsViewModel
+            {
+                Name = instance.Name,
+                Type = instance.Type,
+                MinimumLevel = instance.MinimumLevel,
+                MaximumLevel = instance.MaximumLevel,
+                Geofences = instance.Geofences,
+                Data = instance.Data,
+                DeviceCount = devicesAssigned.Count,
+                Devices = devicesAssigned,
+                Status = status,
+            };
+
+            return View(model);
         }
 
         // GET: InstanceController/Create
