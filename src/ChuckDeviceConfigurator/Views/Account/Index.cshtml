@@ -35,6 +35,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].GroupName)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].IsInUse)
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -59,6 +62,9 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.GroupName)
+                </td>
+                <td>
+                    @(item.IsInUse ? "Yes" : "No")
                 </td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Username">Edit</a> |

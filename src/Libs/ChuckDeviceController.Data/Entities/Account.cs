@@ -148,6 +148,12 @@
                                                          .ToLocalTime()
                                                          .ToString("hh:mm:ss tt MM/dd/yyyy") ?? "--";
 
+        [
+            DisplayName("In Use"),
+            NotMapped,
+        ]
+        public bool IsInUse { get; set; }
+
         #endregion
 
         public bool IsValid(bool ignoreWarning = false, string? groupName = null)

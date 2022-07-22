@@ -37,17 +37,20 @@
         public ActionResult Index(int page = 1, int pageSize = 100)
         {
             var accounts = _context.Accounts.ToList();
+            var accountsInUse = _context.Devices.Where(device => device.AccountUsername != null)
+                                                .Select(device => device.AccountUsername)
+                                                .ToList();
             var count = accounts.Count;
-            //var pageSize = 100;
             var data = accounts.Skip((page - 1) * pageSize)
                                .Take(pageSize)
                                .ToList();
+            data?.ForEach(account => account.IsInUse = accountsInUse.Contains(account.Username));
 
             ViewBag.MaxPage = ((count / pageSize) - (count % pageSize == 0 ? 1 : 0)) + 1;
             ViewBag.Page = page;
             return View(new ViewModelsModel<Account>
             {
-                Items = data,
+                Items = data ?? new(),
             });
         }
 
