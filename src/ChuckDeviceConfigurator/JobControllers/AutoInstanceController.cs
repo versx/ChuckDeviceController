@@ -11,6 +11,7 @@
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
@@ -25,7 +26,7 @@
         private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
 
         private readonly List<PokestopWithMode> _allStops;
-        private readonly List<PokestopWithMode> _todayStops;
+        private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops;
         private readonly Dictionary<PokestopWithMode, byte> _todayStopsAttempts;
         //private List<ulong> _bootstrapCellIds;
         private PokemonPriorityQueue<ulong> _bootstrapCellIds;
@@ -115,7 +116,7 @@
             _deviceFactory = deviceFactory;
 
             _allStops = new List<PokestopWithMode>();
-            _todayStops = new List<PokestopWithMode>();
+            _todayStops = new PokemonPriorityQueue<PokestopWithMode>();
             _todayStopsAttempts = new Dictionary<PokestopWithMode, byte>();
             //_bootstrapCellIds = new List<ulong>();
             _bootstrapCellIds = new PokemonPriorityQueue<ulong>();
@@ -171,65 +172,34 @@
 
                     await CheckCompletionStatusAsync(options.Uuid);
 
-                    PokestopWithMode? pokestop = null;
-                    Coordinate? lastCoord = null;
+                    PokestopWithMode? pokestop;
+                    Coordinate? lastCoord;
                     try
                     {
                         lastCoord = Cooldown.GetLastLocation(options.Account, options.Uuid);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{Name}] Failed to get last location for device '{options.Uuid}'");
+                        _logger.LogError($"[{Name}] Failed to get last location for device '{options.Uuid}': {ex}");
                         return null;
                     }
 
                     if (lastCoord != null)
                     {
-                        var (closest, mode) = GetNextClosestPokestop(lastCoord, options.AccountUsername ?? options.Uuid);
+                        var closest = HandleModeSwitch(lastCoord, options.Uuid, options.AccountUsername);
                         if (closest == null)
                         {
                             return null;
                         }
 
-                        if ((mode ?? false) && !(closest?.IsAlternative ?? false))
-                        {
-                            _logger.LogDebug($"[{Name}] [{options.AccountUsername ?? "?"}] Switching quest mode from {((mode ?? false) ? "alternative" : "none")} to normal.");
-                            PokestopWithMode? closestAr = null;
-                            double closestArDistance = Strings.DefaultDistance;
-                            var arStops = _allStops.Where(x => x.Pokestop.IsArScanEligible)
-                                                   .ToList();
-
-                            foreach (var stop in arStops)
-                            {
-                                var coord = new Coordinate(stop.Pokestop.Latitude, stop.Pokestop.Longitude);
-                                var dist = lastCoord.DistanceTo(coord);
-                                if (dist < closestArDistance)
-                                {
-                                    closestAr = stop;
-                                    closestArDistance = dist;
-                                }
-                            }
-
-                            if (closestAr != null && closestAr?.Pokestop != null)
-                            {
-                                closestAr.IsAlternative = closest?.IsAlternative ?? false;
-                                closest = closestAr;
-                                _logger.LogDebug($"[{Name}] [{options.AccountUsername ?? "?"}] Scanning AR eligible Pokestop {closest?.Pokestop?.Id}");
-                            }
-                            else
-                            {
-                                _logger.LogDebug($"[{Name}] [{options.AccountUsername ?? "?"}] No AR eligible Pokestop found to scan");
-                            }
-                        }
-
                         pokestop = closest;
 
                         var nearbyStops = new List<PokestopWithMode> { pokestop };
-                        var pokestopCoord = new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude);
+                        var pokestopCoord = pokestop.Pokestop.ToCoordinate();
                         var todayStopsC = _todayStops;
                         foreach (var stop in todayStopsC)
                         {
-                            var distance = pokestopCoord.DistanceTo(new Coordinate(stop.Pokestop.Latitude, stop.Pokestop.Longitude));
+                            var distance = pokestopCoord.DistanceTo(stop.Pokestop.ToCoordinate());
                             if (pokestop.IsAlternative == stop.IsAlternative && distance <= Strings.SpinRangeM)
                             {
                                 nearbyStops.Add(stop);
@@ -249,26 +219,25 @@
                     else
                     {
                         // TODO: Lock _todayStops
-                        PokestopWithMode? stop = _todayStops.FirstOrDefault();
+                        PokestopWithMode? stop = _todayStops.Pop();
                         if (stop == null)
                         {
                             return null;
                         }
 
                         pokestop = stop;
-                        _todayStops.RemoveAt(0);
                     }
 
-                    double delay;
-                    ulong encounterTime;
+                    var delay = Strings.DefaultLogoutDelay;
+                    var encounterTime = DateTime.UtcNow.ToTotalSeconds();
                     try
                     {
-                        var result = Cooldown.SetCooldown(
-                            options.Account,
-                            new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude)
-                        );
-                        delay = result.Delay;
-                        encounterTime = result.EncounterTime;
+                        var result = Cooldown.SetCooldown(options.Account, pokestop.Pokestop.ToCoordinate());
+                        if (result != null)
+                        {
+                            delay = Convert.ToUInt16(result.Delay);
+                            encounterTime = result.EncounterTime;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -278,39 +247,15 @@
                         return null;
                     }
 
-                    if (delay >= LogoutDelay && options.Account != null)
+                    if (delay >= LogoutDelay)
                     {
-                        // TODO: Lock _todayStops
-                        _todayStops.Add(pokestop);
-                        // TODO: Lock _accounts
-                        string newUsername;
-                        try
+                        if (options.Account != null)
                         {
-                            var newAccount = await GetAccountAsync(
-                                options.Uuid,
-                                new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude)
-                            );
-                            if (!_accounts.ContainsKey(options.Uuid))
-                            {
-                                newUsername = newAccount?.Username;
-                                _accounts.Add(options.Uuid, newAccount?.Username);
-                                _logger.LogDebug($"[{Name}] [{options.Uuid}] Over logout delay. Switching account from {options.AccountUsername ?? "?"} to {newUsername ?? "?"}");
-                            }
-                            else
-                            {
-                                newUsername = _accounts[options.Uuid];
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[{Name}] [{options.Uuid}] Failed to get account for device in advance: {ex}");
+                            // Delay is too high, switch accounts
+                            return await HandlePokestopDelayAsync(pokestop, options.Uuid, options.AccountUsername);
                         }
 
-                        return CreateSwitchAccountTask();
-                    }
-                    else if (delay >= LogoutDelay)
-                    {
-                        _logger.LogWarning($"[{Name}] [{options.Uuid}] Ignoring over logout delay, because no account is specified");
+                        _logger.LogWarning($"[{Name}] [{options.Uuid}] Ignoring over logout delay, no account is specified");
                     }
 
                     try
@@ -324,7 +269,7 @@
                         await Cooldown.SetEncounterAsync(
                             _deviceFactory,
                             options.Account,
-                            new Coordinate(pokestop.Pokestop.Latitude, pokestop.Pokestop.Longitude),
+                            pokestop.Pokestop.ToCoordinate(),
                             encounterTime
                         );
                     }
@@ -620,7 +565,7 @@
             foreach (var stop in todayStopsC)
             {
                 // TODO: Look into `stop` being null for some reason. :thinking:
-                var coord = new Coordinate(stop.Pokestop.Latitude, stop.Pokestop.Longitude);
+                var coord = stop.Pokestop.ToCoordinate();
                 var dist = lastCoord.DistanceTo(coord);
                 if (dist < closestOverallDistance)
                 {
@@ -786,6 +731,79 @@
             var timeLeft = DateTime.Today.AddDays(1).Subtract(localTime).TotalSeconds;
             var seconds = Math.Round(timeLeft);
             return (localTime, seconds);
+        }
+
+        private async Task<SwitchAccountTask> HandlePokestopDelayAsync(PokestopWithMode pokestop, string uuid, string accountUsername)
+        {
+            // TODO: Lock _todayStops
+            _todayStops.Add(pokestop);
+            // TODO: Lock _accounts
+            string newUsername;
+            try
+            {
+                var pokestopCoord = pokestop.Pokestop.ToCoordinate();
+                var newAccount = await GetAccountAsync(uuid, pokestopCoord);
+                if (!_accounts.ContainsKey(uuid))
+                {
+                    newUsername = newAccount?.Username;
+                    _accounts.Add(uuid, newAccount?.Username);
+
+                    _logger.LogDebug($"[{Name}] [{uuid}] Over logout delay. Switching account from {accountUsername ?? "?"} to {newUsername ?? "?"}");
+                }
+                else
+                {
+                    newUsername = _accounts[uuid];
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"[{Name}] [{uuid}] Failed to get account for device in advance: {ex}");
+            }
+
+            return CreateSwitchAccountTask();
+        }
+
+        private PokestopWithMode? HandleModeSwitch(Coordinate lastCoord, string uuid, string accountUsername)
+        {
+            var (closest, mode) = GetNextClosestPokestop(lastCoord, accountUsername ?? uuid);
+            if (closest == null)
+            {
+                return null;
+            }
+
+            if ((mode ?? false) && !(closest?.IsAlternative ?? false))
+            {
+                _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] Switching quest mode from {((mode ?? false) ? "alternative" : "none")} to normal.");
+
+                PokestopWithMode? closestAr = null;
+                double closestArDistance = Strings.DefaultDistance;
+                var arStops = _allStops.Where(stop => stop.Pokestop.IsArScanEligible)
+                                       .ToList();
+
+                foreach (var stop in arStops)
+                {
+                    var coord = stop.Pokestop.ToCoordinate();
+                    var dist = lastCoord.DistanceTo(coord);
+                    if (dist < closestArDistance)
+                    {
+                        closestAr = stop;
+                        closestArDistance = dist;
+                    }
+                }
+
+                if (closestAr?.Pokestop != null)
+                {
+                    closestAr.IsAlternative = closest?.IsAlternative ?? false;
+                    closest = closestAr;
+                    _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] Scanning AR eligible Pokestop {closest?.Pokestop?.Id}");
+                }
+                else
+                {
+                    _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] No AR eligible Pokestop found to scan");
+                }
+            }
+
+            return closest;
         }
 
         #endregion

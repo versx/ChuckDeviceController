@@ -12,7 +12,7 @@
     using ChuckDeviceController.Extensions;
 
     [Table("pokestop")]
-    public class Pokestop : BaseEntity
+    public class Pokestop : BaseEntity, ICoordinateEntity
     {
         public const ushort LureTime = 1800;
 

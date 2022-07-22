@@ -9,6 +9,7 @@
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
@@ -226,7 +227,7 @@
                 // Cache all existing spawnpoints
                 _spawnpoints = list.ToDictionary(x => x.Id, y => y.DespawnSecond);
 
-                var coords = list.Select(spawn => new Coordinate(spawn.Latitude, spawn.Longitude))
+                var coords = list.Select(spawn => spawn.ToCoordinate())
                                  .ToList();
                 return coords;
             }

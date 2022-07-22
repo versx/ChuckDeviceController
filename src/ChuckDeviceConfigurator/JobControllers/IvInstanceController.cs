@@ -6,6 +6,7 @@
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
@@ -182,7 +183,7 @@
         {
             // First thing to do is ensure that the received Pokemon is within this IV job
             // controller's geofence bounds.
-            var pkmnCoord = new Coordinate(pokemon.Latitude, pokemon.Longitude);
+            var pkmnCoord = pokemon.ToCoordinate();
             if (!GeofenceService.InMultiPolygon((List<MultiPolygon>)MultiPolygons, pkmnCoord))
             {
                 // Pokemon outside of geofence area for job controller, skipping...

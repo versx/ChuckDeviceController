@@ -5,6 +5,7 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
@@ -108,7 +109,7 @@
                 {
                     var gymCoords = context.Gyms.AsEnumerable()
                                                 .Where(gym => bbox.IsInBoundingBox(gym.Latitude, gym.Longitude))
-                                                .Select(gym => new Coordinate(gym.Latitude, gym.Longitude))
+                                                .Select(gym => gym.ToCoordinate())
                                                 .ToList();
                     coordinates.AddRange(gymCoords);
                 }
@@ -116,7 +117,7 @@
                 {
                     var pokestopCoords = context.Pokestops.AsEnumerable()
                                                           .Where(stop => bbox.IsInBoundingBox(stop.Latitude, stop.Longitude))
-                                                          .Select(stop => new Coordinate(stop.Latitude, stop.Longitude))
+                                                          .Select(stop => stop.ToCoordinate())
                                                           .ToList();
                     coordinates.AddRange(pokestopCoords);
                 }
@@ -124,7 +125,7 @@
                 {
                     var spawnpointCoords = context.Spawnpoints.AsEnumerable()
                                                               .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude))
-                                                              .Select(spawn => new Coordinate(spawn.Latitude, spawn.Longitude))
+                                                              .Select(spawn => spawn.ToCoordinate())
                                                               .ToList();
                     coordinates.AddRange(spawnpointCoords);
                 }
@@ -132,7 +133,7 @@
                 {
                     var cellCoords = context.Cells.AsEnumerable()
                                                   .Where(cell => bbox.IsInBoundingBox(cell.Latitude, cell.Longitude))
-                                                  .Select(cell => new Coordinate(cell.Latitude, cell.Longitude))
+                                                  .Select(cell => cell.ToCoordinate())
                                                   .ToList();
                     coordinates.AddRange(cellCoords);
                 }

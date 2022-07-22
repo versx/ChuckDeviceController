@@ -10,7 +10,7 @@
     using ChuckDeviceController.Extensions;
 
     [Table("gym")]
-    public class Gym : BaseEntity
+    public class Gym : BaseEntity, ICoordinateEntity
     {
         public const ushort ExRaidBossId = 150;
         public const ushort ExRaidBossForm = 0;

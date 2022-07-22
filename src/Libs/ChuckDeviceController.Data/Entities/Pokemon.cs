@@ -12,7 +12,7 @@
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("pokemon")]
-    public class Pokemon : BaseEntity, IComparable
+    public class Pokemon : BaseEntity, ICoordinateEntity, IComparable
     {
         #region Constants
 

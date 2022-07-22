@@ -11,7 +11,7 @@
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("weather")]
-    public partial class Weather : BaseEntity
+    public partial class Weather : BaseEntity, ICoordinateEntity
     {
         #region Properties
 

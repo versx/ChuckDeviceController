@@ -9,7 +9,7 @@
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("s2cell")]
-    public class Cell : BaseEntity
+    public class Cell : BaseEntity, ICoordinateEntity
     {
         #region Properties
 

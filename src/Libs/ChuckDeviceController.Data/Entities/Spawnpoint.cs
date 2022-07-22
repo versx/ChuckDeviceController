@@ -8,7 +8,7 @@
     using ChuckDeviceController.Extensions;
 
     [Table("spawnpoint")]
-    public class Spawnpoint : BaseEntity
+    public class Spawnpoint : BaseEntity, ICoordinateEntity
     {
         #region Properties
 

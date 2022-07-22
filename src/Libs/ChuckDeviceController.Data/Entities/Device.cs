@@ -6,7 +6,7 @@
     using System.Text.Json.Serialization;
 
     [Table("device")]
-    public class Device : BaseEntity
+    public class Device : BaseEntity // TODO: ICoordinateEntity
     {
         [
             DisplayName("UUID"),

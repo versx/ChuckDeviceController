@@ -8,6 +8,7 @@
 
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
@@ -195,10 +196,10 @@
                     cell.Longitude <= maxLon
                 ).ToList();
 
-                spawnpoints.ForEach(x => coordinates.Add(new Coordinate(x.Latitude, x.Longitude)));
-                pokestops.ForEach(x => coordinates.Add(new Coordinate(x.Latitude, x.Longitude)));
-                gyms.ForEach(x => coordinates.Add(new Coordinate(x.Latitude, x.Longitude)));
-                //cells.ForEach(x => list.Add(new Coordinate(x.Latitude, x.Longitude)));
+                spawnpoints.ForEach(x => coordinates.Add(x.ToCoordinate()));
+                pokestops.ForEach(x => coordinates.Add(x.ToCoordinate()));
+                gyms.ForEach(x => coordinates.Add(x.ToCoordinate()));
+                //cells.ForEach(x => list.Add(x.ToCoordinate()));
                 var s2cells = bbox.GetS2CellCoordinates();
                 coordinates.AddRange(s2cells);
             }
