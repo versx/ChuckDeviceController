@@ -1,8 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Routing;
-    using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry.Models;
@@ -45,43 +43,11 @@
 
         #endregion
 
-        public override async Task<ITask> GetTaskAsync(TaskOptions options)
-        {
-            // Add device to device list
-            AddDevice(options.Uuid);
-            Coordinate? currentCoord;
-
-            // Check if on demand scanning coordinates list has any to send to workers
-            if (ScanNextCoordinates.Count > 0)
-            {
-                currentCoord = ScanNextCoordinates.Dequeue();
-                var scanNextTask = CreateTask(currentCoord);
-                return await Task.FromResult(scanNextTask);
-            }
-
-            if ((Coordinates?.Count ?? 0) == 0)
-            {
-                // TODO: Throw error that instance requires at least one coordinate
-                _logger.LogError($"[{Name}] Instance requires at least one coordinate, please edit it to contain one.");
-                return null;
-            }
-
-            // Get next coordinate
-            currentCoord = SmartRoute(options.Uuid);
-
-            // Check if we were unable to retrieve a coordinate to send
-            if (currentCoord == null)
-            {
-                // TODO: Not sure if this will ever hit, need to test
-                return null;
-            }
-
-            var task = CreateTask(currentCoord);
-            return await Task.FromResult(task);
-        }
+        #region Public Methods
 
         public override async Task<string> GetStatusAsync()
         {
+            // TODO: Calculate proper status for DynamicRoute job controller instance
             var circleStatus = await base.GetStatusAsync();
             var status = circleStatus == Strings.DefaultInstanceStatus
                 ? Strings.DefaultInstanceStatus
@@ -89,8 +55,17 @@
             return await Task.FromResult(status);
         }
 
+        #endregion
+
+        #region Private Methods
+
         private List<Coordinate> GenerateDynamicRoute()
         {
+            _logger.LogInformation($"[{Name}] Generating dynamic route...");
+
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+
             var route = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
             {
                 CircleSize = Strings.DefaultCircleSize,
@@ -99,15 +74,28 @@
                 MaximumPoints = 500,
             });
 
+            stopwatch.Stop();
+            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{Name}] Dynamic route generation took {totalSeconds}s");
+
             if (OptimizeDynamicRoute)
             {
+                stopwatch.Start();
+
                 _routeCalculator.ClearCoordinates();
                 _routeCalculator.AddCoordinates(route);
                 var optimized = _routeCalculator.CalculateShortestRoute();
                 _routeCalculator.ClearCoordinates();
+
+                stopwatch.Stop();
+                totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+                _logger.LogInformation($"[{Name}] Dynamic route optimization took {totalSeconds}s");
+
                 return optimized.ToList();
             }
             return route;
         }
+
+        #endregion
     }
 }

@@ -12,5 +12,7 @@
         // keep track of coordinates visited I suppose?
         // TODO: Maybe add property for first coord it received and assume route is completed if last coord is first coord - 1
         public ulong LastCompletedWholeRoute { get; set; }
+
+        public uint CoordinatesCompletedCount { get; set; }
     }
 }

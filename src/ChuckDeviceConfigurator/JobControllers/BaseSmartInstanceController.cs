@@ -16,7 +16,9 @@
         private static readonly Random _random = new();
         private readonly ILogger<BaseSmartInstanceController> _logger;
         internal readonly Dictionary<string, DeviceIndex> _currentUuid = new();
-        internal int _lastIndex = 0; // Used for basic leap frog routing only
+
+        // Below used for basic leap frog routing only
+        internal int _lastIndex = 0;
         internal double _lastCompletedTime;
         internal double _lastLastCompletedTime;
 
@@ -46,14 +48,18 @@
 
         #region Constructor
 
-        public BaseSmartInstanceController(Instance instance, List<Coordinate> coords, CircleInstanceType circleType, CircleInstanceRouteType routeType)
+        public BaseSmartInstanceController(
+            Instance instance,
+            List<Coordinate> coords,
+            CircleInstanceType circleType = CircleInstanceType.Pokemon,
+            CircleInstanceRouteType? routeType = CircleInstanceRouteType.Smart)
         {
             Name = instance.Name;
             Coordinates = coords;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
             CircleType = circleType;
-            RouteType = instance.Data?.CircleRouteType ?? routeType; // Strings.DefaultCircleRouteType;
+            RouteType = instance.Data?.CircleRouteType ?? routeType ?? Strings.DefaultCircleRouteType;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
             EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
@@ -395,6 +401,37 @@
 
             var indexes = devices.ToDictionary(key => key.Key, value => value.Value);
             return indexes;
+        }
+
+        internal Coordinate? GetNextScanLocation(string uuid)
+        {
+            Coordinate? currentCoord = null;
+            switch (CircleType)
+            {
+                case CircleInstanceType.Pokemon:
+                case CircleInstanceType.Raid:
+                    switch (RouteType)
+                    {
+                        // TODO: Eventually remove leap frog routing logic (cough, remove all circle routing instances all together)
+                        // REVIEW: Optionally, improve the basic route logic
+                        case CircleInstanceRouteType.Default:
+                            // Get default leap frog route
+                            currentCoord = BasicRoute();
+                            break;
+                        case CircleInstanceRouteType.Split:
+                            // Split route by device count
+                            currentCoord = SplitRoute(uuid);
+                            break;
+                        //case CircleInstanceRouteType.Circular:
+                        // Circular split route by device count
+                        case CircleInstanceRouteType.Smart:
+                            // Smart routing by device count
+                            currentCoord = SmartRoute(uuid);
+                            break;
+                    }
+                    break;
+            }
+            return currentCoord;
         }
 
         #endregion

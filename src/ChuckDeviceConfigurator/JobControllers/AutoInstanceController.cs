@@ -796,7 +796,6 @@
             }
 
             _bootstrapCellIds.Remove(target);
-            //_bootstrapCellIds.RemoveAt(_bootstrapCellIds.Count - 1);
 
             var center = target.S2LatLngFromId();
             var coord = new Coordinate(center.LatDegrees, center.LngDegrees);
