@@ -36,21 +36,26 @@
         // GET: AccountController
         public ActionResult Index(int page = 1, int pageSize = 100)
         {
-            var accounts = _context.Accounts.ToList();
+            //var accounts = _context.Accounts.ToList();
+            var accounts = _context.Accounts.Skip((page - 1) * pageSize)
+                                            .Take(pageSize)
+                                            .ToList();
             var accountsInUse = _context.Devices.Where(device => device.AccountUsername != null)
                                                 .Select(device => device.AccountUsername)
                                                 .ToList();
-            var count = accounts.Count;
+            var count = _context.Accounts.Count(); //accounts.Count;
+            /*
             var data = accounts.Skip((page - 1) * pageSize)
                                .Take(pageSize)
                                .ToList();
-            data?.ForEach(account => account.IsInUse = accountsInUse.Contains(account.Username));
+            */
+            accounts?.ForEach(account => account.IsInUse = accountsInUse.Contains(account.Username));
 
             ViewBag.MaxPage = ((count / pageSize) - (count % pageSize == 0 ? 1 : 0)) + 1;
             ViewBag.Page = page;
             return View(new ViewModelsModel<Account>
             {
-                Items = data ?? new(),
+                Items = accounts ?? new(),
             });
         }
 
