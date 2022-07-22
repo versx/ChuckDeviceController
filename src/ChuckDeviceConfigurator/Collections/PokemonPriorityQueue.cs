@@ -2,6 +2,10 @@
 {
     public class PokemonPriorityQueue<T> : List<T>
     {
+        public PokemonPriorityQueue()
+        {
+        }
+
         public PokemonPriorityQueue(int maxCapacity)
             : base(maxCapacity)
         {

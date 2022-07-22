@@ -22,9 +22,9 @@
         public const uint WeatherBoostMinLevel = 6;
         public const uint WeatherBoostMinIvStat = 4;
         public const bool PvpEnabled = true;
-        public const bool CellPokemonEnabled = true;
-        public const bool SaveSpawnpointLastSeen = true;
-        public const bool WeatherIvClearingEnabled = true;
+        public const bool CellPokemonEnabled = true; // TODO: Make 'CellPokemonEnabled' configurable via config?
+        public const bool SaveSpawnpointLastSeen = true; // TODO: Make 'SaveSpawnpointLastSeen' configurable via config?
+        public const bool WeatherIvClearingEnabled = true; // TODO: Make 'WeatherIvClearingEnabled' configurable via config?
 
         #endregion
 
@@ -206,13 +206,7 @@
 
         public Pokemon(MapDataContext context, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
         {
-            IsEvent = isEvent;
-            if (nearbyPokemon.PokemonDisplay != null)
-            {
-                Costume = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Costume);
-                Weather = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.WeatherBoostedCondition);
-            }
-            Username = username;
+            // Figure out where the Pokemon is
             double lat;
             double lon;
             if (string.IsNullOrEmpty(PokestopId))
@@ -228,7 +222,7 @@
             }
             else
             {
-                var pokestop = context.Pokestops.Find(nearbyPokemon.FortId);
+                var pokestop = context.Pokestops.FindAsync(nearbyPokemon.FortId).Result;
                 if (pokestop == null)
                 {
                     // TODO: Throw error
@@ -246,23 +240,26 @@
             PokestopId = nearbyPokemon.FortId;
             if (nearbyPokemon.PokemonDisplay != null)
             {
-                Gender = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Gender);
                 Form = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Form);
+                Costume = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Costume);
+                Weather = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.WeatherBoostedCondition);
+                Gender = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Gender);
             }
+            IsEvent = isEvent;
+            Username = username;
             CellId = cellId;
             IsExpireTimestampVerified = false;
         }
 
         public Pokemon(MapDataContext context, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
         {
-            IsEvent = isEvent;
             var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
             Id = encounterId.ToString();
             PokemonId = Convert.ToUInt32(mapPokemon.PokedexTypeId);
 
             var spawnpointId = mapPokemon.SpawnpointId;
             // Get Pokestop via spawnpoint id
-            var pokestop = context.Pokestops.Find(spawnpointId);
+            var pokestop = context.Pokestops.FindAsync(spawnpointId).Result;
             if (pokestop == null)
             {
                 // TODO: Throw error
@@ -291,6 +288,7 @@
                 IsExpireTimestampVerified = false;
             }
 
+            IsEvent = isEvent;
             SeenType = SeenType.LureWild;
             CellId = cellId;
         }
@@ -843,7 +841,7 @@
                     Latitude = Latitude,
                     Longitude = Longitude,
                     DespawnSecond = Convert.ToUInt16(secondOfHour),
-                    LastSeen = now,
+                    LastSeen = SaveSpawnpointLastSeen ? now : null,
                     Updated = now,
                 };
                 await spawnpoint.UpdateAsync(context, update: true);
@@ -865,7 +863,7 @@
 
             if (!IsExpireTimestampVerified && spawnId > 0)
             {
-                var spawnpoint = context.Spawnpoints.Find(SpawnId);
+                var spawnpoint = await context.Spawnpoints.FindAsync(SpawnId);
                 if (spawnpoint != null && spawnpoint.DespawnSecond != null)
                 {
                     var despawnSecond = spawnpoint.DespawnSecond;
@@ -874,6 +872,16 @@
                     var despawnOffset = despawnSecond - secondOfHour;
                     if (despawnSecond < secondOfHour)
                         despawnOffset += 3600;
+
+                    // Update spawnpoint last_seen if enabled
+                    if (SaveSpawnpointLastSeen)
+                    {
+                        context.Attach(spawnpoint);
+                        context.Entry(spawnpoint).Property(p => p.LastSeen).IsModified = true;
+                        spawnpoint.LastSeen = now;
+                        context.Spawnpoints.Update(spawnpoint);
+                    }
+
                     ExpireTimestamp = now + (ulong)despawnOffset;
                     IsExpireTimestampVerified = true;
                 }
@@ -1018,6 +1026,12 @@
 
             var other = (Pokemon)obj;
             var result = Id.CompareTo(other.Id);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = PokemonId.CompareTo(other.PokemonId);
             if (result != 0)
             {
                 return result;

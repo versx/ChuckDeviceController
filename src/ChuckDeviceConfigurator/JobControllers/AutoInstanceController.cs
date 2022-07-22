@@ -4,6 +4,7 @@
 
     using Microsoft.EntityFrameworkCore;
 
+    using ChuckDeviceConfigurator.Collections;
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
@@ -26,7 +27,8 @@
         private readonly List<PokestopWithMode> _allStops;
         private readonly List<PokestopWithMode> _todayStops;
         private readonly Dictionary<PokestopWithMode, byte> _todayStopsAttempts;
-        private List<ulong> _bootstrapCellIds;
+        //private List<ulong> _bootstrapCellIds;
+        private PokemonPriorityQueue<ulong> _bootstrapCellIds;
         private readonly System.Timers.Timer _timer;
         private int _bootstrapTotalCount = 0;
         private ulong _completionDate = 0;
@@ -115,7 +117,8 @@
             _allStops = new List<PokestopWithMode>();
             _todayStops = new List<PokestopWithMode>();
             _todayStopsAttempts = new Dictionary<PokestopWithMode, byte>();
-            _bootstrapCellIds = new List<ulong>();
+            //_bootstrapCellIds = new List<ulong>();
+            _bootstrapCellIds = new PokemonPriorityQueue<ulong>();
 
             _accounts = new Dictionary<string, string>();
             _lastMode = new Dictionary<string, bool>();
@@ -365,12 +368,12 @@
                     if (_bootstrapCellIds.Count > 0)
                     {
                         var totalCount = _bootstrapTotalCount;
-                        var count = totalCount - _bootstrapCellIds.Count;
-                        var percentage = count > 0 && totalCount > 0
-                            ? Convert.ToDouble((double)count / (double)totalCount) * 100
+                        var foundCount = totalCount - _bootstrapCellIds.Count;
+                        var percentage = foundCount > 0 && totalCount > 0
+                            ? Convert.ToDouble((double)foundCount / totalCount) * 100
                             : 100;
 
-                        var bootstrapStatus = $"Bootstrapping: {count:N0}/{totalCount:N0} ({Math.Round(percentage, 4)}%)";
+                        var bootstrapStatus = $"Bootstrapping: {foundCount:N0}/{totalCount:N0} ({Math.Round(percentage, 2)}%)";
                         return bootstrapStatus;
                     }
 
@@ -383,10 +386,10 @@
                     var currentCount = maxCount - _todayStops.Count;
 
                     var percent = currentCount > 0 && maxCount > 0
-                        ? Convert.ToDouble((double)currentCount / (double)maxCount) * 100
+                        ? Convert.ToDouble((double)currentCount / maxCount) * 100
                         : 100;
                     var percentReal = currentCountDb > 0 && maxCount > 0
-                        ? Convert.ToDouble((double)currentCountDb / (double)maxCount) * 100
+                        ? Convert.ToDouble((double)currentCountDb / maxCount) * 100
                         : 100;
 
                     var completedDate = _completionDate.FromSeconds();
@@ -462,7 +465,9 @@
             _logger.LogInformation($"[{Name}] Bootstrap Status: {found:N0}/{total:N0} after {totalSeconds} seconds");
 
             // TODO: Lock _bootstrapCellIds
-            _bootstrapCellIds = missingCellIds.Distinct().ToList();
+            //_bootstrapCellIds = missingCellIds;
+            _bootstrapCellIds.AddRange(missingCellIds.Distinct().ToList());
+            //_bootstrapCellIds.AddRange(missingCellIds);
             _bootstrapTotalCount = total;
         }
 
@@ -789,13 +794,14 @@
 
         private async Task<BootstrapTask> CreateBootstrapTaskAsync()
         {
-            var target = _bootstrapCellIds.LastOrDefault();
+            //var target = _bootstrapCellIds..LastOrDefault();
+            var target = _bootstrapCellIds.PopLast();
             if (target == default)
             {
                 return null;
             }
 
-            _bootstrapCellIds.Remove(target);
+            //_bootstrapCellIds.Remove(target);
 
             var center = target.S2LatLngFromId();
             var coord = new Coordinate(center.LatDegrees, center.LngDegrees);

@@ -307,44 +307,36 @@
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                //context.Set<Cell>().AddOrUpdate(cells);
                 //var raw = context.Database.ExecuteSqlRawAsync("", cells);
                 try
                 {
                     // Convert cell ids to Cell models
-                    var cellModels = cells.Select(cell => new Cell(cell)).ToList();
+                    var cellModels = cells.Select(cell => new Cell(cell))
+                                          .ToList();
+                    await context.Cells.BulkMergeAsync(cellModels); //options.AllowDuplicateKeys = false;
 
                     foreach (var cellModel in cellModels)
                     {
-                        if (context.Cells.AsNoTracking().Any(cell => cell.Id == cellModel.Id))
-                        {
-                            context.Update(cellModel);
-                        }
-                        else
-                        {
-                            await context.AddAsync(cellModel);
-                        }
+                        var cellId = cellModel.Id;
 
                         lock (_gymIdsPerCell)
                         {
-                            if (!_gymIdsPerCell.ContainsKey(cellModel.Id))
+                            if (!_gymIdsPerCell.ContainsKey(cellId))
                             {
-                                _gymIdsPerCell.Add(cellModel.Id, new List<string>());
+                                _gymIdsPerCell.Add(cellId, new());
                             }
                         }
                         lock (_stopIdsPerCell)
                         {
-                            if (!_stopIdsPerCell.ContainsKey(cellModel.Id))
+                            if (!_stopIdsPerCell.ContainsKey(cellId))
                             {
-                                _stopIdsPerCell.Add(cellModel.Id, new List<string>());
+                                _stopIdsPerCell.Add(cellId, new());
                             }
                         }
                     }
 
-                    //await context.BulkMergeAsync(cellModels);
-                    await context.BulkSaveChangesAsync();
-                    //var inserted = await context.SaveChangesAsync();
-                    //_logger.LogInformation($"Inserted {inserted:N0} S2 cells");
+                    ////var inserted = await context.SaveChangesAsync();
+                    ////_logger.LogInformation($"Inserted {inserted:N0} S2 cells");
                 }
                 catch (Exception ex)
                 {
@@ -360,23 +352,9 @@
                 try
                 {
                     // Convert weather protos to Weather models
-                    var weatherModels = clientWeather.Select(weather => new Weather(weather)).ToList();
-
-                    /*
-                    foreach (var weatherModel in weatherModels)
-                    {
-                        if (context.Weather.AsNoTracking().Any(weather => weather.Id == weatherModel.Id))
-                        {
-                            context.Update(weatherModel);
-                        }
-                        else
-                        {
-                            await context.AddAsync(weatherModel);
-                        }
-                    }
-                    */
-
-                    await context.BulkMergeAsync(weatherModels);
+                    var weather = clientWeather.Select(weather => new Weather(weather))
+                                               .ToList();
+                    await context.BulkMergeAsync(weather);
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Client weather cells");
                 }
@@ -447,24 +425,12 @@
                         var pokemon = new Pokemon(context, data, cellId, username, isEvent);
                         await pokemon.UpdateAsync(context, updateIv: false);
                         pokemonToUpsert.Add(pokemon);
-
-                        /*
-                        if (context.Pokemon.AsNoTracking().Any(pkmn => pkmn.Id == pokemon.Id))
-                        {
-                            context.Update(pokemon);
-                        }
-                        else
-                        {
-                            await context.AddAsync(pokemon);
-                        }
-                        */
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
 
                     await SendPokemonAsync(pokemonToUpsert);
 
-                    //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Nearby Pokemon");
                 }
@@ -508,24 +474,12 @@
                         await pokemon.UpdateAsync(context, updateIv: true);
                         _logger.LogDebug($"Found Pokemon disk encounter in cache with id '{displayId}'");
                         // TODO: Remove above upsert list addition: pokemonToUpsert.Add(pokemon);
-
-                        /*
-                        if (context.Pokemon.AsNoTracking().Any(pkmn => pkmn.Id == pokemon.Id))
-                        {
-                            context.Update(pokemon);
-                        }
-                        else
-                        {
-                            await context.AddAsync(pokemon);
-                        }
-                        */
                     }
 
                     await context.BulkMergeAsync(pokemonToUpsert);
 
                     await SendPokemonAsync(pokemonToUpsert);
 
-                    //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Map Pokemon");
                 }
@@ -706,6 +660,8 @@
                         }
                     }
 
+                    // TODO: Bulk merge
+
                     await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Forts");
@@ -822,6 +778,8 @@
                             }
                         }
                     }
+
+                    // TODO: Bulk merge
 
                     await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
