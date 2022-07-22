@@ -90,44 +90,19 @@
         // GET: InstanceController/Create
         public ActionResult Create()
         {
-            ViewBag.Geofences = _context.Geofences.ToList();
-            ViewBag.Instances = _context.Instances.ToList();
-            ViewBag.IvLists = _context.IvLists.ToList();
-            ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key }).ToList();
-
             // Create dummy instance model to provide default properties
             var model = new ManageInstanceViewModel
             {
                 Type = null,
-                MinimumLevel = 0,
-                MaximumLevel = 29,
-                Data = new ManageInstanceDataViewModel
-                {
-                    MaximumSpinAttempts = Strings.DefaultMaximumSpinAttempts,
-                    UseWarningAccounts = Strings.DefaultUseWarningAccounts,
-                    CircleRouteType = Strings.DefaultCircleRouteType,
-                    CircleSize = Strings.DefaultCircleSize,
-                    EnableDst = Strings.DefaultEnableDst,
-                    EnableLureEncounters = Strings.DefaultEnableLureEncounters,
-                    FastBootstrapMode = Strings.DefaultFastBootstrapMode,
-                    IgnoreS2CellBootstrap = Strings.DefaultIgnoreS2CellBootstrap,
-                    IvQueueLimit = Strings.DefaultIvQueueLimit,
-                    IvList = Strings.DefaultIvList,
-                    LevelingRadius = Strings.DefaultLevelingRadius,
-                    StoreLevelingData = Strings.DefaultStoreLevelingData,
-                    LogoutDelay = Strings.DefaultLogoutDelay,
-                    OnlyUnknownSpawnpoints = Strings.DefaultOnlyUnknownSpawnpoints,
-                    OptimizeBootstrapRoute = Strings.DefaultOptimizeBootstrapRoute,
-                    OptimizeDynamicRoute = Strings.DefaultOptimizeDynamicRoute,
-                    OptimizeSpawnpointsRoute = Strings.DefaultOptimizeSpawnpointRoute,
-                    QuestMode = Strings.DefaultQuestMode,
-                    SpinLimit = Strings.DefaultSpinLimit,
-                    TimeZone = Strings.DefaultTimeZone,
-                    AccountGroup = Strings.DefaultAccountGroup,
-                    IsEvent = Strings.DefaultIsEvent,
-                    BootstrapCompleteInstanceName = Strings.DefaultBootstrapCompleteInstanceName,
-                },
+                MinimumLevel = Strings.DefaultMinimumLevel,
+                MaximumLevel = Strings.DefaultMaximumLevel,
+                Data = PopulateViewModelFromInstanceData(),
             };
+
+            ViewBag.Geofences = _context.Geofences.ToList();
+            ViewBag.Instances = _context.Instances.ToList();
+            ViewBag.IvLists = _context.IvLists.ToList();
+            ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key }).ToList();
             return View(model);
         }
 
@@ -189,42 +164,7 @@
                 MinimumLevel = instance.MinimumLevel,
                 MaximumLevel = instance.MaximumLevel,
                 Geofences = instance.Geofences,
-                Data = new ManageInstanceDataViewModel
-                {
-                    // All
-                    AccountGroup = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup,
-                    IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent,
-                    
-                    // Circle
-                    CircleRouteType = instance.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType,
-                    EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
-
-                    // Dynamic
-                    OptimizeDynamicRoute = instance.Data?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute,
-
-                    // Bootstrap
-                    FastBootstrapMode = instance.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
-                    CircleSize = instance.Data?.CircleSize ?? Strings.DefaultCircleSize,
-                    BootstrapCompleteInstanceName = instance.Data?.BootstrapCompleteInstanceName,
-
-                    // IV
-                    IvList = instance.Data?.IvList ?? Strings.DefaultIvList,
-                    IvQueueLimit = instance.Data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
-
-                    // Quests
-                    QuestMode = instance.Data?.QuestMode ?? Strings.DefaultQuestMode,
-                    SpinLimit = instance.Data?.SpinLimit ?? Strings.DefaultSpinLimit,
-                    EnableDst = instance.Data?.EnableDst ?? Strings.DefaultEnableDst,
-                    TimeZone = instance.Data?.TimeZone ?? Strings.DefaultTimeZone,
-                    LogoutDelay = instance.Data?.LogoutDelay ?? Strings.DefaultLogoutDelay,
-                    MaximumSpinAttempts = instance.Data?.MaximumSpinAttempts ?? Strings.DefaultMaximumSpinAttempts,
-                    IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap,
-                    UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts,
-
-                    // Leveling
-                    LevelingRadius = instance.Data?.LevelingRadius ?? Strings.DefaultLevelingRadius,
-                    StoreLevelingData = instance.Data?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
-                },
+                Data = PopulateViewModelFromInstanceData(instance.Data),
             };
 
             ViewBag.Geofences = _context.Geofences.ToList();// new MultiSelectList(geofences, "Name", "Name", selectedGeofences);
@@ -421,6 +361,52 @@
                 IsEvent = model?.IsEvent ?? Strings.DefaultIsEvent,
             };
             return instanceData;
+        }
+
+        private static ManageInstanceDataViewModel PopulateViewModelFromInstanceData(InstanceData? data = null)
+        {
+            var instanceDataModel = new ManageInstanceDataViewModel
+            {
+                // All
+                AccountGroup = data?.AccountGroup ?? Strings.DefaultAccountGroup,
+                IsEvent = data?.IsEvent ?? Strings.DefaultIsEvent,
+
+                // Circle
+                CircleRouteType = data?.CircleRouteType ?? Strings.DefaultCircleRouteType,
+                EnableLureEncounters = data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
+
+                // Dynamic
+                OptimizeDynamicRoute = data?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute,
+
+                // Bootstrap
+                FastBootstrapMode = data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
+                CircleSize = data?.CircleSize ?? Strings.DefaultCircleSize,
+                OptimizeBootstrapRoute = data?.OptimizeBootstrapRoute ?? Strings.DefaultOptimizeBootstrapRoute,
+                BootstrapCompleteInstanceName = data?.BootstrapCompleteInstanceName ?? Strings.DefaultBootstrapCompleteInstanceName,
+
+                // IV
+                IvList = data?.IvList ?? Strings.DefaultIvList,
+                IvQueueLimit = data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
+
+                // Quests
+                QuestMode = data?.QuestMode ?? Strings.DefaultQuestMode,
+                SpinLimit = data?.SpinLimit ?? Strings.DefaultSpinLimit,
+                EnableDst = data?.EnableDst ?? Strings.DefaultEnableDst,
+                TimeZone = data?.TimeZone ?? Strings.DefaultTimeZone,
+                LogoutDelay = data?.LogoutDelay ?? Strings.DefaultLogoutDelay,
+                MaximumSpinAttempts = data?.MaximumSpinAttempts ?? Strings.DefaultMaximumSpinAttempts,
+                IgnoreS2CellBootstrap = data?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap,
+                UseWarningAccounts = data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts,
+
+                // Spawnpoints
+                OnlyUnknownSpawnpoints = data?.OnlyUnknownSpawnpoints ?? Strings.DefaultOnlyUnknownSpawnpoints,
+                OptimizeSpawnpointsRoute = data?.OptimizeSpawnpointsRoute ?? Strings.DefaultOptimizeSpawnpointRoute,
+
+                // Leveling
+                LevelingRadius = data?.LevelingRadius ?? Strings.DefaultLevelingRadius,
+                StoreLevelingData = data?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
+            };
+            return instanceDataModel;
         }
     }
 }
