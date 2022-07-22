@@ -82,10 +82,8 @@
             {
                 stopwatch.Start();
 
-                _routeCalculator.ClearCoordinates();
                 _routeCalculator.AddCoordinates(route);
                 var optimized = _routeCalculator.CalculateShortestRoute();
-                _routeCalculator.ClearCoordinates();
 
                 stopwatch.Stop();
                 totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);

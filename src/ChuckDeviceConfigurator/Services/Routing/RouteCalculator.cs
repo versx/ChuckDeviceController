@@ -5,7 +5,7 @@
 
     public class RouteCalculator : IRouteCalculator
     {
-        private const ushort DefaultCircleSize = 70;
+        private const ushort DefaultCircleSize = Strings.DefaultCircleSize;
 
         private readonly List<Coordinate> _coordinates;
 
@@ -51,7 +51,7 @@
 
         public void AddCoordinates(List<Coordinate> coordinates)
         {
-            if (coordinates?.Count == 0)
+            if ((coordinates?.Count ?? 0) == 0)
             {
                 throw new ArgumentNullException(nameof(coordinates));
             }
@@ -77,12 +77,10 @@
             sorted.Sort(Utils.CompareCoordinates);
             var ordered = OrderByDistance(sorted);
 
-            /* TODO: Fix race condition issue, make scoped service instead of singleton
             if (ClearCoordinatesAfterOptimization)
             {
                 ClearCoordinates();
             }
-            */
 
             var queue = new Queue<Coordinate>(ordered);
             return queue;
@@ -111,23 +109,24 @@
         private static List<Coordinate> OrderByDistance(List<Coordinate> coordinates, ushort circleSize = DefaultCircleSize)
         {
             var orderedList = new List<Coordinate>();
-            var currentPoint = coordinates[0];
+            var coords = new List<Coordinate>(coordinates);
+            var currentPoint = coords[0];
 
-            while (coordinates.Count > 1)
+            while (coords.Count > 1)
             {
                 orderedList.Add(currentPoint);
-                coordinates.RemoveAt(coordinates.IndexOf(currentPoint));
+                coords.RemoveAt(coords.IndexOf(currentPoint));
                 var closestPointIndex = 0;
                 var closestDistance = double.MaxValue;
 
-                for (var i = 0; i < coordinates.Count; i++)
+                for (var i = 0; i < coords.Count; i++)
                 {
-                    var distanceQuick = GetDistanceQuick(currentPoint, coordinates[i]) + (circleSize / 2);
+                    var distanceQuick = GetDistanceQuick(currentPoint, coords[i]) + (circleSize / 2);
                     //var distanceQuick = currentPoint.DistanceTo(coordinates[i]) + (circleSize / 2);
                     if (distanceQuick > closestDistance)
                         continue;
 
-                    var distance = GetDistance(currentPoint, coordinates[i]) + (circleSize / 2);
+                    var distance = GetDistance(currentPoint, coords[i]) + (circleSize / 2);
                     //var distance = currentPoint.DistanceTo(coordinates[i]) + (circleSize / 2);
                     if (distance < closestDistance)
                     {
@@ -135,7 +134,7 @@
                         closestDistance = distance;
                     }
                 }
-                currentPoint = coordinates[closestPointIndex];
+                currentPoint = coords[closestPointIndex];
             }
 
             // Add the last point
