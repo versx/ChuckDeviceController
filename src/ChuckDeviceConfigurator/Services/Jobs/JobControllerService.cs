@@ -204,7 +204,6 @@
                                 return;
                             }
                             jobController = CreateIvJobController(instance, multiPolygons, ivList);
-                            // TODO: Add event for Pokemon found with/out IV
                             break;
                         case InstanceType.SmartRaid:
                             jobController = CreateSmartRaidJobController(_mapFactory, instance, multiPolygons);

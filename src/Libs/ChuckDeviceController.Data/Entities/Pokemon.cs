@@ -490,9 +490,12 @@
 
         public async Task UpdateAsync(MapDataContext context, bool updateIv = false)
         {
+            var updateIV = updateIv;
             var setIvForWeather = false;
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
+
+            context.Attach(this);
 
             Pokemon? oldPokemon = null;
             try
@@ -501,14 +504,69 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Pokemon: {ex}");
+                Console.WriteLine($"Error Pokemon.UpdateAsync: {ex}");
             }
 
             if (IsEvent && AttackIV == null)
             {
+                Pokemon? oldPokemonNoEvent = null;
+                try
+                {
+                    oldPokemonNoEvent = await context.Pokemon.FindAsync(Id); // IsEvent: false
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error Pokemon.UpdateAsync: {ex}");
+                }
+                if (oldPokemonNoEvent != null && oldPokemonNoEvent.AttackIV != null &&
+                    ((Weather == 0 || Weather == null) && (oldPokemonNoEvent.Weather == 0 || oldPokemonNoEvent.Weather == null)) ||
+                    (Weather != 0 && oldPokemonNoEvent.Weather != 0))
+                {
+                    AttackIV = oldPokemonNoEvent.AttackIV;
+                    DefenseIV = oldPokemonNoEvent.DefenseIV;
+                    StaminaIV = oldPokemonNoEvent.StaminaIV;
+                    Level = oldPokemonNoEvent.Level;
+                    CP = null;
+                    Weight = null;
+                    Size = null;
+                    Move1 = null;
+                    Move2 = null;
+                    Capture1 = null;
+                    Capture2 = null;
+                    Capture3 = null;
+                    updateIV = true;
+                    //CalculatePvpRankings();
+
+                    context.Entry(this).Property(p => p.AttackIV).IsModified = true;
+                    context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
+                    context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
+                    context.Entry(this).Property(p => p.CP).IsModified = true;
+                    context.Entry(this).Property(p => p.Weight).IsModified = true;
+                    context.Entry(this).Property(p => p.Size).IsModified = true;
+                    context.Entry(this).Property(p => p.Move1).IsModified = true;
+                    context.Entry(this).Property(p => p.Move2).IsModified = true;
+                    context.Entry(this).Property(p => p.Level).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture1).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture2).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture3).IsModified = true;
+                }
             }
             if (IsEvent && !IsExpireTimestampVerified)
             {
+                Pokemon? oldPokemonNoEvent = null;
+                try
+                {
+                    oldPokemonNoEvent = await context.Pokemon.FindAsync(Id); // IsEvent: false
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error Pokemon.UpdateAsync: {ex}");
+                }
+                if (oldPokemonNoEvent != null && oldPokemonNoEvent.IsExpireTimestampVerified)
+                {
+                    ExpireTimestamp = oldPokemonNoEvent.ExpireTimestamp;
+                    IsExpireTimestampVerified = oldPokemonNoEvent.IsExpireTimestampVerified;
+                }
             }
 
             if (oldPokemon == null)
@@ -518,14 +576,21 @@
                 if (ExpireTimestamp == 0)
                 {
                     ExpireTimestamp = now + DefaultTimeUnseenS;
+                    context.Entry(this).Property(p => p.ExpireTimestamp).IsModified = true;
                 }
                 FirstSeenTimestamp = Updated;
                 Updated = now;
                 Changed = now;
+
+                context.Entry(this).Property(p => p.FirstSeenTimestamp).IsModified = true;
+                context.Entry(this).Property(p => p.Updated).IsModified = true;
+                context.Entry(this).Property(p => p.Changed).IsModified = true;
             }
             else
             {
                 FirstSeenTimestamp = oldPokemon.FirstSeenTimestamp;
+                context.Entry(this).Property(p => p.FirstSeenTimestamp).IsModified = true;
+
                 if (ExpireTimestamp == 0)
                 {
                     var changed = DateTime.UtcNow.ToTotalSeconds();
@@ -538,6 +603,7 @@
                     {
                         ExpireTimestamp = oldPokemon.ExpireTimestamp;
                     }
+                    context.Entry(this).Property(p => p.ExpireTimestamp).IsModified = true;
                 }
                 if (IsExpireTimestampVerified && oldPokemon.IsExpireTimestampVerified)
                 {
@@ -559,11 +625,15 @@
                     {
                         Console.WriteLine($"Pokemon {Id} Ditto from {oldPokemon.PokemonId} to {PokemonId}");
                     }
+
+                    context.Entry(this).Property(p => p.PokemonId).IsModified = true;
+                    context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
                 }
 
                 if (oldPokemon.CellId > 0 && CellId == 0)
                 {
                     CellId = oldPokemon.CellId;
+                    context.Entry(this).Property(p => p.CellId).IsModified = true;
                 }
 
                 if (oldPokemon.SpawnId != null)
@@ -571,19 +641,25 @@
                     SpawnId = oldPokemon.SpawnId;
                     Latitude = oldPokemon.Latitude;
                     Longitude = oldPokemon.Longitude;
+
+                    context.Entry(this).Property(p => p.SpawnId).IsModified = true;
+                    context.Entry(this).Property(p => p.Latitude).IsModified = true;
+                    context.Entry(this).Property(p => p.Longitude).IsModified = true;
                 }
 
                 if (oldPokemon.PokestopId != null && PokestopId == null)
                 {
                     PokestopId = oldPokemon.PokestopId;
+                    context.Entry(this).Property(p => p.PokestopId).IsModified = true;
                 }
 
                 //if (oldPokemon.Pvp != null && Pvp == null)
                 //{
                 //    Pvp = oldPokemon.Pvp;
+                //    context.Entry(this).Property(p => p.Pvp).IsModified = true;
                 //}
 
-                if (updateIv && oldPokemon.AttackIV == null && AttackIV != null)
+                if (updateIV && oldPokemon.AttackIV == null && AttackIV != null)
                 {
                     Changed = now;
                 }
@@ -591,6 +667,7 @@
                 {
                     Changed = oldPokemon.Changed;
                 }
+                context.Entry(this).Property(p => p.Changed).IsModified = true;
 
                 var weatherChanged = (oldPokemon.Weather == null || oldPokemon.Weather != 0) && (Weather > 0) ||
                     (Weather == null || Weather == 0) && (oldPokemon.Weather > 0);
@@ -613,48 +690,105 @@
                     IsShiny = oldPokemon.IsShiny;
                     SeenType = oldPokemon.SeenType;
                     IsDitto = IsDittoDisguised(oldPokemon);
+
+                    context.Entry(this).Property(p => p.AttackIV).IsModified = true;
+                    context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
+                    context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
+                    context.Entry(this).Property(p => p.CP).IsModified = true;
+                    context.Entry(this).Property(p => p.Weight).IsModified = true;
+                    context.Entry(this).Property(p => p.Size).IsModified = true;
+                    context.Entry(this).Property(p => p.Move1).IsModified = true;
+                    context.Entry(this).Property(p => p.Move2).IsModified = true;
+                    context.Entry(this).Property(p => p.Level).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture1).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture2).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture3).IsModified = true;
+                    context.Entry(this).Property(p => p.IsShiny).IsModified = true;
+                    context.Entry(this).Property(p => p.SeenType).IsModified = true;
+                    context.Entry(this).Property(p => p.IsDitto).IsModified = true;
+
                     if (IsDitto)
                     {
                         Console.WriteLine($"oldPokemon {Id} Ditto found, disguised as {PokemonId}");
                         SetDittoAttributes(PokemonId, oldPokemon.Weather ?? 0, oldPokemon.Level ?? 0);
-                    }
-                    else if ((AttackIV != null && oldPokemon.AttackIV == null) ||
-                        (CP != null && oldPokemon.CP == null) || HasIvChanges)
-                    {
-                        setIvForWeather = false;
-                        updateIv = true;
-                    }
-                    else if (weatherChanged && oldPokemon.AttackIV != null && WeatherIvClearingEnabled)
-                    {
-                        Console.WriteLine($"Pokemon {Id} changed weather boost state. Clearing IVs.");
-                        setIvForWeather = true;
-                        AttackIV = null;
-                        DefenseIV = null;
-                        StaminaIV = null;
-                        CP = null;
-                        Weight = null;
-                        Size = null;
-                        Move1 = null;
-                        Move2 = null;
-                        Level = null;
-                        Capture1 = null;
-                        Capture2 = null;
-                        Capture3 = null;
-                        //Pvp = null;
-                        Console.WriteLine($"Weather-Boosted state changed. Clearing IVs");
-                    }
-                    else
-                    {
-                        setIvForWeather = false;
-                    }
-
-                    // TODO: Check shouldUpdate
-
-                    if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
-                    {
-                        Console.WriteLine($"Pokemon {Id} Ditto changed from {oldPokemon.PokemonId} to {PokemonId}");
+                        // TODO: Set default Ditto attributes as modified
                     }
                 }
+                else if ((AttackIV != null && oldPokemon.AttackIV == null) ||
+                    (CP != null && oldPokemon.CP == null) || HasIvChanges)
+                {
+                    setIvForWeather = false;
+                    updateIV = true;
+                }
+                else if (weatherChanged && oldPokemon.AttackIV != null && WeatherIvClearingEnabled)
+                {
+                    Console.WriteLine($"Pokemon {Id} changed weather boost state. Clearing IVs.");
+                    setIvForWeather = true;
+                    AttackIV = null;
+                    DefenseIV = null;
+                    StaminaIV = null;
+                    CP = null;
+                    Weight = null;
+                    Size = null;
+                    Move1 = null;
+                    Move2 = null;
+                    Level = null;
+                    Capture1 = null;
+                    Capture2 = null;
+                    Capture3 = null;
+                    //Pvp = null;
+
+                    context.Entry(this).Property(p => p.AttackIV).IsModified = true;
+                    context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
+                    context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
+                    context.Entry(this).Property(p => p.CP).IsModified = true;
+                    context.Entry(this).Property(p => p.Weight).IsModified = true;
+                    context.Entry(this).Property(p => p.Size).IsModified = true;
+                    context.Entry(this).Property(p => p.Move1).IsModified = true;
+                    context.Entry(this).Property(p => p.Move2).IsModified = true;
+                    context.Entry(this).Property(p => p.Level).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture1).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture2).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture3).IsModified = true;
+                    //context.Entry(this).Property(p => p.Pvp).IsModified = true;
+
+                    Console.WriteLine($"Weather-Boosted state changed. Clearing IVs");
+                }
+                else
+                {
+                    setIvForWeather = false;
+                }
+
+                // TODO: Check shouldUpdate
+
+                if (updateIV || setIvForWeather)
+                {
+                    context.Entry(this).Property(p => p.AttackIV).IsModified = true;
+                    context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
+                    context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
+                    context.Entry(this).Property(p => p.CP).IsModified = true;
+                    context.Entry(this).Property(p => p.Weight).IsModified = true;
+                    context.Entry(this).Property(p => p.Size).IsModified = true;
+                    context.Entry(this).Property(p => p.Move1).IsModified = true;
+                    context.Entry(this).Property(p => p.Move2).IsModified = true;
+                    context.Entry(this).Property(p => p.Level).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture1).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture2).IsModified = true;
+                    context.Entry(this).Property(p => p.Capture3).IsModified = true;
+                    context.Entry(this).Property(p => p.IsShiny).IsModified = true;
+                    context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
+                    //context.Entry(this).Property(p => p.Pvp).IsModified = true;
+                }
+
+                if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
+                {
+                    context.Entry(this).Property(p => p.PokemonId).IsModified = true;
+                    context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
+                    Console.WriteLine($"Pokemon {Id} Ditto changed from {oldPokemon.PokemonId} to {PokemonId}");
+                }
+
+                Updated = now;
+                context.Entry(this).Property(p => p.Updated).IsModified = true;
             }
 
             if (setIvForWeather)
@@ -668,7 +802,7 @@
                 IsNewPokemon = true;
                 IsNewPokemonWithIV = AttackIV != null;
             }
-            else if (updateIv && ((oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon.HasIvChanges))
+            else if (updateIV && ((oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon.HasIvChanges))
             {
                 oldPokemon.HasIvChanges = false;
                 // TODO: Webhook
