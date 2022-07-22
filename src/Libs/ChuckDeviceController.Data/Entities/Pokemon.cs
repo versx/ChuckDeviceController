@@ -711,7 +711,16 @@
                     {
                         Console.WriteLine($"oldPokemon {Id} Ditto found, disguised as {PokemonId}");
                         SetDittoAttributes(PokemonId, oldPokemon.Weather ?? 0, oldPokemon.Level ?? 0);
-                        // TODO: Set default Ditto attributes as modified
+
+                        context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
+                        context.Entry(this).Property(p => p.PokemonId).IsModified = true;
+                        context.Entry(this).Property(p => p.Form).IsModified = true;
+                        context.Entry(this).Property(p => p.Costume).IsModified = true;
+                        context.Entry(this).Property(p => p.Gender).IsModified = true;
+                        context.Entry(this).Property(p => p.Move1).IsModified = true;
+                        context.Entry(this).Property(p => p.Move2).IsModified = true;
+                        context.Entry(this).Property(p => p.Weight).IsModified = true;
+                        context.Entry(this).Property(p => p.Size).IsModified = true;
                     }
                 }
                 else if ((AttackIV != null && oldPokemon.AttackIV == null) ||
