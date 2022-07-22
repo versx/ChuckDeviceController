@@ -132,19 +132,14 @@
         #region Receivers
 
         /// <summary>
-        /// Informs all Pokemon IV job controller instances that a Pokemon without
-        /// IV has been scanned/discovered. Allows IV job controller to see if
-        /// interested Pokemon that should be IV scanned or not.
+        /// Informs all Pokemon IV job controller instances that a Pokemon has been
+        /// scanned/discovered. Whether the Pokemon has IV or not will determine if
+        /// it is removed from the IV queue or if it is added to it depending if it
+        /// is in the desirable IV scan list.
         /// </summary>
         /// <param name="pokemon">Pokemon to inform Pokemon IV job controllers of.</param>
-        void GotPokemon(Pokemon pokemon);
-
-        /// <summary>
-        /// Informs all Pokemon IV job controller instances that a Pokemon with IV
-        /// has been scanned and removed from queue. Also checks if Pokemon is 
-        /// </summary>
-        /// <param name="pokemon">Pokemon to inform Pokemon IV job controllers of.</param>
-        void GotPokemonIV(Pokemon pokemon);
+        /// <param name="hasIv">Whether the Pokemon has IV set or not.</param>
+        void GotPokemon(Pokemon pokemon, bool hasIv);
 
         /// <summary>
         /// Inserts received nearby fort data for leveling job controller instance to use.

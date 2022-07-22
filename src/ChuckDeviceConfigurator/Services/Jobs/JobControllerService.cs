@@ -376,8 +376,7 @@
 
         #region Receivers
 
-        // TODO: Remove GotPokemonIV, use GotPokemon(Pokemon, bool) instead
-        public void GotPokemon(Pokemon pokemon)
+        public void GotPokemon(Pokemon pokemon, bool hasIv)
         {
             lock (_instancesLock)
             {
@@ -385,21 +384,7 @@
                 {
                     if (jobController is IvInstanceController ivController)
                     {
-                        ivController.GotPokemon(pokemon);
-                    }
-                }
-            }
-        }
-
-        public void GotPokemonIV(Pokemon pokemon)
-        {
-            lock (_instancesLock)
-            {
-                foreach (var (_, jobController) in _instances)
-                {
-                    if (jobController is IvInstanceController ivController)
-                    {
-                        ivController.GotPokemonIV(pokemon);
+                        ivController.GotPokemon(pokemon, hasIv);
                     }
                 }
             }

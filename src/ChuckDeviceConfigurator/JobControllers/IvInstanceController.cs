@@ -178,8 +178,10 @@
 
         #region IV Queue Management
 
-        internal void GotPokemonIV(Pokemon pokemon)
+        internal void GotPokemon(Pokemon pokemon, bool hasIv)
         {
+            // First thing to do is ensure that the received Pokemon is within this IV job
+            // controller's geofence bounds.
             var pkmnCoord = new Coordinate(pokemon.Latitude, pokemon.Longitude);
             if (!GeofenceService.InMultiPolygon((List<MultiPolygon>)MultiPolygons, pkmnCoord))
             {
@@ -187,37 +189,40 @@
                 return;
             }
 
-            lock (_queueLock)
+            if (hasIv)
             {
-                var index = _pokemonQueue.IndexOf(pokemon);
-                if (index > -1)
+                // Pokemon has IVs scanned, attempt to remove it from the Pokemon queue if it's in it.
+                lock (_queueLock)
                 {
-                    _pokemonQueue.RemoveAt(index);
+                    var index = _pokemonQueue.IndexOf(pokemon);
+                    if (index > -1)
+                    {
+                        _pokemonQueue.RemoveAt(index);
+                    }
+
+                    // Checks if instance is for event as well as the Pokemon has not been
+                    // re-scanned yet and it also meets the desired IV stats for event re-scans.
+                    if (IsEvent && !pokemon.IsEvent &&
+                        EventAttackIV.Contains(pokemon.AttackIV ?? 999) &&
+                        pokemon.DefenseIV == 15 && pokemon.StaminaIV == 15)
+                    {
+                        pokemon.IsEvent = true;
+                        // Push Pokemon to top of queue
+                        _pokemonQueue.Insert(0, pokemon);
+                    }
                 }
 
-                // Checks if instance is for event as well as the Pokemon has not been re-scanned
-                // yet and it also meets the desired IV stats for event re-scans.
-                if (IsEvent && !pokemon.IsEvent && 
-                    EventAttackIV.Contains(pokemon.AttackIV ?? 999) &&
-                    pokemon.DefenseIV == 15 && pokemon.StaminaIV == 15)
-                {
-                    pokemon.IsEvent = true;
-                    // Push Pokemon to top of queue
-                    _pokemonQueue.Insert(0, pokemon);
-                }
+                // Update internal IV stats for job controller status
+                UpdateStats();
+                return;
             }
 
-            UpdateStats();
-        }
-
-        internal void GotPokemon(Pokemon pokemon)
-        {
+            // Pokemon does not have IVs scanned, check if we can add it to this job controller
+            // Pokemon queue depending if it matches some conditions, otherwise ignore it.
             var isNotLure = !string.IsNullOrEmpty(pokemon.PokestopId) || pokemon.SpawnId > 0;
             var matchesEvent = pokemon.IsEvent == IsEvent;
             var isDesiredPokemon = IsDesiredPokemon(pokemon);
-            var pkmnCoord = new Coordinate(pokemon.Latitude, pokemon.Longitude);
-            var inGeofence = GeofenceService.InMultiPolygon((List<MultiPolygon>)MultiPolygons, pkmnCoord);
-            if (!(isNotLure && matchesEvent && isDesiredPokemon && inGeofence))
+            if (!(isNotLure && matchesEvent && isDesiredPokemon))
                 return;
 
             lock (_queueLock)

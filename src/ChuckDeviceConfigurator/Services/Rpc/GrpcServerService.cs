@@ -72,7 +72,7 @@
 
         #region Payload Handlers
 
-        private void HandlePokemonPayload(string json, bool hasIV)
+        private void HandlePokemonPayload(string json, bool hasIv)
         {
             var pokemon = json.FromJson<Pokemon>();
             if (pokemon == null)
@@ -82,15 +82,10 @@
                 return;
             }
 
-            if (hasIV)
-            {
-                _jobControllerService.GotPokemonIV(pokemon);
-            }
-
-            _jobControllerService.GotPokemon(pokemon);
+            _jobControllerService.GotPokemon(pokemon, hasIv);
         }
 
-        private void HandlePokemonListPayload(string json, bool hasIV)
+        private void HandlePokemonListPayload(string json, bool hasIv)
         {
             var pokemon = json.FromJson<List<Pokemon>>();
             if (pokemon == null)
@@ -104,14 +99,7 @@
 
             foreach (var pkmn in pokemon)
             {
-                if (hasIV)
-                {
-                    _jobControllerService.GotPokemonIV(pkmn);
-                }
-                else
-                {
-                    _jobControllerService.GotPokemon(pkmn);
-                }
+                _jobControllerService.GotPokemon(pkmn, hasIv);
             }
         }
 
