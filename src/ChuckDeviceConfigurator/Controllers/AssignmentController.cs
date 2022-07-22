@@ -277,6 +277,31 @@
             }
         }
 
+        // GET: AssignmentController/Start/5
+        public async Task<ActionResult> Start(uint id)
+        {
+            try
+            {
+                var assignment = await _context.Assignments.FindAsync(id);
+                if (assignment == null)
+                {
+                    // Failed to retrieve geofence from database, does it exist?
+                    ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+                    return View(assignment);
+                }
+
+                // Start device assignment
+                await _assignmentService.StartAssignmentAsync(assignment);
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                ModelState.AddModelError("Assignment", $"Unknown error occurred while starting assignment '{id}'.");
+                return View();
+            }
+        }
+
         private uint GetTimeNumeric(string time)
         {
             uint value = 0;

@@ -13,6 +13,8 @@
 
         void Delete(Assignment assignment);
 
-        Task InstanceControllerComplete(string name);
+        Task StartAssignmentAsync(Assignment assignment);
+
+        Task InstanceControllerCompleteAsync(string instanceName);
     }
 }

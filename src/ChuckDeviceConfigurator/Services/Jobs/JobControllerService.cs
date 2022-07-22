@@ -517,7 +517,7 @@
 
         private async void OnAutoInstanceComplete(object? sender, AutoInstanceCompleteEventArgs e)
         {
-            await _assignmentService.InstanceControllerComplete(e.InstanceName);
+            await _assignmentService.InstanceControllerCompleteAsync(e.InstanceName);
         }
 
         private void OnAssignmentDeviceReloaded(object? sender, AssignmentDeviceReloadedEventArgs e)

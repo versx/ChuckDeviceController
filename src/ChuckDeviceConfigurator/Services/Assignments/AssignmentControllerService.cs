@@ -107,6 +107,11 @@
             }
         }
 
+        public async Task StartAssignmentAsync(Assignment assignment)
+        {
+            await TriggerAssignmentAsync(assignment, force: true);
+        }
+
         public Assignment GetByName(uint name)
         {
             throw new NotImplementedException();
@@ -117,14 +122,14 @@
             throw new NotImplementedException();
         }
 
-        public async Task InstanceControllerComplete(string name)
+        public async Task InstanceControllerCompleteAsync(string instanceName)
         {
             foreach (var assignment in _assignments)
             {
                 // Only trigger enabled on-complete assignments
                 if (assignment.Enabled && assignment.Time == 0)
                 {
-                    await TriggerAssignmentAsync(assignment, name);
+                    await TriggerAssignmentAsync(assignment, instanceName);
                 }
             }
         }
@@ -155,13 +160,13 @@
             {
                 if (assignment.Enabled && assignment.Time != 0 && now >= assignment.Time && _lastUpdated < assignment.Time)
                 {
-                    await TriggerAssignmentAsync(assignment, string.Empty);
+                    await TriggerAssignmentAsync(assignment);
                 }
             }
             _lastUpdated = now;
         }
 
-        private async Task TriggerAssignmentAsync(Assignment assignment, string instanceName, bool force = false)
+        private async Task TriggerAssignmentAsync(Assignment assignment, string? instanceName = null, bool force = false)
         {
             if (!(force || assignment.Enabled && (assignment.Date == null || assignment.Date == default || assignment.Date == DateTime.UtcNow)))
                 return;
@@ -172,6 +177,8 @@
                 _logger.LogWarning($"Failed to trigger assignment {assignment.Id}, unable to find devices");
                 return;
             }
+
+            // TODO: Should we prevent disabled assignments from being switched to if forced?
 
             var devicesToUpdate = new List<Device>();
             foreach (var device in devices)

@@ -192,6 +192,9 @@
         {
             //TestRouting();
 
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+
             var bootstrapRoute = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
             {
                 MultiPolygons = _multiPolygons,
@@ -200,6 +203,10 @@
                 CircleSize = CircleSize,
             });
 
+            stopwatch.Stop();
+            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{Name}] Bootstrap route generation took {totalSeconds}s");
+
             if (bootstrapRoute?.Count == 0)
             {
                 throw new Exception($"No bootstrap coordinates generated!");
@@ -207,7 +214,9 @@
 
             if (OptimizeRoute)
             {
-                // Optimized route but contains a couple big jumps
+                stopwatch.Start();
+
+                // Fast route optimization but contains a couple big jumps
                 //_routeCalculator.ClearCoordinates();
                 //_routeCalculator.AddCoordinates(bootstrapRoute);
                 //var optimizedRoute = _routeCalculator.CalculateShortestRoute();
@@ -218,6 +227,11 @@
 
                 // Optimized route with no big jumps, although takes a lot longer to generate
                 var optimizedRoute = RouteOptimizeUtil.Optimize(bootstrapRoute);
+
+                stopwatch.Stop();
+                totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+                _logger.LogInformation($"[{Name}] Bootstrap route optimization took {totalSeconds}s");
+
                 return optimizedRoute;
             }
 
