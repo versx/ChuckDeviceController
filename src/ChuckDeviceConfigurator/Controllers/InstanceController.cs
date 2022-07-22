@@ -94,7 +94,41 @@
             ViewBag.Instances = _context.Instances.ToList();
             ViewBag.IvLists = _context.IvLists.ToList();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key }).ToList();
-            return View();
+
+            // Create dummy instance model to provide default properties
+            var model = new ManageInstanceViewModel
+            {
+                Type = null,
+                MinimumLevel = 0,
+                MaximumLevel = 29,
+                Data = new ManageInstanceDataViewModel
+                {
+                    MaximumSpinAttempts = Strings.DefaultMaximumSpinAttempts,
+                    UseWarningAccounts = Strings.DefaultUseWarningAccounts,
+                    CircleRouteType = Strings.DefaultCircleRouteType,
+                    CircleSize = Strings.DefaultCircleSize,
+                    EnableDst = Strings.DefaultEnableDst,
+                    EnableLureEncounters = Strings.DefaultEnableLureEncounters,
+                    FastBootstrapMode = Strings.DefaultFastBootstrapMode,
+                    IgnoreS2CellBootstrap = Strings.DefaultIgnoreS2CellBootstrap,
+                    IvQueueLimit = Strings.DefaultIvQueueLimit,
+                    IvList = Strings.DefaultIvList,
+                    LevelingRadius = Strings.DefaultLevelingRadius,
+                    StoreLevelingData = Strings.DefaultStoreLevelingData,
+                    LogoutDelay = Strings.DefaultLogoutDelay,
+                    OnlyUnknownSpawnpoints = Strings.DefaultOnlyUnknownSpawnpoints,
+                    OptimizeBootstrapRoute = Strings.DefaultOptimizeBootstrapRoute,
+                    OptimizeDynamicRoute = Strings.DefaultOptimizeDynamicRoute,
+                    OptimizeSpawnpointsRoute = Strings.DefaultOptimizeSpawnpointRoute,
+                    QuestMode = Strings.DefaultQuestMode,
+                    SpinLimit = Strings.DefaultSpinLimit,
+                    TimeZone = Strings.DefaultTimeZone,
+                    AccountGroup = Strings.DefaultAccountGroup,
+                    IsEvent = Strings.DefaultIsEvent,
+                    BootstrapCompleteInstanceName = Strings.DefaultBootstrapCompleteInstanceName,
+                },
+            };
+            return View(model);
         }
 
         // POST: InstanceController/Create
@@ -114,7 +148,8 @@
                 var instance = new Instance
                 {
                     Name = model.Name,
-                    Type = model.Type,
+                    // TODO: Double check
+                    Type = model.Type ?? ChuckDeviceController.Data.InstanceType.CirclePokemon,
                     MinimumLevel = model.MinimumLevel,
                     MaximumLevel = model.MaximumLevel,
                     Geofences = model.Geofences,
@@ -222,7 +257,8 @@
                 }
 
                 instance.Name = model.Name;
-                instance.Type = model.Type;
+                // TODO: Double check
+                instance.Type = model.Type ?? ChuckDeviceController.Data.InstanceType.CirclePokemon;
                 instance.MinimumLevel = model.MinimumLevel;
                 instance.MaximumLevel = model.MaximumLevel;
                 instance.Geofences = model.Geofences;
@@ -236,8 +272,13 @@
                 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
+                /*
+                 * The property 'Instance.Name' is part of a key and so cannot be modified or marked as modified.
+                 * To change the principal of an existing entity with an identifying foreign key, first delete
+                 * the dependent and invoke 'SaveChanges', and then associate the dependent with the new principal.
+                 */
                 ModelState.AddModelError("Instance", $"Unknown error occurred while editing instance '{id}'.");
                 return View(model);
             }

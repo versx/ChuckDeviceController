@@ -9,8 +9,9 @@
         [DisplayName("Name")]
         public string Name { get; set; }
 
+        // NOTE: Set to nullable so default value when creating an instance isn't set to `0` aka CirclePokemon
         [DisplayName("Instance Type")]
-        public InstanceType Type { get; set; }
+        public InstanceType? Type { get; set; }
 
         [DisplayName("Minimum Level")]
         public ushort MinimumLevel { get; set; }
