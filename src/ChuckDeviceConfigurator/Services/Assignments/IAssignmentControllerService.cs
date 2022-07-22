@@ -15,6 +15,8 @@
 
         Task StartAssignmentAsync(Assignment assignment);
 
+        Task StartAssignmentGroupAsync(AssignmentGroup assignmentGroup);
+
         Task InstanceControllerCompleteAsync(string instanceName);
     }
 }

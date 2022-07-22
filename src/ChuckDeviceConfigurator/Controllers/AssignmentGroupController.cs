@@ -5,6 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
 
+    using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
@@ -16,13 +17,16 @@
     {
         private readonly ILogger<AssignmentGroupController> _logger;
         private readonly DeviceControllerContext _context;
+        private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentGroupController(
             ILogger<AssignmentGroupController> logger,
-            DeviceControllerContext context)
+            DeviceControllerContext context,
+            IAssignmentControllerService assignmentService)
         {
             _logger = logger;
             _context = context;
+            _assignmentService = assignmentService;
         }
 
         // GET: AssignmentGroupController
@@ -232,6 +236,31 @@
             catch
             {
                 ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while deleting assignment group '{id}'.");
+                return View();
+            }
+        }
+
+        // GET: AssignmentGroupController/Start/5
+        public async Task<ActionResult> Start(string id)
+        {
+            try
+            {
+                var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
+                if (assignmentGroup == null)
+                {
+                    // Failed to retrieve geofence from database, does it exist?
+                    ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with id '{id}'.");
+                    return View(assignmentGroup);
+                }
+
+                // Start all device assignments in assignment group
+                await _assignmentService.StartAssignmentGroupAsync(assignmentGroup);
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while starting assignment group '{id}'.");
                 return View();
             }
         }

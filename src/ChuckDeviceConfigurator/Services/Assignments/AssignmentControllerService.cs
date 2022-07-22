@@ -112,6 +112,17 @@
             await TriggerAssignmentAsync(assignment, force: true);
         }
 
+        public async Task StartAssignmentGroupAsync(AssignmentGroup assignmentGroup)
+        {
+            var assignments = _assignments.Where(assignment => assignmentGroup.AssignmentIds.Contains(assignment.Id))
+                                          .ToList();
+
+            foreach (var assignment in assignments)
+            {
+                await StartAssignmentAsync(assignment);
+            }
+        }
+
         public Assignment GetByName(uint name)
         {
             throw new NotImplementedException();
