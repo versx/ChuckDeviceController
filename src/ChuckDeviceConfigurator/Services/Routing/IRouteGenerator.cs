@@ -2,20 +2,16 @@
 {
     using ChuckDeviceController.Geometry.Models;
 
+    /// <summary>
+    /// Route generator
+    /// </summary>
     public interface IRouteGenerator
     {
+        /// <summary>
+        /// Generates a route using the specified route generator options.
+        /// </summary>
+        /// <param name="options">Route generator options to use.</param>
+        /// <returns>Returns a list of coordinates of the generated route.</returns>
         List<Coordinate> GenerateRoute(RouteGeneratorOptions options);
-
-        List<Coordinate> GenerateBootstrapRoute(List<MultiPolygon> multiPolygons, double circleSize = 70);
-
-        List<Coordinate> GenerateBootstrapRoute(MultiPolygon multiPolygon, double circleSize = 70);
-
-        List<Coordinate> GenerateRandomRoute(List<MultiPolygon> multiPolygon, uint maxPoints = 500, double circleSize = 70);
-
-        List<Coordinate> GenerateRandomRoute(MultiPolygon multiPolygon, uint maxPoints = 500, double circleSize = 70);
-
-        List<Coordinate> GenerateOptimizedRoute(List<MultiPolygon> multiPolygons, double circleSize = 70);
-
-        List<Coordinate> GenerateOptimizedRoute(MultiPolygon multiPolygon, double circleSize = 70);
     }
 }

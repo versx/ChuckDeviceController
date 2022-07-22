@@ -342,28 +342,29 @@
 
         #region IV Queue
 
-        public IReadOnlyList<Pokemon> GetIvQueue(string name)
+        public IReadOnlyList<Pokemon> GetIvQueue(string instanceName)
         {
             var queue = new List<Pokemon>();
             lock (_instancesLock)
             {
-                if (_instances.ContainsKey(name))
+                // Check if instance exists in cache by name, if not return empty queue.
+                if (!_instances.ContainsKey(instanceName))
+                    return queue;
+
+                var instance = _instances[instanceName];
+                if (instance is IvInstanceController iv)
                 {
-                    var instance = _instances[name];
-                    if (instance is IvInstanceController iv)
-                    {
-                        queue = (List<Pokemon>)iv.GetQueue();
-                    }
+                    queue = (List<Pokemon>)iv.GetQueue();
                 }
             }
             return queue;
         }
 
-        public void RemoveFromIvQueue(string name, string encounterId)
+        public void RemoveFromIvQueue(string instanceName, string encounterId)
         {
             lock (_instancesLock)
             {
-                var jobController = GetInstanceControllerByName(name);
+                var jobController = GetInstanceControllerByName(instanceName);
                 if (jobController is IvInstanceController ivController)
                 {
                     ivController.RemoveFromQueue(encounterId);
@@ -375,6 +376,7 @@
 
         #region Receivers
 
+        // TODO: Remove GotPokemonIV, use GotPokemon(Pokemon, bool) instead
         public void GotPokemon(Pokemon pokemon)
         {
             lock (_instancesLock)
@@ -447,6 +449,7 @@
             _assignmentService.Reload();
         }
 
+        // NOTE: Unused, will need for ScanNext API though.
         public List<string> GetDeviceUuidsInInstance(string instanceName)
         {
             var uuids = new List<string>();

@@ -4,58 +4,162 @@
 
     using ChuckDeviceController.Data.Entities;
 
+    /// <summary>
+    /// Service to manage all <see cref="IJobController"/> instances.
+    /// </summary>
     public interface IJobControllerService
     {
+        /// <summary>
+        /// Starts the <see cref="IJobControllerService"/>.
+        /// </summary>
         void Start();
 
+        /// <summary>
+        /// Stops the <see cref="IJobControllerService"/>.
+        /// </summary>
         void Stop();
 
         #region Instances
 
+        /// <summary>
+        /// Retrieves the job instance controller assigned to the provided
+        /// device.
+        /// </summary>
+        /// <param name="uuid">
+        /// Device universally unique identifier to search for.
+        /// </param>
+        /// <returns>
+        /// Returns the job instance controller assigned to the device.
+        /// </returns>
         IJobController GetInstanceController(string uuid);
 
+        /// <summary>
+        /// Gets the status for the provided instance.
+        /// </summary>
+        /// <param name="instance">The instance to get the status for.</param>
+        /// <returns>Returns the text value of the instance status.</returns>
         Task<string> GetStatusAsync(Instance instance);
 
+        /// <summary>
+        /// Adds the instance to the instance cache and initializes a job
+        /// controller instance from it.
+        /// </summary>
+        /// <param name="instance">The instance to add.</param>
         Task AddInstanceAsync(Instance instance);
 
+        /// <summary>
+        /// Reloads the specified instance in the cache with newest version.
+        /// </summary>
+        /// <param name="newInstance">New instance to add to the cache.</param>
+        /// <param name="oldInstanceName">Old instance name to remove from the cache.</param>
         Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName);
 
+        /// <summary>
+        /// Reloads all job controller instances.
+        /// </summary>
         void ReloadAllInstances();
 
+        /// <summary>
+        /// Removes the job controller instance by name from the cache.
+        /// </summary>
+        /// <param name="instanceName">Instance name to remove.</param>
         Task RemoveInstanceAsync(string instanceName);
 
         #endregion
 
         #region Devices
 
+        /// <summary>
+        /// Adds the device to the device cache.
+        /// </summary>
+        /// <param name="device">Device to add to cache.</param>
         void AddDevice(Device device);
 
+        /// <summary>
+        /// Removes the device from the device cache.
+        /// </summary>
+        /// <param name="device">Device to remove from cache.</param>
         Task RemoveDeviceAsync(Device device);
 
+        /// <summary>
+        /// Removes the device from the device cache by device UUID.
+        /// </summary>
+        /// <param name="uuid">Device UUID to remove from cache.</param>
         void RemoveDevice(string uuid);
 
+        /// <summary>
+        /// Reloads the specified device in the cache with newest version.
+        /// </summary>
+        /// <param name="device">New device to add to the cache.</param>
+        /// <param name="oldDeviceUuid">Old device UUID to remove from the cache.</param>
+        /// <summary>
         void ReloadDevice(Device device, string oldDeviceUuid);
 
+        /// <summary>
+        /// Gets a list of device UUIDs assigned to specified instance.
+        /// </summary>
+        /// <param name="instanceName">
+        /// Instance name to retrieve assigned devices from.
+        /// </param>
+        /// <returns>Returns a list of device UUIDs assigned to instance.</returns>
         List<string> GetDeviceUuidsInInstance(string instanceName);
 
         #endregion
 
         #region IV Queue
 
-        IReadOnlyList<Pokemon> GetIvQueue(string name);
+        /// <summary>
+        /// Gets the Pokemon IV queue by instance name. (Must be Pokemon IV job controller instance)
+        /// </summary>
+        /// <param name="instanceName">
+        /// Name of the Pokemon IV instance to get the queue from.
+        /// </param>
+        /// <returns>
+        /// Returns a read only list of pending queued Pokemon from an IV queue.
+        /// </returns>
+        IReadOnlyList<Pokemon> GetIvQueue(string instanceName);
 
-        void RemoveFromIvQueue(string name, string encounterId);
+        /// <summary>
+        /// Removes a queued Pokemon encounter from the specified IV queue by
+        /// encounter ID.
+        /// </summary>
+        /// <param name="instanceName">Name of Pokemon IV instance.</param>
+        /// <param name="encounterId">Pokemon encounter ID to remove.</param>
+        void RemoveFromIvQueue(string instanceName, string encounterId);
 
         #endregion
 
         #region Receivers
 
+        /// <summary>
+        /// Informs all Pokemon IV job controller instances that a Pokemon without
+        /// IV has been scanned/discovered. Allows IV job controller to see if
+        /// interested Pokemon that should be IV scanned or not.
+        /// </summary>
+        /// <param name="pokemon">Pokemon to inform Pokemon IV job controllers of.</param>
         void GotPokemon(Pokemon pokemon);
 
+        /// <summary>
+        /// Informs all Pokemon IV job controller instances that a Pokemon with IV
+        /// has been scanned and removed from queue. Also checks if Pokemon is 
+        /// </summary>
+        /// <param name="pokemon">Pokemon to inform Pokemon IV job controllers of.</param>
         void GotPokemonIV(Pokemon pokemon);
 
+        /// <summary>
+        /// Inserts received nearby fort data for leveling job controller instance to use.
+        /// </summary>
+        /// <param name="fort">Fort proto data to insert.</param>
+        /// <param name="username">Account username that received fort proto data.</param>
         void GotFort(PokemonFortProto fort, string username);
 
+        /// <summary>
+        /// Assigns trainer stats to leveling job controller instance to keep track of
+        /// progressed trainer level progress while leveling up.
+        /// </summary>
+        /// <param name="username">Account username to assign trainer stats.</param>
+        /// <param name="level">Current trainer level.</param>
+        /// <param name="xp">Current trainer experience points.</param>
         void GotPlayerInfo(string username, ushort level, ulong xp);
 
         #endregion

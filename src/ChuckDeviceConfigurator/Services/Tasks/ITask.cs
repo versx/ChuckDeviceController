@@ -3,8 +3,8 @@
     using System.Text.Json.Serialization;
 
     /// <summary>
-    /// Task interface describing what is expected for
-    /// job task controller instances.
+    /// Task interface contract describing what is expected
+    /// for job controller task instances.
     /// </summary>
     public interface ITask
     {

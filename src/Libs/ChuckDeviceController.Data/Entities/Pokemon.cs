@@ -16,8 +16,8 @@
     {
         #region Constants
 
-        public const uint DefaultTimeUnseen = 1200;
-        public const uint DefaultTimeReseen = 600;
+        public const uint DefaultTimeUnseenS = 1200;
+        public const uint DefaultTimeReseenS = 600;
         public const uint DittoPokemonId = 132;
         public const uint WeatherBoostMinLevel = 6;
         public const uint WeatherBoostMinIvStat = 4;
@@ -161,6 +161,14 @@
 
         [NotMapped]
         public bool IsNewPokemonWithIV { get; set; }
+
+        /// <summary>
+        /// Gets a value determining whether the Pokemon was first seen more
+        /// than 10 minutes ago and is close to expiring.
+        /// </summary>
+        [NotMapped]
+        public bool IsExpirationSoon =>
+            DateTime.UtcNow.ToTotalSeconds() - (FirstSeenTimestamp ?? 1) >= DefaultTimeReseenS;
 
         #endregion
 
@@ -509,7 +517,7 @@
 
                 if (ExpireTimestamp == 0)
                 {
-                    ExpireTimestamp = now + DefaultTimeUnseen;
+                    ExpireTimestamp = now + DefaultTimeUnseenS;
                 }
                 FirstSeenTimestamp = Updated;
                 Updated = now;
@@ -522,9 +530,9 @@
                 {
                     var changed = DateTime.UtcNow.ToTotalSeconds();
                     var oldExpireDate = oldPokemon.ExpireTimestamp;
-                    if (oldExpireDate - changed < DefaultTimeReseen)
+                    if (oldExpireDate - changed < DefaultTimeReseenS)
                     {
-                        ExpireTimestamp = changed + DefaultTimeReseen;
+                        ExpireTimestamp = changed + DefaultTimeReseenS;
                     }
                     else
                     {

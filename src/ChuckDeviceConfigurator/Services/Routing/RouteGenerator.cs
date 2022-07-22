@@ -67,7 +67,11 @@
             return coordinates;
         }
 
-        public List<Coordinate> GenerateBootstrapRoute(List<MultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
+        #endregion
+
+        #region Route Generator Methods
+
+        private List<Coordinate> GenerateBootstrapRoute(List<MultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
         {
             var coordinates = new List<Coordinate>();
             foreach (var multiPolygon in multiPolygons)
@@ -78,7 +82,7 @@
             return coordinates;
         }
 
-        public List<Coordinate> GenerateBootstrapRoute(MultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateBootstrapRoute(MultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
         {
             var xMod = Math.Sqrt(0.75);
             var yMod = Math.Sqrt(0.568);
@@ -124,7 +128,7 @@
             return points;
         }
 
-        public List<Coordinate> GenerateRandomRoute(List<MultiPolygon> multiPolygons, uint maxPoints = 500, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateRandomRoute(List<MultiPolygon> multiPolygons, uint maxPoints = 500, double circleSize = DefaultCircleSize)
         {
             var coordinates = new List<Coordinate>();
             foreach (var multiPolygon in multiPolygons)
@@ -135,14 +139,14 @@
             return coordinates;
         }
 
-        public List<Coordinate> GenerateRandomRoute(MultiPolygon multiPolgyon, uint maxPoints = 500, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateRandomRoute(MultiPolygon multiPolgyon, uint maxPoints = 500, double circleSize = DefaultCircleSize)
         {
             var coordinates = multiPolgyon.ConvertToCoordinates();
             var routeCoords = Calculate(coordinates, maxPoints, circleSize);
             return routeCoords;
         }
 
-        public List<Coordinate> GenerateOptimizedRoute(List<MultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateOptimizedRoute(List<MultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
         {
             var coordinates = new List<Coordinate>();
             foreach (var multiPolygon in multiPolygons)
@@ -153,7 +157,7 @@
             return coordinates;
         }
 
-        public List<Coordinate> GenerateOptimizedRoute(MultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateOptimizedRoute(MultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
         {
             var polygon = multiPolygon.ConvertToCoordinates();
             var bbox = polygon.GetBoundingBox();

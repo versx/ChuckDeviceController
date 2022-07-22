@@ -4,7 +4,7 @@
 
     public class IvQueueViewModel
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public List<IvQueueItemViewModel> Queue { get; set; } = new();
     }
@@ -15,18 +15,18 @@
         public uint Index { get; set; }
 
         [DisplayName("Image")]
-        public string Image { get; set; }
+        public string? Image { get; set; }
 
         [DisplayName("ID")]
         public uint PokemonId { get; set; }
 
         [DisplayName("Name")]
-        public string PokemonName { get; set; }
+        public string? PokemonName { get; set; }
 
         [DisplayName("Encounter ID")]
-        public string EncounterId { get; set; }
+        public string? EncounterId { get; set; }
 
         [DisplayName("Location")]
-        public string Location { get; set; }
+        public string? Location { get; set; }
     }
 }

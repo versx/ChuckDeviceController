@@ -192,6 +192,8 @@
 
         #endregion
 
+        #region Constructors
+
         public Pokestop()
         {
         }
@@ -267,6 +269,10 @@
                                   .ToList();
         }
 
+        #endregion
+
+        #region Public Methods
+
         public void AddDetails(FortDetailsOutProto fortData)
         {
             Id = fortData.Id;
@@ -297,12 +303,9 @@
             var questTitle = title.ToLower();
             HasChanges = true;
 
-            //var conditions = new List<QuestConditionProto>();
-            //var rewards = new List<QuestRewardProto>();
             var conditions = new List<Dictionary<string, dynamic>>();
             var rewards = new List<Dictionary<string, dynamic>>();
 
-            // List<Dictionary<string, dynamic>>();
             foreach (var conditionData in questData.Goal.Condition)
             {
                 var condition = new Dictionary<string, dynamic>();
@@ -641,5 +644,7 @@
                 // TODO: Check shouldUpdate
             }
         }
+
+        #endregion
     }
 }

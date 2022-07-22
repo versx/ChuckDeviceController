@@ -25,7 +25,7 @@
 
         #region Events
 
-        public event EventHandler<AssignmentDeviceReloadedEventArgs> DeviceReloaded;
+        public event EventHandler<AssignmentDeviceReloadedEventArgs>? DeviceReloaded;
         private void OnDeviceReloaded(Device device)
         {
             DeviceReloaded?.Invoke(this, new AssignmentDeviceReloadedEventArgs(device));

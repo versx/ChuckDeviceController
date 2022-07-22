@@ -13,6 +13,12 @@
     public class IvInstanceController : IJobController, IScanNextInstanceController
     {
         private const uint CheckScanHistoryIntervalS = 5;
+        private static readonly List<ushort> EventAttackIV = new()
+        {
+            0,
+            1,
+            15,
+        };
 
         #region Variables
 
@@ -106,8 +112,9 @@
                 return null;
             }
 
-            // Check if Pokemon is close to expiring, if so fetch another from queue
-            if (IsPokemonCloseToExpire(pokemon))
+            // Check if Pokemon is close to expiring, if so fetch another
+            // IV task from the Pokemon queue.
+            if (pokemon.IsExpirationSoon)
             {
                 return await GetTaskAsync(options);
             }
@@ -188,12 +195,14 @@
                     _pokemonQueue.RemoveAt(index);
                 }
 
-                if (IsEvent && !pokemon.IsEvent && (
-                    pokemon.AttackIV == 15 || pokemon.AttackIV == 0 || pokemon.AttackIV == 1) &&
+                // Checks if instance is for event as well as the Pokemon has not been re-scanned
+                // yet and it also meets the desired IV stats for event re-scans.
+                if (IsEvent && !pokemon.IsEvent && 
+                    EventAttackIV.Contains(pokemon.AttackIV ?? 999) &&
                     pokemon.DefenseIV == 15 && pokemon.StaminaIV == 15)
                 {
                     pokemon.IsEvent = true;
-                    // Add Pokemon to first in list
+                    // Push Pokemon to top of queue
                     _pokemonQueue.Insert(0, pokemon);
                 }
             }
@@ -431,17 +440,6 @@
                     _count++;
                 }
             }
-        }
-
-        private static bool IsPokemonCloseToExpire(Pokemon pokemon)
-        {
-            // Check if Pokemon was first seen more than 10 minutes ago,
-            // if so call the GetTask method again to fetch a new Pokemon
-            // to IV scan.
-
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var isCloseToExpire = now - (pokemon.FirstSeenTimestamp ?? 1) >= 600;
-            return isCloseToExpire;
         }
 
         #endregion
