@@ -9,6 +9,7 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     [Authorize(Roles = RoleConsts.InstancesRole)]
     public class InstanceController : Controller
@@ -99,7 +100,9 @@
                 Data = PopulateViewModelFromInstanceData(),
             };
 
-            ViewBag.Geofences = _context.Geofences.ToList();
+            var geofences = _context.Geofences.ToList();
+            ViewBag.Geofences = geofences;
+            ViewBag.GeofencesJson = geofences.ToJson();
             ViewBag.Instances = _context.Instances.ToList();
             ViewBag.IvLists = _context.IvLists.ToList();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key }).ToList();
@@ -167,7 +170,9 @@
                 Data = PopulateViewModelFromInstanceData(instance.Data),
             };
 
-            ViewBag.Geofences = _context.Geofences.ToList();// new MultiSelectList(geofences, "Name", "Name", selectedGeofences);
+            var geofences = _context.Geofences.ToList();
+            ViewBag.Geofences = geofences;
+            ViewBag.GeofencesJson = geofences.ToJson();
             ViewBag.Instances = _context.Instances.ToList();
             ViewBag.IvLists = _context.IvLists.ToList();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key });

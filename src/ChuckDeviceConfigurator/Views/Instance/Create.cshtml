@@ -165,6 +165,7 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 <script>
+// TODO: Move all reusable methods to wwwroot/js/*
 const types = [
     'bootstrap',
     'circles',
@@ -181,7 +182,9 @@ for (const type of types) {
 }
 
 $('#Type').change(function() {
-    hideAllElements(this.value);
+    const instanceTypeId = this.value;
+    hideAllElements(instanceTypeId);
+    handleInstanceTypeChanged(instanceTypeId);
 });
 
 function hideAllElements(instanceTypeId) {
@@ -212,5 +215,40 @@ function hideElements(className, show) {
     }
 }
 
+function handleInstanceTypeChanged(instanceTypeId) {
+    // Hide geofences (geofence/circle) depending on instance type selected
+    const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
+        instanceTypeId == @((int)InstanceType.CircleRaid) ||
+        instanceTypeId == @((int)InstanceType.CircleSmartPokemon);
+
+    // Keep track of already selected geofences to reselect if type matches instance type
+    const selectedGeofences = $('#Geofences').val();
+    // Parse all available geofences
+    const availableGeofences = parseGeofencesJson();
+    // Clear all existing geofences in the list
+    $('#Geofences').empty();
+    // Loop all available geofences and add them back to the select element if they match
+    // the selected instance type
+    for (const geofence of availableGeofences) {
+        // Check if selected instance type matches geofence type
+        if (isCircle && geofence.Type === 'Circle' || !isCircle && geofence.Type === 'Geofence') {
+            // Create new select option for valid geofence
+            const option = new Option(geofence.Name, geofence.Name);
+            // Add select option to geofences multi select element
+            $('#Geofences').append(option);
+        }
+    }
+}
+
+function parseGeofencesJson() {
+    try {
+        const geofencesJson = `@(ViewBag.GeofencesJson)`.replace(/&quot;/g, '"');;
+        const geofences = JSON.parse(geofencesJson);
+        return geofences;
+    } catch (e) {
+        console.error('Failed to parse geofences list:', e);
+        return null;
+    }
+}
 </script>
 }

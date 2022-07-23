@@ -29,8 +29,8 @@
         public static bool InPolygon(MultiPolygon multiPolygon, double latitude, double longitude)
         {
             var numOfPoints = multiPolygon.Count;
-            var lats = multiPolygon.Select(x => x[0]).ToList();
-            var lngs = multiPolygon.Select(x => x[1]).ToList();
+            var lats = multiPolygon.Select(coord => coord[0]).ToList();
+            var lngs = multiPolygon.Select(coord => coord[1]).ToList();
             var polygonContainsPoint = false;
             for (int node = 0, altNode = (numOfPoints - 1); node < numOfPoints; altNode = node++)
             {
@@ -54,7 +54,7 @@
         public static bool IsPointInPolygon(Coordinate point, List<Coordinate> polygon)
         {
             int polygonLength = polygon.Count, i = 0;
-            bool inside = false;
+            var inside = false;
             // x, y for tested point.
             double pointX = point.Longitude, pointY = point.Latitude;
             // start / end point for the current polygon segment.
