@@ -427,7 +427,7 @@
                         try
                         {
                             var bbox = polygon.GetBoundingBox();
-                            var stops = await GetPokestopsInBoundsAsync(bbox);
+                            var stops = await GetPokestopsInBoundsAsync(bbox, onlyEnabled: true);
                             foreach (var stop in stops)
                             {
                                 if (!GeofenceService.InPolygon(polygon, stop.Latitude, stop.Longitude))
@@ -992,12 +992,13 @@
 
             using (var context = _mapFactory.CreateDbContext())
             {
-                var pokestops = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id)).ToList();
+                var pokestops = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id))
+                                                 .ToList();
                 return pokestops;
             }
         }
 
-        private async Task<List<Pokestop>> GetPokestopsInBoundsAsync(BoundingBox bbox)
+        private async Task<List<Pokestop>> GetPokestopsInBoundsAsync(BoundingBox bbox, bool onlyEnabled)
         {
             using (var context = _mapFactory.CreateDbContext())
             {
@@ -1006,6 +1007,9 @@
                     stop.Longitude >= bbox.MinimumLongitude &&
                     stop.Latitude <= bbox.MaximumLatitude &&
                     stop.Longitude <= bbox.MaximumLongitude &&
+                    onlyEnabled
+                        ? stop.Enabled
+                        : stop.Enabled || !stop.Enabled &&
                     !stop.Deleted
                 ).ToList();
                 return await Task.FromResult(pokestops);
@@ -1060,6 +1064,7 @@
         }
     }
 
+    // TODO: Move to separate class
     public class Cooldown
     {
         public static double GetCooldownAmount(double distanceM)
