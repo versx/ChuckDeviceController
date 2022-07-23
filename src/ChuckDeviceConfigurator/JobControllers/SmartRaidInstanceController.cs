@@ -365,7 +365,7 @@
             if ((gyms?.Count ?? 0) == 0)
             {
                 // Failed to get gyms by ids
-                _logger.LogWarning($"Failed to get list of gyms by ids");
+                _logger.LogWarning($"[{Name}] Nearby gyms list is empty.");
                 Thread.Sleep(5000);
                 return;
             }

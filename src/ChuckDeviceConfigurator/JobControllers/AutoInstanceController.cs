@@ -1023,14 +1023,13 @@
 
             using (var context = _mapFactory.CreateDbContext())
             {
-                var count = context.Pokestops.Count(stop =>
-                    pokestopIds.Contains(stop.Id) &&
-                    mode == QuestMode.Normal
-                        ? stop.QuestType != null
-                        : mode == QuestMode.Alternative
-                            ? stop.AlternativeQuestType != null
-                            : stop.QuestType != null || stop.AlternativeQuestType != null
-                );
+                var count = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id))
+                                             .Where(stop => mode == QuestMode.Normal
+                                                                ? stop.QuestType != null
+                                                                : mode == QuestMode.Alternative
+                                                                    ? stop.AlternativeQuestType != null
+                                                                    : stop.QuestType != null || stop.AlternativeQuestType != null)
+                                             .Count();
                 return (ulong)count;
             }
         }
