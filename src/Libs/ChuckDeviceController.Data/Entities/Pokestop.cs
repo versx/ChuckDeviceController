@@ -265,7 +265,7 @@
                 };
             }
             // TODO: Assign Incidents = incidents.
-            Incidents = incidents?.Select(x => new Incident(now, Id, x))
+            Incidents = incidents?.Select(pokestopDisplay => new Incident(now, Id, pokestopDisplay))
                                   .ToList();
         }
 

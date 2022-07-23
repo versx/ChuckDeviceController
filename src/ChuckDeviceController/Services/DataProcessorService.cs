@@ -585,6 +585,10 @@
                         await SendGymsAsync(lvlForts, "test"); // TODO: Get username, needed for leveling instance
                     }
 
+                    var stopsToUpsert = new List<Pokestop>();
+                    var gymsToUpsert = new List<Gym>();
+                    var incidentsToUpsert = new List<Incident>();
+
                     // Convert fort protos to Pokestop/Gym models
                     foreach (var fort in forts)
                     {
@@ -602,6 +606,8 @@
                                 // Loop incidents
                                 if ((pokestop.Incidents?.Count ?? 0) > 0)
                                 {
+                                    incidentsToUpsert.AddRange(pokestop.Incidents);
+                                    /*
                                     foreach (var incident in pokestop.Incidents)
                                     {
                                         if (context.Incidents.AsNoTracking().Any(inc => inc.Id == incident.Id))
@@ -613,19 +619,22 @@
                                             await context.AddAsync(incident);
                                         }
                                     }
+                                    */
                                 }
 
                                 if (context.Pokestops.AsNoTracking().Any(stop => stop.Id == pokestop.Id))
                                 {
                                     // If any Pokestop properties have changed, set which to update,
                                     // otherwise EF will overwrite properties
+                                    // TODO: Not sure if this is still needed with EfCore.BulkExt, need to check
                                     context.UpdatePokestopProperties(pokestop, false);
                                     //context.Update(pokestop);
                                 }
-                                else
-                                {
-                                    await context.AddAsync(pokestop);
-                                }
+                                //else
+                                //{
+                                //    await context.AddAsync(pokestop);
+                                //}
+                                stopsToUpsert.Add(pokestop);
 
                                 lock (_stopIdsPerCell)
                                 {
@@ -641,6 +650,8 @@
                                 var gym = new Gym(data, cellId);
                                 await gym.UpdateAsync(context);
 
+                                gymsToUpsert.Add(gym);
+                                /*
                                 if (context.Gyms.AsNoTracking().Any(g => g.Id == gym.Id))
                                 {
                                     context.Update(gym);
@@ -649,6 +660,7 @@
                                 {
                                     await context.AddAsync(gym);
                                 }
+                                */
 
                                 lock (_gymIdsPerCell)
                                 {
@@ -662,9 +674,20 @@
                         }
                     }
 
-                    // TODO: Bulk merge
+                    if (stopsToUpsert.Count > 0)
+                    {
+                        await context.Pokestops.BulkMergeAsync(stopsToUpsert);
+                    }
+                    if (incidentsToUpsert.Count > 0)
+                    {
+                        await context.Incidents.BulkMergeAsync(incidentsToUpsert);
+                    }
+                    if (gymsToUpsert.Count > 0)
+                    {
+                        await context.Gyms.BulkMergeAsync(gymsToUpsert);
+                    }
 
-                    await context.BulkSaveChangesAsync();
+                    //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Forts");
                 }
@@ -977,10 +1000,12 @@
 
                 if (stopsToDelete.Count > 0)
                 {
+                    _logger.LogInformation($"Marking {stopsToDelete.Count:N0} Pokestops as deleted since they seem to no longer exist.");
                     await context.BulkMergeAsync(stopsToDelete);
                 }
                 if (gymsToDelete.Count > 0)
                 {
+                    _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they seem to no longer exist.");
                     await context.BulkMergeAsync(gymsToDelete);
                 }
             }
