@@ -233,7 +233,7 @@ function handleInstanceTypeChanged(instanceTypeId) {
     $('#Geofences').val(selectedGeofences);
 }
 
-function parseGeofencesJson() {
+function parseGeofencesJson() { // TODO: Pass geofencesJson as param when moved to separate file
     try {
         const geofencesJson = `@(ViewBag.GeofencesJson)`.replace(/&quot;/g, '"');;
         const geofences = JSON.parse(geofencesJson);

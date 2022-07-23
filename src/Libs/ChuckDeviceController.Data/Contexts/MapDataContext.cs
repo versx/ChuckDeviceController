@@ -8,8 +8,6 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
 
-    //using ChuckDeviceController.Data.Factories;
-
     public class MapDataContext : DbContext
     {
         public MapDataContext(DbContextOptions<MapDataContext> options)

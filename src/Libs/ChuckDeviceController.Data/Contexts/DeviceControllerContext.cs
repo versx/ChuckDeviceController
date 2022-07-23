@@ -14,6 +14,8 @@
             //var createSql = Database.GenerateCreateScript();
             //Console.WriteLine($"CreateSql: {createSql}");
             //base.Database.Migrate();
+
+            //base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public DbSet<Account> Accounts { get; set; }
