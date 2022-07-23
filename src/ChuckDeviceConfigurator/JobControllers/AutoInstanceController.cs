@@ -25,18 +25,20 @@
         private readonly IDbContextFactory<MapDataContext> _mapFactory;
         private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
 
-        private readonly List<PokestopWithMode> _allStops;
-        private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops;
-        private readonly Dictionary<(string, bool), byte> _todayStopsAttempts; // (PokestopId, IsAlternative)
-        private PokemonPriorityQueue<ulong> _bootstrapCellIds;
+        private readonly List<PokestopWithMode> _allStops = new();
+        private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops = new();
+        private readonly Dictionary<(string, bool), byte> _todayStopsAttempts = new(); // (PokestopId, IsAlternative)
+        private readonly PokemonPriorityQueue<ulong> _bootstrapCellIds = new();
+        private readonly Dictionary<string, string> _accounts = new();
+        private readonly Dictionary<string, bool> _lastMode = new();
+
+        private readonly object _bootstrapCellIdsLock = new();
+
         private readonly System.Timers.Timer _timer;
         private int _bootstrapTotalCount = 0;
         private ulong _completionDate = 0;
         private ulong _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds() - Strings.SixtyMinutesS;
         private bool _shouldExit;
-
-        private readonly Dictionary<string, string> _accounts;
-        private readonly Dictionary<string, bool> _lastMode;
 
         #endregion
 
@@ -113,14 +115,6 @@
             _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _mapFactory = mapFactory;
             _deviceFactory = deviceFactory;
-
-            _allStops = new List<PokestopWithMode>();
-            _todayStops = new PokemonPriorityQueue<PokestopWithMode>();
-            _todayStopsAttempts = new Dictionary<(string, bool), byte>();
-            _bootstrapCellIds = new PokemonPriorityQueue<ulong>();
-
-            _accounts = new Dictionary<string, string>();
-            _lastMode = new Dictionary<string, bool>();
 
             var (localTime, timeLeft) = GetSecondsUntilMidnight();
             _timer = new System.Timers.Timer(timeLeft * 1000);
@@ -307,17 +301,19 @@
             switch (AutoType)
             {
                 case AutoInstanceType.Quest:
-                    // TODO: Lock _boostrapCellIds
-                    if (_bootstrapCellIds.Count > 0)
+                    lock (_bootstrapCellIdsLock)
                     {
-                        var totalCount = _bootstrapTotalCount;
-                        var foundCount = totalCount - _bootstrapCellIds.Count;
-                        var percentage = foundCount > 0 && totalCount > 0
-                            ? Convert.ToDouble((double)foundCount / totalCount) * 100
-                            : 100;
+                        if (_bootstrapCellIds.Count > 0)
+                        {
+                            var totalCount = _bootstrapTotalCount;
+                            var foundCount = totalCount - _bootstrapCellIds.Count;
+                            var percentage = foundCount > 0 && totalCount > 0
+                                ? Convert.ToDouble((double)foundCount / totalCount) * 100
+                                : 100;
 
-                        var bootstrapStatus = $"Bootstrapping: {foundCount:N0}/{totalCount:N0} ({Math.Round(percentage, 2)}%)";
-                        return bootstrapStatus;
+                            var bootstrapStatus = $"Bootstrapping: {foundCount:N0}/{totalCount:N0} ({Math.Round(percentage, 2)}%)";
+                            return bootstrapStatus;
+                        }
                     }
 
                     // TODO: Lock _allStops
@@ -409,44 +405,49 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             _logger.LogInformation($"[{Name}] Bootstrap Status: {found:N0}/{total:N0} after {totalSeconds} seconds");
 
-            // TODO: Lock _bootstrapCellIds
-            _bootstrapCellIds.AddRange(missingCellIds.Distinct().ToList());
+            lock (_bootstrapCellIdsLock)
+            {
+                _bootstrapCellIds.Clear();
+                _bootstrapCellIds.AddRange(missingCellIds.Distinct().ToList());
+            }
             _bootstrapTotalCount = total;
         }
 
+        /// <summary>
+        /// Updates the list of Pokestops available to spin for today that do not have quests found
+        /// </summary>
         private async Task UpdateAsync()
         {
             switch (AutoType)
             {
                 case AutoInstanceType.Quest:
+                    // Clear all existing cached Pokestops to fetch updated entities
                     _allStops.Clear();
+
+                    // Loop through all specified geofences for Pokestops found within them
                     foreach (var polygon in MultiPolygon)
                     {
                         try
                         {
+                            // Get all Pokestops within bounding box of geofence. Some Pokestops
+                            // closely outside of geofence will also be returned
                             var bbox = polygon.GetBoundingBox();
                             var stops = await GetPokestopsInBoundsAsync(bbox, onlyEnabled: true);
+
+                            //var isNormal = QuestMode == QuestMode.Normal || QuestMode == QuestMode.Both;
+                            var isAlternative = QuestMode == QuestMode.Alternative || QuestMode == QuestMode.Both;
                             foreach (var stop in stops)
                             {
-                                if (!GeofenceService.InPolygon(polygon, stop.Latitude, stop.Longitude))
+                                // Filter any Pokestops not within the geofence
+                                var coord = stop.ToCoordinate();
+                                if (!GeofenceService.InPolygon(polygon, coord))
                                     continue;
 
-                                if (QuestMode == QuestMode.Normal || QuestMode == QuestMode.Both)
+                                _allStops.Add(new PokestopWithMode
                                 {
-                                    _allStops.Add(new PokestopWithMode
-                                    {
-                                        Pokestop = stop,
-                                        IsAlternative = false,
-                                    });
-                                }
-                                if (QuestMode == QuestMode.Alternative || QuestMode == QuestMode.Both)
-                                {
-                                    _allStops.Add(new PokestopWithMode
-                                    {
-                                        Pokestop = stop,
-                                        IsAlternative = true,
-                                    });
-                                }
+                                    Pokestop = stop,
+                                    IsAlternative = isAlternative,
+                                });
                             }
                         }
                         catch (Exception ex)
@@ -462,20 +463,21 @@
                     /*
                     _allStops.Sort((a, b) =>
                     {
-                        var coordA = new Coordinate(a.Pokestop.Latitude, a.Pokestop.Longitude);
-                        var coordB = new Coordinate(b.Pokestop.Latitude, b.Pokestop.Longitude);
+                        var coordA = a.Pokestop.ToCoordinate();
+                        var coordB = b.Pokestop.ToCoordinate();
                         var distanceA = coordA.DistanceTo(coordB);
                         var distanceB = coordB.DistanceTo(coordA);
                         var distance = Convert.ToInt32(((distanceA + distanceB) * 100) / 2);
                         return distance;
                     });
                     */
-                    
+
+                    // Loop through all Pokestops found within geofence to build list of Pokestops to
+                    // spin for today that do not have quests found
                     foreach (var stop in _allStops)
                     {
-                        // Check that the Pokestop does not have quests already found and that it is enabled
-                        if (stop.Pokestop.IsEnabled && // Enabled check is redundant now
-                           (!stop.IsAlternative && stop.Pokestop.QuestType == null) ||
+                        // Check that the Pokestop does not have quests already found
+                        if ((!stop.IsAlternative && stop.Pokestop.QuestType == null) ||
                            (stop.IsAlternative && stop.Pokestop.AlternativeQuestType == null))
                         {
                             // Add Pokestop if it's not already in the list
@@ -489,6 +491,9 @@
             }
         }
 
+        /// <summary>
+        /// Clears all Pokestop quest data that has been found
+        /// </summary>
         private async Task ClearQuestsAsync()
         {
             _timer.Stop();
@@ -653,8 +658,11 @@
                     var spinAttemptsCount = _todayStopsAttempts.ContainsKey(key)
                         ? _todayStopsAttempts[key]
                         : 0;
+                    // Check if Pokestop does not have any quests found and spin attempts is less
+                    // than or equal to max spin attempts allowed
                     if (spinAttemptsCount <= MaximumSpinAttempts &&
-                       ((stop.QuestType == null && isNormal) || (stop.AlternativeQuestType == null && isAlternative)))
+                       ((stop.QuestType == null && isNormal) ||
+                       (stop.AlternativeQuestType == null && isAlternative)))
                     {
                         _todayStops.Add(pokestopWithMode);
                     }
@@ -791,26 +799,25 @@
 
         private async Task<BootstrapTask> CreateBootstrapTaskAsync()
         {
-            //var target = _bootstrapCellIds..LastOrDefault();
-            var target = _bootstrapCellIds.PopLast();
-            if (target == default)
+            var targetCellId = _bootstrapCellIds.PopLast();
+            if (targetCellId == default)
             {
                 return null;
             }
 
-            //_bootstrapCellIds.Remove(target);
-
-            var center = target.S2LatLngFromId();
+            var center = targetCellId.S2LatLngFromId();
             var coord = new Coordinate(center.LatDegrees, center.LngDegrees);
             var cellIds = center.GetLoadedS2CellIds();
 
-            // TODO: Lock _bootstrapCellIds
-            foreach (var cellId in cellIds)
+            lock (_bootstrapCellIdsLock)
             {
-                var index = _bootstrapCellIds.IndexOf(cellId.Id);
-                if (index > 0)
+                foreach (var cellId in cellIds)
                 {
-                    _bootstrapCellIds.RemoveAt(index);
+                    var index = _bootstrapCellIds.IndexOf(cellId.Id);
+                    if (index > 0)
+                    {
+                        _bootstrapCellIds.RemoveAt(index);
+                    }
                 }
             }
 
@@ -1032,6 +1039,7 @@
 
             public bool IsAlternative { get; set; }
 
+            // NOTE: Not really needed now after changing how spin attempts cache
             public int CompareTo(object? obj)
             {
                 if (obj == null)
@@ -1045,6 +1053,12 @@
                 }
 
                 result = Pokestop.Id.CompareTo(other.Pokestop.Id);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = IsAlternative.CompareTo(other.IsAlternative);
                 if (result != 0)
                 {
                     return result;

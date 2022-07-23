@@ -5,6 +5,7 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("spawnpoint")]
@@ -34,11 +35,20 @@
         [Column("last_seen")]
         public ulong? LastSeen { get; set; }
 
+        [NotMapped]
+        public bool HasChanges { get; set; }
+
         #endregion
+
+        #region Constructor
 
         public Spawnpoint()
         {
         }
+
+        #endregion
+
+        #region Public Methods
 
         public async Task UpdateAsync(MapDataContext context, bool update = false)
         {
@@ -54,6 +64,7 @@
 
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
+            // TODO: UpdateLastSeen property
             LastSeen = now;
 
             if (!update && oldSpawnpoint != null)
@@ -66,18 +77,23 @@
                 if (DespawnSecond == null && oldSpawnpoint.DespawnSecond != null)
                 {
                     DespawnSecond = oldSpawnpoint.DespawnSecond;
+                    HasChanges = true;
                 }
                 if (Latitude == oldSpawnpoint.Latitude &&
                     Longitude == oldSpawnpoint.Longitude &&
                     DespawnSecond == oldSpawnpoint.DespawnSecond)
                 {
-                    // TODO: Return false to update
+                    // No changes between current and old spawnpoints
                     return;
                 }
             }
 
+            // TODO: Probably redundant below and can remove
             Updated = now;
+            // TODO: UpdateLastSeen property
             LastSeen = now;
         }
+
+        #endregion
     }
 }

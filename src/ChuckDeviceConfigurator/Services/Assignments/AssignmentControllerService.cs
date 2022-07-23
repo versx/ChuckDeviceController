@@ -270,9 +270,9 @@
         {
             using (var context = _factory.CreateDbContext())
             {
-                // TODO: Use EfCore.BulkExtensions BulkChangesAsync method
                 context.UpdateRange(devices);
                 await context.SaveChangesAsync();
+                // TODO: await context.Devices.BulkMergeAsync(devices);
             }
         }
 

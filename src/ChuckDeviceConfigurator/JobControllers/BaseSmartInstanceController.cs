@@ -2,6 +2,7 @@
 {
     using System.Threading.Tasks;
 
+    using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data;
@@ -9,7 +10,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    public abstract class BaseSmartInstanceController : IJobController
+    public abstract class BaseSmartInstanceController : IJobController, ILureInstanceController
     {
         #region Variables
 
@@ -42,7 +43,7 @@
 
         public bool IsEvent { get; }
 
-        public bool EnableLureEncounters { get; } // TODO: Make ILureJobController interface, remove from Base controller
+        public bool EnableLureEncounters { get; }
 
         #endregion
 
@@ -335,6 +336,7 @@
                 return (0, 0);
             }
 
+            // Loop through all live/active devices
             for (var i = 0; i < numLiveDevices; i++)
             {
                 // Skip device if not in live device list
@@ -343,7 +345,7 @@
 
                 var nextDeviceIndex = i < numLiveDevices - 1
                     ? i + 1
-                    : i; // TODO: Check, was '0'
+                    : 0;
                 var nextDeviceUuid = liveDevices[nextDeviceIndex];
                 var currentUuidIndex = _currentUuid[uuid].LastRouteIndex;
                 var nextUuidIndex = _currentUuid[nextDeviceUuid].LastRouteIndex;
@@ -361,7 +363,6 @@
 
             _currentUuid.Add(uuid, new DeviceIndex
             {
-                // TODO: Set/generate random device index upon adding to device list?
                 LastSeen = DateTime.UtcNow.ToTotalSeconds(),
             });
         }

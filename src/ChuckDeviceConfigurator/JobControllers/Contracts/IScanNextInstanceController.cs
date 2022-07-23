@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceConfigurator.JobControllers.Contracts
 {
     using ChuckDeviceController.Geometry.Models;
 

@@ -47,6 +47,7 @@
     // TODO: Use/benchmark Dapper Micro ORM
     // TODO: Implement memory cache for Pokemon/Pokestops/Gyms/Incidents/Weather/Cells
     // TODO: Split up/refactor class
+    // TODO: Use lock before bulk merging
 
     public class DataProcessorService : BackgroundService, IDataProcessorService
     {
@@ -352,6 +353,8 @@
                     // Convert weather protos to Weather models
                     var weather = clientWeather.Select(weather => new Weather(weather))
                                                .ToList();
+                    // TODO: Weather.Update(oldWeather);
+
                     await context.Weather.BulkMergeAsync(weather, options => options.UseTableLock = true);
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Client weather cells");
@@ -380,23 +383,30 @@
                         var pokemon = new Pokemon(context, data, cellId, timestampMs, username, isEvent);
                         await pokemon.UpdateAsync(context, updateIv: false);
                         pokemonToUpsert.Add(pokemon);
-                        /*
-                        if (context.Pokemon.AsNoTracking().Any(pkmn => pkmn.Id == pokemon.Id))
-                        {
-                            context.Update(pokemon);
-                        }
-                        else
-                        {
-                            await context.AddAsync(pokemon);
-                        }
-                        */
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options => options.UseTableLock = true);
+                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    {
+                        // Do not update IV specific columns
+                        options.UseTableLock = true;
+                        // TODO: Check docs if this needs to be set when IgnoreOnMergeUpdateExpression is set
+                        //options.IgnoreOnMergeUpdate = true;
+                        options.IgnoreOnMergeUpdateExpression = p => new
+                        {
+                            p.AttackIV,
+                            p.DefenseIV,
+                            p.StaminaIV,
+                            p.CP,
+                            p.Level,
+                            p.Size,
+                            p.Weight,
+                            p.Move1,
+                            p.Move2,
+                        };
+                    });
 
                     await SendPokemonAsync(pokemonToUpsert);
 
-                    //await context.BulkSaveChangesAsync();
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Wild Pokemon");
                 }
@@ -425,7 +435,25 @@
                         pokemonToUpsert.Add(pokemon);
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options => options.UseTableLock = true);
+                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    {
+                        // Do not update IV specific columns
+                        options.UseTableLock = true;
+                        options.IgnoreOnMergeUpdateExpression = p => new
+                        {
+                            p.Costume,
+                            p.Form,
+                            p.AttackIV,
+                            p.DefenseIV,
+                            p.StaminaIV,
+                            p.CP,
+                            p.Level,
+                            p.Size,
+                            p.Weight,
+                            p.Move1,
+                            p.Move2,
+                        };
+                    });
 
                     await SendPokemonAsync(pokemonToUpsert);
 
@@ -474,7 +502,11 @@
                         // TODO: Remove above upsert list addition: pokemonToUpsert.Add(pokemon);
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options => options.UseTableLock = true);
+                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    {
+                        // TODO: Do not update IV
+                        options.UseTableLock = true;
+                    });
 
                     await SendPokemonAsync(pokemonToUpsert);
 
@@ -913,9 +945,6 @@
                         var data = (EncounterOutProto)encounter.data;
                         var username = encounter.username;
                         var isEvent = encounter.isEvent;
-                        //if (data.Status != EncounterOutProto.Types.Status.EncounterSuccess)
-                        //{
-                        //}
                         var encounterId = data.Pokemon.EncounterId.ToString();
                         var pokemon = await context.Pokemon.FindAsync(encounterId);
                         if (pokemon != null)
@@ -937,7 +966,28 @@
                         }
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options => options.UseTableLock = true);
+                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    {
+                        options.UseTableLock = true;
+                        // Only update IV specific columns
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.PokemonId,
+                            p.Form,
+                            p.Costume,
+                            p.Gender,
+                            p.AttackIV,
+                            p.DefenseIV,
+                            p.StaminaIV,
+                            p.CP,
+                            p.Level,
+                            p.Size,
+                            p.Weight,
+                            p.Move1,
+                            p.Move2,
+                            p.Weather,
+                        };
+                    });
 
                     await SendPokemonAsync(pokemonToUpsert);
 
@@ -963,10 +1013,6 @@
                         var data = (DiskEncounterOutProto)diskEncounter.data;
                         var username = diskEncounter.username;
                         var isEvent = diskEncounter.isEvent;
-                        //if (data.Status != EncounterOutProto.Types.Status.EncounterSuccess)
-                        //{
-                        //    continue;
-                        //}
                         var displayId = data.Pokemon.PokemonDisplay.DisplayId;
                         var pokemon = await context.Pokemon.FindAsync(displayId);
                         if (pokemon != null)
@@ -974,7 +1020,6 @@
                             pokemon.AddDiskEncounter(data, username);
                             await pokemon.UpdateAsync(context, updateIv: true);
 
-                            //context.Update(pokemon);
                             pokemonToUpsert.Add(pokemon);
                         }
                         else
@@ -984,7 +1029,28 @@
                         }
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options => options.UseTableLock = true);
+                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    {
+                        options.UseTableLock = true;
+                        // Only update IV specific columns
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.PokemonId,
+                            p.Form,
+                            p.Costume,
+                            p.Gender,
+                            p.AttackIV,
+                            p.DefenseIV,
+                            p.StaminaIV,
+                            p.CP,
+                            p.Level,
+                            p.Size,
+                            p.Weight,
+                            p.Move1,
+                            p.Move2,
+                            p.Weather,
+                        };
+                    });
 
                     await SendPokemonAsync(pokemonToUpsert);
 

@@ -5,12 +5,15 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("s2cell")]
     public class Cell : BaseEntity, ICoordinateEntity
     {
+        private const ushort S2CellLevel = 15;
+
         #region Properties
 
         [
@@ -47,6 +50,8 @@
 
         #endregion
 
+        #region Constructor
+
         public Cell()
         {
         }
@@ -57,8 +62,10 @@
             Id = cellId;
             Latitude = latlng.Latitude;
             Longitude = latlng.Longitude;
-            Level = 15;
+            Level = S2CellLevel;
             Updated = DateTime.UtcNow.ToTotalSeconds();
         }
+
+        #endregion
     }
 }

@@ -8,6 +8,7 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
 
@@ -215,6 +216,7 @@
                 {
                     return;
                 }
+                // Set Pokemon location to S2 cell coordinate as an approximation
                 var latlng = cellId.ToCoordinate();
                 lat = latlng.Latitude;
                 lon = latlng.Longitude;
@@ -233,7 +235,7 @@
                 SeenType = SeenType.NearbyStop;
             }
 
-            Id = nearbyPokemon.EncounterId.ToString();
+            Id = Convert.ToString(nearbyPokemon.EncounterId);
             Latitude = lat;
             Longitude = lon;
             PokemonId = Convert.ToUInt16(nearbyPokemon.PokedexNumber);
@@ -259,7 +261,7 @@
 
             var spawnpointId = mapPokemon.SpawnpointId;
             // Get Pokestop via spawnpoint id
-            var pokestop = context.Pokestops.FindAsync(spawnpointId).Result;
+            var pokestop = context.Pokestops.FindAsync(spawnpointId).Result; // TODO: Need to double check this
             if (pokestop == null)
             {
                 // TODO: Throw error
@@ -354,12 +356,16 @@
 
             if (HasIvChanges)
             {
+                // Although capture change values are player specific, set them to the Pokemon
+                // Should remove them eventually though.
                 if (encounterData.CaptureProbability != null)
                 {
                     Capture1 = encounterData.CaptureProbability.CaptureProbability[0];
                     Capture2 = encounterData.CaptureProbability.CaptureProbability[1];
                     Capture3 = encounterData.CaptureProbability.CaptureProbability[2];
                 }
+
+                // Calculate Pokemon level from provided CP multiplier value
                 var cpMultiplier = encounterData.Pokemon.Pokemon.CpMultiplier;
                 ushort level;
                 if (cpMultiplier < 0.734)
@@ -370,6 +376,7 @@
                 {
                     level = Convert.ToUInt16(Math.Round(171.0112688 * cpMultiplier - 95.20425243));
                 }
+
                 Level = level;
                 IsDitto = IsDittoDisguised(
                     Id,
@@ -381,7 +388,7 @@
                     StaminaIV ?? 0);
                 if (IsDitto)
                 {
-
+                    // Set default Ditto attributes
                     SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
                 }
             }
@@ -846,7 +853,6 @@
                 };
                 await spawnpoint.UpdateAsync(context, update: true);
 
-                // TODO: Builk.EfCoreExtensions await context.BulkMergeAsync(new[] { spawnpoint });
                 if (context.Spawnpoints.AsNoTracking().Any(s => s.Id == spawnId))
                 {
                     context.Spawnpoints.Update(spawnpoint);
@@ -898,7 +904,6 @@
                     };
                     await newSpawnpoint.UpdateAsync(context, update: true);
 
-                    // TODO: Bulk.EfCoreExtensions await context.BulkMergeAsync(new[] { newSpawnpoint });
                     if (context.Spawnpoints.AsNoTracking().Any(s => s.Id == spawnId))
                     {
                         context.Spawnpoints.Update(newSpawnpoint);

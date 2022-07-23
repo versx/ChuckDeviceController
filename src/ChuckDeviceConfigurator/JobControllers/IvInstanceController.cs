@@ -3,6 +3,7 @@
     using System.Threading.Tasks;
 
     using ChuckDeviceConfigurator.Collections;
+    using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Entities;
@@ -11,7 +12,7 @@
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
 
-    public class IvInstanceController : IJobController, IScanNextInstanceController
+    public class IvInstanceController : IJobController, ILureInstanceController, IScanNextInstanceController
     {
         private const uint CheckScanHistoryIntervalS = 5;
         private static readonly List<ushort> EventAttackIV = new()

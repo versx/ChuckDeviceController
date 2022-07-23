@@ -9,12 +9,17 @@
     using RewardType = POGOProtos.Rpc.QuestRewardProto.Types.Type;
 
     using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("pokestop")]
     public class Pokestop : BaseEntity, ICoordinateEntity, IFortEntity
     {
-        public const ushort LureTime = 1800;
+        #region Constants
+
+        public const ushort DefaultLureTimeS = 1800; // TODO: Make 'DefaultLureTimeS' configurable
+
+        #endregion
 
         #region Properties
 
@@ -210,6 +215,7 @@
             }
             IsEnabled = fortData.Enabled;
             IsArScanEligible = fortData.IsArScanEligible;
+
             var now = DateTime.UtcNow.ToTotalSeconds();
             var powerUpLevelExpirationMs = Convert.ToUInt32(fortData.PowerUpLevelExpirationMs / 1000);
             PowerUpPoints = Convert.ToUInt32(fortData.PowerUpProgressPoints);
@@ -246,7 +252,7 @@
                     fortData.ActiveFortModifier.Contains(Item.TroyDiskMagnetic) ||
                     fortData.ActiveFortModifier.Contains(Item.TroyDiskRainy))
                 {
-                    LureExpireTimestamp = lastModifiedTimestamp + LureTime;
+                    LureExpireTimestamp = lastModifiedTimestamp + DefaultLureTimeS;
                     LureId = Convert.ToUInt32(fortData.ActiveFortModifier[0]);
                 }
             }
@@ -256,6 +262,7 @@
                 Url = fortData.ImageUrl;
             }
             CellId = s2cellId;
+
             var incidents = fortData.PokestopDisplays?.ToList();
             if ((incidents?.Count ?? 0) == 0 && fortData.PokestopDisplay != null)
             {
@@ -264,9 +271,13 @@
                     fortData.PokestopDisplay,
                 };
             }
+
             // TODO: Assign Incidents = incidents.
-            Incidents = incidents?.Select(pokestopDisplay => new Incident(now, Id, pokestopDisplay))
-                                  .ToList();
+            if (incidents != null)
+            {
+                Incidents = incidents.Select(pokestopDisplay => new Incident(now, Id, pokestopDisplay))
+                                     .ToList();
+            }
         }
 
         #endregion
@@ -481,7 +492,7 @@
                         var pokemonId = Convert.ToUInt32(rewardData.PokemonEncounter.PokemonId);
                         if (rewardData.PokemonEncounter.IsHiddenDitto)
                         {
-                            infoData.Add("pokemon_id", 132);
+                            infoData.Add("pokemon_id", Pokemon.DittoPokemonId);
                             infoData.Add("pokemon_id_display", pokemonId);
                         }
                         else
@@ -568,81 +579,83 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
+            if (oldPokestop == null)
+            {
+                // Brand new Pokestop to insert, set first_seen_timestamp
+                FirstSeenTimestamp = now;
+                return;
+            }
+
+            // Pokestop already exists, compare against this instance to see if anything needs
+            // to be updated
             context.Attach(this);
 
-            if (oldPokestop != null)
+            if (oldPokestop.CellId > 0 && CellId == 0)
             {
-                if (oldPokestop.CellId > 0 && CellId == 0)
-                {
-                    CellId = oldPokestop.CellId;
-                    context.Entry(this).Property(p => p.CellId).IsModified = true;
-                }
-
-                if (oldPokestop.Name != null && Name == null)
-                {
-                    Name = oldPokestop.Name;
-                    context.Entry(this).Property(p => p.Name).IsModified = true;
-                }
-
-                if (oldPokestop.Url != null && Url == null)
-                {
-                    Url = oldPokestop.Url;
-                    context.Entry(this).Property(p => p.Url).IsModified = true;
-                }
-
-                if (updateQuest && oldPokestop.QuestType != null && QuestType == null)
-                {
-                    QuestType = oldPokestop.QuestType;
-                    QuestTarget = oldPokestop.QuestTarget;
-                    QuestConditions = oldPokestop.QuestConditions;
-                    QuestRewards = oldPokestop.QuestRewards;
-                    QuestTimestamp = oldPokestop.QuestTimestamp;
-                    QuestTemplate = oldPokestop.QuestTemplate;
-                    QuestTitle = oldPokestop.QuestTitle;
-
-                    context.Entry(this).Property(p => p.QuestType).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestTarget).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestConditions).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestRewards).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestTimestamp).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestTemplate).IsModified = true;
-                    context.Entry(this).Property(p => p.QuestTitle).IsModified = true;
-                }
-
-                if (updateQuest && oldPokestop.AlternativeQuestType != null && AlternativeQuestType == null)
-                {
-                    AlternativeQuestType = oldPokestop.AlternativeQuestType;
-                    AlternativeQuestTarget = oldPokestop.AlternativeQuestTarget;
-                    AlternativeQuestConditions = oldPokestop.AlternativeQuestConditions;
-                    AlternativeQuestRewards = oldPokestop.AlternativeQuestRewards;
-                    AlternativeQuestTimestamp = oldPokestop.AlternativeQuestTimestamp;
-                    AlternativeQuestTemplate = oldPokestop.AlternativeQuestTemplate;
-                    AlternativeQuestTitle = oldPokestop.AlternativeQuestTitle;
-
-                    context.Entry(this).Property(p => p.AlternativeQuestType).IsModified = true;
-                    context.Entry(this).Property(p => p.AlternativeQuestTarget).IsModified = true;
-                    context.Entry(this).Property(p => p.AlternativeQuestConditions).IsModified = true;
-                    context.Entry(this).Property(p => p.AlternativeQuestRewards).IsModified = true;
-                    context.Entry(this).Property(p => p.AlternativeQuestTimestamp).IsModified = true;
-                    context.Entry(this).Property(p => p.AlternativeQuestTemplate).IsModified = true;
-                    context.Entry(this).Property(p => p.AlternativeQuestTitle).IsModified = true;
-                }
-
-                if (oldPokestop.LureId > 0 && LureId == 0)
-                {
-                    LureId = oldPokestop.LureId;
-                    context.Entry(this).Property(p => p.LureId).IsModified = true;
-                }
-
-                if ((oldPokestop.LureExpireTimestamp != null || oldPokestop.LureExpireTimestamp > 0) &&
-                    (LureExpireTimestamp == null || LureExpireTimestamp == 0))
-                {
-                    LureExpireTimestamp = oldPokestop.LureExpireTimestamp;
-                    context.Entry(this).Property(p => p.LureExpireTimestamp).IsModified = true;
-                }
-
-                // TODO: Check shouldUpdate
+                CellId = oldPokestop.CellId;
+                context.Entry(this).Property(p => p.CellId).IsModified = true;
             }
+            if (oldPokestop.Name != null && Name == null)
+            {
+                Name = oldPokestop.Name;
+                context.Entry(this).Property(p => p.Name).IsModified = true;
+            }
+            if (oldPokestop.Url != null && Url == null)
+            {
+                Url = oldPokestop.Url;
+                context.Entry(this).Property(p => p.Url).IsModified = true;
+            }
+            if (updateQuest && oldPokestop.QuestType != null && QuestType == null)
+            {
+                QuestType = oldPokestop.QuestType;
+                QuestTarget = oldPokestop.QuestTarget;
+                QuestConditions = oldPokestop.QuestConditions;
+                QuestRewards = oldPokestop.QuestRewards;
+                QuestTimestamp = oldPokestop.QuestTimestamp;
+                QuestTemplate = oldPokestop.QuestTemplate;
+                QuestTitle = oldPokestop.QuestTitle;
+
+                context.Entry(this).Property(p => p.QuestType).IsModified = true;
+                context.Entry(this).Property(p => p.QuestTarget).IsModified = true;
+                context.Entry(this).Property(p => p.QuestConditions).IsModified = true;
+                context.Entry(this).Property(p => p.QuestRewards).IsModified = true;
+                context.Entry(this).Property(p => p.QuestTimestamp).IsModified = true;
+                context.Entry(this).Property(p => p.QuestTemplate).IsModified = true;
+                context.Entry(this).Property(p => p.QuestTitle).IsModified = true;
+            }
+            if (updateQuest && oldPokestop.AlternativeQuestType != null && AlternativeQuestType == null)
+            {
+                AlternativeQuestType = oldPokestop.AlternativeQuestType;
+                AlternativeQuestTarget = oldPokestop.AlternativeQuestTarget;
+                AlternativeQuestConditions = oldPokestop.AlternativeQuestConditions;
+                AlternativeQuestRewards = oldPokestop.AlternativeQuestRewards;
+                AlternativeQuestTimestamp = oldPokestop.AlternativeQuestTimestamp;
+                AlternativeQuestTemplate = oldPokestop.AlternativeQuestTemplate;
+                AlternativeQuestTitle = oldPokestop.AlternativeQuestTitle;
+
+                context.Entry(this).Property(p => p.AlternativeQuestType).IsModified = true;
+                context.Entry(this).Property(p => p.AlternativeQuestTarget).IsModified = true;
+                context.Entry(this).Property(p => p.AlternativeQuestConditions).IsModified = true;
+                context.Entry(this).Property(p => p.AlternativeQuestRewards).IsModified = true;
+                context.Entry(this).Property(p => p.AlternativeQuestTimestamp).IsModified = true;
+                context.Entry(this).Property(p => p.AlternativeQuestTemplate).IsModified = true;
+                context.Entry(this).Property(p => p.AlternativeQuestTitle).IsModified = true;
+            }
+            if (oldPokestop.LureId > 0 && LureId == 0)
+            {
+                LureId = oldPokestop.LureId;
+                context.Entry(this).Property(p => p.LureId).IsModified = true;
+            }
+            if ((oldPokestop.LureExpireTimestamp != null || oldPokestop.LureExpireTimestamp > 0) &&
+                (LureExpireTimestamp == null || LureExpireTimestamp == 0))
+            {
+                LureExpireTimestamp = oldPokestop.LureExpireTimestamp;
+                context.Entry(this).Property(p => p.LureExpireTimestamp).IsModified = true;
+            }
+
+            // TODO: Check shouldUpdate
+
+            // TODO: Webhook
         }
 
         #endregion

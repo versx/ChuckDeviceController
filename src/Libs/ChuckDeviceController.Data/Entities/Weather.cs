@@ -7,6 +7,7 @@
     using POGOProtos.Rpc;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
+    using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
 
@@ -66,6 +67,8 @@
 
         #endregion
 
+        #region Constructors
+
         public Weather()
         {
         }
@@ -93,23 +96,26 @@
             Updated = now;
         }
 
+        #endregion
+
+        #region Public Methods
+
         public bool Update(Weather? oldWeather = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
-            var result = false;
-            if (oldWeather == null)
+
+            var result = oldWeather == null ||
+                oldWeather.GameplayCondition != GameplayCondition ||
+                oldWeather.WarnWeather != WarnWeather;
+
+            if (result)
             {
-                // WebhookController.Instance.AddWeather(this);
-                result = true;
-            }
-            else if (oldWeather.GameplayCondition != GameplayCondition ||
-                oldWeather.WarnWeather != WarnWeather)
-            {
-                // WebhookController.Instance.AddWeather(this);
-                result = true;
+                // TODO: Webhooks
             }
             return result;
         }
+
+        #endregion
     }
 }
