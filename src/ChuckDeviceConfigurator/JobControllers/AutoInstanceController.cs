@@ -27,8 +27,7 @@
 
         private readonly List<PokestopWithMode> _allStops;
         private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops;
-        private readonly Dictionary<PokestopWithMode, byte> _todayStopsAttempts;
-        //private List<ulong> _bootstrapCellIds;
+        private readonly Dictionary<(string, bool), byte> _todayStopsAttempts; // (PokestopId, IsAlternative)
         private PokemonPriorityQueue<ulong> _bootstrapCellIds;
         private readonly System.Timers.Timer _timer;
         private int _bootstrapTotalCount = 0;
@@ -57,7 +56,7 @@
 
         public short TimeZoneOffset { get; }
 
-        public AutoInstanceType Type { get; }
+        public AutoInstanceType AutoType { get; }
 
         public uint SpinLimit { get; }
 
@@ -101,7 +100,7 @@
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
             SpinLimit = instance.Data?.SpinLimit ?? Strings.DefaultSpinLimit;
-            Type = AutoInstanceType.Quest;
+            AutoType = AutoInstanceType.Quest;
             IgnoreS2CellBootstrap = instance.Data?.IgnoreS2CellBootstrap ?? Strings.DefaultIgnoreS2CellBootstrap;
             TimeZoneOffset = timeZoneOffset;
             UseWarningAccounts = instance.Data?.UseWarningAccounts ?? Strings.DefaultUseWarningAccounts;
@@ -117,8 +116,7 @@
 
             _allStops = new List<PokestopWithMode>();
             _todayStops = new PokemonPriorityQueue<PokestopWithMode>();
-            _todayStopsAttempts = new Dictionary<PokestopWithMode, byte>();
-            //_bootstrapCellIds = new List<ulong>();
+            _todayStopsAttempts = new Dictionary<(string, bool), byte>();
             _bootstrapCellIds = new PokemonPriorityQueue<ulong>();
 
             _accounts = new Dictionary<string, string>();
@@ -144,7 +142,7 @@
 
         public async Task<ITask> GetTaskAsync(TaskOptions options)
         {
-            switch (Type)
+            switch (AutoType)
             {
                 case AutoInstanceType.Quest:
                     if (_bootstrapCellIds.Count > 0)
@@ -306,7 +304,7 @@
 
         public async Task<string> GetStatusAsync()
         {
-            switch (Type)
+            switch (AutoType)
             {
                 case AutoInstanceType.Quest:
                     // TODO: Lock _boostrapCellIds
@@ -410,15 +408,13 @@
             _logger.LogInformation($"[{Name}] Bootstrap Status: {found:N0}/{total:N0} after {totalSeconds} seconds");
 
             // TODO: Lock _bootstrapCellIds
-            //_bootstrapCellIds = missingCellIds;
             _bootstrapCellIds.AddRange(missingCellIds.Distinct().ToList());
-            //_bootstrapCellIds.AddRange(missingCellIds);
             _bootstrapTotalCount = total;
         }
 
         private async Task UpdateAsync()
         {
-            switch (Type)
+            switch (AutoType)
             {
                 case AutoInstanceType.Quest:
                     _allStops.Clear();
@@ -476,9 +472,9 @@
                     foreach (var stop in _allStops)
                     {
                         // Check that the Pokestop does not have quests already found and that it is enabled
-                        if (stop.Pokestop.Enabled && // Enabled check is redundant now
-                            (!stop.IsAlternative && stop.Pokestop.QuestType == null) ||
-                            (stop.IsAlternative && stop.Pokestop.AlternativeQuestType == null))
+                        if (stop.Pokestop.IsEnabled && // Enabled check is redundant now
+                           (!stop.IsAlternative && stop.Pokestop.QuestType == null) ||
+                           (stop.IsAlternative && stop.Pokestop.AlternativeQuestType == null))
                         {
                             // Add Pokestop if it's not already in the list
                             if (!_todayStops.Contains(stop))
@@ -615,13 +611,11 @@
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-            if (!(_lastCompletionCheck >= 600))
+            // Check if the last completion delta from current time is within the last 10 minutes,
+            // if it is then we've already completed the instance
+            if (now - _lastCompletionCheck < Strings.TenMinutesS)
             {
-                if (_completionDate == 0)
-                {
-                    _completionDate = now;
-                }
-                OnInstanceComplete(Name, _completionDate);
+                HandleOnCompletion(uuid);
                 return;
             }
 
@@ -653,8 +647,9 @@
                         Pokestop = stop,
                         IsAlternative = isAlternative,
                     };
-                    var spinAttemptsCount = _todayStopsAttempts.ContainsKey(pokestopWithMode)
-                        ? _todayStopsAttempts[pokestopWithMode]
+                    var key = (stop.Id, isAlternative);
+                    var spinAttemptsCount = _todayStopsAttempts.ContainsKey(key)
+                        ? _todayStopsAttempts[key]
                         : 0;
                     if (spinAttemptsCount <= MaximumSpinAttempts &&
                        ((stop.QuestType == null && isNormal) || (stop.AlternativeQuestType == null && isAlternative)))
@@ -666,27 +661,21 @@
 
             if (_todayStops.Count == 0)
             {
-                _logger.LogInformation($"[{Name}] [{uuid}] Quest instance complete");
-                if (_completionDate == 0)
-                {
-                    _completionDate = now;
-                }
-
-                // Call OnInstanceComplete event
-                OnInstanceComplete(Name, now);
+                HandleOnCompletion(uuid);
             }
         }
 
         private void IncrementSpinAttempt(PokestopWithMode pokestop, byte amount = 1)
         {
-            if (_todayStopsAttempts.ContainsKey(pokestop))
+            var key = (pokestop.Pokestop.Id, pokestop.IsAlternative);
+            if (_todayStopsAttempts.ContainsKey(key))
             {
-                var tries = _todayStopsAttempts[pokestop];
-                _todayStopsAttempts[pokestop] = Convert.ToByte(tries == byte.MaxValue ? 10 : tries + amount);
+                var tries = _todayStopsAttempts[key];
+                _todayStopsAttempts[key] = Convert.ToByte(tries == byte.MaxValue ? 10 : tries + amount);
             }
             else
             {
-                _todayStopsAttempts.Add(pokestop, amount);
+                _todayStopsAttempts.Add(key, amount);
             }
         }
 
@@ -779,6 +768,19 @@
                     ? pokestop.AlternativeQuestType != null
                     : pokestop.QuestType != null || pokestop.AlternativeQuestType != null;
             return result;
+        }
+
+        private void HandleOnCompletion(string uuid)
+        {
+            _logger.LogInformation($"[{Name}] [{uuid}] Quest instance complete");
+
+            if (_completionDate == 0)
+            {
+                _completionDate = DateTime.UtcNow.ToTotalSeconds();
+            }
+
+            // Call OnInstanceComplete event
+            OnInstanceComplete(Name, _completionDate);
         }
 
         #endregion
@@ -958,7 +960,7 @@
             using (var context = _mapFactory.CreateDbContext())
             {
                 var pokestops = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id))
-                                                 .Where(stop => stop.Enabled && !stop.Deleted)
+                                                 .Where(stop => stop.IsEnabled && !stop.IsDeleted)
                                                  .ToList();
                 return pokestops;
             }
@@ -974,9 +976,9 @@
                     stop.Latitude <= bbox.MaximumLatitude &&
                     stop.Longitude <= bbox.MaximumLongitude &&
                     onlyEnabled
-                        ? stop.Enabled
-                        : stop.Enabled || !stop.Enabled &&
-                    !stop.Deleted
+                        ? stop.IsEnabled
+                        : stop.IsEnabled || !stop.IsEnabled &&
+                    !stop.IsDeleted
                 ).ToList();
                 return await Task.FromResult(pokestops);
             }
@@ -1022,11 +1024,32 @@
 
         #endregion
 
-        private class PokestopWithMode
+        private class PokestopWithMode : IComparable
         {
             public Pokestop? Pokestop { get; set; }
 
             public bool IsAlternative { get; set; }
+
+            public int CompareTo(object? obj)
+            {
+                if (obj == null)
+                    return -1;
+
+                var other = (PokestopWithMode)obj;
+                var result = CompareTo(other);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = Pokestop.Id.CompareTo(other.Pokestop.Id);
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                return 0;
+            }
         }
     }
 
