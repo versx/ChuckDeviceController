@@ -10,7 +10,7 @@
     using ChuckDeviceController.Extensions;
 
     [Table("gym")]
-    public class Gym : BaseEntity, ICoordinateEntity
+    public class Gym : BaseEntity, ICoordinateEntity, IFortEntity
     {
         public const ushort ExRaidBossId = 150;
         public const ushort ExRaidBossForm = 0;
@@ -67,7 +67,7 @@
         public ushort? RaidLevel { get; set; }
 
         [Column("enabled")]
-        public bool Enabled { get; set; }
+        public bool IsEnabled { get; set; }
 
         [Column("ex_raid_eligible")]
         public bool IsExRaidEligible { get; set; }
@@ -126,6 +126,8 @@
         [Column("power_up_end_timestamp")]
         public ulong? PowerUpEndTimestamp { get; set; }
 
+
+
         [NotMapped]
         public bool HasChanges { get; set; }
 
@@ -140,7 +142,7 @@
             Id = fortData.FortId;
             Latitude = fortData.Latitude;
             Longitude = fortData.Longitude;
-            Enabled = fortData.Enabled;
+            IsEnabled = fortData.Enabled;
             GuardingPokemonId = Convert.ToUInt16(fortData.GuardPokemonId);
             Team = fortData.Team;
             AvailableSlots = Convert.ToUInt16(fortData.GymDisplay.SlotsAvailable);

@@ -335,7 +335,9 @@
                         ? Convert.ToDouble((double)currentCountDb / maxCount) * 100
                         : 100;
 
-                    var completedDate = _completionDate.FromSeconds();
+                    var completedDate = _completionDate.FromSeconds()
+                                                       .ToLocalTime()
+                                                       .ToString("hh:mm:ss tt");
                     var status = $"Status: {currentCountDb:N0}|{currentCount:N0}/{maxCount:N0} " +
                         $"({Math.Round(percentReal, 1)}|" +
                         $"{Math.Round(percent, 1)}%)" +
@@ -612,7 +614,7 @@
 
             var now = DateTime.UtcNow.ToTotalSeconds();
             // Check if the last completion delta from current time is within the last 10 minutes,
-            // if it is then we've already completed the instance
+            // if it is then another device completed the instance
             if (now - _lastCompletionCheck < Strings.TenMinutesS)
             {
                 HandleOnCompletion(uuid);

@@ -12,7 +12,7 @@
     using ChuckDeviceController.Extensions;
 
     [Table("pokestop")]
-    public class Pokestop : BaseEntity, ICoordinateEntity
+    public class Pokestop : BaseEntity, ICoordinateEntity, IFortEntity
     {
         public const ushort LureTime = 1800;
 
@@ -50,13 +50,13 @@
         public ulong Updated { get; set; }
 
         [Column("enabled")]
-        public bool Enabled { get; set; }
+        public bool IsEnabled { get; set; }
 
         [Column("cell_id")]
         public ulong CellId { get; set; }
 
         [Column("deleted")]
-        public bool Deleted { get; set; }
+        public bool IsDeleted { get; set; }
 
         [Column("first_seen_timestamp")]
         public ulong FirstSeenTimestamp { get; set; }
@@ -208,7 +208,7 @@
             {
                 SponsorId = Convert.ToUInt16(fortData.Sponsor);
             }
-            Enabled = fortData.Enabled;
+            IsEnabled = fortData.Enabled;
             IsArScanEligible = fortData.IsArScanEligible;
             var now = DateTime.UtcNow.ToTotalSeconds();
             var powerUpLevelExpirationMs = Convert.ToUInt32(fortData.PowerUpLevelExpirationMs / 1000);

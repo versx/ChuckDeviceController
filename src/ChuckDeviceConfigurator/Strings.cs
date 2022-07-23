@@ -24,7 +24,8 @@
         public const string DefaultInstanceStatus = "--";
 
         // Time properties
-        public const ushort ThirtyMinutesS = 1800;
+        public const ushort TenMinutesS = 600;
+        public const ushort ThirtyMinutesS = TenMinutesS * 3;
         public const ushort SixtyMinutesS = ThirtyMinutesS * 2;
         public const uint OneDayS = SixtyMinutesS * 24;
 

@@ -272,7 +272,9 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             _logger.LogInformation($"Data processer inserted {count:N0} items in {totalSeconds}s");
 
-            // TODO: PlayerData
+            // TODO Add config option
+            // Clear any old Gyms or Pokestops that might have been removed from the game
+            await ClearOldFortsAsync();
 
             return stoppingToken;
         }
@@ -580,7 +582,7 @@
                                         .ToList();
                     if (lvlForts.Count > 0)
                     {
-                        await SendGymsAsync(lvlForts, "test"); // TODO: Get username
+                        await SendGymsAsync(lvlForts, "test"); // TODO: Get username, needed for leveling instance
                     }
 
                     // Convert fort protos to Pokestop/Gym models
@@ -629,7 +631,7 @@
                                 {
                                     if (!_stopIdsPerCell.ContainsKey(cellId))
                                     {
-                                        _stopIdsPerCell.Add(cellId, new List<string>());
+                                        _stopIdsPerCell.Add(cellId, new());
                                     }
                                     _stopIdsPerCell[cellId].Add(data.FortId);
                                 }
@@ -652,7 +654,7 @@
                                 {
                                     if (!_gymIdsPerCell.ContainsKey(cellId))
                                     {
-                                        _gymIdsPerCell.Add(cellId, new List<string>());
+                                        _gymIdsPerCell.Add(cellId, new());
                                     }
                                     _gymIdsPerCell[cellId].Add(data.FortId);
                                 }
@@ -931,6 +933,58 @@
         }
 
         #endregion
+
+        private async Task ClearOldFortsAsync()
+        {
+            // TODO: Use BackgroundTask/HostedService
+
+            var gymsToDelete = new List<Gym>();
+            var stopsToDelete = new List<Pokestop>();
+
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                foreach (var (cellId, pokestopIds) in _stopIdsPerCell)
+                {
+                    var pokestops = context.Pokestops.Where(stop => stop.CellId == cellId && !stop.IsDeleted)
+                                                     .ToList();
+                    if (pokestopIds.Count > 0)
+                    {
+                        pokestops = pokestops.Where(stop => !pokestopIds.Contains(stop.Id))
+                                             .ToList();
+                    }
+                    if (pokestops.Count > 0)
+                    {
+                        pokestops.ForEach(stop => stop.IsDeleted = true);
+                        stopsToDelete.AddRange(pokestops);
+                    }
+                }
+
+                foreach (var (cellId, gymIds) in _gymIdsPerCell)
+                {
+                    var gyms = context.Gyms.Where(gym => gym.CellId == cellId && !gym.IsDeleted)
+                                           .ToList();
+                    if (gymIds.Count > 0)
+                    {
+                        gyms = gyms.Where(gym => !gymIds.Contains(gym.Id))
+                                   .ToList();
+                    }
+                    if (gyms.Count > 0)
+                    {
+                        gyms.ForEach(gym => gym.IsDeleted = true);
+                        gymsToDelete.AddRange(gyms);
+                    }
+                }
+
+                if (stopsToDelete.Count > 0)
+                {
+                    await context.BulkMergeAsync(stopsToDelete);
+                }
+                if (gymsToDelete.Count > 0)
+                {
+                    await context.BulkMergeAsync(gymsToDelete);
+                }
+            }
+        }
 
         #region Private Methods
 
