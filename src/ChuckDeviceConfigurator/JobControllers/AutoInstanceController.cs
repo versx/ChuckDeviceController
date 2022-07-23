@@ -806,6 +806,16 @@
             return closest;
         }
 
+        private static bool HasPokestopQuestByType(Pokestop pokestop, QuestMode mode)
+        {
+            var result = mode == QuestMode.Normal
+                ? pokestop.QuestType != null
+                : mode == QuestMode.Alternative
+                    ? pokestop.AlternativeQuestType != null
+                    : pokestop.QuestType != null || pokestop.AlternativeQuestType != null;
+            return result;
+        }
+
         #endregion
 
         #region Task Creators
@@ -1004,7 +1014,6 @@
 
         private async Task<ulong> GetPokestopQuestCountAsync(List<string> pokestopIds, QuestMode mode)
         {
-            /*
             if (pokestopIds.Count > 10000)
             {
                 var result = 0ul;
@@ -1019,18 +1028,14 @@
                 }
                 return result;
             }
-            */
 
             using (var context = _mapFactory.CreateDbContext())
             {
                 var count = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id))
-                                             .Where(stop => mode == QuestMode.Normal
-                                                                ? stop.QuestType != null
-                                                                : mode == QuestMode.Alternative
-                                                                    ? stop.AlternativeQuestType != null
-                                                                    : stop.QuestType != null || stop.AlternativeQuestType != null)
+                                             .AsEnumerable()
+                                             .Where(stop => HasPokestopQuestByType(stop, mode))
                                              .Count();
-                return (ulong)count;
+                return await Task.FromResult((ulong)count);
             }
         }
 
