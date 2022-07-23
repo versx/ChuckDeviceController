@@ -53,13 +53,13 @@
                     @Html.DisplayFor(modelItem => item.Level)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Status)
+                    @Html.Raw(GetAccountStatusColor(item.Status))
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.LastEncounter)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Spins)
+                    @item.Spins.ToString("N0")
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.GroupName)
@@ -96,3 +96,26 @@
     </a>
 }
 <br />
+
+@{
+    string GetAccountStatusColor(string status)
+    {
+        var color = "black";
+        switch (status)
+        {
+            case "Good":
+                color = "green";
+                break;
+            case "Banned":
+                color = "red";
+                break;
+            case "Warning":
+            case "Invalid":
+            case "Suspended":
+                color = "orange";
+                break;
+        }
+        var html = "<span style='color: {0};'>{1}</span>";
+        return string.Format(html, color, status);
+    }
+}
