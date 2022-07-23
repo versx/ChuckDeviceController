@@ -37,7 +37,8 @@
         public ActionResult Index(int page = 1, int pageSize = 100)
         {
             //var accounts = _context.Accounts.ToList();
-            var accounts = _context.Accounts.Skip((page - 1) * pageSize)
+            var accounts = _context.Accounts.OrderBy(key => key.Username)
+                                            .Skip((page - 1) * pageSize)
                                             .Take(pageSize)
                                             .ToList();
             var accountsInUse = _context.Devices.Where(device => device.AccountUsername != null)
