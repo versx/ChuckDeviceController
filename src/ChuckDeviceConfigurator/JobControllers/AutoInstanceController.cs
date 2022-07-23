@@ -476,7 +476,7 @@
                     foreach (var stop in _allStops)
                     {
                         // Check that the Pokestop does not have quests already found and that it is enabled
-                        if (stop.Pokestop.Enabled &&
+                        if (stop.Pokestop.Enabled && // Enabled check is redundant now
                             (!stop.IsAlternative && stop.Pokestop.QuestType == null) ||
                             (stop.IsAlternative && stop.Pokestop.AlternativeQuestType == null))
                         {
@@ -610,6 +610,7 @@
         {
             if (_todayStops.Count > 0)
             {
+                // Pokestop list still contains items, skip check since we know for sure we haven't finished
                 return;
             }
 
@@ -625,8 +626,9 @@
             }
 
             _lastCompletionCheck = now;
-            var ids = _allStops.Select(x => x.Pokestop.Id).ToList();
 
+            var ids = _allStops.Select(x => x.Pokestop.Id)
+                               .ToList();
             var newStops = new List<Pokestop>();
             try
             {
@@ -651,52 +653,15 @@
                         Pokestop = stop,
                         IsAlternative = isAlternative,
                     };
-                    var count = _todayStopsAttempts.ContainsKey(pokestopWithMode)
+                    var spinAttemptsCount = _todayStopsAttempts.ContainsKey(pokestopWithMode)
                         ? _todayStopsAttempts[pokestopWithMode]
                         : 0;
-                    if (stop.Enabled && count <= MaximumSpinAttempts &&
-                        (
-                            stop.QuestType == null ||
-                            stop.AlternativeQuestType == null
-                        )
-                    )
+                    if (spinAttemptsCount <= MaximumSpinAttempts &&
+                       ((stop.QuestType == null && isNormal) || (stop.AlternativeQuestType == null && isAlternative)))
                     {
                         _todayStops.Add(pokestopWithMode);
                     }
                 }
-                /*
-                if (QuestMode == QuestMode.Normal || QuestMode == QuestMode.Both)
-                {
-                    var pokestopWithMode = new PokestopWithMode
-                    {
-                        Pokestop = stop,
-                        IsAlternative = false,
-                    };
-                    var count = _todayStopsAttempts.ContainsKey(pokestopWithMode)
-                        ? _todayStopsAttempts[pokestopWithMode]
-                        : 0;
-                    if (stop.QuestType == null && stop.Enabled && count <= MaxSpinAttempts)
-                    {
-                        _todayStops.Add(pokestopWithMode);
-                    }
-                }
-
-                if (QuestMode == QuestMode.Alternative || QuestMode == QuestMode.Both)
-                {
-                    var pokestopWithMode = new PokestopWithMode
-                    {
-                        Pokestop = stop,
-                        IsAlternative = true,
-                    };
-                    var count = _todayStopsAttempts.ContainsKey(pokestopWithMode)
-                        ? _todayStopsAttempts[pokestopWithMode]
-                        : 0;
-                    if (stop.AlternativeQuestType == null && stop.Enabled && count <= MaxSpinAttempts)
-                    {
-                        _todayStops.Add(pokestopWithMode);
-                    }
-                }
-                */
             }
 
             if (_todayStops.Count == 0)
@@ -993,6 +958,7 @@
             using (var context = _mapFactory.CreateDbContext())
             {
                 var pokestops = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id))
+                                                 .Where(stop => stop.Enabled && !stop.Deleted)
                                                  .ToList();
                 return pokestops;
             }
