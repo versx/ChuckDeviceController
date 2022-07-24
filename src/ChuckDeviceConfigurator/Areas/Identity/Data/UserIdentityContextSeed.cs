@@ -5,8 +5,8 @@
     public static class UserIdentityContextSeed
 	{
         public static async Task SeedSuperAdminAsync(
-            UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            UserManager<ApplicationUser> userManager)
+            //RoleManager<IdentityRole> roleManager)
         {
             try
             {
@@ -14,7 +14,7 @@
                 var defaultUser = new ApplicationUser
                 {
                     UserName = Strings.DefaultUserName,
-                    Email = "admin@gmail.com",
+                    Email = Strings.DefaultUserEmail,
                     EmailConfirmed = true,
                     PhoneNumberConfirmed = true,
                 };
@@ -37,7 +37,7 @@
         }
 
         public static async Task SeedRolesAsync(
-            UserManager<ApplicationUser> userManager,
+            //UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager)
         {
             try

@@ -6,7 +6,12 @@
     {
         private const string TimeZonesFileName = "timezones.json";
 
-        // TODO: Singleton pattern
+        #region Singleton
+
+        private static TimeZoneService? _instance;
+        public ITimeZoneService Instance => _instance ??= new TimeZoneService();
+
+        #endregion
 
         public IReadOnlyDictionary<string, TimeZoneOffsetData> TimeZones { get; }
 
@@ -15,7 +20,7 @@
             var filePath = Path.Combine(Strings.DataFolder, TimeZonesFileName);
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"{TimeZonesFileName} does not exist!", filePath);
+                throw new FileNotFoundException($"Time zone database file '{TimeZonesFileName}' does not exist!", filePath);
             }
             TimeZones = filePath.LoadFromFile<Dictionary<string, TimeZoneOffsetData>>();
         }

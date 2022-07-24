@@ -4,28 +4,13 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Services.Jobs;
+    using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
-
-    public class SmartRaidGym
-    {
-        public Gym Gym { get; set; }
-
-        public ulong Updated { get; set; }
-
-        public Coordinate Coordinate { get; set; }
-    }
-
-    public class GymsResult
-    {
-        public List<SmartRaidGym> NoBoss { get; set; } = new();
-
-        public List<SmartRaidGym> NoRaid { get; set; } = new();
-    }
 
     public class SmartRaidInstanceController : IJobController
     {
@@ -35,6 +20,7 @@
         private const ushort IgnoreTimeEggS = 150; // 2.5 minutes
         private const ushort IgnoreTimeBossS = 60; // 1 minute
         private const ushort NoRaidTimeS = Strings.ThirtyMinutesS; // 30 minutes
+        private const ushort GymInfoSyncS = 30; // 30 seconds
 
         #endregion
 
@@ -75,7 +61,10 @@
 
         #region Constructor
 
-        public SmartRaidInstanceController(IDbContextFactory<MapDataContext> factory, Instance instance, List<MultiPolygon> multiPolygons)
+        public SmartRaidInstanceController(
+            IDbContextFactory<MapDataContext> factory,
+            Instance instance,
+            List<MultiPolygon> multiPolygons)
         {
             Name = instance.Name;
             MultiPolygons = multiPolygons;
@@ -93,7 +82,7 @@
             // Load/build gyms list for smart raid cache
             LoadGymsAsync();
 
-            _timer = new System.Timers.Timer(30 * 1000); // 30 second interval
+            _timer = new System.Timers.Timer(GymInfoSyncS * 1000); // 30 second interval
             _timer.Elapsed += async (sender, e) => await UpdateGymInfoAsync();
             _timer.Start();
         }
@@ -205,24 +194,24 @@
             //var sw = new System.Diagnostics.Stopwatch();
             //sw.Start();
 
+            // TODO: Get S2 cells within multi polygon bounding box instead of generating route
+
             var allGyms = await GetGymsAsync();
-            var routeGenerator = new Services.Routing.RouteGenerator(_factory);
-            var route = routeGenerator.GenerateRoute(new Services.Routing.RouteGeneratorOptions
+            var routeGenerator = new RouteGenerator(_factory);
+            var route = routeGenerator.GenerateRoute(new RouteGeneratorOptions
             {
-                CircleSize = 500, // TODO: Make configurable?
+                CircleSize = 500, // TODO: Make 'CircleSize' configurable?
                 MaximumPoints = 500,
                 MultiPolygons = (List<MultiPolygon>)MultiPolygons,
-                RouteType = Services.Routing.RouteGenerationType.Bootstrap,
+                RouteType = RouteGenerationType.Bootstrap,
             });
 
             // Optimize bootstrapped route
-            var routeCalculator = new Services.Routing.RouteCalculator(new List<Coordinate>(route));
-            routeCalculator.ClearCoordinatesAfterOptimization = true;
+            var routeCalculator = new RouteCalculator(new List<Coordinate>(route));
             var optimizedRoute = routeCalculator.CalculateShortestRoute();
 
             foreach (var coord in route)
             {
-                // TODO: Get S2 cells within multi polygon bounding box
                 var latlng = S2LatLng.FromDegrees(coord.Latitude, coord.Longitude);
                 var cellIds = latlng.GetLoadedS2CellIds()
                                     .Select(cell => cell.Id)
@@ -237,9 +226,6 @@
 
                     foreach (var gym in gyms)
                     {
-                        // REVIEW: Shoot, when did .NET allow setting dictionary value without
-                        // adding key to dictionary first and just using key index.
-                        // :thinking: Finally! <3
                         _smartRaidGyms[gym.Id] = gym;
                     }
                 }
@@ -423,5 +409,21 @@
         }
 
         #endregion
+
+        private class SmartRaidGym
+        {
+            public Gym Gym { get; set; }
+
+            public ulong Updated { get; set; }
+
+            public Coordinate Coordinate { get; set; }
+        }
+
+        private class GymsResult
+        {
+            public List<SmartRaidGym> NoBoss { get; set; } = new();
+
+            public List<SmartRaidGym> NoRaid { get; set; } = new();
+        }
     }
 }

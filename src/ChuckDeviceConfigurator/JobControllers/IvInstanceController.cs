@@ -226,10 +226,14 @@
                 // Pokemon has IVs scanned, attempt to remove it from the Pokemon queue if it's in it.
                 lock (_queueLock)
                 {
-                    var index = _pokemonQueue.IndexOf(pokemon);
-                    if (index > -1)
+                    //var index = _pokemonQueue.IndexOf(pokemon);
+                    //if (index > -1)
+                    if (_pokemonQueue.Exists(p => p.Id == pokemon.Id && p.AttackIV == null))
                     {
-                        _pokemonQueue.RemoveAt(index);
+                        //_pokemonQueue.RemoveAt(index);
+                        _pokemonQueue.Where(p => p.Id == pokemon.Id && p.AttackIV == null)
+                                     .ToList()
+                                     .ForEach(p => _pokemonQueue.Remove(p));
                     }
 
                     // Checks if instance is for event as well as the Pokemon has not been

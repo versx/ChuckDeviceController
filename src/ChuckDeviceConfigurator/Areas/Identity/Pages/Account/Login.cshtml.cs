@@ -68,7 +68,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
             /// </summary>
             [Required]
             [Display(Name = "Email / Username")]
-            //[EmailAddress]
+            //[EmailAddress] // Allow users to login via username or email address
             public string Email { get; set; }
 
             /// <summary>

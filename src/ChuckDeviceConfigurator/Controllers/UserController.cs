@@ -2,6 +2,7 @@
 {
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Identity.UI.Services;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
@@ -14,15 +15,18 @@
         private readonly ILogger<UserController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IEmailSender _emailSender;
 
         public UserController(
             ILogger<UserController> logger,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IEmailSender emailSender)
         {
             _logger = logger;
             _roleManager = roleManager;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
         // GET: UserController
@@ -109,6 +113,7 @@
 
                 // TODO: Might need to send confirmation email so user can login, since we have non-confirmed
                 // accounts set unable to login unless confirmed.
+                await _emailSender.SendEmailAsync(user.Email, "", "");
 
                 // Assign the default registered user role if no roles specified so the user can manage
                 // their account at the very least until given more permissions/access by an Admin.

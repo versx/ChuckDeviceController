@@ -19,6 +19,7 @@
         // Default user properties
         public const string DefaultUserName = "root";
         public const string DefaultUserPassword = "123Pa$$word.";
+        public const string DefaultUserEmail = "admin@gmail.com";
         public const string DefaultSuccessLoginPath = "/Identity/Account/Manage";
 
         public const string DefaultInstanceStatus = "--";
@@ -37,6 +38,12 @@
         public const ulong DefaultDistance = 10000000000000000;
         public const ushort CooldownLimitS = 7200; // Two hours
         public const uint SuspensionTimeLimitS = 2592000; // Account suspension time period
+
+        // Email
+        public const string DefaultEmailConfirmationSubject = "Confirm your email";
+        public const string DefaultEmailConfirmationMessageHtmlFormat = "Please confirm your account by <a href='{0}'>clicking here</a>.";
+        public const string DefaultResetPasswordEmailSubject = "Reset Password";
+        public const string DefaultResetPasswordMessageHtmlFormat = "Please reset your password by <a href='{0}'>clicking here</a>.";
 
         #region Default Instance Property Values
 
@@ -75,7 +82,7 @@
         public const bool DefaultOptimizeSpawnpointRoute = true;
 
         // Leveling
-        public const uint DefaultLevelingRadius = 10000; // TODO: 10000 or 100000?
+        public const uint DefaultLevelingRadius = 10000;
         public const bool DefaultStoreLevelingData = false;
 
         // All

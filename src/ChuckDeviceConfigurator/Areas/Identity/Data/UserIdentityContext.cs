@@ -8,10 +8,6 @@
         public UserIdentityContext(DbContextOptions<UserIdentityContext> options)
             : base(options)
         {
-            // Migrate to latest
-            //var createSql = Database.GenerateCreateScript();
-            //Console.WriteLine($"CreateSql: {createSql}");
-            //base.Database.Migrate();
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

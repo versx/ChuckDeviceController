@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
-using ChuckDeviceConfigurator.Services;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Services.Jobs;
+using ChuckDeviceConfigurator.Services.Net.Mail;
 using ChuckDeviceConfigurator.Services.Routing;
 using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
@@ -76,23 +76,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.Lockout.AllowedForNewUsers = true;
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Password.RequireDigit = true;
-    options.Password.RequiredLength = 8;
-    options.Password.RequiredUniqueChars = 1;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = true;
-    //options.SignIn.RequireConfirmedAccount = true;
-    options.SignIn.RequireConfirmedEmail = true;
-    //options.User.RequireUniqueEmail = true;
-    //options.Stores.ProtectPersonalData = true;
-    //options.ClaimsIdentity.EmailClaimType
-});
+builder.Services.Configure<IdentityOptions>(options => GetDefaultIdentityOptions());
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -278,9 +262,6 @@ async Task SeedDefaultData(IServiceProvider serviceProvider)
             var jobController = services.GetRequiredService<IJobControllerService>();
             var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
 
-            jobController.Start();
-            assignmentController.Start();
-
             if (AutomaticMigrations)
             {
                 var userContext = services.GetRequiredService<UserIdentityContext>();
@@ -293,11 +274,16 @@ async Task SeedDefaultData(IServiceProvider serviceProvider)
                 await deviceContext.Database.MigrateAsync();
             }
 
+            // Start job controller service
+            jobController.Start();
+            // Start assignment controller service
+            assignmentController.Start();
+
             // Seed default user roles
-            await UserIdentityContextSeed.SeedRolesAsync(userManager, roleManager);
+            await UserIdentityContextSeed.SeedRolesAsync(roleManager);
 
             // Seed default SuperAdmin user
-            await UserIdentityContextSeed.SeedSuperAdminAsync(userManager, roleManager);
+            await UserIdentityContextSeed.SeedSuperAdminAsync(userManager);
         }
         catch (Exception ex)
         {
@@ -305,4 +291,36 @@ async Task SeedDefaultData(IServiceProvider serviceProvider)
             logger.LogError(ex, "An error occurred while seeding the database.");
         }
     }
+}
+
+IdentityOptions GetDefaultIdentityOptions()
+{
+    var options = new IdentityOptions
+    {
+        Lockout = new LockoutOptions
+        {
+            AllowedForNewUsers = true,
+            MaxFailedAccessAttempts = 5,
+            DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15),
+        },
+        Password = new PasswordOptions
+        {
+            RequireDigit = true,
+            RequiredLength = 8,
+            RequiredUniqueChars = 1,
+            RequireLowercase = true,
+            RequireUppercase = true,
+            RequireNonAlphanumeric = true,
+        },
+        SignIn = new SignInOptions
+        {
+            //RequireConfirmedAccount = true,
+            RequireConfirmedEmail = true,
+            //RequireConfirmedPhoneNumber = true,
+        },
+        //options.User.RequireUniqueEmail = true;
+        //options.Stores.ProtectPersonalData = true;
+        //options.ClaimsIdentity.EmailClaimType
+    };
+    return options;
 }
