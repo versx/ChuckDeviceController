@@ -24,9 +24,19 @@
                     if (user == null)
                     {
                         await userManager.CreateAsync(defaultUser, Strings.DefaultUserPassword);
-                        await userManager.AddToRoleAsync(defaultUser, Roles.Registered.ToString());
-                        await userManager.AddToRoleAsync(defaultUser, Roles.Admin.ToString());
-                        await userManager.AddToRoleAsync(defaultUser, Roles.SuperAdmin.ToString());
+                        await userManager.AddToRolesAsync(defaultUser, new[]
+                        {
+                            Roles.Registered.ToString(),
+                            Roles.Admin.ToString(),
+                            Roles.SuperAdmin.ToString()
+                        });
+
+                        if (!await userManager.IsInRoleAsync(defaultUser, Roles.Registered.ToString()) ||
+                            !await userManager.IsInRoleAsync(defaultUser, Roles.Admin.ToString()) ||
+                            !await userManager.IsInRoleAsync(defaultUser, Roles.SuperAdmin.ToString()))
+                        {
+                            Console.WriteLine($"FAILURE: An error occurred while assigning the default user account with necessary roles!");
+                        }
                     }
                 }
             }

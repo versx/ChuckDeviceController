@@ -129,7 +129,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
                         protocol: Request.Scheme);
 
                     await _emailSender.SendEmailAsync(Input.Email, Strings.DefaultEmailConfirmationSubject,
-                        string.Format(Strings.DefaultEmailConfirmationHtmlFormat, HtmlEncoder.Default.Encode(callbackUrl)));
+                        string.Format(Strings.DefaultEmailConfirmationMessageHtmlFormat, HtmlEncoder.Default.Encode(callbackUrl)));
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {

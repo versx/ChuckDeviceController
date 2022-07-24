@@ -8,6 +8,9 @@
 
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
+    using System.Text.Encodings.Web;
+    using Microsoft.AspNetCore.WebUtilities;
+    using System.Text;
 
     [Authorize(Roles = RoleConsts.UsersRole)]
     public class UserController : Controller
@@ -106,14 +109,23 @@
                     return View(model);
                 }
 
-                async Task AssignDefaultRegisteredRole(ApplicationUser user)
+                // Send confirmation email so user can login, since we have non-confirmed
+                // accounts set unable to login unless confirmed.
+                // TODO: Need to confirm above
+                var callbackUrl = await BuildConfirmEmailCallbackUrl(user);
+                if (string.IsNullOrEmpty(callbackUrl))
                 {
-                    await _userManager.AddToRoleAsync(user, Roles.Registered.ToString());
+                    var error = $"Failed to generate email confirmation callback url for user '{user.Email}'";
+                    _logger.LogError(error);
+                    ModelState.AddModelError("User", error);
+                    return View(model);
                 }
 
-                // TODO: Might need to send confirmation email so user can login, since we have non-confirmed
-                // accounts set unable to login unless confirmed.
-                await _emailSender.SendEmailAsync(user.Email, "", "");
+                // Send new user their email confirmation link
+                await _emailSender.SendEmailAsync(
+                    user.Email,
+                        Strings.DefaultEmailConfirmationSubject,
+                        string.Format(Strings.DefaultEmailConfirmationMessageHtmlFormat, HtmlEncoder.Default.Encode(callbackUrl)));
 
                 // Assign the default registered user role if no roles specified so the user can manage
                 // their account at the very least until given more permissions/access by an Admin.
@@ -132,7 +144,7 @@
                         _logger.LogError($"Failed to assign roles to user account '{model.UserName}'. Returned errors: {errors}");
                     }
 
-                    // REVIEW: Might want to make this configurable, unsure at the moment
+                    // REVIEW: Make assigning default 'Registered' role configurable
                     if (!await _userManager.IsInRoleAsync(user, Roles.Registered.ToString()))
                     {
                         // User not assigned default registered role, assign it
@@ -311,6 +323,30 @@
                 ModelState.AddModelError("User", $"Unknown error occurred while deleting user account '{userId}'.");
                 return View(user);
             }
+        }
+
+        private async Task AssignDefaultRegisteredRole(ApplicationUser user)
+        {
+            var defaultRegisteredRole = Roles.Registered.ToString();
+            if (!await _userManager.IsInRoleAsync(user, defaultRegisteredRole))
+            {
+                await _userManager.AddToRoleAsync(user, defaultRegisteredRole);
+            }
+        }
+
+        private async Task<string> BuildConfirmEmailCallbackUrl(ApplicationUser user)
+        {
+            var userId = await _userManager.GetUserIdAsync(user);
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            var returnUrl = Url.Content("~/");
+            var callbackUrl = Url.Page(
+                "/Account/ConfirmEmail",
+                pageHandler: null,
+                values: new { area = "Identity", userId, code, returnUrl },
+                protocol: Request.Scheme
+            );
+            return callbackUrl;
         }
     }
 }
