@@ -306,7 +306,7 @@
                 var previousLevel = _players[username].Level;
                 // Check if incoming level from protos is higher than existing
                 // set level, if so then the trainer has leveled up
-                if (level > previousLevel)// || level > MaximumLevel)
+                if (level > previousLevel && previousLevel > 0)// || level > MaximumLevel)
                 {
                     // Trainer has leveled up
                     if (level > MaximumLevel)
