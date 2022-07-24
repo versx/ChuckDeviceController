@@ -257,6 +257,21 @@
             }
         }
 
+        public IJobController GetInstanceControllerByName(string instanceName)
+        {
+            IJobController jobController;
+            lock (_instancesLock)
+            {
+                if (!_instances.ContainsKey(instanceName))
+                {
+                    _logger.LogError($"[{instanceName}] Unable to get instance controller by name, it does not exist in cache");
+                    return null;
+                }
+                jobController = _instances[instanceName];
+            }
+            return jobController;
+        }
+
         public async Task<string> GetStatusAsync(Instance instance)
         {
             IJobController jobController;
@@ -436,7 +451,6 @@
             _assignmentService.Reload();
         }
 
-        // NOTE: Unused, will need for ScanNext API though.
         public List<string> GetDeviceUuidsInInstance(string instanceName)
         {
             var uuids = new List<string>();
@@ -517,28 +531,14 @@
 
         private void OnAccountLevelUp(object? sender, AccountLevelUpEventArgs e)
         {
-            var date = e.DateReached.FromSeconds();
+            var date = e.DateReached.FromSeconds()
+                                    .ToLocalTime();
             _logger.LogInformation($"Account {e.Username} has reached level {e.Level} at {date} with a total of {e.XP} XP!");
         }
 
         #endregion
 
         #region Private Methods
-
-        private IJobController GetInstanceControllerByName(string name)
-        {
-            IJobController jobController;
-            lock (_instancesLock)
-            {
-                if (!_instances.ContainsKey(name))
-                {
-                    _logger.LogError($"[{name}] Unable to get instance controller by name, it does not exist in cache");
-                    return null;
-                }
-                jobController = _instances[name];
-            }
-            return jobController;
-        }
 
         private short ConvertTimeZoneToOffset(string? timeZone = null, bool enableDst = false)
         {

@@ -34,6 +34,13 @@
         IJobController GetInstanceController(string uuid);
 
         /// <summary>
+        /// Retrieves the job instance controller by name.
+        /// </summary>
+        /// <param name="instanceName">Name of the job instance controller.</param>
+        /// <returns>Returns the job instance controller by name.</returns>
+        IJobController GetInstanceControllerByName(string instanceName);
+
+        /// <summary>
         /// Gets the status for the provided instance.
         /// </summary>
         /// <param name="instance">The instance to get the status for.</param>

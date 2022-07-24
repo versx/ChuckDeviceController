@@ -13,5 +13,7 @@
 		public const string SpinPokestop = "spin_pokestop";
 
 		public const string SwitchAccount = "switch_account";
+
+		public const string ScanNext = "next_scan"; // Really... lol
 	}
 }
