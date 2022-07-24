@@ -1127,7 +1127,7 @@
             return new CooldownResult(delay, encounterTime);
         }
 
-        public static async Task SetEncounterAsync(IDbContextFactory<DeviceControllerContext> factory, Account account, Coordinate location, ulong encounterTime)
+        public static async Task SetEncounterAsync(IDbContextFactory<DeviceControllerContext> factory, Account? account, Coordinate location, ulong encounterTime)
         {
             if (factory == null)
             {

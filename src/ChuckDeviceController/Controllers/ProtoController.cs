@@ -1,7 +1,6 @@
 ﻿namespace ChuckDeviceController.Controllers
 {
     using System;
-    using System.Diagnostics;
 
     using Microsoft.AspNetCore.Mvc;
     using POGOProtos.Rpc;
@@ -16,12 +15,15 @@
     [ApiController]
     public class ProtoController : ControllerBase
     {
+        #region Variables
+
+        private static readonly Dictionary<string, ushort> _levelCache = new();
+
         private readonly ILogger<ProtoController> _logger;
-
-        private readonly Dictionary<string, ushort> _levelCache;
-
         private readonly DeviceControllerContext _context;
         private readonly IProtoProcessorService _protoProcessor;
+
+        #endregion
 
         #region Constructor
 
@@ -33,8 +35,6 @@
             _logger = logger;
             _context = context;
             _protoProcessor = protoProcessor;
-
-            _levelCache = new Dictionary<string, ushort>();
         }
 
         #endregion
@@ -92,9 +92,6 @@
                 _logger.LogError("Invalid proto payload received");
                 return null;
             }
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
 
             var now = DateTime.UtcNow.ToTotalSeconds();
             var device = await _context.Devices.FindAsync(payload.Uuid);
@@ -161,7 +158,7 @@
             return new ProtoResponse
             {
                 Status = "ok",
-                // TODO: Provide actual response details
+                // TODO: Provide actual response details, pretty sure most of it doesn't matter though
                 Data = new ProtoDataDetails
                 {
                     InArea = true,

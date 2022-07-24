@@ -194,7 +194,7 @@
                             break;
                         case InstanceType.Leveling:
                             var startingCoord = coordinates[0][0];
-                            jobController = new LevelingInstanceController(instance, multiPolygons, startingCoord);
+                            jobController = new LevelingInstanceController(_deviceFactory, instance, multiPolygons, startingCoord);
                             break;
                         case InstanceType.PokemonIV:
                             var ivList = _ivListService.GetByName(instance.Data?.IvList ?? Strings.DefaultIvList);

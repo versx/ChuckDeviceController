@@ -2,42 +2,27 @@
 {
     using System.Threading.Tasks;
 
+    using Microsoft.EntityFrameworkCore;
     using POGOProtos.Rpc;
 
     using ChuckDeviceConfigurator.Collections;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    public class PlayerLevelingData
-    {
-        public Dictionary<string, PokemonFortProto> UnspunPokestops { get; } = new();
-
-        public object UnspunPokestopsLock { get; } = new();
-
-        //public List<Coordinate> LastPokestopsSpun { get; } = new();
-        public Dictionary<string, Coordinate> LastPokestopsSpun { get; } = new();
-
-        public ulong LastSeen { get; set; }
-
-        public ulong XP { get; set; }
-
-        public ushort Level { get; set; }
-
-        //public List<(ulong, ulong)> XpPerTime { get; } = new(); // timestamp, xp
-        public PokemonPriorityQueue<(ulong, ulong)> XpPerTime { get; } = new(); // timestamp, xp
-
-        public Coordinate? LastLocation { get; set; }
-    }
-
     public class LevelingInstanceController : IJobController
     {
+        #region Constants
+
         private const ushort DefaultMinTargetLevel = 0;
         private const ushort DefaultMaxTargetLevel = 40;
         private const ushort DefaultLastPokestopsSpunCacheLimit = 10;
+
+        #endregion
 
         #region Variables
 
@@ -87,6 +72,7 @@
         };
 
         private readonly ILogger<LevelingInstanceController> _logger;
+        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
         private readonly Dictionary<string, PlayerLevelingData> _players = new();
         private readonly object _playersLock = new();
 
@@ -119,6 +105,7 @@
         #region Constructor
 
         public LevelingInstanceController(
+            IDbContextFactory<DeviceControllerContext> deviceFactory,
             Instance instance,
             List<MultiPolygon> multiPolygons,
             Coordinate startingCoord)
@@ -134,6 +121,7 @@
             Radius = instance.Data?.LevelingRadius ?? Strings.DefaultLevelingRadius;
 
             _logger = new Logger<LevelingInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            _deviceFactory = deviceFactory;
         }
 
         #endregion
@@ -183,13 +171,13 @@
 
             lock (_playersLock)
             {
-                // Get list of accounts that are actively leveling
+                // Get list of accounts that are actively leveling and seen withint he last 60 minutes
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 var players = _players.Where(pair => now - pair.Value.LastSeen <= Strings.SixtyMinutesS)
-                                  .Select(pair => pair.Key)
-                                  .ToList();
+                                      .Select(pair => pair.Key)
+                                      .ToList();
 
-                var data = new List<LevelStats>();
+                var data = new List<LevelStatsStatus>();
                 foreach (var player in players)
                 {
                     var min = Math.Min(Math.Max(MaximumLevel + 1, DefaultMinTargetLevel), DefaultMaxTargetLevel);
@@ -207,10 +195,9 @@
                     // Get latest player xp and time
                     var xpPerTime = _players[player].XpPerTime;
                     for (var i = 0; i < xpPerTime.Count; i++)
-
                     {
                         var (time, xp) = xpPerTime[i];
-                        if ((now - time) <= Strings.TenMinutesS / 2) //Strings.SixtyMinutesS)
+                        if ((now - time) <= Strings.SixtyMinutesS)
                         {
                             startXp = xp;
                             startTime = time;
@@ -228,12 +215,12 @@
                     );
                     var xpPerHour = xpDelta == 0 || timeDelta == 0
                         ? 0
-                        : Convert.ToInt32((double)xpDelta / timeDelta * Strings.SixtyMinutesS);
+                        : Convert.ToUInt64((double)xpDelta / timeDelta * Strings.SixtyMinutesS);
                     var timeLeft = xpTarget == 0 || xpCurrent == 0 || xpPerHour == 0
                         ? 999.0
                         : Convert.ToDouble((double)xpTarget - xpCurrent) / Convert.ToDouble(xpPerHour);
 
-                    data.Add(new LevelStats
+                    data.Add(new LevelStatsStatus
                     {
                         XpTarget = xpTarget,
                         XpStart = xpStart,
@@ -304,10 +291,25 @@
             {
                 AddPlayer(username);
 
-                var now = DateTime.UtcNow.ToTotalSeconds();
+                var previousLevel = _players[username].Level;
+                // Check if incoming level from protos is higher than existing
+                // set level, if so then the trainer has leveled up
+                if (level > previousLevel)
+                {
+                    // TODO: Trainer leveled up, call LevelUp event
+                    _logger.LogInformation($"[{Name}] [{username}] Trainer has level up from {previousLevel} to {level} with {xp:N0} total experience points!");
+                }
                 _players[username].Level = level;
                 _players[username].XP = xp;
+
+                if (level > MaximumLevel)
+                {
+                    // TODO: Trainer has leveled up completely, call event
+                    _logger.LogInformation($"[{Name}] [{username}] Has leveled up completely to {MaximumLevel} with {xp:N0} total experience points!");
+                }
+
                 // Prevent multiple XpPerTime entries that are the same
+                var now = DateTime.UtcNow.ToTotalSeconds();
                 if (!_players[username].XpPerTime.Exists(tuple => tuple.Item1 == now))
                 {
                     _players[username].XpPerTime.Add((now, xp));
@@ -464,7 +466,8 @@
 
             try
             {
-                await Cooldown.SetEncounterAsync(/* TODO: _deviceFactory*/ null, account, currentCoord, encounterTime);
+                // TODO: Call SetEncounter event instead of passing around IDbContextFactories
+                await Cooldown.SetEncounterAsync(_deviceFactory, account, currentCoord, encounterTime);
             }
             catch (Exception ex)
             {
@@ -546,7 +549,26 @@
 
         #endregion
 
-        private class LevelStats
+        private class PlayerLevelingData
+        {
+            public Dictionary<string, PokemonFortProto> UnspunPokestops { get; } = new();
+
+            public object UnspunPokestopsLock { get; } = new();
+
+            public Dictionary<string, Coordinate> LastPokestopsSpun { get; } = new();
+
+            public ulong LastSeen { get; set; }
+
+            public ulong XP { get; set; }
+
+            public ushort Level { get; set; }
+
+            public PokemonPriorityQueue<(ulong, ulong)> XpPerTime { get; } = new(); // timestamp, xp
+
+            public Coordinate? LastLocation { get; set; }
+        }
+
+        private class LevelStatsStatus
         {
             public ulong XpTarget { get; set; }
 
