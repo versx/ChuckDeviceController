@@ -2,10 +2,13 @@
 {
     using System.Threading.Tasks;
 
+    using Microsoft.EntityFrameworkCore;
+
     using ChuckDeviceConfigurator.Collections;
     using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
@@ -25,15 +28,18 @@
         #region Variables
 
         private readonly ILogger<IvInstanceController> _logger;
+        private readonly IDbContextFactory<MapDataContext> _mapFactory;
         //private readonly IndexedPriorityQueue<Pokemon> _pokemonQueue;
         private readonly PokemonPriorityQueue<Pokemon> _pokemonQueue;
-        private readonly List<ScannedPokemon> _scannedPokemon;
+        private readonly PokemonPriorityQueue<ScannedPokemon> _scannedPokemon;
         private readonly object _queueLock = new();
         private readonly object _scannedLock = new();
         private readonly object _statsLock = new();
-        private readonly System.Timers.Timer _timer;
+        private readonly bool _shouldExitThread;
+        //private readonly System.Timers.Timer _timer;
         private ulong _count = 0;
         private ulong _startDate;
+        private Thread _checkThread;
 
         #endregion
 
@@ -63,7 +69,11 @@
 
         #region Constructor
 
-        public IvInstanceController(Instance instance, List<MultiPolygon> multiPolygons, List<uint> pokemonIds)
+        public IvInstanceController(
+            IDbContextFactory<MapDataContext> mapFactory,
+            Instance instance,
+            List<MultiPolygon> multiPolygons,
+            List<uint> pokemonIds)
         {
             Name = instance.Name;
             MultiPolygons = multiPolygons;
@@ -76,14 +86,22 @@
                                    .ToList();
             EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
 
-            _pokemonQueue = new PokemonPriorityQueue<Pokemon>(QueueLimit);
-            _scannedPokemon = new List<ScannedPokemon>();
-            _startDate = DateTime.UtcNow.ToTotalSeconds();
             _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            _mapFactory = mapFactory;
+            _pokemonQueue = new PokemonPriorityQueue<Pokemon>(QueueLimit);
+            _scannedPokemon = new PokemonPriorityQueue<ScannedPokemon>();
+            _startDate = DateTime.UtcNow.ToTotalSeconds();
 
-            _timer = new System.Timers.Timer(CheckScanHistoryIntervalS * 1000); // 5 second interval
-            _timer.Elapsed += (sender, e) => CheckScannedPokemonHistory();
-            _timer.Start();
+            //_timer = new System.Timers.Timer(CheckScanHistoryIntervalS * 1000); // 5 second interval
+            //_timer.Elapsed += (sender, e) => CheckScannedPokemonHistory();
+            //_timer.Start();
+
+            _checkThread = new Thread(new ThreadStart(CheckScannedPokemonHistory))
+            {
+                IsBackground = true,
+                Priority = ThreadPriority.Lowest,
+            };
+            _checkThread.Start();
         }
 
         #endregion
@@ -143,7 +161,7 @@
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 // Prevent dividing by zero
                 ivh = _count > 0
-                    ? _count / (now - _startDate) * Strings.SixtyMinutesS
+                    ? (double)_count / (now - _startDate) * Strings.SixtyMinutesS
                     : 0;
             }
             var ivhStr = Strings.DefaultInstanceStatus;
@@ -166,6 +184,14 @@
             _pokemonQueue.Clear();
             _scannedPokemon.Clear();
 
+            //if (!_timer.Enabled)
+            //{
+            //    _timer.Start();
+            //}
+
+            _checkThread = new Thread(new ThreadStart(CheckScannedPokemonHistory));
+            _checkThread.Start();
+
             return Task.CompletedTask;
         }
 
@@ -173,7 +199,10 @@
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 
-            _timer.Stop();
+            _checkThread.Join(500);
+            _checkThread = null;
+            //_timer.Stop();
+
             return Task.CompletedTask;
         }
 
@@ -192,7 +221,7 @@
                 return;
             }
 
-            if (hasIv)
+            if (hasIv && pokemon.AttackIV != null)
             {
                 // Pokemon has IVs scanned, attempt to remove it from the Pokemon queue if it's in it.
                 lock (_queueLock)
@@ -230,8 +259,24 @@
 
             lock (_queueLock)
             {
-                if (_pokemonQueue.Contains(pokemon))
+                //if (_pokemonQueue.Contains(pokemon))
+                if (_pokemonQueue.Exists(p => p.Id == pokemon.Id))
                 {
+                    // Encounter is already in the queue
+                    if (pokemon.AttackIV != null)
+                    {
+                        // Some how the encounter has IV and wasn't removed
+                        UpdateStats();
+
+                        var queueIndex = _pokemonQueue.IndexOf(pokemon);
+                        if (queueIndex > -1)
+                        {
+                            _pokemonQueue.RemoveAt(queueIndex);
+                        }
+                        _pokemonQueue.Where(p => p.Id == pokemon.Id)
+                                     .ToList()
+                                     .ForEach(p => _pokemonQueue.Remove(p));
+                    }
                     return;
                 }
 
@@ -317,55 +362,66 @@
             };
         }
 
-        private void CheckScannedPokemonHistory()
+        private async void CheckScannedPokemonHistory()
         {
-            ScannedPokemon? scannedPokemon = null;
-            lock (_scannedLock)
+            while (!_shouldExitThread)
             {
-                if (_scannedPokemon.Count == 0)
+                ScannedPokemon? scannedPokemon = null;
+                lock (_scannedLock)
                 {
-                    return;
+                    if (_scannedPokemon.Count == 0)
+                    {
+                        Thread.Sleep(5 * 1000);
+                        continue;
+                    }
+
+                    scannedPokemon = _scannedPokemon.FirstOrDefault();
+                    _scannedPokemon.Remove(scannedPokemon);
                 }
 
-                scannedPokemon = _scannedPokemon.FirstOrDefault();
-                _scannedPokemon.Remove(scannedPokemon);
-            }
+                var now = DateTime.UtcNow.ToTotalSeconds();
+                var timeSince = now - scannedPokemon.DateScanned;
+                if (timeSince < 120)
+                {
+                    Thread.Sleep(Convert.ToInt32(120 - timeSince) * 1000);
+                    continue;
+                }
 
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var timeSince = now - scannedPokemon.DateScanned;
-            if (timeSince < 120)
-            {
-                Thread.Sleep(Convert.ToInt32(120 - timeSince) * 1000);
-                // TODO: Should exit
-            }
+                var success = false;
+                Pokemon? pokemonReal = null;
+                using (var context = _mapFactory.CreateDbContext())
+                {
+                    while (!success)
+                    {
+                        try
+                        {
+                            // TODO: Add max retry
+                            pokemonReal = await context.Pokemon.FindAsync(scannedPokemon.Pokemon.Id);
+                            success = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"Error: {ex}");
+                            Thread.Sleep(1000);
+                            continue;
+                        }
 
-            // TODO: Spawn new thread instead of timer since it is continously checked within this scope
-            var success = false;
-            Pokemon? pokemonReal = null;
-            while (!success)
-            {
-                try
-                {
-                    // TODO: pokemonReal = Pokemon.GeByIdAsync(scannedPokemon.Pokemon.Id);
-                    success = true;
+                        Thread.Sleep(1000);
+                    }
                 }
-                catch (Exception ex)
+                if (pokemonReal != null)
                 {
-                    _logger.LogError($"Error: {ex}");
-                    Thread.Sleep(1000);
-                    // TODO: Should exit
+                    if (pokemonReal.AttackIV == null)
+                    {
+                        _logger.LogInformation($"[{Name}] Checked Pokemon {pokemonReal.Id} doesn't have IV");
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"[{Name}] Checked Pokemon {pokemonReal.Id} has IV");
+                    }
                 }
-            }
-            if (pokemonReal != null)
-            {
-                if (pokemonReal.AttackIV == null)
-                {
-                    _logger.LogInformation($"[{Name}] Checked Pokemon {pokemonReal.Id} doesn't have IV");
-                }
-                else
-                {
-                    _logger.LogInformation($"[{Name}]Checked Pokemon {pokemonReal.Id} has IV");
-                }
+
+                Thread.Sleep(100);
             }
         }
 

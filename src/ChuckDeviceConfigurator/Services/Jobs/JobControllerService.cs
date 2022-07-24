@@ -206,7 +206,7 @@
                                 _logger.LogError($"Failed to fetch IV list for instance {instance.Name}, skipping controller instantiation...");
                                 return;
                             }
-                            jobController = CreateIvJobController(instance, multiPolygons, ivList);
+                            jobController = CreateIvJobController(_mapFactory, instance, multiPolygons, ivList);
                             break;
                         case InstanceType.SmartRaid:
                             jobController = CreateSmartRaidJobController(_mapFactory, instance, multiPolygons);
@@ -602,9 +602,10 @@
             return jobController;
         }
 
-        private static IJobController CreateIvJobController(Instance instance, List<MultiPolygon> multiPolygons, IvList ivList)
+        private static IJobController CreateIvJobController(IDbContextFactory<MapDataContext> mapFactory, Instance instance, List<MultiPolygon> multiPolygons, IvList ivList)
         {
             var jobController = new IvInstanceController(
+                mapFactory,
                 instance,
                 multiPolygons,
                 ivList.PokemonIds

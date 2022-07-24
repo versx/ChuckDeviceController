@@ -69,7 +69,7 @@
             foreach (var coord in coords)
             {
                 // TODO: Log debug instead
-                _logger.LogInformation($"[{jobController.Name}] Adding coordinate '{coord}' to ScanNext job controller instance");
+                _logger.LogInformation($"[{jobController.Name}] Queuing coordinate '{coord}' to ScanNext job controller instance");
                 scanNextController.ScanNextCoordinates.Enqueue(coord);
             }
 
