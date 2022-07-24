@@ -94,8 +94,9 @@
         {
             if (ScanNextCoordinates.Count > 0)
             {
-                var currentCoord = ScanNextCoordinates.Dequeue();
-                var scanNextTask = CreateScanNextTask(currentCoord);
+                var coord = ScanNextCoordinates.Dequeue();
+                var scanNextTask = CreateScanNextTask(coord);
+                _logger.LogInformation($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
                 return await Task.FromResult(scanNextTask);
             }
 

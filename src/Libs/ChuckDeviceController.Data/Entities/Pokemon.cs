@@ -195,14 +195,13 @@
                 Weather = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay.WeatherBoostedCondition);
             }
             Username = username;
+            SpawnId = spawnId;
+            CellId = cellId;
+            SeenType = SeenType.Wild;
 
             UpdateSpawnpointAsync(context, wildPokemon, spawnId).ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
-
-            SpawnId = spawnId;
-            CellId = cellId;
-            SeenType = SeenType.Wild;
         }
 
         public Pokemon(MapDataContext context, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
@@ -500,7 +499,7 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
-            context.Attach(this);
+            //context.Attach(this);
 
             Pokemon? oldPokemon = null;
             try
@@ -542,18 +541,18 @@
                     updateIV = true;
                     //CalculatePvpRankings();
 
-                    context.Entry(this).Property(p => p.AttackIV).IsModified = true;
-                    context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
-                    context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
-                    context.Entry(this).Property(p => p.CP).IsModified = true;
-                    context.Entry(this).Property(p => p.Weight).IsModified = true;
-                    context.Entry(this).Property(p => p.Size).IsModified = true;
-                    context.Entry(this).Property(p => p.Move1).IsModified = true;
-                    context.Entry(this).Property(p => p.Move2).IsModified = true;
-                    context.Entry(this).Property(p => p.Level).IsModified = true;
-                    context.Entry(this).Property(p => p.Capture1).IsModified = true;
-                    context.Entry(this).Property(p => p.Capture2).IsModified = true;
-                    context.Entry(this).Property(p => p.Capture3).IsModified = true;
+                    //context.Entry(this).Property(p => p.AttackIV).IsModified = true;
+                    //context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
+                    //context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
+                    //context.Entry(this).Property(p => p.CP).IsModified = true;
+                    //context.Entry(this).Property(p => p.Weight).IsModified = true;
+                    //context.Entry(this).Property(p => p.Size).IsModified = true;
+                    //context.Entry(this).Property(p => p.Move1).IsModified = true;
+                    //context.Entry(this).Property(p => p.Move2).IsModified = true;
+                    //context.Entry(this).Property(p => p.Level).IsModified = true;
+                    //context.Entry(this).Property(p => p.Capture1).IsModified = true;
+                    //context.Entry(this).Property(p => p.Capture2).IsModified = true;
+                    //context.Entry(this).Property(p => p.Capture3).IsModified = true;
                 }
             }
             if (IsEvent && !IsExpireTimestampVerified)
@@ -581,26 +580,30 @@
                 if (ExpireTimestamp == 0)
                 {
                     ExpireTimestamp = now + DefaultTimeUnseenS;
-                    context.Entry(this).Property(p => p.ExpireTimestamp).IsModified = true;
+                    //context.Entry(this).Property(p => p.ExpireTimestamp).IsModified = true;
                 }
-                FirstSeenTimestamp = Updated;
+                FirstSeenTimestamp = now;
                 Updated = now;
                 Changed = now;
 
-                context.Entry(this).Property(p => p.FirstSeenTimestamp).IsModified = true;
-                context.Entry(this).Property(p => p.Updated).IsModified = true;
-                context.Entry(this).Property(p => p.Changed).IsModified = true;
+                //context.Entry(this).Property(p => p.FirstSeenTimestamp).IsModified = true;
+                //context.Entry(this).Property(p => p.Updated).IsModified = true;
+                //context.Entry(this).Property(p => p.Changed).IsModified = true;
             }
             else
             {
-                FirstSeenTimestamp = oldPokemon.FirstSeenTimestamp;
-                context.Entry(this).Property(p => p.FirstSeenTimestamp).IsModified = true;
+                if (FirstSeenTimestamp == null && oldPokemon.FirstSeenTimestamp > 0)
+                {
+                    FirstSeenTimestamp = oldPokemon.FirstSeenTimestamp;
+                }
 
-                if (ExpireTimestamp == 0)
+                //context.Entry(this).Property(p => p.FirstSeenTimestamp).IsModified = true;
+
+                if (ExpireTimestamp == 0)// && oldPokemon.ExpireTimestamp > 0)
                 {
                     var changed = DateTime.UtcNow.ToTotalSeconds();
                     var oldExpireDate = oldPokemon.ExpireTimestamp;
-                    if (oldExpireDate - changed < DefaultTimeReseenS)
+                    if (changed - oldExpireDate < DefaultTimeReseenS || /* TODO: Workaround */ oldPokemon.ExpireTimestamp == 0)
                     {
                         ExpireTimestamp = changed + DefaultTimeReseenS;
                     }
@@ -608,9 +611,10 @@
                     {
                         ExpireTimestamp = oldPokemon.ExpireTimestamp;
                     }
-                    context.Entry(this).Property(p => p.ExpireTimestamp).IsModified = true;
+                    //context.Entry(this).Property(p => p.ExpireTimestamp).IsModified = true;
                 }
-                if (IsExpireTimestampVerified && oldPokemon.IsExpireTimestampVerified)
+
+                if (!IsExpireTimestampVerified && oldPokemon.IsExpireTimestampVerified)
                 {
                     IsExpireTimestampVerified = oldPokemon.IsExpireTimestampVerified;
                     ExpireTimestamp = oldPokemon.ExpireTimestamp;
@@ -631,14 +635,14 @@
                         Console.WriteLine($"Pokemon {Id} Ditto from {oldPokemon.PokemonId} to {PokemonId}");
                     }
 
-                    context.Entry(this).Property(p => p.PokemonId).IsModified = true;
-                    context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
+                    //context.Entry(this).Property(p => p.PokemonId).IsModified = true;
+                    //context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
                 }
 
                 if (oldPokemon.CellId > 0 && CellId == 0)
                 {
                     CellId = oldPokemon.CellId;
-                    context.Entry(this).Property(p => p.CellId).IsModified = true;
+                    //context.Entry(this).Property(p => p.CellId).IsModified = true;
                 }
 
                 if (oldPokemon.SpawnId != null)
@@ -647,15 +651,15 @@
                     Latitude = oldPokemon.Latitude;
                     Longitude = oldPokemon.Longitude;
 
-                    context.Entry(this).Property(p => p.SpawnId).IsModified = true;
-                    context.Entry(this).Property(p => p.Latitude).IsModified = true;
-                    context.Entry(this).Property(p => p.Longitude).IsModified = true;
+                    //context.Entry(this).Property(p => p.SpawnId).IsModified = true;
+                    //context.Entry(this).Property(p => p.Latitude).IsModified = true;
+                    //context.Entry(this).Property(p => p.Longitude).IsModified = true;
                 }
 
                 if (oldPokemon.PokestopId != null && PokestopId == null)
                 {
                     PokestopId = oldPokemon.PokestopId;
-                    context.Entry(this).Property(p => p.PokestopId).IsModified = true;
+                    //context.Entry(this).Property(p => p.PokestopId).IsModified = true;
                 }
 
                 //if (oldPokemon.Pvp != null && Pvp == null)
@@ -672,7 +676,7 @@
                 {
                     Changed = oldPokemon.Changed;
                 }
-                context.Entry(this).Property(p => p.Changed).IsModified = true;
+                //context.Entry(this).Property(p => p.Changed).IsModified = true;
 
                 var weatherChanged = (oldPokemon.Weather == null || oldPokemon.Weather != 0) && (Weather > 0) ||
                     (Weather == null || Weather == 0) && (oldPokemon.Weather > 0);
@@ -752,18 +756,18 @@
                     Capture3 = null;
                     //Pvp = null;
 
-                    context.Entry(this).Property(p => p.AttackIV).IsModified = true;
-                    context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
-                    context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
-                    context.Entry(this).Property(p => p.CP).IsModified = true;
-                    context.Entry(this).Property(p => p.Weight).IsModified = true;
-                    context.Entry(this).Property(p => p.Size).IsModified = true;
-                    context.Entry(this).Property(p => p.Move1).IsModified = true;
-                    context.Entry(this).Property(p => p.Move2).IsModified = true;
-                    context.Entry(this).Property(p => p.Level).IsModified = true;
-                    context.Entry(this).Property(p => p.Capture1).IsModified = true;
-                    context.Entry(this).Property(p => p.Capture2).IsModified = true;
-                    context.Entry(this).Property(p => p.Capture3).IsModified = true;
+                    //context.Entry(this).Property(p => p.AttackIV).IsModified = true;
+                    //context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
+                    //context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
+                    //context.Entry(this).Property(p => p.CP).IsModified = true;
+                    //context.Entry(this).Property(p => p.Weight).IsModified = true;
+                    //context.Entry(this).Property(p => p.Size).IsModified = true;
+                    //context.Entry(this).Property(p => p.Move1).IsModified = true;
+                    //context.Entry(this).Property(p => p.Move2).IsModified = true;
+                    //context.Entry(this).Property(p => p.Level).IsModified = true;
+                    //context.Entry(this).Property(p => p.Capture1).IsModified = true;
+                    //context.Entry(this).Property(p => p.Capture2).IsModified = true;
+                    //context.Entry(this).Property(p => p.Capture3).IsModified = true;
                     //context.Entry(this).Property(p => p.Pvp).IsModified = true;
 
                     Console.WriteLine($"Weather-Boosted state changed. Clearing IVs");
@@ -777,32 +781,32 @@
 
                 if (updateIV || setIvForWeather)
                 {
-                    context.Entry(this).Property(p => p.AttackIV).IsModified = true;
-                    context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
-                    context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
-                    context.Entry(this).Property(p => p.CP).IsModified = true;
-                    context.Entry(this).Property(p => p.Weight).IsModified = true;
-                    context.Entry(this).Property(p => p.Size).IsModified = true;
-                    context.Entry(this).Property(p => p.Move1).IsModified = true;
-                    context.Entry(this).Property(p => p.Move2).IsModified = true;
-                    context.Entry(this).Property(p => p.Level).IsModified = true;
-                    context.Entry(this).Property(p => p.Capture1).IsModified = true;
-                    context.Entry(this).Property(p => p.Capture2).IsModified = true;
-                    context.Entry(this).Property(p => p.Capture3).IsModified = true;
-                    context.Entry(this).Property(p => p.IsShiny).IsModified = true;
-                    context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
+                    //context.Entry(this).Property(p => p.AttackIV).IsModified = true;
+                    //context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
+                    //context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
+                    //context.Entry(this).Property(p => p.CP).IsModified = true;
+                    //context.Entry(this).Property(p => p.Weight).IsModified = true;
+                    //context.Entry(this).Property(p => p.Size).IsModified = true;
+                    //context.Entry(this).Property(p => p.Move1).IsModified = true;
+                    //context.Entry(this).Property(p => p.Move2).IsModified = true;
+                    //context.Entry(this).Property(p => p.Level).IsModified = true;
+                    //context.Entry(this).Property(p => p.Capture1).IsModified = true;
+                    //context.Entry(this).Property(p => p.Capture2).IsModified = true;
+                    //context.Entry(this).Property(p => p.Capture3).IsModified = true;
+                    //context.Entry(this).Property(p => p.IsShiny).IsModified = true;
+                    //context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
                     //context.Entry(this).Property(p => p.Pvp).IsModified = true;
                 }
 
                 if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
                 {
-                    context.Entry(this).Property(p => p.PokemonId).IsModified = true;
-                    context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
+                    //context.Entry(this).Property(p => p.PokemonId).IsModified = true;
+                    //context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
                     Console.WriteLine($"Pokemon {Id} Ditto changed from {oldPokemon.PokemonId} to {PokemonId}");
                 }
 
                 Updated = now;
-                context.Entry(this).Property(p => p.Updated).IsModified = true;
+                //context.Entry(this).Property(p => p.Updated).IsModified = true;
             }
 
             if (setIvForWeather)
@@ -818,8 +822,8 @@
             }
             else if (updateIV && ((oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon.HasIvChanges))
             {
-                oldPokemon.HasIvChanges = false;
                 // TODO: Webhook
+                oldPokemon.HasIvChanges = false;
                 IsNewPokemonWithIV = true;
             }
 
@@ -873,7 +877,8 @@
                 if (spawnpoint != null && spawnpoint.DespawnSecond != null)
                 {
                     var despawnSecond = spawnpoint.DespawnSecond;
-                    var date = timestampMs.FromMilliseconds();
+                    var ts = timestampMs / 1000;
+                    var date = ts.FromSeconds();
                     var secondOfHour = date.Second + (date.Minute * 60);
                     var despawnOffset = despawnSecond - secondOfHour;
                     if (despawnSecond < secondOfHour)
@@ -888,7 +893,7 @@
                         context.Spawnpoints.Update(spawnpoint);
                     }
 
-                    ExpireTimestamp = now + (ulong)despawnOffset;
+                    ExpireTimestamp = ts + (ulong)despawnOffset;
                     IsExpireTimestampVerified = true;
                 }
                 else

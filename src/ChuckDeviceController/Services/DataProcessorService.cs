@@ -389,7 +389,7 @@
                     {
                         // Do not update IV specific columns
                         options.UseTableLock = true;
-                        // TODO: Check docs if this needs to be set when IgnoreOnMergeUpdateExpression is set
+                        // TODO: Check docs if 'IgnoreOnMergeUpdate' needs to be set when IgnoreOnMergeUpdateExpression is set
                         //options.IgnoreOnMergeUpdate = true;
                         options.IgnoreOnMergeUpdateExpression = p => new
                         {

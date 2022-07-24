@@ -52,6 +52,7 @@
             {
                 var coord = ScanNextCoordinates.Dequeue();
                 var scanNextTask = CreateTask(coord, CircleType);
+                _logger.LogInformation($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
                 return await Task.FromResult(scanNextTask);
             }
 

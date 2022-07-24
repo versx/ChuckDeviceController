@@ -88,6 +88,7 @@
             {
                 var coord = ScanNextCoordinates.Dequeue();
                 var scanNextTask = CreateScanNextTask(coord);
+                _logger.LogInformation($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
                 return await Task.FromResult(scanNextTask);
             }
 
