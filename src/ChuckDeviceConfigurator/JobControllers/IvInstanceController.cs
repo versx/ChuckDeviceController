@@ -17,29 +17,31 @@
 
     public class IvInstanceController : IJobController, ILureInstanceController, IScanNextInstanceController
     {
-        private const uint CheckScanHistoryIntervalS = 5;
-        private static readonly List<ushort> EventAttackIV = new()
-        {
-            0,
-            1,
-            15,
-        };
+        #region Constants
+
+        //private const uint CheckScanHistoryIntervalS = 5;
+        private const ushort DefaultTerminateThreadTimeoutMs = 5 * 1000;
+        private const ushort MaximumRetryCount = 10;
+
+        #endregion
 
         #region Variables
 
         private readonly ILogger<IvInstanceController> _logger;
         private readonly IDbContextFactory<MapDataContext> _mapFactory;
-        //private readonly IndexedPriorityQueue<Pokemon> _pokemonQueue;
         private readonly PokemonPriorityQueue<Pokemon> _pokemonQueue;
         private readonly PokemonPriorityQueue<ScannedPokemon> _scannedPokemon;
+        private static readonly List<ushort> EventAttackIV = new() { 0, 1, 15 };
+
         private readonly object _queueLock = new();
         private readonly object _scannedLock = new();
         private readonly object _statsLock = new();
-        private readonly bool _shouldExitThread;
+
+        private bool _shouldExitThread = false;
+        private Thread? _checkThread;
         //private readonly System.Timers.Timer _timer;
         private ulong _count = 0;
         private ulong _startDate;
-        private Thread _checkThread;
 
         #endregion
 
@@ -189,6 +191,15 @@
             //    _timer.Start();
             //}
 
+            _shouldExitThread = false;
+
+            if (_checkThread != null)
+            {
+                if (!_checkThread.Join(DefaultTerminateThreadTimeoutMs))
+                {
+                    _logger.LogError($"[{Name}] Failed to terminate IV queue thread");
+                }
+            }
             _checkThread = new Thread(new ThreadStart(CheckScannedPokemonHistory));
             _checkThread.Start();
 
@@ -199,9 +210,18 @@
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 
-            _checkThread.Join(500);
-            _checkThread = null;
             //_timer.Stop();
+
+            _shouldExitThread = true;
+
+            if (_checkThread != null)
+            {
+                if (!_checkThread.Join(DefaultTerminateThreadTimeoutMs))
+                {
+                    _logger.LogError($"[{Name}] Failed to terminate IV queue thread");
+                }
+                _checkThread = null;
+            }
 
             return Task.CompletedTask;
         }
@@ -272,11 +292,11 @@
                         // Some how the encounter has IV and wasn't removed
                         UpdateStats();
 
-                        var queueIndex = _pokemonQueue.IndexOf(pokemon);
-                        if (queueIndex > -1)
-                        {
-                            _pokemonQueue.RemoveAt(queueIndex);
-                        }
+                        //var queueIndex = _pokemonQueue.IndexOf(pokemon);
+                        //if (queueIndex > -1)
+                        //{
+                        //    _pokemonQueue.RemoveAt(queueIndex);
+                        //}
                         _pokemonQueue.Where(p => p.Id == pokemon.Id)
                                      .ToList()
                                      .ForEach(p => _pokemonQueue.Remove(p));
@@ -368,6 +388,8 @@
 
         private async void CheckScannedPokemonHistory()
         {
+            const ushort TwoMinutesS = 120;
+
             while (!_shouldExitThread)
             {
                 ScannedPokemon? scannedPokemon = null;
@@ -379,29 +401,41 @@
                         continue;
                     }
 
-                    scannedPokemon = _scannedPokemon.FirstOrDefault();
-                    _scannedPokemon.Remove(scannedPokemon);
+                    scannedPokemon = _scannedPokemon.Pop();
                 }
 
                 var now = DateTime.UtcNow.ToTotalSeconds();
-                var timeSince = now - scannedPokemon.DateScanned;
-                if (timeSince < 120)
+                var timeSince = now - scannedPokemon?.DateScanned;
+                // Check if scanned Pokemon has been seen within the last 2 minutes,
+                // if so then give IV workers time to encounter
+                if (timeSince < TwoMinutesS)
                 {
-                    Thread.Sleep(Convert.ToInt32(120 - timeSince) * 1000);
+                    var timeDelta = Convert.ToInt32(TwoMinutesS - timeSince);
+                    Thread.Sleep(timeDelta * 1000);
                     continue;
                 }
 
                 var success = false;
+                var retryCount = 0;
                 Pokemon? pokemonReal = null;
                 using (var context = _mapFactory.CreateDbContext())
                 {
                     while (!success)
                     {
+                        if (retryCount >= MaximumRetryCount)
+                        {
+                            // Max retry count exceeded, skip
+                            break;
+                        }
+                        retryCount++;
+
                         try
                         {
-                            // TODO: Add max retry
-                            pokemonReal = await context.Pokemon.FindAsync(scannedPokemon.Pokemon.Id);
-                            success = true;
+                            if (scannedPokemon != null)
+                            {
+                                pokemonReal = await context.Pokemon.FindAsync(scannedPokemon.Pokemon.Id);
+                                success = true;
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -413,6 +447,7 @@
                         Thread.Sleep(1000);
                     }
                 }
+
                 if (pokemonReal != null)
                 {
                     if (pokemonReal.AttackIV == null)
@@ -425,6 +460,7 @@
                     }
                 }
 
+                // TODO: Check usage
                 Thread.Sleep(100);
             }
         }

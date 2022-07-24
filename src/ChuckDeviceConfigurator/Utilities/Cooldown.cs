@@ -15,7 +15,7 @@
             return Math.Min(Convert.ToInt32(distanceM / 9.8), Strings.CooldownLimitS);
         }
 
-        public static Coordinate GetLastLocation(Account account, string uuid)
+        public static Coordinate? GetLastLocation(Account? account, string uuid)
         {
             double? lat = null;
             double? lon = null;

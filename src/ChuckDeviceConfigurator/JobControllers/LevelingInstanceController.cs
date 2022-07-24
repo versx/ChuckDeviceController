@@ -106,7 +106,7 @@
 
         #region Events
 
-        public event EventHandler<AccountLevelUpEventArgs> AccountLevelUp;
+        public event EventHandler<AccountLevelUpEventArgs>? AccountLevelUp;
         private void OnAccountLevelUp(ushort level, string username, ulong xp, ulong dateReached)
         {
             AccountLevelUp?.Invoke(this, new AccountLevelUpEventArgs(level, username, xp, dateReached));
@@ -465,7 +465,7 @@
                     while (player.LastPokestopsSpun.Count > DefaultLastPokestopsSpunCacheLimit)
                     {
                         // Remove from the bottom of the cache list
-                        var fortId = fortIds[fortIds.Count - 1];
+                        var fortId = fortIds[^1];
                         player.LastPokestopsSpun.Remove(fortId);
                     }
                     player.LastPokestopsSpun[closestPokestop.FortId] = currentCoord;
