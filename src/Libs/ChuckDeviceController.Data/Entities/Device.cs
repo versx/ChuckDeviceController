@@ -58,12 +58,18 @@
         ]
         public ulong? LastSeen { get; set; } = 0; // Last job request requested
 
-        // TODO: Last received data
+        // TODO: Add Device LastDataReceived timestamp
 
         [
             DisplayName("Last Seen"),
             NotMapped,
         ]
-        public string LastSeenTime { get; set; }
+        public string? LastSeenTime { get; set; }
+
+        [
+            DisplayName(""),
+            NotMapped,
+        ]
+        public string? OnlineStatus { get; set; }
     }
 }

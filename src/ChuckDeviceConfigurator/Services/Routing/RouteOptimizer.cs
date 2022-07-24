@@ -150,7 +150,7 @@
 
         private static List<Coordinate> GetOptimization(List<Coordinate> coordinates, ushort circleSize = 750, ushort optimizationAttempts = 1, bool tsp = true)
         {
-            if (coordinates?.Count == 0)
+            if ((coordinates?.Count ?? 0) == 0)
             {
                 throw new Exception("Invalid coordinates set");
             }
@@ -158,7 +158,7 @@
             var bestAttempt = new List<Coordinate>();
             for (var i = 0; i < optimizationAttempts; i++)
             {
-                var coords = coordinates;
+                var coords = new List<Coordinate>(coordinates);
                 coords.Shuffle();
 
                 var attempt = new List<Coordinate>();

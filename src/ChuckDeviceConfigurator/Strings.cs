@@ -25,10 +25,10 @@
         public const string DefaultInstanceStatus = "--";
 
         // Time properties
-        public const ushort TenMinutesS = 600;
-        public const ushort ThirtyMinutesS = TenMinutesS * 3;
-        public const ushort SixtyMinutesS = ThirtyMinutesS * 2;
-        public const uint OneDayS = SixtyMinutesS * 24;
+        public const ushort TenMinutesS = 600; // 10 minutes
+        public const ushort ThirtyMinutesS = TenMinutesS * 3; // 30 minutes
+        public const ushort SixtyMinutesS = ThirtyMinutesS * 2; // 60 minutes
+        public const uint OneDayS = SixtyMinutesS * 24; // 24 hours
 
         public const string PokemonImageUrl = "https://raw.githubusercontent.com/WatWowMap/wwm-uicons/main/pokemon/";
         public const string GoogleMapsLinkFormat = "https://maps.google.com/maps?q={0},{1}";
@@ -36,7 +36,7 @@
         // Instance constants
         public const ushort SpinRangeM = 80; // NOTE: Revert back to 40m once reverted ingame
         public const ulong DefaultDistance = 10000000000000000;
-        public const ushort CooldownLimitS = SixtyMinutesS * 2; // Two hours
+        public const ushort CooldownLimitS = SixtyMinutesS * 2; // 2 hours
         public const uint SuspensionTimeLimitS = OneDayS * 30; // 30 days - Max account suspension time period
 
         // Email
@@ -44,6 +44,10 @@
         public const string DefaultEmailConfirmationMessageHtmlFormat = "Please confirm your account by <a href='{0}'>clicking here</a>.";
         public const string DefaultResetPasswordEmailSubject = "Reset Password";
         public const string DefaultResetPasswordMessageHtmlFormat = "Please reset your password by <a href='{0}'>clicking here</a>.";
+
+        public const ushort DeviceOnlineThresholdM = 15; // 15 minutes
+
+        public const string DefaultDateTimeFormat = "MM/dd/yyyy hh:mm:ss tt";
 
         #region Default Instance Property Values
 

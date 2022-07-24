@@ -15,6 +15,9 @@
     [Authorize(Roles = RoleConsts.DevicesRole)]
     public class DeviceController : Controller
     {
+        private const string OnlineIcon = "🟢"; // green dot
+        private const string OfflineIcon = "🔴"; // red dot
+
         private readonly ILogger<DeviceController> _logger;
         private readonly DeviceControllerContext _context;
         private readonly IJobControllerService _jobControllerService;
@@ -33,12 +36,15 @@
         public ActionResult Index()
         {
             var devices = _context.Devices.ToList();
+            var now = DateTime.UtcNow.ToTotalSeconds();
             foreach (var device in devices)
             {
                 var lastSeen = device.LastSeen?.FromSeconds()
                                                .ToLocalTime()
-                                               .ToString("hh:mm:ss tt MM/dd/yyyy") ?? "--";
-                device.LastSeenTime = lastSeen;
+                                               .ToString(Strings.DefaultDateTimeFormat);
+                device.LastSeenTime = lastSeen ?? Strings.DefaultInstanceStatus;
+                var isOnline = now - device.LastSeen <= Strings.DeviceOnlineThresholdM;
+                device.OnlineStatus = isOnline ? OnlineIcon : OfflineIcon;
             }
             var model = new ViewModelsModel<Device>
             {

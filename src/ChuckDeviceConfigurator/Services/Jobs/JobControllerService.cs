@@ -18,7 +18,6 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    // TODO: Allow admin to see queue of all coords rather than just Pokemon IV queue
     public class JobControllerService : IJobControllerService
     {
         #region Variables
@@ -33,8 +32,8 @@
         private readonly IRouteGenerator _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
 
-        private readonly Dictionary<string, Device> _devices;
-        private readonly Dictionary<string, IJobController> _instances;
+        private readonly Dictionary<string, Device> _devices = new();
+        private readonly Dictionary<string, IJobController> _instances = new();
 
         private readonly object _devicesLock = new();
         private readonly object _instancesLock = new();
@@ -78,9 +77,6 @@
             _routeCalculator = routeCalculator;
             _assignmentService = assignmentService;
             _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
-
-            _devices = new Dictionary<string, Device>();
-            _instances = new Dictionary<string, IJobController>();
         }
 
         #endregion
@@ -184,17 +180,17 @@
                             ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
                             break;
                         case InstanceType.Bootstrap:
-                            jobController = new BootstrapInstanceController(instance, multiPolygons, _routeGenerator, _routeCalculator);
+                            jobController = CreateBootstrapJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
                             ((BootstrapInstanceController)jobController).InstanceComplete += OnBootstrapInstanceComplete;
                             break;
                         case InstanceType.DynamicPokemon:
-                            jobController = new DynamicRouteInstanceController(instance, multiPolygons, _routeGenerator, _routeCalculator);
+                            jobController = CreateDynamicJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
                             break;
                         case InstanceType.FindTth:
-                            jobController = new TthFinderInstanceController(_mapFactory, instance, multiPolygons, _routeCalculator);
+                            jobController = CreateSpawnpointJobController(_mapFactory, instance, multiPolygons, _routeCalculator);
                             break;
                         case InstanceType.Leveling:
-                            jobController = new LevelingInstanceController(_deviceFactory, instance, multiPolygons);
+                            jobController = CreateLevelingJobController(_deviceFactory, instance, multiPolygons);
                             ((LevelingInstanceController)jobController).AccountLevelUp += OnAccountLevelUp;
                             break;
                         case InstanceType.PokemonIV:
@@ -600,6 +596,28 @@
             return jobController;
         }
 
+        private static IJobController CreateBootstrapJobController(Instance instance, List<MultiPolygon> multiPolygons, IRouteGenerator routeGenerator, IRouteCalculator routeCalculator)
+        {
+            var jobController = new BootstrapInstanceController(
+                instance,
+                multiPolygons,
+                routeGenerator,
+                routeCalculator
+            );
+            return jobController;
+        }
+
+        private static IJobController CreateDynamicJobController(Instance instance, List<MultiPolygon> multiPolygons, IRouteGenerator routeGenerator, IRouteCalculator routeCalculator)
+        {
+            var jobController = new DynamicRouteInstanceController(
+                instance,
+                multiPolygons,
+                routeGenerator,
+                routeCalculator
+            );
+            return jobController;
+        }
+
         private static IJobController CreateIvJobController(IDbContextFactory<MapDataContext> mapFactory, Instance instance, List<MultiPolygon> multiPolygons, IvList ivList)
         {
             var jobController = new IvInstanceController(
@@ -607,6 +625,27 @@
                 instance,
                 multiPolygons,
                 ivList.PokemonIds
+            );
+            return jobController;
+        }
+
+        private static IJobController CreateLevelingJobController(IDbContextFactory<DeviceControllerContext> deviceFactory, Instance instance, List<MultiPolygon> multiPolygons)
+        {
+            var jobController = new LevelingInstanceController(
+                deviceFactory,
+                instance,
+                multiPolygons
+            );
+            return jobController;
+        }
+
+        private static IJobController CreateSpawnpointJobController(IDbContextFactory<MapDataContext> mapFactory, Instance instance, List<MultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
+        {
+            var jobController = new TthFinderInstanceController(
+                mapFactory,
+                instance,
+                multiPolygons,
+                routeCalculator
             );
             return jobController;
         }

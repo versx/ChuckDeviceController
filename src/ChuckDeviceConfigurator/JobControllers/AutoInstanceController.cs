@@ -628,7 +628,7 @@
 
             _lastCompletionCheck = now;
 
-            var ids = _allStops.Select(x => x.Pokestop.Id)
+            var ids = _allStops.Select(stop => stop.Pokestop.Id)
                                .ToList();
             var newStops = new List<Pokestop>();
             try

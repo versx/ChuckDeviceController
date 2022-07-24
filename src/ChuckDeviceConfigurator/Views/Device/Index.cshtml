@@ -16,6 +16,9 @@
     <thead>
         <tr>
             <th>
+                @Html.DisplayNameFor(model => model.Items[0].OnlineStatus)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Items[0].Uuid)
             </th>
             <th>
@@ -40,6 +43,9 @@
         @foreach (var item in Model.Items)
         {
             <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OnlineStatus)
+                </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Uuid)
                 </td>

@@ -300,7 +300,6 @@
             });
             if (task == null)
             {
-                _logger.LogWarning($"[{device.Uuid}] No tasks avaialable yet");
                 return CreateErrorResponse("No tasks available yet");
             }
 
