@@ -234,7 +234,7 @@
             // Assign new email address only if it does not match existing email address for user account
             if (user.Email != model.Email)
             {
-                // TODO: Add some type of verification that the user owns the email account
+                // TODO: Add some type of verification that the user owns the email account, i.e. confirmation email
                 // Assign user new email address
                 user.Email = model.Email;
 

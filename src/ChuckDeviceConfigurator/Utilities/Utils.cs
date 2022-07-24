@@ -8,18 +8,18 @@
         {
             var times = TimeSpan.FromSeconds(timeS);
             return timeS == 0
-                ? "On Complete" // TODO: Localize
+                ? "On Complete"
                 : $"{times.Hours:00}:{times.Minutes:00}:{times.Seconds:00}";
         }
 
-        public static double BenchmarkAction(Action action)
+        public static double BenchmarkAction(Action action, ushort precision = 4)
         {
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
             action();
             stopwatch.Start();
 
-            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
             Console.WriteLine($"Benchmark took {totalSeconds}s");
             return totalSeconds;
         }

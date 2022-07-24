@@ -270,7 +270,7 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             _logger.LogInformation($"Data processer inserted {count:N0} items in {totalSeconds}s");
 
-            // TODO Add config option
+            // TODO Add 'ClearOldForts' config option
             // Clear any old Gyms or Pokestops that might have been removed from the game
             await ClearOldFortsAsync();
 
@@ -389,7 +389,6 @@
                     {
                         // Do not update IV specific columns
                         options.UseTableLock = true;
-                        // TODO: Check docs if 'IgnoreOnMergeUpdate' needs to be set when IgnoreOnMergeUpdateExpression is set
                         //options.IgnoreOnMergeUpdate = true;
                         options.IgnoreOnMergeUpdateExpression = p => new
                         {
@@ -483,23 +482,24 @@
                         var pokemon = new Pokemon(context, data, cellId, username, isEvent);
                         await pokemon.UpdateAsync(context, updateIv: false);
 
-                        pokemonToUpsert.Add(pokemon);
-
                         // Check if we have a pending disk encounter cache
                         var displayId = data.PokemonDisplay.DisplayId;
                         var cachedDiskEncounter = _diskCache.Get<DiskEncounterOutProto>(displayId);
-                        if (cachedDiskEncounter == null)
+                        if (cachedDiskEncounter != null)
+                        {
+                            // Thanks Fabio <3
+                            _logger.LogDebug($"Found Pokemon disk encounter with id '{displayId}' in cache");
+
+                            pokemon.AddDiskEncounter(cachedDiskEncounter, username);
+                            await pokemon.UpdateAsync(context, updateIv: true);
+                        }
+                        else
                         {
                             // Failed to get DiskEncounter from cache
-                            _logger.LogWarning($"Failed to fetch cached disk encounter with id '{displayId}' from cache");
-                            continue;
+                            _logger.LogWarning($"Unable to fetch cached Pokemon disk encounter with id '{displayId}' from cache");
                         }
 
-                        // Thanks Fabio <3
-                        pokemon.AddDiskEncounter(cachedDiskEncounter, username);
-                        await pokemon.UpdateAsync(context, updateIv: true);
-                        _logger.LogDebug($"Found Pokemon disk encounter in cache with id '{displayId}'");
-                        // TODO: Remove above upsert list addition: pokemonToUpsert.Add(pokemon);
+                        pokemonToUpsert.Add(pokemon);
                     }
 
                     await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
