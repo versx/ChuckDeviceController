@@ -22,10 +22,10 @@
         public const uint DittoPokemonId = 132;
         public const uint WeatherBoostMinLevel = 6;
         public const uint WeatherBoostMinIvStat = 4;
-        public const bool PvpEnabled = true;
-        public const bool CellPokemonEnabled = true; // TODO: Make 'CellPokemonEnabled' configurable via config?
-        public const bool SaveSpawnpointLastSeen = true; // TODO: Make 'SaveSpawnpointLastSeen' configurable via config?
-        public const bool WeatherIvClearingEnabled = true; // TODO: Make 'WeatherIvClearingEnabled' configurable via config?
+        public const bool PvpEnabled = true; // TODO: Make 'EnablePvp' configurable via config
+        public const bool CellPokemonEnabled = true; // TODO: Make 'CellPokemonEnabled' configurable via config
+        public const bool SaveSpawnpointLastSeen = true; // TODO: Make 'SaveSpawnpointLastSeen' configurable via config
+        public const bool WeatherIvClearingEnabled = true; // TODO: Make 'WeatherIvClearingEnabled' configurable via config
 
         #endregion
 
@@ -199,7 +199,7 @@
             CellId = cellId;
             SeenType = SeenType.Wild;
 
-            UpdateSpawnpointAsync(context, wildPokemon, spawnId).ConfigureAwait(false)
+            UpdateSpawnpointAsync(context, wildPokemon, timestampMs, spawnId).ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
         }
@@ -397,10 +397,12 @@
             var spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
             SpawnId = spawnId;
 
-            await UpdateSpawnpointAsync(context, wildPokemon, spawnId);
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var timestampMs = now * 1000;
+            await UpdateSpawnpointAsync(context, wildPokemon, timestampMs, spawnId);
 
             SeenType = SeenType.Encounter;
-            Updated = DateTime.UtcNow.ToTotalSeconds() * 1000;
+            Updated = now;
             Changed = Updated;
         }
 
@@ -487,9 +489,8 @@
                 }
             }
 
-
             SeenType = SeenType.LureEncounter;
-            Updated = DateTime.UtcNow.ToTotalSeconds() * 1000;
+            Updated = DateTime.UtcNow.ToTotalSeconds();
             Changed = Updated;
         }
 
@@ -835,11 +836,9 @@
 
         #region Private Methods
 
-        private async Task UpdateSpawnpointAsync(MapDataContext context, WildPokemonProto wild, ulong spawnId)
+        private async Task UpdateSpawnpointAsync(MapDataContext context, WildPokemonProto wild, ulong timestampMs, ulong spawnId)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var timestampMs = DateTime.UtcNow.ToTotalSeconds() * 1000;
-
             if (wild.TimeTillHiddenMs <= 90000 && wild.TimeTillHiddenMs > 0)
             {
                 ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(wild.TimeTillHiddenMs)) / 1000);
@@ -878,8 +877,8 @@
                 if (spawnpoint != null && spawnpoint.DespawnSecond != null)
                 {
                     var despawnSecond = spawnpoint.DespawnSecond;
-                    var ts = timestampMs / 1000;
-                    var date = ts.FromSeconds();
+                    var timestampS = timestampMs / 1000;
+                    var date = timestampS.FromMilliseconds();
                     var secondOfHour = date.Second + (date.Minute * 60);
                     var despawnOffset = despawnSecond - secondOfHour;
                     if (despawnSecond < secondOfHour)
@@ -894,7 +893,7 @@
                         context.Spawnpoints.Update(spawnpoint);
                     }
 
-                    ExpireTimestamp = ts + (ulong)despawnOffset;
+                    ExpireTimestamp = timestampS + (ulong)despawnOffset;
                     IsExpireTimestampVerified = true;
                 }
                 else
