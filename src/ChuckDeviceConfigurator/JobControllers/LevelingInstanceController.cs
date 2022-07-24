@@ -25,9 +25,9 @@
 
         public ushort Level { get; set; }
 
-        public List<(ulong, ulong)> XpPerTime { get; } = new(); // time, xp
+        public List<(ulong, ulong)> XpPerTime { get; } = new(); // timestamp, xp
 
-        public Coordinate LastLocation { get; set; }
+        public Coordinate? LastLocation { get; set; }
     }
 
     public class LevelingInstanceController : IJobController
@@ -79,8 +79,8 @@
             20000000,
         };
 
-        private readonly ILogger<CircleInstanceController> _logger;
-        private readonly Dictionary<string, PlayerLevelingData> _players;
+        private readonly ILogger<LevelingInstanceController> _logger;
+        private readonly Dictionary<string, PlayerLevelingData> _players = new();
         private readonly object _playersLock = new();
 
         #endregion
@@ -128,8 +128,7 @@
             StoreLevelData = instance.Data?.StoreLevelingData ?? Strings.DefaultStoreLevelingData;
             Radius = instance.Data?.LevelingRadius ?? Strings.DefaultLevelingRadius;
 
-            _logger = new Logger<CircleInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-            _players = new Dictionary<string, PlayerLevelingData>();
+            _logger = new Logger<LevelingInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
         }
 
         #endregion
@@ -140,13 +139,13 @@
         {
             if (string.IsNullOrEmpty(options.AccountUsername))
             {
-                // TODO: Throw error
+                _logger.LogError($"[{Name}] [{options.Uuid}] No account assigned to device, unable to fetch leveling task...");
                 return null;
             }
 
             if (options.Account == null)
             {
-                // TODO: Throw error
+                _logger.LogError($"[{Name}] [{options.Uuid}] No account assigned to device, unable to fetch leveling task...");
                 return null;
             }
 
@@ -157,13 +156,12 @@
                 return null;
             }
 
-            var delay = await GetDelayAsync(currentCoord, options.Uuid, options.Account);
-
             lock (_playersLock)
             {
                 _players[options.AccountUsername].LastSeen = DateTime.UtcNow.ToTotalSeconds();
             }
 
+            var delay = await GetDelayAsync(currentCoord, options.Uuid, options.Account);
             var task = CreateTask(currentCoord, delay, deployEgg: true);
             return await Task.FromResult(task);
         }
@@ -193,8 +191,8 @@
                     var startXp = 0ul;
                     var startTime = DateTime.UtcNow.ToTotalSeconds();
 
-                    var xpPerTime = _players[player].XpPerTime;
                     // Get latest player xp and time
+                    var xpPerTime = _players[player].XpPerTime;
                     foreach (var (time, xp) in xpPerTime)
                     {
                         if ((now - time) <= Strings.SixtyMinutesS)
@@ -271,14 +269,24 @@
             return await Task.FromResult(status);
         }
 
-        public async Task Reload()
+        public Task Reload()
         {
-            await Task.CompletedTask;
+            _logger.LogDebug($"[{Name}] Reloading instance");
+
+            // Clear all existing players data from cache
+            _players.Clear();
+
+            return Task.CompletedTask;
         }
 
-        public async Task Stop()
+        public Task Stop()
         {
-            await Task.CompletedTask;
+            _logger.LogDebug($"[{Name}] Stopping instance");
+
+            // Clear all existing players data from cache
+            _players.Clear();
+
+            return Task.CompletedTask;
         }
 
         internal void SetPlayerInfo(string username, ushort level, ulong xp)
@@ -290,6 +298,7 @@
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 _players[username].Level = level;
                 _players[username].XP = xp;
+                // Prevent multiple XpPerTime entries that are the same
                 if (!_players[username].XpPerTime.Exists(tuple => tuple.Item1 == now))
                 {
                     _players[username].XpPerTime.Add((now, xp));
@@ -311,7 +320,7 @@
                 return;
             }
 
-            if (fort.FortType != FortType.Gym)
+            if (fort.FortType == FortType.Gym)
             {
                 // Do not process Pokestop forts, we should not be receiving them anyways
                 // but better safe than sorry I guess
@@ -458,11 +467,11 @@
             foreach (var stop in unspunPokestops)
             {
                 var stopCoord = new Coordinate(stop.Latitude, stop.Longitude);
+                // Loop through players previously spun Pokestops cache list
+                // and ignore any nearby Pokestops already spun
                 foreach (var lastCoord in excludeCoordinates)
                 {
-                    // TODO: Hmm, not sure if this is correct logic or not,
-                    // skipping Pokestop if it's not within spin range. :thinking:
-                    // Need to double check
+                    // Skip any Pokestops within range that have already been spun
                     if (stopCoord.DistanceTo(lastCoord) <= Strings.SpinRangeM)
                     {
                         continue;

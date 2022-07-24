@@ -602,7 +602,7 @@
                 try
                 {
                     // Send found/nearby forts with gRPC service for leveling instance
-                    var lvlForts = forts.Where(fort => fort.data.FortType == FortType.Gym)
+                    var lvlForts = forts.Where(fort => fort.data.FortType != FortType.Gym)
                                         .Select(fort => fort.data)
                                         .Select(fort => (PokemonFortProto)fort)
                                         .ToList();
