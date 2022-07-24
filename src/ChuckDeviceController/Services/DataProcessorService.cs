@@ -58,6 +58,7 @@
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly IDbContextFactory<MapDataContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
+        private readonly IGrpcClientService _grpcClientService;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
@@ -70,12 +71,14 @@
             ILogger<IProtoProcessorService> logger,
             IBackgroundTaskQueue taskQueue,
             IDbContextFactory<MapDataContext> factory,
-            IMemoryCache diskCache)
+            IMemoryCache diskCache,
+            IGrpcClientService grpcClientService)
         {
             _logger = logger;
             _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
             _dbFactory = factory;
             _diskCache = diskCache;
+            _grpcClientService = grpcClientService;
         }
 
         #endregion
@@ -1179,7 +1182,7 @@
 
         #region Grpc Senders
 
-        private static async Task SendPokemonAsync(List<Pokemon> pokemon)
+        private async Task SendPokemonAsync(List<Pokemon> pokemon)
         {
             var newPokemon = pokemon.Where(pkmn => pkmn.IsNewPokemon).ToList();
             var newPokemonWithIV = pokemon.Where(pkmn => pkmn.IsNewPokemonWithIV).ToList();
@@ -1187,22 +1190,22 @@
             if (newPokemon.Count > 0)
             {
                 // Send got Pokemon proto message
-                await GrpcClientService.SendRpcPayloadAsync(newPokemon, PayloadType.PokemonList, hasIV: false);
+                await _grpcClientService.SendRpcPayloadAsync(newPokemon, PayloadType.PokemonList, hasIV: false);
             }
 
             if (newPokemonWithIV.Count > 0)
             {
                 // Send got Pokemon IV proto message
-                await GrpcClientService.SendRpcPayloadAsync(newPokemonWithIV, PayloadType.PokemonList, hasIV: true);
+                await _grpcClientService.SendRpcPayloadAsync(newPokemonWithIV, PayloadType.PokemonList, hasIV: true);
             }
         }
 
-        private static async Task SendGymsAsync(List<PokemonFortProto> forts, string username)
+        private async Task SendGymsAsync(List<PokemonFortProto> forts, string username)
         {
-            await GrpcClientService.SendRpcPayloadAsync(forts, PayloadType.FortList, username);
+            await _grpcClientService.SendRpcPayloadAsync(forts, PayloadType.FortList, username);
         }
 
-        private static async Task SendPlayerDataAsync(string username, ushort level, uint xp)
+        private async Task SendPlayerDataAsync(string username, ushort level, uint xp)
         {
             var payload = new
             {
@@ -1210,7 +1213,7 @@
                 level,
                 xp,
             };
-            await GrpcClientService.SendRpcPayloadAsync(payload, PayloadType.PlayerInfo, username);
+            await _grpcClientService.SendRpcPayloadAsync(payload, PayloadType.PlayerInfo, username);
         }
 
         #endregion
