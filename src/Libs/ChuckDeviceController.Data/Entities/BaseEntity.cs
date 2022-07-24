@@ -5,7 +5,5 @@
     public abstract class BaseEntity//<T> where T : Type
     {
         //public virtual int Id { get; protected set; }
-
-        // TODO: Save/Update method
     }
 }

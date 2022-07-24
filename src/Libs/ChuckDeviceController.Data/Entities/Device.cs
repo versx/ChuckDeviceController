@@ -6,7 +6,7 @@
     using System.Text.Json.Serialization;
 
     [Table("device")]
-    public class Device : BaseEntity // TODO: ICoordinateEntity
+    public class Device : BaseEntity
     {
         [
             DisplayName("UUID"),
@@ -56,7 +56,7 @@
             Column("last_seen"),
             JsonPropertyName("last_seen"),
         ]
-        public ulong? LastSeen { get; set; } = 0; // Last job request received
+        public ulong? LastSeen { get; set; } = 0; // Last job request requested
 
         // TODO: Last received data
 

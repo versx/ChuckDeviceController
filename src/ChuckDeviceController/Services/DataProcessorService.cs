@@ -14,6 +14,7 @@
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Protos;
+    using ChuckDeviceController.Services.Rpc;
 
     /*
     public interface IDataConsumer
@@ -563,23 +564,24 @@
                         var pokemon = new Pokemon(context, data, cellId, username, isEvent);
                         await pokemon.UpdateAsync(context, updateIv: false);
 
-                        pokemonToUpsert.Add(pokemon);
-
                         // Check if we have a pending disk encounter cache
                         var displayId = data.PokemonDisplay.DisplayId;
                         var cachedDiskEncounter = _diskCache.Get<DiskEncounterOutProto>(displayId);
-                        if (cachedDiskEncounter == null)
+                        if (cachedDiskEncounter != null)
+                        {
+                            // Thanks Fabio <3
+                            _logger.LogDebug($"Found Pokemon disk encounter with id '{displayId}' in cache");
+
+                            pokemon.AddDiskEncounter(cachedDiskEncounter, username);
+                            await pokemon.UpdateAsync(context, updateIv: true);
+                        }
+                        else
                         {
                             // Failed to get DiskEncounter from cache
-                            _logger.LogWarning($"Failed to fetch cached disk encounter with id '{displayId}' from cache");
-                            continue;
+                            _logger.LogWarning($"Unable to fetch cached Pokemon disk encounter with id '{displayId}' from cache");
                         }
 
-                        // Thanks Fabio <3
-                        pokemon.AddDiskEncounter(cachedDiskEncounter, username);
-                        await pokemon.UpdateAsync(context, updateIv: true);
-                        _logger.LogDebug($"Found Pokemon disk encounter in cache with id '{displayId}'");
-                        // TODO: Remove above upsert list addition: pokemonToUpsert.Add(pokemon);
+                        pokemonToUpsert.Add(pokemon);
                     }
 
                     await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options => options.UseTableLock = true);

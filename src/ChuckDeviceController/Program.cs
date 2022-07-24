@@ -5,6 +5,7 @@ using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Services;
+using ChuckDeviceController.Services.Rpc;
 
 
 // TODO: Make 'AutomaticMigrations' configurable
@@ -50,6 +51,7 @@ builder.WebHost.ConfigureLogging(configure =>
 // Register available DI services
 builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
+builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
 builder.Services.AddSingleton<IBackgroundTaskQueue>(_ =>
 {
     // Get max subscription queue capacity config value
@@ -75,7 +77,7 @@ builder.Services.AddDbContext<DeviceControllerContext>(options =>
 
 builder.Services.AddMemoryCache(options =>
 {
-    // TODO: Make Cache SizeLimit configurable
+    // TODO: Make 'CacheSizeLimit' configurable
     options.SizeLimit = 100;
 });
 

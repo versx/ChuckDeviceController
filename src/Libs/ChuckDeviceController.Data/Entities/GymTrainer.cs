@@ -51,9 +51,9 @@
         [Column("updated")]
         public ulong Updated { get; set; }
 
-        // TODO: FortId?
-
         #endregion
+
+        #region Constructors
 
         public GymTrainer()
         {
@@ -75,5 +75,7 @@
             HasSharedExPass = profileData.HasSharedExPass;
             GymBadgeType = Convert.ToUInt16(profileData.GymBadgeType);
         }
+
+        #endregion
     }
 }

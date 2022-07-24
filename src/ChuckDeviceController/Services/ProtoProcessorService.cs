@@ -14,6 +14,7 @@
     using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
+    using ChuckDeviceController.Services.Rpc;
 
     public class ProtoPayloadItem
     {
