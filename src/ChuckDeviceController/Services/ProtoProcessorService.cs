@@ -7,21 +7,12 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Cache;
-    using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.HostedServices;
-    using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Services.Rpc;
-
-    public class ProtoPayloadItem
-    {
-        public ProtoPayload Payload { get; set; }
-
-        public Device Device { get; set; }
-    }
 
     public class ProtoProcessorService : BackgroundService, IProtoProcessorService
     {
@@ -30,8 +21,9 @@
         private readonly ILogger<IProtoProcessorService> _logger;
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly IDataProcessorService _dataProcessor;
+        private readonly IGrpcClientService _grpcClientService;
 
-        private readonly Dictionary<ulong, int> _emptyCells;
+        private readonly Dictionary<ulong, int> _emptyCells = new();
         private static readonly TimedMap<bool> _arQuestActualMap = new();
         private static readonly TimedMap<bool> _arQuestTargetMap = new();
 
@@ -39,7 +31,7 @@
 
         #region Properties
 
-        public bool ProcessMapPokemon { get; set; }
+        public bool ProcessMapPokemon { get; set; } = true; // TODO: Make `ProcessMapPokemon` configurable
 
         #endregion
 
@@ -48,14 +40,13 @@
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
             IBackgroundTaskQueue taskQueue,
-            IDataProcessorService dataProcessor)
+            IDataProcessorService dataProcessor,
+            IGrpcClientService grpcClientService)
         {
             _logger = logger;
             _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
             _dataProcessor = dataProcessor;
-            _emptyCells = new Dictionary<ulong, int>();
-
-            ProcessMapPokemon = true; // TODO: Make `ProcessMapPokemon` configurable
+            _grpcClientService = grpcClientService;
         }
 
         #endregion
@@ -120,14 +111,14 @@
             _logger.LogError("Exited background processing...");
         }
 
-        public async Task EnqueueAsync(ProtoPayloadItem payload)
+        public async Task EnqueueAsync(ProtoPayloadQueueItem payload)
         {
             await _taskQueue.EnqueueAsync(async token =>
                 await ProcessWorkItemAsync(payload, token));
         }
 
         private async Task<CancellationToken> ProcessWorkItemAsync(
-            ProtoPayloadItem payload,
+            ProtoPayloadQueueItem payload,
             CancellationToken stoppingToken)
         {
             if (payload?.Payload == null || payload?.Device == null)
@@ -597,7 +588,7 @@
                     xp,
                     level,
                 };
-                await GrpcClientService.SendRpcPayloadAsync(playerInfo, PayloadType.PlayerInfo, username);
+                await _grpcClientService.SendRpcPayloadAsync(playerInfo, PayloadType.PlayerInfo, username);
             }
 
             stopwatch.Stop();
@@ -616,6 +607,8 @@
         }
 
         #endregion
+
+        #region AR Quest Caching
 
         public static void SetArQuestTarget(string uuid, ulong timestamp, bool isAr)
         {
@@ -646,16 +639,23 @@
             return actualMode;
         }
 
+        #endregion
+
+        #region Private Methods
+
         private void CheckQueueLength()
         {
+            var usage = $"{_taskQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}";
             if (_taskQueue.Count == Strings.MaximumQueueCapacity)
             {
-                _logger.LogWarning($"Proto processing queue is at maximum capacity! {_taskQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}");
+                _logger.LogWarning($"Proto processing queue is at maximum capacity! {usage}");
             }
             else if (_taskQueue.Count > Strings.MaximumQueueSizeWarning)
             {
-                _logger.LogWarning($"Proto processing queue is {_taskQueue.Count:N0} items long.");
+                _logger.LogWarning($"Proto processing queue is over capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
         }
+
+        #endregion
     }
 }

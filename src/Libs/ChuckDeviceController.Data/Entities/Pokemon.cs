@@ -206,6 +206,8 @@
 
         public Pokemon(MapDataContext context, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
         {
+            Id = Convert.ToString(nearbyPokemon.EncounterId);
+
             // Figure out where the Pokemon is
             double lat;
             double lon;
@@ -226,7 +228,7 @@
                 var pokestop = context.Pokestops.FindAsync(nearbyPokemon.FortId).Result;
                 if (pokestop == null)
                 {
-                    // TODO: Throw error
+                    Console.WriteLine($"Failed to fetch Pokestop for nearby Pokemon '{Id}' to find location, skipping");
                     return;
                 }
                 lat = pokestop.Latitude;
@@ -234,7 +236,6 @@
                 SeenType = SeenType.NearbyStop;
             }
 
-            Id = Convert.ToString(nearbyPokemon.EncounterId);
             Latitude = lat;
             Longitude = lon;
             PokemonId = Convert.ToUInt16(nearbyPokemon.PokedexNumber);
@@ -263,7 +264,7 @@
             var pokestop = context.Pokestops.FindAsync(spawnpointId).Result; // TODO: Need to double check this
             if (pokestop == null)
             {
-                // TODO: Throw error
+                Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{Id}' to find location, skipping");
                 return;
             }
             PokestopId = pokestop.Id;
@@ -603,7 +604,7 @@
                 {
                     var changed = DateTime.UtcNow.ToTotalSeconds();
                     var oldExpireDate = oldPokemon.ExpireTimestamp;
-                    if (changed - oldExpireDate < DefaultTimeReseenS || /* TODO: Workaround */ oldPokemon.ExpireTimestamp == 0)
+                    if (changed - oldExpireDate < DefaultTimeReseenS || /* TODO: Workaround -> */ oldPokemon.ExpireTimestamp == 0)
                     {
                         ExpireTimestamp = changed + DefaultTimeReseenS;
                     }
@@ -681,7 +682,7 @@
                 var weatherChanged = (oldPokemon.Weather == null || oldPokemon.Weather != 0) && (Weather > 0) ||
                     (Weather == null || Weather == 0) && (oldPokemon.Weather > 0);
 
-                if (oldPokemon.AttackIV != null && AttackIV == null && !weatherChanged) // TODO: !
+                if (oldPokemon.AttackIV != null && AttackIV == null && !weatherChanged)
                 {
                     setIvForWeather = false;
                     AttackIV = oldPokemon.AttackIV;

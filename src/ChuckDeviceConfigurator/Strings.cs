@@ -36,8 +36,8 @@
         // Instance constants
         public const ushort SpinRangeM = 80; // NOTE: Revert back to 40m once reverted ingame
         public const ulong DefaultDistance = 10000000000000000;
-        public const ushort CooldownLimitS = 7200; // Two hours
-        public const uint SuspensionTimeLimitS = 2592000; // Account suspension time period
+        public const ushort CooldownLimitS = SixtyMinutesS * 2; // Two hours
+        public const uint SuspensionTimeLimitS = OneDayS * 30; // 30 days - Max account suspension time period
 
         // Email
         public const string DefaultEmailConfirmationSubject = "Confirm your email";

@@ -2,12 +2,16 @@
 {
     public interface IFortEntity
     {
-        public bool IsEnabled { get; }
+        bool IsEnabled { get; }
 
-        public bool IsDeleted { get; }
+        bool IsDeleted { get; }
 
-        public ulong CellId { get; }
+        ulong CellId { get; }
 
-        // TODO: Add PowerUp columns and other shared properties between forts
+        uint? PowerUpPoints { get; }
+
+        ushort? PowerUpLevel { get; }
+
+        ulong? PowerUpEndTimestamp { get; }
     }
 }

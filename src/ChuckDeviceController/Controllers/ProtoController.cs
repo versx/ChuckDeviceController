@@ -148,7 +148,7 @@
             }
 
             // Queue proto payload for processing
-            await _protoProcessor.EnqueueAsync(new ProtoPayloadItem
+            await _protoProcessor.EnqueueAsync(new ProtoPayloadQueueItem
             {
                 Payload = payload,
                 Device = device,
