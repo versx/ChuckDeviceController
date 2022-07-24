@@ -607,6 +607,7 @@
                 var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
                 // _logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
+                // TODO: Get 'StoreLevelingData' value for trainer from JobControllerService using gRPC?
                 await _dataProcessor.ConsumeDataAsync(username, processedProtos);
             }
 

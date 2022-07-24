@@ -61,7 +61,6 @@
         // TODO: Last received data
 
         [
-
             DisplayName("Last Seen"),
             NotMapped,
         ]

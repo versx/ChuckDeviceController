@@ -57,6 +57,10 @@
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
                 return View();
             }
+            var lastSeen = device.LastSeen?.FromSeconds()
+                                           .ToLocalTime()
+                                           .ToString("hh:mm:ss tt MM/dd/yyyy") ?? "--";
+            device.LastSeenTime = lastSeen;
             return View(device);
         }
 
