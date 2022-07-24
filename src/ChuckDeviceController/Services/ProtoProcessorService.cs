@@ -607,11 +607,13 @@
                 var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
                 // _logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
-                await _dataProcessor.ConsumeDataAsync(processedProtos);
+                await _dataProcessor.ConsumeDataAsync(username, processedProtos);
             }
 
             return stoppingToken;
         }
+
+        #endregion
 
         public static void SetArQuestTarget(string uuid, ulong timestamp, bool isAr)
         {
@@ -641,8 +643,6 @@
             }
             return actualMode;
         }
-
-        #endregion
 
         private void CheckQueueLength()
         {

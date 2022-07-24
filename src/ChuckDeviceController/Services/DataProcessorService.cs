@@ -81,10 +81,10 @@
 
         #region Background Service
 
-        public async Task ConsumeDataAsync(List<dynamic> data)
+        public async Task ConsumeDataAsync(string username, List<dynamic> data)
         {
             await _taskQueue.EnqueueAsync(async token =>
-                await ProcessWorkItemAsync(data, token));
+                await ProcessWorkItemAsync(username, data, token));
         }
 
         public override async Task StopAsync(CancellationToken stoppingToken)
@@ -145,6 +145,7 @@
         }
 
         private async Task<CancellationToken> ProcessWorkItemAsync(
+            string username,
             List<dynamic> data,
             CancellationToken stoppingToken)
         {
@@ -222,8 +223,7 @@
             if (forts.Count > 0)
             {
                 // Insert Forts
-                await UpdateFortsAsync(forts);
-
+                await UpdateFortsAsync(username, forts);
             }
 
             var fortDetails = data.Where(x => x.type == ProtoDataType.FortDetails)
@@ -595,7 +595,7 @@
         }
         */
 
-        private async Task UpdateFortsAsync(List<dynamic> forts)
+        private async Task UpdateFortsAsync(string username, List<dynamic> forts)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
@@ -606,9 +606,11 @@
                                         .Select(fort => fort.data)
                                         .Select(fort => (PokemonFortProto)fort)
                                         .ToList();
-                    if (lvlForts.Count > 0)
+                    // Ensure that the account username is set, otherwise ignore relaying
+                    // fort data for leveling instance
+                    if (!string.IsNullOrEmpty(username) && lvlForts.Count > 0)
                     {
-                        await SendGymsAsync(lvlForts, "test"); // TODO: Get username, needed for leveling instance
+                        await SendGymsAsync(lvlForts, username);
                     }
 
                     var stopsToUpsert = new List<Pokestop>();
@@ -620,7 +622,7 @@
                     {
                         var cellId = (ulong)fort.cell;
                         var data = (PokemonFortProto)fort.data;
-                        var username = (string)fort.username;
+                        //var username = (string)fort.username;
 
                         switch (data.FortType)
                         {

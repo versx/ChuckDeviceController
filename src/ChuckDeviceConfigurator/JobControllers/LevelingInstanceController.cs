@@ -13,11 +13,11 @@
 
     public class PlayerLevelingData
     {
-        public Dictionary<string, PokemonFortProto> UnspunPokestops { get; set; } = new();
+        public Dictionary<string, PokemonFortProto> UnspunPokestops { get; } = new();
 
-        public object UnspunPokestopsLock { get; set; } = new();
+        public object UnspunPokestopsLock { get; } = new();
 
-        public List<Coordinate> LastPokestopsSpun { get; set; } = new();
+        public List<Coordinate> LastPokestopsSpun { get; } = new();
 
         public ulong LastSeen { get; set; }
 
@@ -25,7 +25,7 @@
 
         public ushort Level { get; set; }
 
-        public List<(ulong, ulong)> XpPerTime { get; set; } = new(); // time, xp
+        public List<(ulong, ulong)> XpPerTime { get; } = new(); // time, xp
 
         public Coordinate LastLocation { get; set; }
     }
@@ -205,7 +205,8 @@
                         }
 
                         // TODO: Remove first?
-                        //_playerXpPerTime.PopFirst();
+                        // Purge old XP stats older than 60 minutes
+                        //_ = xpPerTime.Pop();
                     }
 
                     var xpDelta = xpPerTime.LastOrDefault().Item2 - startXp;
@@ -213,8 +214,10 @@
                         1,
                         xpPerTime.LastOrDefault().Item1 - startTime
                     );
-                    var xpPerHour = Convert.ToInt32((double)xpDelta / (double)timeDelta * Strings.SixtyMinutesS);
-                    var timeLeft = xpPerHour == 0
+                    var xpPerHour = xpDelta == 0 || timeDelta == 0
+                        ? 0
+                        : Convert.ToInt32((double)xpDelta / (double)timeDelta * Strings.SixtyMinutesS);
+                    var timeLeft = xpTarget == 0 || xpCurrent == 0 || xpPerHour == 0
                         ? 999.0
                         : Convert.ToDouble((double)xpTarget - (double)xpCurrent) / Convert.ToDouble(xpPerHour);
 
@@ -287,7 +290,10 @@
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 _players[username].Level = level;
                 _players[username].XP = xp;
-                _players[username].XpPerTime.Add((now, xp));
+                if (!_players[username].XpPerTime.Exists(tuple => tuple.Item1 == now))
+                {
+                    _players[username].XpPerTime.Add((now, xp));
+                }
             }
         }
 
@@ -328,20 +334,17 @@
                 }
 
                 var player = _players[username];
-                lock (player.UnspunPokestopsLock)
+                // Check if fort has been visited already and unspun Pokestop cache
+                // for player still contains the fort
+                if (fort.Visited && player.UnspunPokestops.ContainsKey(fort.FortId))
                 {
-                    // Check if fort has been visited already and unspun Pokestop cache
-                    // for player still contains the fort
-                    if (fort.Visited && player.UnspunPokestops.ContainsKey(fort.FortId))
-                    {
-                        // Pokestop already spun, remove fort
-                        player.UnspunPokestops.Remove(fort.FortId);
-                    }
-                    else
-                    {
-                        // Pokestop has not been spun yet, add to unspun Pokestop cache
-                        player.UnspunPokestops[fort.FortId] = fort;
-                    }
+                    // Pokestop already spun, remove fort
+                    player.UnspunPokestops.Remove(fort.FortId);
+                }
+                else
+                {
+                    // Pokestop has not been spun yet, add to unspun Pokestop cache
+                    player.UnspunPokestops[fort.FortId] = fort;
                 }
             }
         }
@@ -380,6 +383,8 @@
                     return StartingCoordinate;
                 }
 
+                // Reverse the unspun Pokestops list which should sort based on closest/most
+                // recently added to the list
                 var reversedUnspunPokestops = player.UnspunPokestops.Values.Reverse().ToList();
                 var closestPokestop = FindClosestPokestop(
                     reversedUnspunPokestops,
@@ -389,15 +394,22 @@
                 if (closestPokestop != null)
                 {
                     currentCoord = new Coordinate(closestPokestop.Latitude, closestPokestop.Longitude);
-                    // Remove Pokestop from unspun Pokestop cache and add to last Pokestops
-                    // spun cache
+                    // Remove the next Pokestop to spin from the unspun Pokestops cache
                     player.UnspunPokestops.Remove(closestPokestop.FortId);
+                    // Keep a cache list of the last 5 Pokestops spun and add the next closest
+                    // Pokestop to the last Pokestops spun cache
                     while (player.LastPokestopsSpun.Count > 5)
                     {
                         player.LastPokestopsSpun.RemoveAt(0);
                     }
+                    // TODO: Should we prevent multiple entries of the same Pokestop?
                     player.LastPokestopsSpun.Add(currentCoord);
                 }
+            }
+
+            if (currentCoord != null)
+            {
+                player.LastLocation = currentCoord;
             }
             return currentCoord;
         }
@@ -406,9 +418,9 @@
         {
             double delay;
             ulong encounterTime;
+
             try
             {
-
                 var result = Cooldown.SetCooldown(account, currentCoord);
                 delay = result.Delay;
                 encounterTime = result.EncounterTime;
@@ -430,6 +442,7 @@
                 _logger.LogError($"[{Name}] [{uuid}] Failed to save cooldown for account '{account}' to destination '{currentCoord}'\nError: {ex}");
                 return 0;
             }
+
             return delay;
         }
 

@@ -2,6 +2,6 @@
 {
     public interface IDataProcessorService
     {
-        Task ConsumeDataAsync(List<dynamic> data);
+        Task ConsumeDataAsync(string username, List<dynamic> data);
     }
 }
