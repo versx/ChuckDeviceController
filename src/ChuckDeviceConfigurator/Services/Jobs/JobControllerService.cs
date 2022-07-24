@@ -194,9 +194,7 @@
                             jobController = new TthFinderInstanceController(_mapFactory, instance, multiPolygons, _routeCalculator);
                             break;
                         case InstanceType.Leveling:
-                            // TODO: Make `StartingCoordinate` configurable via Instance.Data
-                            var startingCoord = coordinates.FirstOrDefault()?.FirstOrDefault();
-                            jobController = new LevelingInstanceController(_deviceFactory, instance, multiPolygons, startingCoord);
+                            jobController = new LevelingInstanceController(_deviceFactory, instance, multiPolygons);
                             ((LevelingInstanceController)jobController).AccountLevelUp += OnAccountLevelUp;
                             break;
                         case InstanceType.PokemonIV:

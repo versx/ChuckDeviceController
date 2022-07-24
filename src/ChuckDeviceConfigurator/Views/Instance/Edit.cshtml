@@ -143,6 +143,11 @@
             <div class="checkbox leveling">
                 <label><input type="checkbox" asp-for="Data.StoreLevelingData"> Save Leveling Data</label>
             </div>
+            <div class="form-group leveling">
+                <label asp-for="Data.StartingCoordinate" class="control-label"></label> (Leave blank to use first in route)
+                <input asp-for="Data.StartingCoordinate" class="form-control">
+                <span asp-validation-for="Data.StartingCoordinate" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <label asp-for="Data.AccountGroup" class="control-label"></label>
                 <input asp-for="Data.AccountGroup" class="form-control" maxlength="50">

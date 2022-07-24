@@ -104,6 +104,9 @@
         [DisplayName("Save Leveling Data")]
         public bool StoreLevelingData { get; set; } = Strings.DefaultStoreLevelingData;
 
+        [DisplayName("Starting Coordinate")]
+        public string StartingCoordinate { get; set; } = Strings.DefaultStartingCoordinate;
+
 
         // All
         [DisplayName("Account Group")]

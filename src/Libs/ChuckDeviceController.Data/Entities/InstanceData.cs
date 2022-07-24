@@ -161,6 +161,12 @@
         ]
         public bool StoreLevelingData { get; set; }
 
+        [
+            DisplayName("Starting Coordinate"),
+            JsonPropertyName("leveling_start_coordinate"),
+        ]
+        public string? StartingCoordinate { get; set; }
+
         #endregion
 
         [

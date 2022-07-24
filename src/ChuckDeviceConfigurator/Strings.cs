@@ -84,6 +84,7 @@
         // Leveling
         public const uint DefaultLevelingRadius = 10000;
         public const bool DefaultStoreLevelingData = false;
+        public const string DefaultStartingCoordinate = null;
 
         // All
         public const string DefaultAccountGroup = null;

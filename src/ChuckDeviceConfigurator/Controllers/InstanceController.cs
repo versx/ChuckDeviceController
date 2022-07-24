@@ -360,6 +360,7 @@
                 // Leveling
                 LevelingRadius = model?.LevelingRadius ?? Strings.DefaultLevelingRadius,
                 StoreLevelingData = model?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
+                StartingCoordinate = model?.StartingCoordinate ?? Strings.DefaultStartingCoordinate,
 
                 // All
                 AccountGroup = model?.AccountGroup ?? Strings.DefaultAccountGroup,
@@ -410,6 +411,7 @@
                 // Leveling
                 LevelingRadius = data?.LevelingRadius ?? Strings.DefaultLevelingRadius,
                 StoreLevelingData = data?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
+                StartingCoordinate = data?.StartingCoordinate ?? Strings.DefaultStartingCoordinate,
             };
             return instanceDataModel;
         }

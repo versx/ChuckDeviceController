@@ -119,8 +119,7 @@
         public LevelingInstanceController(
             IDbContextFactory<DeviceControllerContext> deviceFactory,
             Instance instance,
-            List<MultiPolygon> multiPolygons,
-            Coordinate startingCoord)
+            List<MultiPolygon> multiPolygons)
         {
             Name = instance.Name;
             MultiPolygons = multiPolygons;
@@ -128,12 +127,21 @@
             MaximumLevel = instance.MaximumLevel;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
-            StartingCoordinate = startingCoord;
             StoreLevelData = instance.Data?.StoreLevelingData ?? Strings.DefaultStoreLevelingData;
             Radius = instance.Data?.LevelingRadius ?? Strings.DefaultLevelingRadius;
 
             _logger = new Logger<LevelingInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _deviceFactory = deviceFactory;
+
+            var startingCoordData = instance.Data?.StartingCoordinate ?? Strings.DefaultStartingCoordinate;
+            var startingCoord = GetStartingCoordinate(startingCoordData);
+            if (startingCoord == null)
+            {
+                var error = $"[{Name}] Failed to parse starting coordinate, unable to initialize instance";
+                _logger.LogError(error);
+                throw new Exception(error);
+            }
+            StartingCoordinate = startingCoord;
         }
 
         #endregion
@@ -570,6 +578,36 @@
                         // Return default instance status `--`
                         : Strings.DefaultInstanceStatus;
             return status;
+        }
+
+        private Coordinate? GetStartingCoordinate(string startingCoordData)
+        {
+            if (!string.IsNullOrEmpty(startingCoordData))
+            {
+                // Parse string, split.trim
+                var split = startingCoordData.Trim(' ').Split(',');
+                if (split.Length == 2)
+                {
+                    if (!double.TryParse(split.FirstOrDefault(), out var lat))
+                    {
+                        _logger.LogError($"[{Name}] Failed to parse latitude coordinate for starting location");
+                    }
+                    if (!double.TryParse(split.LastOrDefault(), out var lon))
+                    {
+                        _logger.LogError($"[{Name}] Failed to parse latitude coordinate for starting location");
+                    }
+                    return new Coordinate(lat, lon);
+                }
+
+                _logger.LogError($"[{Name}] Failed to parse starting coordinate, using first coordinate in route as fallback");
+            }
+
+            var firstCoord = MultiPolygons[0][0];
+            if (firstCoord != null)
+            {
+                return new Coordinate(firstCoord.FirstOrDefault(), firstCoord.LastOrDefault());
+            }
+            return null;
         }
 
         #endregion
