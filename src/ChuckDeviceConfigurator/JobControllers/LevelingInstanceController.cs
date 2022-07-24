@@ -6,6 +6,7 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceConfigurator.Collections;
+    using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -99,6 +100,16 @@
         public bool StoreLevelData { get; }
 
         public ulong Radius { get; set; }
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler<AccountLevelUpEventArgs> AccountLevelUp;
+        private void OnAccountLevelUp(ushort level, string username, ulong xp, ulong dateReached)
+        {
+            AccountLevelUp?.Invoke(this, new AccountLevelUpEventArgs(level, username, xp, dateReached));
+        }
 
         #endregion
 
@@ -291,25 +302,38 @@
             {
                 AddPlayer(username);
 
+                var now = DateTime.UtcNow.ToTotalSeconds();
                 var previousLevel = _players[username].Level;
                 // Check if incoming level from protos is higher than existing
                 // set level, if so then the trainer has leveled up
-                if (level > previousLevel)
+                if (level > previousLevel)// || level > MaximumLevel)
                 {
-                    // TODO: Trainer leveled up, call LevelUp event
-                    _logger.LogInformation($"[{Name}] [{username}] Trainer has level up from {previousLevel} to {level} with {xp:N0} total experience points!");
+                    // Trainer has leveled up
+                    if (level > MaximumLevel)
+                    {
+                        // Finished
+                        _logger.LogInformation($"[{Name}] [{username}] Trainer has reached level {MaximumLevel} with {xp:N0} total XP!");
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"[{Name}] [{username}] Trainer has level up from {previousLevel} to {level} with {xp:N0} total XP!");
+                    }
+                    OnAccountLevelUp(level, username, xp, now);
+
+                    /* REVIEW: Redundant
+                    if (level > MaximumLevel)
+                    {
+                        // Trainer has leveled up completely
+                        _logger.LogInformation($"[{Name}] [{username}] Trainer has reached level {MaximumLevel} with {xp:N0} total XP!");
+                        OnAccountLevelUp(level, username, xp, now);
+                    }
+                    */
                 }
+
                 _players[username].Level = level;
                 _players[username].XP = xp;
 
-                if (level > MaximumLevel)
-                {
-                    // TODO: Trainer has leveled up completely, call event
-                    _logger.LogInformation($"[{Name}] [{username}] Has leveled up completely to {MaximumLevel} with {xp:N0} total experience points!");
-                }
-
                 // Prevent multiple XpPerTime entries that are the same
-                var now = DateTime.UtcNow.ToTotalSeconds();
                 if (!_players[username].XpPerTime.Exists(tuple => tuple.Item1 == now))
                 {
                     _players[username].XpPerTime.Add((now, xp));

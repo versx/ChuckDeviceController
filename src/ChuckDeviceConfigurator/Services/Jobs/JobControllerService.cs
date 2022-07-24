@@ -15,6 +15,7 @@
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
     // TODO: Allow admin to see queue of all coords rather than just Pokemon IV queue
@@ -193,8 +194,10 @@
                             jobController = new TthFinderInstanceController(_mapFactory, instance, multiPolygons, _routeCalculator);
                             break;
                         case InstanceType.Leveling:
-                            var startingCoord = coordinates[0][0];
+                            // TODO: Make `StartingCoordinate` configurable via Instance.Data
+                            var startingCoord = coordinates.FirstOrDefault()?.FirstOrDefault();
                             jobController = new LevelingInstanceController(_deviceFactory, instance, multiPolygons, startingCoord);
+                            ((LevelingInstanceController)jobController).AccountLevelUp += OnAccountLevelUp;
                             break;
                         case InstanceType.PokemonIV:
                             var ivList = _ivListService.GetByName(instance.Data?.IvList ?? Strings.DefaultIvList);
@@ -510,6 +513,12 @@
         private void OnAssignmentDeviceReloaded(object? sender, AssignmentDeviceReloadedEventArgs e)
         {
             ReloadDevice(e.Device, e.Device.Uuid);
+        }
+
+        private void OnAccountLevelUp(object? sender, AccountLevelUpEventArgs e)
+        {
+            var date = e.DateReached.FromSeconds();
+            _logger.LogInformation($"Account {e.Username} has reached level {e.Level} at {date} with a total of {e.XP} XP!");
         }
 
         #endregion
