@@ -4,12 +4,12 @@
     ViewData["Title"] = "IV List Details " + Model?.Name;
 }
 
-<h1>IV List Details @Model?.Name</h1>
+<h1>IV List Details</h1>
 
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
 <div>
-    <h4>Geofence</h4>
+    <h4>IV List '@(Model?.Name)'</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">

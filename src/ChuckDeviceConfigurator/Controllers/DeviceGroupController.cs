@@ -44,6 +44,7 @@
                 ModelState.AddModelError("DeviceGroup", $"DeviceGroup does not exist with id '{id}'.");
                 return View();
             }
+            // TODO: Show online status for devices
             return View(deviceGroup);
         }
 

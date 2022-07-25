@@ -4,12 +4,12 @@
     ViewData["Title"] = "Instance Details " + Model?.Name;
 }
 
-<h1>Instance Details @Model?.Name</h1>
+<h1>Instance Details</h1>
 
 <p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
 
 <div>
-    <h4>Instance</h4>
+    <h4>Instance '@(Model?.Name)'</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">

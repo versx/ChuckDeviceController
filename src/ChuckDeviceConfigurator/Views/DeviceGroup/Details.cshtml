@@ -4,12 +4,12 @@
     ViewData["Title"] = "Device Group Details " + Model?.Name;
 }
 
-<h1>Device Group Details @Model?.Name</h1>
+<h1>Device Group Details</h1>
 
 <p>@Html.ValidationMessage("DeviceGroup", new { @class = "text-danger" })</p>
 
 <div>
-    <h4>Device Group</h4>
+    <h4>Device Group '@(Model?.Name)'</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">

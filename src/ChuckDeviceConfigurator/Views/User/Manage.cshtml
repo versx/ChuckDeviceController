@@ -5,11 +5,11 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Manage User @Model?.UserName</h1>
+<h1>Manage User</h1>
 
 <p>@Html.ValidationMessage("User", new { @class = "text-danger" })</p>
 
-<h4>Manage user account for @Model?.UserName</h4>
+<h4>Manage user account for '@(Model?.UserName)'</h4>
 <hr />
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>

@@ -58,8 +58,6 @@
             return View(model);
         }
 
-
-
         // GET: DeviceController/Details/5
         public async Task<ActionResult> Details(string id)
         {
