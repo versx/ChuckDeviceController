@@ -3,6 +3,7 @@
     using System.Text.Json;
     using System.Timers;
 
+    using ChuckDeviceController.Pvp.GameMaster;
     using ChuckDeviceController.Pvp.Models;
 
     using POGOProtos.Rpc;
@@ -517,7 +518,12 @@
                 if (data == null)
                     continue;
 
-                var templateId = Convert.ToString(template["templateId"]);
+                var templateId = data.TemplateId;
+                if (string.IsNullOrEmpty(templateId))
+                {
+                    continue;
+                }
+
                 if (templateId.StartsWith("V") && templateId.Contains("_POKEMON_"))
                 {
                     var pokemonInfo = data.PokemonSettings;
@@ -550,7 +556,7 @@
                         if (formId == PokemonForm.Unset)
                         {
                             Console.WriteLine($"Failed to get form for '{formName}'");
-                            return;
+                            continue;
                         }
                         form = formId;
                     }
@@ -584,11 +590,7 @@
                     }
 
                     var costumeEvolution = pokemonInfo.ObCostumeEvolution?
-                        .Where(costume =>
-                        {
-                            var costumeId = CostumeFromName(costume);
-                            return costumeId != PokemonCostume.Unset;
-                        })
+                        .Where(costume => CostumeFromName(costume) != PokemonCostume.Unset)
                         .Select(CostumeFromName)
                         .ToList();
                     var stat = new PokemonBaseStats
