@@ -29,10 +29,14 @@
                 <td>@user.Email</td>
                 <td>@string.Join(", ", user.Roles.ToList())</td>
                 <td>
-                    <a class="btn btn-primary" asp-controller="User" asp-action="Manage" asp-route-userId="@user.UserId">Manage</a>
-                    @if (user.UserName != @(defaultUserName))
+                    <a class="btn btn-primary btn-sm" asp-controller="User" asp-action="Manage" asp-route-userId="@user.UserId">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </a>
+                    @if (user.UserName != defaultUserName)
                     {
-                        <a class="btn btn-danger" asp-controller="User" asp-action="Delete" asp-route-userId="@user.UserId">Delete</a>
+                        <a class="btn btn-danger btn-sm" asp-controller="User" asp-action="Delete" asp-route-userId="@user.UserId">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </a>
                     }
                 </td>
             </tr>
