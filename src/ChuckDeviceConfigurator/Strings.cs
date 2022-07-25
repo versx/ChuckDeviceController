@@ -49,6 +49,8 @@
 
         public const string DefaultDateTimeFormat = "MM/dd/yyyy hh:mm:ss tt";
 
+        public const string GoogleMapsFormat = "https://maps.google.com/maps?q={0},{1}";
+
         #region Default Instance Property Values
 
         // All

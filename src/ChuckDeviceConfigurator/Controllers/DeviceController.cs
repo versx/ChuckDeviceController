@@ -6,6 +6,7 @@
     using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Services.Jobs;
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -39,10 +40,13 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             foreach (var device in devices)
             {
+                var isMoreThanOneDay = now - device.LastSeen > Strings.OneDayS;
                 var lastSeen = device.LastSeen?.FromSeconds()
                                                .ToLocalTime()
                                                .ToString(Strings.DefaultDateTimeFormat);
-                device.LastSeenTime = lastSeen ?? Strings.DefaultInstanceStatus;
+                device.LastSeenTime = isMoreThanOneDay
+                    ? lastSeen
+                    : TimeSpanUtils.ToReadableString(device.LastSeen ?? 0);
                 device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
                     ? OnlineIcon
                     : OfflineIcon;
@@ -54,6 +58,8 @@
             return View(model);
         }
 
+
+
         // GET: DeviceController/Details/5
         public async Task<ActionResult> Details(string id)
         {
@@ -64,10 +70,18 @@
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
                 return View();
             }
+
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var isMoreThanOneDay = now - device.LastSeen > Strings.OneDayS;
             var lastSeen = device.LastSeen?.FromSeconds()
                                            .ToLocalTime()
-                                           .ToString("hh:mm:ss tt MM/dd/yyyy") ?? "--";
-            device.LastSeenTime = lastSeen;
+                                           .ToString(Strings.DefaultDateTimeFormat);
+            device.LastSeenTime = isMoreThanOneDay
+                ? lastSeen
+                : TimeSpanUtils.ToReadableString(device.LastSeen ?? 0);
+            device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
+                ? OnlineIcon
+                : OfflineIcon;
             return View(device);
         }
 
