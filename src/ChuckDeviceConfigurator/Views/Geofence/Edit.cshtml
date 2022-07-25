@@ -5,11 +5,11 @@
     ViewData["Title"] = "Edit Geofence " + Model?.Name;
 }
 
-<h1>Edit Geofence @Model?.Name</h1>
+<h1>Edit Geofence</h1>
 
 <p>@Html.ValidationMessage("Geofence", new { @class = "text-danger" })</p>
 
-<h4>Geofence</h4>
+<h4>Geofence '@(Model?.Name)'</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">

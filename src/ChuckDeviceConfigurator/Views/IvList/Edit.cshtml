@@ -7,11 +7,11 @@
     var pokemonIds = string.Join(Environment.NewLine, Model?.PokemonIds ?? new List<uint>());
 }
 
-<h1>Edit IV List @Model?.Name</h1>
+<h1>Edit IV List</h1>
 
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
-<h4>IV List</h4>
+<h4>IV List '@(Model?.Name)'</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">

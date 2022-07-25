@@ -5,11 +5,11 @@
     ViewData["Title"] = "Edit Instance " + Model?.Name;
 }
 
-<h1>Edit Instance @Model?.Name</h1>
+<h1>Edit Instance</h1>
 
 <p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
 
-<h4>Instance</h4>
+<h4>Instance '@(Model?.Name)'</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">

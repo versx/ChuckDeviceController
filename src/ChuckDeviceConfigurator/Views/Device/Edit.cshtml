@@ -5,11 +5,11 @@
     ViewData["Title"] = "Edit Device " + Model?.Uuid;
 }
 
-<h1>Edit Device @Model?.Uuid</h1>
+<h1>Edit Device</h1>
 
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
-<h4>Device</h4>
+<h4>Device '@(Model?.Uuid)'</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">

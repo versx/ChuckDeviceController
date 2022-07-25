@@ -5,11 +5,11 @@
     ViewData["Title"] = "Edit Assignment Group " + Model?.Name;
 }
 
-<h1>Edit Assignment Group @Model?.Name</h1>
+<h1>Edit Assignment Group</h1>
 
 <p>@Html.ValidationMessage("AssignmentGroup", new { @class = "text-danger" })</p>
 
-<h4>Assignment Group</h4>
+<h4>Assignment Group '@(Model?.Name)'</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">

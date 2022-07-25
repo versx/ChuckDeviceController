@@ -5,11 +5,11 @@
     ViewData["Title"] = "Edit Device Group " + Model?.Name;
 }
 
-<h1>Edit Device Group @Model?.Name</h1>
+<h1>Edit Device Group</h1>
 
 <p>@Html.ValidationMessage("DeviceGroup", new { @class = "text-danger" })</p>
 
-<h4>Device Group</h4>
+<h4>Device Group '@(Model?.Name)'</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
