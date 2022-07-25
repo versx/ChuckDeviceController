@@ -137,7 +137,7 @@
                 var displayText = (string.IsNullOrEmpty(assignment.DeviceGroupName)
                     ? assignment.DeviceUuid
                     : assignment.DeviceGroupName
-                ) + $" -> {assignment.InstanceName} ({Utils.FormatAssignmentTime(assignment.Time)}";
+                ) + $" -> {assignment.InstanceName} ({Utils.FormatAssignmentTime(assignment.Time)})";
                 assignmentsList.Add(new SelectListItem
                 {
                     Text = displayText,

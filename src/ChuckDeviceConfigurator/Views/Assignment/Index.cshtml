@@ -71,10 +71,17 @@
                     @(item.Enabled ? "Yes" : "No")
                 </td>
                 <td>
-                    <a asp-action="Start" asp-route-id="@item.Id">Start</a> |
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <div class="dropdown">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownGroup" data-bs-toggle="dropdown" aria-expanded="false">
+                            Action
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
+                            <li><a class="dropdown-item" asp-action="Start" asp-route-id="@item.Id">Start</a></li>
+                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">Edit</a></li>
+                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id">Details</a></li>
+                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id">Delete</a></li>
+                        </ul>
+                    </div>
                 </td>
             </tr>
         }
