@@ -29,7 +29,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EFCore.BulkExtensions" Version="6.5.3" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.47.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.6">
@@ -45,7 +44,7 @@
     <PackageReference Include="POGOProtos.Core" Version="2.56.6" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="6.14.2" />
+    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="6.14.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -520,28 +520,7 @@
 
             using (var context = _mapFactory.CreateDbContext())
             {
-                var pokestops = context.Pokestops.Where(pokestop => pokestopIds.Contains(pokestop.Id))
-                                                 .ToList();
-                pokestops.ForEach(pokestop =>
-                {
-                    pokestop.QuestConditions = null;
-                    pokestop.QuestRewards = null;
-                    pokestop.QuestTarget = null;
-                    pokestop.QuestTemplate = null;
-                    pokestop.QuestTimestamp = null;
-                    pokestop.QuestTitle = null;
-                    pokestop.QuestType = null;
-
-                    pokestop.AlternativeQuestConditions = null;
-                    pokestop.AlternativeQuestRewards = null;
-                    pokestop.AlternativeQuestTarget = null;
-                    pokestop.AlternativeQuestTemplate = null;
-                    pokestop.AlternativeQuestTimestamp = null;
-                    pokestop.AlternativeQuestTitle = null;
-                    pokestop.AlternativeQuestType = null;
-                    context.Update(pokestop);
-                });
-                await context.SaveChangesAsync();
+                await context.ClearQuestsAsync(pokestopIds);
                 _logger.LogInformation($"[{Name}] {pokestopIds.Count:N0} Pokestop Quests have been cleared");
             }
 
