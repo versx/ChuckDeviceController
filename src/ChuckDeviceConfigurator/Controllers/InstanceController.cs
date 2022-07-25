@@ -50,7 +50,7 @@
             };
             if (autoRefresh)
             {
-                // TODO: Make table refresh configurable (implement a better way actually)
+                // TODO: Make table refresh configurable (implement server side table data fetch vs reloading actual page)
                 Response.Headers["Refresh"] = "5";
             }
             return View(model);
@@ -273,7 +273,7 @@
 
         // GET: InstanceController/IvQueue/test
         [Route("/Instance/IvQueue/{name}")]
-        public ActionResult IvQueue(string name)
+        public ActionResult IvQueue(string name, bool autoRefresh = false)
         {
             try
             {
@@ -298,7 +298,12 @@
                 {
                     Name = name,
                     Queue = queueItems,
+                    AutoRefresh = autoRefresh,
                 };
+                if (autoRefresh)
+                {
+                    Response.Headers["Refresh"] = "5";
+                }
                 return View(model);
             }
             catch

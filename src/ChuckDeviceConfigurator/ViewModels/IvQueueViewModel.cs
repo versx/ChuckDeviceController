@@ -7,6 +7,8 @@
         public string? Name { get; set; }
 
         public List<IvQueueItemViewModel> Queue { get; set; } = new();
+
+        public bool AutoRefresh { get; set; }
     }
 
     public class IvQueueItemViewModel

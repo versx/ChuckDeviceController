@@ -10,6 +10,10 @@
 
 <p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
 
+<div class="checkbox">
+    <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
+</div>
+
 <table class="table table-striped">
     <thead class="table-dark">
         <tr>
@@ -67,3 +71,16 @@
     }
     </tbody>
 </table>
+
+@section Scripts {
+<script>
+const handleAutoRefresh = (e) => {
+    const isChecked = $(e).is(':checked');
+    if (isChecked) {
+        location.href = '@Url.Action("IvQueue", new { name = Model.Name, autoRefresh = true })';
+    } else {
+        location.href = '@Url.Action("IvQueue", new { name = Model.Name, autoRefresh = false })';
+    }
+};
+</script>
+}
