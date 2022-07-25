@@ -10,8 +10,8 @@
 
 <p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
 
-<table class="table">
-    <thead>
+<table class="table table-striped">
+    <thead class="table-dark">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Queue[0].Index)
@@ -40,9 +40,9 @@
         foreach (var item in Model.Queue)
         {
             <tr>
-                <td>
+                <th scope="row">
                     @index
-                </td>
+                </th>
                 <td>
                     @Html.Raw(item.Image)
                 </td>

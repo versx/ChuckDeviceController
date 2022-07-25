@@ -11,7 +11,7 @@
 </p>
 
 <table class="table table-striped">
-    <thead>
+    <thead class="table-dark">
         <tr>
             <th>Username</th>
             <th>Email</th>
@@ -23,7 +23,7 @@
         @foreach (var user in Model)
         {
             <tr>
-                <td>@user.UserName</td>
+                <th scope="row">@user.UserName</th>
                 <td>@user.Email</td>
                 <td>@string.Join(", ", user.Roles.ToList())</td>
                 <td>

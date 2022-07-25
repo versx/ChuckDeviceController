@@ -11,8 +11,8 @@
     <a asp-action="Create">Create New</a>
 </p>
 
-<table class="table">
-    <thead>
+<table class="table table-striped">
+    <thead class="table-dark">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Name)
@@ -27,9 +27,9 @@
         @foreach (var item in Model.Items)
         {
             <tr>
-                <td>
+                <th scope="row">
                     @Html.DisplayFor(modelItem => item.Name)
-                </td>
+                </th>
                 <td>
                     @string.Join(", ", item.PokemonIds.Take(10))
                 </td>

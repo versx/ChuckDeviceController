@@ -43,7 +43,7 @@
                                                .ToLocalTime()
                                                .ToString(Strings.DefaultDateTimeFormat);
                 device.LastSeenTime = lastSeen ?? Strings.DefaultInstanceStatus;
-                device.OnlineStatus = device.LastSeen <= Strings.DeviceOnlineThresholdS
+                device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
                     ? OnlineIcon
                     : OfflineIcon;
             }

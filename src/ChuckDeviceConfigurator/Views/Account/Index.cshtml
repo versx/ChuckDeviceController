@@ -15,8 +15,8 @@
     <a asp-action="Add">Import Accounts</a>
 </p>
 
-<table class="table">
-    <thead>
+<table class="table table-striped">
+    <thead class="table-dark">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Username)
@@ -46,9 +46,9 @@
         @foreach (var item in Model.Items)
         {
             <tr>
-                <td>
+                <th scope="row">
                     @Html.DisplayFor(modelItem => item.Username)
-                </td>
+                </th>
                 <td>
                     @Html.DisplayFor(modelItem => item.Level)
                 </td>
