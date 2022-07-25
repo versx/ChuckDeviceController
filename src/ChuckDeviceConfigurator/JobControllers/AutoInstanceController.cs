@@ -46,7 +46,7 @@
 
         public string Name { get; }
 
-        public IReadOnlyList<MultiPolygon> MultiPolygon { get; }
+        public IReadOnlyList<MultiPolygon> MultiPolygons { get; }
 
         public ushort MinimumLevel { get; }
 
@@ -92,11 +92,11 @@
             IDbContextFactory<MapDataContext> mapFactory,
             IDbContextFactory<DeviceControllerContext> deviceFactory,
             Instance instance,
-            List<MultiPolygon> multiPolygon,
+            List<MultiPolygon> multiPolygons,
             short timeZoneOffset = Strings.DefaultTimeZoneOffset)
         {
             Name = instance.Name;
-            MultiPolygon = multiPolygon;
+            MultiPolygons = multiPolygons;
             MinimumLevel = instance.MinimumLevel;
             MaximumLevel = instance.MaximumLevel;
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
@@ -379,11 +379,13 @@
             var allCellIds = new List<ulong>();
 
             // Get all known cells from the database
-            var existingCells = await GetS2CellsAsync();
+            using var context = _mapFactory.CreateDbContext();
+            // TODO: Get s2cells within multi polygon instead of all
+            var existingCells = await context.GetS2CellsAsync(MultiPolygons);
             var existingCellIds = existingCells.Select(cell => cell.Id).ToList();
 
             // Loop through all geofences and get s2cells within each geofence
-            foreach (var polygon in MultiPolygon)
+            foreach (var polygon in MultiPolygons)
             {
                 // Get maximum amount of S2 level 15 cells within this geofence
                 var s2Cells = polygon.GetS2CellIds(15, 15, int.MaxValue);
@@ -430,7 +432,7 @@
                     using (var context = _mapFactory.CreateDbContext())
                     {
                         // Loop through all specified geofences for Pokestops found within them
-                        foreach (var polygon in MultiPolygon)
+                        foreach (var polygon in MultiPolygons)
                         {
                             try
                             {
@@ -655,6 +657,8 @@
             {
                 HandleOnCompletion(uuid);
             }
+
+            await Task.CompletedTask;
         }
 
         private void IncrementSpinAttempt(PokestopWithMode pokestop, byte amount = 1)
@@ -847,114 +851,37 @@
 
         #region Database Helpers
 
-        #region Account
-
         private async Task<Account?> GetAccountAsync(string uuid, Coordinate encounterTarget)
         {
-            if (_accounts.ContainsKey(uuid))
-            {
-                var username = _accounts[uuid];
-                _accounts.Remove(uuid);
-                return await GetAccountAsync(username);
-            }
-
-            var account = await GetNewAccountAsync(
-                MinimumLevel,
-                MaximumLevel,
-                UseWarningAccounts,
-                SpinLimit,
-                noCooldown: true,
-                GroupName
-            );
-            return account;
-        }
-
-        private async Task<Account?> GetAccountAsync(string username)
-        {
+            // TODO: Check account against encounterTarget to see if too far
             using (var context = _deviceFactory.CreateDbContext())
             {
-                var account = await context.Accounts.FindAsync(username);
+                if (_accounts.ContainsKey(uuid))
+                {
+                    var username = _accounts[uuid];
+                    _accounts.Remove(uuid);
+                    return await context.GetAccountAsync(username);
+                }
+
+                var account = await context.GetNewAccountAsync(
+                    MinimumLevel,
+                    MaximumLevel,
+                    UseWarningAccounts,
+                    SpinLimit,
+                    noCooldown: true,
+                    GroupName
+                );
                 return account;
             }
         }
 
-        private async Task<Account?> GetNewAccountAsync(ushort minLevel = 0, ushort maxLevel = 35, bool ignoreWarning = false, uint spins = 3500, bool noCooldown = true, string? group = null)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-
-            using (var context = _deviceFactory.CreateDbContext())
-            {
-                var account = context.Accounts.FirstOrDefault(a =>
-                    // Meet level requirements for instance
-                    a.Level >= minLevel && a.Level <= maxLevel &&
-                    // Is under total spins
-                    a.Spins < spins &&
-                    // Matches event group name
-                    !string.IsNullOrEmpty(group)
-                        ? a.GroupName == group
-                        : string.IsNullOrEmpty(a.GroupName) &&
-                    // 
-                    noCooldown
-                        ? (a.LastEncounterTime == null || now - a.LastEncounterTime >= Strings.CooldownLimitS)
-                        : (a.LastEncounterTime == null || a.LastEncounterTime != null) &&
-                    ignoreWarning
-                        // Has warning 
-                        ? string.IsNullOrEmpty(a.Failed) || a.Failed == "GPR_RED_WARNING"
-                        // Has no account warnings or are expired already
-                        : (a.Failed == null && a.FirstWarningTimestamp == null) ||
-                          (a.Failed == "GPR_RED_WARNING" && a.WarnExpireTimestamp > 0 && a.WarnExpireTimestamp <= now) ||
-                          (a.Failed == "suspended" && a.FailedTimestamp <= now - Strings.SuspensionTimeLimitS)
-                );
-                return await Task.FromResult(account);
-            }
-        }
-
         #endregion
 
-        private async Task<List<Cell>> GetS2CellsAsync()
-        {
-            using (var context = _mapFactory.CreateDbContext())
-            {
-                var cells = context.Cells.ToList();
-                return await Task.FromResult(cells);
-            }
-        }
-
-        #endregion
-
-        private class PokestopWithMode : IComparable
+        private class PokestopWithMode
         {
             public Pokestop? Pokestop { get; set; }
 
             public bool IsAlternative { get; set; }
-
-            // NOTE: Not really needed now after changing how spin attempts cache
-            public int CompareTo(object? obj)
-            {
-                if (obj == null)
-                    return -1;
-
-                var other = (PokestopWithMode)obj;
-                var result = CompareTo(other);
-                if (result != 0)
-                {
-                    return result;
-                }
-
-                result = Pokestop.Id.CompareTo(other.Pokestop.Id);
-                if (result != 0)
-                {
-                    return result;
-                }
-
-                result = IsAlternative.CompareTo(other.IsAlternative);
-                if (result != 0)
-                {
-                    return result;
-                }
-
-                return 0;
-            }
         }
     }
 }

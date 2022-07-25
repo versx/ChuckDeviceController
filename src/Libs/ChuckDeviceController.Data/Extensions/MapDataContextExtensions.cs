@@ -5,6 +5,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
 
     public static class MapDataContextExtensions
@@ -84,7 +85,7 @@
         /// </summary>
         /// <param name="context"></param>
         /// <param name="multiPolygons"></param>
-        public static async Task ClearQuestsAsync(this MapDataContext context, List<MultiPolygon> multiPolygons)
+        public static async Task ClearQuestsAsync(this MapDataContext context, IEnumerable<MultiPolygon> multiPolygons)
         {
             foreach (var multiPolygon in multiPolygons)
             {
@@ -99,6 +100,7 @@
         /// <param name="multiPolygon"></param>
         public static async Task ClearQuestsAsync(this MapDataContext context, MultiPolygon multiPolygon)
         {
+            // TODO: Use GeofenceService.InMultiPolygon instead
             var bbox = multiPolygon.GetBoundingBox();
             await ClearQuestsAsync(context, bbox);
         }
@@ -171,6 +173,70 @@
                                    .Where(pokestop => isNotDeleted == pokestop.IsDeleted)
                                    .ToList();
             return pokestops;
+        }
+
+        #endregion
+
+        #region S2 Cells
+
+        /// <summary>
+        /// Get all S2 cells
+        /// </summary>
+        /// <param name="context"></param>
+        public static async Task<List<Cell>> GetS2CellsAsync(this MapDataContext context)
+        {
+            var cells = context.Cells.ToList();
+            return await Task.FromResult(cells);
+        }
+
+        /// <summary>
+        /// Get all S2 cells within bounding box
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="bbox"></param>
+        public static async Task<List<Cell>> GetS2CellsAsync(this MapDataContext context, BoundingBox bbox)
+        {
+            var cells = context.Cells.Where(cell =>
+                cell.Latitude >= bbox.MinimumLatitude &&
+                cell.Longitude >= bbox.MinimumLongitude &&
+                cell.Latitude <= bbox.MaximumLatitude &&
+                cell.Longitude <= bbox.MaximumLongitude
+            ).ToList();
+            return await Task.FromResult(cells);
+        }
+
+        /// <summary>
+        /// Get all S2 cells within geofence polygon
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="multiPolygon"></param>
+        /// <returns></returns>
+        public static async Task<List<Cell>> GetS2CellsAsync(this MapDataContext context, MultiPolygon multiPolygon)
+        {
+            var bbox = multiPolygon.GetBoundingBox();
+            // Get S2 cells within geofence bounding box
+            var bboxCells = await GetS2CellsAsync(context, bbox);
+            // Filter S2 cells outside of geofence polygon
+            var cellsInArea = bboxCells.Where(cell => GeofenceService.InPolygon(multiPolygon, cell.ToCoordinate()))
+                                       .ToList();
+            return cellsInArea;
+        }
+
+        /// <summary>
+        /// Get all S2 cells within geofence polygons
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="multiPolygons"></param>
+        /// <returns></returns>
+        public static async Task<List<Cell>> GetS2CellsAsync(this MapDataContext context, IEnumerable<MultiPolygon> multiPolygons)
+        {
+            var cells = new List<Cell>();
+            foreach (var multiPolygon in multiPolygons)
+            {
+                var list = await GetS2CellsAsync(context, multiPolygon);
+                cells.AddRange(list);
+            }
+            return cells;
         }
 
         #endregion
