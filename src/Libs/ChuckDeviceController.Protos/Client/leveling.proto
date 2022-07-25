@@ -1,0 +1,29 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "ChuckDeviceController.Protos";
+
+package leveling;
+
+// The trainer leveling service definition.
+service Leveling {
+    // Sends trainer info
+    rpc ReceivedTrainerInfo (TrainerInfoRequest) returns (TrainerInfoResponse);
+}
+
+// The request message containing the trainer username.
+message TrainerInfoRequest {
+    string username = 1;
+}
+
+// The response message containing the status of the request.
+message TrainerInfoResponse {
+    TrainerInfoStatus status = 1;
+    string username = 2;
+    bool storeLevelingData = 3;
+    bool isLeveling = 4;
+}
+
+enum TrainerInfoStatus {
+	Ok = 0;
+	Error = 1;
+}

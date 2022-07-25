@@ -45,7 +45,7 @@
         public const string DefaultResetPasswordEmailSubject = "Reset Password";
         public const string DefaultResetPasswordMessageHtmlFormat = "Please reset your password by <a href='{0}'>clicking here</a>.";
 
-        public const ushort DeviceOnlineThresholdM = 15; // 15 minutes
+        public const ushort DeviceOnlineThresholdS = 15 * 60; // 15 minutes
 
         public const string DefaultDateTimeFormat = "MM/dd/yyyy hh:mm:ss tt";
 

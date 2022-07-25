@@ -137,9 +137,9 @@
             var hasArQuestReqGlobal = payload.Payload.HaveAr;
 
             var isMadData = false;
-            var isEmptyGmo = true;
-            var isInvalidGmo = true;
-            var containsGmo = false;
+            //var isEmptyGmo = true;
+            //var isInvalidGmo = true;
+            //var containsGmo = false;
 
             Coordinate? targetCoord = null;
             var inArea = false;
@@ -282,10 +282,10 @@
                         }
                         break;
                     case Method.Encounter:
-                        isEmptyGmo = false;
-                        isInvalidGmo = false;
                         try
                         {
+                            //isEmptyGmo = false;
+                            //isInvalidGmo = false;
                             if (level >= 30 || isMadData)
                             {
                                 var er = EncounterOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
@@ -360,13 +360,13 @@
                         }
                         break;
                     case Method.GetMapObjects:
-                        containsGmo = true;
                         try
                         {
+                            //containsGmo = true;
                             var gmo = GetMapObjectsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                             if (gmo != null)
                             {
-                                isInvalidGmo = false;
+                                //isInvalidGmo = false;
                                 var gmoMapCells = gmo.MapCell;
                                 var newWildPokemon = new List<dynamic>();
                                 var newNearbyPokemon = new List<dynamic>();
@@ -479,7 +479,7 @@
                                         }
                                     }
 
-                                    isEmptyGmo = true;
+                                    //isEmptyGmo = true;
                                     _logger.LogDebug($"[{uuid}] GMO is empty.");
                                 }
                                 else
@@ -500,7 +500,7 @@
                                         }
                                     }
 
-                                    isEmptyGmo = false;
+                                    //isEmptyGmo = false;
                                 }
 
                                 processedProtos.AddRange(newCells);
@@ -596,11 +596,14 @@
             // Insert/upsert wildPokemon, nearbyPokemon, mapPokemon, forts, cells, clientWeather, etc into database
             if (processedProtos.Count > 0)
             {
-                var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+                // var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
                 // _logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
-                // TODO: Get 'StoreLevelingData' value for trainer from JobControllerService using gRPC?
-                await _dataProcessor.ConsumeDataAsync(username, processedProtos);
+                var storeData = await IsAllowedToSaveDataAsync(username);
+                if (storeData)
+                {
+                    await _dataProcessor.ConsumeDataAsync(username, processedProtos);
+                }
             }
 
             return stoppingToken;
@@ -642,6 +645,23 @@
         #endregion
 
         #region Private Methods
+
+        private async Task<bool> IsAllowedToSaveDataAsync(string username)
+        {
+            // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
+            var levelingStatus = await _grpcClientService.GetTrainerLevelingStatus(username);
+            if (levelingStatus.Status != TrainerInfoStatus.Ok)
+            {
+                // Failure occurred, return true to be safe
+                return true;
+            }
+
+            // Only store data if trainer is not currently leveling or if trainer is leveling and instance is configured
+            // to store leveling data found
+            var storeData = (levelingStatus.IsLeveling && levelingStatus.StoreLevelingData) ||
+                         !levelingStatus.IsLeveling;
+            return storeData;
+        }
 
         private void CheckQueueLength()
         {

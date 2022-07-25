@@ -144,7 +144,7 @@ builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSe
 
 builder.Services.AddGrpc(options =>
 {
-    options.IgnoreUnknownServices = true;
+    options.IgnoreUnknownServices = false; // TODO: Set to 'true' for production
     options.EnableDetailedErrors = true;
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });
@@ -183,7 +183,8 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGrpcService<GrpcServerService>();
+app.MapGrpcService<ProtoPayloadServerService>();
+app.MapGrpcService<TrainerInfoServerService>();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

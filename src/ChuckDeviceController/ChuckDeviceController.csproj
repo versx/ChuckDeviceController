@@ -58,6 +58,7 @@
 
   <ItemGroup>
     <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\payload.proto" GrpcServices="Client" />
+    <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Client\leveling.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>

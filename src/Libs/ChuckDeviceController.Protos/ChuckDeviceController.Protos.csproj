@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Client\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Protobuf Include="Server\greet.proto" GrpcServices="Server" />
   </ItemGroup>
 

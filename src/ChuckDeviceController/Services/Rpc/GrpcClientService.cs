@@ -44,5 +44,24 @@
             var reply = await client.ReceivedPayloadAsync(request);
             //Console.WriteLine($"Response: {reply?.Status}");
         }
+
+        public async Task<TrainerInfoResponse> GetTrainerLevelingStatus(string username)
+        {
+            // Create gRPC channel for receiving gRPC server address
+            using var channel = GrpcChannel.ForAddress(_grpcServerEndpoint);
+
+            // Create new gRPC client for gRPC channel for address
+            var client = new Leveling.LevelingClient(channel);
+
+            // Create gRPC payload request
+            var request = new TrainerInfoRequest
+            {
+                Username = username,
+            };
+
+            // Handle the response of the request
+            var response = await client.ReceivedTrainerInfoAsync(request);
+            return response;
+        }
     }
 }

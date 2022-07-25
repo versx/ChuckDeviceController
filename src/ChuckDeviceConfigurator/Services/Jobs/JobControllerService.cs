@@ -429,6 +429,36 @@
             }
         }
 
+        public TrainerLevelingStatus GetTrainerLevelingStatus(string username)
+        {
+            var storeLevelingData = false;
+            var isTrainerLeveling = false;
+
+            lock (_instancesLock)
+            {
+                foreach (var (_, jobController) in _instances)
+                {
+                    if (jobController is not LevelingInstanceController levelController)
+                        continue;
+
+                    // Check if trainer account is using leveling instance
+                    if (levelController.HasTrainer(username))
+                    {
+                        storeLevelingData = levelController.StoreLevelData;
+                        isTrainerLeveling = true;
+                        break;
+                    }
+                }
+            }
+
+            return new TrainerLevelingStatus
+            (
+                username,
+                isTrainerLeveling,
+                storeLevelingData
+            );
+        }
+
         #endregion
 
         #region Devices
@@ -651,5 +681,21 @@
         }
 
         #endregion
+    }
+
+    public class TrainerLevelingStatus
+    {
+        public string? Username { get; }
+
+        public bool StoreLevelingData { get; }
+
+        public bool IsTrainerLeveling { get; }
+
+        public TrainerLevelingStatus(string? username, bool storeLevelingData = false, bool isTrainerLeveling = false)
+        {
+            StoreLevelingData = storeLevelingData;
+            IsTrainerLeveling = isTrainerLeveling;
+            Username = username;
+        }
     }
 }

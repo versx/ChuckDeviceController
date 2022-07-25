@@ -8,19 +8,19 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Protos;
 
-    public class GrpcServerService : Payload.PayloadBase
+    public class ProtoPayloadServerService : Payload.PayloadBase
     {
         #region Variables
 
-        private readonly ILogger<GrpcServerService> _logger;
+        private readonly ILogger<ProtoPayloadServerService> _logger;
         private readonly IJobControllerService _jobControllerService;
 
         #endregion
 
         #region Constructor
 
-        public GrpcServerService(
-            ILogger<GrpcServerService> logger,
+        public ProtoPayloadServerService(
+            ILogger<ProtoPayloadServerService> logger,
             IJobControllerService jobControllerService)
         {
             _logger = logger;

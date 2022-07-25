@@ -164,6 +164,16 @@
         /// <param name="xp">Current trainer experience points.</param>
         void GotPlayerInfo(string username, ushort level, ulong xp);
 
+        /// <summary>
+        /// Gets a value determining whether to store the leveling data found by trainer
+        /// </summary>
+        /// <param name="username">Trainer username to get value from</param>
+        /// <returns>
+        /// Returns information about the trainers leveling status
+        /// be stored.
+        /// </returns>
+        TrainerLevelingStatus GetTrainerLevelingStatus(string username);
+
         #endregion
     }
 }

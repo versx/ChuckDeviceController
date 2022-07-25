@@ -43,8 +43,9 @@
                                                .ToLocalTime()
                                                .ToString(Strings.DefaultDateTimeFormat);
                 device.LastSeenTime = lastSeen ?? Strings.DefaultInstanceStatus;
-                var isOnline = now - device.LastSeen <= Strings.DeviceOnlineThresholdM;
-                device.OnlineStatus = isOnline ? OnlineIcon : OfflineIcon;
+                device.OnlineStatus = device.LastSeen <= Strings.DeviceOnlineThresholdS
+                    ? OnlineIcon
+                    : OfflineIcon;
             }
             var model = new ViewModelsModel<Device>
             {
