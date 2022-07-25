@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "User Accounts";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    // TODO: Pass default root username from controller
+    var defaultUserName = "root";
 }
 <h1>User Accounts</h1>
 
@@ -28,7 +30,7 @@
                 <td>@string.Join(", ", user.Roles.ToList())</td>
                 <td>
                     <a class="btn btn-primary" asp-controller="User" asp-action="Manage" asp-route-userId="@user.UserId">Manage</a>
-                    @if (user.UserName != "root")
+                    @if (user.UserName != @(defaultUserName))
                     {
                         <a class="btn btn-danger" asp-controller="User" asp-action="Delete" asp-route-userId="@user.UserId">Delete</a>
                     }
