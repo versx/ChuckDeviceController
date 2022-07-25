@@ -9,7 +9,7 @@
         #region Singleton
 
         private static TimeZoneService? _instance;
-        public ITimeZoneService Instance => _instance ??= new TimeZoneService();
+        public static ITimeZoneService Instance => _instance ??= new TimeZoneService();
 
         #endregion
 

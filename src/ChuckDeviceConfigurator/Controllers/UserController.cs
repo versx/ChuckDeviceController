@@ -48,6 +48,7 @@
                 };
                 userRolesViewModel.Add(viewModel);
             }
+            ViewBag.DefaultUserName = Strings.DefaultUserName;
             return View(userRolesViewModel);
         }
 
