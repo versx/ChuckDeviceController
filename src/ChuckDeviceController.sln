@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Geome
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Configuration", "Libs\ChuckDeviceController.Configuration\ChuckDeviceController.Configuration.csproj", "{59AE3392-3EEF-48AF-94C5-349C424E5AC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Protos", "Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj", "{B83E2A63-EFA0-4CEA-A1E7-D1FC6E32836D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Protos", "Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj", "{B83E2A63-EFA0-4CEA-A1E7-D1FC6E32836D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Pvp", "Libs\ChuckDeviceController.Pvp\ChuckDeviceController.Pvp.csproj", "{2572D7B8-A332-42ED-B72C-DA5782192C39}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +55,10 @@ Global
 		{B83E2A63-EFA0-4CEA-A1E7-D1FC6E32836D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B83E2A63-EFA0-4CEA-A1E7-D1FC6E32836D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B83E2A63-EFA0-4CEA-A1E7-D1FC6E32836D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2572D7B8-A332-42ED-B72C-DA5782192C39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2572D7B8-A332-42ED-B72C-DA5782192C39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2572D7B8-A332-42ED-B72C-DA5782192C39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2572D7B8-A332-42ED-B72C-DA5782192C39}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,6 +69,7 @@ Global
 		{DA16D6C9-6FF6-4E04-90DA-59511DE51652} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 		{59AE3392-3EEF-48AF-94C5-349C424E5AC4} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 		{B83E2A63-EFA0-4CEA-A1E7-D1FC6E32836D} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
+		{2572D7B8-A332-42ED-B72C-DA5782192C39} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {826A78C7-B0DA-4D44-AF8E-BDDBFCE8F569}

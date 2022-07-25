@@ -54,6 +54,7 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Pvp\ChuckDeviceController.Pvp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
