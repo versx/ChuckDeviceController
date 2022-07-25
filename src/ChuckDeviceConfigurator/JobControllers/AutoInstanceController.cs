@@ -39,7 +39,6 @@
         private int _bootstrapTotalCount = 0;
         private ulong _completionDate = 0;
         private ulong _lastCompletionCheck = DateTime.UtcNow.ToTotalSeconds() - Strings.SixtyMinutesS;
-        private bool _shouldExit;
 
         #endregion
 
@@ -319,7 +318,11 @@
 
                     // TODO: Lock _allStops
                     var ids = _allStops.Select(x => x.Pokestop.Id).ToList();
-                    var currentCountDb = await GetPokestopQuestCountAsync(ids, QuestMode);
+                    var currentCountDb = 0ul;
+                    using (var context = _mapFactory.CreateDbContext())
+                    {
+                        currentCountDb = await context.GetPokestopQuestCountAsync(ids, QuestMode);
+                    }
 
                     // TODO: Lock _allStops
                     var maxCount = _allStops.Count;
@@ -355,7 +358,6 @@
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 
-            _shouldExit = true;
             _timer.Stop();
 
             return Task.CompletedTask;
@@ -425,35 +427,38 @@
                     // Clear all existing cached Pokestops to fetch updated entities
                     _allStops.Clear();
 
-                    // Loop through all specified geofences for Pokestops found within them
-                    foreach (var polygon in MultiPolygon)
+                    using (var context = _mapFactory.CreateDbContext())
                     {
-                        try
+                        // Loop through all specified geofences for Pokestops found within them
+                        foreach (var polygon in MultiPolygon)
                         {
-                            // Get all Pokestops within bounding box of geofence. Some Pokestops
-                            // closely outside of geofence will also be returned
-                            var bbox = polygon.GetBoundingBox();
-                            var stops = await GetPokestopsInBoundsAsync(bbox, onlyEnabled: true);
-
-                            //var isNormal = QuestMode == QuestMode.Normal || QuestMode == QuestMode.Both;
-                            var isAlternative = QuestMode == QuestMode.Alternative || QuestMode == QuestMode.Both;
-                            foreach (var stop in stops)
+                            try
                             {
-                                // Filter any Pokestops not within the geofence
-                                var coord = stop.ToCoordinate();
-                                if (!GeofenceService.InPolygon(polygon, coord))
-                                    continue;
+                                // Get all Pokestops within bounding box of geofence. Some Pokestops
+                                // closely outside of geofence will also be returned
+                                var bbox = polygon.GetBoundingBox();
+                                var stops = await context.GetPokestopsInBoundsAsync(bbox, isEnabled: true);
 
-                                _allStops.Add(new PokestopWithMode
+                                //var isNormal = QuestMode == QuestMode.Normal || QuestMode == QuestMode.Both;
+                                var isAlternative = QuestMode == QuestMode.Alternative || QuestMode == QuestMode.Both;
+                                foreach (var stop in stops)
                                 {
-                                    Pokestop = stop,
-                                    IsAlternative = isAlternative,
-                                });
+                                    // Filter any Pokestops not within the geofence
+                                    var coord = stop.ToCoordinate();
+                                    if (!GeofenceService.InPolygon(polygon, coord))
+                                        continue;
+
+                                    _allStops.Add(new PokestopWithMode
+                                    {
+                                        Pokestop = stop,
+                                        IsAlternative = isAlternative,
+                                    });
+                                }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[{Name}] Error: {ex}");
+                            catch (Exception ex)
+                            {
+                                _logger.LogError($"[{Name}] Error: {ex}");
+                            }
                         }
                     }
 
@@ -504,9 +509,6 @@
             // in seconds to use for the next quest clearing interval.
             _timer.Interval = (timeLeft == 0 ? Strings.OneDayS : timeLeft) * 1000;
             _timer.Start();
-
-            if (_shouldExit)
-                return;
 
             if (_allStops.Count == 0)
             {
@@ -613,7 +615,8 @@
             try
             {
                 // Get Pokestops within S2 cells
-                newStops = await GetPokestopsByIdsAsync(ids);
+                using var context = _mapFactory.CreateDbContext();
+                newStops = context.GetPokestopsByIds(ids);
             }
             catch (Exception ex)
             {
@@ -749,6 +752,7 @@
             return closest;
         }
 
+        /*
         private static bool HasPokestopQuestByType(Pokestop pokestop, QuestMode mode)
         {
             var result = mode == QuestMode.Normal
@@ -758,6 +762,7 @@
                     : pokestop.QuestType != null || pokestop.AlternativeQuestType != null;
             return result;
         }
+        */
 
         private void HandleOnCompletion(string uuid)
         {
@@ -920,6 +925,7 @@
 
         #region Pokestops
 
+        /*
         private async Task<List<Pokestop>> GetPokestopsByIdsAsync(List<string> pokestopIds)
         {
             if (pokestopIds.Count > 10000)
@@ -998,6 +1004,7 @@
                 return await Task.FromResult((ulong)count);
             }
         }
+        */
 
         #endregion
 

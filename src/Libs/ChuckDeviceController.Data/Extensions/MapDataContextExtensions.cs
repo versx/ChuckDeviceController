@@ -30,9 +30,7 @@
         public static async Task ClearQuestsAsync(this MapDataContext context, IEnumerable<string> pokestopIds)
         {
             var pokestopsToUpsert = new List<Pokestop>();
-            var pokestops = context.Pokestops
-                                   .Where(pokestop => pokestopIds.Contains(pokestop.Id))
-                                   .ToList();
+            var pokestops = GetPokestopsByIds(context, pokestopIds);
             pokestops.ForEach(pokestop =>
             {
                 pokestop.QuestConditions = null;
@@ -121,6 +119,72 @@
                 .Select(stop => stop.Id)
                 .ToList();
             await ClearQuestsAsync(context, pokestopIds);
+        }
+
+        #endregion
+
+        #region Pokestops
+
+        public static async Task<ulong> GetPokestopQuestCountAsync(this MapDataContext context, List<string> pokestopIds, QuestMode mode)
+        {
+            if (pokestopIds.Count > 10000)
+            {
+                // TODO: Benchmark if batching is necessary with Z.EntityFramework library (which already has it's own batching options/logic)
+                var result = 0ul;
+                var batchSize = Convert.ToInt64(Math.Ceiling(Convert.ToDouble(pokestopIds.Count) / 10000.0));
+                for (var i = 0; i < batchSize; i++)
+                {
+                    var start = 10000 * i;
+                    var end = Math.Max(10000 * i, pokestopIds.Count - 1);
+                    var splice = pokestopIds.GetRange(start, end);
+                    var spliceResult = await GetPokestopQuestCountAsync(context, splice, mode);
+                    result += spliceResult;
+                }
+                return result;
+            }
+
+            var pokestops = GetPokestopsByIds(context, pokestopIds);
+            var count = pokestops.LongCount(stop => HasPokestopQuestByType(stop, mode));
+            return await Task.FromResult(Convert.ToUInt64(count));
+        }
+
+        public static async Task<List<Pokestop>> GetPokestopsInBoundsAsync(this MapDataContext context, BoundingBox bbox, bool isEnabled = true)
+        {
+            var pokestops = context.Pokestops.Where(stop =>
+                stop.Latitude >= bbox.MinimumLatitude &&
+                stop.Longitude >= bbox.MinimumLongitude &&
+                stop.Latitude <= bbox.MaximumLatitude &&
+                stop.Longitude <= bbox.MaximumLongitude &&
+                isEnabled && stop.IsEnabled &&
+                //    ? stop.IsEnabled
+                //    : stop.IsEnabled || !stop.IsEnabled &&
+                !stop.IsDeleted
+            ).ToList();
+            return await Task.FromResult(pokestops);
+        }
+
+        public static List<Pokestop> GetPokestopsByIds(this MapDataContext context, IEnumerable<string> pokestopIds, bool isEnabled = true, bool isNotDeleted = true)
+        {
+            var pokestops = context.Pokestops
+                                   .Where(pokestop => pokestopIds.Contains(pokestop.Id))
+                                   .Where(pokestop => isEnabled && pokestop.IsEnabled)
+                                   .Where(pokestop => isNotDeleted && !pokestop.IsDeleted)
+                                   .ToList();
+            return pokestops;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private static bool HasPokestopQuestByType(Pokestop pokestop, QuestMode mode)
+        {
+            var result = mode == QuestMode.Normal
+                ? pokestop.QuestType != null
+                : mode == QuestMode.Alternative
+                    ? pokestop.AlternativeQuestType != null
+                    : pokestop.QuestType != null || pokestop.AlternativeQuestType != null;
+            return result;
         }
 
         #endregion

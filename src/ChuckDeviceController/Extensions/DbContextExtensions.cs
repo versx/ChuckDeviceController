@@ -1,4 +1,5 @@
-﻿namespace ChuckDeviceController.Extensions
+﻿/*
+namespace ChuckDeviceController.Extensions
 {
     using Microsoft.EntityFrameworkCore;
 
@@ -129,3 +130,4 @@
         }
     }
 }
+*/
