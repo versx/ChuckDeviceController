@@ -291,6 +291,12 @@
                         EncounterId = item.Id,
                         PokemonId = item.PokemonId,
                         PokemonName = item.PokemonId.ToString(), // TODO: Get pokemon name
+                        PokemonForm = (item.Form ?? 0) == 0 // TODO: Get form name
+                            ? "--"
+                            : Convert.ToString(item.Form),
+                        PokemonCostume = (item.Costume ?? 0) == 0 // TODO: Get costume name
+                            ? "--"
+                            : Convert.ToString(item.Costume),
                         Location = locationUrl,
                     };
                 }).ToList();

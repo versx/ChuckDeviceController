@@ -30,6 +30,12 @@
                 @Html.DisplayNameFor(model => model.Queue[0].PokemonId)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.Queue[0].PokemonForm)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].PokemonCostume)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Queue[0].EncounterId)
             </th>
             <th>
@@ -55,6 +61,12 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.PokemonId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonForm)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonCostume)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.EncounterId)

@@ -25,6 +25,12 @@
         [DisplayName("Name")]
         public string? PokemonName { get; set; }
 
+        [DisplayName("Form")]
+        public string? PokemonForm { get; set; }
+
+        [DisplayName("Costume")]
+        public string? PokemonCostume { get; set; }
+
         [DisplayName("Encounter ID")]
         public string? EncounterId { get; set; }
 
