@@ -134,6 +134,12 @@
         /// <param name="encounterId">Pokemon encounter ID to remove.</param>
         void RemoveFromIvQueue(string instanceName, string encounterId);
 
+        /// <summary>
+        /// Clears all pending encounters from the specified Pokemon IV job controller instance queue
+        /// </summary>
+        /// <param name="instanceName">Name of the Pokemon IV instance queue to clear</param>
+        void ClearIvQueue(string instanceName);
+
         #endregion
 
         #region Receivers

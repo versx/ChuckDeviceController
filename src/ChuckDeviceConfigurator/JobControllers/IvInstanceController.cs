@@ -352,6 +352,14 @@
             }
         }
 
+        internal void ClearQueue()
+        {
+            lock (_queueLock)
+            {
+                _pokemonQueue.Clear();
+            }
+        }
+
         #endregion
 
         #region Private Methods

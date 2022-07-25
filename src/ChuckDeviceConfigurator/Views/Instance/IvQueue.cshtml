@@ -8,6 +8,10 @@
 
 <h1>IV Queue @Model?.Name</h1>
 
+<p>
+    <a class="btn btn-danger btn-sm" asp-action="ClearQueue" asp-route-name="@Model?.Name">Clear Queue</a>
+</p>
+
 <p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
 
 <div class="checkbox">

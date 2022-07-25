@@ -335,6 +335,21 @@
             return RedirectToAction(nameof(IvQueue), new { name });
         }
 
+        [Route("/Instance/IvQueue/ClearQueue/{name}")]
+        public ActionResult ClearQueue(string name)
+        {
+            try
+            {
+                // Clear all pending Pokemon encounters from the specified IV queue
+                _jobControllerService.ClearIvQueue(name);
+            }
+            catch
+            {
+                _logger.LogError($"Unknown error occurred while clearing IV queue '{name}'.");
+            }
+            return RedirectToAction(nameof(IvQueue), new { name });
+        }
+
         private static InstanceData PopulateInstanceDataFromModel(ManageInstanceDataViewModel model)
         {
             var instanceData = new InstanceData

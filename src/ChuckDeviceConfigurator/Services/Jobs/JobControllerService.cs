@@ -383,6 +383,18 @@
             }
         }
 
+        public void ClearIvQueue(string instanceName)
+        {
+            lock (_instancesLock)
+            {
+                var jobController = GetInstanceControllerByName(instanceName);
+                if (jobController is IvInstanceController ivController)
+                {
+                    ivController.ClearQueue();
+                }
+            }
+        }
+
         #endregion
 
         #region Receivers
