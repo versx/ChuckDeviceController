@@ -36,7 +36,6 @@ var serverVersion = ServerVersion.AutoDetect(connectionString);
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
-builder.WebHost.UseUrls(config["Urls"]);
 
 #region Logger Filtering
 

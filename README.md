@@ -103,6 +103,10 @@ View all available API routes:
     // Database connection string
     "DefaultConnection": "Uid=cdcuser;Password=cdcpass123;Host=127.0.0.1;Port=3306;Database=cdcdb;old guids=true;Allow User Variables=true;"
   },
+  "Keys": {
+    // SendGrid API key, used for email service
+    "SendGridKey": ""
+  },
   // Available authentication providers
   "Authentication": {
     "Discord": {
@@ -121,8 +125,22 @@ View all available API routes:
       "ClientSecret": ""
     }
   },
-  // Url to access the Dashboard UI
-  "Urls": "http://*:8881",
+  "Kestrel": {
+    "EndpointDefaults": {
+        "Protocols": "Http1AndHttp2"
+    },
+    "Endpoints": {
+      // Endpoint used to access the Dashboard UI
+      "Http": {
+        "Url": "http://*:8881"
+      },
+      // Endpoint used for inter-process communication between controller
+      "Grpc": {
+        "Url": "http://*:5002",
+        "Protocols": "Http2"
+      }
+    }
+  },
   "Logging": {
     "LogLevel": {
       "Default": "Information",
