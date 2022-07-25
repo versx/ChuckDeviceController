@@ -167,8 +167,8 @@
         {
             var pokestops = context.Pokestops
                                    .Where(pokestop => pokestopIds.Contains(pokestop.Id))
-                                   .Where(pokestop => isEnabled && pokestop.IsEnabled)
-                                   .Where(pokestop => isNotDeleted && !pokestop.IsDeleted)
+                                   .Where(pokestop => isEnabled == pokestop.IsEnabled)
+                                   .Where(pokestop => isNotDeleted == pokestop.IsDeleted)
                                    .ToList();
             return pokestops;
         }

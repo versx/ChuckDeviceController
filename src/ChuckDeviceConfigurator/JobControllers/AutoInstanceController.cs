@@ -752,18 +752,6 @@
             return closest;
         }
 
-        /*
-        private static bool HasPokestopQuestByType(Pokestop pokestop, QuestMode mode)
-        {
-            var result = mode == QuestMode.Normal
-                ? pokestop.QuestType != null
-                : mode == QuestMode.Alternative
-                    ? pokestop.AlternativeQuestType != null
-                    : pokestop.QuestType != null || pokestop.AlternativeQuestType != null;
-            return result;
-        }
-        */
-
         private void HandleOnCompletion(string uuid)
         {
             _logger.LogInformation($"[{Name}] [{uuid}] Quest instance complete");
@@ -920,91 +908,6 @@
                 return await Task.FromResult(account);
             }
         }
-
-        #endregion
-
-        #region Pokestops
-
-        /*
-        private async Task<List<Pokestop>> GetPokestopsByIdsAsync(List<string> pokestopIds)
-        {
-            if (pokestopIds.Count > 10000)
-            {
-                var list = new List<Pokestop>();
-                var count = Convert.ToInt64(Math.Ceiling(Convert.ToDouble(pokestopIds.Count) / 10000.0));
-                for (var i = 0; i < count; i++)
-                {
-                    var start = 10000 * i;
-                    var end = Math.Max(10000 * i, pokestopIds.Count - 1);
-                    var splice = pokestopIds.GetRange(start, end);
-                    var spliceResult = await GetPokestopsByIdsAsync(splice);
-                    if (spliceResult != null)
-                    {
-                        list.AddRange(spliceResult);
-                    }
-                }
-                return list;
-            }
-
-            if (pokestopIds.Count == 0)
-            {
-                return new List<Pokestop>();
-            }
-
-            using (var context = _mapFactory.CreateDbContext())
-            {
-                var pokestops = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id))
-                                                 .Where(stop => stop.IsEnabled && !stop.IsDeleted)
-                                                 .ToList();
-                return pokestops;
-            }
-        }
-
-        private async Task<List<Pokestop>> GetPokestopsInBoundsAsync(BoundingBox bbox, bool onlyEnabled)
-        {
-            using (var context = _mapFactory.CreateDbContext())
-            {
-                var pokestops = context.Pokestops.Where(stop =>
-                    stop.Latitude >= bbox.MinimumLatitude &&
-                    stop.Longitude >= bbox.MinimumLongitude &&
-                    stop.Latitude <= bbox.MaximumLatitude &&
-                    stop.Longitude <= bbox.MaximumLongitude &&
-                    onlyEnabled
-                        ? stop.IsEnabled
-                        : stop.IsEnabled || !stop.IsEnabled &&
-                    !stop.IsDeleted
-                ).ToList();
-                return await Task.FromResult(pokestops);
-            }
-        }
-
-        private async Task<ulong> GetPokestopQuestCountAsync(List<string> pokestopIds, QuestMode mode)
-        {
-            if (pokestopIds.Count > 10000)
-            {
-                var result = 0ul;
-                var count = Convert.ToInt64(Math.Ceiling(Convert.ToDouble(pokestopIds.Count) / 10000.0));
-                for (var i = 0; i < count; i++)
-                {
-                    var start = 10000 * i;
-                    var end = Math.Max(10000 * i, pokestopIds.Count - 1);
-                    var splice = pokestopIds.GetRange(start, end);
-                    var spliceResult = await GetPokestopQuestCountAsync(splice, mode);
-                    result += spliceResult;
-                }
-                return result;
-            }
-
-            using (var context = _mapFactory.CreateDbContext())
-            {
-                var count = context.Pokestops.Where(stop => pokestopIds.Contains(stop.Id))
-                                             .AsEnumerable()
-                                             .Where(stop => HasPokestopQuestByType(stop, mode))
-                                             .Count();
-                return await Task.FromResult((ulong)count);
-            }
-        }
-        */
 
         #endregion
 
