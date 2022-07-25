@@ -16,9 +16,6 @@
     <thead class="table-dark">
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].OnlineStatus)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Items[0].Uuid)
             </th>
             <th>
@@ -44,11 +41,8 @@
         {
             <tr>
                 <th scope="row">
-                    @Html.DisplayFor(modelItem => item.OnlineStatus)
+                    @Html.DisplayFor(modelItem => item.OnlineStatus) @Html.DisplayFor(modelItem => item.Uuid)
                 </th>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Uuid)
-                </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.InstanceName)
                 </td>

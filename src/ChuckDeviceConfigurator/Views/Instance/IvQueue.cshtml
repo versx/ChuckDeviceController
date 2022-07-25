@@ -4,12 +4,17 @@
 @model IvQueueViewModel
 @{
     ViewData["Title"] = "IV Queue " + Model?.Name;
+    var confirmText = "Are you sure you want to clear all pending Pokemon encounters from the queue?";
+    var clearAllText = "Clears all pending Pokemon encounters in the IV queue.";
+    var removeEncounterText = "Removes the pending Pokemon encounter from the IV queue.";
 }
 
 <h1>IV Queue @Model?.Name</h1>
 
 <p>
-    <a class="btn btn-danger btn-sm" asp-action="ClearQueue" asp-route-name="@Model?.Name" onclick="return confirm('Are you sure you want to clear all pending Pokemon encounters from the queue?')">Clear Queue</a>
+    <a class="btn btn-danger btn-sm" title="@(clearAllText)" asp-action="ClearQueue" asp-route-name="@Model?.Name" onclick="return confirm('@(confirmText)')">
+        Clear Queue
+    </a>
 </p>
 
 <p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
@@ -79,7 +84,9 @@
                     @Html.Raw(item.Location)
                 </td>
                 <td>
-                    <a class="btn btn-danger btn-sm" href="@Model.Name/Remove/@item.EncounterId">Remove</a>
+                    <a class="btn btn-danger btn-sm" href="@Model.Name/Remove/@item.EncounterId" title="@(removeEncounterText)">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </a>
                 </td>
             </tr>
             index++;
