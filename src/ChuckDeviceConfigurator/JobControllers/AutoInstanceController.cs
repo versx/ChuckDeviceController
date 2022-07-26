@@ -309,7 +309,7 @@
                             var foundCount = totalCount - _bootstrapCellIds.Count;
                             var percentage = foundCount > 0 && totalCount > 0
                                 ? Convert.ToDouble((double)foundCount / totalCount) * 100
-                                : 100;
+                                : 0;
 
                             var bootstrapStatus = $"Bootstrapping: {foundCount:N0}/{totalCount:N0} ({Math.Round(percentage, 2)}%)";
                             return bootstrapStatus;
@@ -330,10 +330,10 @@
 
                     var percent = currentCount > 0 && maxCount > 0
                         ? Convert.ToDouble((double)currentCount / maxCount) * 100
-                        : 100;
+                        : 0;
                     var percentReal = currentCountDb > 0 && maxCount > 0
                         ? Convert.ToDouble((double)currentCountDb / maxCount) * 100
-                        : 100;
+                        : 0;
 
                     var completedDate = _completionDate.FromSeconds()
                                                        .ToLocalTime()
@@ -374,26 +374,27 @@
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
-            var total = 0;
             var missingCellIds = new List<ulong>();
             var allCellIds = new List<ulong>();
-
-            // Get all known cells from the database
-            using var context = _mapFactory.CreateDbContext();
-            // TODO: Get s2cells within multi polygon instead of all
-            var existingCells = await context.GetS2CellsAsync(MultiPolygons);
-            var existingCellIds = existingCells.Select(cell => cell.Id).ToList();
 
             // Loop through all geofences and get s2cells within each geofence
             foreach (var polygon in MultiPolygons)
             {
                 // Get maximum amount of S2 level 15 cells within this geofence
                 var s2Cells = polygon.GetS2CellIds(15, 15, int.MaxValue);
-                var s2CellIds = s2Cells.Select(cell => cell.Id).ToList();
-                total += s2CellIds.Count;
+                var s2CellIds = s2Cells.Select(cell => cell.Id)
+                                       .ToList();
                 allCellIds.AddRange(s2CellIds);
             }
 
+            // Get all known cells from the database
+            using var context = _mapFactory.CreateDbContext();
+            // TODO: Get s2cells within multi polygon instead of all
+            var existingCells = await context.GetS2CellsAsync(MultiPolygons);
+            var existingCellIds = existingCells.Select(cell => cell.Id)
+                                               .ToList();
+
+            allCellIds = allCellIds.Distinct().ToList();
             // Loop through all S2Cells within the geofence and filter any missing
             foreach (var s2CellId in allCellIds)
             {
@@ -404,6 +405,8 @@
                 }
             }
 
+            missingCellIds = missingCellIds.Distinct().ToList();
+            var total = allCellIds.Count;
             var found = total - missingCellIds.Count;
 
             stopwatch.Stop();
@@ -413,7 +416,7 @@
             lock (_bootstrapCellIdsLock)
             {
                 _bootstrapCellIds.Clear();
-                _bootstrapCellIds.AddRange(missingCellIds.Distinct().ToList());
+                _bootstrapCellIds.AddRange(missingCellIds);
             }
             _bootstrapTotalCount = total;
         }

@@ -165,12 +165,12 @@
             return await Task.FromResult(pokestops);
         }
 
-        public static List<Pokestop> GetPokestopsByIds(this MapDataContext context, IEnumerable<string> pokestopIds, bool isEnabled = true, bool isNotDeleted = true)
+        public static List<Pokestop> GetPokestopsByIds(this MapDataContext context, IEnumerable<string> pokestopIds, bool isEnabled = true, bool isDeleted = false)
         {
             var pokestops = context.Pokestops
                                    .Where(pokestop => pokestopIds.Contains(pokestop.Id))
                                    .Where(pokestop => isEnabled == pokestop.IsEnabled)
-                                   .Where(pokestop => isNotDeleted == pokestop.IsDeleted)
+                                   .Where(pokestop => isDeleted == pokestop.IsDeleted)
                                    .ToList();
             return pokestops;
         }
