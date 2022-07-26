@@ -11,12 +11,12 @@
         public ulong? FirstWarningTimestamp { get; set; }
 
         [JsonPropertyName("version")]
-        public string Version { get; set; }
+        public string? Version { get; set; }
 
         [JsonPropertyName("commit")]
-        public string Commit { get; set; }
+        public string? Commit { get; set; }
 
         [JsonPropertyName("provider")]
-        public string Provider { get; set; }
+        public string? Provider { get; set; }
     }
 }

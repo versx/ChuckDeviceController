@@ -5,10 +5,10 @@
     public class DeviceAccountResponse
     {
         [JsonPropertyName("username")]
-        public string Username { get; set; }
+        public string? Username { get; set; }
 
         [JsonPropertyName("password")]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [JsonPropertyName("first_warning_timestamp")]
         public ulong? FirstWarningTimestamp { get; set; }

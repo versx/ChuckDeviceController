@@ -40,6 +40,11 @@
 
         #region Public Methods
 
+        /// <summary>
+        /// Adds the provided coordinate to the coordinate list.
+        /// </summary>
+        /// <param name="coordinate">Coordinate to add.</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void AddCoordinate(Coordinate coordinate)
         {
             if (coordinate == null)
@@ -49,6 +54,11 @@
             _coordinates.Add(coordinate);
         }
 
+        /// <summary>
+        /// Adds a list of coordinates to the coordinate list.
+        /// </summary>
+        /// <param name="coordinates">List of coordinates to add.</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void AddCoordinates(List<Coordinate> coordinates)
         {
             if ((coordinates?.Count ?? 0) == 0)
@@ -61,11 +71,19 @@
             }
         }
 
+        /// <summary>
+        /// Clears all coordinates in the coordinate list.
+        /// </summary>
         public void ClearCoordinates()
         {
             _coordinates.Clear();
         }
 
+        /// <summary>
+        /// Calculates the shortest possible route.
+        /// </summary>
+        /// <returns>Returns a queue of the shortest route.</returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public Queue<Coordinate> CalculateShortestRoute()
         {
             if (_coordinates.Count == 0)
