@@ -157,9 +157,7 @@
                 stop.Longitude >= bbox.MinimumLongitude &&
                 stop.Latitude <= bbox.MaximumLatitude &&
                 stop.Longitude <= bbox.MaximumLongitude &&
-                isEnabled && stop.IsEnabled &&
-                //    ? stop.IsEnabled
-                //    : stop.IsEnabled || !stop.IsEnabled &&
+                isEnabled == stop.IsEnabled &&
                 !stop.IsDeleted
             ).ToList();
             return await Task.FromResult(pokestops);
