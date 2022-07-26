@@ -36,6 +36,12 @@
 
         #region Public Methods
 
+        /// <summary>
+        /// Generates a route using the provided route generation options.
+        /// </summary>
+        /// <param name="options">Routing generation </param>
+        /// <returns>Returns a list of the generated route.</returns>
+        /// <exception cref="Exception"></exception>
         public List<Coordinate> GenerateRoute(RouteGeneratorOptions options)
         {
             var coordinates = new List<Coordinate>();

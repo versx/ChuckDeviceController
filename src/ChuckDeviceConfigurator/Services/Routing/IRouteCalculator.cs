@@ -9,21 +9,21 @@
     public interface IRouteCalculator
     {
         /// <summary>
-        /// Gets or sets a value determining whether the coordinates list
-        /// is cleared after the route calculator has finished optimizing
-        /// the route.
+        ///     Gets or sets a value determining whether the coordinates list
+        ///     is cleared after the route calculator has finished optimizing
+        ///     the route.
         /// </summary>
         bool ClearCoordinatesAfterOptimization { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of coordinates to include when calculating
-        /// the optimized route.
+        ///     Gets or sets the list of coordinates to include when calculating
+        ///     the optimized route.
         /// </summary>
         IReadOnlyList<Coordinate> Coordinates { get; }
 
 
         /// <summary>
-        /// Adds the specified coordinate to the coordinates list.
+        ///     Adds the specified coordinate to the coordinates list.
         /// </summary>
         /// <param name="coordinate">Coordinate to add to the list.</param>
         void AddCoordinate(Coordinate coordinate);
@@ -37,7 +37,7 @@
         void AddCoordinates(List<Coordinate> coordinates);
 
         /// <summary>
-        /// Clears all current coordinates in the coordinates list.
+        ///     Clears all current coordinates in the coordinates list.
         /// </summary>
         void ClearCoordinates();
 

@@ -37,20 +37,6 @@
         /// </summary>
         bool IncludeNests { get; }
 
-        /*
-        /// <summary>
-        /// Gets or sets a value determining whether the polygons are optimized in the route
-        /// optimization.
-        /// </summary>
-        bool OptimizePolygons { get; }
-
-        /// <summary>
-        /// Gets or sets a value determining whether circle points are optimized in the route
-        /// optimization.
-        /// </summary>
-        bool OptimizeCircles { get; }
-        */
-
         /// <summary>
         /// Gets or sets the multi polygons to use for optimizing the route.
         /// </summary>

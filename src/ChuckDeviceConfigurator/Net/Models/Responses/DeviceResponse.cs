@@ -5,7 +5,7 @@
     public class DeviceResponse
     {
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [JsonPropertyName("data")]
         public dynamic? Data { get; set; }

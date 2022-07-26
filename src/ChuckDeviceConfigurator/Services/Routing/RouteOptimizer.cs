@@ -22,22 +22,39 @@
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to include
+        /// Gym locations when optimizing the route.
+        /// </summary>
         public bool IncludeGyms { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to include
+        /// Pokestop locations when optimizing the route.
+        /// </summary>
         public bool IncludePokestops { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to include
+        /// Spawnpoint locations when optimizing the route.
+        /// </summary>
         public bool IncludeSpawnpoints { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to include
+        /// S2 Cell locations when optimizing the route.
+        /// </summary>
         public bool IncludeS2Cells { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to include
+        /// Nest locations when optimizing the route.
+        /// </summary>
         public bool IncludeNests { get; set; }
 
-        public bool OptimizePolygons { get; set; }
-
-        public bool OptimizeCircles { get; set; }
-
         /// <summary>
-        /// Gets or sets the Geofencing boundaries
+        /// Gets or sets the geofencing boundaries used when
+        /// optimizing the route.
         /// </summary>
         public IReadOnlyList<MultiPolygon> MultiPolygons { get; set; }
 
@@ -55,6 +72,12 @@
 
         #region Public Methods
 
+        /// <summary>
+        /// Optimizes the provides route using the specified route
+        /// optimization options.
+        /// </summary>
+        /// <param name="options">Route optimization options to use.</param>
+        /// <returns>Returns the optimized route.</returns>
         public async Task<List<Coordinate>> OptimizeRouteAsync(RouteOptimizerOptions options)
         {
             var coordinates = new List<Coordinate>();
