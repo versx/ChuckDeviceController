@@ -11,20 +11,11 @@
             var coords = new List<Coordinate>();
             foreach (var geofence in geofences)
             {
-                var area = geofence.Data?.Area;
-                if (area is null)
-                {
-                    Console.WriteLine($"Failed to parse geofence '{geofence.Name}' coordinates");
+                var result = ConvertToCoordinates(geofence);
+                if (result == null)
                     continue;
-                }
-                string areaJson = Convert.ToString(area);
-                var coordsArray = (List<Coordinate>)
-                (
-                    area is List<Coordinate>
-                        ? area
-                        : areaJson.FromJson<List<Coordinate>>()
-                );
-                coords.AddRange(coordsArray);
+
+                result.AddRange(result);
             }
             return coords;
         }
@@ -56,41 +47,12 @@
             var coordinates = new List<List<Coordinate>>();
             foreach (var geofence in geofences)
             {
-                var area = geofence.Data?.Area;
-                if (area is null)
-                {
-                    Console.WriteLine($"Failed to parse coordinates for geofence '{geofence.Name}'");
+                var result = ConvertToMultiPolygons(geofence);
+                if (result.Item1 == null || result.Item2 == null)
                     continue;
-                }
-                string areaJson = Convert.ToString(area);
-                var coordsArray = (List<List<Coordinate>>)
-                (
-                    area is List<List<Coordinate>>
-                        ? area
-                        : areaJson.FromJson<List<List<Coordinate>>>()
-                );
-                coordinates.AddRange(coordsArray);
 
-                var areaArrayEmptyInner = new List<MultiPolygon>();
-                foreach (var coord in coordsArray)
-                {
-                    var multiPolygon = new MultiPolygon();
-                    Coordinate? first = null;
-                    for (var i = 0; i < coord.Count; i++)
-                    {
-                        if (i == 0)
-                        {
-                            first = coord[i];
-                        }
-                        multiPolygon.Add(new Polygon(coord[i].Latitude, coord[i].Longitude));
-                    }
-                    if (first != null)
-                    {
-                        multiPolygon.Add(new Polygon(first.Latitude, first.Longitude));
-                    }
-                    areaArrayEmptyInner.Add(multiPolygon);
-                }
-                multiPolygons.AddRange(areaArrayEmptyInner);
+                multiPolygons.AddRange(result.Item1);
+                coordinates.AddRange(result.Item2);
             }
             return (multiPolygons, coordinates);
         }
@@ -117,20 +79,26 @@
             coordinates.AddRange(coordsArray);
 
             var areaArrayEmptyInner = new List<MultiPolygon>();
-            foreach (var coord in coordsArray)
+            foreach (var coordList in coordsArray)
             {
                 var multiPolygon = new MultiPolygon();
                 Coordinate? first = null;
-                for (var i = 0; i < coord.Count; i++)
+                Coordinate? last = null;
+                for (var i = 0; i < coordList.Count; i++)
                 {
+                    var coord = coordList[i];
                     if (i == 0)
-                    {
-                        first = coord[i];
-                    }
-                    multiPolygon.Add(new Polygon(coord[i].Latitude, coord[i].Longitude));
+                        first = coord;
+                    else if (i == coordList.Count - 1)
+                        last = coord;
+
+                    multiPolygon.Add(new Polygon(coord.Latitude, coord.Longitude));
                 }
-                if (first != null)
+                // Check if the first and last coordinates are not null and are the same, if
+                // not add the first coordinate to the end of the list
+                if (first != null && last != null && first.CompareTo(last) != 0)
                 {
+                    // Insert first coordinate at the end of the list
                     multiPolygon.Add(new Polygon(first.Latitude, first.Longitude));
                 }
                 areaArrayEmptyInner.Add(multiPolygon);

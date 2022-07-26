@@ -160,14 +160,6 @@
                     ? AreaConverters.AreaStringToCoordinates(lines)
                     : AreaConverters.AreaStringToMultiPolygon(lines);
 
-                /*
-                if (!_context.Geofences.Any(fence => fence.Name == name))
-                {
-                    // Does not exist
-                    return null;
-                }
-                */
-
                 geofence.Name = name;
                 geofence.Type = type;
                 if (geofence.Data == null)

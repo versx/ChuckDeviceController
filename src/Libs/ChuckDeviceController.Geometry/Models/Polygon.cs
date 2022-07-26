@@ -8,5 +8,10 @@
         {
             AddRange(new[] { lat, lon });
         }
+
+        public Coordinate ToCoordinate()
+        {
+            return new Coordinate(this.FirstOrDefault(), this.LastOrDefault());
+        }
     }
 }
