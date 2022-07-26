@@ -394,7 +394,7 @@
                                                .ToList();
 
             // Remove any duplicates
-            var test = allCellIds.Distinct().ToList();
+            allCellIds = allCellIds.Distinct().ToList();
 
             // Filter all existing S2 cells not already found 
             var missingCellIds = allCellIds.Where(cellId => !existingCellIds.Contains(cellId))
@@ -867,7 +867,9 @@
                     UseWarningAccounts,
                     SpinLimit,
                     noCooldown: true,
-                    GroupName
+                    GroupName,
+                    Strings.CooldownLimitS,
+                    Strings.SuspensionTimeLimitS
                 );
                 return account;
             }

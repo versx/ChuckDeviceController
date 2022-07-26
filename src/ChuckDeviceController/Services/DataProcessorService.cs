@@ -46,7 +46,7 @@
     */
 
     // TODO: Use/benchmark Dapper Micro ORM
-    // TODO: Implement memory cache for Pokemon/Pokestops/Gyms/Incidents/Weather/Cells
+    // TODO: Implement memory cache for all map data entities
     // TODO: Split up/refactor class
     // TODO: Use lock before bulk merging
 
@@ -396,6 +396,7 @@
                         //options.IgnoreOnMergeUpdate = true;
                         options.IgnoreOnMergeUpdateExpression = p => new
                         {
+                            p.Id,
                             p.AttackIV,
                             p.DefenseIV,
                             p.StaminaIV,
@@ -444,6 +445,7 @@
                         options.UseTableLock = true;
                         options.IgnoreOnMergeUpdateExpression = p => new
                         {
+                            p.Id,
                             p.Costume,
                             p.Form,
                             p.AttackIV,
@@ -508,7 +510,7 @@
 
                     await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
                     {
-                        // TODO: Do not update IV
+                        // TODO: Do not update IV :thinking: wait maybe we do need to. IIRC they are found within 70m range, need to confirm
                         options.UseTableLock = true;
                     });
 
@@ -636,34 +638,13 @@
                                 var pokestop = new Pokestop(data, cellId);
                                 await pokestop.UpdateAsync(context, updateQuest: false);
 
+                                stopsToUpsert.Add(pokestop);
+
                                 // Loop incidents
                                 if ((pokestop.Incidents?.Count ?? 0) > 0)
                                 {
                                     incidentsToUpsert.AddRange(pokestop.Incidents);
-                                    /*
-                                    foreach (var incident in pokestop.Incidents)
-                                    {
-                                        if (context.Incidents.AsNoTracking().Any(inc => inc.Id == incident.Id))
-                                        {
-                                            context.Update(incident);
-                                        }
-                                        else
-                                        {
-                                            await context.AddAsync(incident);
-                                        }
-                                    }
-                                    */
                                 }
-
-                                if (context.Pokestops.AsNoTracking().Any(stop => stop.Id == pokestop.Id))
-                                {
-                                    // If any Pokestop properties have changed, set which to update,
-                                    // otherwise EF will overwrite properties
-                                    // TODO: Not sure if this is still needed with EfCore.BulkExt, need to check
-                                    //context.UpdatePokestopProperties(pokestop, updateQuest: false);
-                                    //context.Update(pokestop);
-                                }
-                                stopsToUpsert.Add(pokestop);
 
                                 lock (_stopIdsPerCell)
                                 {
@@ -702,6 +683,7 @@
                             // of existing quest columns set
                             options.IgnoreOnMergeUpdateExpression = p => new
                             {
+                                p.Id,
                                 p.QuestType,
                                 p.QuestTitle,
                                 p.QuestTimestamp,
@@ -911,6 +893,7 @@
                         // Only include the following columns when updating
                         options.OnMergeUpdateInputExpression = p => new
                         {
+                            p.Id,
                             p.QuestType,
                             p.QuestTitle,
                             p.QuestTimestamp,
@@ -979,6 +962,7 @@
                         // Only update IV specific columns
                         options.OnMergeUpdateInputExpression = p => new
                         {
+                            p.Id,
                             p.PokemonId,
                             p.Form,
                             p.Costume,
@@ -1042,6 +1026,7 @@
                         // Only update IV specific columns
                         options.OnMergeUpdateInputExpression = p => new
                         {
+                            p.Id,
                             p.PokemonId,
                             p.Form,
                             p.Costume,
