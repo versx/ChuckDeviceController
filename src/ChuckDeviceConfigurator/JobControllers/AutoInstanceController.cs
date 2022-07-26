@@ -374,7 +374,6 @@
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
-            var missingCellIds = new List<ulong>();
             var allCellIds = new List<ulong>();
 
             // Loop through all geofences and get s2cells within each geofence
@@ -389,23 +388,19 @@
 
             // Get all known cells from the database
             using var context = _mapFactory.CreateDbContext();
-            // TODO: Get s2cells within multi polygon instead of all
+            // Get S2 cells within multi polygon
             var existingCells = await context.GetS2CellsAsync(MultiPolygons);
             var existingCellIds = existingCells.Select(cell => cell.Id)
                                                .ToList();
 
-            allCellIds = allCellIds.Distinct().ToList();
-            // Loop through all S2Cells within the geofence and filter any missing
-            foreach (var s2CellId in allCellIds)
-            {
-                // Check if we don't already have the S2Cell in the database
-                if (!existingCellIds.Contains(s2CellId))
-                {
-                    missingCellIds.Add(s2CellId);
-                }
-            }
+            // Remove any duplicates
+            var test = allCellIds.Distinct().ToList();
 
-            missingCellIds = missingCellIds.Distinct().ToList();
+            // Filter all existing S2 cells not already found 
+            var missingCellIds = allCellIds.Where(cellId => !existingCellIds.Contains(cellId))
+                                           //.Distinct()
+                                           .ToList();
+
             var total = allCellIds.Count;
             var found = total - missingCellIds.Count;
 

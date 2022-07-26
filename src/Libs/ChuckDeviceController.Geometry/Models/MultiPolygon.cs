@@ -28,11 +28,11 @@
                 for (var i = 0; i <= 3; i++)
                 {
                     var vertex = cell.GetVertex(i);
-                    var coord = new S2LatLng(new S2Point(vertex.X, vertex.Y, vertex.Z));
-                    if (GeofenceService.InPolygon(this, coord.LatDegrees, coord.LngDegrees))
-                    {
-                        result.Add(cellId);
-                    }
+                    var coord = vertex.ToCoordinate();
+                    if (!GeofenceService.InPolygon(this, coord))
+                        continue;
+
+                    result.Add(cellId);
                 }
             }
             return result;

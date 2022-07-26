@@ -103,5 +103,12 @@
             var rect = new S2LatLngRect(min, max);
             return rect;
         }
+
+        public static Coordinate ToCoordinate(this S2Point point)
+        {
+            var latlng = new S2LatLng(point);
+            var coord = new Coordinate(latlng.LatDegrees, latlng.LngDegrees);
+            return coord;
+        }
     }
 }
