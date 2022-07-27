@@ -15,7 +15,7 @@
                 if (result == null)
                     continue;
 
-                result.AddRange(result);
+                coords.AddRange(result);
             }
             return coords;
         }

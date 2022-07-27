@@ -102,7 +102,7 @@
                     // list, use 0 for route last completed sum calculation.
                     device.LastCompleted == 0 || device.LastCompletedWholeRoute == 0
                     ? 0
-                    : (double)device.LastCompleted - (double)device.LastCompletedWholeRoute
+                    : (double)device.LastCompleted - device.LastCompletedWholeRoute
                 );
                 if (totalRoundTime > 0)
                 {

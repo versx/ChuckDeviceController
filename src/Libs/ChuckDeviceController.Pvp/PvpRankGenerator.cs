@@ -29,6 +29,8 @@
         private readonly object _greatLock = new();
         private readonly object _ultraLock = new();
 
+        private static readonly object _instanceLock = new();
+
         private readonly Timer _timer;
 
         private string? _lastETag;
@@ -46,8 +48,19 @@
         #region Singleton
 
         private static IPvpRankGenerator? _instance;
-        public static IPvpRankGenerator Instance =>
-            _instance ??= new PvpRankGenerator();
+        public static IPvpRankGenerator Instance
+        {
+            get
+            {
+                // Lock singleton to prevent multiple instance creations
+                // from different threads
+                lock (_instanceLock)
+                {
+                    _instance ??= new PvpRankGenerator();
+                }
+                return _instance;
+            }
+        }
 
 
         #endregion
@@ -58,14 +71,11 @@
         {
             _timer = new Timer(Strings.FetchMasterFileIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await LoadMasterFileIfNeededAsync();
-            LoadMasterFileIfNeededAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            /*
             _timer.Start();
 
             LoadMasterFileAsync().ConfigureAwait(false)
                                  .GetAwaiter()
                                  .GetResult();
-            */
         }
 
         #endregion
@@ -245,6 +255,10 @@
 
             if (cached == null)
             {
+                if (!_pokemonBaseStats.ContainsKey(info))
+                {
+                    Console.WriteLine($"Nope");
+                }
                 var baseStats = _pokemonBaseStats[info];
                 if (baseStats == null)
                 {
@@ -287,7 +301,12 @@
             var result = rankings.Select(rank => (new PokemonWithFormAndGender { Pokemon = pokemon, Form = form, Gender = gender }, rank))
                                  .ToList();
 
-            var baseStats = _pokemonBaseStats[new PokemonWithFormAndGender { Pokemon = pokemon, Form = form }];
+            var pkmn = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
+            if (!_pokemonBaseStats.ContainsKey(pkmn))
+            {
+                Console.WriteLine($"Nope");
+            }
+            var baseStats = _pokemonBaseStats[pkmn];
             var hasNoEvolveForm = costume!.ToString().ToLower().Contains(Strings.NoEvolveForm);
             var hasCostumeEvoOverride = baseStats.CostumeEvolutionOverride != null &&
                 baseStats.CostumeEvolutionOverride.Count > 0 &&
@@ -418,6 +437,8 @@
 
         private async Task LoadMasterFileAsync()
         {
+            Console.WriteLine($"Checking if game master file needs to be downloaded...");
+
             var newETag = await GetETag(Strings.MasterFileEndpoint);
             if (string.IsNullOrEmpty(newETag))
             {

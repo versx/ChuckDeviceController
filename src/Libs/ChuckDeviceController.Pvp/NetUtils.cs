@@ -26,9 +26,12 @@
         {
             try
             {
+                SetDefaultSecurityProtocol();
+
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), DefaultMimeType);
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.ContentType.ToString(), DefaultMimeType);
+                client.DefaultRequestHeaders.Add(HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent);
                 return await client.GetStringAsync(url);
             }
             catch (Exception ex)
@@ -86,6 +89,8 @@
         {
             try
             {
+                SetDefaultSecurityProtocol();
+
                 using var client = new HttpClient();
                 var requestMessage = new HttpRequestMessage
                 {
@@ -93,9 +98,9 @@
                     RequestUri = new Uri(url),
                     Headers =
                     {
-                        //{ HttpRequestHeader.UserAgent.ToString(), userAgent },
                         { HttpRequestHeader.Accept.ToString(), DefaultMimeType },
                         { HttpRequestHeader.ContentType.ToString(), DefaultMimeType },
+                        { HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent },
                     },
                     //Content = new StringContent(payload, Encoding.UTF8, DefaultMimeType),
                 };
@@ -108,6 +113,19 @@
                 Console.WriteLine($"Failed to download data from {url}: {ex}");
             }
             return null;
+        }
+
+
+        /// <summary>
+        /// Fixes Exception: Authentication failed because the remote party sent a TLS alert: 'DecryptError'.
+        /// </summary>
+        private static void SetDefaultSecurityProtocol()
+        {
+            // Credits: https://stackoverflow.com/a/35321007
+            ServicePointManager.SecurityProtocol =
+                SecurityProtocolType.Tls12 |
+                SecurityProtocolType.Tls11 |
+                SecurityProtocolType.Tls;
         }
     }
 }

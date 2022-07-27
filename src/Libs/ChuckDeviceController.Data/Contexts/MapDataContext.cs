@@ -101,6 +101,9 @@
             modelBuilder.Entity<Pokemon>()
                         .Property(p => p.SeenType)
                         .HasConversion(x => Entities.Pokemon.SeenTypeToString(x), x => Entities.Pokemon.StringToSeenType(x));
+            modelBuilder.Entity<Pokemon>()
+                        .Property(p => p.PvpRankings)
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<Dictionary<string, dynamic>>());
 
             base.OnModelCreating(modelBuilder);
         }

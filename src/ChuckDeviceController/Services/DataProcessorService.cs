@@ -7,6 +7,9 @@
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
     using POGOProtos.Rpc;
+    using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
+    using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
+    using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -14,6 +17,8 @@
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Protos;
+    using ChuckDeviceController.Pvp;
+    using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
 
     /*
@@ -377,6 +382,7 @@
                 try
                 {
                     var pokemonToUpsert = new List<Pokemon>();
+                    var spawnpointsToUpsert = new List<Spawnpoint>();
                     foreach (var wild in wildPokemon)
                     {
                         var cellId = wild.cell;
@@ -384,7 +390,13 @@
                         var timestampMs = wild.timestampMs;
                         var username = wild.username;
                         var isEvent = wild.isEvent;
-                        var pokemon = new Pokemon(context, data, cellId, timestampMs, username, isEvent);
+                        var pokemon = new Pokemon(data, cellId, username, isEvent);
+                        var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data, timestampMs);
+                        if (spawnpoint != null)
+                        {
+                            spawnpointsToUpsert.Add(spawnpoint);
+                        }
+
                         await pokemon.UpdateAsync(context, updateIv: false);
                         pokemonToUpsert.Add(pokemon);
                     }
@@ -406,6 +418,19 @@
                             p.Weight,
                             p.Move1,
                             p.Move2,
+                            p.PvpRankings,
+                        };
+                    });
+
+                    await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
+                    {
+                        options.UseTableLock = true;
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.Id,
+                            p.LastSeen,
+                            p.Updated,
+                            p.DespawnSecond,
                         };
                     });
 
@@ -457,6 +482,7 @@
                             p.Weight,
                             p.Move1,
                             p.Move2,
+                            p.PvpRankings,
                         };
                     });
 
@@ -524,6 +550,81 @@
                     _logger.LogError($"UpdateMapPokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
                 }
             }
+        }
+
+        private async Task<Spawnpoint> UpdateSpawnpointAsync(MapDataContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
+        {
+            var spawnId = pokemon.SpawnId ?? 0;
+            if (spawnId == 0)
+            {
+                return null;
+            }
+
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (wild.TimeTillHiddenMs <= 90000 && wild.TimeTillHiddenMs > 0)
+            {
+                pokemon.ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(wild.TimeTillHiddenMs)) / 1000);
+                pokemon.IsExpireTimestampVerified = true;
+                var date = timestampMs.FromMilliseconds();
+                var secondOfHour = date.Second + (date.Minute * 60);
+
+                var spawnpoint = new Spawnpoint
+                {
+                    Id = spawnId,
+                    Latitude = pokemon.Latitude,
+                    Longitude = pokemon.Longitude,
+                    DespawnSecond = Convert.ToUInt16(secondOfHour),
+                    LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
+                    Updated = now,
+                };
+                await spawnpoint.UpdateAsync(context, update: true);
+                return spawnpoint;
+            }
+            else
+            {
+                pokemon.IsExpireTimestampVerified = false;
+            }
+
+            if (!pokemon.IsExpireTimestampVerified && spawnId > 0)
+            {
+                var spawnpoint = await context.Spawnpoints.FindAsync(pokemon.SpawnId);
+                if (spawnpoint != null && spawnpoint.DespawnSecond != null)
+                {
+                    var despawnSecond = spawnpoint.DespawnSecond;
+                    var timestampS = timestampMs / 1000;
+                    var date = timestampS.FromMilliseconds();
+                    var secondOfHour = date.Second + (date.Minute * 60);
+                    var despawnOffset = despawnSecond - secondOfHour;
+                    if (despawnSecond < secondOfHour)
+                        despawnOffset += 3600;
+
+                    // Update spawnpoint last_seen if enabled
+                    if (Pokemon.SaveSpawnpointLastSeen)
+                    {
+                        spawnpoint.LastSeen = now;
+                    }
+
+                    pokemon.ExpireTimestamp = timestampS + (ulong)despawnOffset;
+                    pokemon.IsExpireTimestampVerified = true;
+                    return spawnpoint;
+                }
+                else
+                {
+                    var newSpawnpoint = new Spawnpoint
+                    {
+                        Id = spawnId,
+                        Latitude = pokemon.Latitude,
+                        Longitude = pokemon.Longitude,
+                        DespawnSecond = null,
+                        LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
+                        Updated = now,
+                    };
+                    await newSpawnpoint.UpdateAsync(context, update: true);
+                    return newSpawnpoint;
+                }
+            }
+
+            return null;
         }
 
         /*
@@ -925,11 +1026,15 @@
 
         private async Task UpdateEncountersAsync(List<dynamic> encounters)
         {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var timestampMs = now * 1000;
+
             using (var context = _dbFactory.CreateDbContext())
             {
                 try
                 {
                     var pokemonToUpsert = new List<Pokemon>();
+                    var spawnpointsToUpsert = new List<Spawnpoint>();
                     foreach (var encounter in encounters)
                     {
                         var data = (EncounterOutProto)encounter.data;
@@ -940,6 +1045,16 @@
                         if (pokemon != null)
                         {
                             await pokemon.AddEncounterAsync(context, data, username);
+                            var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data.Pokemon, timestampMs);
+                            if (spawnpoint != null)
+                            {
+                                spawnpointsToUpsert.Add(spawnpoint);
+                            }
+
+                            if (pokemon.HasIvChanges)
+                            {
+                                SetPvpRankings(pokemon);
+                            }
                             await pokemon.UpdateAsync(context, updateIv: true);
 
                             pokemonToUpsert.Add(pokemon);
@@ -948,8 +1063,18 @@
                         {
                             // New Pokemon
                             var cellId = S2CellExtensions.S2CellIdFromLatLng(data.Pokemon.Latitude, data.Pokemon.Longitude);
-                            var newPokemon = new Pokemon(context, data.Pokemon, cellId.Id, DateTime.UtcNow.ToTotalSeconds(), username, isEvent);
+                            var newPokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
                             await newPokemon.AddEncounterAsync(context, data, username);
+                            var spawnpoint = await UpdateSpawnpointAsync(context, newPokemon, data.Pokemon, timestampMs);
+                            if (spawnpoint != null)
+                            {
+                                spawnpointsToUpsert.Add(spawnpoint);
+                            }
+
+                            if (newPokemon.HasIvChanges)
+                            {
+                                SetPvpRankings(newPokemon);
+                            }
                             await newPokemon.UpdateAsync(context, updateIv: true);
 
                             pokemonToUpsert.Add(newPokemon);
@@ -977,6 +1102,19 @@
                             p.Move1,
                             p.Move2,
                             p.Weather,
+                            p.PvpRankings,
+                        };
+                    });
+
+                    await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
+                    {
+                        options.UseTableLock = true;
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.Id,
+                            p.LastSeen,
+                            p.Updated,
+                            p.DespawnSecond,
                         };
                     });
 
@@ -1009,6 +1147,10 @@
                         if (pokemon != null)
                         {
                             pokemon.AddDiskEncounter(data, username);
+                            if (pokemon.HasIvChanges)
+                            {
+                                SetPvpRankings(pokemon);
+                            }
                             await pokemon.UpdateAsync(context, updateIv: true);
 
                             pokemonToUpsert.Add(pokemon);
@@ -1041,6 +1183,7 @@
                             p.Move1,
                             p.Move2,
                             p.Weather,
+                            p.PvpRankings,
                         };
                     });
 
@@ -1070,6 +1213,31 @@
             {
                 _logger.LogWarning($"Data processing queue is {_taskQueue.Count:N0} items long.");
             }
+        }
+
+        private static void SetPvpRankings(Pokemon pokemon)
+        {
+            var pokemonId = (HoloPokemonId)pokemon.PokemonId;
+            PokemonForm? formId = pokemon.Form != null && pokemon.Form != 0
+                ? (PokemonForm)(pokemon.Form ?? 0)
+                : null;
+            PokemonGender? genderId = pokemon.Gender != null && pokemon.Gender != 0
+                ? (PokemonGender)(pokemon.Gender ?? 0)
+                : null;
+            var costumeId = (PokemonCostume)(pokemon.Costume ?? 0);
+            var iv = new IV(pokemon.AttackIV ?? 0, pokemon.DefenseIV ?? 0, pokemon.StaminaIV ?? 0);
+            var level = pokemon.Level ?? 0;
+            var pvpRanks = PvpRankGenerator.Instance.GetAllPvpLeagues(
+                pokemonId,
+                formId,
+                genderId,
+                costumeId,
+                iv,
+                level
+            );
+            pokemon.PvpRankings = pvpRanks != null && pvpRanks.Count > 0
+                ? (Dictionary<string, dynamic>)pvpRanks
+                : null;
         }
 
         private async Task ClearOldFortsAsync()
