@@ -46,7 +46,7 @@
         public override string ToString()
         {
             var ivs = IVs.Select(iv => $"{iv.IV.Attack}/{iv.IV.Defense}/{iv.IV.Stamina}");
-            return string.Join("\n", ivs);
+            return string.Join(",", ivs);
         }
     }
 }

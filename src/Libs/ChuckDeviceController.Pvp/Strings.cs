@@ -6,7 +6,7 @@
         internal const string MasterFileEndpoint = "https://raw.githubusercontent.com/PokeMiners/game_masters/master/latest/latest.json";
         internal const string NoEvolveForm = "noevolve";
 
-        internal static readonly RankType DefaultRank = RankType.Dense;
+        internal static readonly PvpRankType DefaultRank = PvpRankType.Dense;
         internal static readonly IReadOnlyList<ushort> LevelCaps = new List<ushort> { 50 };
         internal static readonly IReadOnlyDictionary<ushort, ushort> LeagueFilters = new Dictionary<ushort, ushort>
         {

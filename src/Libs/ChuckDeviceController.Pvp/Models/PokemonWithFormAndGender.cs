@@ -20,13 +20,19 @@
                 return result;
             }
 
-            result = (Form ?? PokemonForm.Unset).CompareTo(other.Form ?? PokemonForm.Unset);
+            //result = (Form ?? PokemonForm.Unset).CompareTo(other.Form ?? PokemonForm.Unset);
+            result = (Form == null && other.Form == null)
+                ? 0
+                : (Form ?? PokemonForm.Unset).CompareTo(other.Form ?? PokemonForm.Unset);
             if (result != 0)
             {
                 return result;
             }
 
-            result = (Gender ?? PokemonGender.Unset).CompareTo(other.Gender ?? PokemonGender.Unset);
+            //result = (Gender ?? PokemonGender.Unset).CompareTo(other.Gender ?? PokemonGender.Unset);
+            result = (Gender == null && other.Gender == null)
+                ? 0
+                : (Gender ?? PokemonGender.Unset).CompareTo(other.Gender ?? PokemonGender.Unset);
             if (result != 0)
             {
                 return result;
@@ -38,8 +44,8 @@
         public bool Equals(PokemonWithFormAndGender other)
         {
             return Pokemon == other.Pokemon &&
-                   (Form == other.Form || (Form == null || other.Form == null)) &&
-                   (Gender == other.Gender || (Gender == null || other.Gender == null));
+                   (Form == other.Form || (Form == null && other.Form == null)) &&
+                   (Gender == other.Gender || (Gender == null && other.Gender == null));
         }
 
         public override bool Equals(object? obj)

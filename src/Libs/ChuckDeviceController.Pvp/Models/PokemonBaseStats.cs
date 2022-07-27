@@ -16,7 +16,7 @@
 
         public double BaseWeight { get; set; }
 
-        public List<PokemonCostume>? CostumeEvolutionOverride { get; set; }
+        public List<PokemonCostume?> CostumeEvolutionOverride { get; set; }
 
         public PokemonBaseStats()
         {

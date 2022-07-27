@@ -93,5 +93,10 @@
         {
             return left.CompareTo(right) >= 0;
         }
+
+        public override string ToString()
+        {
+            return $"{Attack}/{Defense}/{Stamina}";
+        }
     }
 }

@@ -3,6 +3,7 @@
     using System.Text.Json;
     using System.Timers;
 
+    using ChuckDeviceController.Pvp.Extensions;
     using ChuckDeviceController.Pvp.GameMaster;
     using ChuckDeviceController.Pvp.Models;
 
@@ -19,7 +20,7 @@
     {
         #region Variables
 
-        private Dictionary<PokemonWithFormAndGender, PokemonBaseStats> _stats = new();
+        private Dictionary<PokemonWithFormAndGender, PokemonBaseStats> _pokemonBaseStats = new();
         private readonly Dictionary<PokemonWithFormAndGender, List<PvpRank>> _rankingLittle = new();
         private readonly Dictionary<PokemonWithFormAndGender, List<PvpRank>> _rankingGreat = new();
         private readonly Dictionary<PokemonWithFormAndGender, List<PvpRank>> _rankingUltra = new();
@@ -71,10 +72,10 @@
 
         #region Public Methods
 
-        public List<PvpRank> GetPvpStats(HoloPokemonId pokemon, PokemonForm? form, IV iv, double level, PvpLeague league)
+        public IReadOnlyList<PvpRank> GetPvpStats(HoloPokemonId pokemon, PokemonForm? form, IV iv, double level, PvpLeague league)
         {
-            var stats = GetTopPvpRanks(pokemon, form, league);
-            if (stats == null)
+            var pvpStats = GetTopPvpRanks(pokemon, form, league);
+            if (pvpStats == null)
             {
                 return new List<PvpRank>();
             }
@@ -88,21 +89,20 @@
                 var ordinalIndex = 0;
                 var foundMatch = false;
                 PvpRank? rank = null;
-                var filteredStats = stats.Where(stat => stat.Cap == levelCap).ToList();
+                var filteredStats = pvpStats.Where(stat => stat.Cap == levelCap).ToList();
+                var shouldBreak = false;
                 foreach (var ivStat in filteredStats)
                 {
+                    if (shouldBreak) break;
+
                     competitionIndex = ordinalIndex;
                     foreach (var ivLevel in ivStat.IVs)
                     {
-                        if (ivLevel.IV.Attack == 0 && ivLevel.IV.Defense == 14)
-                        {
-                            var msg = $"IvLevel: {ivLevel.IV.Attack}/{ivLevel.IV.Defense}/{ivLevel.IV.Stamina} == IV: {iv.Attack}/{iv.Defense}/{iv.Stamina}";
-                            System.Diagnostics.Debug.WriteLine(msg);
-                        }
                         if (ivLevel.IV == iv && ivLevel.Level >= level)
                         {
                             foundMatch = true;
                             rank = ivStat;
+                            shouldBreak = true;
                             break;
                         }
                         ordinalIndex++;
@@ -117,29 +117,24 @@
 
                 var max = Convert.ToDouble(filteredStats[0].CompetitionRank);
                 var value = Convert.ToDouble(rank?.CompetitionRank);
-                var ivs = new List<PvpRank.IvWithCp>();
                 var currentIV = rank?.IVs.FirstOrDefault(iv => iv.IV == iv.IV);
-                ivs = currentIV == null
+                var ivs = currentIV == null
                     ? new()
                     : new List<PvpRank.IvWithCp> { currentIV };
 
                 var lastStat = lastRank?.IVs.FirstOrDefault();
                 var ivCpStat = ivs.FirstOrDefault();
-                if (lastRank != null && lastStat != null && lastStat.Level == ivCpStat.Level &&
+                if (lastRank != null && lastStat != null &&
+                    lastStat.Level == ivCpStat!.Level &&
                     lastRank.CompetitionRank == competitionIndex + 1 &&
                     lastStat.IV == ivCpStat.IV)
                 {
-                    if (rankings.Exists(r => r.CompetitionRank == lastRank.CompetitionRank))
-                    {
-                        lastRank.IsCapped = true;
-                        rankings.ForEach(r =>
-                        {
-                            if (r.CompetitionRank == lastRank.CompetitionRank)
-                            {
-                                r = lastRank;
-                            }
-                        });
-                    }
+                    var index = rankings.FindIndex(iv => iv.CompetitionRank == lastRank!.CompetitionRank);
+                    if (index == -1)
+                        continue; // Failed to find index
+
+                    lastRank.IsCapped = true;
+                    rankings[index] = lastRank;
                 }
                 else
                 {
@@ -149,7 +144,7 @@
                         DenseRank = Convert.ToUInt32(denseIndex + 1),
                         OrdinalRank = Convert.ToUInt32(ordinalIndex + 1),
                         Percentage = value / max,
-                        Cap = rank.Cap,
+                        Cap = rank!.Cap,
                         IsCapped = false,
                         IVs = ivs,
                     };
@@ -159,27 +154,27 @@
             return rankings;
         }
 
-        public Dictionary<string, dynamic>? GetAllPvpLeagues(HoloPokemonId pokemon, PokemonForm? form, PokemonGender? gender, PokemonCostume costume, IV iv, double level)
+        public IReadOnlyDictionary<string, dynamic>? GetAllPvpLeagues(HoloPokemonId pokemon, PokemonForm? form, PokemonGender? gender, PokemonCostume? costume, IV iv, double level)
         {
             var pvp = new Dictionary<string, dynamic>();
             foreach (var leagueId in Enum.GetValues(typeof(PvpLeague)))
             {
                 var league = (PvpLeague)leagueId;
                 var leagueName = league.ToString().ToLower();
-                var stats = GetPvpStatsWithEvolutions(pokemon, form, gender, costume, iv, level, league)?
+                var pvpStats = GetPvpStatsWithEvolutions(pokemon, form, gender, costume, iv, level, league)?
                     .Select(ranking =>
                     {
                         var rank = 0u;
                         var (pokemon, response) = ranking;
                         switch (Strings.DefaultRank)
                         {
-                            case RankType.Dense:
+                            case PvpRankType.Dense:
                                 rank = response.DenseRank;
                                 break;
-                            case RankType.Competition:
+                            case PvpRankType.Competition:
                                 rank = response.CompetitionRank;
                                 break;
-                            case RankType.Ordinal:
+                            case PvpRankType.Ordinal:
                                 rank = response.OrdinalRank;
                                 break;
                         }
@@ -188,11 +183,11 @@
                         var json = new
                         {
                             pokemon = pokemon.Pokemon,
-                            form = pokemon.Form,
-                            gender = pokemon.Gender,
+                            form = pokemon.Form ?? 0,
+                            gender = pokemon.Gender ?? 0,
                             rank,
                             percentage = response.Percentage,
-                            cp = firstIV.CP,
+                            cp = firstIV!.CP,
                             level = firstIV.Level,
                             competition_rank = response.CompetitionRank,
                             dense_rank = response.DenseRank,
@@ -202,9 +197,9 @@
                         };
                         return json;
                     }).ToList();
-                if ((stats?.Count ?? 0) > 0)
+                if ((pvpStats?.Count ?? 0) > 0)
                 {
-                    pvp[leagueName] = stats;
+                    pvp[leagueName] = pvpStats!;
                 }
             }
             return pvp.Count == 0
@@ -212,7 +207,7 @@
                 : pvp;
         }
 
-        public List<PvpRank> GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm? form, PvpLeague league)
+        public IReadOnlyList<PvpRank> GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm? form, PvpLeague league)
         {
             var info = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
             List<PvpRank>? cached = null;
@@ -248,34 +243,13 @@
                     break;
             }
 
-            //if ((cached?.Count ?? 0) == 0)
             if (cached == null)
             {
-                /*
-                var baseStats = _stats.ContainsKey(info)
-                    ? _stats[info]
-                    : null;
-                */
-                var baseStats = _stats[info];
+                var baseStats = _pokemonBaseStats[info];
                 if (baseStats == null)
                 {
                     return null;
                 }
-
-                /*
-                let event = Threading.Event()
-                switch league {
-                case .little:
-                    rankingLittle[info] = .event(event: event)
-                    rankingLittleLock.unlock()
-                case .great:
-                    rankingGreat[info] = .event(event: event)
-                    rankingGreatLock.unlock()
-                case .ultra:
-                    rankingUltra[info] = .event(event: event)
-                    rankingUltraLock.unlock()
-                }
-                 */
                 var values = CalculateAllRanks(baseStats, (ushort)league);
                 switch (league)
                 {
@@ -300,9 +274,6 @@
                 }
                 return values;
             }
-
-            //var top = GetTopPvpRanks(pokemon, form, league);
-            //return top;
             return cached;
         }
 
@@ -310,72 +281,59 @@
 
         #region Private Methods
 
-        public List<(PokemonWithFormAndGender, PvpRank)> GetPvpStatsWithEvolutions(HoloPokemonId pokemon, PokemonForm? form, PokemonGender? gender, PokemonCostume costume, IV iv, double level, PvpLeague league)
+        private List<(PokemonWithFormAndGender, PvpRank)> GetPvpStatsWithEvolutions(HoloPokemonId pokemon, PokemonForm? form, PokemonGender? gender, PokemonCostume? costume, IV iv, double level, PvpLeague league)
         {
             var rankings = GetPvpStats(pokemon, form, iv, level, league);
-            var pkmn = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form, Gender = gender };
-            var result = rankings.Select(rank => (pkmn, rank))
+            var result = rankings.Select(rank => (new PokemonWithFormAndGender { Pokemon = pokemon, Form = form, Gender = gender }, rank))
                                  .ToList();
 
-            if (!_stats.ContainsKey(pkmn))
-            {
-                return null;
-            }
-
-            var baseStats = _stats[pkmn];
-            var hasNoEvolveForm = costume.ToString().ToLower().Contains(Strings.NoEvolveForm);
+            var baseStats = _pokemonBaseStats[new PokemonWithFormAndGender { Pokemon = pokemon, Form = form }];
+            var hasNoEvolveForm = costume!.ToString().ToLower().Contains(Strings.NoEvolveForm);
             var hasCostumeEvoOverride = baseStats.CostumeEvolutionOverride != null &&
                 baseStats.CostumeEvolutionOverride.Count > 0 &&
-                baseStats.CostumeEvolutionOverride.Contains(costume);
+                costume != null && baseStats.CostumeEvolutionOverride.Contains(costume ?? null);
 
-            // Check if Pokemon has evolutions but is form or costume that cannot evolve
-            if (baseStats != null &&
-                (baseStats.Evolutions?.Count ?? 0) > 0 &&
-                (!hasNoEvolveForm || hasCostumeEvoOverride))
+            // Check if Pokemon has evolutions but has form or costume that cannot evolve
+            if (baseStats != null && baseStats.Evolutions != null &&
+                baseStats.Evolutions.Count > 0 &&
+                (hasNoEvolveForm || hasCostumeEvoOverride))
             {
                 return result;
             }
 
-            foreach (var evolution in baseStats.Evolutions)
+            foreach (var evolution in baseStats!.Evolutions!)
             {
                 if (evolution.Gender == null || evolution.Gender == gender)
                 {
-                    var pvpStats = GetPvpStatsWithEvolutions(evolution.Pokemon, evolution.Form ?? PokemonForm.Unset, gender, costume, iv, level, league);
+                    var pvpStats = GetPvpStatsWithEvolutions(evolution.Pokemon, evolution.Form, gender, costume, iv, level, league);
                     result.AddRange(pvpStats);
                 }
             }
             return result;
         }
 
-        private static List<PvpRank> CalculateAllRanks(PokemonBaseStats stats, ushort cpCap)
+        private static List<PvpRank> CalculateAllRanks(PokemonBaseStats baseStats, ushort cpCap)
         {
             var rankings = new List<PvpRank>();
             foreach (var levelCap in Strings.LevelCaps)
             {
-                var cp = CalculateCP(stats, IV.GetHundoCombination(), levelCap);
+                var cp = baseStats.CalculateCP(IV.GetHundoCombination(), levelCap);
+                // Check Pokemon CP is within league CP cap range
                 if (cp <= Strings.LeagueFilters[cpCap])
                     continue;
 
-                var pvpStats = CalculatePvpStat(stats, cpCap, levelCap);
-                //var keys = pvpStats.Keys.ToList();
-                //keys.Sort((a, b) => a.CompareTo(b));
-                //var sortedPvpStats = keys.ToDictionary<uint, PvpRank>((key, value) => key, value => pvpStat[x]);
-                // TODO: Convert to list, sort, then convert back to dictionary
-                //pvpStats.Sort((a, b) => a.Key.CompareTo(b.Key));
-                /*
-                    pvpStats.sorted { (lhs, rhs) -> Bool in
-                        lhs.key >= rhs.key }
-                            .map { (value) -> Response in
-                        value.value }
-                 */
-                rankings.AddRange(pvpStats.Values);
+                var pvpStats = CalculatePvpStat(baseStats, cpCap, levelCap);
+                var keys = pvpStats.Keys.ToList();
+                keys.Sort((a, b) => b.CompareTo(a));
+                var sortedPvpStats = keys.Select(key => pvpStats[key]).ToList();
+                rankings.AddRange(sortedPvpStats);
             }
             return rankings;
         }
 
-        private static SortedDictionary<uint, PvpRank> CalculatePvpStat(PokemonBaseStats stats, ushort cpCap, ushort levelCap)
+        private static SortedDictionary<uint, PvpRank> CalculatePvpStat(PokemonBaseStats baseStats, ushort cpCap, ushort levelCap)
         {
-            var ranking = new SortedDictionary<uint, PvpRank>(new PvpRankComparer());
+            var ranking = new SortedDictionary<uint, PvpRank>();// new PvpRankComparer());
             var allCombinations = IV.GetAllCombinations();
             foreach (var iv in allCombinations)
             {
@@ -384,7 +342,7 @@
                 while (lowest < highest)
                 {
                     var mid = Math.Ceiling(lowest + highest) / 2;
-                    var cp = CalculateCP(stats, iv, mid);
+                    var cp = baseStats.CalculateCP(iv, mid);
                     if (cp <= cpCap)
                     {
                         lowest = mid;
@@ -395,58 +353,36 @@
                         highest = mid - 0.5;
                     }
                 }
-                if (lowest != 0)
-                {
-                    var value = CalculateStatProduct(stats, iv, lowest);
-                    if (!ranking.ContainsKey(value) || ranking[value] == null)
-                    {
-                        ranking[value] = new PvpRank
-                        {
-                            CompetitionRank = value,
-                            DenseRank = value,
-                            OrdinalRank = value,
-                            Percentage = 0.0,
-                            Cap = levelCap,
-                            IsCapped = false,
-                            IVs = new(),
-                        };
-                    }
+                if (lowest == 0)
+                    continue;
 
-                    // TODO: ContainsKey
-                    var ivWithCp = new PvpRank.IvWithCp(iv, lowest, bestCP);
-                    //if let index = ranking[value]!.ivs.firstIndex(where: { bestCP >= $0.cp }) {
-                    if (ranking[value].IVs.Exists(iv => bestCP >= iv.CP))
+                var value = baseStats.CalculateStatProduct(iv, lowest);
+                if (!ranking.ContainsKey(value) || ranking[value] == null)
+                {
+                    ranking[value] = new PvpRank
                     {
-                        ranking[value].IVs.Insert(/*TODO: Get index*/ 0, ivWithCp);
-                    }
-                    else
-                    {
-                        ranking[value].IVs.Add(ivWithCp);
-                    }
+                        CompetitionRank = value,
+                        DenseRank = value,
+                        OrdinalRank = value,
+                        Percentage = 0.0,
+                        Cap = levelCap,
+                        IsCapped = false,
+                        IVs = new(),
+                    };
+                }
+
+                var ivWithCp = new PvpRank.IvWithCp(iv, lowest, bestCP);
+                var index = ranking[value].IVs.FindIndex(iv => bestCP >= iv.CP);
+                if (index > -1)
+                {
+                    ranking[value].IVs.Insert(index, ivWithCp);
+                }
+                else
+                {
+                    ranking[value].IVs.Add(ivWithCp);
                 }
             }
             return ranking;
-        }
-
-        private static uint CalculateStatProduct(PokemonBaseStats stats, IV iv, double level)
-        {
-            var multiplier = Strings.CpMultipliers[level];
-            var hp = Math.Floor(Convert.ToDouble(iv.Stamina + stats.BaseStamina) * multiplier);
-            hp = hp < 10 ? 10 : hp;
-            var attack = Convert.ToDouble(iv.Attack + stats.BaseAttack) * multiplier;
-            var defense = Convert.ToDouble(iv.Defense + stats.BaseDefense) * multiplier;
-            var product = Convert.ToUInt32(Math.Round(attack * defense * hp));
-            return product;
-        }
-
-        private static uint CalculateCP(PokemonBaseStats stats, IV iv, double level)
-        {
-            var attack = Convert.ToDouble(stats.BaseAttack + iv.Attack);
-            var defense = Math.Pow(Convert.ToDouble(stats.BaseDefense + iv.Defense), 0.5);
-            var stamina = Math.Pow(Convert.ToDouble(stats.BaseStamina + iv.Stamina), 0.5);
-            var multiplier = Math.Pow(Strings.CpMultipliers[level], 2);
-            var cp = Math.Max(Convert.ToUInt32(Math.Floor(attack * defense * stamina * multiplier / 10)), 10);
-            return cp;
         }
 
         private static async Task<string?> GetETag(string url)
@@ -501,7 +437,7 @@
                 return;
             }
 
-            var stats = new Dictionary<PokemonWithFormAndGender, PokemonBaseStats>();
+            var pokemonBaseStats = new Dictionary<PokemonWithFormAndGender, PokemonBaseStats>();
             foreach (var template in templates)
             {
                 var templateData = Convert.ToString(template["data"]);
@@ -529,14 +465,14 @@
                         continue;
                     }
 
-                    var pokemonName = pokemonInfo.PokemonId;
-                    var baseStats = pokemonInfo.Stats;
+                    var pokemonName = pokemonInfo.PokemonId!; // <- Interesting, .NET has similar swift stuff now
+                    var pokedexBaseStats = pokemonInfo.Stats;
                     var pokedexHeightM = pokemonInfo.PokedexHeightM;
                     var pokedexWeightKg = pokemonInfo.PokedexWeightKg;
-                    var baseAttack = baseStats.BaseAttack;
-                    var baseDefense = baseStats.BaseDefense;
-                    var baseStamina = baseStats.BaseStamina;
-                    var pokemon = PokemonFromName(pokemonName);
+                    var baseAttack = pokedexBaseStats.BaseAttack;
+                    var baseDefense = pokedexBaseStats.BaseDefense;
+                    var baseStamina = pokedexBaseStats.BaseStamina;
+                    var pokemon = GetPokemonFromName(pokemonName);
                     if (pokemon == HoloPokemonId.Missingno)
                     {
                         Console.WriteLine($"Failed to get Pokemon for '{pokemonName}'");
@@ -548,7 +484,7 @@
                     PokemonForm? form = null;
                     if (!string.IsNullOrEmpty(formName))
                     {
-                        var formId = FormFromName(formName);
+                        var formId = GetFormFromName(formName);
                         if (formId == PokemonForm.Unset)
                         {
                             Console.WriteLine($"Failed to get form for '{formName}'");
@@ -569,27 +505,31 @@
                                 // Skip
                                 continue;
                             }
-                            var evoPokemon = PokemonFromName(evoName);
+                            var evoPokemon = GetPokemonFromName(evoName);
                             if (!string.IsNullOrEmpty(evoName) && evoPokemon != HoloPokemonId.Missingno)
                             {
                                 var evoFormName = info.Form;
                                 var genderName = info.GenderRequirement;
                                 PokemonForm? evoForm = string.IsNullOrEmpty(evoFormName)
                                     ? null
-                                    : FormFromName(evoFormName);
+                                    : GetFormFromName(evoFormName);
                                 PokemonGender? evoGender = string.IsNullOrEmpty(genderName)
                                     ? null
-                                    : GenderFromName(genderName);
+                                    : GetGenderFromName(genderName);
                                 evolutions.Add(new PokemonWithFormAndGender { Pokemon = evoPokemon, Form = evoForm, Gender = evoGender });
                             }
                         }
                     }
 
                     var costumeEvolution = pokemonInfo.ObCostumeEvolution?
-                        .Where(costume => CostumeFromName(costume) != PokemonCostume.Unset)
-                        .Select(CostumeFromName)
+                        .Where(costumeName =>
+                        {
+                            var costume = GetCostumeFromName(costumeName);
+                            return costume != PokemonCostume.Unset && costume != null;
+                        })
+                        .Select(GetCostumeFromName)
                         .ToList();
-                    var stat = new PokemonBaseStats
+                    var baseStats = new PokemonBaseStats
                     {
                         BaseAttack = baseAttack,
                         BaseDefense = baseDefense,
@@ -599,11 +539,11 @@
                         BaseWeight = pokedexWeightKg,
                         CostumeEvolutionOverride = costumeEvolution,
                     };
-                    stats[new PokemonWithFormAndGender { Pokemon = pokemon, Form = form }] = stat;
+                    pokemonBaseStats[new PokemonWithFormAndGender { Pokemon = pokemon, Form = form }] = baseStats;
                 }
             }
 
-            _stats = stats;
+            _pokemonBaseStats = pokemonBaseStats;
             lock (_littleLock)
             {
                 _rankingLittle.Clear();
@@ -625,28 +565,28 @@
         #region Helpers
 
         // TODO: Move to separate class
-        private static PokemonForm FormFromName(string name)
-        {
-            var allForms = new List<PokemonForm>(Enum.GetValues<PokemonForm>());
-            var form = GetEnumFromName(name, allForms);
-            return form;
-        }
-
-        private static HoloPokemonId PokemonFromName(string name)
+        private static HoloPokemonId GetPokemonFromName(string name)
         {
             var allPokemon = new List<HoloPokemonId>(Enum.GetValues<HoloPokemonId>());
             var pokemon = GetEnumFromName(name, allPokemon);
             return pokemon;
         }
 
-        private static PokemonGender GenderFromName(string name)
+        private static PokemonForm? GetFormFromName(string name)
+        {
+            var allForms = new List<PokemonForm>(Enum.GetValues<PokemonForm>());
+            var form = GetEnumFromName(name, allForms);
+            return form;
+        }
+
+        private static PokemonGender? GetGenderFromName(string name)
         {
             var allGenders = new List<PokemonGender>(Enum.GetValues<PokemonGender>());
             var gender = GetEnumFromName(name, allGenders);
             return gender;
         }
 
-        private static PokemonCostume CostumeFromName(string name)
+        private static PokemonCostume? GetCostumeFromName(string name)
         {
             var allCostumes = new List<PokemonCostume>(Enum.GetValues<PokemonCostume>());
             var costume = GetEnumFromName(name, allCostumes);
@@ -655,8 +595,8 @@
 
         private static T? GetEnumFromName<T>(string name, List<T> values)
         {
-            var lower = name.Replace("_", "").ToLower();
-            var result = values.FirstOrDefault(x => x.ToString().ToLower() == lower);
+            var lowerName = name.Replace("_", "").ToLower();
+            var result = values.FirstOrDefault(x => x.ToString().ToLower() == lowerName);
             return result;
         }
 
@@ -679,9 +619,11 @@
             return json;
         }
 
+        /*
         private class PvpRankComparer : IComparer<uint>
         {
             public int Compare(uint x, uint y) => x.CompareTo(y);
         }
+        */
     }
 }

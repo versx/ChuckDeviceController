@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Pvp
 {
-    public enum RankType
+    public enum PvpRankType
     {
         Dense,
         Ordinal,

@@ -51,20 +51,15 @@ namespace Tests
             Assert.That(result, Is.False);
         }
 
-        [Test]
-        public void Test1()
+        [TestCase(2, 13, 14, HoloPokemonId.Bulbasaur, Form.BulbasaurNormal)]
+        [TestCase(0, 14, 14, HoloPokemonId.Ralts, Form.RaltsNormal)]//, Gender.Male)]
+        [TestCase(0, 13, 14, HoloPokemonId.Riolu)]
+        public void Test_Base_Pass(int atk, int def, int sta, HoloPokemonId pokemon, Form? form = null, Gender? gender = null, Costume? costume = null)
         {
-            var pokemon = HoloPokemonId.Lucario;
-            Form? form = null;//Form.RioluNormal;
-            Gender? gender = null;//Gender.Male;
-            var costume = Costume.Unset;
-            var iv = new IV(0, 14, 14);
-            //var iv = new IV(0, 14, 15);
-            //var iv = new IV(3, 13, 13);
+            var iv = new IV((ushort)atk, (ushort)def, (ushort)sta);
             var level = 1;
-            var league = PvpLeague.Ultra;
 
-            var bulba = _pvp.GetAllPvpLeagues(
+            var ranks = _pvp.GetAllPvpLeagues(
                 pokemon,
                 form,
                 gender,
@@ -72,19 +67,36 @@ namespace Tests
                 iv,
                 level
             );
-            Console.WriteLine($"Ranks: {bulba}");
+            Assert.That(ranks?.Count == 3, Is.True);
+        }
 
-            var bulbaEvos = _pvp.GetPvpStatsWithEvolutions(
+        [TestCase(0, 13, 14, HoloPokemonId.Lucario)]
+        public void Test_Evolution_Pass(int atk, int def, int sta, HoloPokemonId pokemon, Form? form = null, Gender? gender = null, Costume? costume = null)
+        {
+            var iv = new IV((ushort)atk, (ushort)def, (ushort)sta);
+            var level = 1;
+
+            var evolutions = _pvp.GetAllPvpLeagues(
+                pokemon,
+                form,
+                gender,
+                costume,
+                iv,
+                level
+            );
+            /*
+            var evolutions = _pvp.GetPvpStatsWithEvolutions(
                 pokemon,
                 form,
                 gender,
                 costume,
                 iv,
                 level,
-                league
+                PvpLeague.Ultra
             );
+            */
 
-            Console.WriteLine($"Ranks Evolutions: {bulbaEvos}");
+            Assert.That(evolutions?.Count == 3, Is.True);
         }
     }
 }
