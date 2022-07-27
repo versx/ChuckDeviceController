@@ -10,10 +10,10 @@
 
     public interface IPvpRankGenerator
     {
-        Dictionary<string, dynamic>? GetAllPvpLeagues(HoloPokemonId pokemon, PokemonForm form, PokemonGender gender, PokemonCostume costume, IV iv, double level);
+        Dictionary<string, dynamic>? GetAllPvpLeagues(HoloPokemonId pokemon, PokemonForm? form, PokemonGender? gender, PokemonCostume costume, IV iv, double level);
 
-        List<PvpRank> GetPvpStats(HoloPokemonId pokemon, PokemonForm form, IV iv, double level, PvpLeague league);
+        List<PvpRank> GetPvpStats(HoloPokemonId pokemon, PokemonForm? form, IV iv, double level, PvpLeague league);
 
-        List<PvpRank> GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm form, PvpLeague league);
+        List<PvpRank> GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm? form, PvpLeague league);
     }
 }

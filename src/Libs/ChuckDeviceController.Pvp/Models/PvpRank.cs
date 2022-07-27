@@ -16,9 +16,20 @@
 
         public List<IvWithCp> IVs { get; set; } = new();
 
+        public PvpRank()
+        {
+            CompetitionRank = 0;
+            DenseRank = 0;
+            OrdinalRank = 0;
+            Percentage = 0;
+            Cap = 0;
+            IsCapped = false;
+            IVs = new();
+        }
+
         public class IvWithCp
         {
-            public IV? IV { get; set; }
+            public IV IV { get; set; }
 
             public double Level { get; set; }
 
@@ -30,6 +41,12 @@
                 Level = level;
                 CP = cp;
             }
+        }
+
+        public override string ToString()
+        {
+            var ivs = IVs.Select(iv => $"{iv.IV.Attack}/{iv.IV.Defense}/{iv.IV.Stamina}");
+            return string.Join("\n", ivs);
         }
     }
 }

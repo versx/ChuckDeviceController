@@ -4,33 +4,16 @@
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
-    public class PokemonWithFormAndGender : IComparable
+    public struct PokemonWithFormAndGender : IEquatable<PokemonWithFormAndGender>, IComparable<PokemonWithFormAndGender>
     {
         public HoloPokemonId Pokemon { get; set; }
 
-        public PokemonForm? Form { get; set; }// = PokemonForm.Unset;
+        public PokemonForm? Form { get; set; }
 
         public PokemonGender? Gender { get; set; }
 
-        public PokemonWithFormAndGender(HoloPokemonId pokemon, PokemonForm? form)
+        public int CompareTo(PokemonWithFormAndGender other)
         {
-            Pokemon = pokemon;
-            Form = form;
-        }
-
-        public PokemonWithFormAndGender(HoloPokemonId pokemon, PokemonForm? form, PokemonGender? gender)
-        {
-            Pokemon = pokemon;
-            Form = form;
-            Gender = gender;
-        }
-
-        public int CompareTo(object? obj)
-        {
-            if (obj == null)
-                return -1;
-
-            var other = (PokemonWithFormAndGender)obj;
             var result = Pokemon.CompareTo(other.Pokemon);
             if (result != 0)
             {
@@ -50,6 +33,64 @@
             }
 
             return 0;
+        }
+
+        public bool Equals(PokemonWithFormAndGender other)
+        {
+            return Pokemon == other.Pokemon &&
+                   (Form == other.Form || (Form == null || other.Form == null)) &&
+                   (Gender == other.Gender || (Gender == null || other.Gender == null));
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null)
+                return false;
+
+            var other = (PokemonWithFormAndGender)obj;
+            return Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return Convert.ToInt32(Pokemon) ^
+                   Convert.ToInt32(Form ?? 0) ^
+                   Convert.ToInt32(Gender ?? 0);
+        }
+
+        public static bool operator ==(PokemonWithFormAndGender left, PokemonWithFormAndGender right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(PokemonWithFormAndGender left, PokemonWithFormAndGender right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator <(PokemonWithFormAndGender left, PokemonWithFormAndGender right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(PokemonWithFormAndGender left, PokemonWithFormAndGender right)
+        {
+            return left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(PokemonWithFormAndGender left, PokemonWithFormAndGender right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(PokemonWithFormAndGender left, PokemonWithFormAndGender right)
+        {
+            return left.CompareTo(right) >= 0;
+        }
+
+        public override string ToString()
+        {
+            return $"{Pokemon}_{Form}_{Gender}";
         }
     }
 }

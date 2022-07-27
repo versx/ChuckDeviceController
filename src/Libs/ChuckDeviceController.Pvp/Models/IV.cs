@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Pvp.Models
 {
-    public class IV
+    public struct IV : IEquatable<IV>, IComparable<IV>
     {
         private static List<IV>? _allCombinations;
 
@@ -38,5 +38,60 @@
         }
 
         public static IV GetHundoCombination() => new(15, 15, 15);
+
+        public bool Equals(IV other)
+        {
+            return Attack == other.Attack &&
+                   Defense == other.Defense &&
+                   Stamina == other.Stamina;
+        }
+
+        public int CompareTo(IV other)
+        {
+            return Equals(other) ? 0 : -1;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj == null)
+                return false;
+
+            var other = (IV)obj;
+            return Attack == other.Attack &&
+                   Defense == other.Defense &&
+                   Stamina == other.Stamina;
+        }
+
+        public override int GetHashCode() => Attack ^ Defense ^ Stamina;
+
+        public static bool operator ==(IV left, IV right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(IV left, IV right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator <(IV left, IV right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(IV left, IV right)
+        {
+            return left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(IV left, IV right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(IV left, IV right)
+        {
+            return left.CompareTo(right) >= 0;
+        }
     }
 }
