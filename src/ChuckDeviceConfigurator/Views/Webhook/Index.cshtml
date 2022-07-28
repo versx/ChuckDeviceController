@@ -5,7 +5,7 @@
     ViewData["Title"] = "Webhooks";
 }
 
-<h1>Webhooks</h1>
+<h1>Webhook Endpoints</h1>
 
 <p>
     <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
@@ -19,6 +19,9 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Url)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Types)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Delay)
@@ -43,13 +46,16 @@
                     @Html.DisplayFor(modelItem => item.Url)
                 </td>
                 <td>
+                    @string.Join(", ", item.Types)
+                </td>
+                <td>
                     @Html.DisplayFor(modelItem => item.Delay)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => string.Join(", ", item.Geofences))
+                    @string.Join(", ", item.Geofences)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Enabled ? "Yes" : "No")
+                    @(item.Enabled ? "Yes" : "No")
                 </td>
                 <td>
                     <div class="dropdown">

@@ -4,7 +4,9 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Services.Webhooks;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -13,13 +15,16 @@
     {
         private readonly ILogger<WebhookController> _logger;
         private readonly DeviceControllerContext _context;
+        private readonly IWebhookControllerService _webhookService;
 
         public WebhookController(
             ILogger<WebhookController> logger,
-            DeviceControllerContext context)
+            DeviceControllerContext context,
+            IWebhookControllerService webhookService)
         {
             _logger = logger;
             _context = context;
+            _webhookService = webhookService;
         }
 
         // GET: WebhookController
@@ -48,16 +53,53 @@
         // GET: WebhookController/Create
         public ActionResult Create()
         {
+            var geofences = _context.Geofences.Where(geofence => geofence.Type == GeofenceType.Geofence)
+                                              .ToList();
+            ViewBag.Geofences = geofences;
             return View();
         }
 
         // POST: WebhookController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(IFormCollection collection)
         {
             try
             {
+                var name = Convert.ToString(collection["Name"]);
+                var url = Convert.ToString(collection["Url"]);
+                var types = Convert.ToString(collection["Types"]);
+                var webhookTypes = types.Split(',')
+                                        .Where(type => !string.IsNullOrEmpty(type))
+                                        .Select(type => (WebhookType)Convert.ToUInt32(type))
+                                        .ToList();
+                var delay = Convert.ToDouble(collection["Delay"]);
+                var geofences = Convert.ToString(collection["Geofences"]).Split(',');
+                var enabled = collection["Enabled"].Contains("true");
+
+                if (_context.Webhooks.Any(webhook => webhook.Name == name))
+                {
+                    // Webhook already exists by name
+                    ModelState.AddModelError("Webhook", $"Webhook with name '{name}' already exists.");
+                    return View();
+                }
+                var webhook = new Webhook
+                {
+                    Name = name,
+                    Url = url,
+                    Types = webhookTypes,
+                    Delay = delay,
+                    Geofences = new(geofences),
+                    Enabled = enabled,
+                    Data = new WebhookData(),
+                };
+
+                // Add webhook to database
+                await _context.AddAsync(webhook);
+                await _context.SaveChangesAsync();
+
+                _webhookService.Add(webhook);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -77,6 +119,10 @@
                 ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
                 return View();
             }
+
+            var geofences = _context.Geofences.Where(geofence => geofence.Type == GeofenceType.Geofence)
+                                              .ToList();
+            ViewBag.Geofences = geofences;
             return View(webhook);
         }
 
@@ -92,8 +138,33 @@
                 {
                     // Failed to retrieve webhook from database, does it exist?
                     ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
-                    return View();
+                    return View(webhook);
                 }
+
+                var name = Convert.ToString(collection["Name"]);
+                var url = Convert.ToString(collection["Url"]);
+                var types = Convert.ToString(collection["Types"]);
+                var webhookTypes = types.Split(',')
+                                        .Where(type => !string.IsNullOrEmpty(type))
+                                        .Select(type => (WebhookType)Convert.ToUInt32(type))
+                                        .ToList();
+                var delay = Convert.ToDouble(collection["Delay"]);
+                var geofences = Convert.ToString(collection["Geofences"]).Split(',');
+                var enabled = collection["Enabled"].Contains("true");
+
+                webhook.Name = name;
+                webhook.Url = url;
+                webhook.Types = webhookTypes;
+                webhook.Delay = delay;
+                webhook.Geofences = new(geofences);
+                webhook.Enabled = enabled;
+                webhook.Data = new WebhookData();
+
+                _context.Update(webhook);
+                await _context.SaveChangesAsync();
+
+                _webhookService.Edit(webhook, id);
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -134,6 +205,8 @@
                 // Delete webhook from database
                 _context.Webhooks.Remove(webhook);
                 await _context.SaveChangesAsync();
+
+                _webhookService.Delete(id);
 
                 return RedirectToAction(nameof(Index));
             }

@@ -2,26 +2,27 @@
 {
     using Grpc.Core;
 
-    using ChuckDeviceConfigurator.Services.Jobs;
+    using ChuckDeviceConfigurator.Services.Webhooks;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Protos;
 
     public class WebhookEndpointServerService : WebhookEndpoint.WebhookEndpointBase
     {
         #region Variables
 
-        private readonly ILogger<ProtoPayloadServerService> _logger;
-        private readonly IJobControllerService _jobControllerService;
+        private readonly ILogger<WebhookEndpointServerService> _logger;
+        private readonly IWebhookControllerService _webhookService;
 
         #endregion
 
         #region Constructor
 
         public WebhookEndpointServerService(
-            ILogger<ProtoPayloadServerService> logger,
-            IJobControllerService jobControllerService)
+            ILogger<WebhookEndpointServerService> logger,
+            IWebhookControllerService webhookService)
         {
             _logger = logger;
-            _jobControllerService = jobControllerService;
+            _webhookService = webhookService;
         }
 
         #endregion
@@ -30,10 +31,12 @@
 
         public override Task<WebhookEndpointResponse> ReceivedWebhookEndpoint(WebhookEndpointRequest request, ServerCallContext context)
         {
-            //_logger.LogInformation($"Received webhook endpoints request");
+            _logger.LogInformation($"Received fetch webhook endpoints request");
 
-            // TODO: Get all webhooks from database
-            var json = string.Empty;
+            var webhooks = _webhookService.GetAll();
+            var json = webhooks.ToJson();
+
+            // TODO: Provide error status if failed to get webhooks
 
             var response = new WebhookEndpointResponse
             {

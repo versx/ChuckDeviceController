@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<IWebhookRelayService, WebhookRelayService>();
+builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
 
 var app = builder.Build();
 

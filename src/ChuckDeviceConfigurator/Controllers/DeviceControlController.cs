@@ -300,7 +300,7 @@
             });
             if (task == null)
             {
-                return CreateErrorResponse("No tasks available yet");
+                return CreateErrorResponse("No tasks available yet", logWarning: true);
             }
 
             _logger.LogInformation($"[{device?.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
@@ -444,9 +444,16 @@
             };
         }
 
-        private DeviceResponse CreateErrorResponse(string error, dynamic? data = null)
+        private DeviceResponse CreateErrorResponse(string error, dynamic? data = null, bool logWarning = false)
         {
-            _logger.LogError(error);
+            if (logWarning)
+            {
+                _logger.LogWarning(error);
+            }
+            else
+            {
+                _logger.LogError(error);
+            }
             return new DeviceResponse
             {
                 Status = "error",

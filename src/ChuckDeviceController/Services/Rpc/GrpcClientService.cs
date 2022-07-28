@@ -23,7 +23,8 @@
             var webhookEndpoint = configuration.GetValue<string>("GrpcWebhookServer");
             if (string.IsNullOrEmpty(webhookEndpoint))
             {
-                throw new ArgumentNullException($"gRPC controller server endpoint is not set but is required!", nameof(webhookEndpoint));
+                // TODO: Make optional if no webhooks are wanted
+                throw new ArgumentNullException($"gRPC webhook server endpoint is not set but is required!", nameof(webhookEndpoint));
             }
             _grpcWebhookServerEndpoint = webhookEndpoint;
         }

@@ -7,12 +7,15 @@
     {
         Pokemon = 0,
         Pokestops,
-        Raids,
-        Eggs,
-        Quests,
         Lures,
         Invasions,
+        Quests,
+        AlternativeQuests,
         Gyms,
+        GymInfo,
+        Eggs,
+        Raids,
         Weather,
+        Accounts,
     }
 }

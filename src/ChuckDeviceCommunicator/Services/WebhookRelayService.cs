@@ -10,31 +10,6 @@
     using ChuckDeviceController.Protos;
 
     // TODO: If webhooks are changed via UI, send from Configurator -> Communicator, alternatively request them every 5 minutes or something
-    public class WebhookEndpoint : IWebhookEndpoint
-    {
-        public bool Enabled => true;
-
-        public string Url => "https://webhook.site/aaa1ba26-1d7c-4774-982d-696ca6dfecd3";
-
-        public double Delay => 5.0;
-
-        public IEnumerable<WebhookPayloadType> AllowedTypes => new List<WebhookPayloadType>
-        {
-            WebhookPayloadType.Pokemon,
-            WebhookPayloadType.Pokestop,
-            WebhookPayloadType.Lure,
-            WebhookPayloadType.Invasion,
-            WebhookPayloadType.Quest,
-            WebhookPayloadType.AlternativeQuest,
-            WebhookPayloadType.Gym,
-            WebhookPayloadType.GymInfo,
-            WebhookPayloadType.Egg,
-            WebhookPayloadType.Raid,
-            WebhookPayloadType.Weather,
-            WebhookPayloadType.Account,
-        };
-    }
-
     public class WebhookRelayService : IWebhookRelayService
     {
         #region Constants
@@ -48,7 +23,7 @@
 
         private readonly ILogger<IWebhookRelayService> _logger;
         private readonly IGrpcClientService _grpcClientService;
-        private readonly List<IWebhookEndpoint> _webhookEndpoints = new();
+        private readonly List<Webhook> _webhookEndpoints = new();
         private readonly Timer _timer;
         private readonly ushort _timeout = 30; // TODO: Make 'timeout' configurable
 
@@ -91,7 +66,7 @@
         /// <summary>
         /// Gets the webhook endpoints to relay entity data to.
         /// </summary>
-        public IEnumerable<IWebhookEndpoint> WebhookEndpoints => _webhookEndpoints;
+        public IEnumerable<Webhook> WebhookEndpoints => _webhookEndpoints;
 
         #endregion
 
@@ -103,12 +78,6 @@
         {
             _logger = logger;
             _grpcClientService = grpcClientService;
-            // TODO: Request webhook endpoints
-            _webhookEndpoints = new List<IWebhookEndpoint>
-            {
-                new WebhookEndpoint(),
-            };
-
             _timer = new Timer(WebhookRelayIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckWebhooksAsync();
             Start();
@@ -120,14 +89,20 @@
 
         public void Start()
         {
+            _logger.LogInformation($"Starting webhook relay service...");
             if (!_timer.Enabled)
             {
                 _timer.Start();
             }
+
+            RequestWebhookEndpointsAsync().ConfigureAwait(false)
+                                          .GetAwaiter()
+                                          .GetResult();
         }
 
         public void Stop()
         {
+            _logger.LogInformation($"Stopping webhook relay service...");
             if (_timer.Enabled)
             {
                 _timer.Stop();
@@ -136,10 +111,11 @@
 
         public void Reload()
         {
-            lock (_webhookLock)
-            {
-                // TODO: Request fresh webhooks from Configurator
-            }
+            _logger.LogInformation($"Reloading webhook relay service...");
+
+            RequestWebhookEndpointsAsync().ConfigureAwait(false)
+                                          .GetAwaiter()
+                                          .GetResult();
         }
 
         public void Enqueue(WebhookPayloadType webhookType, string json)
@@ -432,84 +408,84 @@
                 var events = new List<dynamic>();
 
                 // TODO: Check if entities are within geofence or if geofence is not set
-                if (pokemonEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Pokemon))
+                if (pokemonEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Pokemon))
                 {
                     foreach (var (_, pokemon) in pokemonEvents)
                     {
                         events.Add(pokemon.GetWebhookData(WebhookHeaders.Pokemon));
                     }
                 }
-                if (pokestopEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Pokestop))
+                if (pokestopEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Pokestops))
                 {
                     foreach (var (_, pokestop) in pokestopEvents)
                     {
                         events.Add(pokestop.GetWebhookData(WebhookHeaders.Pokestop));
                     }
                 }
-                if (lureEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Lure))
+                if (lureEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Lures))
                 {
                     foreach (var (_, lure) in lureEvents)
                     {
                         events.Add(lure.GetWebhookData(WebhookHeaders.Lure));
                     }
                 }
-                if (invasionEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Invasion))
+                if (invasionEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Invasions))
                 {
                     foreach (var (_, (pokestop, invasion)) in invasionEvents)
                     {
                         events.Add(invasion.GetWebhookData(WebhookHeaders.Invasion, pokestop));
                     }
                 }
-                if (questEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Quest))
+                if (questEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Quests))
                 {
                     foreach (var (_, quest) in questEvents)
                     {
                         events.Add(quest.GetWebhookData(WebhookHeaders.Quest));
                     }
                 }
-                if (alternativeQuestEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.AlternativeQuest))
+                if (alternativeQuestEvents.Count > 0 && endpoint.Types.Contains(WebhookType.AlternativeQuests))
                 {
                     foreach (var (_, alternativeQuest) in alternativeQuestEvents)
                     {
                         events.Add(alternativeQuest.GetWebhookData(WebhookHeaders.AlternativeQuest));
                     }
                 }
-                if (gymEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Gym))
+                if (gymEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Gyms))
                 {
                     foreach (var (_, gym) in gymEvents)
                     {
                         events.Add(gym.GetWebhookData(WebhookHeaders.Gym));
                     }
                 }
-                if (gymInfoEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.GymInfo))
+                if (gymInfoEvents.Count > 0 && endpoint.Types.Contains(WebhookType.GymInfo))
                 {
                     foreach (var (_, gymInfo) in gymInfoEvents)
                     {
                         events.Add(gymInfo.GetWebhookData("gym-info"));
                     }
                 }
-                if (eggEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Egg))
+                if (eggEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Eggs))
                 {
                     foreach (var (_, egg) in eggEvents)
                     {
                         events.Add(egg.GetWebhookData(WebhookHeaders.Egg));
                     }
                 }
-                if (raidEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Raid))
+                if (raidEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Raids))
                 {
                     foreach (var (_, raid) in raidEvents)
                     {
                         events.Add(raid.GetWebhookData(WebhookHeaders.Raid));
                     }
                 }
-                if (weatherEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Weather))
+                if (weatherEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Weather))
                 {
                     foreach (var (_, weather) in weatherEvents)
                     {
                         events.Add(weather.GetWebhookData(WebhookHeaders.Weather));
                     }
                 }
-                if (accountEvents.Count > 0 && endpoint.AllowedTypes.Contains(WebhookPayloadType.Account))
+                if (accountEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Accounts))
                 {
                     foreach (var (_, account) in accountEvents)
                     {
@@ -522,6 +498,9 @@
                     await SendWebhookEventsAsync(endpoint.Url, events);
                     Thread.Sleep(Convert.ToInt32(endpoint.Delay * 1000));
                 }
+
+                // Wait 5 seconds between webhook endpoints
+                Thread.Sleep(5 * 1000);
             }
         }
 
@@ -531,7 +510,8 @@
                 return;
 
             var json = payloads.ToJson();
-            // Send webhook payloads to endpoint with retry count in mind
+            // Send webhook payloads to endpoint
+            // TODO: Use retry count
             var result = await NetUtils.PostAsync(url, json, _timeout);
             if (!string.IsNullOrEmpty(result))
             {
@@ -543,6 +523,8 @@
 
         private async Task RequestWebhookEndpointsAsync()
         {
+            _logger.LogInformation($"Requesting webhook endpoints from configurator...");
+
             var response = await _grpcClientService.GetWebhookEndpointsAsync();
             if (response.Status != WebhookEndpointStatus.Ok)
             {
@@ -552,7 +534,20 @@
 
             var json = response.Payload;
             var webhooks = json.FromJson<List<Webhook>>();
-            // TODO: Set webhook endpoints
+            if (webhooks == null || webhooks.Count == 0)
+            {
+                _logger.LogError($"Failed to retrieve webhook endpoints, list was null or empty!");
+                return;
+            }
+
+            // Set webhook endpoints
+            lock (_webhookLock)
+            {
+                _webhookEndpoints.Clear();
+                _webhookEndpoints.AddRange(webhooks);
+            }
+
+            _logger.LogInformation($"Successfully retrieved updated webhook endpoints.");
         }
 
         #endregion

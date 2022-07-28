@@ -1,0 +1,56 @@
+﻿@using ChuckDeviceController.Data.Entities;
+@model Webhook
+@{
+    ViewData["Title"] = "Webhook Details " + Model?.Name;
+}
+
+<h1>Webhook Details</h1>
+
+<p>@Html.ValidationMessage("Webhook", new { @class = "text-danger" })</p>
+
+<div>
+    <h4>Webhook '@(Model?.Name)'</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Url)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Url)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Types)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.Raw(string.Join("<br>", Model?.Types ?? new()))
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Delay)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Delay)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Geofences)
+        </dt>
+        <dd class = "col-sm-10">
+            @(string.Join(", ", Model?.Geofences ?? new()))
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Enabled)
+        </dt>
+        <dd class = "col-sm-10">
+            @(Model.Enabled ? "Yes" : "No")
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Name">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

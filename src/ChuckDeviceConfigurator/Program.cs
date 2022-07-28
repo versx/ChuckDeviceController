@@ -14,6 +14,7 @@ using ChuckDeviceConfigurator.Services.Net.Mail;
 using ChuckDeviceConfigurator.Services.Routing;
 using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
+using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 
@@ -134,6 +135,7 @@ builder.Services.AddDbContext<MapDataContext>(options =>
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();
+builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();

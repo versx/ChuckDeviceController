@@ -80,10 +80,13 @@
                 WebhookType.Raids => "raids",
                 WebhookType.Eggs => "eggs",
                 WebhookType.Quests => "quests",
+                WebhookType.AlternativeQuests => "alternative_quests",
                 WebhookType.Lures => "lures",
                 WebhookType.Invasions => "invasions",
                 WebhookType.Gyms => "gyms",
+                WebhookType.GymInfo => "gym_info",
                 WebhookType.Weather => "weather",
+                WebhookType.Accounts => "accounts",
                 _ => "pokemon",
             };
         }
@@ -94,24 +97,32 @@
             var split = webhookTypes.Split(',');
             foreach (var item in split)
             {
-                if (item.ToLower().Contains("pokemon"))
+                var itemLower = item.ToLower();
+                // TODO: Use switch case instead
+                if (itemLower == "pokemon")
                     list.Add(WebhookType.Pokemon);
-                if (item.ToLower().Contains("pokestops"))
+                if (itemLower == "pokestops")
                     list.Add(WebhookType.Pokestops);
-                if (item.ToLower().Contains("raids"))
+                if (itemLower == "raids")
                     list.Add(WebhookType.Raids);
-                if (item.ToLower().Contains("eggs"))
+                if (itemLower == "eggs")
                     list.Add(WebhookType.Eggs);
-                if (item.ToLower().Contains("quests"))
+                if (itemLower == "quests")
                     list.Add(WebhookType.Quests);
-                if (item.ToLower().Contains("lures"))
+                if (itemLower == "alternative_quests")
+                    list.Add(WebhookType.AlternativeQuests);
+                if (itemLower == "lures")
                     list.Add(WebhookType.Lures);
-                if (item.ToLower().Contains("invasions"))
+                if (itemLower == "invasions")
                     list.Add(WebhookType.Invasions);
-                if (item.ToLower().Contains("gyms"))
+                if (itemLower == "gyms")
                     list.Add(WebhookType.Gyms);
-                if (item.ToLower().Contains("weather"))
+                if (itemLower == "gym_info")
+                    list.Add(WebhookType.GymInfo);
+                if (itemLower == "weather")
                     list.Add(WebhookType.Weather);
+                if (itemLower == "accounts")
+                    list.Add(WebhookType.Accounts);
             }
             return list;
         }
