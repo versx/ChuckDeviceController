@@ -535,10 +535,22 @@
             var json = payloads.ToJson();
             // Send webhook payloads to endpoint
             // TODO: Use retry count
-            var result = await NetUtils.PostAsync(url, json, _timeout);
-            if (!string.IsNullOrEmpty(result))
+            var (statusCode, result) = await NetUtils.PostAsync(url, json, _timeout);
+            if (statusCode != System.Net.HttpStatusCode.OK)
             {
-                _logger.LogError($"Webhook endpoint returned non empty response: {result} for endpoint: '{url}'");
+                _logger.LogError($"Webhook endpoint {url} did not return an 'OK' status code, {statusCode} with response: {result}");
+
+                // Try sending again
+                if (retryCount >= MaximumRetryCount)
+                {
+                    _logger.LogWarning($"{retryCount}/{MaximumRetryCount} attempts made to send webhook payload to endpoint {url}, aborting...");
+                    return;
+                }
+                Thread.Sleep(3 * 1000);
+                retryCount++;
+                _logger.LogWarning($"Retry attempt {retryCount}/{MaximumRetryCount} to resend webhook payload to endpoint {url}");
+
+                await SendWebhookEventsAsync(url, payloads, retryCount);
                 return;
             }
             _logger.LogInformation($"Sent {payloads!.Count:N0} webhook events to {url}. Total sent this session: {_totalWebhooksSent}");

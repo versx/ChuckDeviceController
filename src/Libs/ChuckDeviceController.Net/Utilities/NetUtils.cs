@@ -39,7 +39,7 @@
             return null;
         }
 
-        public static string Post(string url, string payload)
+        public static (HttpStatusCode, string?) Post(string url, string payload)
         {
             return PostAsync(url, payload).Result;
         }
@@ -50,7 +50,7 @@
         /// <param name="url">Url to send the request to.</param>
         /// <param name="payload">JSON payload that will be sent in the request.</param>
         /// <returns>Returns the response string of the HTTP POST request.</returns>
-        public static async Task<string> PostAsync(string url, string payload, uint timeoutS = 30, string userAgent = DefaultUserAgent)
+        public static async Task<(HttpStatusCode, string?)> PostAsync(string url, string payload, uint timeoutS = 30, string userAgent = DefaultUserAgent)
         {
             try
             {
@@ -72,13 +72,13 @@
                 };
                 var response = await client.SendAsync(requestMessage);
                 var responseData = await response.Content.ReadAsStringAsync();
-                return responseData;
+                return (response.StatusCode, responseData);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to post data to {url}: {ex}");
             }
-            return null;
+            return (HttpStatusCode.BadRequest, null);
         }
 
         public static HttpResponseMessage Head(string url)
