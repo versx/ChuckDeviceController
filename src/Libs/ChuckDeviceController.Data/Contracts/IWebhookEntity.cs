@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Data.Contracts
 {
-    public interface IWebhookPayload
+    public interface IWebhookEntity
     {
         dynamic GetWebhookData(string type);
     }

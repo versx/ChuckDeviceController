@@ -11,7 +11,7 @@
     using ChuckDeviceController.Extensions;
 
     [Table("incident")]
-    public class Incident : BaseEntity, IWebhookPayload
+    public class Incident : BaseEntity, IWebhookEntity
     {
         public const string UnknownPokestopName = "Unknown";
 

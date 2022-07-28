@@ -424,9 +424,10 @@
 
             #endregion
 
-            foreach (var endpoint in _webhookEndpoints)
+            for (var i = 0; i < _webhookEndpoints.Count; i++)
             {
                 var events = new List<dynamic>();
+                var endpoint = _webhookEndpoints[i];
 
                 // TODO: Check if entities are within geofence or if geofence is not set
                 if (pokemonEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Pokemon))
@@ -537,10 +538,10 @@
             var result = await NetUtils.PostAsync(url, json, _timeout);
             if (!string.IsNullOrEmpty(result))
             {
-                _logger.LogError($"Webhook endpoint post returned non empty response: {result} for endpoint: '{url}'");
+                _logger.LogError($"Webhook endpoint returned non empty response: {result} for endpoint: '{url}'");
                 return;
             }
-            _logger.LogInformation($"Sent {payloads!.Count:N0} webhook events to {url} with result: {result}");
+            _logger.LogInformation($"Sent {payloads!.Count:N0} webhook events to {url}. Total sent this session: {_totalWebhooksSent}");
         }
 
         private async Task RequestWebhookEndpointsAsync()

@@ -13,7 +13,7 @@
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("weather")]
-    public partial class Weather : BaseEntity, ICoordinateEntity, IWebhookPayload
+    public partial class Weather : BaseEntity, ICoordinateEntity, IWebhookEntity
     {
         #region Properties
 

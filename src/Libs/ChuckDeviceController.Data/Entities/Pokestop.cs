@@ -13,7 +13,7 @@
     using ChuckDeviceController.Extensions;
 
     [Table("pokestop")]
-    public class Pokestop : BaseEntity, ICoordinateEntity, IFortEntity, IWebhookPayload
+    public class Pokestop : BaseEntity, ICoordinateEntity, IFortEntity, IWebhookEntity
     {
         #region Constants
 

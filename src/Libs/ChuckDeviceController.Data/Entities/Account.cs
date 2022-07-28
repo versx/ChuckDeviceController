@@ -9,7 +9,7 @@
     using ChuckDeviceController.Extensions;
 
     [Table("account")]
-    public class Account : BaseEntity, IWebhookPayload
+    public class Account : BaseEntity, IWebhookEntity
     {
         #region Properties
 

@@ -7,9 +7,9 @@
     {
         bool IsRunning { get; }
 
-        IEnumerable<Webhook> WebhookEndpoints { get; }
-
         ulong TotalSent { get; }
+
+        IEnumerable<Webhook> WebhookEndpoints { get; }
 
 
         void Start();
