@@ -766,7 +766,7 @@
                                         await incident.UpdateAsync(context);
                                         if (incident.SendWebhook)
                                         {
-                                            await SendWebhookAsync(WebhookPayloadType.Invasion, (pokestop, incident));
+                                            await SendWebhookAsync(WebhookPayloadType.Invasion, new PokestopWithIncident(pokestop, incident));
                                         }
                                     }
                                     incidentsToUpsert.AddRange(pokestop.Incidents);
