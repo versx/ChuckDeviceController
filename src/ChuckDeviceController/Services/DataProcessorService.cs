@@ -452,40 +452,46 @@
                         }
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    if (pokemonToUpsert.Count > 0)
                     {
-                        // Do not update IV specific columns
-                        options.UseTableLock = true;
-                        //options.IgnoreOnMergeUpdate = true;
-                        options.IgnoreOnMergeUpdateExpression = p => new
+                        await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
                         {
-                            p.Id,
-                            p.AttackIV,
-                            p.DefenseIV,
-                            p.StaminaIV,
-                            p.CP,
-                            p.Level,
-                            p.Size,
-                            p.Weight,
-                            p.Move1,
-                            p.Move2,
-                            p.PvpRankings,
-                        };
-                    });
+                            // Do not update IV specific columns
+                            options.UseTableLock = true;
+                            //options.IgnoreOnMergeUpdate = true;
+                            options.IgnoreOnMergeUpdateExpression = p => new
+                            {
+                                p.Id,
+                                p.AttackIV,
+                                p.DefenseIV,
+                                p.StaminaIV,
+                                p.CP,
+                                p.Level,
+                                p.Size,
+                                p.Weight,
+                                p.Move1,
+                                p.Move2,
+                                p.PvpRankings,
+                            };
+                        });
 
-                    await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
+                        await SendPokemonAsync(pokemonToUpsert);
+                    }
+
+                    if (spawnpointsToUpsert.Count > 0)
                     {
-                        options.UseTableLock = true;
-                        options.OnMergeUpdateInputExpression = p => new
+                        await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
                         {
-                            p.Id,
-                            p.LastSeen,
-                            p.Updated,
-                            p.DespawnSecond,
-                        };
-                    });
-
-                    await SendPokemonAsync(pokemonToUpsert);
+                            options.UseTableLock = true;
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                p.Id,
+                                p.LastSeen,
+                                p.Updated,
+                                p.DespawnSecond,
+                            };
+                        });
+                    }
 
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Wild Pokemon");
@@ -521,29 +527,32 @@
                         }
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    if (pokemonToUpsert.Count > 0)
                     {
-                        // Do not update IV specific columns
-                        options.UseTableLock = true;
-                        options.IgnoreOnMergeUpdateExpression = p => new
+                        await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
                         {
-                            p.Id,
-                            p.Costume,
-                            p.Form,
-                            p.AttackIV,
-                            p.DefenseIV,
-                            p.StaminaIV,
-                            p.CP,
-                            p.Level,
-                            p.Size,
-                            p.Weight,
-                            p.Move1,
-                            p.Move2,
-                            p.PvpRankings,
-                        };
-                    });
+                        // Do not update IV specific columns
+                            options.UseTableLock = true;
+                            options.IgnoreOnMergeUpdateExpression = p => new
+                            {
+                                p.Id,
+                                p.Costume,
+                                p.Form,
+                                p.AttackIV,
+                                p.DefenseIV,
+                                p.StaminaIV,
+                                p.CP,
+                                p.Level,
+                                p.Size,
+                                p.Weight,
+                                p.Move1,
+                                p.Move2,
+                                p.PvpRankings,
+                            };
+                        });
 
-                    await SendPokemonAsync(pokemonToUpsert);
+                        await SendPokemonAsync(pokemonToUpsert);
+                    }
 
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Nearby Pokemon");
@@ -597,13 +606,16 @@
                         }
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    if (pokemonToUpsert.Count > 0)
                     {
-                        // TODO: Do not update IV :thinking: wait maybe we do need to. IIRC they are found within 70m range, need to confirm
-                        options.UseTableLock = true;
-                    });
+                        await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                        {
+                            // TODO: Do not update IV :thinking: wait maybe we do need to. IIRC they are found within 70m range, need to confirm
+                            options.UseTableLock = true;
+                        });
 
-                    await SendPokemonAsync(pokemonToUpsert);
+                        await SendPokemonAsync(pokemonToUpsert);
+                    }
 
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Map Pokemon");
@@ -784,7 +796,7 @@
                         await SendGymsAsync(lvlForts, username);
                     }
 
-                    var stopsToUpsert = new List<Pokestop>();
+                    var pokestopsToUpsert = new List<Pokestop>();
                     var gymsToUpsert = new List<Gym>();
                     var incidentsToUpsert = new List<Incident>();
 
@@ -802,7 +814,7 @@
                                 var pokestop = new Pokestop(data, cellId);
                                 await pokestop.UpdateAsync(context, updateQuest: false);
 
-                                stopsToUpsert.Add(pokestop);
+                                pokestopsToUpsert.Add(pokestop);
 
                                 // Loop incidents
                                 if ((pokestop.Incidents?.Count ?? 0) > 0)
@@ -838,9 +850,9 @@
                         }
                     }
 
-                    if (stopsToUpsert.Count > 0)
+                    if (pokestopsToUpsert.Count > 0)
                     {
-                        await context.Pokestops.BulkMergeAsync(stopsToUpsert, options =>
+                        await context.Pokestops.BulkMergeAsync(pokestopsToUpsert, options =>
                         {
                             options.UseTableLock = true;
                             // Ignore the following columns when updating to prevent overwrite
@@ -905,6 +917,9 @@
             {
                 try
                 {
+                    var pokestopsToUpsert = new List<Pokestop>();
+                    var gymsToUpsert = new List<Gym>();
+
                     // Convert fort details protos to Pokestop/Gym models
                     foreach (var fortDetail in fortDetails)
                     {
@@ -919,7 +934,8 @@
                                     await pokestop.UpdateAsync(context);
                                     if (pokestop.HasChanges)
                                     {
-                                        context.Update(pokestop);
+                                        //context.Update(pokestop);
+                                        pokestopsToUpsert.Add(pokestop);
                                     }
                                 }
                                 break;
@@ -931,16 +947,44 @@
                                     await gym.UpdateAsync(context);
                                     if (gym.HasChanges)
                                     {
-                                        context.Update(gym);
+                                        //context.Update(gym);
+                                        gymsToUpsert.Add(gym);
                                     }
                                 }
                                 break;
                         }
                     }
 
-                    // TODO: Bulk merge
+                    if (pokestopsToUpsert.Count > 0)
+                    {
+                        await context.Pokestops.BulkInsertAsync(pokestopsToUpsert, options =>
+                        {
+                            options.UseTableLock = true;
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                // Only update necessary columns
+                                p.Id,
+                                p.Name,
+                                p.Url,
+                            };
+                        });
+                    }
 
-                    await context.BulkSaveChangesAsync();
+                    if (gymsToUpsert.Count > 0)
+                    {
+                        await context.Gyms.BulkInsertAsync(gymsToUpsert, options =>
+                        {
+                            options.UseTableLock = true;
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                // Only update necessary columns
+                                p.Id,
+                                p.Name,
+                                p.Url,
+                            };
+                        });
+                    }
+
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Fort details");
                 }
@@ -957,6 +1001,10 @@
             {
                 try
                 {
+                    var gymsToUpsert = new List<Gym>();
+                    var gymDefendersToUpsert = new List<GymDefender>();
+                    var gymTrainersToUpsert = new List<GymTrainer>();
+
                     // Convert gym info protos to Gym models
                     foreach (var gymInfo in gymInfos)
                     {
@@ -970,7 +1018,7 @@
                             await gym.UpdateAsync(context);
                             if (gym.HasChanges)
                             {
-                                context.Update(gym);
+                                gymsToUpsert.Add(gym);
                             }
                         }
 
@@ -983,33 +1031,47 @@
                             if (gymDefenderData.TrainerPublicProfile != null)
                             {
                                 var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
-                                if (context.GymTrainers.AsNoTracking().Any(trainer => trainer.Name == gymTrainer.Name))
-                                {
-                                    context.Update(gymTrainer);
-                                }
-                                else
-                                {
-                                    await context.AddAsync(gymTrainer);
-                                }
+                                gymTrainersToUpsert.Add(gymTrainer);
                             }
                             if (gymDefenderData.MotivatedPokemon != null)
                             {
                                 var gymDefender = new GymDefender(gymDefenderData, fortId);
-                                if (context.GymDefenders.AsNoTracking().Any(defender => defender.Id == gymDefender.Id))
-                                {
-                                    context.Update(gymDefender);
-                                }
-                                else
-                                {
-                                    await context.AddAsync(gymDefender);
-                                }
+                                gymDefendersToUpsert.Add(gymDefender);
                             }
                         }
                     }
 
-                    // TODO: Bulk merge
+                    if (gymsToUpsert.Count > 0)
+                    {
+                        await context.Gyms.BulkInsertAsync(gymsToUpsert, options =>
+                        {
+                            options.UseTableLock = true;
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                // Only update necessary columns
+                                p.Id,
+                                p.Name,
+                                p.Url,
+                            };
+                        });
+                    }
 
-                    await context.BulkSaveChangesAsync();
+                    if (gymTrainersToUpsert.Count > 0)
+                    {
+                        await context.GymTrainers.BulkInsertAsync(gymTrainersToUpsert, options =>
+                        {
+                            options.UseTableLock = true;
+                        });
+                    }
+
+                    if (gymDefendersToUpsert.Count > 0)
+                    {
+                        await context.GymDefenders.BulkInsertAsync(gymDefendersToUpsert, options =>
+                        {
+                            options.UseTableLock = true;
+                        });
+                    }
+
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Gym info");
                 }
@@ -1051,32 +1113,35 @@
                         }
                     }
 
-                    await context.Pokestops.BulkMergeAsync(questsToUpsert, options =>
+                    if (questsToUpsert.Count > 0)
                     {
-                        options.UseTableLock = true;
-                        // Only include the following columns when updating
-                        options.OnMergeUpdateInputExpression = p => new
+                        await context.Pokestops.BulkMergeAsync(questsToUpsert, options =>
                         {
-                            p.Id,
-                            p.QuestType,
-                            p.QuestTitle,
-                            p.QuestTimestamp,
-                            p.QuestTemplate,
-                            p.QuestTarget,
-                            p.QuestRewardType,
-                            p.QuestRewards,
-                            p.QuestConditions,
+                            options.UseTableLock = true;
+                        // Only include the following columns when updating
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                p.Id,
+                                p.QuestType,
+                                p.QuestTitle,
+                                p.QuestTimestamp,
+                                p.QuestTemplate,
+                                p.QuestTarget,
+                                p.QuestRewardType,
+                                p.QuestRewards,
+                                p.QuestConditions,
 
-                            p.AlternativeQuestType,
-                            p.AlternativeQuestTitle,
-                            p.AlternativeQuestTimestamp,
-                            p.AlternativeQuestTemplate,
-                            p.AlternativeQuestTarget,
-                            p.AlternativeQuestRewardType,
-                            p.AlternativeQuestRewards,
-                            p.AlternativeQuestConditions,
-                        };
-                    });
+                                p.AlternativeQuestType,
+                                p.AlternativeQuestTitle,
+                                p.AlternativeQuestTimestamp,
+                                p.AlternativeQuestTemplate,
+                                p.AlternativeQuestTarget,
+                                p.AlternativeQuestRewardType,
+                                p.AlternativeQuestRewards,
+                                p.AlternativeQuestConditions,
+                            };
+                        });
+                    }
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Pokestop quests");
                 }
@@ -1182,44 +1247,50 @@
                         */
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    if (pokemonToUpsert.Count > 0)
                     {
-                        options.UseTableLock = true;
+                        await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                        {
+                            options.UseTableLock = true;
                         // Only update IV specific columns
-                        options.OnMergeUpdateInputExpression = p => new
-                        {
-                            p.Id,
-                            p.PokemonId,
-                            p.Form,
-                            p.Costume,
-                            p.Gender,
-                            p.AttackIV,
-                            p.DefenseIV,
-                            p.StaminaIV,
-                            p.CP,
-                            p.Level,
-                            p.Size,
-                            p.Weight,
-                            p.Move1,
-                            p.Move2,
-                            p.Weather,
-                            p.PvpRankings,
-                        };
-                    });
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                p.Id,
+                                p.PokemonId,
+                                p.Form,
+                                p.Costume,
+                                p.Gender,
+                                p.AttackIV,
+                                p.DefenseIV,
+                                p.StaminaIV,
+                                p.CP,
+                                p.Level,
+                                p.Size,
+                                p.Weight,
+                                p.Move1,
+                                p.Move2,
+                                p.Weather,
+                                p.PvpRankings,
+                            };
+                        });
 
-                    await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
+                        await SendPokemonAsync(pokemonToUpsert);
+                    }
+
+                    if (spawnpointsToUpsert.Count > 0)
                     {
-                        options.UseTableLock = true;
-                        options.OnMergeUpdateInputExpression = p => new
+                        await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
                         {
-                            p.Id,
-                            p.LastSeen,
-                            p.Updated,
-                            p.DespawnSecond,
-                        };
-                    });
-
-                    await SendPokemonAsync(pokemonToUpsert);
+                            options.UseTableLock = true;
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                p.Id,
+                                p.LastSeen,
+                                p.Updated,
+                                p.DespawnSecond,
+                            };
+                        });
+                    }
 
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Pokemon encounters");
@@ -1268,32 +1339,35 @@
                         }
                     }
 
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    if (pokemonToUpsert.Count > 0)
                     {
-                        options.UseTableLock = true;
-                        // Only update IV specific columns
-                        options.OnMergeUpdateInputExpression = p => new
+                        await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
                         {
-                            p.Id,
-                            p.PokemonId,
-                            p.Form,
-                            p.Costume,
-                            p.Gender,
-                            p.AttackIV,
-                            p.DefenseIV,
-                            p.StaminaIV,
-                            p.CP,
-                            p.Level,
-                            p.Size,
-                            p.Weight,
-                            p.Move1,
-                            p.Move2,
-                            p.Weather,
-                            p.PvpRankings,
-                        };
-                    });
+                            options.UseTableLock = true;
+                            // Only update IV specific columns
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                p.Id,
+                                p.PokemonId,
+                                p.Form,
+                                p.Costume,
+                                p.Gender,
+                                p.AttackIV,
+                                p.DefenseIV,
+                                p.StaminaIV,
+                                p.CP,
+                                p.Level,
+                                p.Size,
+                                p.Weight,
+                                p.Move1,
+                                p.Move2,
+                                p.Weather,
+                                p.PvpRankings,
+                            };
+                        });
 
-                    await SendPokemonAsync(pokemonToUpsert);
+                        await SendPokemonAsync(pokemonToUpsert);
+                    }
 
                     //var inserted = await context.SaveChangesAsync();
                     //_logger.LogInformation($"Inserted {inserted:N0} Lured Pokemon encounters");
