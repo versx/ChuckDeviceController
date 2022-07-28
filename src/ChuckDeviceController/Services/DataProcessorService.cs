@@ -746,7 +746,15 @@
                             case FortType.Checkpoint:
                                 // Init Pokestop model from fort proto data
                                 var pokestop = new Pokestop(data, cellId);
-                                await pokestop.UpdateAsync(context, updateQuest: false);
+                                var pokestopWebhooks = await pokestop.UpdateAsync(context, updateQuest: false);
+                                if (pokestopWebhooks.Count > 0)
+                                {
+                                    foreach (var webhook in pokestopWebhooks)
+                                    {
+                                        var type = ConvertWebhookType(webhook.Key);
+                                        await SendWebhookAsync(type, webhook.Value);
+                                    }
+                                }
 
                                 pokestopsToUpsert.Add(pokestop);
 
@@ -776,11 +784,10 @@
                             case FortType.Gym:
                                 // Init Gym model from fort proto data
                                 var gym = new Gym(data, cellId);
-                                var webhooks = await gym.UpdateAsync(context);
-
-                                if (webhooks.Count > 0)
+                                var gymWebhooks = await gym.UpdateAsync(context);
+                                if (gymWebhooks.Count > 0)
                                 {
-                                    foreach (var webhook in webhooks)
+                                    foreach (var webhook in gymWebhooks)
                                     {
                                         var type = ConvertWebhookType(webhook.Key);
                                         await SendWebhookAsync(type, webhook.Value);
@@ -883,6 +890,7 @@
                                 {
                                     pokestop.AddDetails(data);
                                     await pokestop.UpdateAsync(context);
+                                    // TODO: Webhooks
                                     if (pokestop.HasChanges)
                                     {
                                         //context.Update(pokestop);
@@ -896,6 +904,7 @@
                                 {
                                     gym.AddDetails(data);
                                     await gym.UpdateAsync(context);
+                                    // TODO: Webhooks
                                     if (gym.HasChanges)
                                     {
                                         //context.Update(gym);
@@ -967,6 +976,7 @@
                         {
                             gym.AddDetails(data);
                             await gym.UpdateAsync(context);
+                            // TODO: Webhooks
                             if (gym.HasChanges)
                             {
                                 gymsToUpsert.Add(gym);
@@ -1053,7 +1063,12 @@
                         if (pokestop != null)
                         {
                             pokestop.AddQuest(title, data, hasAr);
-                            await pokestop.UpdateAsync(context, updateQuest: true);
+                            var webhooks = await pokestop.UpdateAsync(context, updateQuest: true);
+                            foreach (var webhook in webhooks)
+                            {
+                                var type = ConvertWebhookType(webhook.Key);
+                                await SendWebhookAsync(type, webhook.Value);
+                            }
 
                             if (pokestop.HasChanges && (pokestop.HasQuestChanges || pokestop.HasAlternativeQuestChanges))
                             {
@@ -1330,7 +1345,7 @@
             }
         }
 
-        private async Task<Spawnpoint> UpdateSpawnpointAsync(MapDataContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
+        private static async Task<Spawnpoint> UpdateSpawnpointAsync(MapDataContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
         {
             var spawnId = pokemon.SpawnId ?? 0;
             if (spawnId == 0)
@@ -1521,7 +1536,7 @@
                 case WebhookType.GymInfo:
                     return WebhookPayloadType.GymInfo;
                 case WebhookType.Eggs:
-                    return WebhookPayloadType.Egg:
+                    return WebhookPayloadType.Egg;
                 case WebhookType.Raids:
                     return WebhookPayloadType.Raid;
                 case WebhookType.Weather:
