@@ -14,7 +14,8 @@
     {
         #region Constants
 
-        public const ushort WebhookRelayIntervalS = 5;
+        public const ushort WebhookRelayIntervalS = 5; // 5 seconds
+        public const ushort RequestWebhookIntervalS = 60; // 60 seconds
         public const ushort MaximumRetryCount = 3; // TODO: Make 'MaximumRetryCount' configurable
 
         #endregion
@@ -25,7 +26,9 @@
         private readonly IGrpcClientService _grpcClientService;
         private readonly List<Webhook> _webhookEndpoints = new();
         private readonly Timer _timer;
+        private readonly Timer _requestTimer;
         private readonly ushort _timeout = 30; // TODO: Make 'timeout' configurable
+        private ulong _totalWebhooksSent;
 
         private readonly Dictionary<string, Pokemon> _pokemonEvents = new();
         private readonly Dictionary<string, Pokestop> _pokestopEvents = new();
@@ -68,6 +71,11 @@
         /// </summary>
         public IEnumerable<Webhook> WebhookEndpoints => _webhookEndpoints;
 
+        /// <summary>
+        /// Gets the total amount of webhooks sent during this session.
+        /// </summary>
+        public ulong TotalSent => _totalWebhooksSent;
+
         #endregion
 
         #region Constructor
@@ -80,6 +88,11 @@
             _grpcClientService = grpcClientService;
             _timer = new Timer(WebhookRelayIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckWebhooksAsync();
+
+            // TODO: Eventually receive webhook endpoints on-demand
+            _requestTimer = new Timer(RequestWebhookIntervalS * 1000);
+            _requestTimer.Elapsed += async (sender, e) => await RequestWebhookEndpointsAsync();
+
             Start();
         }
 
@@ -95,6 +108,11 @@
                 _timer.Start();
             }
 
+            if (!_requestTimer.Enabled)
+            {
+                _requestTimer.Start();
+            }
+
             RequestWebhookEndpointsAsync().ConfigureAwait(false)
                                           .GetAwaiter()
                                           .GetResult();
@@ -106,6 +124,11 @@
             if (_timer.Enabled)
             {
                 _timer.Stop();
+            }
+
+            if (_requestTimer.Enabled)
+            {
+                _requestTimer.Stop();
             }
         }
 
@@ -495,6 +518,7 @@
 
                 if (events.Count > 0)
                 {
+                    _totalWebhooksSent += Convert.ToUInt64(events.Count);
                     await SendWebhookEventsAsync(endpoint.Url, events);
                     Thread.Sleep(Convert.ToInt32(endpoint.Delay * 1000));
                 }

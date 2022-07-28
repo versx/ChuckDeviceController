@@ -9,6 +9,9 @@
 
         IEnumerable<Webhook> WebhookEndpoints { get; }
 
+        ulong TotalSent { get; }
+
+
         void Start();
 
         void Stop();
