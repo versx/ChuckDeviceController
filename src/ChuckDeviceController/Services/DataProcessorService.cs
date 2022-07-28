@@ -627,81 +627,6 @@
             }
         }
 
-        private async Task<Spawnpoint> UpdateSpawnpointAsync(MapDataContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
-        {
-            var spawnId = pokemon.SpawnId ?? 0;
-            if (spawnId == 0)
-            {
-                return null;
-            }
-
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            if (wild.TimeTillHiddenMs <= 90000 && wild.TimeTillHiddenMs > 0)
-            {
-                pokemon.ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(wild.TimeTillHiddenMs)) / 1000);
-                pokemon.IsExpireTimestampVerified = true;
-                var date = timestampMs.FromMilliseconds();
-                var secondOfHour = date.Second + (date.Minute * 60);
-
-                var spawnpoint = new Spawnpoint
-                {
-                    Id = spawnId,
-                    Latitude = pokemon.Latitude,
-                    Longitude = pokemon.Longitude,
-                    DespawnSecond = Convert.ToUInt16(secondOfHour),
-                    LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
-                    Updated = now,
-                };
-                await spawnpoint.UpdateAsync(context, update: true);
-                return spawnpoint;
-            }
-            else
-            {
-                pokemon.IsExpireTimestampVerified = false;
-            }
-
-            if (!pokemon.IsExpireTimestampVerified && spawnId > 0)
-            {
-                var spawnpoint = await context.Spawnpoints.FindAsync(pokemon.SpawnId);
-                if (spawnpoint != null && spawnpoint.DespawnSecond != null)
-                {
-                    var despawnSecond = spawnpoint.DespawnSecond;
-                    var timestampS = timestampMs / 1000;
-                    var date = timestampS.FromMilliseconds();
-                    var secondOfHour = date.Second + (date.Minute * 60);
-                    var despawnOffset = despawnSecond - secondOfHour;
-                    if (despawnSecond < secondOfHour)
-                        despawnOffset += 3600;
-
-                    // Update spawnpoint last_seen if enabled
-                    if (Pokemon.SaveSpawnpointLastSeen)
-                    {
-                        spawnpoint.LastSeen = now;
-                    }
-
-                    pokemon.ExpireTimestamp = timestampS + (ulong)despawnOffset;
-                    pokemon.IsExpireTimestampVerified = true;
-                    return spawnpoint;
-                }
-                else
-                {
-                    var newSpawnpoint = new Spawnpoint
-                    {
-                        Id = spawnId,
-                        Latitude = pokemon.Latitude,
-                        Longitude = pokemon.Longitude,
-                        DespawnSecond = null,
-                        LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
-                        Updated = now,
-                    };
-                    await newSpawnpoint.UpdateAsync(context, update: true);
-                    return newSpawnpoint;
-                }
-            }
-
-            return null;
-        }
-
         /*
         private async Task UpdatePokemonAsync(List<dynamic> wildPokemon, List<dynamic> nearbyPokemon, List<dynamic> mapPokemon)
         {
@@ -819,6 +744,14 @@
                                 // Loop incidents
                                 if ((pokestop.Incidents?.Count ?? 0) > 0)
                                 {
+                                    foreach (var incident in pokestop!.Incidents!)
+                                    {
+                                        await incident.UpdateAsync(context);
+                                        if (incident.SendWebhook)
+                                        {
+                                            await SendWebhookAsync(WebhookPayloadType.Invasion, (pokestop, incident));
+                                        }
+                                    }
                                     incidentsToUpsert.AddRange(pokestop.Incidents);
                                 }
 
@@ -1377,6 +1310,81 @@
                     _logger.LogError($"UpdateDiskEncountersAsync: {ex.InnerException?.Message ?? ex.Message}");
                 }
             }
+        }
+
+        private async Task<Spawnpoint> UpdateSpawnpointAsync(MapDataContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
+        {
+            var spawnId = pokemon.SpawnId ?? 0;
+            if (spawnId == 0)
+            {
+                return null;
+            }
+
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (wild.TimeTillHiddenMs <= 90000 && wild.TimeTillHiddenMs > 0)
+            {
+                pokemon.ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(wild.TimeTillHiddenMs)) / 1000);
+                pokemon.IsExpireTimestampVerified = true;
+                var date = timestampMs.FromMilliseconds();
+                var secondOfHour = date.Second + (date.Minute * 60);
+
+                var spawnpoint = new Spawnpoint
+                {
+                    Id = spawnId,
+                    Latitude = pokemon.Latitude,
+                    Longitude = pokemon.Longitude,
+                    DespawnSecond = Convert.ToUInt16(secondOfHour),
+                    LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
+                    Updated = now,
+                };
+                await spawnpoint.UpdateAsync(context, update: true);
+                return spawnpoint;
+            }
+            else
+            {
+                pokemon.IsExpireTimestampVerified = false;
+            }
+
+            if (!pokemon.IsExpireTimestampVerified && spawnId > 0)
+            {
+                var spawnpoint = await context.Spawnpoints.FindAsync(pokemon.SpawnId);
+                if (spawnpoint != null && spawnpoint.DespawnSecond != null)
+                {
+                    var despawnSecond = spawnpoint.DespawnSecond;
+                    var timestampS = timestampMs / 1000;
+                    var date = timestampS.FromMilliseconds();
+                    var secondOfHour = date.Second + (date.Minute * 60);
+                    var despawnOffset = despawnSecond - secondOfHour;
+                    if (despawnSecond < secondOfHour)
+                        despawnOffset += 3600;
+
+                    // Update spawnpoint last_seen if enabled
+                    if (Pokemon.SaveSpawnpointLastSeen)
+                    {
+                        spawnpoint.LastSeen = now;
+                    }
+
+                    pokemon.ExpireTimestamp = timestampS + (ulong)despawnOffset;
+                    pokemon.IsExpireTimestampVerified = true;
+                    return spawnpoint;
+                }
+                else
+                {
+                    var newSpawnpoint = new Spawnpoint
+                    {
+                        Id = spawnId,
+                        Latitude = pokemon.Latitude,
+                        Longitude = pokemon.Longitude,
+                        DespawnSecond = null,
+                        LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
+                        Updated = now,
+                    };
+                    await newSpawnpoint.UpdateAsync(context, update: true);
+                    return newSpawnpoint;
+                }
+            }
+
+            return null;
         }
 
         #endregion

@@ -194,12 +194,15 @@
                     }
                     break;
                 case WebhookPayloadType.Invasion:
-                    // TODO: Deserialize tuple (Pokestop, Incident)?
-                    var invasion = json.FromJson<Incident>();
-                    var invasionPokestop = new Pokestop();
+                    var (invasionPokestop, invasion) = json.FromJson<(Pokestop, Incident)>();
                     if (invasion == null)
                     {
                         _logger.LogError($"Failed to deserialize Invasion webhook payload");
+                        return;
+                    }
+                    if (invasionPokestop == null)
+                    {
+                        _logger.LogError($"Failed to deserialize Pokestop from Invasion webhook payload");
                         return;
                     }
                     lock (_invasionsLock)

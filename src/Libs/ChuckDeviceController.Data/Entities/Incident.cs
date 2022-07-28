@@ -48,6 +48,9 @@
         [NotMapped]
         public bool HasChanges { get; set; }
 
+        [NotMapped]
+        public bool SendWebhook { get; set; }
+
         #endregion
 
         #region Constructor
@@ -97,6 +100,7 @@
 
             if (oldIncident == null)
             {
+                /*
                 Pokestop? pokestop = null;
                 try
                 {
@@ -109,13 +113,17 @@
 
                 if (pokestop != null)
                 {
-                    // TODO: Webhook
+                    SendWebhook = true;
                 }
+                */
+
+                SendWebhook = true;
             }
             else
             {
                 if (oldIncident.Expiration < Expiration || oldIncident.Character != Character)
                 {
+                    /*
                     Pokestop? pokestop = null;
                     try
                     {
@@ -128,8 +136,11 @@
 
                     if (pokestop != null)
                     {
-                        // TODO: Webhook
+                        SentWebhook = true;
                     }
+                    */
+
+                    SendWebhook = true;
                 }
             }
         }
