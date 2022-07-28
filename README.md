@@ -68,6 +68,10 @@ Apple Silicon: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-
 1. Run ChuckDeviceConfigurator `dotnet ChuckDeviceConfigurator.dll`  
 1. Visit Dashboard at `http://LAN_MACHINE_IP:8881`  
 
+## ChuckDeviceCommunicator (optional)  
+1. Copy ChuckDeviceCommunicator config `cp ChuckDeviceCommunicator/appsettings.json bin/debug/appsettings.json`  
+1. Change directories `cd bin/debug` and fill out `appsettings.json` configuration file  
+1. Run ChuckDeviceCommunicator `dotnet ChuckDeviceCommunicator.dll`  
 
 View all available API routes:  
 `http://LAN_MACHINE_IP:port/swagger`  
@@ -83,8 +87,12 @@ View all available API routes:
     // Database connection string
     "DefaultConnection": "Uid=cdcuser;Password=cdcpass123;Host=127.0.0.1;Port=3306;Database=cdcdb;old guids=true;Allow User Variables=true;"
   },
-  // Webhook data endpoint
+  // Proto data endpoint
   "Urls": "http://*:8888",
+  // gRPC service used to communicate with the configurator
+  "GrpcControllerServer": "http://localhost:5002",
+  // gRPC service used to communicate/relay webhooks to the webhook service
+  "GrpcWebhookServer": "http://localhost:5003",
   "Logging": {
     "LogLevel": {
       "Default": "Information",
@@ -151,19 +159,41 @@ View all available API routes:
 }
 ```
 
+### ChuckDeviceCommunicator (Webhook Relay Service)  
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  // Endpoint of the controller's gRPC service (used to request updated webhook endpoints)
+  "ControllerServerEndpoint": "http://localhost:5002",
+  "Kestrel": {
+    "EndpointDefaults": {
+      "Protocols": "Http1AndHttp2"
+    },
+    "Endpoints": {
+      "Grpc": {
+        // Listening endpoint where webhooks will be sent
+        "Url": "http://*:5003",
+        "Protocols": "Http2"
+      }
+    }
+  }
+}
+
+```
+
 <hr>
 
 ## TODO:  
-- Implement Pokemon Pvp rankings
-- Finish Dashboard UI  
 - Improve database performance  
 - Switch from EFCore to Dapper or other alternative  
-- Add inter-process communication  
-- Fix automated database migrator  
-- User authentication system (Use UserIdentity)  
 - Responsive pages  
 - Add MAD support  
-- Webhooks service  
 - Localization  
 
 <hr>
