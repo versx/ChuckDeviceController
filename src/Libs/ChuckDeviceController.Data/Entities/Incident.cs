@@ -78,6 +78,7 @@
         // TODO: Instead of relying on SendWebhook property, possibly have UpdateAsync return list/dict of webhook payloads
         // This would be especially needed for Gyms/Pokestops that could return multiple webhook types
         // Maybe return just the WebhookHeaders for the entity and compose the payload in the DataProcessorService <- sounds good/much better
+        //public async Task<Dictionary<WebhookType, (Pokestop, Incident)>> UpdateAsync(MapDataContext context)
         public async Task UpdateAsync(MapDataContext context)
         {
             Incident? oldIncident = null;

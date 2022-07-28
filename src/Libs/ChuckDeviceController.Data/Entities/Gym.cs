@@ -133,8 +133,6 @@
         [Column("power_up_end_timestamp")]
         public ulong? PowerUpEndTimestamp { get; set; }
 
-
-
         [NotMapped]
         public bool HasChanges { get; set; }
 

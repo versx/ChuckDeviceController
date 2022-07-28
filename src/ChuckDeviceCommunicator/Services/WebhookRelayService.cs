@@ -33,7 +33,7 @@
         private readonly Dictionary<string, Pokemon> _pokemonEvents = new();
         private readonly Dictionary<string, Pokestop> _pokestopEvents = new();
         private readonly Dictionary<string, Pokestop> _lureEvents = new();
-        private readonly Dictionary<string, (Pokestop, Incident)> _invasionEvents = new();
+        private readonly Dictionary<string, PokestopWithIncident> _invasionEvents = new();
         private readonly Dictionary<string, Pokestop> _questEvents = new();
         private readonly Dictionary<string, Pokestop> _alternativeQuestEvents = new();
         private readonly Dictionary<string, Gym> _gymEvents = new();
@@ -194,20 +194,15 @@
                     }
                     break;
                 case WebhookPayloadType.Invasion:
-                    var (invasionPokestop, invasion) = json.FromJson<(Pokestop, Incident)>();
-                    if (invasion == null)
+                    var pokestopWithIncident = json.FromJson<PokestopWithIncident>();
+                    if (pokestopWithIncident == null)
                     {
                         _logger.LogError($"Failed to deserialize Invasion webhook payload");
                         return;
                     }
-                    if (invasionPokestop == null)
-                    {
-                        _logger.LogError($"Failed to deserialize Pokestop from Invasion webhook payload");
-                        return;
-                    }
                     lock (_invasionsLock)
                     {
-                        _invasionEvents[invasion.Id] = (invasionPokestop, invasion);
+                        _invasionEvents[pokestopWithIncident.Pokestop.Id] = pokestopWithIncident;
                     }
                     break;
                 case WebhookPayloadType.Quest:
@@ -318,7 +313,7 @@
             Dictionary<string, Pokemon> pokemonEvents = new();
             Dictionary<string, Pokestop> pokestopEvents = new();
             Dictionary<string, Pokestop> lureEvents = new();
-            Dictionary<string, (Pokestop, Incident)> invasionEvents = new();
+            Dictionary<string, PokestopWithIncident> invasionEvents = new();
             Dictionary<string, Pokestop> questEvents = new();
             Dictionary<string, Pokestop> alternativeQuestEvents = new();
             Dictionary<string, Gym> gymEvents = new();
@@ -457,9 +452,9 @@
                 }
                 if (invasionEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Invasions))
                 {
-                    foreach (var (_, (pokestop, invasion)) in invasionEvents)
+                    foreach (var (_, pokestopWithIncident) in invasionEvents)
                     {
-                        events.Add(invasion.GetWebhookData(WebhookHeaders.Invasion, pokestop));
+                        events.Add(pokestopWithIncident.Invasion.GetWebhookData(WebhookHeaders.Invasion, pokestopWithIncident.Pokestop));
                     }
                 }
                 if (questEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Quests))
