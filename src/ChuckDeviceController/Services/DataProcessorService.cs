@@ -407,7 +407,15 @@
                     // Convert weather protos to Weather models
                     var weather = clientWeather.Select(weather => new Weather(weather))
                                                .ToList();
-                    // TODO: Weather.Update(oldWeather);
+                    foreach (var weatherCell in weather)
+                    {
+                        await weatherCell.UpdateAsync(context);
+
+                        if (weatherCell.SendWebhook)
+                        {
+                            await SendWebhookAsync(WebhookPayloadType.Weather, weatherCell);
+                        }
+                    }
 
                     await context.Weather.BulkMergeAsync(weather, options => options.UseTableLock = true);
                     //var inserted = await context.SaveChangesAsync();

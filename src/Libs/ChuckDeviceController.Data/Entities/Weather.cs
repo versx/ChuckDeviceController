@@ -7,6 +7,7 @@
     using POGOProtos.Rpc;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
@@ -65,6 +66,9 @@
         [Column("updated")]
         public ulong Updated { get; set; }
 
+        [NotMapped]
+        public bool SendWebhook { get; set; }
+
         #endregion
 
         #region Constructors
@@ -100,20 +104,30 @@
 
         #region Public Methods
 
-        public bool Update(Weather? oldWeather = null)
+        public async Task UpdateAsync(MapDataContext context)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
-            var result = oldWeather == null ||
-                oldWeather.GameplayCondition != GameplayCondition ||
-                oldWeather.WarnWeather != WarnWeather;
-
-            if (result)
+            Weather? oldWeather = null;
+            try
             {
-                // TODO: Webhooks
+                oldWeather = await context.Weather.FindAsync(Id);
             }
-            return result;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Weather: {ex}");
+            }
+
+            if (oldWeather == null)
+            {
+                SendWebhook = true;
+            }
+            else if (oldWeather.GameplayCondition != GameplayCondition || 
+                     oldWeather.WarnWeather != WarnWeather)
+            {
+                SendWebhook = true;
+            }
         }
 
         public dynamic GetWebhookData(string type)
