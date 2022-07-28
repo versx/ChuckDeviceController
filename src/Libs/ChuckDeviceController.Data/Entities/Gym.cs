@@ -261,8 +261,9 @@
             }
         }
 
-        public async Task UpdateAsync(MapDataContext context)
+        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MapDataContext context)
         {
+            var webhooks = new Dictionary<WebhookType, Gym>();
             Gym? oldGym = null;
             try
             {
@@ -383,17 +384,16 @@
                         oldGym.RaidSpawnTimestamp != RaidSpawnTimestamp
                     ))
                 {
-                    // TODO: Webhooks
                     var raidBattleTime = (RaidBattleTimestamp ?? 0);
                     var raidEndTime = (RaidEndTimestamp ?? 0);
                     var ts = DateTime.UtcNow.ToTotalSeconds();
                     if (raidBattleTime > ts && RaidLevel != 0)
                     {
-                        // TODO: Webhook egg
+                        webhooks.Add(WebhookType.Eggs, this);
                     }
                     else if (raidEndTime > ts && RaidPokemonId != 0)
                     {
-                        // TODO: Webhook raid
+                        webhooks.Add(WebhookType.Raids, this);
                     }
                 }
             }
@@ -402,18 +402,19 @@
 
             if (oldGym == null)
             {
-                // TODO: Webhook gym
-                // TODO: Webhook gymInfo
+                webhooks.Add(WebhookType.Gyms, this);
+                webhooks.Add(WebhookType.GymInfo, this);
+
                 var raidBattleTime = RaidBattleTimestamp ?? 0;
                 var raidEndTime = RaidEndTimestamp ?? 0;
                 var ts = DateTime.UtcNow.ToTotalSeconds();
                 if (raidBattleTime > ts && RaidLevel != 0)
                 {
-                    // TODO: Webhook egg
+                    webhooks.Add(WebhookType.Eggs, this);
                 }
                 else if (raidEndTime > ts && RaidPokemonId != 0)
                 {
-                    // TODO: Webhook raid
+                    webhooks.Add(WebhookType.Raids, this);
                 }
             }
             else
@@ -428,20 +429,22 @@
                     var ts = DateTime.UtcNow.ToTotalSeconds();
                     if (raidBattleTime > ts && RaidLevel != 0)
                     {
-                        // TODO: Webhook egg
+                        webhooks.Add(WebhookType.Eggs, this);
                     }
                     else if (raidEndTime > ts && RaidPokemonId != 0)
                     {
-                        // TODO: Webhook raid
+                        webhooks.Add(WebhookType.Raids, this);
                     }
                 }
                 if (oldGym.AvailableSlots != AvailableSlots ||
                     oldGym.Team != Team ||
                     oldGym.InBattle != InBattle)
                 {
-                    // TODO: Webhook GymInfo
+                    webhooks.Add(WebhookType.GymInfo, this);
                 }
             }
+
+            return webhooks;
         }
 
         public dynamic GetWebhookData(string type)

@@ -12,6 +12,7 @@
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
 
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
@@ -775,7 +776,16 @@
                             case FortType.Gym:
                                 // Init Gym model from fort proto data
                                 var gym = new Gym(data, cellId);
-                                await gym.UpdateAsync(context);
+                                var webhooks = await gym.UpdateAsync(context);
+
+                                if (webhooks.Count > 0)
+                                {
+                                    foreach (var webhook in webhooks)
+                                    {
+                                        var type = ConvertWebhookType(webhook.Key);
+                                        await SendWebhookAsync(type, webhook.Value);
+                                    }
+                                }
 
                                 gymsToUpsert.Add(gym);
 
@@ -1487,6 +1497,39 @@
                     _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they seem to no longer exist.");
                     await context.Gyms.BulkMergeAsync(gymsToDelete);
                 }
+            }
+        }
+
+        private static WebhookPayloadType ConvertWebhookType(WebhookType type)
+        {
+            switch (type)
+            {
+                case WebhookType.Pokemon:
+                    return WebhookPayloadType.Pokemon;
+                case WebhookType.Pokestops:
+                    return WebhookPayloadType.Pokestop;
+                case WebhookType.Lures:
+                    return WebhookPayloadType.Lure;
+                case WebhookType.Invasions:
+                    return WebhookPayloadType.Invasion;
+                case WebhookType.Quests:
+                    return WebhookPayloadType.Quest;
+                case WebhookType.AlternativeQuests:
+                    return WebhookPayloadType.AlternativeQuest;
+                case WebhookType.Gyms:
+                    return WebhookPayloadType.Gym;
+                case WebhookType.GymInfo:
+                    return WebhookPayloadType.GymInfo;
+                case WebhookType.Eggs:
+                    return WebhookPayloadType.Egg:
+                case WebhookType.Raids:
+                    return WebhookPayloadType.Raid;
+                case WebhookType.Weather:
+                    return WebhookPayloadType.Weather;
+                case WebhookType.Accounts:
+                    return WebhookPayloadType.Account;
+                default:
+                    return WebhookPayloadType.Pokemon;
             }
         }
 
