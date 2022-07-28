@@ -6,6 +6,7 @@
 
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
+    using Nito.AsyncEx;
     using POGOProtos.Rpc;
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
@@ -53,7 +54,6 @@
     // TODO: Use/benchmark Dapper Micro ORM
     // TODO: Implement memory cache for all map data entities
     // TODO: Split up/refactor class
-    // TODO: Use lock before bulk merging
 
     public class DataProcessorService : BackgroundService, IDataProcessorService
     {
@@ -67,6 +67,18 @@
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
+
+        private readonly AsyncLock _cellsLock = new();
+        private readonly AsyncLock _weatherLock = new();
+        private readonly AsyncLock _wildPokemonLock = new();
+        private readonly AsyncLock _nearbyPokemonLock = new();
+        private readonly AsyncLock _mapPokemonLock = new();
+        private readonly AsyncLock _fortsLock = new();
+        private readonly AsyncLock _fortDetailsLock = new();
+        private readonly AsyncLock _gymInfoLock = new();
+        private readonly AsyncLock _questsLock = new();
+        private readonly AsyncLock _encountersLock = new();
+        private readonly AsyncLock _diskEncountersLock = new();
 
         #endregion
 
@@ -184,8 +196,11 @@
                             .ToList();
             if (cells.Count > 0)
             {
-                // Insert S2 cells
-                await UpdateCellsAsync(cells);
+                using (await _cellsLock.LockAsync(stoppingToken))
+                {
+                    // Insert S2 cells
+                    await UpdateCellsAsync(cells);
+                }
             }
 
             var clientWeather = data.Where(x => x.type == ProtoDataType.ClientWeather)
@@ -194,32 +209,44 @@
                                     .ToList();
             if (clientWeather.Count > 0)
             {
-                // Insert weather cells
-                await UpdateClientWeatherAsync(clientWeather);
+                using (await _weatherLock.LockAsync(stoppingToken))
+                {
+                    // Insert weather cells
+                    await UpdateClientWeatherAsync(clientWeather);
+                }
             }
 
             var wildPokemon = data.Where(x => x.type == ProtoDataType.WildPokemon)
                                   .ToList();
             if (wildPokemon.Count > 0)
             {
-                // Insert wild pokemon
-                await UpdateWildPokemonAsync(wildPokemon);
+                using (await _wildPokemonLock.LockAsync(stoppingToken))
+                {
+                    // Insert wild pokemon
+                    await UpdateWildPokemonAsync(wildPokemon);
+                }
             }
 
             var nearbyPokemon = data.Where(x => x.type == ProtoDataType.NearbyPokemon)
                                     .ToList();
             if (nearbyPokemon.Count > 0)
             {
-                // Insert nearby pokemon
-                await UpdateNearbyPokemonAsync(nearbyPokemon);
+                using (await _nearbyPokemonLock.LockAsync(stoppingToken))
+                {
+                    // Insert nearby pokemon
+                    await UpdateNearbyPokemonAsync(nearbyPokemon);
+                }
             }
 
             var mapPokemon = data.Where(x => x.type == ProtoDataType.MapPokemon)
                                  .ToList();
             if (mapPokemon.Count > 0)
             {
-                // Insert map pokemon
-                await UpdateMapPokemonAsync(mapPokemon);
+                using (await _mapPokemonLock.LockAsync(stoppingToken))
+                {
+                    // Insert map pokemon
+                    await UpdateMapPokemonAsync(mapPokemon);
+                }
             }
 
             //if (wildPokemon.Count > 0 || nearbyPokemon.Count > 0 || mapPokemon.Count > 0)
@@ -231,48 +258,66 @@
                             .ToList();
             if (forts.Count > 0)
             {
-                // Insert Forts
-                await UpdateFortsAsync(username, forts);
+                using (await _fortsLock.LockAsync(stoppingToken))
+                {
+                    // Insert Forts
+                    await UpdateFortsAsync(username, forts);
+                }
             }
 
             var fortDetails = data.Where(x => x.type == ProtoDataType.FortDetails)
                                   .ToList();
             if (fortDetails.Count > 0)
             {
-                // Insert Fort Details
-                await UpdateFortDetailsAsync(fortDetails);
+                using (await _fortDetailsLock.LockAsync(stoppingToken))
+                {
+                    // Insert Fort Details
+                    await UpdateFortDetailsAsync(fortDetails);
+                }
             }
 
             var gymInfos = data.Where(x => x.type == ProtoDataType.GymInfo)
                                .ToList();
             if (gymInfos.Count > 0)
             {
-                // Insert gym info
-                await UpdateGymInfoAsync(gymInfos);
+                using (await _fortDetailsLock.LockAsync(stoppingToken))
+                {
+                    // Insert gym info
+                    await UpdateGymInfoAsync(gymInfos);
+                }
             }
 
             var quests = data.Where(x => x.type == ProtoDataType.Quest)
                              .ToList();
             if (quests.Count > 0)
             {
-                // Insert quests
-                await UpdateQuestsAsync(quests);
+                using (await _questsLock.LockAsync(stoppingToken))
+                {
+                    // Insert quests
+                    await UpdateQuestsAsync(quests);
+                }
             }
 
             var encounters = data.Where(x => x.type == ProtoDataType.Encounter)
                                  .ToList();
             if (encounters.Count > 0)
             {
-                // Insert Pokemon encounters
-                await UpdateEncountersAsync(encounters);
+                using (await _encountersLock.LockAsync(stoppingToken))
+                {
+                    // Insert Pokemon encounters
+                    await UpdateEncountersAsync(encounters);
+                }
             }
 
             var diskEncounters = data.Where(x => x.type == ProtoDataType.DiskEncounter)
                                      .ToList();
             if (diskEncounters.Count > 0)
             {
-                // Insert lured Pokemon encounters
-                await UpdateDiskEncountersAsync(diskEncounters);
+                using (await _diskEncountersLock.LockAsync(stoppingToken))
+                {
+                    // Insert lured Pokemon encounters
+                    await UpdateDiskEncountersAsync(diskEncounters);
+                }
             }
 
             stopwatch.Stop();
