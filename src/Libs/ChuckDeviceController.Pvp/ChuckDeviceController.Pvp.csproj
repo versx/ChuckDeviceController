@@ -10,4 +10,8 @@
     <PackageReference Include="POGOProtos.Core" Version="2.56.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj" />
+  </ItemGroup>
+
 </Project>

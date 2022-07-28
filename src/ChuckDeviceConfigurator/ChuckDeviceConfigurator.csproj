@@ -44,11 +44,13 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\payload.proto" GrpcServices="Server" />
+    <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\ProtoPayload.proto" GrpcServices="Server" />
+    <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\WebhookEndpoint.proto" GrpcServices="Server" />
     <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Client\leveling.proto" GrpcServices="Server" />
   </ItemGroup>
 

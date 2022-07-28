@@ -12,7 +12,7 @@
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("weather")]
-    public partial class Weather : BaseEntity, ICoordinateEntity
+    public partial class Weather : BaseEntity, ICoordinateEntity, IWebhookPayload
     {
         #region Properties
 
@@ -114,6 +114,47 @@
                 // TODO: Webhooks
             }
             return result;
+        }
+
+        public dynamic GetWebhookData(string type)
+        {
+            switch (type.ToLower())
+            {
+                case "weather":
+                    var s2cell = Id.S2CellFromId();
+                    var polygon = new List<List<double>>();
+                    for (var i = 0; i <= 3; i++)
+                    {
+                        var vertex = s2cell.GetVertex(i);
+                        var coord = vertex.ToCoordinate();
+                        polygon.Add(new List<double> { coord.Latitude, coord.Longitude });
+                    }
+                    return new
+                    {
+                        type = WebhookHeaders.Weather,
+                        message = new
+                        {
+                            s2_cell_id = Id,
+                            latitude = Latitude,
+                            longitude = Longitude,
+                            polygon = polygon,
+                            gameplay_condition = GameplayCondition,
+                            wind_direction = WindDirection,
+                            cloud_level = CloudLevel,
+                            rain_level = RainLevel,
+                            wind_level = WindLevel,
+                            snow_level = SnowLevel,
+                            fog_level = FogLevel,
+                            special_effect_level = SpecialEffectLevel,
+                            severity = Severity,
+                            warn_weather = WarnWeather,
+                            updated = Updated,
+                        },
+                    };
+            }
+
+            Console.WriteLine($"Received unknown weather webhook payload type: {type}, returning null");
+            return null;
         }
 
         #endregion

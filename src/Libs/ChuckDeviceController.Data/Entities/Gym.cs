@@ -11,13 +11,14 @@
     using ChuckDeviceController.Extensions;
 
     [Table("gym")]
-    public class Gym : BaseEntity, ICoordinateEntity, IFortEntity
+    public class Gym : BaseEntity, ICoordinateEntity, IFortEntity, IWebhookPayload
     {
         #region Constants
 
         // TODO: Make 'ExRaidBossId' and 'ExRaidBossForm' configurable
         public const ushort ExRaidBossId = 150;
         public const ushort ExRaidBossFormId = 0;
+        public const string UnknownGymName = "Unknown";
 
         #endregion
 
@@ -286,105 +287,254 @@
             {
                 // Brand new Gym to insert, set first_seen_timestamp
                 FirstSeenTimestamp = now;
-                return;
+                //return;
             }
+            else
+            {
+                // Gym already exists, compare against this instance to see if anything needs
+                // to be updated
+                //context.Attach(this);
 
-            // Gym already exists, compare against this instance to see if anything needs
-            // to be updated
-            context.Attach(this);
+                if (oldGym.CellId > 0 && CellId == 0)
+                {
+                    CellId = oldGym.CellId;
+                    //context.Entry(this).Property(p => p.CellId).IsModified = true;
+                }
+                if (oldGym.Name != null && Name == null)
+                {
+                    Name = oldGym.Name;
+                    //context.Entry(this).Property(p => p.Name).IsModified = true;
+                }
+                if (oldGym.Url != null && Url == null)
+                {
+                    Url = oldGym.Url;
+                    //context.Entry(this).Property(p => p.Url).IsModified = true;
+                }
+                if (oldGym.RaidIsExclusive != null && RaidIsExclusive == null)
+                {
+                    RaidIsExclusive = oldGym.RaidIsExclusive;
+                    //context.Entry(this).Property(p => p.RaidIsExclusive).IsModified = true;
+                }
+                if (RaidEndTimestamp == null && oldGym.RaidEndTimestamp != null)
+                {
+                    RaidEndTimestamp = oldGym.RaidEndTimestamp;
+                    //context.Entry(this).Property(p => p.RaidEndTimestamp).IsModified = true;
+                }
+                if (RaidBattleTimestamp == null && oldGym.RaidBattleTimestamp != null)
+                {
+                    RaidBattleTimestamp = oldGym.RaidBattleTimestamp;
+                    //context.Entry(this).Property(p => p.RaidBattleTimestamp).IsModified = true;
+                }
+                if (RaidSpawnTimestamp == null && oldGym.RaidSpawnTimestamp != null)
+                {
+                    RaidSpawnTimestamp = oldGym.RaidSpawnTimestamp;
+                    //context.Entry(this).Property(p => p.RaidSpawnTimestamp).IsModified = true;
+                }
+                if (RaidLevel == null && oldGym.RaidLevel != null)
+                {
+                    RaidLevel = oldGym.RaidLevel;
+                    //context.Entry(this).Property(p => p.RaidLevel).IsModified = true;
+                }
+                if (RaidPokemonId == null && oldGym.RaidPokemonId != null)
+                {
+                    RaidPokemonId = oldGym.RaidPokemonId;
+                    //context.Entry(this).Property(p => p.RaidPokemonId).IsModified = true;
+                }
+                if (RaidPokemonForm == null && oldGym.RaidPokemonForm != null)
+                {
+                    RaidPokemonForm = oldGym.RaidPokemonForm;
+                    //context.Entry(this).Property(p => p.RaidPokemonForm).IsModified = true;
+                }
+                if (RaidPokemonCostume == null && oldGym.RaidPokemonCostume != null)
+                {
+                    RaidPokemonCostume = oldGym.RaidPokemonCostume;
+                    //context.Entry(this).Property(p => p.RaidPokemonCostume).IsModified = true;
+                }
+                if (RaidPokemonGender == null && oldGym.RaidPokemonGender != null)
+                {
+                    RaidPokemonGender = oldGym.RaidPokemonGender;
+                    //context.Entry(this).Property(p => p.RaidPokemonGender).IsModified = true;
+                }
+                if (RaidPokemonEvolution == null && oldGym.RaidPokemonEvolution != null)
+                {
+                    RaidPokemonEvolution = oldGym.RaidPokemonEvolution;
+                    //context.Entry(this).Property(p => p.RaidPokemonEvolution).IsModified = true;
+                }
+                if (PowerUpEndTimestamp == null && oldGym.PowerUpEndTimestamp != null)
+                {
+                    PowerUpEndTimestamp = oldGym.PowerUpEndTimestamp;
+                    //context.Entry(this).Property(p => p.PowerUpEndTimestamp).IsModified = true;
+                }
+                if (PowerUpLevel == null && oldGym.PowerUpLevel != null)
+                {
+                    PowerUpLevel = oldGym.PowerUpLevel;
+                    //context.Entry(this).Property(p => p.PowerUpLevel).IsModified = true;
+                }
+                if (PowerUpPoints == null && oldGym.PowerUpPoints != null)
+                {
+                    PowerUpPoints = oldGym.PowerUpPoints;
+                    //context.Entry(this).Property(p => p.PowerUpPoints).IsModified = true;
+                }
 
-            if (oldGym.CellId > 0 && CellId == 0)
-            {
-                CellId = oldGym.CellId;
-                context.Entry(this).Property(p => p.CellId).IsModified = true;
-            }
-            if (oldGym.Name != null && Name == null)
-            {
-                Name = oldGym.Name;
-                context.Entry(this).Property(p => p.Name).IsModified = true;
-            }
-            if (oldGym.Url != null && Url == null)
-            {
-                Url = oldGym.Url;
-                context.Entry(this).Property(p => p.Url).IsModified = true;
-            }
-            if (oldGym.RaidIsExclusive != null && RaidIsExclusive == null)
-            {
-                RaidIsExclusive = oldGym.RaidIsExclusive;
-                context.Entry(this).Property(p => p.RaidIsExclusive).IsModified = true;
-            }
-            if (RaidEndTimestamp == null && oldGym.RaidEndTimestamp != null)
-            {
-                RaidEndTimestamp = oldGym.RaidEndTimestamp;
-                context.Entry(this).Property(p => p.RaidEndTimestamp).IsModified = true;
-            }
-            if (RaidBattleTimestamp == null && oldGym.RaidBattleTimestamp != null)
-            {
-                RaidBattleTimestamp = oldGym.RaidBattleTimestamp;
-                context.Entry(this).Property(p => p.RaidBattleTimestamp).IsModified = true;
-            }
-            if (RaidSpawnTimestamp == null && oldGym.RaidSpawnTimestamp != null)
-            {
-                RaidSpawnTimestamp = oldGym.RaidSpawnTimestamp;
-                context.Entry(this).Property(p => p.RaidSpawnTimestamp).IsModified = true;
-            }
-            if (RaidLevel == null && oldGym.RaidLevel != null)
-            {
-                RaidLevel = oldGym.RaidLevel;
-                context.Entry(this).Property(p => p.RaidLevel).IsModified = true;
-            }
-            if (RaidPokemonId == null && oldGym.RaidPokemonId != null)
-            {
-                RaidPokemonId = oldGym.RaidPokemonId;
-                context.Entry(this).Property(p => p.RaidPokemonId).IsModified = true;
-            }
-            if (RaidPokemonForm == null && oldGym.RaidPokemonForm != null)
-            {
-                RaidPokemonForm = oldGym.RaidPokemonForm;
-                context.Entry(this).Property(p => p.RaidPokemonForm).IsModified = true;
-            }
-            if (RaidPokemonCostume == null && oldGym.RaidPokemonCostume != null)
-            {
-                RaidPokemonCostume = oldGym.RaidPokemonCostume;
-                context.Entry(this).Property(p => p.RaidPokemonCostume).IsModified = true;
-            }
-            if (RaidPokemonGender == null && oldGym.RaidPokemonGender != null)
-            {
-                RaidPokemonGender = oldGym.RaidPokemonGender;
-                context.Entry(this).Property(p => p.RaidPokemonGender).IsModified = true;
-            }
-            if (RaidPokemonEvolution == null && oldGym.RaidPokemonEvolution != null)
-            {
-                RaidPokemonEvolution = oldGym.RaidPokemonEvolution;
-                context.Entry(this).Property(p => p.RaidPokemonEvolution).IsModified = true;
-            }
-            if (PowerUpEndTimestamp == null && oldGym.PowerUpEndTimestamp != null)
-            {
-                PowerUpEndTimestamp = oldGym.PowerUpEndTimestamp;
-                context.Entry(this).Property(p => p.PowerUpEndTimestamp).IsModified = true;
-            }
-            if (PowerUpLevel == null && oldGym.PowerUpLevel != null)
-            {
-                PowerUpLevel = oldGym.PowerUpLevel;
-                context.Entry(this).Property(p => p.PowerUpLevel).IsModified = true;
-            }
-            if (PowerUpPoints == null && oldGym.PowerUpPoints != null)
-            {
-                PowerUpPoints = oldGym.PowerUpPoints;
-                context.Entry(this).Property(p => p.PowerUpPoints).IsModified = true;
+                if (RaidSpawnTimestamp != null && RaidSpawnTimestamp != 0 &&
+                    (
+                        oldGym.RaidLevel != RaidLevel ||
+                        oldGym.RaidPokemonId != RaidPokemonId ||
+                        oldGym.RaidSpawnTimestamp != RaidSpawnTimestamp
+                    ))
+                {
+                    // TODO: Webhooks
+                    var raidBattleTime = (RaidBattleTimestamp ?? 0);
+                    var raidEndTime = (RaidEndTimestamp ?? 0);
+                    var ts = DateTime.UtcNow.ToTotalSeconds();
+                    if (raidBattleTime > ts && RaidLevel != 0)
+                    {
+                        // TODO: Webhook egg
+                    }
+                    else if (raidEndTime > ts && RaidPokemonId != 0)
+                    {
+                        // TODO: Webhook raid
+                    }
+                }
             }
 
             // TODO: Check shouldUpdate
 
-            if (RaidSpawnTimestamp != null && RaidSpawnTimestamp != 0 &&
-                (
+            if (oldGym == null)
+            {
+                // TODO: Webhook gym
+                // TODO: Webhook gymInfo
+                var raidBattleTime = RaidBattleTimestamp ?? 0;
+                var raidEndTime = RaidEndTimestamp ?? 0;
+                var ts = DateTime.UtcNow.ToTotalSeconds();
+                if (raidBattleTime > ts && RaidLevel != 0)
+                {
+                    // TODO: Webhook egg
+                }
+                else if (raidEndTime > ts && RaidPokemonId != 0)
+                {
+                    // TODO: Webhook raid
+                }
+            }
+            else
+            {
+                if (RaidSpawnTimestamp > 0 && (
                     oldGym.RaidLevel != RaidLevel ||
                     oldGym.RaidPokemonId != RaidPokemonId ||
-                    oldGym.RaidSpawnTimestamp != RaidSpawnTimestamp
-                ))
-            {
-                // TODO: Webhooks
+                    oldGym.RaidSpawnTimestamp != RaidSpawnTimestamp))
+                {
+                    var raidBattleTime = RaidBattleTimestamp ?? 0;
+                    var raidEndTime = RaidEndTimestamp ?? 0;
+                    var ts = DateTime.UtcNow.ToTotalSeconds();
+                    if (raidBattleTime > ts && RaidLevel != 0)
+                    {
+                        // TODO: Webhook egg
+                    }
+                    else if (raidEndTime > ts && RaidPokemonId != 0)
+                    {
+                        // TODO: Webhook raid
+                    }
+                }
+                if (oldGym.AvailableSlots != AvailableSlots ||
+                    oldGym.Team != Team ||
+                    oldGym.InBattle != InBattle)
+                {
+                    // TODO: Webhook GymInfo
+                }
             }
+        }
+
+        public dynamic GetWebhookData(string type)
+        {
+            // TODO: Add GymDefender and GymTrainer webhooks support
+            switch (type.ToLower())
+            {
+                case "gym":
+                    return new
+                    {
+                        type = WebhookHeaders.Gym,
+                        message = new
+                        {
+                            gym_id = Id,
+                            gym_name = Name ?? UnknownGymName,
+                            latitude = Latitude,
+                            longitude = Longitude,
+                            url = Url,
+                            enabled = IsEnabled,
+                            team_id = Convert.ToUInt16(Team),
+                            last_modified = LastModifiedTimestamp,
+                            guard_pokemon_id = GuardingPokemonId,
+                            slots_available = AvailableSlots,
+                            raid_active_until = RaidEndTimestamp ?? 0,
+                            ex_raid_eligible = IsExRaidEligible,
+                            sponsor_id = SponsorId ?? 0,
+                            //partner_id = PartnerId,
+                            power_up_points = PowerUpPoints ?? 0,
+                            power_up_level = PowerUpLevel ?? 0,
+                            power_up_end_timestamp = PowerUpEndTimestamp ?? 0,
+                            ar_scan_eligible = IsArScanEligible ?? false,
+                        },
+                    };
+                case "gym-info":
+                    return new
+                    {
+                        type = WebhookHeaders.GymDetails,
+                        message = new
+                        {
+                            id = Id,
+                            name = Name ?? UnknownGymName,
+                            url = Url,
+                            latitude = Latitude,
+                            longitude = Longitude,
+                            team = Convert.ToUInt16(Team),
+                            slots_available = AvailableSlots,
+                            ex_raid_eligible = IsExRaidEligible,
+                            in_battle = InBattle,
+                            sponsor_id = SponsorId ?? 0,
+                            //partner_id = PartnerId,
+                            power_up_points = PowerUpPoints ?? 0,
+                            power_up_level = PowerUpLevel ?? 0,
+                            power_up_end_timestamp = PowerUpEndTimestamp ?? 0,
+                            ar_scan_eligible = IsArScanEligible ?? false,
+                        },
+                    };
+                case "egg" or "raid":
+                    return new
+                    {
+                        type = WebhookHeaders.Raid,
+                        message = new
+                        {
+                            gym_id = Id,
+                            gym_name = Name ?? UnknownGymName,
+                            gym_url = Url,
+                            latitude = Latitude,
+                            longitude = Longitude,
+                            team_id = Convert.ToUInt16(Team),
+                            spawn = RaidSpawnTimestamp ?? 0,
+                            start = RaidBattleTimestamp ?? 0,
+                            end = RaidEndTimestamp ?? 0,
+                            level = RaidLevel,
+                            pokemon_id = RaidPokemonId ?? 0,
+                            cp = RaidPokemonCP ?? 0,
+                            gender = RaidPokemonGender ?? 0,
+                            form = RaidPokemonForm ?? 0,
+                            evolution = RaidPokemonEvolution,
+                            move_1 = RaidPokemonMove1 ?? 0,
+                            move_2 = RaidPokemonMove2 ?? 0,
+                            ex_raid_eligible = IsExRaidEligible,
+                            is_exclusive = RaidIsExclusive ?? false,
+                            sponsor_id = SponsorId ?? 0,
+                            //partner_id = PartnerId,
+                            power_up_points = PowerUpPoints ?? 0,
+                            power_up_level = PowerUpLevel ?? 0,
+                            power_up_end_timestamp = PowerUpEndTimestamp ?? 0,
+                            ar_scan_eligible = IsArScanEligible ?? false,
+                        },
+                    };
+            }
+
+            Console.WriteLine($"Received unknown gym webhook payload type: {type}, returning null");
+            return null;
         }
 
         #endregion

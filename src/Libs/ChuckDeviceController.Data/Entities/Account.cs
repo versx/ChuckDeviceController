@@ -5,10 +5,11 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("account")]
-    public class Account : BaseEntity
+    public class Account : BaseEntity, IWebhookPayload
     {
         #region Properties
 
@@ -156,6 +157,8 @@
 
         #endregion
 
+        #region Public Methods
+
         public bool IsValid(bool ignoreWarning = false, string? groupName = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
@@ -194,5 +197,40 @@
             // TODO: InUse?
             return "Good";
         }
+
+        public dynamic GetWebhookData(string type)
+        {
+            switch (type.ToLower())
+            {
+                case "account":
+                    return new
+                    {
+                        type = WebhookHeaders.Account,
+                        message = new
+                        {
+                            username = Username,
+                            level = Level,
+                            first_warning_timestamp = FirstWarningTimestamp ?? 0,
+                            failed_timestamp = FailedTimestamp ?? 0,
+                            failed = Failed ?? "None",
+                            last_encounter_time = LastEncounterTime ?? 0,
+                            spins = Spins,
+                            creation_timestamp = CreationTimestamp,
+                            warn = Warn ?? false,
+                            warn_expire_timestamp = WarnExpireTimestamp ?? 0,
+                            warn_message_acknowledged = WarnMessageAcknowledged ?? false,
+                            suspended_message_acknowledged = SuspendedMessageAcknowledged ?? false, 
+                            was_suspended = WasSuspended ?? false,
+                            banned = Banned ?? false,
+                            group = GroupName,
+                        },
+                    };
+            }
+
+            Console.WriteLine($"Received unknown account webhook payload type: {type}, returning null");
+            return null;
+        }
+
+        #endregion
     }
 }

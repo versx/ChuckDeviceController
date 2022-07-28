@@ -649,7 +649,7 @@
         private async Task<bool> IsAllowedToSaveDataAsync(string username)
         {
             // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
-            var levelingStatus = await _grpcClientService.GetTrainerLevelingStatus(username);
+            var levelingStatus = await _grpcClientService.GetTrainerLevelingStatusAsync(username);
             if (levelingStatus.Status != TrainerInfoStatus.Ok)
             {
                 // Failure occurred, return true to be safe

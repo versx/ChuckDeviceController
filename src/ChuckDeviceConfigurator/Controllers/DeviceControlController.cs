@@ -3,13 +3,13 @@
     using Microsoft.AspNetCore.Mvc;
 
     using ChuckDeviceConfigurator.Extensions;
-    using ChuckDeviceConfigurator.Net.Models.Requests;
-    using ChuckDeviceConfigurator.Net.Models.Responses;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Net.Models.Requests;
+    using ChuckDeviceController.Net.Models.Responses;
 
     [ApiController]
     public class DeviceControlController : ControllerBase

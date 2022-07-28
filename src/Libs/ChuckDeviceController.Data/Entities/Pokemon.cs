@@ -13,7 +13,7 @@
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("pokemon")]
-    public class Pokemon : BaseEntity, ICoordinateEntity
+    public class Pokemon : BaseEntity, ICoordinateEntity, IWebhookPayload
     {
         #region Constants
 
@@ -175,6 +175,9 @@
         public bool IsExpirationSoon =>
             DateTime.UtcNow.ToTotalSeconds() - FirstSeenTimestamp >= DefaultTimeReseenS;
 
+        [NotMapped]
+        public bool SendWebhook { get; set; }
+
         #endregion
 
         #region Constructors
@@ -306,7 +309,7 @@
 
         #region Public Methods
 
-        public async Task AddEncounterAsync(MapDataContext context, EncounterOutProto encounterData, string username)
+        public async Task AddEncounterAsync(EncounterOutProto encounterData, string username)
         {
             var pokemonId = Convert.ToUInt32(encounterData.Pokemon.Pokemon.PokemonId);
             var cp = Convert.ToUInt16(encounterData.Pokemon.Pokemon.Cp);
@@ -395,6 +398,8 @@
             SeenType = SeenType.Encounter;
             Updated = DateTime.UtcNow.ToTotalSeconds();
             Changed = Updated;
+
+            await Task.CompletedTask;
         }
 
         public void AddDiskEncounter(DiskEncounterOutProto diskEncounterData, string username)
@@ -791,23 +796,74 @@
 
             if (setIvForWeather)
             {
-                // TODO: Webhook
+                SendWebhook = true;
                 IsNewPokemon = true;
             }
             else if (oldPokemon == null)
             {
-                // TODO: Webhook
+                SendWebhook = true;
                 IsNewPokemon = true;
                 IsNewPokemonWithIV = AttackIV != null;
             }
             else if (updateIV && ((oldPokemon.AttackIV == null && AttackIV != null) || oldPokemon.HasIvChanges))
             {
-                // TODO: Webhook
+                SendWebhook = true;
                 oldPokemon.HasIvChanges = false;
                 IsNewPokemonWithIV = true;
             }
 
             // TODO: Cache pokemon
+        }
+
+        public dynamic GetWebhookData(string type)
+        {
+            switch (type.ToLower())
+            {
+                case "pokemon":
+                    return new
+                    {
+                        type = "pokemon",
+                        message = new
+                        {
+                            spawnpoint_id = SpawnId?.ToString("X") ?? "None",
+                            pokestop_id = PokestopId ?? "None",
+                            encounter_id = Id,
+                            pokemon_id = PokemonId,
+                            latitude = Latitude,
+                            longitude = Longitude,
+                            disappear_time = ExpireTimestamp,
+                            disappear_time_verified = IsExpireTimestampVerified,
+                            first_seen = FirstSeenTimestamp,
+                            last_modified_time = Updated,
+                            gender = Gender,
+                            cp = CP,
+                            form = Form,
+                            costume = Costume,
+                            individual_attack = AttackIV,
+                            individual_defense = DefenseIV,
+                            individual_stamina = StaminaIV,
+                            pokemon_level = Level,
+                            move_1 = Move1,
+                            move_2 = Move2,
+                            weight = Weight,
+                            height = Size,
+                            weather = Weather,
+                            // TODO: Remove captures eventually
+                            capture_1 = Capture1,
+                            capture_2 = Capture2,
+                            capture_3 = Capture3,
+                            shiny = IsShiny,
+                            username = Username,
+                            display_pokemon_id = DisplayPokemonId,
+                            pvp = PvpRankings,
+                            is_event = IsEvent,
+                            seen_type = SeenType, // TODO: Make sure it's sending as string variant not integer value
+                        },
+                    };
+            }
+
+            Console.WriteLine($"Received unknown pokemon webhook payload type: {type}, returning null");
+            return null;
         }
 
         #endregion

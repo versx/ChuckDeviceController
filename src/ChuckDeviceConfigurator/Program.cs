@@ -184,6 +184,7 @@ app.UseAuthorization();
 
 app.MapGrpcService<ProtoPayloadServerService>();
 app.MapGrpcService<TrainerInfoServerService>();
+app.MapGrpcService<WebhookEndpointServerService>();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

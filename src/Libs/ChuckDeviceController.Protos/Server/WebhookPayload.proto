@@ -1,0 +1,38 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "ChuckDeviceController.Protos";
+
+package webhook;
+
+service WebhookPayload {
+    rpc ReceivedWebhookPayload (WebhookPayloadRequest) returns (WebhookPayloadResponse);
+}
+
+message WebhookPayloadRequest {
+    string payload = 1;
+    WebhookPayloadType payloadType = 2;
+}
+
+message WebhookPayloadResponse {
+    WebhookPayloadStatus status = 1;
+}
+
+enum WebhookPayloadStatus {
+	Ok = 0;
+	Error = 1;
+}
+
+enum WebhookPayloadType {
+	Pokemon = 0;
+    Pokestop = 1;
+    Lure = 2;
+    Invasion = 3;
+    Quest = 4;
+    AlternativeQuest = 5;
+    Gym = 6;
+    GymInfo = 7;
+    Egg = 8;
+    Raid = 9;
+    Weather = 10;
+    Account = 11;
+}

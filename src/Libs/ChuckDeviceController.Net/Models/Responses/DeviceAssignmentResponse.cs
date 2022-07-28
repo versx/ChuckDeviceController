@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Net.Models.Responses
+﻿namespace ChuckDeviceController.Net.Models.Responses
 {
     using System.Text.Json.Serialization;
 

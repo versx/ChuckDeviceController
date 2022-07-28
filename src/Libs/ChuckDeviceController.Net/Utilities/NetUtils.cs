@@ -1,16 +1,15 @@
-﻿namespace ChuckDeviceController.Pvp
+﻿namespace ChuckDeviceController.Net.Utilities
 {
+    using System;
     using System.Net;
+    using System.Net.Http;
     using System.Text;
+    using System.Threading.Tasks;
 
     public static class NetUtils
     {
-        #region Constants
-
-        private const string DefaultUserAgent = "test"; // TODO: Set user agent
-        private const string DefaultMimeType = "application/json";
-
-        #endregion
+        public const string DefaultUserAgent = "test123456"; // TODO: Set actual UserAgent
+        public const string DefaultMimeType = "application/json";
 
         public static string Get(string url)
         {
@@ -31,7 +30,6 @@
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), DefaultMimeType);
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.ContentType.ToString(), DefaultMimeType);
-                client.DefaultRequestHeaders.Add(HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent);
                 return await client.GetStringAsync(url);
             }
             catch (Exception ex)
@@ -52,11 +50,14 @@
         /// <param name="url">Url to send the request to.</param>
         /// <param name="payload">JSON payload that will be sent in the request.</param>
         /// <returns>Returns the response string of the HTTP POST request.</returns>
-        public static async Task<string> PostAsync(string url, string payload, string userAgent = DefaultUserAgent)
+        public static async Task<string> PostAsync(string url, string payload, uint timeoutS = 30, string userAgent = DefaultUserAgent)
         {
             try
             {
+                SetDefaultSecurityProtocol();
+
                 using var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(timeoutS);
                 var requestMessage = new HttpRequestMessage
                 {
                     Method = HttpMethod.Post,
@@ -114,7 +115,6 @@
             }
             return null;
         }
-
 
         /// <summary>
         /// Fixes Exception: Authentication failed because the remote party sent a TLS alert: 'DecryptError'.

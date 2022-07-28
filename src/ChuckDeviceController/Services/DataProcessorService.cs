@@ -444,6 +444,12 @@
 
                         await pokemon.UpdateAsync(context, updateIv: false);
                         pokemonToUpsert.Add(pokemon);
+
+                        if (pokemon.SendWebhook)
+                        {
+                            // TODO: Decide whether to send individually or send as list to webhook service
+                            await SendWebhookAsync(WebhookPayloadType.Pokemon, pokemon);
+                        }
                     }
 
                     await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
@@ -507,6 +513,12 @@
                         var pokemon = new Pokemon(context, data, cellId, username, isEvent);
                         await pokemon.UpdateAsync(context, updateIv: false);
                         pokemonToUpsert.Add(pokemon);
+
+                        if (pokemon.SendWebhook)
+                        {
+                            // TODO: Decide whether to send individually or send as list to webhook service
+                            await SendWebhookAsync(WebhookPayloadType.Pokemon, pokemon);
+                        }
                     }
 
                     await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
@@ -577,6 +589,12 @@
                         }
 
                         pokemonToUpsert.Add(pokemon);
+
+                        if (pokemon.SendWebhook)
+                        {
+                            // TODO: Decide whether to send individually or send as list to webhook service
+                            await SendWebhookAsync(WebhookPayloadType.Pokemon, pokemon);
+                        }
                     }
 
                     await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
@@ -1087,9 +1105,36 @@
                         var isEvent = encounter.isEvent;
                         var encounterId = data.Pokemon.EncounterId.ToString();
                         var pokemon = await context.Pokemon.FindAsync(encounterId);
+                        if (pokemon == null)
+                        {
+                            // New Pokemon
+                            var cellId = S2CellExtensions.S2CellIdFromLatLng(data.Pokemon.Latitude, data.Pokemon.Longitude);
+                            pokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
+                        }
+                        await pokemon.AddEncounterAsync(data, username);
+                        var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data.Pokemon, timestampMs);
+                        if (spawnpoint != null)
+                        {
+                            spawnpointsToUpsert.Add(spawnpoint);
+                        }
+
+                        if (pokemon.HasIvChanges)
+                        {
+                            SetPvpRankings(pokemon);
+                        }
+                        await pokemon.UpdateAsync(context, updateIv: true);
+                        pokemonToUpsert.Add(pokemon);
+
+                        if (pokemon.SendWebhook)
+                        {
+                            // TODO: Decide whether to send individually or send as list to webhook service
+                            await SendWebhookAsync(WebhookPayloadType.Pokemon, pokemon);
+                        }
+
+                        /*
                         if (pokemon != null)
                         {
-                            await pokemon.AddEncounterAsync(context, data, username);
+                            await pokemon.AddEncounterAsync(data, username);
                             var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data.Pokemon, timestampMs);
                             if (spawnpoint != null)
                             {
@@ -1101,15 +1146,20 @@
                                 SetPvpRankings(pokemon);
                             }
                             await pokemon.UpdateAsync(context, updateIv: true);
-
                             pokemonToUpsert.Add(pokemon);
+
+                            if (pokemon.SendWebhook)
+                            {
+                                // TODO: Decide whether to send individually or send as list to webhook service
+                                await SendWebhookAsync(WebhookPayloadType.Pokemon, pokemon);
+                            }
                         }
                         else
                         {
                             // New Pokemon
                             var cellId = S2CellExtensions.S2CellIdFromLatLng(data.Pokemon.Latitude, data.Pokemon.Longitude);
                             var newPokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
-                            await newPokemon.AddEncounterAsync(context, data, username);
+                            await newPokemon.AddEncounterAsync(data, username);
                             var spawnpoint = await UpdateSpawnpointAsync(context, newPokemon, data.Pokemon, timestampMs);
                             if (spawnpoint != null)
                             {
@@ -1121,9 +1171,15 @@
                                 SetPvpRankings(newPokemon);
                             }
                             await newPokemon.UpdateAsync(context, updateIv: true);
-
                             pokemonToUpsert.Add(newPokemon);
+
+                            if (newPokemon.SendWebhook)
+                            {
+                                // TODO: Decide whether to send individually or send as list to webhook service
+                                await SendWebhookAsync(WebhookPayloadType.Pokemon, newPokemon);
+                            }
                         }
+                        */
                     }
 
                     await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
@@ -1197,8 +1253,13 @@
                                 SetPvpRankings(pokemon);
                             }
                             await pokemon.UpdateAsync(context, updateIv: true);
-
                             pokemonToUpsert.Add(pokemon);
+
+                            if (pokemon.SendWebhook)
+                            {
+                                // TODO: Decide whether to send individually or send as list to webhook service
+                                await SendWebhookAsync(WebhookPayloadType.Pokemon, pokemon);
+                            }
                         }
                         else
                         {
@@ -1379,6 +1440,24 @@
         #endregion
 
         #region Grpc Senders
+
+        private async Task SendWebhookAsync<T>(WebhookPayloadType webhookType, T entity)
+        {
+            if (entity == null)
+            {
+                _logger.LogWarning($"Unable to relay entity {typeof(T).Name} to webhook service, entity is null...");
+                return;
+            }
+
+            var json = entity.ToJson();
+            if (string.IsNullOrEmpty(json))
+            {
+                _logger.LogWarning($"Failed to serialize entity {typeof(T).Name} to relay to webhook service, skipping...");
+                return;
+            }
+
+            await _grpcClientService.SendWebhookAsync(webhookType, json);
+        }
 
         private async Task SendPokemonAsync(List<Pokemon> pokemon)
         {
