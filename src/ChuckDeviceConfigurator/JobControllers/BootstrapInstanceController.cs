@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
+
     using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Jobs;

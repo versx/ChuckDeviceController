@@ -20,7 +20,7 @@
         #region Constants
 
         //private const uint CheckScanHistoryIntervalS = 5;
-        private const ushort DefaultTerminateThreadTimeoutMs = 5 * 1000;
+        private const ushort DefaultTerminateThreadTimeoutMs = 5 * 1000; // 5 seconds
         private const ushort MaximumRetryCount = 10;
 
         #endregion
@@ -216,8 +216,10 @@
 
             if (_checkThread != null)
             {
+                // Attempt to terminate thread, wait timeout before forcefully terminating
                 if (!_checkThread.Join(DefaultTerminateThreadTimeoutMs))
                 {
+                    // Unable to terminate thread after timeout period
                     _logger.LogError($"[{Name}] Failed to terminate IV queue thread");
                 }
                 _checkThread = null;
@@ -230,6 +232,12 @@
 
         #region IV Queue Management
 
+        /// <summary>
+        /// Handles scanned Pokemon encounter processed by controller. Used to
+        /// determine IVs scanned per hour.
+        /// </summary>
+        /// <param name="pokemon">Pokemon encounter</param>
+        /// <param name="hasIv">Pokemon has IVs</param>
         internal void GotPokemon(Pokemon pokemon, bool hasIv)
         {
             // First thing to do is ensure that the received Pokemon is within this IV job
@@ -241,23 +249,21 @@
                 return;
             }
 
+            // Check if incoming encounter IVs were found
             if (hasIv && pokemon.AttackIV != null)
             {
                 // Pokemon has IVs scanned, attempt to remove it from the Pokemon queue if it's in it.
                 lock (_queueLock)
                 {
-                    //var index = _pokemonQueue.IndexOf(pokemon);
-                    //if (index > -1)
-                    if (_pokemonQueue.Exists(p => p.Id == pokemon.Id && p.AttackIV == null))
+                    // Remove Pokemon from scan queue
+                    var index = _pokemonQueue.IndexOf(pokemon);
+                    if (index > -1)
                     {
-                        //_pokemonQueue.RemoveAt(index);
-                        _pokemonQueue.Where(p => p.Id == pokemon.Id && p.AttackIV == null)
-                                     .ToList()
-                                     .ForEach(p => _pokemonQueue.Remove(p));
+                        // Remove Pokemon from queue at index
+                        _pokemonQueue.RemoveAt(index);
                     }
-
-                    // Checks if instance is for event as well as the Pokemon has not been
-                    // re-scanned yet and it also meets the desired IV stats for event re-scans.
+                    // Checks if instance is for event as well as the Pokemon has not been re-scanned
+                    // yet and that it also meets the desired IV stats for event re-scans.
                     if (IsEvent && !pokemon.IsEvent &&
                         EventAttackIV.Contains(pokemon.AttackIV ?? 999) &&
                         pokemon.DefenseIV == 15 && pokemon.StaminaIV == 15)
@@ -276,34 +282,20 @@
             // Pokemon does not have IVs scanned, check if we can add it to this job controller
             // Pokemon queue depending if it matches some conditions, otherwise ignore it.
             var isNotLure = !string.IsNullOrEmpty(pokemon.PokestopId) || pokemon.SpawnId > 0;
-            var matchesEvent = pokemon.IsEvent == IsEvent;
+            var isEventSpawn = pokemon.IsEvent == IsEvent;
             var isDesiredPokemon = IsDesiredPokemon(pokemon);
-            if (!(isNotLure && matchesEvent && isDesiredPokemon))
+            if (!(isNotLure && isEventSpawn && isDesiredPokemon))
                 return;
 
             lock (_queueLock)
             {
-                //if (_pokemonQueue.Contains(pokemon))
-                if (_pokemonQueue.Exists(p => p.Id == pokemon.Id))
+                // Check if Pokemon without IVs is still in queue pending
+                if (_pokemonQueue.Contains(pokemon))
                 {
-                    // Encounter is already in the queue
-                    if (pokemon.AttackIV != null)
-                    {
-                        // Some how the encounter has IV and wasn't removed
-                        UpdateStats();
-
-                        //var queueIndex = _pokemonQueue.IndexOf(pokemon);
-                        //if (queueIndex > -1)
-                        //{
-                        //    _pokemonQueue.RemoveAt(queueIndex);
-                        //}
-                        _pokemonQueue.Where(p => p.Id == pokemon.Id)
-                                     .ToList()
-                                     .ForEach(p => _pokemonQueue.Remove(p));
-                    }
                     return;
                 }
 
+                // Find the last index of the same Pokemon in the queue to insert pending encounter
                 var index = GetLastIndexOf(pokemon.PokemonId, pokemon.Form ?? 0);
                 if (_pokemonQueue.Count >= QueueLimit && index == null)
                 {
@@ -313,45 +305,47 @@
                 {
                     if (index != null)
                     {
+                        // Insert in queue at index
                         _pokemonQueue.Insert((int)index, pokemon);
-                        //_pokemonQueue.Set((int)index, pokemon);
+
                         // Remove last item in the queue
                         _ = _pokemonQueue.PopLast();
                     }
                 }
                 else if (index != null)
                 {
+                    // Insert in queue at index
                     _pokemonQueue.Insert((int)index, pokemon);
                 }
                 else
                 {
-                    _pokemonQueue.Insert(0, pokemon);
+                    // Add to the end of the queue
+                    _pokemonQueue.Add(pokemon);
                 }
             }
         }
 
+        /// <summary>
+        /// Remove Pokemon from IV queue based on encounter ID.
+        /// </summary>
+        /// <param name="encounterId">Pokemon encounter ID</param>
         internal void RemoveFromQueue(string encounterId)
         {
-            // Remove Pokemon from IV queue based on encounterId
             lock (_queueLock)
             {
-                int index = -1;
-                for (var i = 0; i < _pokemonQueue.Count; i++)
-                {
-                    var pokemon = _pokemonQueue[i];
-                    if (pokemon.Id == encounterId)
-                    {
-                        index = i;
-                        break;
-                    }
-                }
+                // Find index of Pokemon encounter to remove by encounter id
+                var index = _pokemonQueue.FindIndex(pokemon => pokemon.Id == encounterId);
                 if (index > -1)
                 {
+                    // Remove encounter from queue by index
                     _pokemonQueue.RemoveAt(index);
                 }
             }
         }
 
+        /// <summary>
+        /// Clear all pending Pokemon encounters from IV queue.
+        /// </summary>
         internal void ClearQueue()
         {
             lock (_queueLock)
@@ -478,13 +472,9 @@
             if (PokemonIds.Contains(pokemon.PokemonId.ToString()))
                 return true;
 
-            if (pokemon.Form != null && pokemon.Form > 0)
-            {
-                var key = $"{pokemon.PokemonId}_f{pokemon.Form}";
-                return PokemonIds.Contains(key);
-            }
-
-            return false;
+            var key = $"{pokemon.PokemonId}_f{pokemon.Form}";
+            var result = pokemon.Form > 0 && PokemonIds.Contains(key);
+            return result;
         }
 
         private int? GetPriorityIndex(uint pokemonId, ushort formId)
@@ -493,11 +483,10 @@
                 ? $"{pokemonId}_f{formId}"
                 : $"{pokemonId}";
             var priority = PokemonIds.IndexOf(key);
-            if (priority != -1)
+            if (priority > -1)
             {
                 return priority;
             }
-
             if (formId > 0)
             {
                 var index = PokemonIds.IndexOf($"{pokemonId}");
@@ -516,15 +505,14 @@
 
             lock (_queueLock)
             {
-                var i = 0u;
-                foreach (var pokemon in _pokemonQueue)
+                for (var i = 0; i < _pokemonQueue.Count; i++)
                 {
+                    var pokemon = _pokemonQueue[i];
                     var priority = GetPriorityIndex(pokemon.PokemonId, formId);
-                    if (targetPriority < priority)
+                    if (priority > -1 && targetPriority < priority)
                     {
-                        return i;
+                        return (uint)i;
                     }
-                    i++;
                 }
             }
             return null;

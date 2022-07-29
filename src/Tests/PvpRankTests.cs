@@ -6,7 +6,7 @@ namespace Tests
     using ChuckDeviceController.Pvp;
     using ChuckDeviceController.Pvp.Models;
 
-    public class Tests
+    public class PvpRankTests
     {
         private readonly PvpRankGenerator _pvp = new();
 

@@ -13,7 +13,7 @@
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("pokemon")]
-    public class Pokemon : BaseEntity, ICoordinateEntity, IWebhookEntity
+    public class Pokemon : BaseEntity, ICoordinateEntity, IWebhookEntity, IEquatable<Pokemon>
     {
         #region Constants
 
@@ -1084,6 +1084,37 @@
         }
 
         #endregion
+
+        public bool Equals(Pokemon? other)
+        {
+            if (other == null)
+                return false;
+
+            var result = 
+                Id == other.Id &&
+                PokemonId == other.PokemonId &&
+                Form == other.Form &&
+                Costume == other.Costume &&
+                Gender == other.Gender &&
+                Level == other.Level &&
+                CP == other.CP &&
+                AttackIV == other.AttackIV &&
+                DefenseIV == other.DefenseIV &&
+                StaminaIV == other.StaminaIV &&
+                Move1 == other.Move1 &&
+                Move2 == other.Move2 &&
+                DisplayPokemonId == other.DisplayPokemonId &&
+                SpawnId == other.SpawnId &&
+                Size == other.Size &&
+                Weight == other.Weight &&
+                CellId == other.CellId &&
+                Weather == other.Weather &&
+                Username == other.Username &&
+                PokestopId == other.PokestopId &&
+                Latitude == other.Latitude &&
+                Longitude == other.Longitude;
+            return result;
+        }
     }
 
     /*
