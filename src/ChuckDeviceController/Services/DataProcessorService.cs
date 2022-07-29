@@ -1084,7 +1084,7 @@
                         await context.Pokestops.BulkMergeAsync(questsToUpsert, options =>
                         {
                             options.UseTableLock = true;
-                        // Only include the following columns when updating
+                            // Only include the following columns when updating
                             options.OnMergeUpdateInputExpression = p => new
                             {
                                 p.Id,
@@ -1093,7 +1093,6 @@
                                 p.QuestTimestamp,
                                 p.QuestTemplate,
                                 p.QuestTarget,
-                                p.QuestRewardType,
                                 p.QuestRewards,
                                 p.QuestConditions,
 
@@ -1102,7 +1101,6 @@
                                 p.AlternativeQuestTimestamp,
                                 p.AlternativeQuestTemplate,
                                 p.AlternativeQuestTarget,
-                                p.AlternativeQuestRewardType,
                                 p.AlternativeQuestRewards,
                                 p.AlternativeQuestConditions,
                             };
