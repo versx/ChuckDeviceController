@@ -287,6 +287,21 @@
                 // Brand new Gym to insert, set first_seen_timestamp
                 FirstSeenTimestamp = now;
                 //return;
+
+                webhooks.Add(WebhookType.Gyms, this);
+                webhooks.Add(WebhookType.GymInfo, this);
+
+                var raidBattleTime = RaidBattleTimestamp ?? 0;
+                var raidEndTime = RaidEndTimestamp ?? 0;
+                var ts = DateTime.UtcNow.ToTotalSeconds();
+                if (raidBattleTime > ts && RaidLevel != 0)
+                {
+                    webhooks.Add(WebhookType.Eggs, this);
+                }
+                else if (raidEndTime > ts && RaidPokemonId != 0)
+                {
+                    webhooks.Add(WebhookType.Raids, this);
+                }
             }
             else
             {
@@ -375,48 +390,6 @@
                     //context.Entry(this).Property(p => p.PowerUpPoints).IsModified = true;
                 }
 
-                if (RaidSpawnTimestamp != null && RaidSpawnTimestamp != 0 &&
-                    (
-                        oldGym.RaidLevel != RaidLevel ||
-                        oldGym.RaidPokemonId != RaidPokemonId ||
-                        oldGym.RaidSpawnTimestamp != RaidSpawnTimestamp
-                    ))
-                {
-                    var raidBattleTime = (RaidBattleTimestamp ?? 0);
-                    var raidEndTime = (RaidEndTimestamp ?? 0);
-                    var ts = DateTime.UtcNow.ToTotalSeconds();
-                    if (raidBattleTime > ts && RaidLevel != 0)
-                    {
-                        webhooks.Add(WebhookType.Eggs, this);
-                    }
-                    else if (raidEndTime > ts && RaidPokemonId != 0)
-                    {
-                        webhooks.Add(WebhookType.Raids, this);
-                    }
-                }
-            }
-
-            // TODO: Check shouldUpdate
-
-            if (oldGym == null)
-            {
-                webhooks.Add(WebhookType.Gyms, this);
-                webhooks.Add(WebhookType.GymInfo, this);
-
-                var raidBattleTime = RaidBattleTimestamp ?? 0;
-                var raidEndTime = RaidEndTimestamp ?? 0;
-                var ts = DateTime.UtcNow.ToTotalSeconds();
-                if (raidBattleTime > ts && RaidLevel != 0)
-                {
-                    webhooks.Add(WebhookType.Eggs, this);
-                }
-                else if (raidEndTime > ts && RaidPokemonId != 0)
-                {
-                    webhooks.Add(WebhookType.Raids, this);
-                }
-            }
-            else
-            {
                 if (RaidSpawnTimestamp > 0 && (
                     oldGym.RaidLevel != RaidLevel ||
                     oldGym.RaidPokemonId != RaidPokemonId ||
@@ -441,6 +414,8 @@
                     webhooks.Add(WebhookType.GymInfo, this);
                 }
             }
+
+            // TODO: Check shouldUpdate
 
             return webhooks;
         }

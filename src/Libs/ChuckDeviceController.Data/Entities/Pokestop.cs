@@ -586,6 +586,20 @@
                 // Brand new Pokestop to insert, set first_seen_timestamp
                 FirstSeenTimestamp = now;
                 //return;
+
+                webhooks.Add(WebhookType.Pokestops, this);
+                if (LureExpireTimestamp > 0)
+                {
+                    webhooks.Add(WebhookType.Lures, this);
+                }
+                if (QuestTimestamp > 0)
+                {
+                    webhooks.Add(WebhookType.Quests, this);
+                }
+                if (AlternativeQuestTimestamp > 0)
+                {
+                    webhooks.Add(WebhookType.AlternativeQuests, this);
+                }
             }
             else
             {
@@ -662,46 +676,14 @@
                 {
                     webhooks.Add(WebhookType.Lures, this);
                 }
-                if (updateQuest && QuestTimestamp > oldPokestop.QuestTimestamp)
-                {
-                    webhooks.Add(WebhookType.Quests, this);
-                }
-                if (updateQuest && AlternativeQuestTimestamp > oldPokestop.AlternativeQuestTimestamp)
-                {
-                    webhooks.Add(WebhookType.AlternativeQuests, this);
-                }
-            }
-
-            if (oldPokestop == null)
-            {
-                webhooks.Add(WebhookType.Pokestops, this);
-                if (LureExpireTimestamp > 0)
-                {
-                    webhooks.Add(WebhookType.Lures, this);
-                }
-                if (QuestTimestamp > 0)
-                {
-                    webhooks.Add(WebhookType.Quests, this);
-                }
-                if (AlternativeQuestTimestamp > 0)
-                {
-                    webhooks.Add(WebhookType.AlternativeQuests, this);
-                }
-            }
-            else
-            {
-                if (oldPokestop.LureExpireTimestamp < LureExpireTimestamp)
-                {
-                    webhooks.Add(WebhookType.Lures, this);
-                }
                 if (updateQuest && (HasQuestChanges || QuestTimestamp > oldPokestop.QuestTimestamp))
                 {
-                    HasQuestChanges = false;
+                    //HasQuestChanges = false;
                     webhooks.Add(WebhookType.Quests, this);
                 }
                 if (updateQuest && (HasAlternativeQuestChanges || AlternativeQuestTimestamp > oldPokestop.AlternativeQuestTimestamp))
                 {
-                    HasAlternativeQuestChanges = false;
+                    //HasAlternativeQuestChanges = false;
                     webhooks.Add(WebhookType.AlternativeQuests, this);
                 }
             }
