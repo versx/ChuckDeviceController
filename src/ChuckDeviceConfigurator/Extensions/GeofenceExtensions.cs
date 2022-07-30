@@ -1,7 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Extensions
 {
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Models;
 
     public static class GeofenceExtensions

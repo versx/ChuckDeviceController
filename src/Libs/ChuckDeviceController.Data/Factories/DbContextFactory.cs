@@ -6,7 +6,7 @@
     using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
     using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
 
     public static class DbContextFactory
     {

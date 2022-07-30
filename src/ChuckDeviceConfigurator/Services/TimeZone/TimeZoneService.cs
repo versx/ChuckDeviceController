@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.TimeZone
 {
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
 
     public class TimeZoneService : ITimeZoneService
     {
@@ -22,7 +22,12 @@
             {
                 throw new FileNotFoundException($"Time zone database file '{TimeZonesFileName}' does not exist!", filePath);
             }
-            TimeZones = filePath.LoadFromFile<Dictionary<string, TimeZoneOffsetData>>();
+            var obj = filePath.LoadFromFile<Dictionary<string, TimeZoneOffsetData>>();
+            if (obj == null)
+            {
+                throw new NullReferenceException($"Failed to deserialize time zone manifest.");
+            }
+            TimeZones = obj;
         }
     }
 }

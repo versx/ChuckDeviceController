@@ -2,7 +2,7 @@
 {
     using Grpc.Net.Client;
 
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
 
     public class GrpcClientService : IGrpcClientService

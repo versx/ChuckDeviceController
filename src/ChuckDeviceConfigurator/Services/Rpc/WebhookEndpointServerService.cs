@@ -3,7 +3,7 @@
     using Grpc.Core;
 
     using ChuckDeviceConfigurator.Services.Webhooks;
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
 
     public class WebhookEndpointServerService : WebhookEndpoint.WebhookEndpointBase

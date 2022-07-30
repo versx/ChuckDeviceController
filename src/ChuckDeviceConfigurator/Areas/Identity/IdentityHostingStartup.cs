@@ -13,6 +13,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity
             {
                 services.AddDbContext<UserIdentityContext>(options =>
                 {
+                    // TODO: Try catch
                     var connectionString = context.Configuration.GetSection("ConnectionStrings:DefaultConnection").Get<string>();
                     var serverVersion = ServerVersion.AutoDetect(connectionString);
                     options.UseMySql(connectionString, serverVersion);

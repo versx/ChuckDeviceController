@@ -25,9 +25,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8F292B41
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{F0C29FFE-CD55-455B-A45E-52F853116FF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceCommunicator", "ChuckDeviceCommunicator\ChuckDeviceCommunicator.csproj", "{00ED1BCE-3DFA-49BE-80BA-C73A3DADAB5D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceCommunicator", "ChuckDeviceCommunicator\ChuckDeviceCommunicator.csproj", "{00ED1BCE-3DFA-49BE-80BA-C73A3DADAB5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Net", "Libs\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj", "{4EC85B94-B6FF-4955-A935-D43BC0F41EF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Net", "Libs\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj", "{4EC85B94-B6FF-4955-A935-D43BC0F41EF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Extensions.Json", "Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj", "{128BCA49-646E-4AC8-9A40-6F56852DAEB1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +81,10 @@ Global
 		{4EC85B94-B6FF-4955-A935-D43BC0F41EF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4EC85B94-B6FF-4955-A935-D43BC0F41EF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4EC85B94-B6FF-4955-A935-D43BC0F41EF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{128BCA49-646E-4AC8-9A40-6F56852DAEB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{128BCA49-646E-4AC8-9A40-6F56852DAEB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{128BCA49-646E-4AC8-9A40-6F56852DAEB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{128BCA49-646E-4AC8-9A40-6F56852DAEB1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +98,7 @@ Global
 		{2572D7B8-A332-42ED-B72C-DA5782192C39} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 		{F0C29FFE-CD55-455B-A45E-52F853116FF8} = {8F292B41-6BD7-4AEC-AB77-B9988E820368}
 		{4EC85B94-B6FF-4955-A935-D43BC0F41EF7} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
+		{128BCA49-646E-4AC8-9A40-6F56852DAEB1} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {826A78C7-B0DA-4D44-AF8E-BDDBFCE8F569}

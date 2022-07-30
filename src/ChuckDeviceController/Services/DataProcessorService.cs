@@ -16,6 +16,7 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Protos;

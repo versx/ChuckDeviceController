@@ -5,7 +5,7 @@
     using ChuckDeviceCommunicator.Services.Rpc;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Net.Utilities;
     using ChuckDeviceController.Protos;
 

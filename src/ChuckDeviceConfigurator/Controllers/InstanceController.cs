@@ -9,7 +9,7 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
 
     [Authorize(Roles = RoleConsts.InstancesRole)]
     public class InstanceController : Controller

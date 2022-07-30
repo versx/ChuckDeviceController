@@ -11,7 +11,7 @@
         /// <typeparam name="T">The type of object to convert the string to.</typeparam>
         /// <param name="value">The actual string value.</param>
         /// <returns>Returns an object relating to the converted string.</returns>
-        public static T StringToObject<T>(this string value)
+        public static T? StringToObject<T>(this string value)
         {
             //TypeConverter tc = TypeDescriptor.GetConverter(typeof(T));
             //return (T)tc.ConvertFromString(value);
@@ -56,23 +56,6 @@
                 Debug.WriteLine($"ObjectToString: {ex}");
                 return value.ToString();
             }
-        }
-
-        public static T LoadFromFile<T>(this string filePath)
-        {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException($"{filePath} file not found.", filePath);
-            }
-
-            var data = File.ReadAllText(filePath);
-            if (string.IsNullOrEmpty(data))
-            {
-                Console.WriteLine($"{filePath} file is empty.");
-                return default;
-            }
-
-            return data.FromJson<T>();
         }
 
         public static void Shuffle<T>(this IList<T> list)

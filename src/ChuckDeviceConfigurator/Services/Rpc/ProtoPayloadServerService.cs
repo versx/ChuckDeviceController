@@ -5,7 +5,7 @@
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
 
     public class ProtoPayloadServerService : Payload.PayloadBase
