@@ -29,21 +29,34 @@
 
         #region Event Handlers
 
-        public override Task<WebhookEndpointResponse> ReceivedWebhookEndpoint(WebhookEndpointRequest request, ServerCallContext context)
+        public override async Task<WebhookEndpointResponse> ReceivedWebhookEndpoint(WebhookEndpointRequest request, ServerCallContext context)
         {
-            _logger.LogInformation($"Received fetch webhook endpoints request");
+            _logger.LogDebug($"Received fetch webhook endpoints request from: {context.Host}");
 
             var webhooks = _webhookService.GetAll();
-            var json = webhooks.ToJson();
+            if (webhooks == null)
+            {
+                return await Task.FromResult(new WebhookEndpointResponse
+                {
+                    Status = WebhookEndpointStatus.Error,
+                });
+            }
 
-            // TODO: Provide error status if failed to get webhooks
+            var json = webhooks.ToJson();
+            if (string.IsNullOrEmpty(json))
+            {
+                return await Task.FromResult(new WebhookEndpointResponse
+                {
+                    Status = WebhookEndpointStatus.Error,
+                });
+            }
 
             var response = new WebhookEndpointResponse
             {
                 Status = WebhookEndpointStatus.Ok,
                 Payload = json,
             };
-            return Task.FromResult(response);
+            return await Task.FromResult(response);
         }
 
         #endregion

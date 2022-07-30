@@ -8,7 +8,7 @@
         private const string AppSettings = "appsettings.json";
         private const string AppSettingsFormat = "appsettings.{0}.json";
 
-        public static IConfigurationRoot LoadConfig(string[] args, string env = "")
+        public static IConfigurationRoot LoadConfig(string[] args, string? env = null)
         {
             var baseFilePath = Path.Combine(BasePath, AppSettings);
             var envFilePath = Path.Combine(BasePath, string.Format(AppSettingsFormat, env));

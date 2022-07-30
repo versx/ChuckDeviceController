@@ -24,6 +24,7 @@
 
         private readonly ILogger<IWebhookRelayService> _logger;
         private readonly IGrpcClientService _grpcClientService;
+        private readonly IConfiguration _configuration;
         private readonly List<Webhook> _webhookEndpoints = new();
         private readonly Timer _timer;
         private readonly Timer _requestTimer;
@@ -89,18 +90,20 @@
             _timer = new Timer(WebhookRelayIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckWebhooksAsync();
 
-            // TODO: Eventually receive webhook endpoints on-demand
+            // TODO: Eventually receive webhook endpoints on-demand via configurator
             _requestTimer = new Timer(RequestWebhookIntervalS * 1000);
-            _requestTimer.Elapsed += async (sender, e) => await RequestWebhookEndpointsAsync();
+            _requestTimer.Elapsed += async (sender, e) => await SendWebhookEndpointsRequestAsync();
 
-            Start();
+            StartAsync().ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
         }
 
         #endregion
 
         #region Public Methods
 
-        public void Start()
+        public async Task StartAsync()
         {
             _logger.LogInformation($"Starting webhook relay service...");
             if (!_timer.Enabled)
@@ -113,12 +116,10 @@
                 _requestTimer.Start();
             }
 
-            RequestWebhookEndpointsAsync().ConfigureAwait(false)
-                                          .GetAwaiter()
-                                          .GetResult();
+            await SendWebhookEndpointsRequestAsync();
         }
 
-        public void Stop()
+        public async Task StopAsync()
         {
             _logger.LogInformation($"Stopping webhook relay service...");
             if (_timer.Enabled)
@@ -130,18 +131,18 @@
             {
                 _requestTimer.Stop();
             }
+
+            await Task.CompletedTask;
         }
 
-        public void Reload()
+        public async Task ReloadAsync()
         {
             _logger.LogInformation($"Reloading webhook relay service...");
 
-            RequestWebhookEndpointsAsync().ConfigureAwait(false)
-                                          .GetAwaiter()
-                                          .GetResult();
+            await SendWebhookEndpointsRequestAsync();
         }
 
-        public void Enqueue(WebhookPayloadType webhookType, string json)
+        public async Task EnqueueAsync(WebhookPayloadType webhookType, string json)
         {
             if (!IsRunning)
             {
@@ -302,6 +303,8 @@
                     }
                     break;
             }
+
+            await Task.CompletedTask;
         }
 
         #endregion
@@ -534,7 +537,6 @@
 
             var json = payloads.ToJson();
             // Send webhook payloads to endpoint
-            // TODO: Use retry count
             var (statusCode, result) = await NetUtils.PostAsync(url, json, _timeout);
             if (statusCode != System.Net.HttpStatusCode.OK)
             {
@@ -550,13 +552,13 @@
                 retryCount++;
                 _logger.LogWarning($"Retry attempt {retryCount}/{MaximumRetryCount} to resend webhook payload to endpoint {url}");
 
-                await SendWebhookEventsAsync(url, payloads, retryCount);
+                await SendWebhookEventsAsync(url, payloads!, retryCount);
                 return;
             }
             _logger.LogInformation($"Sent {payloads!.Count:N0} webhook events to {url}. Total sent this session: {_totalWebhooksSent}");
         }
 
-        private async Task RequestWebhookEndpointsAsync()
+        private async Task SendWebhookEndpointsRequestAsync()
         {
             _logger.LogInformation($"Requesting webhook endpoints from configurator...");
 

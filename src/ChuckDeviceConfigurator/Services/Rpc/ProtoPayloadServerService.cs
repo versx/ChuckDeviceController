@@ -31,15 +31,18 @@
 
         #region Event Handlers
 
-        public override Task<PayloadResponse> ReceivedPayload(PayloadRequest request, ServerCallContext context)
+        public override async Task<PayloadResponse> ReceivedPayload(PayloadRequest request, ServerCallContext context)
         {
-            //_logger.LogInformation($"Received {request.PayloadType} proto message");
+            //_logger.LogDebug($"Received {request.PayloadType} proto message");
 
             var json = request.Payload;
             if (string.IsNullOrEmpty(json))
             {
                 _logger.LogError($"JSON payload was null, unable to deserialize Pokemon entity");
-                return null;
+                return await Task.FromResult(new PayloadResponse
+                {
+                    Status = PayloadStatus.Error,
+                });
             }
 
             switch (request.PayloadType)
@@ -61,11 +64,10 @@
                     break;
             }
 
-            var response = new PayloadResponse
+            return await Task.FromResult(new PayloadResponse
             {
                 Status = PayloadStatus.Ok,
-            };
-            return Task.FromResult(response);
+            });
         }
 
         #endregion

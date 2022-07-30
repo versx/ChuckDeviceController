@@ -28,18 +28,36 @@
 
         public override async Task<TrainerInfoResponse> ReceivedTrainerInfo(TrainerInfoRequest request, ServerCallContext context)
         {
-            _logger.LogInformation($"Received {request.Username} request for trainer info");
+            _logger.LogDebug($"Received {request.Username} request for trainer info");
 
             var username = request.Username;
+            if (string.IsNullOrEmpty(username))
+            {
+                _logger.LogWarning($"Trainer username was null, unable to fetch trainer info.");
+                return await Task.FromResult(new TrainerInfoResponse
+                {
+                    Status = TrainerInfoStatus.Error,
+                });
+            }
+
             var result = _jobControllerService.GetTrainerLevelingStatus(username);
-            var response = new TrainerInfoResponse
+            if (result == null)
+            {
+                _logger.LogWarning($"Trainer leveling status for username '{username}' from job controller service returned null, unable to fetch trainer info.");
+                return await Task.FromResult(new TrainerInfoResponse
+                {
+                    Status = TrainerInfoStatus.Error,
+                    Username = username,
+                });
+            }
+
+            return await Task.FromResult(new TrainerInfoResponse
             {
                 Status = TrainerInfoStatus.Ok,
                 Username = username,
                 StoreLevelingData = result.StoreLevelingData,
                 IsLeveling = result.IsTrainerLeveling,
-            };
-            return await Task.FromResult(response);
+            });
         }
     }
 }

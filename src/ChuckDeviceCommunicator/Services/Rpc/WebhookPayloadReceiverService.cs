@@ -17,24 +17,25 @@
             _webhookRelayService = webhookRelayService;
         }
 
-        public override Task<WebhookPayloadResponse> ReceivedWebhookPayload(WebhookPayloadRequest request, ServerCallContext context)
+        public override async Task<WebhookPayloadResponse> ReceivedWebhookPayload(WebhookPayloadRequest request, ServerCallContext context)
         {
             var json = request.Payload;
             if (string.IsNullOrEmpty(json))
             {
                 _logger.LogError($"JSON payload was null, unable to deserialize webhook payload");
-                return null;
+                return await Task.FromResult(new WebhookPayloadResponse
+                {
+                    Status = WebhookPayloadStatus.Error,
+                });
             }
-            _logger.LogInformation($"Host: {context.Host}");
 
             // TODO: Decide whether to deserialize webhook payload json here or in relay service
             _webhookRelayService.Enqueue(request.PayloadType, request.Payload);
 
-            var response = new WebhookPayloadResponse
+            return await Task.FromResult(new WebhookPayloadResponse
             {
                 Status = WebhookPayloadStatus.Ok,
-            };
-            return Task.FromResult(response);
+            });
         }
     }
 }
