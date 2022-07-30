@@ -3,6 +3,7 @@
     using System.Text.Json;
     using System.Timers;
 
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Net.Utilities;
     using ChuckDeviceController.Pvp.Extensions;
     using ChuckDeviceController.Pvp.GameMaster;
@@ -449,9 +450,14 @@
             _lastETag = newETag;
 
             var requestData = await NetUtils.GetAsync(Strings.MasterFileEndpoint);
+            if (string.IsNullOrEmpty(requestData))
+            {
+                Console.WriteLine($"Failed to download latest game master file data.");
+                return;
+            }
 
             Console.WriteLine($"Starting game master file parsing...");
-            var templates = FromJson<List<Dictionary<string, object>>>(requestData);
+            var templates = requestData.FromJson<List<Dictionary<string, object>>>();
             if (templates == null)
             {
                 // Failed to parse templates
@@ -468,7 +474,7 @@
                     // Failed
                     continue;
                 }
-                var data = FromJson<PokemonTemplate>(templateData);
+                var data = templateData.FromJson<PokemonTemplate>();
                 if (data == null)
                     continue;
 
@@ -623,23 +629,6 @@
         }
 
         #endregion
-
-        // TODO: Move eventually or reference ChuckDeviceController.Extensions library
-        public static T? FromJson<T>(string json) =>
-            JsonSerializer.Deserialize<T>(json, _jsonOptions);
-
-        public static string ToJson<T>(T obj, bool pretty = false)
-        {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                AllowTrailingCommas = true,
-                WriteIndented = pretty,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-            };
-            var json = JsonSerializer.Serialize(obj, options);
-            return json;
-        }
 
         /*
         private class PvpRankComparer : IComparer<uint>

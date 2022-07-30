@@ -5,11 +5,11 @@
     using Microsoft.EntityFrameworkCore;
     using POGOProtos.Rpc;
 
-    using ChuckDeviceConfigurator.Collections;
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceConfigurator.Utilities;
+    using ChuckDeviceController.Collections;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;

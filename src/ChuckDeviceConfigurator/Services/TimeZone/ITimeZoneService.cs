@@ -6,6 +6,9 @@
     /// </summary>
     public interface ITimeZoneService
     {
+        /// <summary>
+        /// Gets a dictionary of available time zones and their offset information.
+        /// </summary>
         IReadOnlyDictionary<string, TimeZoneOffsetData> TimeZones { get; }
     }
 }

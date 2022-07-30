@@ -6,7 +6,7 @@
     using Google.Common.Geometry;
     using POGOProtos.Rpc;
 
-    using ChuckDeviceController.Cache;
+    using ChuckDeviceController.Collections.Cache;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;

@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Net",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Extensions.Json", "Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj", "{128BCA49-646E-4AC8-9A40-6F56852DAEB1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Collections", "ChuckDeviceController.Collections\ChuckDeviceController.Collections.csproj", "{F2DE7FDF-86AE-4B4C-9BDA-A11478073E02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,10 @@ Global
 		{128BCA49-646E-4AC8-9A40-6F56852DAEB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{128BCA49-646E-4AC8-9A40-6F56852DAEB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{128BCA49-646E-4AC8-9A40-6F56852DAEB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2DE7FDF-86AE-4B4C-9BDA-A11478073E02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2DE7FDF-86AE-4B4C-9BDA-A11478073E02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2DE7FDF-86AE-4B4C-9BDA-A11478073E02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2DE7FDF-86AE-4B4C-9BDA-A11478073E02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +105,7 @@ Global
 		{F0C29FFE-CD55-455B-A45E-52F853116FF8} = {8F292B41-6BD7-4AEC-AB77-B9988E820368}
 		{4EC85B94-B6FF-4955-A935-D43BC0F41EF7} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 		{128BCA49-646E-4AC8-9A40-6F56852DAEB1} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
+		{F2DE7FDF-86AE-4B4C-9BDA-A11478073E02} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {826A78C7-B0DA-4D44-AF8E-BDDBFCE8F569}

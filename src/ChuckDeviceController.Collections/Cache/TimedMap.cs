@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Cache
+﻿namespace ChuckDeviceController.Collections.Cache
 {
     // Credits: https://codereview.stackexchange.com/questions/229094/leetcode-time-based-key-value-store-c
     public class TimedMap<T>

@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Collections
+﻿namespace ChuckDeviceController.Collections
 {
     public class PokemonPriorityQueue<T> : List<T>
     {
