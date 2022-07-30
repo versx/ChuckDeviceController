@@ -18,6 +18,14 @@
             _grpcControllerServerEndpoint = controllerEndpoint;
         }
 
+        /// <summary>
+        ///     Sends a gRPC request to retrieve the latest available webhook endpoints
+        ///     from the configurator.
+        /// </summary>
+        /// <returns>
+        ///     Returns the webhook endpoint response containing the available
+        ///     webhook endpoints.
+        /// </returns>
         public async Task<WebhookEndpointResponse> GetWebhookEndpointsAsync()
         {
             // Create gRPC channel for receiving gRPC server address

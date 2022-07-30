@@ -4,13 +4,13 @@
 
     using ChuckDeviceController.Protos;
 
-    public class WebhookPayloadReceiverService : WebhookPayload.WebhookPayloadBase, IWebhookPayloadReceiverService
+    public class WebhookPayloadReceiverService : WebhookPayload.WebhookPayloadBase
     {
-        private readonly ILogger<IWebhookPayloadReceiverService> _logger;
+        private readonly ILogger<WebhookPayloadReceiverService> _logger;
         private readonly IWebhookRelayService _webhookRelayService;
 
         public WebhookPayloadReceiverService(
-            ILogger<IWebhookPayloadReceiverService> logger,
+            ILogger<WebhookPayloadReceiverService> logger,
             IWebhookRelayService webhookRelayService)
         {
             _logger = logger;
@@ -19,17 +19,15 @@
 
         public override Task<WebhookPayloadResponse> ReceivedWebhookPayload(WebhookPayloadRequest request, ServerCallContext context)
         {
-            //_logger.LogInformation($"Received {request.PayloadType} webhook payload proto message");
-
             var json = request.Payload;
             if (string.IsNullOrEmpty(json))
             {
                 _logger.LogError($"JSON payload was null, unable to deserialize webhook payload");
                 return null;
             }
+            _logger.LogInformation($"Host: {context.Host}");
 
             // TODO: Decide whether to deserialize webhook payload json here or in relay service
-
             _webhookRelayService.Enqueue(request.PayloadType, request.Payload);
 
             var response = new WebhookPayloadResponse

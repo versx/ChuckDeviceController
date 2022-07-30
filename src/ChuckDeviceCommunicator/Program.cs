@@ -1,9 +1,19 @@
 using ChuckDeviceCommunicator.Services;
 using ChuckDeviceCommunicator.Services.Rpc;
+using ChuckDeviceController.Configuration;
 
-// TODO: Load config
+
+var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+var config = Config.LoadConfig(args, env);
+if (config.Providers.Count() == 2)
+{
+    // Only environment variables and command line providers added,
+    // failed to load config provider.
+    Environment.FailFast($"Failed to find or load configuration file, exiting...");
+}
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseConfiguration(config);
 
 // Additional configuration is required to successfully run gRPC on macOS.
 // For instructions on how to configure Kestrel and gRPC clients on macOS, visit https://go.microsoft.com/fwlink/?linkid=2099682
