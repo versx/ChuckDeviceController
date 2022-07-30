@@ -21,8 +21,14 @@
 
         public static string ToJson<T>(this T obj, bool pretty = false)
         {
-            _jsonOptions.WriteIndented = pretty;
-            var json = JsonSerializer.Serialize(obj, _jsonOptions);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                WriteIndented = pretty,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+            };
+            var json = JsonSerializer.Serialize(obj, options);
             return json;
         }
 
