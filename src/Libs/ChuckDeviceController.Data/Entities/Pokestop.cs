@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
     using System;
+    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
@@ -55,13 +56,19 @@
         [Column("updated")]
         public ulong Updated { get; set; }
 
-        [Column("enabled")]
+        [
+            DisplayName("Enabled"),
+            Column("enabled"),
+        ]
         public bool IsEnabled { get; set; }
 
         [Column("cell_id")]
         public ulong CellId { get; set; }
 
-        [Column("deleted")]
+        [
+            DisplayName("Deleted"),
+            Column("deleted"),
+        ]
         public bool IsDeleted { get; set; }
 
         [Column("first_seen_timestamp")]
@@ -194,7 +201,13 @@
         public bool HasQuestChanges { get; set; }
 
         [NotMapped]
-        public bool HasAlternativeQuestChanges = true;
+        public bool HasAlternativeQuestChanges { get; set; }
+
+        [
+            DisplayName("Last Updated"),
+            NotMapped,
+        ]
+        public string UpdatedTime { get; set; }
 
         #endregion
 

@@ -10,6 +10,8 @@
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
 
     [Authorize(Roles = RoleConsts.UtilitiesRole)]
     public class UtilitiesController : Controller
@@ -36,6 +38,8 @@
         {
             return View();
         }
+
+        #region Clear Quests
 
         // GET: UtilitiesController/ClearQuests
         public ActionResult ClearQuests()
@@ -102,7 +106,7 @@
                     _logger.LogInformation($"All quests have been cleared");
                 }
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(ClearQuests));
             }
             catch
             {
@@ -110,5 +114,332 @@
                 return View(model);
             }
         }
+
+        #endregion
+
+        #region Convert Forts
+
+        // GET: UtilitiesController/ConvertForts
+        public ActionResult ConvertForts()
+        {
+            // Retrieve Pokestops/Gyms that have been upgraded/downgraded
+            var pokestops = _mapContext.Pokestops.ToList();
+            var gyms = _mapContext.Gyms.ToList();
+            var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
+                                                .ToList();
+            convertiblePokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
+            var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
+                                      .ToList();
+            convertibleGyms.ForEach(gym => gym.UpdatedTime = gym.Updated.GetLastUpdatedStatus());
+
+            var model = new ConvertFortsViewModel
+            {
+                PokestopsToGyms = convertiblePokestops,
+                GymsToPokestops = convertibleGyms,
+            };
+            return View(model);
+        }
+
+        // POST: UtilitiesController/ConvertForts
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ConvertForts(ConvertFortsViewModel model)
+        {
+            try
+            {
+                var pokestops = _mapContext.Pokestops.ToList();
+                var gyms = _mapContext.Gyms.ToList();
+                var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
+                                                    .ToList();
+                var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
+                                          .ToList();
+
+                foreach (var pokestop in convertiblePokestops)
+                {
+                    var result = await ConvertPokestopToGymAsync(pokestop);
+                    if (!result)
+                    {
+                        _logger.LogError($"Failed to convert Pokestop to Gym with id '{pokestop.Id}'");
+                    }
+                }
+
+                foreach (var gym in convertibleGyms)
+                {
+                    var result = await ConvertGymToPokestopAsync(gym);
+                    if (!result)
+                    {
+                        _logger.LogError($"Failed to convert Gym to Pokestop with id '{gym.Id}'");
+                    }
+                }
+
+                return RedirectToAction(nameof(ConvertForts));
+            }
+            catch
+            {
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while converting forts.");
+                return View(model);
+            }
+        }
+
+        // GET: UtilitiesController/ConvertPokestop/3243243242
+        [HttpGet]
+        public async Task<ActionResult> ConvertPokestop(string id)
+        {
+            try
+            {
+                // Convert individual Pokestop to Gym
+                var pokestop = await _mapContext.Pokestops.FindAsync(id);
+                if (pokestop == null)
+                {
+                    ModelState.AddModelError("Utilities", $"Failed to retrieve Pokestop with id '{id}'");
+                    return View();
+                }
+
+                var result = await ConvertPokestopToGymAsync(pokestop);
+                if (!result)
+                {
+                    _logger.LogError($"Failed to convert Pokestop to Gym with id '{id}'");
+                }
+                else
+                {
+                    _logger.LogInformation($"Successfully converted Pokestop '{id}' to Gym");
+                }
+
+                return RedirectToAction(nameof(ConvertForts));
+            }
+            catch
+            {
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while converting Pokestop '{id}' to Gym.");
+                return View();
+            }
+        }
+
+        // GET: UtilitiesController/DeletePokestop/3243243242
+        [HttpGet]
+        public async Task<ActionResult> DeletePokestop(string id)
+        {
+            try
+            {
+                var result = await _mapContext.Pokestops.DeleteByKeyAsync(id);
+                if (result != 1)
+                {
+                    ModelState.AddModelError("Utilities", $"Failed to delete Pokestop with id '{id}");
+                }
+
+                return RedirectToAction(nameof(ConvertForts));
+            }
+            catch
+            {
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while deleting Pokestop '{id}'.");
+                return View();
+            }
+        }
+
+        // GET: UtilitiesController/ConvertGym/3243243242
+        [HttpGet]
+        public async Task<ActionResult> ConvertGym(string id)
+        {
+            try
+            {
+                // Convert individual Gym to Pokestop
+                var gym = await _mapContext.Gyms.FindAsync(id);
+                if (gym == null)
+                {
+                    ModelState.AddModelError("Utilities", $"Failed to retrieve Gym with id '{id}'");
+                    return View();
+                }
+
+                var result = await ConvertGymToPokestopAsync(gym);
+                if (!result)
+                {
+                    _logger.LogError($"Failed to convert Gym to Pokestop with id '{id}'");
+                }
+                else
+                {
+                    _logger.LogInformation($"Successfully converted Gym '{id}' to Pokestop");
+                }
+
+                return RedirectToAction(nameof(ConvertForts));
+            }
+            catch
+            {
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while converting Gym '{id}' to Pokestop.");
+                return View();
+            }
+        }
+
+        // GET: UtilitiesController/DeleteGym/3243243242
+        [HttpGet]
+        public async Task<ActionResult> DeleteGym(string id)
+        {
+            try
+            {
+                var result = await _mapContext.Gyms.DeleteByKeyAsync(id);
+                if (result != 1)
+                {
+                    ModelState.AddModelError("Utilities", $"Failed to delete Gym with id '{id}");
+                }
+
+                return RedirectToAction(nameof(ConvertForts));
+            }
+            catch
+            {
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while deleting Gym '{id}'.");
+                return View();
+            }
+        }
+
+        // GET: UtilitiesController/ConvertPokestops
+        [HttpGet]
+        public async Task<ActionResult> ConvertPokestops(ConvertFortsViewModel model)
+        {
+            try
+            {
+                // Convert all Pokestops to Gyms
+                var pokestops = _mapContext.Pokestops.ToList();
+                var gyms = _mapContext.Gyms.ToList();
+                var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
+                                                    .ToList();
+
+                foreach (var pokestop in convertiblePokestops)
+                {
+                    var result = await ConvertPokestopToGymAsync(pokestop);
+                    if (!result)
+                    {
+                        _logger.LogError($"Failed to convert Pokestop to Gym with id '{pokestop.Id}'");
+                    }
+                }
+
+                return RedirectToAction(nameof(ConvertForts));
+            }
+            catch
+            {
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while converting Pokestops to Gyms.");
+                return View(model);
+            }
+        }
+
+        // GET: UtilitiesController/ConvertGyms
+        [HttpGet]
+        public async Task<ActionResult> ConvertGyms(ConvertFortsViewModel model)
+        {
+            try
+            {
+                // Convert all Gyms to Pokestops
+                var pokestops = _mapContext.Pokestops.ToList();
+                var gyms = _mapContext.Gyms.ToList();
+                var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
+                                          .ToList();
+
+                foreach (var gym in convertibleGyms)
+                {
+                    var result = await ConvertGymToPokestopAsync(gym);
+                    if (!result)
+                    {
+                        _logger.LogError($"Failed to convert Gym to Pokestop with id '{gym.Id}'");
+                    }
+                }
+
+                return RedirectToAction(nameof(ConvertForts));
+            }
+            catch
+            {
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while converting Gyms to Pokestops.");
+                return View(model);
+            }
+        }
+
+        #endregion
+
+        public ActionResult ClearStalePokestops()
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var pokestops = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
+                                                 .ToList();
+            ViewBag.Pokestops = pokestops;
+            return View();
+        }
+
+        #region Private Methods
+
+        private async Task<bool> ConvertPokestopToGymAsync(Pokestop pokestop)
+        {
+            var gym = await _mapContext.Gyms.FindAsync(pokestop.Id);
+            if (gym != null)
+            {
+                var needsUpdate = false;
+                if (string.IsNullOrEmpty(gym.Name))
+                {
+                    gym.Name = pokestop.Name;
+                    needsUpdate = true;
+                }
+                if (string.IsNullOrEmpty(gym.Url))
+                {
+                    gym.Url = pokestop.Url;
+                    needsUpdate = true;
+                }
+
+                // Delete old Pokestop
+                _mapContext.Pokestops.Remove(pokestop);
+                await _mapContext.SaveChangesAsync();
+
+                if (needsUpdate)
+                {
+                    // Update Gym details
+                    gym.IsEnabled = true;
+                    gym.IsDeleted = false;
+                    _mapContext.Gyms.Update(gym);
+                    await _mapContext.SaveChangesAsync();
+                }
+                return true;
+            }
+            else
+            {
+                // TODO: Insert new gym from pokestop properties
+            }
+
+            return false;
+        }
+
+        private async Task<bool> ConvertGymToPokestopAsync(Gym gym)
+        {
+            var pokestop = await _mapContext.Pokestops.FindAsync(gym.Id);
+            if (pokestop != null)
+            {
+                var needsUpdate = false;
+                if (string.IsNullOrEmpty(pokestop.Name))
+                {
+                    pokestop.Name = gym.Name;
+                    needsUpdate = true;
+                }
+                if (string.IsNullOrEmpty(pokestop.Url))
+                {
+                    pokestop.Url = gym.Url;
+                    needsUpdate = true;
+                }
+
+                // Delete old Gym
+                _mapContext.Gyms.Remove(gym);
+                await _mapContext.SaveChangesAsync();
+
+                if (needsUpdate)
+                {
+                    // Update Pokestop details
+                    pokestop.IsEnabled = true;
+                    pokestop.IsDeleted = false;
+                    _mapContext.Pokestops.Update(pokestop);
+                    await _mapContext.SaveChangesAsync();
+                }
+                return true;
+            }
+            else
+            {
+                // TODO: Insert new pokestop from gym properties
+            }
+
+            return false;
+        }
+
+        #endregion
     }
 }

@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
     using System;
+    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
@@ -73,7 +74,10 @@
         [Column("raid_level")]
         public ushort? RaidLevel { get; set; }
 
-        [Column("enabled")]
+        [
+            DisplayName("Enabled"),
+            Column("enabled"),
+        ]
         public bool IsEnabled { get; set; }
 
         [Column("ex_raid_eligible")]
@@ -109,7 +113,10 @@
         [Column("cell_id")]
         public ulong CellId { get; set; }
 
-        [Column("deleted")]
+        [
+            DisplayName("Deleted"),
+            Column("deleted"),
+        ]
         public bool IsDeleted { get; set; }
 
         [Column("total_cp")]
@@ -135,6 +142,12 @@
 
         [NotMapped]
         public bool HasChanges { get; set; }
+
+        [
+            DisplayName("Last Updated"),
+            NotMapped,
+        ]
+        public string UpdatedTime { get; set; }
 
         #endregion
 

@@ -58,37 +58,37 @@
         var index = 1;
         foreach (var item in Model.Queue)
         {
-                <tr>
-                    <th scope="row">
-                        @index
-                    </th>
-                    <td>
-                        @Html.Raw(item.Image)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.PokemonName)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.PokemonId)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.PokemonForm)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.PokemonCostume)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.EncounterId)
-                    </td>
-                    <td>
-                        @Html.Raw(item.Location)
-                    </td>
-                    <td>
-                        <a class="btn btn-danger btn-sm" href="@Model.Name/Remove/@item.EncounterId" title="@(removeEncounterText)">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </a>
-                    </td>
-                </tr>
+            <tr>
+                <th scope="row">
+                    @index
+                </th>
+                <td>
+                    @Html.Raw(item.Image)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonForm)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonCostume)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EncounterId)
+                </td>
+                <td>
+                    @Html.Raw(item.Location)
+                </td>
+                <td>
+                    <a class="btn btn-danger btn-sm" href="@Model.Name/Remove/@item.EncounterId" title="@(removeEncounterText)">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </a>
+                </td>
+            </tr>
             index++;
         }
     }

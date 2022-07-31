@@ -13,7 +13,6 @@
 <p>
     • Select an instance to clear any quests for that specific instance.<br />
     • Select a geofence to clear any quests within that geofence.<br />
-    • Select neither (nothing) to clear <b><u>ALL</u></b> quests from the database.<br />
 </p>
 
 <hr />
@@ -34,8 +33,10 @@
                 </select>
                 <span asp-validation-for="GeofenceName" class="text-danger"></span>
             </div>
+            <br />
             <div class="form-group">
-                <input type="submit" value="Clear" class="btn btn-primary" onclick="@(string.IsNullOrEmpty(Model.GeofenceName) && string.IsNullOrEmpty(Model.InstanceName) ? "return confirm('You are about to clear all quests, are you sure this is what you want to do?');" : "")" />
+                <input type="submit" value="Clear Quests" class="btn btn-danger"/>
+                <input type="submit" value="Clear All Quests" class="btn btn-danger" onclick="return confirm('You are about to clear all quests, are you sure this is what you want to do?');" />
             </div>
         </form>
     </div>

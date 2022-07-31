@@ -29,9 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceCommunicator", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Net", "Libs\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj", "{4EC85B94-B6FF-4955-A935-D43BC0F41EF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Extensions.Json", "Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj", "{128BCA49-646E-4AC8-9A40-6F56852DAEB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Extensions.Json", "Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj", "{128BCA49-646E-4AC8-9A40-6F56852DAEB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Collections", "ChuckDeviceController.Collections\ChuckDeviceController.Collections.csproj", "{F2DE7FDF-86AE-4B4C-9BDA-A11478073E02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Collections", "ChuckDeviceController.Collections\ChuckDeviceController.Collections.csproj", "{F2DE7FDF-86AE-4B4C-9BDA-A11478073E02}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
