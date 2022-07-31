@@ -14,7 +14,9 @@
                                            .ToLocalTime()
                                            .ToString(Strings.DefaultDateTimeFormat);
             device.LastSeenTime = isMoreThanOneDay
-                ? lastSeen
+                ? device.LastSeen == 0
+                    ? "Never"
+                    : lastSeen
                 : TimeSpanUtils.ToReadableString(device.LastSeen ?? 0);
             device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
                 ? Strings.DeviceOnlineIcon
