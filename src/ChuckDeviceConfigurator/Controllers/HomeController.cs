@@ -34,26 +34,29 @@
         {
             var model = new DashboardViewModel
             {
-                Accounts = (uint)_deviceContext.Accounts.Count(),
-                Assignments = (uint)_deviceContext.Assignments.Count(),
-                AssignmentGroups = (uint)_deviceContext.AssignmentGroups.Count(),
-                Devices = (uint)_deviceContext.Devices.Count(),
-                DeviceGroups = (uint)_deviceContext.DeviceGroups.Count(),
-                Geofences = (uint)_deviceContext.Geofences.Count(),
-                Instances = (uint)_deviceContext.Instances.Count(),
-                IvLists = (uint)_deviceContext.IvLists.Count(),
-                Webhooks = (uint)_deviceContext.Webhooks.Count(),
-                Users = (uint)_userManager.Users.Count(),
+                Accounts = (ulong)_deviceContext.Accounts.LongCount(),
+                Assignments = (ulong)_deviceContext.Assignments.LongCount(),
+                AssignmentGroups = (ulong)_deviceContext.AssignmentGroups.LongCount(),
+                Devices = (ulong)_deviceContext.Devices.LongCount(),
+                DeviceGroups = (ulong)_deviceContext.DeviceGroups.LongCount(),
+                Geofences = (ulong)_deviceContext.Geofences.LongCount(),
+                Instances = (ulong)_deviceContext.Instances.LongCount(),
+                IvLists = (ulong)_deviceContext.IvLists.LongCount(),
+                Webhooks = (ulong)_deviceContext.Webhooks.LongCount(),
+                Users = (ulong)_userManager.Users.LongCount(),
 
-                Gyms = (uint)_mapContext.Gyms.Count(),
-                GymDefenders = (uint)_mapContext.GymDefenders.Count(),
-                GymTrainers = (uint)_mapContext.GymTrainers.Count(),
-                Incidents = (uint)_mapContext.Incidents.Count(),
-                Pokemon = (uint)_mapContext.Pokemon.Count(),
-                Pokestops = (uint)_mapContext.Pokestops.Count(),
-                Cells = (uint)_mapContext.Cells.Count(),
-                Spawnpoints = (uint)_mapContext.Spawnpoints.Count(),
-                Weather = (uint)_mapContext.Weather.Count(),
+                Gyms = (ulong)_mapContext.Gyms.LongCount(),
+                GymDefenders = (ulong)_mapContext.GymDefenders.LongCount(),
+                GymTrainers = (ulong)_mapContext.GymTrainers.LongCount(),
+                // TODO: Raids
+                Incidents = (ulong)_mapContext.Incidents.LongCount(),
+                Pokemon = (ulong)_mapContext.Pokemon.LongCount(),
+                Pokestops = (ulong)_mapContext.Pokestops.LongCount(),
+                // TODO: Lures
+                // TODO: Quests
+                Cells = (ulong)_mapContext.Cells.LongCount(),
+                Spawnpoints = (ulong)_mapContext.Spawnpoints.LongCount(),
+                Weather = (ulong)_mapContext.Weather.LongCount(),
             };
             return View(model);
         }
