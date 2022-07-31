@@ -24,18 +24,12 @@
         {
             var coords = new List<Coordinate>();
             var area = geofence.Data?.Area;
-            if (area is null)
+            var coordsArray = ParseGeofenceArea<List<Coordinate>>(geofence.Name, area);
+            if (coordsArray == null)
             {
-                Console.WriteLine($"Failed to parse geofence '{geofence.Name}' coordinates");
+                Console.WriteLine($"Failed to parse Coordinates list from geofence");
                 return null;
             }
-            string areaJson = Convert.ToString(area);
-            var coordsArray = (List<Coordinate>)
-            (
-                area is List<Coordinate>
-                    ? area
-                    : areaJson.FromJson<List<Coordinate>>()
-            );
             coords.AddRange(coordsArray);
             return coords;
         }
@@ -64,18 +58,12 @@
             var coordinates = new List<List<Coordinate>>();
 
             var area = geofence.Data?.Area;
-            if (area is null)
+            var coordsArray = ParseGeofenceArea<List<List<Coordinate>>>(geofence.Name, area);
+            if (coordsArray == null)
             {
-                Console.WriteLine($"Failed to parse coordinates for geofence '{geofence.Name}'");
-                return default;
+                Console.WriteLine($"Failed to parse MultiPolygon coordinates from geofence");
+                return (null, null);
             }
-            string areaJson = Convert.ToString(area);
-            var coordsArray = (List<List<Coordinate>>)
-            (
-                area is List<List<Coordinate>>
-                    ? area
-                    : areaJson.FromJson<List<List<Coordinate>>>()
-            );
             coordinates.AddRange(coordsArray);
 
             var areaArrayEmptyInner = new List<MultiPolygon>();
@@ -105,6 +93,23 @@
             }
             multiPolygons.AddRange(areaArrayEmptyInner);
             return (multiPolygons, coordinates);
+        }
+
+        private static T? ParseGeofenceArea<T>(string geofenceName, dynamic area)
+        {
+            if (area is null)
+            {
+                Console.WriteLine($"Failed to parse coordinates for geofence '{geofenceName}'");
+                return default;
+            }
+            string areaJson = Convert.ToString(area);
+            var coordsArray = (T?)
+            (
+                area is T
+                    ? area
+                    : areaJson.FromJson<T>()
+            );
+            return coordsArray;
         }
     }
 }
