@@ -65,7 +65,7 @@
                             </td>
                             <td>
                                 <a class="btn btn-primary btn-sm" asp-action="ConvertPokestop" asp-route-id="@item.Id" title="Convert Pokestop to Gym"><i class="fas fa-exchange"></i></a>
-                                <a class="btn btn-danger btn-sm" asp-action="DeletePokestop" asp-route-id="@item.Id" title="Delete Pokestop" onclick="return confirm('You are about to delete Pokestop '@(item.Name ?? item.Id)', are you sure this is what you want to do?');"><i class="fa-solid fa-trash-can"></i></a>
+                                <a class="btn btn-danger btn-sm" asp-action="DeletePokestop" asp-route-id="@item.Id" title="Delete Pokestop" onclick="return confirm('You are about to delete Pokestop \'@(item.Name ?? item.Id)\', are you sure this is what you want to do?');"><i class="fa-solid fa-trash-can"></i></a>
                             </td>
                         </tr>
                     }

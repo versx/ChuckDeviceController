@@ -220,19 +220,18 @@
         {
             try
             {
-                var result = await _mapContext.Pokestops.DeleteByKeyAsync(id);
-                if (result != 1)
+                var pokestop = await _mapContext.Pokestops.FindAsync(id);
+                if (pokestop != null)
                 {
-                    ModelState.AddModelError("Utilities", $"Failed to delete Pokestop with id '{id}");
+                    _mapContext.Pokestops.Remove(pokestop);
+                    await _mapContext.SaveChangesAsync();
                 }
-
-                return RedirectToAction(nameof(ConvertForts));
             }
             catch
             {
                 ModelState.AddModelError("Utilities", $"Unknown error occurred while deleting Pokestop '{id}'.");
-                return View();
             }
+            return RedirectToAction(nameof(ConvertForts));
         }
 
         // GET: UtilitiesController/ConvertGym/3243243242
@@ -274,19 +273,18 @@
         {
             try
             {
-                var result = await _mapContext.Gyms.DeleteByKeyAsync(id);
-                if (result != 1)
+                var gym = await _mapContext.Gyms.FindAsync(id);
+                if (gym != null)
                 {
-                    ModelState.AddModelError("Utilities", $"Failed to delete Gym with id '{id}");
+                    _mapContext.Gyms.Remove(gym);
+                    await _mapContext.SaveChangesAsync();
                 }
-
-                return RedirectToAction(nameof(ConvertForts));
             }
             catch
             {
                 ModelState.AddModelError("Utilities", $"Unknown error occurred while deleting Gym '{id}'.");
-                return View();
             }
+            return RedirectToAction(nameof(ConvertForts));
         }
 
         // GET: UtilitiesController/ConvertPokestops
@@ -351,14 +349,43 @@
 
         #endregion
 
+        #region Clear Stale Pokestops
+
         public ActionResult ClearStalePokestops()
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var pokestops = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
                                                  .ToList();
-            ViewBag.Pokestops = pokestops;
-            return View();
+            pokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
+            return View(pokestops);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ClearStalePokestops(List<Pokestop> pokestops)
+        {
+            try
+            {
+                var now = DateTime.UtcNow.ToTotalSeconds();
+                var pokestopsToDelete = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
+                                                             .ToList();
+
+                await _mapContext.Pokestops.BulkDeleteAsync(pokestopsToDelete, options =>
+                {
+                    options.UseTableLock = true;
+                });
+
+                _logger.LogInformation($"Deleted {pokestopsToDelete.Count:N0} stale Pokestops from the database.");
+                return RedirectToAction(nameof(ClearStalePokestops));
+            }
+            catch
+            {
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while clearing all stale Pokestops.");
+                return View(pokestops);
+            }
+        }
+
+        #endregion
 
         #region Private Methods
 

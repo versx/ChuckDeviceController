@@ -1,0 +1,82 @@
+﻿@using ChuckDeviceController.Data.Entities
+@model List<Pokestop>
+@{
+    ViewData["Title"] = "Utilities - Clear Stale Pokestops";
+}
+
+<h1>Utilities</h1>
+
+<p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
+
+<h4>Clear Stale Pokestops</h4>
+
+<p>
+    Below is a list of Pokestops that have not been seen by any device in the last 24 hours.
+</p>
+
+<hr />
+<div class="row">
+    <div class="col">
+        <form asp-controller="Utilities" asp-action="ClearStalePokestops">
+            <div class="form-group">
+                <input type="submit" value="Delete All" class="btn btn-danger float-end" title="Delete All Stale Pokestops" onclick="return confirm('You are about to delete \'@(Model.Count)\' Pokestops, are you sure this is what you want to do?');" />
+            </div>
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model[0].Id)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model[0].Name)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model[0].UpdatedTime)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model[0].IsEnabled)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model[0].IsDeleted)
+                        </th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <th scope="row">
+                                <img src="@item.Url" height="48" width="48" />
+                                @Html.DisplayFor(modelItem => item.Id)
+                            </th>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.UpdatedTime)
+                            </td>
+                            <td>
+                                @(item.IsEnabled ? "Yes" : "No")
+                            </td>
+                            <td>
+                                @(item.IsDeleted ? "Yes" : "No")
+                            </td>
+                            <td>
+                                <a class="btn btn-danger btn-sm" asp-action="DeletePokestop" asp-route-id="@item.Id" title="Delete Stale Pokestop" onclick="return confirm('You are about to delete Pokestop \'@(item.Name ?? item.Id)\', are you sure this is what you want to do?');"><i class="fa-solid fa-trash-can"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to Utilities</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
