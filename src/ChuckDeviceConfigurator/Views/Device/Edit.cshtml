@@ -9,6 +9,15 @@
 
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
+<br />
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Device" asp-action="Index">Devices</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Device</li>
+    </ol>
+</nav>
+
 <h4>@(Model?.OnlineStatus) Device '@(Model?.Uuid)'</h4>
 <hr />
 <div class="row">
@@ -39,10 +48,6 @@
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

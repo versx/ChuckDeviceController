@@ -8,6 +8,15 @@
 
 <p>@Html.ValidationMessage("Assignment", new { @class = "text-danger" })</p>
 
+<br />
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Assignment" asp-action="Index">Assignments</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Create Assignment</li>
+    </ol>
+</nav>
+
 <h4>Assignment</h4>
 <hr />
 <div class="row">
@@ -56,10 +65,6 @@
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

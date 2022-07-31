@@ -249,32 +249,42 @@
                 }
             }
 
-            // Check if any roles selected before updating user account's assigned roles
-            if (model.Roles.Any(role => role.Selected))
+            // Get selected role names
+            var selectedRoles = model.Roles.Where(role => role.Selected)
+                                           .Select(role => role.RoleName)
+                                           .ToList();
+
+            // Fetch all existing roles assigned to user account
+            var roles = await _userManager.GetRolesAsync(user);
+
+            if (user.UserName == Strings.DefaultUserName)
             {
-                // Get select role names
-                var selectedRoles = model.Roles.Where(role => role.Selected)
-                                               .Select(role => role.RoleName)
-                                               .ToList();
-
-                // Fetch all existing roles assigned to user account
-                var roles = await _userManager.GetRolesAsync(user);
-
-                // Remove all assigned roles from user
-                var removeResult = await _userManager.RemoveFromRolesAsync(user, roles);
-                if (!removeResult.Succeeded)
+                var superAdminRole = Roles.SuperAdmin.ToString();
+                // Check if new role list does not contain SuperAdmin role or
+                // if the existing assigned roles also does not contain it
+                if (!selectedRoles.Contains(superAdminRole) ||
+                    !roles.Contains(superAdminRole))
                 {
-                    ModelState.AddModelError("", $"Cannot remove already assigned roles from user account '{model.UserName}'");
-                    return View(model);
+                    // Looks like SuperAdmin role was removed somehow from the
+                    // root user account, add it back
+                    selectedRoles.Add(superAdminRole);
                 }
+            }
 
-                // Assign user account new list of expected roles
-                var addResult = await _userManager.AddToRolesAsync(user, selectedRoles);
-                if (!addResult.Succeeded)
-                {
-                    ModelState.AddModelError("", $"Cannot assign selected roles to user account '{model.UserName}'");
-                    return View(model);
-                }
+            // Remove all assigned roles from user
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, roles);
+            if (!removeResult.Succeeded)
+            {
+                ModelState.AddModelError("", $"Cannot remove already assigned roles from user account '{model.UserName}'");
+                return View(model);
+            }
+
+            // Assign user account new list of expected roles
+            var addResult = await _userManager.AddToRolesAsync(user, selectedRoles);
+            if (!addResult.Succeeded)
+            {
+                ModelState.AddModelError("", $"Cannot assign selected roles to user account '{model.UserName}'");
+                return View(model);
             }
 
             return RedirectToAction(nameof(Index));

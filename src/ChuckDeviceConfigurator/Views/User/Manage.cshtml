@@ -5,11 +5,20 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Manage User</h1>
+<h1>Manage User Account</h1>
 
 <p>@Html.ValidationMessage("User", new { @class = "text-danger" })</p>
 
-<h4>Manage user account for '@(Model?.UserName)'</h4>
+<br />
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="User" asp-action="Index">Users</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Manage User</li>
+    </ol>
+</nav>
+
+<h4>Manage User Account '@(Model?.UserName)'</h4>
 <hr />
 <form method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -36,10 +45,10 @@
     <br />
     <div class="card">
         <div class="card-header">
-            <b>Manage User Roles</b>
+            <b>User Permissions</b>
         </div>
         <div class="card-body">
-            @for (var i = 0; i < Model.Roles.Count; i++)
+            @for (var i = 0; i < Model!.Roles.Count; i++)
             {
                 <div class="form-check m-1">
                     <input type="hidden" asp-for="@Model.Roles[i].RoleId" />
@@ -54,8 +63,7 @@
         <div class="card-footer">
             <input type="submit" value="Update" class="btn btn-primary"
                    style="width:auto" />
-            <a asp-action="Index" asp-route-id="@ViewBag.userId"
-               class="btn btn-primary" style="width:auto">Cancel</a>
+            <a asp-action="Index" asp-route-id="@ViewBag.userId" class="btn btn-secondary" style="width:auto">Cancel</a>
         </div>
     </div>
 </form>

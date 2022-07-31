@@ -8,6 +8,19 @@
 
 <h4>Reload Instance</h4>
 
+<p>
+    Reloading an instance will reset all variables, caches, stats, etc for the job controller instance as if it was just started.
+</p>
+
+<br />
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Utilities" asp-action="Index">Utilities</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Reload Instance</li>
+    </ol>
+</nav>
+
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -25,10 +38,6 @@
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to Utilities</a>
 </div>
 
 @section Scripts {

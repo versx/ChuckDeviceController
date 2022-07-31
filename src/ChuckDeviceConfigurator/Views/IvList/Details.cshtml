@@ -8,8 +8,25 @@
 
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
+<br />
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="IvList" asp-action="Index">IV Lists</a></li>
+        <li class="breadcrumb-item active" aria-current="page">IV List Details</li>
+    </ol>
+</nav>
+
 <div>
-    <h4>IV List '@(Model?.Name)'</h4>
+    <div>
+        <div class="float-start">
+            <h4>IV List '@(Model?.Name)'</h4>
+        </div>
+        <div class="float-end">
+            <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">Edit</a>
+        </div>
+    </div>
+    <br />
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -22,11 +39,7 @@
             @Html.DisplayNameFor(model => model.PokemonIds)
         </dt>
         <dd class = "col-sm-10">
-            @string.Join(", ", Model.PokemonIds.Take(10))
+            @string.Join(", ", (Model?.PokemonIds ?? new()).Take(10))
         </dd>
     </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">Edit</a> |
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

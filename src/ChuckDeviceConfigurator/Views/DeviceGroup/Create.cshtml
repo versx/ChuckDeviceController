@@ -8,6 +8,15 @@
 
 <p>@Html.ValidationMessage("DeviceGroup", new { @class = "text-danger" })</p>
 
+<br />
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="DeviceGroup" asp-action="Index">Device Groups</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Create Device Group</li>
+    </ol>
+</nav>
+
 <h4>Device Group</h4>
 <hr />
 <div class="row">
@@ -30,10 +39,6 @@
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

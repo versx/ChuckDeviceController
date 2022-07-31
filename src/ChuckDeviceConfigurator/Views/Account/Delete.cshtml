@@ -8,9 +8,29 @@
 
 <p>@Html.ValidationMessage("Account", new { @class = "text-danger" })</p>
 
+<br />
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Account" asp-action="Index">Accounts</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Delete Account</li>
+    </ol>
+</nav>
+
 <h3>Are you sure you want to delete this account?</h3>
 <div>
-    <h4>Account '@Model.Username'</h4>
+    <div>
+        <div class="float-start">
+            <h4>Account '@Model.Username'</h4>
+        </div>
+        <div class="float-end">
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="Username" />
+                <input type="submit" value="Delete" class="btn btn-danger" />
+            </form>
+        </div>
+    </div>
+    <br />
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -134,10 +154,11 @@
             @Html.DisplayFor(model => model.CreationTimestamp)
         </dd>
     </dl>
-    
+
+    @*
     <form asp-action="Delete">
         <input type="hidden" asp-for="Username" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        <input type="submit" value="Delete" class="btn btn-danger" />
     </form>
+    *@
 </div>
