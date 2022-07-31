@@ -7,6 +7,6 @@
     public class InstanceDetailsViewModel : Instance
     {
         [DisplayName("Assigned Devices")]
-        public List<string> Devices { get; set; } = new();
+        public List<Device> Devices { get; set; } = new();
     }
 }

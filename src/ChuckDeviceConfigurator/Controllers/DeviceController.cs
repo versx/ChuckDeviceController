@@ -5,12 +5,11 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
 
+    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.Services.Jobs;
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
 
     [Controller]
     [Authorize(Roles = RoleConsts.DevicesRole)]
@@ -34,33 +33,14 @@
         public ActionResult Index()
         {
             var devices = _context.Devices.ToList();
-            devices.ForEach(device =>
-            {
-                device = SetDeviceStatus(device);
-            });
+            devices = devices.Select(device => device.SetDeviceStatus())
+                             .ToList();
 
             var model = new ViewModelsModel<Device>
             {
                 Items = devices,
             };
             return View(model);
-        }
-
-        // TODO: Make reusable method between Device/DeviceGroup controllers
-        private static Device SetDeviceStatus(Device device)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var isMoreThanOneDay = now - device.LastSeen > Strings.OneDayS;
-            var lastSeen = device.LastSeen?.FromSeconds()
-                                           .ToLocalTime()
-                                           .ToString(Strings.DefaultDateTimeFormat);
-            device.LastSeenTime = isMoreThanOneDay
-                ? lastSeen
-                : TimeSpanUtils.ToReadableString(device.LastSeen ?? 0);
-            device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
-                ? Strings.DeviceOnlineIcon
-                : Strings.DeviceOfflineIcon;
-            return device;
         }
 
         // GET: DeviceController/Details/5
@@ -74,7 +54,7 @@
                 return View();
             }
 
-            device = SetDeviceStatus(device);
+            device = device.SetDeviceStatus();
             return View(device);
         }
 

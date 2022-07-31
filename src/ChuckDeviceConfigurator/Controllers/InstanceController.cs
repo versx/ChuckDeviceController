@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceConfigurator.ViewModels;
@@ -69,7 +70,7 @@
 
             // Get devices assigned to instance
             var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
-                                                  .Select(device => device.Uuid) // TODO: Include last seen?
+                                                  .Select(device => device.SetDeviceStatus())
                                                   .ToList();
             var status = await _jobControllerService.GetStatusAsync(instance);
             var model = new InstanceDetailsViewModel

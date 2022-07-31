@@ -4,11 +4,10 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
-    using ChuckDeviceConfigurator.Utilities;
 
     [Controller]
     [Authorize(Roles = RoleConsts.DeviceGroupsRole)]
@@ -49,7 +48,7 @@
 
             // Get list of devices for device group from database and set their online/offline status
             var devices = _context.Devices.Where(device => deviceGroup.DeviceUuids.Contains(device.Uuid))
-                                          .Select(device => SetDeviceStatus(device))
+                                          .Select(device => device.SetDeviceStatus())
                                           .ToList();
             var model = new DeviceGroupDetailsViewModel
             {
@@ -58,23 +57,6 @@
                 Devices = devices,
             };
             return View(model);
-        }
-
-        // TODO: Make reusable method between Device/DeviceGroup controllers
-        private static Device SetDeviceStatus(Device device)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var isMoreThanOneDay = now - device.LastSeen > Strings.OneDayS;
-            var lastSeen = device.LastSeen?.FromSeconds()
-                                           .ToLocalTime()
-                                           .ToString(Strings.DefaultDateTimeFormat);
-            device.LastSeenTime = isMoreThanOneDay
-                ? lastSeen
-                : TimeSpanUtils.ToReadableString(device.LastSeen ?? 0);
-            device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
-                ? Strings.DeviceOnlineIcon
-                : Strings.DeviceOfflineIcon;
-            return device;
         }
 
         // GET: DeviceGroupController/Create
