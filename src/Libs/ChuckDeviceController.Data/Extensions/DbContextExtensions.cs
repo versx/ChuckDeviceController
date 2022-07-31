@@ -25,10 +25,11 @@
 
                 // Migrate the provided database context
                 await dbContext.Database.MigrateAsync();
+                logger.LogInformation($"Successfully migrated database context: {typeof(TDbContext).Name}");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred while migrating the database.");
+                logger.LogError(ex, $"An error occurred while migrating the database context: {typeof(TDbContext).Name}");
             }
         }
     }
