@@ -8,9 +8,6 @@ using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
 
-// TODO: Make 'AutomaticMigrations' configurable
-const bool AutomaticMigrations = true;
-
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
 if (config.Providers.Count() == 2)
@@ -97,7 +94,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-if (AutomaticMigrations)
+// Migrate database to latest migration automatically if enabled
+if (config.GetValue<bool>("AutomaticMigrations"))
 {
     // Migrate database if needed
     await MigrateDatabase(app.Services);
@@ -114,7 +112,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
 
 static async Task MigrateDatabase(IServiceProvider serviceProvider)
 {

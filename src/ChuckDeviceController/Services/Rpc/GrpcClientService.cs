@@ -7,18 +7,18 @@
 
     public class GrpcClientService : IGrpcClientService
     {
-        private readonly string _grpcControllerServerEndpoint;
+        private readonly string _grpcConfiguratorServerEndpoint;
         private readonly string _grpcWebhookServerEndpoint;
 
         public GrpcClientService(IConfiguration configuration)
         {
             // TODO: Group server endpoints in config
-            var controllerEndpoint = configuration.GetValue<string>("GrpcControllerServer");
-            if (string.IsNullOrEmpty(controllerEndpoint))
+            var configuratorEndpoint = configuration.GetValue<string>("GrpcConfiguratorServer");
+            if (string.IsNullOrEmpty(configuratorEndpoint))
             {
-                throw new ArgumentNullException($"gRPC controller server endpoint is not set but is required!", nameof(controllerEndpoint));
+                throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(configuratorEndpoint));
             }
-            _grpcControllerServerEndpoint = controllerEndpoint;
+            _grpcConfiguratorServerEndpoint = configuratorEndpoint;
 
             var webhookEndpoint = configuration.GetValue<string>("GrpcWebhookServer");
             if (string.IsNullOrEmpty(webhookEndpoint))
@@ -33,7 +33,7 @@
         public async Task SendRpcPayloadAsync<T>(T data, PayloadType payloadType, string? username = null, bool hasIV = false)
         {
             // Create gRPC channel for receiving gRPC server address
-            using var channel = GrpcChannel.ForAddress(_grpcControllerServerEndpoint);
+            using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
 
             // Create new gRPC client for gRPC channel for address
             var client = new Payload.PayloadClient(channel);
@@ -58,7 +58,7 @@
         public async Task<TrainerInfoResponse> GetTrainerLevelingStatusAsync(string username)
         {
             // Create gRPC channel for receiving gRPC server address
-            using var channel = GrpcChannel.ForAddress(_grpcControllerServerEndpoint);
+            using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
 
             // Create new gRPC client for gRPC channel for address
             var client = new Leveling.LevelingClient(channel);
@@ -74,9 +74,9 @@
             return response;
         }
 
-        public async Task<WebhookPayloadResponse> SendWebhookAsync(WebhookPayloadType webhookType, string json)
+        public async Task<WebhookPayloadResponse> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json)
         {
-            if (string.IsNullOrEmpty(_grpcControllerServerEndpoint))
+            if (string.IsNullOrEmpty(_grpcConfiguratorServerEndpoint))
             {
                 // User does not want to process/receive webhooks
                 return null;

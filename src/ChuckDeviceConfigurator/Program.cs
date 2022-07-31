@@ -19,9 +19,6 @@ using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 
 
-// TODO: Make 'AutomaticMigrations' configurable
-const bool AutomaticMigrations = true;
-
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
 if (config.Providers.Count() == 2)
@@ -265,7 +262,8 @@ async Task SeedDefaultData(IServiceProvider serviceProvider)
             var jobController = services.GetRequiredService<IJobControllerService>();
             var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
 
-            if (AutomaticMigrations)
+            // Migrate database to latest migration automatically if enabled
+            if (config.GetValue<bool>("AutomaticMigrations"))
             {
                 var userContext = services.GetRequiredService<UserIdentityContext>();
                 var deviceContext = services.GetRequiredService<DeviceControllerContext>();
