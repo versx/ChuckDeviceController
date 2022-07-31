@@ -122,6 +122,8 @@
                 return View();
             }
 
+            device = device.SetDeviceStatus();
+
             var accountsInUse = _context.Devices.Select(device => device.AccountUsername)
                                                 .ToList();
             // Filter accounts that are not used by devices unless this device we are editing
@@ -188,6 +190,7 @@
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
                 return View();
             }
+            device = device.SetDeviceStatus();
             return View(device);
         }
 

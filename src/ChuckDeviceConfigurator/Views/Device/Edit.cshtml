@@ -9,7 +9,7 @@
 
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
-<h4>Device '@(Model?.Uuid)'</h4>
+<h4>@(Model?.OnlineStatus) Device '@(Model?.Uuid)'</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
