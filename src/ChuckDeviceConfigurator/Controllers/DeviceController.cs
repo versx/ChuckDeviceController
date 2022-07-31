@@ -16,9 +16,6 @@
     [Authorize(Roles = RoleConsts.DevicesRole)]
     public class DeviceController : Controller
     {
-        private const string OnlineIcon = "🟢"; // green dot
-        private const string OfflineIcon = "🔴"; // red dot
-
         private readonly ILogger<DeviceController> _logger;
         private readonly DeviceControllerContext _context;
         private readonly IJobControllerService _jobControllerService;
@@ -37,25 +34,33 @@
         public ActionResult Index()
         {
             var devices = _context.Devices.ToList();
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            foreach (var device in devices)
+            devices.ForEach(device =>
             {
-                var isMoreThanOneDay = now - device.LastSeen > Strings.OneDayS;
-                var lastSeen = device.LastSeen?.FromSeconds()
-                                               .ToLocalTime()
-                                               .ToString(Strings.DefaultDateTimeFormat);
-                device.LastSeenTime = isMoreThanOneDay
-                    ? lastSeen
-                    : TimeSpanUtils.ToReadableString(device.LastSeen ?? 0);
-                device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
-                    ? OnlineIcon
-                    : OfflineIcon;
-            }
+                device = SetDeviceStatus(device);
+            });
+
             var model = new ViewModelsModel<Device>
             {
                 Items = devices,
             };
             return View(model);
+        }
+
+        // TODO: Make reusable method between Device/DeviceGroup controllers
+        private static Device SetDeviceStatus(Device device)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var isMoreThanOneDay = now - device.LastSeen > Strings.OneDayS;
+            var lastSeen = device.LastSeen?.FromSeconds()
+                                           .ToLocalTime()
+                                           .ToString(Strings.DefaultDateTimeFormat);
+            device.LastSeenTime = isMoreThanOneDay
+                ? lastSeen
+                : TimeSpanUtils.ToReadableString(device.LastSeen ?? 0);
+            device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
+                ? Strings.DeviceOnlineIcon
+                : Strings.DeviceOfflineIcon;
+            return device;
         }
 
         // GET: DeviceController/Details/5
@@ -69,17 +74,7 @@
                 return View();
             }
 
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var isMoreThanOneDay = now - device.LastSeen > Strings.OneDayS;
-            var lastSeen = device.LastSeen?.FromSeconds()
-                                           .ToLocalTime()
-                                           .ToString(Strings.DefaultDateTimeFormat);
-            device.LastSeenTime = isMoreThanOneDay
-                ? lastSeen
-                : TimeSpanUtils.ToReadableString(device.LastSeen ?? 0);
-            device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
-                ? OnlineIcon
-                : OfflineIcon;
+            device = SetDeviceStatus(device);
             return View(device);
         }
 

@@ -7,6 +7,8 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
+    using ChuckDeviceConfigurator.Utilities;
 
     [Controller]
     [Authorize(Roles = RoleConsts.DeviceGroupsRole)]
@@ -44,8 +46,35 @@
                 ModelState.AddModelError("DeviceGroup", $"DeviceGroup does not exist with id '{id}'.");
                 return View();
             }
-            // TODO: Show online status for devices
-            return View(deviceGroup);
+
+            // Get list of devices for device group from database and set their online/offline status
+            var devices = _context.Devices.Where(device => deviceGroup.DeviceUuids.Contains(device.Uuid))
+                                          .Select(device => SetDeviceStatus(device))
+                                          .ToList();
+            var model = new DeviceGroupDetailsViewModel
+            {
+                Name = deviceGroup.Name,
+                DeviceUuids = deviceGroup.DeviceUuids,
+                Devices = devices,
+            };
+            return View(model);
+        }
+
+        // TODO: Make reusable method between Device/DeviceGroup controllers
+        private static Device SetDeviceStatus(Device device)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var isMoreThanOneDay = now - device.LastSeen > Strings.OneDayS;
+            var lastSeen = device.LastSeen?.FromSeconds()
+                                           .ToLocalTime()
+                                           .ToString(Strings.DefaultDateTimeFormat);
+            device.LastSeenTime = isMoreThanOneDay
+                ? lastSeen
+                : TimeSpanUtils.ToReadableString(device.LastSeen ?? 0);
+            device.OnlineStatus = now - device.LastSeen <= Strings.DeviceOnlineThresholdS
+                ? Strings.DeviceOnlineIcon
+                : Strings.DeviceOfflineIcon;
+            return device;
         }
 
         // GET: DeviceGroupController/Create
@@ -64,7 +93,7 @@
             try
             {
                 var name = Convert.ToString(collection["Name"]);
-                var devices = collection["Devices"].ToList();
+                var devices = collection["DeviceUuids"].ToList();
 
                 if (_context.DeviceGroups.Any(deviceGroup => deviceGroup.Name == name))
                 {
@@ -83,7 +112,7 @@
                 var deviceGroup = new DeviceGroup
                 {
                     Name = name,
-                    Devices = devices,
+                    DeviceUuids = devices,
                 };
 
                 // Add device group to database
@@ -131,7 +160,7 @@
                 }
 
                 var name = Convert.ToString(collection["Name"]);
-                var devices = collection["Devices"].ToList();
+                var devices = collection["DeviceUuids"].ToList();
 
                 if (_context.DeviceGroups.Any(deviceGroup => deviceGroup.Name == name && deviceGroup.Name != id))
                 {
@@ -148,7 +177,7 @@
                 }
 
                 deviceGroup.Name = name;
-                deviceGroup.Devices = devices;
+                deviceGroup.DeviceUuids = devices;
 
                 // Update device group to database
                 _context.DeviceGroups.Update(deviceGroup);

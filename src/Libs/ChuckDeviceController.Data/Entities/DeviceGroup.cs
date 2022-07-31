@@ -18,6 +18,6 @@
             DisplayName("Devices"),
             Column("device_uuids"),
         ]
-        public List<string> Devices { get; set; }
+        public List<string> DeviceUuids { get; set; }
     }
 }

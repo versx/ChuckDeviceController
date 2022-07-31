@@ -19,7 +19,7 @@
                 @Html.DisplayNameFor(model => model.Items[0].Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].Devices)
+                @Html.DisplayNameFor(model => model.Items[0].DeviceUuids)
             </th>
             <th></th>
         </tr>
@@ -32,7 +32,7 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </th>
                 <td>
-                    @string.Join(", ", item.Devices)
+                    @string.Join(", ", item.DeviceUuids)
                 </td>
                 <td>
                     <div class="dropdown">

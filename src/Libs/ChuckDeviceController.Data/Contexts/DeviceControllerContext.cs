@@ -43,7 +43,7 @@
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
 
             modelBuilder.Entity<DeviceGroup>()
-                        .Property(p => p.Devices)
+                        .Property(p => p.DeviceUuids)
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
 
             modelBuilder.Entity<Geofence>()

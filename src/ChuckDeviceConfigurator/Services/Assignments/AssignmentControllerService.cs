@@ -246,10 +246,10 @@
                         var deviceGroup = await context.DeviceGroups.FindAsync(assignment.DeviceGroupName);
                         // Redundant check since device groups are required to have at least one device,
                         // but better safe than sorry.
-                        if (deviceGroup?.Devices?.Count > 0)
+                        if (deviceGroup?.DeviceUuids?.Count > 0)
                         {
                             // Get device entities from uuids.
-                            var devicesInGroup = context.Devices.Where(d => deviceGroup.Devices.Contains(d.Uuid))
+                            var devicesInGroup = context.Devices.Where(d => deviceGroup.DeviceUuids.Contains(d.Uuid))
                                                                 .ToList();
                             if (devicesInGroup != null && devicesInGroup?.Count > 0)
                             {

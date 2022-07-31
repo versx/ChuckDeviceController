@@ -51,6 +51,9 @@
 
         public const string GoogleMapsFormat = "https://maps.google.com/maps?q={0},{1}";
 
+        public const string DeviceOnlineIcon = "🟢"; // green dot
+        public const string DeviceOfflineIcon = "🔴"; // red dot
+
         #region Default Instance Property Values
 
         // All
