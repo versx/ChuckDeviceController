@@ -351,6 +351,7 @@
 
         #region Clear Stale Pokestops
 
+        // GET: UtilitiesController/ClearStalePokestops
         public ActionResult ClearStalePokestops()
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
@@ -360,6 +361,7 @@
             return View(pokestops);
         }
 
+        // POST: UtilitiesController/ClearStalePokestops
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ClearStalePokestops(List<Pokestop> pokestops)
@@ -382,6 +384,45 @@
             {
                 ModelState.AddModelError("Utilities", $"Unknown error occurred while clearing all stale Pokestops.");
                 return View(pokestops);
+            }
+        }
+
+        #endregion
+
+        #region Reload Instance
+
+        // GET: UtilitiesController/ReloadInstance
+        public ActionResult ReloadInstance()
+        {
+            ViewBag.Instances = _deviceContext.Instances.ToList();
+            return View();
+        }
+
+        // POST: UtilitiesController/ReloadInstance
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ReloadInstance(IFormCollection collection)
+        {
+            try
+            {
+                var name = Convert.ToString(collection["InstanceName"]);
+                var jobController = _jobControllerService.GetInstanceControllerByName(name);
+                if (jobController == null)
+                {
+                    ModelState.AddModelError("Utilities", $"Failed to find job controller instance with name '{name}'");
+                    ViewBag.Instances = _deviceContext.Instances.ToList();
+                    return View(collection);
+                }
+
+                await jobController.Reload();
+
+                _logger.LogInformation($"Job controller instance {name} reloaded.");
+                return RedirectToAction(nameof(ReloadInstance));
+            }
+            catch
+            {
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while reload instance.");
+                return View(collection);
             }
         }
 

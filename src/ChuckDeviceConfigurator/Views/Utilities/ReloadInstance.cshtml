@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Utilities - Reload Instance";
+}
+
+<h1>Utilities</h1>
+
+<p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
+
+<h4>Reload Instance</h4>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="Utilities" asp-action="ReloadInstance">
+            <div class="form-group">
+                <label for="InstanceName" class="control-label">Instance</label>
+                <select id="InstanceName" name="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))">
+                    <option value="">Please select an instance</option>
+                </select>
+                <span validation-for="InstanceName" class="text-danger"></span>
+            </div>
+            <br />
+            <div class="form-group">
+                <input type="submit" value="Reload Instance" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to Utilities</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
