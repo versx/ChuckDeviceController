@@ -7,6 +7,7 @@
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
@@ -162,19 +163,21 @@
             var minLevel = Strings.DefaultMinimumLevel;
             var maxLevel = Strings.DefaultMaximumLevel;
 
-            if (device is not null)
+            if (device == null)
             {
-                // Get instance controller for device and set min/max level variables
-                var jobController = _jobControllerService.GetInstanceController(device.Uuid);
-                if (jobController != null)
-                {
-                    minLevel = jobController.MinimumLevel;
-                    maxLevel = jobController.MaximumLevel;
-                }
+                return CreateErrorResponse($"Failed to get account, provided device was null");
+            }
+
+            // Get instance controller for device and set min/max level variables
+            var jobController = _jobControllerService.GetInstanceController(device.Uuid);
+            if (jobController != null)
+            {
+                minLevel = jobController.MinimumLevel;
+                maxLevel = jobController.MaximumLevel;
             }
 
             Account? account = null;
-            if (string.IsNullOrEmpty(device?.AccountUsername))
+            if (string.IsNullOrEmpty(device.AccountUsername))
             {
                 var devices = _context.Devices.ToList();
                 var inUseAccounts = devices.Where(d => !string.IsNullOrEmpty(d.AccountUsername))
@@ -183,14 +186,13 @@
                                            .ToList();
 
                 // Get new account between min/max level and not in inUseAccount list
-                account = _context.GetNewAccount(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts);
+                account = _context.GetNewAccount(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts!);
 
-                _logger.LogDebug($"[{device?.Uuid}] GetNewAccount '{account?.Username}'");
+                _logger.LogDebug($"[{device.Uuid}] GetNewAccount '{account?.Username}'");
                 if (account == null)
                 {
                     // Failed to get new account from database
-                    _logger.LogError($"[{device.Uuid}] Failed to get account, make sure you have accounts in your `account` table.");
-                    return CreateErrorResponse("Failed to get account, are you sure you have enough acounts?");
+                    return CreateErrorResponse($"[{device.Uuid}] Failed to get account, are you sure you have enough acounts?");
                 }
 
                 device.AccountUsername = account.Username;
@@ -203,17 +205,23 @@
                 if (account == null)
                 {
                     // Failed to get account
-                    _logger.LogError($"[{device.Uuid}] Failed to retrieve device's assigned account from database");
-                    return CreateErrorResponse($"Failed to retrieve device's assigned account from database");
+                    return CreateErrorResponse($"[{device.Uuid}] Failed to retrieve device's assigned account from database");
                 }
 
-                _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account?.Username}'");
-                if (account.Level >= minLevel &&
-                    account.Level <= maxLevel &&
-                    (!account.FirstWarningTimestamp.HasValue || account.FirstWarningTimestamp == 0) &&
+                _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}'");
+                if (account.Level >= minLevel && account.Level <= maxLevel &&
+                    (account.FirstWarningTimestamp == null || account.FirstWarningTimestamp == 0) &&
                     string.IsNullOrEmpty(account.Failed) &&
-                    (!account.FailedTimestamp.HasValue || account.FailedTimestamp > 0))
+                    (account.FailedTimestamp == null || account.FailedTimestamp == 0))
                 {
+                    // Clear pending account switch flag for device if set
+                    if (device.IsPendingAccountSwitch)
+                    {
+                        device.IsPendingAccountSwitch = false;
+                        _context.Update(device);
+                        await _context.SaveChangesAsync();
+                    }
+
                     return new DeviceResponse
                     {
                         Status = "ok",
@@ -426,10 +434,13 @@
                 return CreateSwitchAccountTask(minLevel, maxLevel);
             }
 
-            // TODO: Add `pending_account_switch` to Device entity so HandleLogout method can check whether to set accountUsername to null or not
-            device.AccountUsername = null;
-            _context.Devices.Update(device);
-            await _context.SaveChangesAsync();
+            // Only clear the account username if the device is pending an account switch made from the UI
+            if (!device.IsPendingAccountSwitch)
+            {
+                device.AccountUsername = null;
+                _context.Devices.Update(device);
+                await _context.SaveChangesAsync();
+            }
 
             return new DeviceResponse
             {
@@ -468,28 +479,6 @@
                 Error = error,
                 Data = data,
             };
-        }
-    }
-
-    public static class DbContextEntityExtensions
-    {
-        public static Account GetNewAccount(this DeviceControllerContext context, ushort minLevel, ushort maxLevel, uint maxSpins = 3500, IReadOnlyList<string> accountsInUse = null)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var account = context.Accounts.FirstOrDefault(x =>
-                x.Level >= minLevel &&
-                x.Level <= maxLevel &&
-                string.IsNullOrEmpty(x.Failed) &&
-                x.Spins < maxSpins &&
-                x.LastEncounterTime == null &&
-                (x.LastUsedTimestamp == null || (x.LastUsedTimestamp > 0 && now - x.LastUsedTimestamp >= Strings.ThirtyMinutesS)) &&
-                x.FirstWarningTimestamp == null &&
-                (x.Warn == null || !(x.Warn ?? false)) &&
-                (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
-                x.Banned == null &&
-                !accountsInUse.Contains(x.Username.ToLower())
-            );
-            return account;
         }
     }
 }

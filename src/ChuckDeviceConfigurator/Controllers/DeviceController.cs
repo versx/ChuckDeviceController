@@ -157,10 +157,11 @@
                     device.InstanceName = instanceName;
                 }
 
-                // TODO: If assigned account for device changes, force device to logout/switch accounts
+                // If the account assigned to the device changes, force device to logout/switch accounts
                 if (device.AccountUsername != accountUsername)
                 {
                     device.AccountUsername = accountUsername;
+                    device.IsPendingAccountSwitch = true;
                 }
 
                 _context.Devices.Update(device);

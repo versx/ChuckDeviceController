@@ -61,13 +61,20 @@
         // TODO: Add Device LastDataReceived timestamp
 
         [
+            DisplayName("Is Pending Account Switch"),
+            Column("pending_account_switch"),
+            JsonPropertyName("pending_account_switch"),
+        ]
+        public bool IsPendingAccountSwitch { get; set; } // used internally
+
+        [
             DisplayName("Last Seen"),
             NotMapped,
         ]
         public string? LastSeenTime { get; set; }
 
         [
-            DisplayName(""),
+            DisplayName("Online Status"),
             NotMapped,
         ]
         public string? OnlineStatus { get; set; }

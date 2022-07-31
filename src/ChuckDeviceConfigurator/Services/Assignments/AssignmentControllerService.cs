@@ -244,9 +244,15 @@
                     {
                         // Get device group from database.
                         var deviceGroup = await context.DeviceGroups.FindAsync(assignment.DeviceGroupName);
+                        if (deviceGroup == null)
+                        {
+                            _logger.LogError($"Failed to find device group by name '{assignment.DeviceGroupName}' to retrieve device list for assignment '{assignment.Id}'");
+                            return null;
+                        }
+
                         // Redundant check since device groups are required to have at least one device,
                         // but better safe than sorry.
-                        if (deviceGroup?.DeviceUuids?.Count > 0)
+                        if ((deviceGroup?.DeviceUuids?.Count ?? 0) > 0)
                         {
                             // Get device entities from uuids.
                             var devicesInGroup = context.Devices.Where(d => deviceGroup.DeviceUuids.Contains(d.Uuid))

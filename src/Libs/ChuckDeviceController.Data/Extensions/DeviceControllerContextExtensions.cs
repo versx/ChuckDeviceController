@@ -8,6 +8,7 @@
 
     public static class DeviceControllerContextExtensions
     {
+        private const ushort LastUsedM = 1800; // 30 minutes
         private const ushort CooldownLimitS = 7200; // 2 hours
         private const uint SuspensionTimeLimitS = 2592000; // 30 days - Max account suspension time period
 
@@ -21,8 +22,8 @@
 
         public static async Task<Account?> GetNewAccountAsync(this DeviceControllerContext context,
             ushort minLevel = 0, ushort maxLevel = 35, bool ignoreWarning = false, uint spins = 3500,
-            bool noCooldown = true, string? group = null,
-            ushort cooldownLimitS = CooldownLimitS, uint suspensionTimeLimitS = SuspensionTimeLimitS)
+            bool noCooldown = true, string? group = null, ushort cooldownLimitS = CooldownLimitS,
+            uint suspensionTimeLimitS = SuspensionTimeLimitS)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var account = context.Accounts.FirstOrDefault(a =>
@@ -47,6 +48,25 @@
                       (a.Failed == "suspended" && a.FailedTimestamp <= now - suspensionTimeLimitS)
             );
             return await Task.FromResult(account);
+        }
+
+        public static Account? GetNewAccount(this DeviceControllerContext context,
+            ushort minLevel, ushort maxLevel, uint maxSpins = 3500, IReadOnlyList<string>? accountsInUse = null)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var account = context.Accounts.FirstOrDefault(x =>
+                x.Level >= minLevel && x.Level <= maxLevel &&
+                string.IsNullOrEmpty(x.Failed) &&
+                x.Spins < maxSpins &&
+                x.LastEncounterTime == null &&
+                (x.LastUsedTimestamp == null || (x.LastUsedTimestamp > 0 && now - x.LastUsedTimestamp >= LastUsedM)) &&
+                x.FirstWarningTimestamp == null &&
+                (x.Warn == null || !(x.Warn ?? false)) &&
+                (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
+                x.Banned == null &&
+                !((accountsInUse ?? new List<string>()).Contains(x.Username.ToLower()))
+            );
+            return account;
         }
 
         #endregion
