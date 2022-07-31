@@ -18,20 +18,18 @@
         /// <param name="context"></param>
         public static async Task ClearQuestsAsync(this MapDataContext context)
         {
-            var pokestopIds = context.Pokestops.Select(stop => stop.Id)
-                                               .ToList();
-            await ClearQuestsAsync(context, pokestopIds);
+            var pokestops = context.Pokestops.ToList();
+            await ClearQuestsAsync(context, pokestops);
         }
 
         /// <summary>
-        /// Clear all Pokestops with quests by Pokestop IDs
+        /// Clear all Pokestops with quests
         /// </summary>
         /// <param name="context"></param>
-        /// <param name="pokestopIds"></param>
-        public static async Task ClearQuestsAsync(this MapDataContext context, IEnumerable<string> pokestopIds)
+        /// <param name="pokestops"></param>
+        /// <returns></returns>
+        public static async Task ClearQuestsAsync(this MapDataContext context, List<Pokestop> pokestops)
         {
-            var pokestopsToUpsert = new List<Pokestop>();
-            var pokestops = GetPokestopsByIds(context, pokestopIds);
             pokestops.ForEach(pokestop =>
             {
                 pokestop.QuestConditions = null;
@@ -49,10 +47,8 @@
                 pokestop.AlternativeQuestTimestamp = null;
                 pokestop.AlternativeQuestTitle = null;
                 pokestop.AlternativeQuestType = null;
-
-                pokestopsToUpsert.Add(pokestop);
             });
-            await context.Pokestops.BulkUpdateAsync(pokestopsToUpsert, options =>
+            await context.Pokestops.BulkUpdateAsync(pokestops, options =>
             {
                 options.TemporaryTableUseTableLock = true;
                 options.UseTableLock = true;
@@ -78,6 +74,18 @@
                     p.AlternativeQuestType,
                 };
             });
+        }
+
+        /// <summary>
+        /// Clear all Pokestops with quests by Pokestop IDs
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="pokestopIds"></param>
+        public static async Task ClearQuestsAsync(this MapDataContext context, IEnumerable<string> pokestopIds)
+        {
+            var pokestopsToUpsert = new List<Pokestop>();
+            var pokestops = GetPokestopsByIds(context, pokestopIds);
+            await ClearQuestsAsync(context, pokestops);
         }
 
         /// <summary>

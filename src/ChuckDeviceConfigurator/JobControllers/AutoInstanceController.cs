@@ -363,6 +363,38 @@
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Clears all Pokestop quest data that has been found
+        /// </summary>
+        public async Task ClearQuestsAsync()
+        {
+            _timer.Stop();
+            var (localTime, timeLeft) = GetSecondsUntilMidnight();
+            var now = localTime.ToTotalSeconds();
+            // Timer interval cannot be set to 0, calculate one full day
+            // in seconds to use for the next quest clearing interval.
+            _timer.Interval = (timeLeft == 0 ? Strings.OneDayS : timeLeft) * 1000;
+            _timer.Start();
+
+            if (_allStops.Count == 0)
+            {
+                _logger.LogWarning($"[{Name}] Tried clearing quests but no pokestops with quests.");
+                return;
+            }
+
+            // Clear quests
+            var pokestopIds = _allStops.Select(stop => stop.Pokestop.Id).ToList();
+            _logger.LogInformation($"[{Name}] Clearing Quests for {pokestopIds.Count:N0} Pokestops...");
+
+            using (var context = _mapFactory.CreateDbContext())
+            {
+                await context.ClearQuestsAsync(pokestopIds);
+                _logger.LogInformation($"[{Name}] {pokestopIds.Count:N0} Pokestop Quests have been cleared");
+            }
+
+            await UpdateAsync();
+        }
+
         #endregion
 
         #region Private Methods
@@ -495,38 +527,6 @@
                     }
                     break;
             }
-        }
-
-        /// <summary>
-        /// Clears all Pokestop quest data that has been found
-        /// </summary>
-        private async Task ClearQuestsAsync()
-        {
-            _timer.Stop();
-            var (localTime, timeLeft) = GetSecondsUntilMidnight();
-            var now = localTime.ToTotalSeconds();
-            // Timer interval cannot be set to 0, calculate one full day
-            // in seconds to use for the next quest clearing interval.
-            _timer.Interval = (timeLeft == 0 ? Strings.OneDayS : timeLeft) * 1000;
-            _timer.Start();
-
-            if (_allStops.Count == 0)
-            {
-                _logger.LogWarning($"[{Name}] Tried clearing quests but no pokestops with quests.");
-                return;
-            }
-
-            // Clear quests
-            var pokestopIds = _allStops.Select(stop => stop.Pokestop.Id).ToList();
-            _logger.LogInformation($"[{Name}] Clearing Quests for {pokestopIds.Count:N0} Pokestops...");
-
-            using (var context = _mapFactory.CreateDbContext())
-            {
-                await context.ClearQuestsAsync(pokestopIds);
-                _logger.LogInformation($"[{Name}] {pokestopIds.Count:N0} Pokestop Quests have been cleared");
-            }
-
-            await UpdateAsync();
         }
 
         private (PokestopWithMode?, bool?) GetNextClosestPokestop(Coordinate lastCoord, string modeKey)

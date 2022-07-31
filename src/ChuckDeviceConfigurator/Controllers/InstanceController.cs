@@ -35,7 +35,7 @@
         }
 
         // GET: InstanceController
-        public async Task<ActionResult> Index(bool autoRefresh = false, string? sortOrder = "asc", string? sortParam = "Name", string? searchKeyword = null)
+        public async Task<ActionResult> Index(bool autoRefresh = false, string? sortOrder = null, string? sortParam = null, string? searchKeyword = null)
         {
             var instances = _context.Instances.ToList();
             var devices = _context.Devices.ToList();

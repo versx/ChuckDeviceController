@@ -1,0 +1,50 @@
+﻿@using ChuckDeviceConfigurator.ViewModels
+@model ClearQuestsViewModel
+@{
+    ViewData["Title"] = "Utilities - Clear Quests";
+}
+
+<h1>Utilities</h1>
+
+<p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
+
+<h4>Clear Quests</h4>
+
+<p>
+    • Select an instance to clear any quests for that specific instance.<br />
+    • Select a geofence to clear any quests within that geofence.<br />
+    • Select neither (nothing) to clear <b><u>ALL</u></b> quests from the database.<br />
+</p>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="Utilities" asp-action="ClearQuests">
+            <div class="form-group">
+                <label asp-for="InstanceName" class="control-label"></label>
+                <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances))">
+                    <option value="">Please select an instance</option>
+                </select>
+                <span asp-validation-for="InstanceName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="GeofenceName" class="control-label"></label>
+                <select asp-for="GeofenceName" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences))">
+                    <option value="">Please select a geofence</option>
+                </select>
+                <span asp-validation-for="GeofenceName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Clear" class="btn btn-primary" onclick="@(string.IsNullOrEmpty(Model.GeofenceName) && string.IsNullOrEmpty(Model.InstanceName) ? "return confirm('You are about to clear all quests, are you sure this is what you want to do?');" : "")" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to Utilities</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
