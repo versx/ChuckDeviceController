@@ -7,10 +7,10 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Collections.Cache;
+    using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
-    using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Services.Rpc;
 

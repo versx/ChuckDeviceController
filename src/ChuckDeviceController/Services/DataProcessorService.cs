@@ -12,13 +12,13 @@
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
 
+    using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Extensions;
-    using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Pvp;
     using ChuckDeviceController.Pvp.Models;

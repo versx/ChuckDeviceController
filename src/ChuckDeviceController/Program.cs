@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 
 using ChuckDeviceController;
+using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
-using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 

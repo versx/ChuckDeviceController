@@ -11,7 +11,6 @@
     using ChuckDeviceController.Net.Utilities;
     using ChuckDeviceController.Protos;
 
-    // TODO: If webhooks are changed via UI, send from Configurator -> Communicator
     public class WebhookRelayService : IWebhookRelayService
     {
         #region Constants
@@ -96,7 +95,7 @@
             _timer = new Timer(WebhookRelayIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckWebhooksAsync();
 
-            // TODO: Eventually receive webhook endpoints on-demand via configurator
+            // TODO: Eventually receive webhook endpoints on-demand via configurator upon add/remove/modify
             _requestTimer = new Timer(RequestWebhookIntervalS * 1000);
             _requestTimer.Elapsed += async (sender, e) => await SendWebhookEndpointsRequestAsync();
 

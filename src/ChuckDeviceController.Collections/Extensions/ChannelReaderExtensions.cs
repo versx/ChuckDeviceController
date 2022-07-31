@@ -1,10 +1,6 @@
-﻿namespace ChuckDeviceController.Extensions
+﻿namespace ChuckDeviceController.Collections.Extensions
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Threading;
 	using System.Threading.Channels;
-	using System.Threading.Tasks;
 
 	public static class ChannelReaderExtensions
 	{
@@ -13,7 +9,7 @@
 			await reader.WaitToReadAsync(cancellationToken);
 
 			var batch = new List<T>();
-			while (batch.Count < maxBatchSize && reader.TryRead(out T message))
+			while (batch.Count < maxBatchSize && reader.TryRead(out T? message))
 			{
 				batch.Add(message);
 			}

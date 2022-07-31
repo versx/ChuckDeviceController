@@ -1,10 +1,5 @@
-﻿namespace ChuckDeviceController.HostedServices
+﻿namespace ChuckDeviceController.Collections.Queues
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-
     public interface IBackgroundTaskQueue
     {
         /// <summary>
