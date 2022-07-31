@@ -19,10 +19,11 @@ builder.WebHost.UseConfiguration(config);
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<IWebhookRelayService, WebhookRelayService>();
 builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
+builder.Services.Configure<WebhookRelayConfig>(builder.Configuration.GetSection("Relay"));
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.MapGrpcService<WebhookPayloadReceiverService>();
-
 app.Run();

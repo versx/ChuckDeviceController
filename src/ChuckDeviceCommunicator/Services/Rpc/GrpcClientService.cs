@@ -6,16 +6,16 @@
 
     public class GrpcClientService : IGrpcClientService
     {
-        private readonly string _grpcControllerServerEndpoint;
+        private readonly string _grpcConfiguratorServerEndpoint;
 
         public GrpcClientService(IConfiguration configuration)
         {
-            var controllerEndpoint = configuration.GetValue<string>("ControllerServerEndpoint");
-            if (string.IsNullOrEmpty(controllerEndpoint))
+            var configuratorEndpoint = configuration.GetValue<string>("ConfiguratorServerEndpoint");
+            if (string.IsNullOrEmpty(configuratorEndpoint))
             {
-                throw new ArgumentNullException($"gRPC controller server endpoint is not set but is required!", nameof(controllerEndpoint));
+                throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(configuratorEndpoint));
             }
-            _grpcControllerServerEndpoint = controllerEndpoint;
+            _grpcConfiguratorServerEndpoint = configuratorEndpoint;
         }
 
         /// <summary>
@@ -29,7 +29,7 @@
         public async Task<WebhookEndpointResponse> GetWebhookEndpointsAsync()
         {
             // Create gRPC channel for receiving gRPC server address
-            using var channel = GrpcChannel.ForAddress(_grpcControllerServerEndpoint);
+            using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
 
             // Create new gRPC client for gRPC channel for address
             var client = new WebhookEndpoint.WebhookEndpointClient(channel);

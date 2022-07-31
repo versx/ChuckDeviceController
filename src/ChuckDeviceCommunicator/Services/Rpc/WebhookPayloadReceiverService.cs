@@ -23,19 +23,19 @@
             if (string.IsNullOrEmpty(json))
             {
                 _logger.LogError($"JSON payload was null, unable to deserialize webhook payload");
-                return await Task.FromResult(new WebhookPayloadResponse
+                return new WebhookPayloadResponse
                 {
                     Status = WebhookPayloadStatus.Error,
-                });
+                };
             }
 
             // TODO: Decide whether to deserialize webhook payload json here or in relay service
-            _webhookRelayService.Enqueue(request.PayloadType, request.Payload);
+            await _webhookRelayService.EnqueueAsync(request.PayloadType, request.Payload);
 
-            return await Task.FromResult(new WebhookPayloadResponse
+            return new WebhookPayloadResponse
             {
                 Status = WebhookPayloadStatus.Ok,
-            });
+            };
         }
     }
 }

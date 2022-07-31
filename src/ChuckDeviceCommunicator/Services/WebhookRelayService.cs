@@ -2,6 +2,8 @@
 {
     using System.Timers;
 
+    using Microsoft.Extensions.Options;
+
     using ChuckDeviceCommunicator.Services.Rpc;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
@@ -9,14 +11,14 @@
     using ChuckDeviceController.Net.Utilities;
     using ChuckDeviceController.Protos;
 
-    // TODO: If webhooks are changed via UI, send from Configurator -> Communicator, alternatively request them every 5 minutes or something
+    // TODO: If webhooks are changed via UI, send from Configurator -> Communicator
     public class WebhookRelayService : IWebhookRelayService
     {
         #region Constants
 
         public const ushort WebhookRelayIntervalS = 5; // 5 seconds
         public const ushort RequestWebhookIntervalS = 60; // 60 seconds
-        public const ushort MaximumRetryCount = 3; // TODO: Make 'MaximumRetryCount' configurable
+        public const ushort RequestFailedRetryDelayS = 3; // 3 seconds
 
         #endregion
 
@@ -24,11 +26,10 @@
 
         private readonly ILogger<IWebhookRelayService> _logger;
         private readonly IGrpcClientService _grpcClientService;
-        private readonly IConfiguration _configuration;
+        //private readonly IConfiguration _configuration;
         private readonly List<Webhook> _webhookEndpoints = new();
         private readonly Timer _timer;
         private readonly Timer _requestTimer;
-        private readonly ushort _timeout = 30; // TODO: Make 'timeout' configurable
         private ulong _totalWebhooksSent;
 
         private readonly Dictionary<string, Pokemon> _pokemonEvents = new();
@@ -77,16 +78,21 @@
         /// </summary>
         public ulong TotalSent => _totalWebhooksSent;
 
+        public WebhookRelayConfig Options { get; }
+
         #endregion
 
         #region Constructor
 
         public WebhookRelayService(
             ILogger<IWebhookRelayService> logger,
-            IGrpcClientService grpcClientService)
+            IGrpcClientService grpcClientService,
+            IOptions<WebhookRelayConfig> optionsAccessor)
         {
             _logger = logger;
             _grpcClientService = grpcClientService;
+            Options = optionsAccessor.Value;
+
             _timer = new Timer(WebhookRelayIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckWebhooksAsync();
 
@@ -536,21 +542,30 @@
                 return;
 
             var json = payloads.ToJson();
+            if (string.IsNullOrEmpty(json))
+            {
+                _logger.LogError($"Serialized webhook payload is empty, skipping...");
+                return;
+            }
+
             // Send webhook payloads to endpoint
-            var (statusCode, result) = await NetUtils.PostAsync(url, json, _timeout);
+            var (statusCode, result) = await NetUtils.PostAsync(url, json, Options.RequestTimeout);
+            // If the request failed, attempt it again in 3 seconds
             if (statusCode != System.Net.HttpStatusCode.OK)
             {
                 _logger.LogError($"Webhook endpoint {url} did not return an 'OK' status code, {statusCode} with response: {result}");
 
                 // Try sending again
-                if (retryCount >= MaximumRetryCount)
+                if (retryCount >= Options.MaximumRetryCount)
                 {
-                    _logger.LogWarning($"{retryCount}/{MaximumRetryCount} attempts made to send webhook payload to endpoint {url}, aborting...");
+                    _logger.LogWarning($"{retryCount}/{Options.MaximumRetryCount} attempts made to send webhook payload to endpoint {url}, aborting...");
                     return;
                 }
-                Thread.Sleep(3 * 1000);
+
+                // Wait 3 seconds before trying again
+                Thread.Sleep(RequestFailedRetryDelayS * 1000);
                 retryCount++;
-                _logger.LogWarning($"Retry attempt {retryCount}/{MaximumRetryCount} to resend webhook payload to endpoint {url}");
+                _logger.LogWarning($"Retry attempt {retryCount}/{Options.MaximumRetryCount} to resend webhook payload to endpoint {url}");
 
                 await SendWebhookEventsAsync(url, payloads!, retryCount);
                 return;
