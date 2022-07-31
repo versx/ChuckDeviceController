@@ -11,6 +11,7 @@
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
 
     [Authorize(Roles = RoleConsts.InstancesRole)]
@@ -34,7 +35,7 @@
         }
 
         // GET: InstanceController
-        public async Task<ActionResult> Index(bool autoRefresh = false)
+        public async Task<ActionResult> Index(bool autoRefresh = false, string? sortOrder = "asc", string? sortParam = "Name", string? searchKeyword = null)
         {
             var instances = _context.Instances.ToList();
             var devices = _context.Devices.ToList();
@@ -45,6 +46,25 @@
                 var status = await _jobControllerService.GetStatusAsync(instance);
                 instance.Status = status;
             }
+
+            if (!string.IsNullOrEmpty(searchKeyword))
+            {
+                instances = instances.Where(instance => instance.Name.Contains(searchKeyword) ||
+                                                        instance.Type.ToString().Contains(searchKeyword) ||
+                                                        instance.Geofences.Contains(searchKeyword) ||
+                                                        instance.Status.Contains(searchKeyword))
+                                     .ToList();
+            }
+
+            instances = sortOrder switch
+            {
+                "asc" => instances.OrderBy(instance => instance.GetPropertyValue(sortParam!))
+                                  .ToList(),
+                "desc" => instances.OrderByDescending(instance => instance.GetPropertyValue(sortParam!))
+                                   .ToList(),
+                _ => instances.OrderBy(instance => instance.Name)
+                              .ToList(),
+            };
             var model = new ViewModelsModel<Instance>
             {
                 AutoRefresh = autoRefresh,
@@ -55,6 +75,12 @@
                 // TODO: Make table refresh configurable (implement server side table data fetch vs reloading actual page)
                 Response.Headers["Refresh"] = "5";
             }
+            ViewBag.AutoRefresh = autoRefresh;
+            ViewBag.SortParam = sortParam ?? "Name";
+            ViewBag.SortOrder = sortOrder == "asc"
+                ? "desc"
+                : "asc";
+            ViewBag.SearchKeyword = searchKeyword;
             return View(model);
         }
 

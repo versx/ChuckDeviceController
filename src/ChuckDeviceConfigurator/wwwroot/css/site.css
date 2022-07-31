@@ -83,3 +83,9 @@ body {
     background: #007bb6;
     color: #fff;
 }
+
+/* Remove hyperlink color from table columns and from footer About link */
+th > a, footer > div > div > a {
+    color: inherit;
+    text-decoration: none !important;
+}

@@ -15,27 +15,35 @@
     <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
 </div>
 
+@*
+@using (Html.BeginForm())
+{
+    <p>
+        Search: @Html.TextBox("SearchKeyword", "", new { onchange = "handleSearch(this);" })
+    </p>
+}
+*@
+
 <table class="table table-striped">
     <thead class="table-dark">
         <tr>
             <th scope="col">
-                @Html.DisplayNameFor(model => model.Items[0].Name)
+                @Html.ActionLink(Html.DisplayNameFor(model => model.Items[0].Name), "Index", new { sortOrder = ViewBag.SortOrder, sortParam = "Name", autoRefresh = ViewBag.AutoRefresh })
             </th>
             <th scope="col">
-                @Html.DisplayNameFor(model => model.Items[0].Type)
+                @Html.ActionLink(Html.DisplayNameFor(model => model.Items[0].Type), "Index", new { sortOrder = ViewBag.SortOrder, sortParam = "Type", autoRefresh = ViewBag.AutoRefresh })
             </th>
             <th scope="col">
-                @*@Html.DisplayNameFor(model => model.Items[0].Status)*@
-                Status (Completed/Attempted|Total)
+                @Html.ActionLink("Status (Completed/Attempted|Total)", "Index", new { sortOrder = ViewBag.SortOrder, sortParam = "Status", autoRefresh = ViewBag.AutoRefresh })
             </th>
             <th scope="col">
-                Level
+                @Html.ActionLink("Level", "Index", new { sortOrder = ViewBag.SortOrder, sortParam = "MinimumLevel", autoRefresh = ViewBag.AutoRefresh })
             </th>
             <th scope="col">
                 @Html.DisplayNameFor(model => model.Items[0].Geofences)
             </th>
             <th scope="col">
-                @Html.DisplayNameFor(model => model.Items[0].DeviceCount)
+                @Html.ActionLink(Html.DisplayNameFor(model => model.Items[0].DeviceCount), "Index", new { sortOrder = ViewBag.SortOrder, sortParam = "DeviceCount", autoRefresh = ViewBag.AutoRefresh })
             </th>
             <th scope="col"></th>
         </tr>
@@ -84,10 +92,19 @@
 const handleAutoRefresh = (e) => {
     const isChecked = $(e).is(':checked');
     if (isChecked) {
-        location.href = '@Url.Action("Index", new { autoRefresh = true })';
+        location.href = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = true }))";
     } else {
-        location.href = '@Url.Action("Index", new { autoRefresh = false })';
+        location.href = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = false }))";
     }
 };
+
+function handleSearch(e) {
+    // https://docs.microsoft.com/en-us/aspnet/mvc/overview/getting-started/getting-started-with-ef-using-mvc/sorting-filtering-and-paging-with-the-entity-framework-in-an-asp-net-mvc-application
+    const value = $(e).val();
+    let url = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = ViewBag.AutoRefresh, searchKeyword = "SEARCH_PLACEHOLDER" }))";
+    url = url.replace('SEARCH_PLACEHOLDER', value);
+    console.log('replaced url:', url);
+    location.href = url;
+}
 </script>
 }

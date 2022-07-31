@@ -93,5 +93,26 @@
             var isEqual = Enumerable.SequenceEqual(listA, listB);
             return isEqual;
         }
+
+        /// <summary>
+        /// Gets a public property value of the specified object.
+        /// </summary>
+        /// <typeparam name="T">Reference type to search property for.</typeparam>
+        /// <param name="obj">Source object</param>
+        /// <param name="propertyName">Name of property</param>
+        /// <returns>Returns the value of the specified property of the object.</returns>
+        public static object? GetPropertyValue<T>(this T obj, string propertyName)
+        {
+            if (obj == null)
+            {
+                return null;
+            }
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                return obj;
+            }
+            var value = obj.GetType()!.GetProperty(propertyName)!.GetValue(obj);
+            return value;
+        }
     }
 }
