@@ -12,7 +12,7 @@
     {
         #region Pokemon Circle Instance
         [
-            DisplayName("Circle Instance Route Type"),
+            DisplayName("Circle Route Type"),
             JsonPropertyName("circle_route_type"),
         ]
         public CircleInstanceRouteType? CircleRouteType { get; set; } = CircleInstanceRouteType.Default;

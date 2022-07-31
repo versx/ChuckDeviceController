@@ -8,6 +8,7 @@
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
@@ -102,6 +103,7 @@
             };
 
             var geofences = _context.Geofences.ToList();
+            ViewBag.Devices = _context.Devices.ToList();
             ViewBag.Geofences = geofences;
             ViewBag.GeofencesJson = geofences.ToJson();
             ViewBag.Instances = _context.Instances.ToList();
@@ -127,8 +129,7 @@
                 var instance = new Instance
                 {
                     Name = model.Name,
-                    // TODO: Double check
-                    Type = model.Type ?? ChuckDeviceController.Data.InstanceType.CirclePokemon,
+                    Type = model.Type ?? InstanceType.CirclePokemon,
                     MinimumLevel = model.MinimumLevel,
                     MaximumLevel = model.MaximumLevel,
                     Geofences = model.Geofences,
@@ -140,6 +141,12 @@
                 await _context.SaveChangesAsync();
 
                 await _jobControllerService.AddInstanceAsync(instance);
+
+                // Assign devices to instance and reload devices in cache
+                if (model.AssignedDevices != null && model.AssignedDevices.Count > 0)
+                {
+                    await AssignDevicesToInstance(model.AssignedDevices, model.Name);
+                }
 
                 return RedirectToAction(nameof(Index));
             }
@@ -161,6 +168,10 @@
                 return View();
             }
 
+            var assignedDevices = _context.Devices.Where(device => device.InstanceName == id)
+                                                  .Select(device => device.Uuid)
+                                                  .ToList();
+
             var model = new ManageInstanceViewModel
             {
                 Name = instance.Name,
@@ -169,9 +180,11 @@
                 MaximumLevel = instance.MaximumLevel,
                 Geofences = instance.Geofences,
                 Data = PopulateViewModelFromInstanceData(instance.Data),
+                AssignedDevices = assignedDevices,
             };
 
             var geofences = _context.Geofences.ToList();
+            ViewBag.Devices = _context.Devices.ToList();
             ViewBag.Geofences = geofences;
             ViewBag.GeofencesJson = geofences.ToJson();
             ViewBag.Instances = _context.Instances.ToList();
@@ -203,8 +216,7 @@
                 }
 
                 instance.Name = model.Name;
-                // TODO: Double check
-                instance.Type = model.Type ?? ChuckDeviceController.Data.InstanceType.CirclePokemon;
+                instance.Type = model.Type ?? InstanceType.CirclePokemon;
                 instance.MinimumLevel = model.MinimumLevel;
                 instance.MaximumLevel = model.MaximumLevel;
                 instance.Geofences = model.Geofences;
@@ -214,11 +226,18 @@
                 _context.Instances.Update(instance);
                 await _context.SaveChangesAsync();
 
+                // Reload instance cache
                 await _jobControllerService.ReloadInstanceAsync(instance, id);
+
+                // Assign devices to instance and reload devices in cache
+                if (model.AssignedDevices != null && model.AssignedDevices.Count > 0)
+                {
+                    await AssignDevicesToInstance(model.AssignedDevices, id);
+                }
                 
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 /*
                  * The property 'Instance.Name' is part of a key and so cannot be modified or marked as modified.
@@ -271,6 +290,8 @@
                 return View();
             }
         }
+
+        #region IV Queue Routes
 
         // GET: InstanceController/IvQueue/test
         [Route("/Instance/IvQueue/{name}")]
@@ -351,10 +372,64 @@
             return RedirectToAction(nameof(IvQueue), new { name });
         }
 
+        #endregion
+
+        #region Private Methods
+
+        private async Task AssignDevicesToInstance(List<string> deviceUuids, string instanceName)
+        {
+            foreach (var deviceUuid in deviceUuids)
+            {
+                // Retrieve device by uuid from database
+                var device = await _context.Devices.FindAsync(deviceUuid);
+                if (device == null)
+                {
+                    _logger.LogWarning($"Failed to retrieve device from database with UUID '{deviceUuid}', unable to assign device to instance '{instanceName}'");
+                    continue;
+                }
+
+                // Check if device is already assigned to instance
+                if (device.InstanceName == instanceName)
+                {
+                    // Device is already assigned to instance, skip...
+                    continue;
+                }
+
+                // Assign device to new instance
+                device.InstanceName = instanceName;
+                _context.Devices.Update(device);
+                await _context.SaveChangesAsync();
+
+                // Reload device cache
+                _jobControllerService.ReloadDevice(device, deviceUuid);
+            }
+        }
+
         private static InstanceData PopulateInstanceDataFromModel(ManageInstanceDataViewModel model)
         {
             var instanceData = new InstanceData
             {
+                // All
+                AccountGroup = model?.AccountGroup ?? Strings.DefaultAccountGroup,
+                IsEvent = model?.IsEvent ?? Strings.DefaultIsEvent,
+
+                // Circle
+                CircleRouteType = model?.CircleRouteType ?? Strings.DefaultCircleRouteType,
+                EnableLureEncounters = model?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
+
+                // Dynamic
+                OptimizeDynamicRoute = model?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute,
+
+                // Bootstrap
+                FastBootstrapMode = model?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
+                CircleSize = model?.CircleSize ?? Strings.DefaultCircleSize,
+                OptimizeBootstrapRoute = model?.OptimizeBootstrapRoute ?? Strings.DefaultOptimizeBootstrapRoute,
+                BootstrapCompleteInstanceName = model?.BootstrapCompleteInstanceName ?? Strings.DefaultBootstrapCompleteInstanceName,
+
+                // IV
+                IvList = model?.IvList ?? Strings.DefaultIvList,
+                IvQueueLimit = model?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
+
                 // Quests
                 QuestMode = model?.QuestMode ?? Strings.DefaultQuestMode,
                 TimeZone = model?.TimeZone ?? Strings.DefaultTimeZone,
@@ -365,21 +440,6 @@
                 LogoutDelay = model?.LogoutDelay ?? Strings.DefaultLogoutDelay,
                 MaximumSpinAttempts = model?.MaximumSpinAttempts ?? Strings.DefaultMaximumSpinAttempts,
 
-                // Bootstrap
-                FastBootstrapMode = model?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode,
-                CircleSize = model?.CircleSize ?? Strings.DefaultCircleSize,
-                OptimizeBootstrapRoute = model?.OptimizeBootstrapRoute ?? Strings.DefaultOptimizeBootstrapRoute,
-                BootstrapCompleteInstanceName = model?.BootstrapCompleteInstanceName ?? Strings.DefaultBootstrapCompleteInstanceName,
-
-                // Circle
-                CircleRouteType = model?.CircleRouteType ?? Strings.DefaultCircleRouteType,
-                OptimizeDynamicRoute = model?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute,
-
-                // IV
-                IvList = model?.IvList ?? Strings.DefaultIvList,
-                IvQueueLimit = model?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
-                EnableLureEncounters = model?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters,
-
                 // Spawnpoint
                 OnlyUnknownSpawnpoints = model?.OnlyUnknownSpawnpoints ?? Strings.DefaultOnlyUnknownSpawnpoints,
                 OptimizeSpawnpointsRoute = model?.OptimizeSpawnpointsRoute ?? Strings.DefaultOptimizeSpawnpointRoute,
@@ -388,10 +448,6 @@
                 LevelingRadius = model?.LevelingRadius ?? Strings.DefaultLevelingRadius,
                 StoreLevelingData = model?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
                 StartingCoordinate = model?.StartingCoordinate ?? Strings.DefaultStartingCoordinate,
-
-                // All
-                AccountGroup = model?.AccountGroup ?? Strings.DefaultAccountGroup,
-                IsEvent = model?.IsEvent ?? Strings.DefaultIsEvent,
             };
             return instanceData;
         }
@@ -442,5 +498,7 @@
             };
             return instanceDataModel;
         }
+
+        #endregion
     }
 }

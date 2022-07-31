@@ -3,6 +3,7 @@
     using System.ComponentModel;
 
     using ChuckDeviceController.Data;
+    using ChuckDeviceController.Data.Entities;
 
     public class ManageInstanceViewModel
     {
@@ -24,12 +25,15 @@
 
         [DisplayName("Instance Data")]
         public ManageInstanceDataViewModel Data { get; set; } = new();
+
+        [DisplayName("Assigned Devices")]
+        public List<string>? AssignedDevices { get; set; } = new(); // optional
     }
 
     public class ManageInstanceDataViewModel
     {
         // Circle Instance
-        [DisplayName("Circle Instance Route Type")]
+        [DisplayName("Circle Route Type")]
         public CircleInstanceRouteType? CircleRouteType { get; set; } = Strings.DefaultCircleRouteType;
 
 

@@ -192,6 +192,10 @@
                     _logger.LogError($"[{device.Uuid}] Failed to get account, make sure you have accounts in your `account` table.");
                     return CreateErrorResponse("Failed to get account, are you sure you have enough acounts?");
                 }
+
+                device.AccountUsername = account.Username;
+                _context.Devices.Update(device);
+                await _context.SaveChangesAsync();
             }
             else
             {
@@ -229,10 +233,6 @@
                 }
             }
 
-            device.AccountUsername = account.Username;
-            _context.Devices.Update(device);
-            await _context.SaveChangesAsync();
-
             return new DeviceResponse
             {
                 Status = "ok",
@@ -267,6 +267,15 @@
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
                 return CreateSwitchAccountTask(minLevel, maxLevel);
+            }
+            else
+            {
+                // Handle account assignment changes from UI
+                // TODO: Double check that this doesn't loop if account and in-game name differ
+                if (device.AccountUsername != username)
+                {
+                    return CreateSwitchAccountTask(minLevel, maxLevel);
+                }
             }
 
             Account? account = null;
@@ -407,8 +416,7 @@
                 var jobController = _jobControllerService.GetInstanceController(device.Uuid);
                 if (jobController == null)
                 {
-                    _logger.LogError($"[{device.Uuid}] Failed to get job instance controller to handle logout request");
-                    return CreateErrorResponse($"Failed to get job instance controller to handle logout request");
+                    return CreateErrorResponse($"[{device.Uuid}] Failed to get job instance controller to handle logout request");
                 }
 
                 var minLevel = jobController.MinimumLevel;
@@ -416,9 +424,9 @@
 
                 // Return switch account task
                 return CreateSwitchAccountTask(minLevel, maxLevel);
-                //return CreateErrorResponse("Device is not assigned an account, unable handle logout request");
             }
 
+            // TODO: Add `pending_account_switch` to Device entity so HandleLogout method can check whether to set accountUsername to null or not
             device.AccountUsername = null;
             _context.Devices.Update(device);
             await _context.SaveChangesAsync();
