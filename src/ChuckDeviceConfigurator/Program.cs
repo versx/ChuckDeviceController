@@ -17,6 +17,7 @@ using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
+using ChuckDeviceController.Data.Extensions;
 
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -265,14 +266,11 @@ async Task SeedDefaultData(IServiceProvider serviceProvider)
             // Migrate database to latest migration automatically if enabled
             if (config.GetValue<bool>("AutomaticMigrations"))
             {
-                var userContext = services.GetRequiredService<UserIdentityContext>();
-                var deviceContext = services.GetRequiredService<DeviceControllerContext>();
-
                 // Migrate the UserIdentity tables
-                await userContext.Database.MigrateAsync();
+                await app.Services.MigrateDatabase<UserIdentityContext>();
 
                 // Migrate the device controller tables
-                await deviceContext.Database.MigrateAsync();
+                await app.Services.MigrateDatabase<DeviceControllerContext>();
             }
 
             // Start job controller service

@@ -4,6 +4,7 @@ using ChuckDeviceController;
 using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
+using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
@@ -98,7 +99,7 @@ var app = builder.Build();
 if (config.GetValue<bool>("AutomaticMigrations"))
 {
     // Migrate database if needed
-    await MigrateDatabase(app.Services);
+    await app.Services.MigrateDatabase<MapDataContext>();
 }
 
 // Configure the HTTP request pipeline.
@@ -112,24 +113,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-static async Task MigrateDatabase(IServiceProvider serviceProvider)
-{
-    using (var scope = serviceProvider.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
-        try
-        {
-            var mapContext = services.GetRequiredService<MapDataContext>();
-
-            // Migrate the map data tables
-            await mapContext.Database.MigrateAsync();
-        }
-        catch (Exception ex)
-        {
-            var logger = loggerFactory.CreateLogger<Program>();
-            logger.LogError(ex, "An error occurred while migrating the database.");
-        }
-    }
-}
