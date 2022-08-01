@@ -4,13 +4,13 @@
 
 <h1>Utilities</h1>
 
-<button class="btn btn-danger">Clear Quests</button>
-<button class="btn btn-primary">Convert Forts</button>
-<button class="btn btn-danger">Clear Stale Pokestops</button>
-<button class="btn btn-primary">Reload Instance</button>
+<a class="btn btn-danger" asp-action="ClearQuests">Clear Quests</a>
+<a class="btn btn-primary"asp-action="ConvertForts">Convert Forts</a>
+<a class="btn btn-danger"asp-action="ClearStalePokestops">Clear Stale Pokestops</a>
+<a class="btn btn-primary"asp-action="ReloadInstance">Reload Instance</a>
+<a class="btn btn-danger"asp-action="TruncateData">Truncate Data</a>
 
 <ul class="list-group">
     <li class="list-group-item">Route Generator/Optimizer (leaflet map)</li>
-    <li class="list-group-item">Truncate Pokemon and Incident tables (at an interval and limit amount or full table?)</li>
-    <li class="list-group-item">ReQuest - Either Assignments Group (don't really like that idea) or Instance (better but still meh). Just not sure what.</li>
+    <li class="list-group-item">ReQuest - Select from list of assignments, assignment groups, or instances</li>
 </ul>

@@ -415,17 +415,17 @@
         // POST: UtilitiesController/ReloadInstance
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ReloadInstance(IFormCollection collection)
+        public async Task<ActionResult> ReloadInstance(string instanceName)
         {
             try
             {
-                var name = Convert.ToString(collection["InstanceName"]);
+                var name = instanceName;
                 var jobController = _jobControllerService.GetInstanceControllerByName(name);
                 if (jobController == null)
                 {
                     ModelState.AddModelError("Utilities", $"Failed to find job controller instance with name '{name}'");
                     ViewBag.Instances = _deviceContext.Instances.ToList();
-                    return View(collection);
+                    return View(instanceName);
                 }
 
                 await jobController.Reload();
@@ -436,7 +436,80 @@
             catch
             {
                 ModelState.AddModelError("Utilities", $"Unknown error occurred while reload instance.");
-                return View(collection);
+                return View(instanceName);
+            }
+        }
+
+        #endregion
+
+        #region Truncate Data
+
+        // GET: UtilitiesController/TruncateData
+        public ActionResult TruncateData()
+        {
+            // TODO: Maybe setup schedules to truncate at an interval
+            // TODO: When a data type is selected, show the amount that'll be deleted based on the time span selected
+            ViewBag.PokemonCount = _mapContext.Pokemon.LongCount().ToString("N0");
+            ViewBag.IncidentsCount = _mapContext.Incidents.LongCount().ToString("N0");
+            ViewBag.DataTypes = new List<string>
+            {
+                "Pokemon",
+                "Incidents",
+            };
+            return View();
+        }
+
+        // POST: UtilitiesController/TruncateData
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> TruncateData(int timeSpan, string dataType)
+        {
+            try
+            {
+                var now = DateTime.UtcNow.ToTotalSeconds();
+                var time = Convert.ToUInt64(timeSpan * Strings.SixtyMinutesS);
+                var sw = new System.Diagnostics.Stopwatch();
+                switch (dataType)
+                {
+                    case "Pokemon":
+                        sw.Start();
+                        var pokemon = _mapContext.Pokemon.Where(pokemon => pokemon.ExpireTimestamp < now && now - pokemon.ExpireTimestamp > time).ToList();
+                        var pokemonCount = pokemon.Count;
+                        await _mapContext.Pokemon.BulkDeleteAsync(pokemon, options =>
+                        {
+                            options.UseTableLock = true;
+                        });
+                        sw.Stop();
+                        var pkmnSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        _logger.LogInformation($"Successfully deleted {pokemonCount:N0} old Pokemon from the database in {pkmnSeconds}s");
+                        break;
+                    case "Incidents":
+                        sw.Start();
+                        var invasions = _mapContext.Incidents.Where(incident => incident.Expiration < now && now - incident.Expiration > time).ToList();
+                        var invasionsCount = invasions.Count;
+                        await _mapContext.Incidents.BulkDeleteAsync(invasions, options =>
+                        {
+                            options.UseTableLock = true;
+                        });
+                        sw.Stop();
+                        var invasionSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        _logger.LogInformation($"Successfully deleted {invasionsCount:N0} old Invasions from the database in {invasionSeconds}s");
+                        break;
+                    default:
+                        _logger.LogWarning($"Unknown data type provided '{dataType}', unable to truncate.");
+                        break;
+                }
+                return RedirectToAction(nameof(TruncateData));
+            }
+            catch (Exception ex)
+            {
+                ViewBag.DataTypes = new List<string>
+                {
+                    "Pokemon",
+                    "Incidents",
+                };
+                ModelState.AddModelError("Utilities", $"Unknown error occurred while truncating data: {ex}.");
+                return View();
             }
         }
 
