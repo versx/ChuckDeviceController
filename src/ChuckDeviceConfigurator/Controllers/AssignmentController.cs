@@ -318,7 +318,7 @@
 
         private uint GetTimeNumeric(string time)
         {
-            uint value = 0;
+            var value = 0u;
             if (string.IsNullOrEmpty(time))
             {
                 return value;
@@ -335,7 +335,7 @@
                 var minutes = Convert.ToUInt32(split[1]);
                 var seconds = Convert.ToUInt32(split[2]);
                 var timeValue = hours * Strings.SixtyMinutesS + minutes * 60 + seconds;
-                value = timeValue == 0 ? 1 : timeValue;
+                value = timeValue;// == 0 ? 1 : timeValue;
             }
             else
             {
