@@ -7,6 +7,6 @@
 	/// </summary>
 	public interface IWebhookControllerService : IControllerService<Webhook, string>
 	{
-		IReadOnlyList<Webhook> GetAll();
+		IReadOnlyList<Webhook> GetAll(bool includeGeofenceMultiPolygons = false);
     }
 }

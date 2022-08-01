@@ -7,6 +7,8 @@
     using System.Linq;
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Geometry.Models;
+
     [Table("webhook")]
     public class Webhook : BaseEntity
     {
@@ -61,6 +63,13 @@
             JsonPropertyName("data"),
         ]
         public WebhookData Data { get; set; }
+
+        [
+            DisplayName("Geofence Multi-Polygons"),
+            NotMapped,
+            JsonPropertyName("multiPolygons"),
+        ]
+        public List<MultiPolygon> GeofenceMultiPolygons { get; set; }
 
         #endregion
 

@@ -2,6 +2,7 @@
 {
 	using Microsoft.EntityFrameworkCore;
 
+	using ChuckDeviceConfigurator.Extensions;
 	using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -86,11 +87,27 @@
 						.ToList();
 		}
 
-		public IReadOnlyList<Webhook> GetAll()
+		public IReadOnlyList<Webhook> GetAll(bool includeGeofenceMultiPolygons = false)
 		{
 			using (var context = _factory.CreateDbContext())
 			{
 				var webhooks = context.Webhooks.ToList();
+				if (includeGeofenceMultiPolygons)
+                {
+					var geofences = context.Geofences.ToList();
+					webhooks.ForEach(webhook =>
+					{
+						foreach (var webhookGeofence in webhook.Geofences)
+                        {
+							var geofence = geofences.FirstOrDefault(g => g.Name == webhookGeofence);
+							if (geofence == null)
+								continue;
+
+							var (multiPolygons, _) = geofence.ConvertToMultiPolygons();
+							webhook.GeofenceMultiPolygons = multiPolygons;
+                        }
+					});
+                }
 				return webhooks;
 			}
 		}

@@ -33,7 +33,7 @@
         {
             _logger.LogDebug($"Received fetch webhook endpoints request from: {context.Host}");
 
-            var webhooks = _webhookService.GetAll();
+            var webhooks = _webhookService.GetAll(includeGeofenceMultiPolygons: true);
             if (webhooks == null)
             {
                 return await Task.FromResult(new WebhookEndpointResponse
