@@ -111,7 +111,7 @@
             {
                 _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
 
-                await Reload();
+                await ReloadAsync();
 
                 if (SpawnpointCoordinates.Count == 0)
                 {
@@ -146,7 +146,7 @@
             return await Task.FromResult(status);
         }
 
-        public Task Reload()
+        public Task ReloadAsync()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
@@ -157,7 +157,7 @@
             return Task.CompletedTask;
         }
 
-        public Task Stop()
+        public Task StopAsync()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
             return Task.CompletedTask;

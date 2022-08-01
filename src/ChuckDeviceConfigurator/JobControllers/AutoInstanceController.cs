@@ -347,14 +347,14 @@
             return null;
         }
 
-        public async Task Reload()
+        public async Task ReloadAsync()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
             await UpdateAsync();
         }
 
-        public Task Stop()
+        public Task StopAsync()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 

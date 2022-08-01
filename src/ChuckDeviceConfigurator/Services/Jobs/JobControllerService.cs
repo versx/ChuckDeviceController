@@ -115,12 +115,12 @@
             _logger.LogInformation("All instances have been started");
         }
 
-        public void Stop()
+        public async void Stop()
         {
             foreach (var (name, jobController) in _instances)
             {
                 _logger.LogInformation($"[{name}] Stopping job controller");
-                jobController.Stop();
+                await jobController.StopAsync();
             }
         }
 
@@ -293,7 +293,7 @@
             {
                 foreach (var (_, instanceController) in _instances)
                 {
-                    instanceController?.Reload();
+                    instanceController?.ReloadAsync().ConfigureAwait(false);
                 }
             }
             _assignmentService.Reload();
@@ -318,7 +318,7 @@
                         device.InstanceName = newInstance.Name;
                         _devices[uuid] = device;
                     }
-                    _instances[oldInstanceName]?.Stop();
+                    _instances[oldInstanceName]?.StopAsync();
                     _instances[oldInstanceName] = null;
                 }
             }
@@ -331,7 +331,7 @@
         {
             lock (_instancesLock)
             {
-                _instances[instanceName]?.Stop();
+                _instances[instanceName]?.StopAsync();
                 _instances[instanceName] = null;
                 _instances.Remove(instanceName);
             }

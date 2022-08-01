@@ -154,7 +154,7 @@
             return await Task.FromResult(status);
         }
 
-        public Task Reload()
+        public Task ReloadAsync()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
@@ -168,7 +168,7 @@
             return Task.CompletedTask;
         }
 
-        public Task Stop()
+        public Task StopAsync()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 

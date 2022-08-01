@@ -135,7 +135,7 @@
             return await Task.FromResult(status);
         }
 
-        public override Task Reload()
+        public override Task ReloadAsync()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
@@ -147,7 +147,7 @@
             return Task.CompletedTask;
         }
 
-        public override Task Stop()
+        public override Task StopAsync()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 
@@ -258,7 +258,7 @@
                 {
                     // Just keep reloading bootstrap route if no chained instance specified
                     //_timesCompleted++;
-                    await Reload();
+                    await ReloadAsync();
                     return;
                 }
 

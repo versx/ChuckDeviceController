@@ -125,9 +125,9 @@
             return await Task.FromResult(status);
         }
 
-        public abstract Task Reload();
+        public abstract Task ReloadAsync();
 
-        public abstract Task Stop();
+        public abstract Task StopAsync();
 
         #endregion
 

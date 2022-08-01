@@ -81,7 +81,7 @@
             return await base.GetStatusAsync();
         }
 
-        public override Task Reload()
+        public override Task ReloadAsync()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
@@ -94,7 +94,7 @@
             return Task.CompletedTask;
         }
 
-        public override Task Stop()
+        public override Task StopAsync()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 

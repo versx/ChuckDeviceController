@@ -45,11 +45,11 @@
         /// <summary>
         /// Stops the job controller.
         /// </summary>
-        Task Stop();
+        Task StopAsync();
 
         /// <summary>
         /// Reloads or resets the job controller as if it was newly created.
         /// </summary>
-        Task Reload();
+        Task ReloadAsync();
     }
 }

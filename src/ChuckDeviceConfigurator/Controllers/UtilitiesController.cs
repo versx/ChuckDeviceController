@@ -428,7 +428,7 @@
                     return View(instanceName);
                 }
 
-                await jobController.Reload();
+                await jobController.ReloadAsync();
 
                 _logger.LogInformation($"Job controller instance {name} reloaded.");
                 return RedirectToAction(nameof(ReloadInstance));
