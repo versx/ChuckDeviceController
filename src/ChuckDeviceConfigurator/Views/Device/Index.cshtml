@@ -4,13 +4,23 @@
 @model ViewModelsModel<Device>
 @{
     ViewData["Title"] = "Devices";
+    var pageSize = Context.Request.Query.ContainsKey("pageSize")
+        ? Convert.ToInt32(Context.Request.Query["pageSize"])
+        : 100;
 }
 
 <h1>Devices</h1>
 
-<p>
-    <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
-</p>
+<div>
+    <div class="float-start">
+        <label>
+            <b>Page:</b> @ViewBag.Page / @ViewBag.MaxPage
+        </label>
+    </div>
+    <div class="form-group float-end">
+        <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
+    </div>
+</div>
 
 <table class="table table-striped">
     <thead class="table-dark">
@@ -75,3 +85,20 @@
         }
     </tbody>
 </table>
+
+<nav aria-label="...">
+    <ul class="pagination">
+        <li class="page-item @(ViewBag.Page > 1 ? "" : "disabled")">
+            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.Page - 1, pageSize = pageSize })" tabindex="-1">&laquo; Previous</a>
+        </li>
+        @foreach (var pageNumber in ViewBag.NextPages)
+        {
+            <li class="page-item @(pageNumber == ViewBag.Page ? "active" : "")" aria-current="page">
+                <a class="page-link" href="@Url.Action("Index", new { page = pageNumber, pageSize = pageSize })">@pageNumber</a>
+            </li>
+        }
+        <li class="page-item @(ViewBag.Page - 1 < ViewBag.MaxPage - 1 ? "" : "disabled")">
+            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.Page + 1, pageSize = pageSize })">Next &raquo;</a>
+        </li>
+    </ul>
+</nav>
