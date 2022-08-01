@@ -6,6 +6,7 @@
     using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Jobs;
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -352,13 +353,26 @@
         #region Clear Stale Pokestops
 
         // GET: UtilitiesController/ClearStalePokestops
-        public ActionResult ClearStalePokestops()
+        public ActionResult ClearStalePokestops(int page = 1, int pageSize = 100)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var pokestops = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
                                                  .ToList();
-            pokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
-            return View(pokestops);
+
+            var total = pokestops.Count;
+            var maxPage = (total / pageSize) - (total % pageSize == 0 ? 1 : 0) + 1;
+            page = page > maxPage ? maxPage : page;
+
+            var pagedPokestops = pokestops.OrderBy(key => key.Name)
+                                          .Skip((page - 1) * pageSize)
+                                          .Take(pageSize)
+                                          .ToList();
+            pagedPokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
+
+            ViewBag.MaxPage = maxPage;
+            ViewBag.Page = page;
+            ViewBag.NextPages = Utils.GetNextPages(page, maxPage);
+            return View(pagedPokestops);
         }
 
         // POST: UtilitiesController/ClearStalePokestops

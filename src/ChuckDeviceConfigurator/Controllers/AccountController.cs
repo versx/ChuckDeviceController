@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -39,21 +40,21 @@
         {
             var accounts = _context.Accounts.ToList();
             var devices = _context.Devices.ToList();
-            var pagedAccounts = _context.Accounts.OrderBy(key => key.Username)
-                                                 .Skip((page - 1) * pageSize)
-                                                 .Take(pageSize)
-                                                 .ToList();
+
+            var total = accounts.Count;
+            var maxPage = (total / pageSize) - (total % pageSize == 0 ? 1 : 0) + 1;
+            page = page > maxPage ? maxPage : page;
+
+            var pagedAccounts = accounts.OrderBy(key => key.Username)
+                                        .Skip((page - 1) * pageSize)
+                                        .Take(pageSize)
+                                        .ToList();
             var accountsInUse = devices.Where(device => device.AccountUsername != null)
                                        .Select(device => device.AccountUsername)
                                        .ToList();
-            /*
-            var data = accounts.Skip((page - 1) * pageSize)
-                               .Take(pageSize)
-                               .ToList();
-            */
-            pagedAccounts?.ForEach(account => account.IsInUse = accountsInUse.Contains(account.Username));
 
             var now = DateTime.UtcNow.ToTotalSeconds();
+
             var banExpireTime = Strings.OneDayS * 7;
             var failedList = new List<string> { "banned", "suspended", "invalid_credentials", "GPR_RED_WARNING", "GPR_BANNED" };
             var cleanAccounts = accounts.Where(x => string.IsNullOrEmpty(x.Failed) &&
@@ -85,7 +86,6 @@
             if (WasSuspended ?? false)
                 return "Warning";
              */
-            var total = accounts.Count;
             var days7 = Strings.OneDayS * 7;
             var days30 = Strings.OneDayS * 30;
             var bannedAccounts = accounts.Where(x => x.Failed == "banned" || x.Failed == "GPR_BANNED" || (x.Banned ?? false));
@@ -122,8 +122,9 @@
                 {
                 },
             };
-            ViewBag.MaxPage = ((total / pageSize) - (total % pageSize == 0 ? 1 : 0)) + 1;
+            ViewBag.MaxPage = maxPage;
             ViewBag.Page = page;
+            ViewBag.NextPages = Utils.GetNextPages(page, maxPage);
             return View(model);
         }
 

@@ -2,6 +2,9 @@
 @model List<Pokestop>
 @{
     ViewData["Title"] = "Utilities - Clear Stale Pokestops";
+    var pageSize = Context.Request.Query.ContainsKey("pageSize")
+        ? Convert.ToInt32(Context.Request.Query["pageSize"])
+        : 100;
 }
 
 <h1>Utilities</h1>
@@ -27,8 +30,15 @@
 <div class="row">
     <div class="col">
         <form asp-controller="Utilities" asp-action="ClearStalePokestops">
-            <div class="form-group">
-                <input type="submit" value="Delete All" class="btn btn-danger float-end" title="Delete All Stale Pokestops" onclick="return confirm('You are about to delete \'@(Model.Count)\' Pokestops, are you sure this is what you want to do?');" />
+            <div>
+                <div class="float-start">
+                    <label>
+                        <b>Page:</b> @ViewBag.Page / @ViewBag.MaxPage
+                    </label>
+                </div>
+                <div class="form-group float-end">
+                    <input type="submit" value="Delete All" class="btn btn-danger float-end" title="Delete All Stale Pokestops" onclick="return confirm('You are about to delete \'@(Model.Count)\' Pokestops, are you sure this is what you want to do?');" />
+                </div>
             </div>
             <table class="table table-striped">
                 <thead class="table-dark">
@@ -79,6 +89,22 @@
                 </tbody>
             </table>
         </form>
+        <nav aria-label="...">
+            <ul class="pagination">
+                <li class="page-item @(ViewBag.Page > 1 ? "" : "disabled")">
+                    <a class="page-link" href="@Url.Action("ClearStalePokestops", new { page = ViewBag.Page - 1, pageSize = pageSize })" tabindex="-1">&laquo; Previous</a>
+                </li>
+                @foreach (var pageNumber in ViewBag.NextPages)
+                {
+                    <li class="page-item @(pageNumber == ViewBag.Page ? "active" : "")" aria-current="page">
+                        <a class="page-link" href="@Url.Action("ClearStalePokestops", new { page = pageNumber, pageSize = pageSize })">@pageNumber</a>
+                    </li>
+                }
+                <li class="page-item @(ViewBag.Page - 1 < ViewBag.MaxPage - 1 ? "" : "disabled")">
+                    <a class="page-link" href="@Url.Action("ClearStalePokestops", new { page = ViewBag.Page + 1, pageSize = pageSize })">Next &raquo;</a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </div>
 

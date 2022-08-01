@@ -261,6 +261,9 @@
         </table>
     </div>
     <div class="tab-pane fade" id="accounts" role="tabpanel" aria-labelledby="pills-accounts-tab">
+        <label>
+            <b>Page:</b> @ViewBag.Page / @ViewBag.MaxPage
+        </label>
         <table class="table table-striped">
             <thead class="table-dark">
                 <tr>
@@ -330,20 +333,22 @@
             </tbody>
         </table>
 
-        <label>
-            Page: @ViewBag.Page / @ViewBag.MaxPage
-        </label>
-        <nav aria-label="Page: @ViewBag.Page / @ViewBag.MaxPage">
+        <nav aria-label="...">
             <ul class="pagination">
                 <li class="page-item @(ViewBag.Page > 1 ? "" : "disabled")">
                     <a class="page-link" href="@(Url.Action("Index", new { page = ViewBag.Page - 1, pageSize = pageSize }) + "#accounts")" tabindex="-1">&laquo; Previous</a>
                 </li>
+                @foreach (var pageNumber in ViewBag.NextPages)
+                {
+                    <li class="page-item @(pageNumber == ViewBag.Page ? "active" : "")" aria-current="page">
+                        <a class="page-link" href="@(Url.Action("Index", new { page = pageNumber, pageSize = pageSize }) + "#accounts")">@pageNumber</a>
+                    </li>
+                }
                 <li class="page-item @(ViewBag.Page - 1 < ViewBag.MaxPage - 1 ? "" : "disabled")">
                     <a class="page-link" href="@(Url.Action("Index", new { page = ViewBag.Page + 1, pageSize = pageSize }) + "#accounts")">Next &raquo;</a>
                 </li>
             </ul>
         </nav>
-        <br />
     </div>
 </div>
 
@@ -351,6 +356,7 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function() {
+            // Credits: https://stackoverflow.com/a/19015027
             // Store the currently selected tab in the hash value
             $("ul.nav-pills > li > a").on("shown.bs.tab", function(e) {
                 const id = $(e.target).attr("href").substr(1);
