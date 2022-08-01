@@ -65,7 +65,6 @@
         public WebhookData Data { get; set; }
 
         [
-            DisplayName("Geofence Multi-Polygons"),
             NotMapped,
             JsonPropertyName("multiPolygons"),
         ]

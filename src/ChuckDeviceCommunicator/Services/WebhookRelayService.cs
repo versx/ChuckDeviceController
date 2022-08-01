@@ -440,7 +440,6 @@
                 var events = new List<dynamic>();
                 var endpoint = _webhookEndpoints[i];
 
-                // TODO: Check if entities are within geofence or if geofence is not set
                 if (pokemonEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Pokemon))
                 {
                     foreach (var (_, pokemon) in pokemonEvents)

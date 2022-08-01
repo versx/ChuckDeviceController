@@ -47,6 +47,7 @@
                 ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
                 return View();
             }
+            ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
             return View(webhook);
         }
 
@@ -56,6 +57,7 @@
             var geofences = _context.Geofences.Where(geofence => geofence.Type == GeofenceType.Geofence)
                                               .ToList();
             ViewBag.Geofences = geofences;
+            ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
             return View();
         }
 
@@ -123,6 +125,7 @@
             var geofences = _context.Geofences.Where(geofence => geofence.Type == GeofenceType.Geofence)
                                               .ToList();
             ViewBag.Geofences = geofences;
+            ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
             return View(webhook);
         }
 
@@ -184,6 +187,7 @@
                 ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
                 return View();
             }
+            ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
             return View(webhook);
         }
 
