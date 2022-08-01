@@ -21,14 +21,14 @@
 
         public GeofenceControllerService(
 			//ILogger<IGeofenceControllerService> logger,
-			IDbContextFactory<DeviceControllerContext> factory)
-		{
-			//_logger = logger;
-			_factory = factory;
+            IDbContextFactory<DeviceControllerContext> factory)
+        {
+            //_logger = logger;
+            _factory = factory;
 			_geofences = new();
 
-			Reload();
-		}
+            Reload();
+        }
 
         #endregion
 

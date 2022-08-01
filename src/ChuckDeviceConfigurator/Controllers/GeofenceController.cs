@@ -5,6 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
 
     using ChuckDeviceConfigurator.Services.Geofences;
+    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -19,15 +20,18 @@
         private readonly ILogger<GeofenceController> _logger;
         private readonly DeviceControllerContext _context;
         private readonly IGeofenceControllerService _geofenceService;
+        private readonly IJobControllerService _jobControllerService;
 
         public GeofenceController(
             ILogger<GeofenceController> logger,
             DeviceControllerContext context,
-            IGeofenceControllerService geofenceService)
+            IGeofenceControllerService geofenceService,
+            IJobControllerService jobControllerService)
         {
             _logger = logger;
             _context = context;
             _geofenceService = geofenceService;
+            _jobControllerService = jobControllerService;
         }
 
         // GET: GeofenceController
@@ -172,9 +176,16 @@
                 _context.Update(geofence);
                 await _context.SaveChangesAsync();
 
-                // TODO: Update any existing instances if geofence name changed
-
                 _geofenceService.Edit(geofence, id);
+
+                // Get list of instances that have geofence
+                var instancesWithGeofence = _context.Instances.Where(instance => instance.Geofences.Contains(geofence.Name))
+                                                              .ToList();
+                foreach (var instance in instancesWithGeofence)
+                {
+                    // Reload instance so updated geofence is applied
+                    await _jobControllerService.ReloadInstanceAsync(instance, instance.Name);
+                }
 
                 return RedirectToAction(nameof(Index));
             }
@@ -219,6 +230,18 @@
                 await _context.SaveChangesAsync();
 
                 _geofenceService.Delete(id);
+
+                // Get list of instances that have geofence
+                var instancesWithGeofence = _context.Instances.Where(instance => instance.Geofences.Contains(geofence.Name))
+                                                              .ToList();
+                foreach (var instance in instancesWithGeofence)
+                {
+                    instance.Geofences.Remove(geofence.Name);
+                    await _context.SaveChangesAsync();
+
+                    // Reload instance so removed geofence is not ignored
+                    await _jobControllerService.ReloadInstanceAsync(instance, instance.Name);
+                }
 
                 return RedirectToAction(nameof(Index));
             }
