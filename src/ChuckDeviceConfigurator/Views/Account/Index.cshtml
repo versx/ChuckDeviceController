@@ -16,10 +16,10 @@
 
 <ul class="nav nav-pills nav-justified mb-3" id="pills-tab" role="tablist">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="pills-overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button" role="tab" aria-controls="pills-overview" aria-selected="false">Overview</button>
+        <a class="nav-link active" id="pills-overview-tab" data-bs-toggle="tab" data-bs-target="#overview" href="#overview" role="tab" aria-controls="pills-overview" aria-selected="true">Overview</a>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link" id="pills-accounts-tab" data-bs-toggle="pill" data-bs-target="#accounts" type="button" role="tab" aria-controls="pills-accounts" aria-selected="true">Accounts</button>
+        <a class="nav-link" id="pills-accounts-tab" data-bs-toggle="tab" data-bs-target="#accounts" href="#accounts" role="tab" aria-controls="pills-accounts" aria-selected="false">Accounts</a>
     </li>
 </ul>
 <div class="tab-content" id="pills-tabContent">
@@ -329,46 +329,60 @@
                 }
             </tbody>
         </table>
+
         <label>
             Page: @ViewBag.Page / @ViewBag.MaxPage
         </label>
-        @if (ViewBag.Page > 1)
-        {
-            <a href="@Url.Action("Index", new { page = ViewBag.Page - 1, pageSize = pageSize })" 
-               class="btn btn-default">
-                &laquo; Prev
-            </a>
-        }
-        @if (ViewBag.Page - 1 < ViewBag.MaxPage - 1)
-        {
-            <a href="@Url.Action("Index", new { page = ViewBag.Page + 1, pageSize = pageSize })" 
-               class="btn btn-default">
-                Next &raquo;
-            </a>
-        }
+        <nav aria-label="Page: @ViewBag.Page / @ViewBag.MaxPage">
+            <ul class="pagination">
+                <li class="page-item @(ViewBag.Page > 1 ? "" : "disabled")">
+                    <a class="page-link" href="@(Url.Action("Index", new { page = ViewBag.Page - 1, pageSize = pageSize }) + "#accounts")" tabindex="-1">&laquo; Previous</a>
+                </li>
+                <li class="page-item @(ViewBag.Page - 1 < ViewBag.MaxPage - 1 ? "" : "disabled")">
+                    <a class="page-link" href="@(Url.Action("Index", new { page = ViewBag.Page + 1, pageSize = pageSize }) + "#accounts")">Next &raquo;</a>
+                </li>
+            </ul>
+        </nav>
         <br />
     </div>
 </div>
 
-@{
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Store the currently selected tab in the hash value
+            $("ul.nav-pills > li > a").on("shown.bs.tab", function(e) {
+                const id = $(e.target).attr("href").substr(1);
+                window.location.hash = id;
+            });
+
+            // Upon page load, switch to the currently selected tab
+            const hash = window.location.hash;
+            $('#pills-tab a[href="' + hash + '"]').tab('show');
+        });
+    </script>
+}
+
+    @{
     string GetAccountStatusColor(string status)
     {
-        var color = "black";
+        var cssClass = "text-dark";
         switch (status)
         {
             case "Good":
-                color = "green";
+                cssClass = "account-good";
                 break;
             case "Banned":
-                color = "red";
+                cssClass = "account-banned";
                 break;
             case "Warning":
             case "Invalid":
             case "Suspended":
-                color = "orange";
+                cssClass = "account-warning";
                 break;
         }
-        var html = "<span style='color: {0};'>{1}</span>";
-        return string.Format(html, color, status);
+        var html = "<span class='{0}'>{1}</span>";
+        return string.Format(html, cssClass, status);
     }
 }
