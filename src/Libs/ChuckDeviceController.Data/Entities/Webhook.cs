@@ -69,7 +69,7 @@
             NotMapped,
             JsonPropertyName("multiPolygons"),
         ]
-        public List<MultiPolygon> GeofenceMultiPolygons { get; set; }
+        public List<List<Coordinate>> GeofenceMultiPolygons { get; set; }
 
         #endregion
 

@@ -447,7 +447,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, pokemon.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(pokemon.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(pokemon.GetWebhookData(WebhookHeaders.Pokemon));
@@ -459,7 +459,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, pokestop.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(pokestop.GetWebhookData(WebhookHeaders.Pokestop));
@@ -471,7 +471,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, lure.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(lure.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(lure.GetWebhookData(WebhookHeaders.Lure));
@@ -483,7 +483,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, pokestopWithIncident.Pokestop.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(pokestopWithIncident.Pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(pokestopWithIncident.Invasion.GetWebhookData(WebhookHeaders.Invasion, pokestopWithIncident.Pokestop));
@@ -495,7 +495,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, quest.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(quest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(quest.GetWebhookData(WebhookHeaders.Quest));
@@ -507,7 +507,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, alternativeQuest.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(alternativeQuest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(alternativeQuest.GetWebhookData(WebhookHeaders.AlternativeQuest));
@@ -519,7 +519,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, gym.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(gym.GetWebhookData(WebhookHeaders.Gym));
@@ -531,7 +531,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, gymInfo.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(gymInfo.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(gymInfo.GetWebhookData("gym-info"));
@@ -543,7 +543,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, egg.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(egg.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(egg.GetWebhookData(WebhookHeaders.Egg));
@@ -555,7 +555,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, raid.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(raid.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(raid.GetWebhookData(WebhookHeaders.Raid));
@@ -567,7 +567,7 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, weather.ToCoordinate()))
+                            if (!GeofenceService.IsPointInPolygon(weather.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
                         events.Add(weather.GetWebhookData(WebhookHeaders.Weather));

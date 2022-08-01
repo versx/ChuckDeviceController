@@ -103,8 +103,8 @@
 							if (geofence == null)
 								continue;
 
-							var (multiPolygons, _) = geofence.ConvertToMultiPolygons();
-							webhook.GeofenceMultiPolygons = multiPolygons;
+							var (_, coordinates) = geofence.ConvertToMultiPolygons();
+							webhook.GeofenceMultiPolygons = coordinates;
                         }
 					});
                 }
