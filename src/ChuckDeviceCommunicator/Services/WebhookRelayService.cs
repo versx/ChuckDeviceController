@@ -7,7 +7,10 @@
     using ChuckDeviceCommunicator.Services.Rpc;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.Geometry;
+    using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Net.Utilities;
     using ChuckDeviceController.Protos;
 
@@ -442,6 +445,11 @@
                 {
                     foreach (var (_, pokemon) in pokemonEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, pokemon.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(pokemon.GetWebhookData(WebhookHeaders.Pokemon));
                     }
                 }
@@ -449,6 +457,11 @@
                 {
                     foreach (var (_, pokestop) in pokestopEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, pokestop.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(pokestop.GetWebhookData(WebhookHeaders.Pokestop));
                     }
                 }
@@ -456,6 +469,11 @@
                 {
                     foreach (var (_, lure) in lureEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, lure.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(lure.GetWebhookData(WebhookHeaders.Lure));
                     }
                 }
@@ -463,6 +481,11 @@
                 {
                     foreach (var (_, pokestopWithIncident) in invasionEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, pokestopWithIncident.Pokestop.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(pokestopWithIncident.Invasion.GetWebhookData(WebhookHeaders.Invasion, pokestopWithIncident.Pokestop));
                     }
                 }
@@ -470,6 +493,11 @@
                 {
                     foreach (var (_, quest) in questEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, quest.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(quest.GetWebhookData(WebhookHeaders.Quest));
                     }
                 }
@@ -477,6 +505,11 @@
                 {
                     foreach (var (_, alternativeQuest) in alternativeQuestEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, alternativeQuest.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(alternativeQuest.GetWebhookData(WebhookHeaders.AlternativeQuest));
                     }
                 }
@@ -484,6 +517,11 @@
                 {
                     foreach (var (_, gym) in gymEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, gym.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(gym.GetWebhookData(WebhookHeaders.Gym));
                     }
                 }
@@ -491,6 +529,11 @@
                 {
                     foreach (var (_, gymInfo) in gymInfoEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, gymInfo.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(gymInfo.GetWebhookData("gym-info"));
                     }
                 }
@@ -498,6 +541,11 @@
                 {
                     foreach (var (_, egg) in eggEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, egg.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(egg.GetWebhookData(WebhookHeaders.Egg));
                     }
                 }
@@ -505,6 +553,11 @@
                 {
                     foreach (var (_, raid) in raidEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, raid.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(raid.GetWebhookData(WebhookHeaders.Raid));
                     }
                 }
@@ -512,6 +565,11 @@
                 {
                     foreach (var (_, weather) in weatherEvents)
                     {
+                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        {
+                            if (!GeofenceService.InMultiPolygon(endpoint.GeofenceMultiPolygons, weather.ToCoordinate()))
+                                continue;
+                        }
                         events.Add(weather.GetWebhookData(WebhookHeaders.Weather));
                     }
                 }
