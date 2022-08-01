@@ -7,6 +7,7 @@
     using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -35,10 +36,14 @@
         }
 
         // GET: InstanceController
-        public async Task<ActionResult> Index(bool autoRefresh = false, string? sortOrder = null, string? sortParam = null, string? searchKeyword = null)
+        public async Task<ActionResult> Index(int page = 1, int pageSize = 100, bool autoRefresh = false, string? sortOrder = null, string? sortParam = null, string? searchKeyword = null)
         {
             var instances = _context.Instances.ToList();
             var devices = _context.Devices.ToList();
+            var total = instances.Count;
+            var maxPage = (total / pageSize) - (total % pageSize == 0 ? 1 : 0) + 1;
+            page = page > maxPage ? maxPage : page;
+
             foreach (var instance in instances)
             {
                 var deviceCount = devices.Count(device => device.InstanceName == instance.Name);
@@ -65,10 +70,16 @@
                 _ => instances.OrderBy(instance => instance.Name)
                               .ToList(),
             };
+
+            var pagedInstances = instances.OrderBy(key => key.Name)
+                                          .Skip((page - 1) * pageSize)
+                                          .Take(pageSize)
+                                          .ToList();
+
             var model = new ViewModelsModel<Instance>
             {
                 AutoRefresh = autoRefresh,
-                Items = instances,
+                Items = pagedInstances,
             };
             if (autoRefresh)
             {
@@ -81,6 +92,9 @@
                 ? "desc"
                 : "asc";
             ViewBag.SearchKeyword = searchKeyword;
+            ViewBag.MaxPage = maxPage;
+            ViewBag.Page = page;
+            ViewBag.NextPages = Utils.GetNextPages(page, maxPage);
             return View(model);
         }
 

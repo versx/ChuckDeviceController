@@ -3,17 +3,12 @@
 @model ViewModelsModel<Instance>
 @{
     ViewData["Title"] = "Instances";
+    var pageSize = Context.Request.Query.ContainsKey("pageSize")
+        ? Convert.ToInt32(Context.Request.Query["pageSize"])
+        : 100;
 }
 
 <h1>Instances</h1>
-
-<p>
-    <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
-</p>
-
-<div class="checkbox">
-    <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
-</div>
 
 @*
 @using (Html.BeginForm())
@@ -23,6 +18,20 @@
     </p>
 }
 *@
+
+<div>
+    <div class="float-start">
+        <div class="checkbox">
+            <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
+        </div>
+        <label>
+            <b>Page:</b> @ViewBag.Page / @ViewBag.MaxPage
+        </label>
+    </div>
+    <div class="form-group float-end">
+        <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
+    </div>
+</div>
 
 <table class="table table-striped">
     <thead class="table-dark">
@@ -87,21 +96,38 @@
     </tbody>
 </table>
 
+<nav aria-label="...">
+    <ul class="pagination">
+        <li class="page-item @(ViewBag.Page > 1 ? "" : "disabled")">
+            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.Page - 1, pageSize = pageSize })" tabindex="-1">&laquo; Previous</a>
+        </li>
+        @foreach (var pageNumber in ViewBag.NextPages)
+        {
+            <li class="page-item @(pageNumber == ViewBag.Page ? "active" : "")" aria-current="page">
+                <a class="page-link" href="@Url.Action("Index", new { page = pageNumber, pageSize = pageSize })">@pageNumber</a>
+            </li>
+        }
+        <li class="page-item @(ViewBag.Page - 1 < ViewBag.MaxPage - 1 ? "" : "disabled")">
+            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.Page + 1, pageSize = pageSize })">Next &raquo;</a>
+        </li>
+    </ul>
+</nav>
+
 @section Scripts {
 <script>
 const handleAutoRefresh = (e) => {
     const isChecked = $(e).is(':checked');
     if (isChecked) {
-        location.href = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = true }))";
+        location.href = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = true, page = ViewBag.Page }))";
     } else {
-        location.href = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = false }))";
+        location.href = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = false, page = ViewBag.Page }))";
     }
 };
 
 function handleSearch(e) {
     // https://docs.microsoft.com/en-us/aspnet/mvc/overview/getting-started/getting-started-with-ef-using-mvc/sorting-filtering-and-paging-with-the-entity-framework-in-an-asp-net-mvc-application
     const value = $(e).val();
-    let url = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = ViewBag.AutoRefresh, searchKeyword = "SEARCH_PLACEHOLDER" }))";
+    let url = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = ViewBag.AutoRefresh, page = ViewBag.Page, searchKeyword = "SEARCH_PLACEHOLDER" }))";
     url = url.replace('SEARCH_PLACEHOLDER', value);
     console.log('replaced url:', url);
     location.href = url;
