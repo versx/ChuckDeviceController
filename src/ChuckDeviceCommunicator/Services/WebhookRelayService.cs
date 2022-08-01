@@ -439,6 +439,8 @@
             {
                 var events = new List<dynamic>();
                 var endpoint = _webhookEndpoints[i];
+                if (!endpoint.Enabled)
+                    continue;
 
                 if (pokemonEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Pokemon))
                 {
