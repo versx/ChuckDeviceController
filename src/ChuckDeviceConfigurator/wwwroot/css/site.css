@@ -90,3 +90,30 @@ footer > div > div > a {
     color: inherit;
     text-decoration: none !important;
 }
+
+.account-warning, .account-suspended,
+.account-cooldown, .account-spinlimit {
+    color: orange;
+}
+
+.account-banned {
+    color: red;
+}
+
+.account-good {
+    color: limegreen;
+}
+
+.account-inuse {
+    color: teal;
+}
+
+.account-new {
+    color: dodgerblue;
+}
+
+.account-level-header {
+    position: center;
+    width: 100%;
+    margin: 0 auto;
+}
