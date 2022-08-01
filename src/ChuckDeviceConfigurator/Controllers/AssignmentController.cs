@@ -6,6 +6,7 @@
     using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Services.Assignments;
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -28,12 +29,25 @@
         }
 
         // GET: AssignmentController
-        public ActionResult Index()
+        public ActionResult Index(int page = 1, int pageSize = 100)
         {
             var assignments = _context.Assignments.ToList();
+
+            var total = assignments.Count;
+            var maxPage = (total / pageSize) - (total % pageSize == 0 ? 1 : 0) + 1;
+            page = page > maxPage ? maxPage : page;
+
+            var pagedAssignments = assignments.OrderBy(key => key.Id)
+                                              .Skip((page - 1) * pageSize)
+                                              .Take(pageSize)
+                                              .ToList();
+
+            ViewBag.MaxPage = maxPage;
+            ViewBag.Page = page;
+            ViewBag.NextPages = Utils.GetNextPages(page, maxPage);
             return View(new ViewModelsModel<Assignment>
             {
-                Items = assignments,
+                Items = pagedAssignments,
             });
         }
 
