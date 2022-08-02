@@ -117,3 +117,11 @@ footer > div > div > a {
     width: 100%;
     margin: 0 auto;
 }
+
+.assignment-enabled {
+    color: green;
+}
+
+.assignment-disabled {
+    color: red;
+}

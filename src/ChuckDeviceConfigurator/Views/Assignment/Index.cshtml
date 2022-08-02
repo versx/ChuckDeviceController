@@ -4,25 +4,17 @@
 @model ViewModelsModel<Assignment>
 @{
     ViewData["Title"] = "Assignments";
-    var pageSize = Context.Request.Query.ContainsKey("pageSize")
-        ? Convert.ToInt32(Context.Request.Query["pageSize"])
-        : 100;
 }
 
 <h1>Assignments</h1>
 
-<div>
-    <div class="float-start">
-        <label>
-            <b>Page:</b> @ViewBag.Page / @ViewBag.MaxPage
-        </label>
-    </div>
-    <div class="form-group float-end">
+<p>
+    <div class="form-group">
         <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
     </div>
-</div>
+</p>
 
-<table class="table table-striped">
+<table id="table-assignments" class="table table-striped table-bordered dt-responsive nowrap">
     <thead class="table-dark">
         <tr>
             <th>
@@ -78,7 +70,7 @@
                     @Utils.FormatAssignmentTime(item.Time)
                 </td>
                 <td>
-                    @(item.Enabled ? "Yes" : "No")
+                    @Html.Raw($"<span class=\"{(item.Enabled ? "assignment-enabled" : "assignment-disabled")}\">{(item.Enabled ? "Yes" : "No")}</span>")
                 </td>
                 <td>
                     <div class="dropdown">
@@ -98,19 +90,30 @@
     </tbody>
 </table>
 
-<nav aria-label="...">
-    <ul class="pagination">
-        <li class="page-item @(ViewBag.Page > 1 ? "" : "disabled")">
-            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.Page - 1, pageSize = pageSize })" tabindex="-1">&laquo; Previous</a>
-        </li>
-        @foreach (var pageNumber in ViewBag.NextPages)
-        {
-            <li class="page-item @(pageNumber == ViewBag.Page ? "active" : "")" aria-current="page">
-                <a class="page-link" href="@Url.Action("Index", new { page = pageNumber, pageSize = pageSize })">@pageNumber</a>
-            </li>
-        }
-        <li class="page-item @(ViewBag.Page - 1 < ViewBag.MaxPage - 1 ? "" : "disabled")">
-            <a class="page-link" href="@Url.Action("Index", new { page = ViewBag.Page + 1, pageSize = pageSize })">Next &raquo;</a>
-        </li>
-    </ul>
-</nav>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            $('#table-assignments').DataTable({
+                columnDefs: [
+                    { orderable: false, targets: 8 },
+                ],
+                order: [[0, 'asc']],
+                stateSave: true,
+                searching: true,
+                paging: true,
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, 'All']],
+                pagingType: 'full_numbers',
+                colReorder: false,
+                fixedHeader: {
+                    header: true,
+                },
+                responsive: {
+                    //breakpoints: '',
+                    details: true,
+                },
+                info: true,
+            });
+        });
+    </script>
+}
