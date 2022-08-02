@@ -165,7 +165,7 @@
             IsEnabled = fortData.Enabled;
             GuardingPokemonId = Convert.ToUInt16(fortData.GuardPokemonId);
             Team = fortData.Team;
-            AvailableSlots = Convert.ToUInt16(fortData.GymDisplay.SlotsAvailable);
+            AvailableSlots = Convert.ToUInt16(fortData.GymDisplay?.SlotsAvailable ?? 0);
             LastModifiedTimestamp = Convert.ToUInt64(fortData.LastModifiedMs / 1000);
             IsExRaidEligible = fortData.IsExRaidEligible;
             InBattle = fortData.IsInBattle;
