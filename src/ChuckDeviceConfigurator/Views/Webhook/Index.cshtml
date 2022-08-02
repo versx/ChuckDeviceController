@@ -33,7 +33,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Enabled)
             </th>
-            <th></th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
@@ -56,7 +56,7 @@
                     @string.Join(", ", item.Geofences)
                 </td>
                 <td>
-                    @(item.Enabled ? "Yes" : "No")
+                    @Html.Raw($"<span class=\"{(item.Enabled ? "webhook-enabled" : "webhook-disabled")}\">{(item.Enabled ? "Yes" : "No")}</span>")
                 </td>
                 <td>
                     <div class="dropdown">

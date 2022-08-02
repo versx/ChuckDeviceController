@@ -353,26 +353,14 @@
         #region Clear Stale Pokestops
 
         // GET: UtilitiesController/ClearStalePokestops
-        public ActionResult ClearStalePokestops(int page = 1, int pageSize = 100)
+        public ActionResult ClearStalePokestops()
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var pokestops = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
                                                  .ToList();
 
-            var total = pokestops.Count;
-            var maxPage = (total / pageSize) - (total % pageSize == 0 ? 1 : 0) + 1;
-            page = page > maxPage ? maxPage : page;
-
-            var pagedPokestops = pokestops.OrderBy(key => key.Name)
-                                          .Skip((page - 1) * pageSize)
-                                          .Take(pageSize)
-                                          .ToList();
-            pagedPokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
-
-            ViewBag.MaxPage = maxPage;
-            ViewBag.Page = page;
-            ViewBag.NextPages = Utils.GetNextPages(page, maxPage);
-            return View(pagedPokestops);
+            pokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
+            return View(pokestops);
         }
 
         // POST: UtilitiesController/ClearStalePokestops

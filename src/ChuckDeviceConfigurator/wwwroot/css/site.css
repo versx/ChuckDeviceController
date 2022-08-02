@@ -118,10 +118,14 @@ footer > div > div > a {
     margin: 0 auto;
 }
 
-.assignment-enabled {
+.assignment-enabled,
+.pokestop-enabled,
+.webhook-enabled {
     color: green;
 }
 
-.assignment-disabled {
+.assignment-disabled,
+.pokestop-disabled,
+.webhook-disabled {
     color: red;
 }
