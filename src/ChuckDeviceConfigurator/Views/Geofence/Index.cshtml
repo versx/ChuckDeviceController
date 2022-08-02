@@ -12,7 +12,7 @@
     <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
 </p>
 
-<table class="table table-striped">
+<table id="table-geofences" class="table table-striped table-bordered dt-responsive nowrap">
     <thead class="table-dark">
         <tr>
             <th>
@@ -56,3 +56,34 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#table-geofences').DataTable({
+                columnDefs: [
+                    { orderable: false, targets: 3 },
+                ],
+                order: [[0, 'asc']],
+                stateSave: true,
+                searching: true,
+                paging: true,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+                //pagingType: 'full_numbers',
+                colReorder:
+                {
+                    enable: true,
+                    fixedColumnsLeft: 1,
+                },
+                fixedHeader: {
+                    header: true,
+                },
+                responsive: {
+                    //breakpoints: '',
+                    details: true,
+                },
+                info: true,
+            });
+        });
+    </script>
+}
