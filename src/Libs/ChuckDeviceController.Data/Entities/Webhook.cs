@@ -23,7 +23,7 @@
         public string Name { get; set; }
 
         [
-            DisplayName("Webhook Types"),
+            DisplayName("Types"),
             Column("types"),
             JsonPropertyName("types"),
         ]
