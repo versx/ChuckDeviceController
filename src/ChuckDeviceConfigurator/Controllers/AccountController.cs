@@ -3,8 +3,8 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -36,25 +36,16 @@
         */
 
         // GET: AccountController
-        public ActionResult Index(int page = 1, int pageSize = 100)
+        public async Task<ActionResult> Index()
         {
-            var accounts = _context.Accounts.ToList();
+            var accounts = await _context.Accounts.ToListAsync();
             var devices = _context.Devices.ToList();
 
-            var total = accounts.Count;
-            var maxPage = (total / pageSize) - (total % pageSize == 0 ? 1 : 0) + 1;
-            page = page > maxPage ? maxPage : page;
-
-            var pagedAccounts = accounts.OrderBy(key => key.Username)
-                                        .Skip((page - 1) * pageSize)
-                                        .Take(pageSize)
-                                        .ToList();
             var accountsInUse = devices.Where(device => device.AccountUsername != null)
                                        .Select(device => device.AccountUsername)
                                        .ToList();
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-
             var banExpireTime = Strings.OneDayS * 7;
             var failedList = new List<string> { "banned", "suspended", "invalid_credentials", "GPR_RED_WARNING", "GPR_BANNED" };
             var cleanAccounts = accounts.Where(x => string.IsNullOrEmpty(x.Failed) &&
@@ -64,28 +55,22 @@
                                                     x.LastEncounterLongitude == null &&
                                                     x.LastEncounterTime == null &&
                                                     x.Spins == 0);
-            var accountLevelStatistics = accounts.GroupBy(x => x.Level, (x, y) => new AccountLevelStatisticsViewModel
+            var accountLevelStatistics = accounts.GroupBy(account => account.Level, (level, levelAccounts) => new AccountLevelStatisticsViewModel
             {
-                Level = x,
-                Total = (ulong)accounts.LongCount(z => z.Level == x),
-                InUse = (ulong)accounts.LongCount(z => devices.Any(dev => string.Compare(dev.AccountUsername, z.Username) == 0 && z.Level == x)),
-                Good = (ulong)y.LongCount(z => string.IsNullOrEmpty(z.Failed) && z.FailedTimestamp == null && z.FirstWarningTimestamp == null),
-                Banned = (ulong)y.LongCount(z => (z.Failed == "banned" || z.Failed == "GPR_BANNED") && now - z.FailedTimestamp < banExpireTime),
-                Warning = (ulong)y.LongCount(z => z.FirstWarningTimestamp > 0),
-                Suspended = (ulong)y.LongCount(z => z.Failed == "suspended"),
-                Invalid = (ulong)y.LongCount(z => z.Failed == "invalid_credentials"),
-                Cooldown = (ulong)y.LongCount(z => z.LastEncounterTime != null && now - z.LastEncounterTime < 7200),
-                SpinLimit = (ulong)y.LongCount(z => z.Spins >= Strings.DefaultSpinLimit),
-                Other = (ulong)y.LongCount(z => !failedList.Contains(z.Failed)),
-            }).OrderByDescending(x => x.Level).ToList();
+                Level = level,
+                Total = (ulong)accounts.LongCount(acc => acc.Level == level),
+                InUse = (ulong)accounts.LongCount(acc => devices.Any(dev => string.Compare(dev.AccountUsername, acc.Username) == 0 && acc.Level == level)),
+                Good = (ulong)levelAccounts.LongCount(acc => string.IsNullOrEmpty(acc.Failed) && acc.FailedTimestamp == null && acc.FirstWarningTimestamp == null),
+                Banned = (ulong)levelAccounts.LongCount(acc => (acc.Failed == "banned" || acc.Failed == "GPR_BANNED") && now - acc.FailedTimestamp < banExpireTime),
+                Warning = (ulong)levelAccounts.LongCount(acc => acc.FirstWarningTimestamp > 0),
+                Suspended = (ulong)levelAccounts.LongCount(acc => acc.Failed == "suspended"),
+                Invalid = (ulong)levelAccounts.LongCount(acc => acc.Failed == "invalid_credentials"),
+                Cooldown = (ulong)levelAccounts.LongCount(acc => acc.LastEncounterTime != null && now - acc.LastEncounterTime < 7200),
+                SpinLimit = (ulong)levelAccounts.LongCount(acc => acc.Spins >= Strings.DefaultSpinLimit),
+                Other = (ulong)levelAccounts.LongCount(acc => !string.IsNullOrEmpty(acc.Failed) && !failedList.Contains(acc.Failed)),
+            }).ToList();
             //accountLevelStatistics.Sort((a, b) => b.Level.CompareTo(a.Level));
 
-            /*
-            if (FirstWarningTimestamp > 0)
-                return "Warning";
-            if (WasSuspended ?? false)
-                return "Warning";
-             */
             var days7 = Strings.OneDayS * 7;
             var days30 = Strings.OneDayS * 30;
             var bannedAccounts = accounts.Where(x => x.Failed == "banned" || x.Failed == "GPR_BANNED" || (x.Banned ?? false));
@@ -94,9 +79,9 @@
 
             var model = new AccountStatisticsViewModel
             {
-                Accounts = pagedAccounts ?? new(),
+                Accounts = accounts ?? new(),
                 AccountLevelStatistics = accountLevelStatistics,
-                TotalAccounts = (ulong)total,
+                TotalAccounts = (ulong)accounts.LongCount(),
                 InCooldown = (ulong)accounts.LongCount(x => x.LastEncounterTime > 0 && now - x.LastEncounterTime < Strings.CooldownLimitS),
                 AccountsInUse = (ulong)accountsInUse.Count,
                 OverSpinLimit = (ulong)accounts.LongCount(x => x.Spins >= Strings.DefaultSpinLimit),
@@ -122,9 +107,6 @@
                 {
                 },
             };
-            ViewBag.MaxPage = maxPage;
-            ViewBag.Page = page;
-            ViewBag.NextPages = Utils.GetNextPages(page, maxPage);
             return View(model);
         }
 

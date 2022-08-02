@@ -318,7 +318,7 @@
                         device.InstanceName = newInstance.Name;
                         _devices[uuid] = device;
                     }
-                    _instances[oldInstanceName]?.StopAsync();
+                    _instances[oldInstanceName]?.StopAsync().ConfigureAwait(false);
                     _instances[oldInstanceName] = null;
                 }
             }

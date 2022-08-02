@@ -61,20 +61,20 @@
                                      .ToList();
             }
 
-            instances = sortOrder switch
-            {
-                "asc" => instances.OrderBy(instance => instance.GetPropertyValue(sortParam!))
-                                  .ToList(),
-                "desc" => instances.OrderByDescending(instance => instance.GetPropertyValue(sortParam!))
-                                   .ToList(),
-                _ => instances.OrderBy(instance => instance.Name)
-                              .ToList(),
-            };
-
             var pagedInstances = instances.OrderBy(key => key.Name)
                                           .Skip((page - 1) * pageSize)
                                           .Take(pageSize)
                                           .ToList();
+
+            pagedInstances = sortOrder switch
+            {
+                "asc" => pagedInstances.OrderBy(instance => instance.GetPropertyValue(sortParam!))
+                                       .ToList(),
+                "desc" => pagedInstances.OrderByDescending(instance => instance.GetPropertyValue(sortParam!))
+                                        .ToList(),
+                _ => pagedInstances.OrderBy(instance => instance.Name)
+                                   .ToList(),
+            };
 
             var model = new ViewModelsModel<Instance>
             {

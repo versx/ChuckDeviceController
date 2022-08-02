@@ -95,7 +95,7 @@
 				if (includeGeofenceMultiPolygons)
                 {
 					var geofences = context.Geofences.ToList();
-					webhooks.ForEach(webhook =>
+					foreach (var webhook in webhooks)
 					{
 						foreach (var webhookGeofence in webhook.Geofences)
                         {
@@ -106,7 +106,7 @@
 							var (_, coordinates) = geofence.ConvertToMultiPolygons();
 							webhook.GeofenceMultiPolygons = coordinates;
                         }
-					});
+					}
                 }
 				return webhooks;
 			}
