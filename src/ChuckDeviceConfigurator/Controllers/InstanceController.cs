@@ -36,13 +36,10 @@
         }
 
         // GET: InstanceController
-        public async Task<ActionResult> Index(int page = 1, int pageSize = 100, bool autoRefresh = false, string? sortOrder = null, string? sortParam = null, string? searchKeyword = null)
+        public async Task<ActionResult> Index(bool autoRefresh = false)
         {
             var instances = _context.Instances.ToList();
             var devices = _context.Devices.ToList();
-            var total = instances.Count;
-            var maxPage = (total / pageSize) - (total % pageSize == 0 ? 1 : 0) + 1;
-            page = page > maxPage ? maxPage : page;
 
             foreach (var instance in instances)
             {
@@ -52,34 +49,10 @@
                 instance.Status = status;
             }
 
-            if (!string.IsNullOrEmpty(searchKeyword))
-            {
-                instances = instances.Where(instance => instance.Name.Contains(searchKeyword) ||
-                                                        instance.Type.ToString().Contains(searchKeyword) ||
-                                                        instance.Geofences.Contains(searchKeyword) ||
-                                                        instance.Status.Contains(searchKeyword))
-                                     .ToList();
-            }
-
-            var pagedInstances = instances.OrderBy(key => key.Name)
-                                          .Skip((page - 1) * pageSize)
-                                          .Take(pageSize)
-                                          .ToList();
-
-            pagedInstances = sortOrder switch
-            {
-                "asc" => pagedInstances.OrderBy(instance => instance.GetPropertyValue(sortParam!))
-                                       .ToList(),
-                "desc" => pagedInstances.OrderByDescending(instance => instance.GetPropertyValue(sortParam!))
-                                        .ToList(),
-                _ => pagedInstances.OrderBy(instance => instance.Name)
-                                   .ToList(),
-            };
-
             var model = new ViewModelsModel<Instance>
             {
                 AutoRefresh = autoRefresh,
-                Items = pagedInstances,
+                Items = instances,
             };
             if (autoRefresh)
             {
@@ -87,14 +60,6 @@
                 Response.Headers["Refresh"] = "5";
             }
             ViewBag.AutoRefresh = autoRefresh;
-            ViewBag.SortParam = sortParam ?? "Name";
-            ViewBag.SortOrder = sortOrder == "asc"
-                ? "desc"
-                : "asc";
-            ViewBag.SearchKeyword = searchKeyword;
-            ViewBag.MaxPage = maxPage;
-            ViewBag.Page = page;
-            ViewBag.NextPages = Utils.GetNextPages(page, maxPage);
             return View(model);
         }
 
