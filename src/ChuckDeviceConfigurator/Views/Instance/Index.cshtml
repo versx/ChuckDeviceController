@@ -81,7 +81,6 @@
 </table>
 
 @section Scripts {
-@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function() {
             $('#table-instances').DataTable({
@@ -112,19 +111,10 @@
         const handleAutoRefresh = (e) => {
             const isChecked = $(e).is(':checked');
             if (isChecked) {
-                location.href = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = true, page = ViewBag.Page }))";
+                location.href = "@Html.Raw(Url.Action("Index", new { autoRefresh = true }))";
             } else {
-                location.href = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = false, page = ViewBag.Page }))";
+                location.href = "@Html.Raw(Url.Action("Index", new { autoRefresh = false }))";
             }
         };
-
-        function handleSearch(e) {
-            // https://docs.microsoft.com/en-us/aspnet/mvc/overview/getting-started/getting-started-with-ef-using-mvc/sorting-filtering-and-paging-with-the-entity-framework-in-an-asp-net-mvc-application
-            const value = $(e).val();
-            let url = "@Html.Raw(Url.Action("Index", new { sortOrder = ViewBag.SortOrder, sortParam = ViewBag.SortParam, autoRefresh = ViewBag.AutoRefresh, page = ViewBag.Page, searchKeyword = "SEARCH_PLACEHOLDER" }))";
-            url = url.replace('SEARCH_PLACEHOLDER', value);
-            console.log('replaced url:', url);
-            location.href = url;
-        }
     </script>
 }
