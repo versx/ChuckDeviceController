@@ -39,12 +39,13 @@
         public async Task<ActionResult> Index()
         {
             var accounts = await _context.Accounts.ToListAsync();
-            var devices = _context.Devices.ToList();
+            var devices = await _context.Devices.ToListAsync();
 
             var accountsInUse = devices.Where(device => device.AccountUsername != null)
                                        .Select(device => device.AccountUsername)
                                        .ToList();
 
+            var total = accounts.Count;
             var now = DateTime.UtcNow.ToTotalSeconds();
             var banExpireTime = Strings.OneDayS * 7;
             var failedList = new List<string> { "banned", "suspended", "invalid_credentials", "GPR_RED_WARNING", "GPR_BANNED" };
@@ -69,7 +70,6 @@
                 SpinLimit = (ulong)levelAccounts.LongCount(acc => acc.Spins >= Strings.DefaultSpinLimit),
                 Other = (ulong)levelAccounts.LongCount(acc => !string.IsNullOrEmpty(acc.Failed) && !failedList.Contains(acc.Failed)),
             }).ToList();
-            //accountLevelStatistics.Sort((a, b) => b.Level.CompareTo(a.Level));
 
             var days7 = Strings.OneDayS * 7;
             var days30 = Strings.OneDayS * 30;
@@ -81,12 +81,12 @@
             {
                 Accounts = accounts ?? new(),
                 AccountLevelStatistics = accountLevelStatistics,
-                TotalAccounts = (ulong)accounts.LongCount(),
+                TotalAccounts = (ulong)total,
                 InCooldown = (ulong)accounts.LongCount(x => x.LastEncounterTime > 0 && now - x.LastEncounterTime < Strings.CooldownLimitS),
                 AccountsInUse = (ulong)accountsInUse.Count,
                 OverSpinLimit = (ulong)accounts.LongCount(x => x.Spins >= Strings.DefaultSpinLimit),
                 CleanLevel30s = (ulong)cleanAccounts.LongCount(x => x.Level >= 30),
-                SuspendedAccounts = (ulong)accounts.LongCount(x =>  x.Failed == "suspended"),
+                SuspendedAccounts = (ulong)suspendedAccounts.LongCount(),
                 NewAccounts = (ulong)cleanAccounts.LongCount(),
                 OverLevel30 = (ulong)accounts.LongCount(x => x.Level >= 30),
                 Bans = new AccountWarningsBansViewModel
@@ -105,6 +105,7 @@
                 },
                 Suspended = new AccountWarningsBansViewModel
                 {
+                    Total = (ulong)suspendedAccounts.LongCount(),
                 },
             };
             return View(model);
