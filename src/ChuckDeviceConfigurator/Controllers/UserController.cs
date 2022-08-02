@@ -36,7 +36,7 @@
         public async Task<IActionResult> Index()
         {
             var users = await _userManager.Users.ToListAsync();
-            var userRolesViewModel = new List<UserRolesViewModel>();
+            var model = new ViewModelsModel<UserRolesViewModel>();
             foreach (var user in users)
             {
                 var viewModel = new UserRolesViewModel
@@ -46,10 +46,11 @@
                     UserName = user.UserName,
                     Roles = await _userManager.GetRolesAsync(user),
                 };
-                userRolesViewModel.Add(viewModel);
+                model.Items.Add(viewModel);
             }
+
             ViewBag.DefaultUserName = Strings.DefaultUserName;
-            return View(userRolesViewModel);
+            return View(model);
         }
 
         // GET: UserController/Create

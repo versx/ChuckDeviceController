@@ -1,5 +1,5 @@
 ﻿@using ChuckDeviceConfigurator.ViewModels
-@model List<UserRolesViewModel>
+@model ViewModelsModel<UserRolesViewModel>
 @{
     ViewData["Title"] = "User Accounts";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -12,17 +12,23 @@
     <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
 </p>
 
-<table class="table table-striped">
+<table id="table-users" class="table table-striped table-bordered dt-responsive nowrap">
     <thead class="table-dark">
         <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Roles</th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Roles)
+            </th>
             <th>Action</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var user in Model)
+        @foreach (var user in Model.Items)
         {
             <tr>
                 <th scope="row">@user.UserName</th>
@@ -43,3 +49,33 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#table-users').DataTable({
+                columnDefs: [
+                    { orderable: false, targets: 3 },
+                ],
+                order: [[0, 'asc']],
+                stateSave: true,
+                searching: true,
+                paging: true,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+                colReorder:
+                {
+                    enable: true,
+                    fixedColumnsLeft: 1,
+                },
+                fixedHeader: {
+                    header: true,
+                },
+                responsive: {
+                    //breakpoints: '',
+                    details: true,
+                },
+                info: true,
+            });
+        });
+    </script>
+}
