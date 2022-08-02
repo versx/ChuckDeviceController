@@ -6,18 +6,16 @@
 }
 
 <h1>Instances</h1>
+<br />
 
-<div class="pb-3">
+<div class="pb-5">
     <div class="float-start">
-        <div class="checkbox">
-            <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
-        </div>
-    </div>
-    <div class="form-group float-end">
         <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
     </div>
+    <div class="checkbox float-end">
+        <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
+    </div>
 </div>
-<br />
 
 <table id="table-instances" class="table table-striped table-bordered dt-responsive nowrap">
     <thead class="table-dark">

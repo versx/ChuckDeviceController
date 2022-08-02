@@ -7,7 +7,6 @@
 
     using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.Services.Jobs;
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -31,28 +30,16 @@
         }
 
         // GET: DeviceController
-        public ActionResult Index(int page = 1, int pageSize = 100)
+        public ActionResult Index()
         {
             var devices = _context.Devices.ToList();
-            var total = devices.Count;
-            var maxPage = (total / pageSize) - (total % pageSize == 0 ? 1 : 0) + 1;
-            page = page > maxPage ? maxPage : page;
-
-            var pagedDevices = devices.OrderBy(key => key.Uuid)
-                                      .Skip((page - 1) * pageSize)
-                                      .Take(pageSize)
-                                      .ToList();
-            pagedDevices = pagedDevices.Select(device => device.SetDeviceStatus())
-                                       .ToList();
+            devices = devices.Select(device => device.SetDeviceStatus())
+                             .ToList();
 
             var model = new ViewModelsModel<Device>
             {
-                Items = pagedDevices,
+                Items = devices,
             };
-
-            ViewBag.MaxPage = maxPage;
-            ViewBag.Page = page;
-            ViewBag.NextPages = Utils.GetNextPages(page, maxPage);
             return View(model);
         }
 

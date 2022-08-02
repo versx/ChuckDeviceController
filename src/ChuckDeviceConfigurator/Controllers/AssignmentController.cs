@@ -6,7 +6,6 @@
     using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Services.Assignments;
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
