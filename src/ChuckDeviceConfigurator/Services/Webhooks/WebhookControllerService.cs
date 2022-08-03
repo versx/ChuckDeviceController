@@ -2,11 +2,11 @@
 {
 	using Microsoft.EntityFrameworkCore;
 
-	using ChuckDeviceConfigurator.Extensions;
 	using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+	using ChuckDeviceController.Data.Extensions;
 
-    public class WebhookControllerService : IWebhookControllerService
+	public class WebhookControllerService : IWebhookControllerService
 	{
 		#region Variables
 

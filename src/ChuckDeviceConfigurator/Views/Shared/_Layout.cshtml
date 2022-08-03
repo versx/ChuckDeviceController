@@ -74,12 +74,6 @@
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuDevices">
                                         <li class="nav-item">
-                                            <a class="dropdown-item" asp-area="" asp-controller="Assignment" asp-action="Index">Assignments</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="dropdown-item" asp-area="" asp-controller="AssignmentGroup" asp-action="Index">Assignment Groups</a>
-                                        </li>
-                                        <li class="nav-item">
                                             <a class="dropdown-item" asp-area="" asp-controller="Device" asp-action="Index">Devices</a>
                                         </li>
                                         <li class="nav-item">
@@ -102,6 +96,21 @@
                                         </li>
                                         <li class="nav-item">
                                             <a class="dropdown-item" asp-area="" asp-controller="IvList" asp-action="Index">IV Lists</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <div class="dropdown">
+                                    <a href="#" class="nav-link dropdown-toggle text-light" id="dropdownMenuSchedules" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Schedules
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuSchedules">
+                                        <li class="nav-item">
+                                            <a class="dropdown-item" asp-area="" asp-controller="Assignment" asp-action="Index">Assignments</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="dropdown-item" asp-area="" asp-controller="AssignmentGroup" asp-action="Index">Assignment Groups</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -132,6 +141,12 @@
                                         </li>
                                         <li>
                                             <a class="dropdown-item" asp-area="" asp-controller="Utilities" asp-action="TruncateData">Truncate Data</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Utilities" asp-action="ReQuest">Re-Quest</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item disabled" asp-area="" asp-controller="Utilities" asp-action="RouteGenerator">Route Generator</a>
                                         </li>
                                     </ul>
                                 </div>

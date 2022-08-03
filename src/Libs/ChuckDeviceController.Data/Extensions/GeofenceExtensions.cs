@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Extensions
+﻿namespace ChuckDeviceController.Data.Extensions
 {
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;

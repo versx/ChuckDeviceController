@@ -503,6 +503,24 @@
 
         #endregion
 
+        #region ReQuest
+
+        // POST: UtilitiesController/ReQuest
+        public ActionResult ReQuest()
+        {
+            return View();
+        }
+
+        // POST: UtilitiesController/ReQuest
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ReQuest(string instanceName)
+        {
+            return View();
+        }
+
+        #endregion
+
         #region Private Methods
 
         private async Task<bool> ConvertPokestopToGymAsync(Pokestop pokestop)

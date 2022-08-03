@@ -48,7 +48,6 @@
 
             // Get list of devices for device group from database and set their online/offline status
             var devices = _context.Devices.Where(device => deviceGroup.DeviceUuids.Contains(device.Uuid))
-                                          .Select(device => device.SetDeviceStatus())
                                           .ToList();
             var model = new DeviceGroupDetailsViewModel
             {
@@ -56,6 +55,7 @@
                 DeviceUuids = deviceGroup.DeviceUuids,
                 Devices = devices,
             };
+            ViewBag.Devices = devices;
             return View(model);
         }
 

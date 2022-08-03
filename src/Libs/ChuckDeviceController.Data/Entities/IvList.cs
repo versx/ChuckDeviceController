@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
-    using System.Collections.Generic;
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
@@ -19,12 +17,13 @@
         ]
         public string Name { get; set; }
 
+        // TODO: Change IvList.PokemonIds to List<string> to accommodate forms and possibly costumes
         [
-            DisplayName("Pokemon IDs"),
+            DisplayName("Pokemon"),
             Column("pokemon_ids"),
             JsonPropertyName("pokemon_ids"),
         ]
-        public List<uint> PokemonIds { get; set; }
+        public List<uint> PokemonIds { get; set; } = new();
     }
 
     /*

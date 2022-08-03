@@ -1,4 +1,5 @@
-﻿@using ChuckDeviceConfigurator.ViewModels;
+﻿@using ChuckDeviceConfigurator.Utilities
+@using ChuckDeviceConfigurator.ViewModels
 @model AccountStatisticsViewModel
 @{
     ViewData["Title"] = "Accounts";
@@ -296,7 +297,7 @@
                             @Html.DisplayFor(modelItem => item.Level)
                         </td>
                         <td>
-                            @Html.Raw(GetAccountStatusColor(item.Status))
+                            @Html.Raw(Utils.GetAccountStatusColor(item.Status))
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.LastEncounter)
@@ -418,27 +419,4 @@
         });
     */
     </script>
-}
-
-    @{
-    string GetAccountStatusColor(string status)
-    {
-        var cssClass = "text-dark";
-        switch (status)
-        {
-            case "Good":
-                cssClass = "account-good";
-                break;
-            case "Banned":
-                cssClass = "account-banned";
-                break;
-            case "Warning":
-            case "Invalid":
-            case "Suspended":
-                cssClass = "account-warning";
-                break;
-        }
-        var html = "<span class='{0}'>{1}</span>";
-        return string.Format(html, cssClass, status);
-    }
 }

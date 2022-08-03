@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Utilities
 {
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
     public static class Utils
@@ -10,6 +12,74 @@
             return timeS == 0
                 ? "On Complete"
                 : $"{times.Hours:00}:{times.Minutes:00}:{times.Seconds:00}";
+        }
+
+        public static string FormatAssignmentText(Assignment assignment, bool includeIcons = false)
+        {
+            var sourceInstance = string.IsNullOrEmpty(assignment.SourceInstanceName)
+                ? null
+                : assignment.SourceInstanceName;
+            var deviceOrGroupName = string.IsNullOrEmpty(assignment.DeviceGroupName)
+                ? (includeIcons ? "<i class=\"fa-solid fa-layer-group\"></i>&nbsp;" : null) + assignment.DeviceUuid
+                : (includeIcons ? "<i class=\"fa-solid fa-mobile-screen-button\"></i>&nbsp;" : null) + assignment.DeviceGroupName;
+            var time = FormatAssignmentTime(assignment.Time);
+
+            var sb = new System.Text.StringBuilder();
+            sb.Append(deviceOrGroupName);
+            if (!string.IsNullOrEmpty(sourceInstance))
+            {
+                sb.Append($" (From: {sourceInstance})");
+            }
+            sb.Append(" -> ");
+            sb.Append(assignment.InstanceName);
+            sb.Append($" ({time})");
+            var displayText = sb.ToString();
+            return displayText;
+        }
+
+        public static string FormatEnabled(bool enabled)
+        {
+            var status = enabled ? "Yes" : "No";
+            var color = enabled ? "green" : "red";
+            var displayText = $"<span style='color: {color}'>{status}</span>";
+            //var displayText = $"<span class=\"{(enabled ? "webhook-enabled" : "webhook-disabled")}\">{status}</span>";
+            return displayText;
+        }
+
+        public static string GetDeviceStatus(ulong lastSeen)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var status = now - lastSeen <= Strings.DeviceOnlineThresholdS
+                ? Strings.DeviceOnlineIcon
+                : Strings.DeviceOfflineIcon;
+            return status;
+        }
+
+        public static string GetAccountStatusColor(string status)
+        {
+            var cssClass = "text-dark";
+            switch (status)
+            {
+                case "Good":
+                    cssClass = "account-good";
+                    break;
+                case "Banned":
+                    cssClass = "account-banned";
+                    break;
+                case "Warning":
+                case "Invalid":
+                case "Suspended":
+                    cssClass = "account-warning";
+                    break;
+            }
+            var html = "<span class='{0}'>{1}</span>";
+            return string.Format(html, cssClass, status);
+        }
+
+        public static string GetPokemonIcon(uint pokemonId)
+        {
+            var imageUrl = $"<img src='{Strings.PokemonImageUrl}/{pokemonId}.png' width='32' height='32' />";
+            return imageUrl;
         }
 
         public static double BenchmarkAction(Action action, ushort precision = 4)

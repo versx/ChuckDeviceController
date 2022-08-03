@@ -74,7 +74,6 @@
 
             // Get devices assigned to instance
             var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
-                                                  .Select(device => device.SetDeviceStatus())
                                                   .ToList();
             var status = await _jobControllerService.GetStatusAsync(instance);
             var model = new InstanceDetailsViewModel
@@ -311,7 +310,7 @@
                     var locationUrl = $"<a href='{string.Format(Strings.GoogleMapsLinkFormat, lat, lon)}'>{lat}, {lon}</a>";
                     return new IvQueueItemViewModel
                     {
-                        // TODO: Include forms and make image url configurable
+                        // TODO: Make image url configurable
                         Image = imageUrl,
                         EncounterId = item.Id,
                         PokemonId = item.PokemonId,

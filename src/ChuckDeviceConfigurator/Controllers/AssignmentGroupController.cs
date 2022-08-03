@@ -50,6 +50,16 @@
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with id '{id}'.");
                 return View();
             }
+
+            var assignments = new List<Assignment>();
+            //var assignments = assignmentGroup.AssignmentIds.Select(async id => await _context.Assignments.FindAsync(id))
+            //                                               .ToList();
+            foreach (var assignmentId in assignmentGroup.AssignmentIds)
+            {
+                var assignment = await _context.Assignments.FindAsync(assignmentId);
+                assignments.Add(assignment);
+            }
+            ViewBag.Assignments = assignments;
             return View(assignmentGroup);
         }
 
@@ -60,10 +70,7 @@
             var assignments = _context.Assignments.ToList();
             foreach (var assignment in assignments)
             {
-                var displayText = (string.IsNullOrEmpty(assignment.DeviceGroupName)
-                    ? assignment.DeviceUuid
-                    : assignment.DeviceGroupName
-                ) + $" -> {assignment.InstanceName} ({Utils.FormatAssignmentTime(assignment.Time)})";
+                var displayText = Utils.FormatAssignmentText(assignment);
                 assignmentsList.Add(new SelectListItem
                 {
                     Text = displayText,
@@ -134,10 +141,7 @@
             var assignments = _context.Assignments.ToList();
             foreach (var assignment in assignments)
             {
-                var displayText = (string.IsNullOrEmpty(assignment.DeviceGroupName)
-                    ? assignment.DeviceUuid
-                    : assignment.DeviceGroupName
-                ) + $" -> {assignment.InstanceName} ({Utils.FormatAssignmentTime(assignment.Time)})";
+                var displayText = Utils.FormatAssignmentText(assignment);
                 assignmentsList.Add(new SelectListItem
                 {
                     Text = displayText,
@@ -261,6 +265,31 @@
             catch
             {
                 ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while starting assignment group '{id}'.");
+                return View();
+            }
+        }
+
+        // GET: AssignmentGroupController/ReQuest/test
+        public async Task<ActionResult> ReQuest(string id)
+        {
+            try
+            {
+                var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
+                if (assignmentGroup == null)
+                {
+                    // Failed to retrieve assignment group from database, does it exist?
+                    ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with name '{id}'.");
+                    return View();
+                }
+
+                // Start re-quest for all device assignments in assignment group
+                await _assignmentService.ReQuestAssignmentGroupAsync(assignmentGroup);
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while starting re-quest for assignment group {id}.");
                 return View();
             }
         }

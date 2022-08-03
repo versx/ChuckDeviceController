@@ -191,7 +191,7 @@
                 model.Roles.Add(userRolesViewModel);
             }
 
-            ViewBag.userId = userId;
+            ViewBag.UserId = userId;
             ViewBag.UserName = user.UserName;
             return View(model);
         }

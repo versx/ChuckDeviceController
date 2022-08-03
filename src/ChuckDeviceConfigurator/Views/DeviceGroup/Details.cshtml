@@ -1,4 +1,5 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
+﻿@using ChuckDeviceConfigurator.Utilities
+@using ChuckDeviceConfigurator.ViewModels
 @model DeviceGroupDetailsViewModel
 @{
     ViewData["Title"] = "Device Group Details " + Model?.Name;
@@ -18,28 +19,42 @@
 </nav>
 
 <div>
+    <h4>Device Group '@Model?.Name'</h4>
     <div>
-        <div class="float-start">
-            <h4>Device Group '@(Model?.Name)'</h4>
-        </div>
-        <div class="float-end">
-            <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">Edit</a>
-        </div>
+        <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger">
+            <i class="fa-solid fa-trash"></i>&nbsp;Delete
+        </a>
     </div>
-    <br />
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DeviceUuids)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.Raw(string.Join("<br>", Model?.Devices.Select(device => $"{device.OnlineStatus} {device.Uuid}").ToList() ?? new()))
-        </dd>
-    </dl>
 </div>
+
+<hr />
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Name)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.DeviceUuids)
+    </dt>
+    <dd class="col-sm-10">
+        @if ((ViewBag.Devices?.Count ?? 0) > 0)
+        {
+            <ul class="list-group">
+                @foreach (var device in ViewBag.Devices)
+                {
+                    var status = Utils.GetDeviceStatus(device.LastSeen);
+                    <li class="list-group-item">@Html.Raw($"{status} {device.Uuid}")</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>None</p>
+        }
+    </dd>
+</dl>

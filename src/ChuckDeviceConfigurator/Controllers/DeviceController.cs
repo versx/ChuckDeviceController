@@ -33,9 +33,6 @@
         public ActionResult Index()
         {
             var devices = _context.Devices.ToList();
-            devices = devices.Select(device => device.SetDeviceStatus())
-                             .ToList();
-
             var model = new ViewModelsModel<Device>
             {
                 Items = devices,
@@ -53,8 +50,6 @@
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
                 return View();
             }
-
-            device = device.SetDeviceStatus();
             return View(device);
         }
 
@@ -122,8 +117,6 @@
                 return View();
             }
 
-            device = device.SetDeviceStatus();
-
             var accountsInUse = _context.Devices.Select(device => device.AccountUsername)
                                                 .ToList();
             // Filter accounts that are not used by devices unless this device we are editing
@@ -190,7 +183,6 @@
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
                 return View();
             }
-            device = device.SetDeviceStatus();
             return View(device);
         }
 

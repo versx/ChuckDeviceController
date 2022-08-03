@@ -45,6 +45,13 @@
         Task StartAssignmentGroupAsync(AssignmentGroup assignmentGroup);
 
         /// <summary>
+        /// Clears all quests for related instances affected by assignment group
+        /// assignments and re-quests.
+        /// </summary>
+        /// <param name="assignmentGroup">Assignments group to re-quest</param>
+        Task ReQuestAssignmentGroupAsync(AssignmentGroup assignmentGroup);
+
+        /// <summary>
         ///     Called when an AutoInstanceController completes. Triggers all "On-Complete"
         ///     assignments for devices assigned to AutoInstanceController.
         /// </summary>

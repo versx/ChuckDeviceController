@@ -112,6 +112,42 @@
             await TriggerAssignmentAsync(assignment, force: true);
         }
 
+        public List<string> ResolveAssignmentChain(Assignment assignment)
+        {
+            var result = new List<Assignment>();
+            var assignments = _assignments.Where(a => a.Enabled).ToList();
+            var toVisit = new List<Assignment> { assignment };
+            while (toVisit.Count > 0)
+            {
+                var found = false;
+                for (var i = 0; i < toVisit.Count; i++)
+                {
+                    var source = toVisit[i];
+                    var chained = assignments.Where(a => a.SourceInstanceName == source.InstanceName);
+                    foreach (var target in chained)
+                    {
+                        if (!toVisit.Contains(target))
+                        {
+                            toVisit.Add(target);
+                        }
+                    }
+                    if (!result.Contains(source))
+                    {
+                        found = true;
+                        result.Add(source);
+                    }
+                    var index = toVisit.IndexOf(source);
+                    if (index > -1)
+                    {
+                        toVisit.RemoveAt(index);
+                    }
+                }
+                if (!found) break;
+            }
+            var instanceNames = result.Select(a => a.InstanceName).ToList();
+            return instanceNames;
+        }
+
         public async Task StartAssignmentGroupAsync(AssignmentGroup assignmentGroup)
         {
             var assignments = _assignments.Where(assignment => assignmentGroup.AssignmentIds.Contains(assignment.Id))
@@ -121,6 +157,44 @@
             {
                 await StartAssignmentAsync(assignment);
             }
+        }
+
+        public async Task ReQuestAssignmentGroupAsync(AssignmentGroup assignmentGroup)
+        {
+            var assignmentIds = assignmentGroup.AssignmentIds;
+            var assignments = assignmentIds.Select(id => _assignments.FirstOrDefault(a => a.Id == id))
+                                           .Where(assignment => assignment.Enabled)
+                                           .ToList();
+            using var context = _factory.CreateDbContext();
+            var instances = context.Instances
+                                   .Where(instance => instance.Type == ChuckDeviceController.Data.InstanceType.AutoQuest)
+                                   .ToList();
+            var geofences = context.Geofences.ToList()
+                                             .Where(geofence => instances.Any(i => i.Geofences.Contains(geofence.Name)))
+                                             .ToList();
+            var instancesToClear = new List<Instance>();
+            foreach (var assignment in assignments)
+            {
+                var affectedInstanceNames = ResolveAssignmentChain(assignment);
+                var affectedInstances = instances.Where(x => affectedInstanceNames.Contains(x.Name)).ToList();
+                var affectedInstanceNotAdded = affectedInstances.Where(x => !instancesToClear.Contains(x));
+                foreach (var instance in affectedInstanceNotAdded)
+                {
+                    instancesToClear.Add(instance);
+                }
+            }
+            _logger.LogInformation($"Re-Quest will clear quests for {instancesToClear.Count:N0} instances");
+
+            foreach (var instance in instancesToClear)
+            {
+                var instanceGeofences = geofences.Where(geofence => instance.Geofences.Contains(geofence.Name)).ToList();
+                foreach (var geofence in instanceGeofences)
+                {
+                    Console.WriteLine($"Clearing quests for geofence: {geofence.Name}");
+                }
+            }
+
+            await Task.CompletedTask;
         }
 
         public Assignment GetByName(uint name)
@@ -188,8 +262,6 @@
                 _logger.LogWarning($"Failed to trigger assignment {assignment.Id}, unable to find devices");
                 return;
             }
-
-            // TODO: Should we prevent disabled assignments from being switched to if forced?
 
             var devicesToUpdate = new List<Device>();
             foreach (var device in devices)

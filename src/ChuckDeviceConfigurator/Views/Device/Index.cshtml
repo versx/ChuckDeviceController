@@ -1,4 +1,5 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
+﻿@using ChuckDeviceConfigurator.Utilities
+@using ChuckDeviceConfigurator.ViewModels
 @using ChuckDeviceController.Data.Entities
 @using ChuckDeviceController.Extensions
 @model ViewModelsModel<Device>
@@ -42,7 +43,7 @@
         {
             <tr>
                 <th scope="row">
-                    @Html.DisplayFor(modelItem => item.OnlineStatus) @Html.DisplayFor(modelItem => item.Uuid)
+                    @Utils.GetDeviceStatus(item.LastSeen ?? 0) @Html.DisplayFor(modelItem => item.Uuid)
                 </th>
                 <td>
                     @Html.DisplayFor(modelItem => item.InstanceName)
