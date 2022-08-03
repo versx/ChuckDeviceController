@@ -338,14 +338,18 @@
                     var completedDate = _completionDate.FromSeconds()
                                                        .ToLocalTime()
                                                        .ToString("hh:mm:ss tt");
-                    var status = $"Status: {currentCountDb:N0}|{currentCount:N0}/{maxCount:N0} " +
+                    var isCompleted = _completionDate != default;
+                    var html = Utils.GetQueueLink(Name, displayText: "Queue", basePath: "/Instance/QuestQueue", html: true);
+                    var status = $"{(isCompleted ? $"Status: " : $"{html}: {_todayStops.Count:N0},")} {currentCountDb:N0}|{currentCount:N0}/{maxCount:N0} " +
                         $"({Math.Round(percentReal, 1)}|" +
                         $"{Math.Round(percent, 1)}%)" +
-                        $"{(_completionDate != default ? $", Completed @ {completedDate}" : "")}";
+                        $"{(isCompleted ? $", Completed @ {completedDate}" : "")}";
                     return status;
             }
             return null;
         }
+
+        public IReadOnlyList<PokestopWithMode> GetQueue() => _todayStops.ToList();
 
         public async Task ReloadAsync()
         {
@@ -876,12 +880,12 @@
         }
 
         #endregion
+    }
 
-        private class PokestopWithMode
-        {
-            public Pokestop? Pokestop { get; set; }
+    public class PokestopWithMode
+    {
+        public Pokestop? Pokestop { get; set; }
 
-            public bool IsAlternative { get; set; }
-        }
+        public bool IsAlternative { get; set; }
     }
 }

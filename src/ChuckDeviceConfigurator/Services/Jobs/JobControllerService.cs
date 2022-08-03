@@ -397,6 +397,24 @@
 
         #endregion
 
+        public IReadOnlyList<PokestopWithMode> GetQuestQueue(string instanceName)
+        {
+            var queue = new List<PokestopWithMode>();
+            lock (_instancesLock)
+            {
+                // Check if instance exists in cache by name, if not return empty queue.
+                if (!_instances.ContainsKey(instanceName))
+                    return queue;
+
+                var instance = _instances[instanceName];
+                if (instance is AutoInstanceController quest)
+                {
+                    queue = (List<PokestopWithMode>)quest.GetQueue();
+                }
+            }
+            return queue;
+        }
+
         #region Receivers
 
         public void GotPokemon(Pokemon pokemon, bool hasIv)

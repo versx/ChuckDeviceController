@@ -2,6 +2,7 @@
 {
     using POGOProtos.Rpc;
 
+    using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceController.Data.Entities;
 
     /// <summary>
@@ -141,6 +142,8 @@
         void ClearIvQueue(string instanceName);
 
         #endregion
+
+        IReadOnlyList<PokestopWithMode> GetQuestQueue(string instanceName);
 
         #region Receivers
 

@@ -380,6 +380,47 @@
 
         #endregion
 
+        // GET: InstanceController/QuestQueue/test
+        [Route("/Instance/QuestQueue/{name}")]
+        public ActionResult QuestQueue(string name, bool autoRefresh = false)
+        {
+            try
+            {
+                var questQueue = _jobControllerService.GetQuestQueue(name);
+                var queueItems = questQueue.Select(item =>
+                {
+                    var lat = Math.Round(item.Pokestop.Latitude, 5);
+                    var lon = Math.Round(item.Pokestop.Longitude, 5);
+                    return new QuestQueueItemViewModel
+                    {
+                        // TODO: Make image url configurable
+                        Id = item.Pokestop.Id,
+                        Name = item.Pokestop.Name,
+                        Image = $"<img src='{item.Pokestop.Url}' height='48' width='48' />",
+                        IsAlternative = item.IsAlternative,
+                        Latitude = lat,
+                        Longitude = lon,
+                    };
+                }).ToList();
+                var model = new QuestQueueViewModel
+                {
+                    Name = name,
+                    Queue = queueItems,
+                    AutoRefresh = autoRefresh,
+                };
+                if (autoRefresh)
+                {
+                    Response.Headers["Refresh"] = "10";
+                }
+                return View(model);
+            }
+            catch
+            {
+                _logger.LogError($"Unknown error occurred while retrieving quest queue '{name}'.");
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
         #region Private Methods
 
         private async Task AssignDevicesToInstance(List<string> deviceUuids, string instanceName)
