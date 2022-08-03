@@ -55,7 +55,7 @@
             return status;
         }
 
-        public static string GetLastUpdatedStatus(ulong updated)
+        public static string GetLastUpdatedStatus(ulong updated, bool html = false)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var isMoreThanOneDay = now - updated > Strings.OneDayS;
@@ -67,7 +67,15 @@
                     ? "Never"
                     : lastUpdated
                 : TimeSpanUtils.ToReadableString(updated);
-            return updatedTime;
+
+            var color = isMoreThanOneDay
+                ? updated == 0
+                    ? "orange"
+                    : "red"
+                : "green";
+            return html
+                ? $"<span style='color: {color};'>{updatedTime}</span>"
+                : updatedTime;
         }
 
         public static string GetAccountStatusColor(string status)
@@ -101,9 +109,11 @@
 
         public static string GetGoogleMapsLink(double lat, double lon, bool html = false)
         {
+            var rndLat = Math.Round(lat, 5);
+            var rndLon = Math.Round(lon, 5);
             var link = string.Format(Strings.GoogleMapsLinkFormat, lat, lon);
             return html
-                ? $"<a href='{link}'>{lat}, {lon}</a>"
+                ? $"<a href='{link}' target='_blank'>{rndLat},{rndLon}</a>"
                 : link;
         }
 

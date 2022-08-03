@@ -231,6 +231,7 @@
 
             // Set assigned account for device to null so a new one is fetched upon next job request
             device.AccountUsername = null;
+            device.IsPendingAccountSwitch = true;
 
             _context.Update(device);
             await _context.SaveChangesAsync();

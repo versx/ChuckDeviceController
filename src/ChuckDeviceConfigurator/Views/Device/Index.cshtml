@@ -55,10 +55,10 @@
                     @Html.DisplayFor(modelItem => item.LastHost)
                 </td>
                 <td>
-                    @Math.Round(Convert.ToDouble(item.LastLatitude ?? 0), 5),@Math.Round(Convert.ToDouble(item.LastLongitude ?? 0), 5)
+                    @Html.Raw(Utils.GetGoogleMapsLink(item.LastLatitude ?? 0, item.LastLongitude ?? 0, html: true))
                 </td>
                 <td>
-                    @Utils.GetLastUpdatedStatus(item.LastSeen ?? 0)
+                    @Html.Raw(Utils.GetLastUpdatedStatus(item.LastSeen ?? 0, html: true))
                 </td>
                 <td>
                     <div class="dropdown">
@@ -69,7 +69,7 @@
                             <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Uuid"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Uuid"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                             <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Uuid"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
-                            <li><a class="dropdown-item" asp-action="ForceAccountSwitch" asp-route-id="@item.Uuid"><i class="fa-solid fa-repeat"></i>&nbsp;Switch Account</a></li>
+                            <li><a class="dropdown-item" asp-action="ForceAccountSwitch" asp-route-id="@item.Uuid" onclick="return confirm('Are you sure you want to force device \'@item.Uuid\' to logout and switch accounts?');"><i class="fa-solid fa-repeat"></i>&nbsp;Switch Account</a></li>
                         </ul>
                     </div>
                 </td>
