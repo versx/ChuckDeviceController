@@ -890,8 +890,12 @@
                                 if (pokestop != null)
                                 {
                                     pokestop.AddDetails(data);
-                                    await pokestop.UpdateAsync(context);
-                                    // TODO: Webhooks
+                                    var webhooks = await pokestop.UpdateAsync(context);
+                                    foreach (var webhook in webhooks)
+                                    {
+                                        var type = ConvertWebhookType(webhook.Key);
+                                        await SendWebhookPayloadAsync(type, pokestop);
+                                    }
                                     if (pokestop.HasChanges)
                                     {
                                         //context.Update(pokestop);
@@ -904,8 +908,12 @@
                                 if (gym != null)
                                 {
                                     gym.AddDetails(data);
-                                    await gym.UpdateAsync(context);
-                                    // TODO: Webhooks
+                                    var webhooks = await gym.UpdateAsync(context);
+                                    foreach (var webhook in webhooks)
+                                    {
+                                        var type = ConvertWebhookType(webhook.Key);
+                                        await SendWebhookPayloadAsync(type, gym);
+                                    }
                                     if (gym.HasChanges)
                                     {
                                         //context.Update(gym);
@@ -921,6 +929,7 @@
                         await context.Pokestops.BulkInsertAsync(pokestopsToUpsert, options =>
                         {
                             options.UseTableLock = true;
+                            options.AllowDuplicateKeys = false;
                             options.OnMergeUpdateInputExpression = p => new
                             {
                                 // Only update necessary columns
@@ -936,6 +945,7 @@
                         await context.Gyms.BulkInsertAsync(gymsToUpsert, options =>
                         {
                             options.UseTableLock = true;
+                            options.AllowDuplicateKeys = false;
                             options.OnMergeUpdateInputExpression = p => new
                             {
                                 // Only update necessary columns
@@ -976,8 +986,12 @@
                         if (gym != null)
                         {
                             gym.AddDetails(data);
-                            await gym.UpdateAsync(context);
-                            // TODO: Webhooks
+                            var webhooks = await gym.UpdateAsync(context);
+                            foreach (var webhook in webhooks)
+                            {
+                                var type = ConvertWebhookType(webhook.Key);
+                                await SendWebhookPayloadAsync(type, gym);
+                            }
                             if (gym.HasChanges)
                             {
                                 gymsToUpsert.Add(gym);
@@ -990,6 +1004,7 @@
 
                         foreach (var gymDefenderData in gymDefenders)
                         {
+                            // TODO: Webhooks
                             if (gymDefenderData.TrainerPublicProfile != null)
                             {
                                 var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
@@ -1073,8 +1088,6 @@
 
                             if (pokestop.HasChanges && (pokestop.HasQuestChanges || pokestop.HasAlternativeQuestChanges))
                             {
-                                // TODO: Double check if below is still needed
-                                //context.UpdatePokestopProperties(pokestop, updateQuest: true);
                                 questsToUpsert.Add(pokestop);
                             }
                         }
