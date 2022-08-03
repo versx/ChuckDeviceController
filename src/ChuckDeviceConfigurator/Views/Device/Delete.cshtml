@@ -22,7 +22,7 @@
 <div>
     <h4>@Utils.GetDeviceStatus(Model?.LastSeen ?? 0) Device '@Model?.Uuid'</h4>
     <div>
-        <a asp-action="ForceAccountSwitch" asp-route-id="@Model?.Uuid" class="btn btn-warning">
+        <a asp-action="ForceAccountSwitch" asp-route-id="@Model?.Uuid" class="btn btn-warning" onclick="return confirm('Are you sure you want to force device \'@Model?.Uuid\' to logout and switch accounts?');">
             <i class="fa-solid fa-repeat"></i>&nbsp;Switch Account
         </a>
         <a asp-action="Edit" asp-route-id="@Model?.Uuid" class="btn btn-primary">
