@@ -9,6 +9,11 @@ namespace ChuckDeviceConfigurator.Areas.Identity
     {
         private readonly ILogger<IdentityHostingStartup> _logger;
 
+        public IdentityHostingStartup()
+        {
+            _logger = new Logger<IdentityHostingStartup>(LoggerFactory.Create(x => x.AddConsole()));
+        }
+
         public IdentityHostingStartup(ILogger<IdentityHostingStartup> logger)
         {
             _logger = logger;
