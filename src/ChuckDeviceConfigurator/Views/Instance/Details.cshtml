@@ -62,28 +62,31 @@
     <dd class = "col-sm-10">
         @Html.Raw(string.Join("<br>", Model?.Geofences ?? new()))
     </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Data.AccountGroup)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Data.AccountGroup)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Data.IsEvent)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Data.IsEvent)
-    </dd>
+    @if (Model?.Data?.IsEvent ?? false)
+    {
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Data.AccountGroup)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Data.AccountGroup)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Data.IsEvent)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Data.IsEvent)
+        </dd>
+    }
     <dt class = "col-sm-2">
         @Html.DisplayNameFor(model => model.Devices)
     </dt>
     <dd class = "col-sm-10">
-        @if ((ViewBag.Devices?.Count ?? 0) > 0)
+        @if ((Model?.Devices?.Count ?? 0) > 0)
         {
             <ul class="list-group">
-                @foreach (var device in ViewBag.Devices)
+                @foreach (var device in Model!.Devices)
                 {
-                    var status = Utils.GetDeviceStatus(device.LastSeen);
+                    var status = Utils.GetDeviceStatus(device.LastSeen ?? 0);
                     <li class="list-group-item">@Html.Raw($"{status} {device.Uuid}")</li>
                 }
             </ul>
