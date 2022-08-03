@@ -47,6 +47,8 @@
                 ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
                 return View();
             }
+            var instance = await _context.Instances.FindAsync(assignment.InstanceName);
+            ViewBag.IsQuest = instance!.Type == ChuckDeviceController.Data.InstanceType.AutoQuest;
             return View(assignment);
         }
 

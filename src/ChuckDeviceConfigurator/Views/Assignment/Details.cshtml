@@ -24,10 +24,12 @@
         <a asp-action="Start" asp-route-id="@Model?.Id" class="btn btn-success @(Model?.Enabled ?? false ? "" : "disabled")">
             <i class="fa-solid fa-play"></i>&nbsp;Start
         </a>
-        @* TODO: Check if target instance is quest, otherwise remove button *@
-        <a asp-action="ReQuest" asp-route-id="@Model?.Id" class="btn btn-warning @(Model?.Enabled ?? false ? "" : "disabled")">
-            <i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest
-        </a>
+        @if (ViewBag.IsQuest)
+        {
+            <a asp-action="ReQuest" asp-route-id="@Model?.Id" class="btn btn-warning @(Model?.Enabled ?? false ? "" : "disabled")">
+                <i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest
+            </a>
+        }
         <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">
             <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
         </a>
@@ -38,51 +40,57 @@
 </div>
 @if (!(Model?.Enabled ?? false))
 {
-    <i class="text-muted">Assignments cannot be started or re-quested if disabled.</i>
+    <i class="text-muted">Assignments cannot be started or re-quested if <u>disabled</u>.</i>
 }
 
 <hr />
 <dl class="row">
-    <dt class = "col-sm-2">
+    <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.SourceInstanceName)
     </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.SourceInstanceName)
+    <dd class="col-sm-10">
+        @(string.IsNullOrEmpty(Model?.SourceInstanceName) ? "Any" : Model.SourceInstanceName)
     </dd>
-    <dt class = "col-sm-2">
+    <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.InstanceName)
     </dt>
-    <dd class = "col-sm-10">
+    <dd class="col-sm-10">
         @Html.DisplayFor(model => model.InstanceName)
     </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.DeviceUuid)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.DeviceUuid)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.DeviceGroupName)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.DeviceGroupName)
-    </dd>
-    <dt class = "col-sm-2">
+    @if (!string.IsNullOrEmpty(Model?.DeviceUuid))
+    {
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.DeviceUuid)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DeviceUuid)
+        </dd>
+    }
+    @if (!string.IsNullOrEmpty(Model?.DeviceGroupName))
+    {
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.DeviceGroupName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DeviceGroupName)
+        </dd>
+    }
+    <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.Date)
     </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Date)
+    <dd class="col-sm-10">
+        @(Model?.Date == null ? "Any" : Model?.Date)
     </dd>
-    <dt class = "col-sm-2">
+    <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.Time)
     </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Time)
+    <dd class="col-sm-10">
+        @Utils.FormatAssignmentTime(Model?.Time ?? 0)
     </dd>
-    <dt class = "col-sm-2">
+    <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.Enabled)
     </dt>
-    <dd class = "col-sm-10">
+    <dd class="col-sm-10">
         @Html.Raw(Utils.FormatEnabled(Model?.Enabled ?? false))
     </dd>
 </dl>

@@ -45,12 +45,12 @@
                 <span asp-validation-for="InstanceName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Time" class="control-label"></label> (Leave Empty To Also Create "On-Complete" Assignment)
+                <label asp-for="Time" class="control-label"></label> <small class="text-muted"><i>(Set to 12am to create "On-Complete" assignment)</i></small>
                 <input asp-for="Time" class="form-control" type="time" />
                 <span asp-validation-for="Time" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Date" class="control-label"></label> (Leave Empty For Any Date)
+                <label asp-for="Date" class="control-label"></label> <small class="text-muted"><i>(Leave empty for any date)</i></small>
                 <input asp-for="Date" class="form-control" type="date" />
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
