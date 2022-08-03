@@ -34,7 +34,13 @@
         [DisplayName("Encounter ID")]
         public string? EncounterId { get; set; }
 
-        [DisplayName("Location")]
-        public string? Location { get; set; }
+        //[DisplayName("Location")]
+        //public string? Location { get; set; }
+
+        [DisplayName("Latitude")]
+        public double Latitude { get; set; }
+
+        [DisplayName("Longitude")]
+        public double Longitude { get; set; }
     }
 }

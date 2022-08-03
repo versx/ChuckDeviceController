@@ -55,6 +55,21 @@
             return status;
         }
 
+        public static string GetLastUpdatedStatus(ulong updated)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var isMoreThanOneDay = now - updated > Strings.OneDayS;
+            var lastUpdated = updated.FromSeconds()
+                                     .ToLocalTime()
+                                     .ToString(Strings.DefaultDateTimeFormat);
+            var updatedTime = isMoreThanOneDay
+                ? updated == 0
+                    ? "Never"
+                    : lastUpdated
+                : TimeSpanUtils.ToReadableString(updated);
+            return updatedTime;
+        }
+
         public static string GetAccountStatusColor(string status)
         {
             var cssClass = "text-dark";
@@ -76,10 +91,20 @@
             return string.Format(html, cssClass, status);
         }
 
-        public static string GetPokemonIcon(uint pokemonId)
+        public static string GetPokemonIcon(uint pokemonId, string width = "32", string height = "32", bool html = false)
         {
-            var imageUrl = $"<img src='{Strings.PokemonImageUrl}/{pokemonId}.png' width='32' height='32' />";
-            return imageUrl;
+            var url = $"{Strings.PokemonImageUrl}/{pokemonId}.png";
+            return html
+                ? $"<img src='{url}' width='{width}' height='{height}' />"
+                : url;
+        }
+
+        public static string GetGoogleMapsLink(double lat, double lon, bool html = false)
+        {
+            var link = string.Format(Strings.GoogleMapsLinkFormat, lat, lon);
+            return html
+                ? $"<a href='{link}'>{lat}, {lon}</a>"
+                : link;
         }
 
         public static double BenchmarkAction(Action action, ushort precision = 4)

@@ -4,9 +4,9 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -306,12 +306,9 @@
                 {
                     var lat = Math.Round(item.Latitude, 5);
                     var lon = Math.Round(item.Longitude, 5);
-                    var imageUrl = $"<img src='{Strings.PokemonImageUrl}/{item.PokemonId}.png' width='32' height='32' />";
-                    var locationUrl = $"<a href='{string.Format(Strings.GoogleMapsLinkFormat, lat, lon)}'>{lat}, {lon}</a>";
                     return new IvQueueItemViewModel
                     {
                         // TODO: Make image url configurable
-                        Image = imageUrl,
                         EncounterId = item.Id,
                         PokemonId = item.PokemonId,
                         PokemonName = item.PokemonId.ToString(), // TODO: Get pokemon name
@@ -321,7 +318,8 @@
                         PokemonCostume = (item.Costume ?? 0) == 0 // TODO: Get costume name
                             ? "--"
                             : Convert.ToString(item.Costume),
-                        Location = locationUrl,
+                        Latitude = lat,
+                        Longitude = lon,
                     };
                 }).ToList();
                 var model = new IvQueueViewModel

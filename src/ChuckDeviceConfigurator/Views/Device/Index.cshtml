@@ -58,7 +58,7 @@
                     @Math.Round(Convert.ToDouble(item.LastLatitude ?? 0), 5),@Math.Round(Convert.ToDouble(item.LastLongitude ?? 0), 5)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.LastSeenTime)
+                    @Utils.GetLastUpdatedStatus(item.LastSeen ?? 0)
                 </td>
                 <td>
                     <div class="dropdown">
