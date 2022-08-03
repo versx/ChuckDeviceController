@@ -37,9 +37,14 @@
             return displayText;
         }
 
+        public static string FormatBoolean(bool isTrue)
+        {
+            return isTrue ? "Yes" : "No";
+        }
+
         public static string FormatEnabled(bool enabled)
         {
-            var status = enabled ? "Yes" : "No";
+            var status = FormatBoolean(enabled);
             var color = enabled ? "green" : "red";
             var displayText = $"<span style='color: {color}'>{status}</span>";
             //var displayText = $"<span class=\"{(enabled ? "webhook-enabled" : "webhook-disabled")}\">{status}</span>";
@@ -115,6 +120,16 @@
             return html
                 ? $"<a href='{link}' target='_blank'>{rndLat},{rndLon}</a>"
                 : link;
+        }
+
+        public static string GetQueueLink(string ivInstanceName, string displayText = "Queue", string basePath = "/Instance/IvQueue", bool html = false)
+        {
+            var encodedName = Uri.EscapeDataString(ivInstanceName);
+            var url = $"{basePath}/{encodedName}";
+            var status = $"<a href='{url}'>{displayText}</a>";
+            return html
+                ? status
+                : url;
         }
 
         public static double BenchmarkAction(Action action, ushort precision = 4)

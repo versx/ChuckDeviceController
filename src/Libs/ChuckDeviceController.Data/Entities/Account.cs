@@ -28,13 +28,13 @@
         public string Password { get; set; }
 
         [
-            DisplayName("First Warning Timestamp"),
+            DisplayName("First Warning Time"),
             Column("first_warning_timestamp"),
         ]
         public ulong? FirstWarningTimestamp { get; set; }
 
         [
-            DisplayName("Failed Timestamp"),
+            DisplayName("Failed Time"),
             Column("failed_timestamp"),
         ]
         public ulong? FailedTimestamp { get; set; }
@@ -82,7 +82,7 @@
         public ushort Tutorial { get; set; } = 0;
 
         [
-            DisplayName("Creation Timestamp"),
+            DisplayName("Created"),
             Column("creation_timestamp"),
         ]
         public ulong? CreationTimestamp { get; set; }
@@ -94,7 +94,7 @@
         public bool? Warn { get; set; }
 
         [
-            DisplayName("Warning Expire Timestamp"),
+            DisplayName("Warning Expire Time"),
             Column("warn_expire_timestamp"),
         ]
         public ulong? WarnExpireTimestamp { get; set; }

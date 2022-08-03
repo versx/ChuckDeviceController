@@ -170,7 +170,7 @@
                 return View();
             }
 
-            var assignedDevices = _context.Devices.Where(device => device.InstanceName == id)
+            var assignedDevices = _context.Devices.Where(device => device.InstanceName == instance.Name)
                                                   .Select(device => device.Uuid)
                                                   .ToList();
 
@@ -261,6 +261,12 @@
                 ModelState.AddModelError("Instance", $"Instance does not exist with id '{id}'.");
                 return View();
             }
+            instance.Status = await _jobControllerService.GetStatusAsync(instance);
+
+            // Get devices assigned to instance
+            var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
+                                                  .ToList();
+            ViewBag.Devices = devicesAssigned;
             return View(instance);
         }
 

@@ -7,6 +7,7 @@
     using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -171,7 +172,7 @@
             {
                 ivhStr = Math.Round(ivh).ToString("N0");
             }
-            var html = $"<a href='/Instance/IvQueue/{Uri.EscapeDataString(Name)}'>Queue</a>";
+            var html = Utils.GetQueueLink(Name, displayText: "Queue", html: true);
             var status = $"{html}: {_pokemonQueue.Count}, IV/h: {ivhStr}";
             return await Task.FromResult(status);
         }
