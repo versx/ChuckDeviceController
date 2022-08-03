@@ -37,6 +37,7 @@
             {
                 Items = assignmentGroups,
             };
+            // TODO: Include instance type for disabling Re-Quest button
             return View(model);
         }
 
@@ -52,11 +53,15 @@
             }
 
             var assignments = new List<Assignment>();
-            //var assignments = assignmentGroup.AssignmentIds.Select(async id => await _context.Assignments.FindAsync(id))
-            //                                               .ToList();
+            // TODO: Include instance type for removing Re-Quest button
             foreach (var assignmentId in assignmentGroup.AssignmentIds)
             {
                 var assignment = await _context.Assignments.FindAsync(assignmentId);
+                if (assignment == null)
+                {
+                    _logger.LogWarning($"Failed to retrieve assignment with id '{assignmentId}' for assignment group '{id}' details.");
+                    continue;
+                }
                 assignments.Add(assignment);
             }
             ViewBag.Assignments = assignments;

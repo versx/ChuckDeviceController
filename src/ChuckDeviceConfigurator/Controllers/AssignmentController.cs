@@ -7,6 +7,7 @@
 
     using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -31,6 +32,7 @@
         public ActionResult Index()
         {
             var assignments = _context.Assignments.ToList();
+            // TODO: Include instance type for removing Re-Quest button
             return View(new ViewModelsModel<Assignment>
             {
                 Items = assignments,
@@ -48,7 +50,11 @@
                 return View();
             }
             var instance = await _context.Instances.FindAsync(assignment.InstanceName);
-            ViewBag.IsQuest = instance!.Type == ChuckDeviceController.Data.InstanceType.AutoQuest;
+            if (instance == null)
+            {
+                _logger.LogWarning($"Failed to retrieve instance with name '{assignment.InstanceName}' for assignment '{id}'.");
+            }
+            ViewBag.IsQuest = (instance?.Type ?? InstanceType.CirclePokemon) == InstanceType.AutoQuest;
             return View(assignment);
         }
 
