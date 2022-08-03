@@ -15,6 +15,7 @@
         // Folder paths
         public const string WebRoot = "wwwroot";
         public static readonly string DataFolder = Path.Combine(WebRoot, "data");
+        public static readonly string PluginsFolder = "./bin/debug/plugins/";
 
         // Default user properties
         public const string DefaultUserName = "root";

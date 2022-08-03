@@ -48,6 +48,9 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Plugins\ChuckDeviceController.Plugins.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -62,8 +65,10 @@
     <None Remove="AspNet.Security.OAuth.GitHub" />
     <None Remove="SendGrid" />
     <None Remove="Services\Geofences\" />
+    <None Remove="Services\Plugins\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\Geofences\" />
+    <Folder Include="Services\Plugins\" />
   </ItemGroup>
 </Project>

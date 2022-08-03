@@ -1,10 +1,9 @@
-﻿{
+{
   "profiles": {
     "ChuckDeviceCommunicator": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": false,
-      "applicationUrl": "http://localhost:5003;https://localhost:7003",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:48724",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

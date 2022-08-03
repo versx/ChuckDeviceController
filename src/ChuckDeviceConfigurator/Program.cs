@@ -11,6 +11,7 @@ using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.Net.Mail;
+using ChuckDeviceConfigurator.Services.Plugins;
 using ChuckDeviceConfigurator.Services.Routing;
 using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
@@ -19,6 +20,9 @@ using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Extensions;
 
+
+var manager = new PluginsManager(new Logger<IPluginsManager>(LoggerFactory.Create(x => x.AddConsole())));
+await manager.LoadPluginsAsync(Strings.PluginsFolder);
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
@@ -52,7 +56,7 @@ builder.WebHost.ConfigureLogging(configure =>
     configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
 });
 
-#endregion`
+#endregion
 
 #region User Identity
 
@@ -139,6 +143,7 @@ builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
+builder.Services.AddSingleton<IPluginsManager, PluginsManager>();
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
 
 builder.Services.AddGrpc(options =>
