@@ -34,6 +34,7 @@
 
         private readonly Dictionary<string, Device> _devices = new();
         private readonly Dictionary<string, IJobController> _instances = new();
+        private readonly List<InstanceType> _registeredInstanceTypes = new();
 
         private readonly object _devicesLock = new();
         private readonly object _instancesLock = new();
@@ -51,6 +52,11 @@
         /// Gets a dictionary of all loaded job controller instances.
         /// </summary>
         public IReadOnlyDictionary<string, IJobController> Instances => _instances;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public IReadOnlyList<InstanceType> RegisteredInstanceTypes => _registeredInstanceTypes;
 
         #endregion
 
@@ -77,6 +83,7 @@
             _routeCalculator = routeCalculator;
             _assignmentService = assignmentService;
             _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
+            _registeredInstanceTypes = new List<InstanceType>();
         }
 
         #endregion
@@ -140,6 +147,13 @@
                 _instances[instance.Name] = jobController;
             }
             */
+            await Task.CompletedTask;
+        }
+
+        // TODO: Add Register all available job controllers method and add manifest, check against when adding instances and registering new job controllers via plugins
+        // TODO: Use ChuckDeviceController.Common contracts. Would do it right now but tired and need to get up early and it's 1am zzzz
+        public async Task RegisterJobControllerAsync(ChuckDeviceController.Plugins.InstanceType type, ChuckDeviceController.Plugins.IJobController controller)
+        {
             await Task.CompletedTask;
         }
 
@@ -734,6 +748,7 @@
         #endregion
     }
 
+    // TODO: Move to separate file: Services.Rpc.Models
     public class TrainerLevelingStatus
     {
         public string? Username { get; }

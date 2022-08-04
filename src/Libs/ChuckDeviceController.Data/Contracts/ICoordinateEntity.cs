@@ -2,8 +2,8 @@
 {
     public interface ICoordinateEntity
     {
-        public double Latitude { get; }
+        double Latitude { get; }
 
-        public double Longitude { get; }
+        double Longitude { get; }
     }
 }

@@ -24,6 +24,8 @@
     {
         Task AddJobControllerAsync(IJobController jobController);
 
+        Task RegisterJobControllerAsync(InstanceType type, IJobController controller);
+
         //Task AddInstanceAsync(IInstance instance);
     }
 
@@ -40,7 +42,8 @@
     }
 
     // TODO: Use ChuckDeviceConfigurator.JobControllers.IJobController interface
-    // TODO: Possibly allow Instance creations to link job controller type with
+    // TODO: Add RegisterInstanceType(InstanceType type, IJobController controller) method
+
     public interface IJobController : IJobControllerCoordinates
     {
         /// <summary>
@@ -88,24 +91,17 @@
         Task ReloadAsync();
     }
 
-    // NOTE: Just for testing purposes
+    // NOTE: Just for testing purposes, reference ChuckDeviceController.Common
     public interface ITask
     {
     }
 
-    // NOTE: Just for testing purposes
+    // NOTE: Just for testing purposes, reference ChuckDeviceController.Common
     public class TaskOptions
     {
     }
 
-    public interface IInstanceControllerService
-    {
-        Task CreateInstance(string name, InstanceType type, ushort minLevel, ushort maxLevel, List<string> geofences, IInstanceData data);
-
-        Task RegisterInstanceType(InstanceType type);
-    }
-
-    // NOTE: Just for testing purposes
+    // NOTE: Just for testing purposes, reference ChuckDeviceController.Common
     public enum InstanceType
     {
     }

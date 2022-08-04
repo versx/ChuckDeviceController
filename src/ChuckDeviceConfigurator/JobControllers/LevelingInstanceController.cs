@@ -510,7 +510,7 @@
             catch (Exception ex)
             {
                 // Failed to calculate cooldown for account to destination
-                _logger.LogError($"[{Name}] [{uuid}] Failed to calculate cooldown for account '{account}' to destination '{currentCoord}'\nError: {ex}");
+                _logger.LogError($"[{Name}] [{uuid}] Failed to calculate cooldown for account '{account?.Username}' to destination '{currentCoord}'\nError: {ex}");
                 return 0;
             }
 
@@ -522,7 +522,7 @@
             catch (Exception ex)
             {
                 // Failed to save cooldown
-                _logger.LogError($"[{Name}] [{uuid}] Failed to save cooldown for account '{account}' to destination '{currentCoord}'\nError: {ex}");
+                _logger.LogError($"[{Name}] [{uuid}] Failed to save cooldown for account '{account?.Username}' to destination '{currentCoord}'\nError: {ex}");
                 return 0;
             }
 

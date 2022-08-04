@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Data
+﻿namespace ChuckDeviceController.Common.Data
 {
     using System.Text.Json.Serialization;
 

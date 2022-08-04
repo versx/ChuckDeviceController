@@ -168,6 +168,19 @@
         #endregion
     }
 
+    public class JobControllerServiceHost : IJobControllerServiceHost
+    {
+        public Task AddJobControllerAsync(IJobController jobController)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task RegisterJobControllerAsync(InstanceType type, IJobController controller)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
     #region Mock Host Classes (for now)
 
     public class AppHost : IAppHost

@@ -2,12 +2,7 @@
 {
     using System.Text.Json.Serialization;
 
-    public interface ICoordinate
-    {
-        double Latitude { get; }
-
-        double Longitude { get; }
-    }
+    using ChuckDeviceController.Geometry.Contracts;
 
     public class Coordinate : ICoordinate, IComparable
     {
