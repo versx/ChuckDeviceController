@@ -170,12 +170,17 @@
 
     public class JobControllerServiceHost : IJobControllerServiceHost
     {
-        public Task AddJobControllerAsync(IJobController jobController)
+        public Task AddJobControllerAsync(IJobController controller)
         {
             return Task.CompletedTask;
         }
 
-        public Task RegisterJobControllerAsync(InstanceType type, IJobController controller)
+        public async Task RegisterAllJobControllerTypesAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+        public Task RegisterJobControllerTypeAsync(InstanceType type)
         {
             return Task.CompletedTask;
         }

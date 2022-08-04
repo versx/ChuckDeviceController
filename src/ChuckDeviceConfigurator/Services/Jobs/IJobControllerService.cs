@@ -3,6 +3,7 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceConfigurator.JobControllers;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
 
     /// <summary>
@@ -10,6 +11,18 @@
     /// </summary>
     public interface IJobControllerService
     {
+        /// <summary>
+        /// Gets a dictionary of active and configured devices.
+        /// </summary>
+        public IReadOnlyDictionary<string, Device> Devices { get; }
+
+        /// <summary>
+        /// Gets a dictionary of all loaded job controller instances.
+        /// </summary>
+        public IReadOnlyDictionary<string, IJobController> Instances { get; }
+
+        IReadOnlyList<InstanceType> RegisteredInstanceTypes { get; }
+
         /// <summary>
         /// Starts the <see cref="IJobControllerService"/>.
         /// </summary>
@@ -143,7 +156,11 @@
 
         #endregion
 
+        #region Quest Queue
+
         IReadOnlyList<PokestopWithMode> GetQuestQueue(string instanceName);
+
+        #endregion
 
         #region Receivers
 
