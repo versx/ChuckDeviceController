@@ -12,6 +12,7 @@ using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.Net.Mail;
 using ChuckDeviceConfigurator.Services.Plugins;
+using ChuckDeviceConfigurator.Services.Plugins.Extensions;
 using ChuckDeviceConfigurator.Services.Routing;
 using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
@@ -19,10 +20,8 @@ using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Plugins;
 
-
-var manager = new PluginsManager(new Logger<IPluginsManager>(LoggerFactory.Create(x => x.AddConsole())));
-await manager.LoadPluginsAsync(Strings.PluginsFolder);
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
@@ -35,6 +34,13 @@ if (config.Providers.Count() == 2)
 
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
+
+// Load plugins immediately
+var pluginManager = new PluginManager
+{
+    PluginsFolder = Strings.PluginsFolder,
+};
+await pluginManager.LoadPluginsAsync();
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
@@ -55,6 +61,22 @@ builder.WebHost.ConfigureLogging(configure =>
     configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
     configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
 });
+
+#endregion
+
+#region Plugin Registration
+
+var mvcBuilder = builder.Services.AddMvc();
+
+var pluginFinder = new PluginFinder<IPlugin>(Strings.PluginsFolder);
+var pluginAssemblies = pluginFinder.FindAssemliesWithPlugins();
+if (pluginAssemblies.Count > 0)
+{
+    foreach (var pluginFile in pluginAssemblies)
+    {
+        mvcBuilder.AddPluginFromAssemblyFile(pluginFile);
+    }
+}
 
 #endregion
 
@@ -114,6 +136,7 @@ RegisterAuthProviders(auth);
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+//builder.Services.AddMvc().AddMvcOptions(o => o.EnableEndpointRouting = false);
 
 #region Database Contexts
 
@@ -143,7 +166,7 @@ builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
-builder.Services.AddSingleton<IPluginsManager, PluginsManager>();
+builder.Services.AddSingleton<IPluginManager>(pluginManager);
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
 
 builder.Services.AddGrpc(options =>
@@ -155,6 +178,10 @@ builder.Services.AddGrpc(options =>
 
 #endregion
 
+// Call ConfigureServices method in plugins
+ConfigureServices(builder.Services);
+
+#region App Builder
 
 var app = builder.Build();
 
@@ -195,8 +222,29 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
+// Call Configure method in plugins
+Configure(app);
+
 app.Run();
 
+#endregion
+
+
+void Configure(IApplicationBuilder app)
+{
+    foreach (var (pluginName, plugin) in pluginManager!.Plugins)
+    {
+        plugin.Configure(app);
+    }
+}
+
+void ConfigureServices(IServiceCollection services)
+{
+    foreach (var (pluginName, plugin) in pluginManager!.Plugins)
+    {
+        plugin.ConfigureServices(services);
+    }
+}
 
 void RegisterAuthProviders(AuthenticationBuilder auth)
 {

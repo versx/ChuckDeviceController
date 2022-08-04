@@ -4,6 +4,11 @@
 
     using ChuckDeviceController.Plugins;
 
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.DependencyInjection;
+
     public class TestPlugin : IPlugin, IAppEvents
     {
         #region Metadata Properties
@@ -14,7 +19,7 @@
 
         public string Author => "versx";
 
-        public string Version => "1.0.0.0";
+        public Version Version => new Version("1.0.0.0");
 
         #endregion
 
@@ -27,6 +32,29 @@
             _loggingHost = loggingHost;
 
             _appHost.Restart();
+        }
+
+        public void Configure(IApplicationBuilder appBuilder)
+        {
+            _loggingHost.LogMessage($"Configure called");
+
+            // We can configure routing here or using Mvc Controller classes
+            appBuilder.Map("/plugin/v1", app =>
+            {
+                app.Run(async (httpContext) =>
+                {
+                    Console.WriteLine($"Plugin route called");
+                    await httpContext.Response.WriteAsync($"Hello from plugin {Name}");
+                });
+            });
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            _loggingHost.LogMessage($"ConfigureServices called");
+            services.AddSingleton<IPluginService, TestPluginService>();
+            //services.AddMvc();
+            //services.AddControllersWithViews();
         }
 
         public async Task InitializeAsync()
@@ -48,10 +76,8 @@
         }
     }
 
-    /*
-    public class MyPluginController : Controller
+    public class TestPluginService : IPluginService
     {
-        public IActionResult Index() => View();
+        public string Test => $"Testing";
     }
-    */
 }

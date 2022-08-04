@@ -69,6 +69,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\Geofences\" />
-    <Folder Include="Services\Plugins\" />
   </ItemGroup>
 </Project>

@@ -9,11 +9,12 @@
         private readonly AssemblyDependencyResolver _resolver;
 
         public PluginLoadContext(string pluginPath)
+            : base(Path.GetFileNameWithoutExtension(pluginPath), isCollectible: true)
         {
             _resolver = new AssemblyDependencyResolver(pluginPath);
         }
 
-        protected override Assembly Load(AssemblyName assemblyName)
+        protected override Assembly? Load(AssemblyName assemblyName)
         {
             var assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
             if (assemblyPath != null)
@@ -31,6 +32,14 @@
                 return LoadUnmanagedDllFromPath(libraryPath);
             }
             return IntPtr.Zero;
+        }
+    }
+
+    public class PluginAssemblyLoadContext : AssemblyLoadContext
+    {
+        public PluginAssemblyLoadContext(string name)
+            : base(name, isCollectible: true)
+        {
         }
     }
 }
