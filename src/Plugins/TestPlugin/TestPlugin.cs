@@ -9,13 +9,16 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.DependencyInjection;
 
+    //http://127.0.0.1:8881/plugin/v1
+    //http://127.0.0.1:8881/Test
+
     public class TestPlugin : IPlugin, IAppEvents
     {
         #region Metadata Properties
 
         public string Name => "TestPlugin";
 
-        public string Description => "Demostrates capabilities of plugin system";
+        public string Description => "Demostrates the capabilities of the plugin system.";
 
         public string Author => "versx";
 

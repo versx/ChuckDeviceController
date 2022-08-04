@@ -1,81 +1,109 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
-    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+
+    using ChuckDeviceConfigurator.Services.Plugins;
+    using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Plugins;
 
     public class PluginController : Controller
     {
+        private readonly ILogger<PluginController> _logger;
+        private readonly IPluginManager _pluginManager;
+
+        public PluginController(
+            ILogger<PluginController> logger,
+            IPluginManager pluginManager)
+        {
+            _logger = logger;
+            _pluginManager = pluginManager;
+        }
+
         // GET: PluginController
         public ActionResult Index()
         {
-            return View();
+            var plugins = _pluginManager.Plugins.Values.ToList();
+            var model = new ViewModelsModel<IPlugin>
+            {
+                Items = plugins,
+            };
+            return View(model);
         }
 
         // GET: PluginController/Details/5
-        public ActionResult Details(int id)
+        public ActionResult Details(string id)
         {
-            return View();
-        }
-
-        // GET: PluginController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: PluginController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
+            if (!_pluginManager.Plugins.ContainsKey(id))
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
+                ModelState.AddModelError("Plugin", $"Plugin with name '{id}' has not been loaded or registered.");
                 return View();
             }
+            var plugin = _pluginManager.Plugins[id];
+            return View(plugin);
         }
 
-        // GET: PluginController/Edit/5
-        public ActionResult Edit(int id)
+        // GET: PluginController/Reload/5
+        public ActionResult Reload(string id)
         {
-            return View();
-        }
-
-        // POST: PluginController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
+            // TODO: Reload Plugin
+            if (!_pluginManager.Plugins.ContainsKey(id))
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
+                ModelState.AddModelError("Plugin", $"Plugin with name '{id}' has not been loaded or registered.");
                 return View();
             }
+            //var plugin = _pluginManager.Plugins[id];
+            //plugin.Reload();
+            _logger.LogInformation($"Plugin '{id}' has been reloaded");
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: PluginController/Delete/5
-        public ActionResult Delete(int id)
+        // GET: PluginController/Manage/5
+        public ActionResult Manage(string id)
+        {
+            // TODO: Toggle - Enable/Disable Plugin
+            if (!_pluginManager.Plugins.ContainsKey(id))
+            {
+                ModelState.AddModelError("Plugin", $"Plugin with name '{id}' has not been loaded or registered.");
+                return View();
+            }
+            //var plugin = _pluginManager.Plugins[id];
+            //plugin.SetState(); / ToggleState
+            //var enabled = plugin.State == PluginState.Enabled;
+            //_logger.LogInformation($"Plugin '{id}' has been '{(enabled ? "enabled" : "disabled")}");
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: PluginController/Upload
+        public ActionResult Upload()
         {
             return View();
         }
 
-        // POST: PluginController/Delete/5
+        // POST: PluginController/Upload
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Upload(IFormCollection collection)
         {
             try
             {
+                var name = Convert.ToString(collection["Name"]);
+                if (_pluginManager.Plugins.ContainsKey(name))
+                {
+                    // Plugin already exists and is registered in plugin manager cache
+                    ModelState.AddModelError("Plugin", $"Plugin already exists and is registered in plugin manager cache with name '{name}'.");
+                    return View();
+                }
+
+                // TODO: Handle plugin upload, add to bin/plugins, move Views, etc
+
+                await Task.CompletedTask;
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                ModelState.AddModelError("Plugin", $"Unknown error occurred while uploading plugin.");
                 return View();
             }
         }

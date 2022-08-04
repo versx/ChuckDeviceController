@@ -1,15 +1,15 @@
 ﻿@using ChuckDeviceConfigurator.ViewModels
-@using ChuckDeviceController.Data.Entities
-@model ViewModelsModel<IvList>
+@using ChuckDeviceController.Plugins
+@model ViewModelsModel<IPlugin>
 @{
-    ViewData["Title"] = "IV Lists";
+    ViewData["Title"] = "Plugin Manager";
 }
 
 <h1>Plugin Manager</h1>
 <br />
 
 <p>
-    <a class="btn btn-success btn-sm" asp-action="Import">Import</a>
+    <a class="btn btn-success btn-sm" asp-action="Upload">Upload</a>
 </p>
 
 <table id="table-plugins" class="table table-striped table-bordered dt-responsive nowrap">
@@ -19,7 +19,10 @@
                 @Html.DisplayNameFor(model => model.Items[0].Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].PokemonIds)
+                @Html.DisplayNameFor(model => model.Items[0].Author)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Version)
             </th>
             <th>Action</th>
         </tr>
@@ -32,7 +35,10 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </th>
                 <td>
-                    @string.Join(", ", item.PokemonIds.Take(10))
+                    @Html.DisplayFor(modelItem => item.Author)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Version)
                 </td>
                 <td>
                     <div class="dropdown">
@@ -40,9 +46,11 @@
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Name"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
+                            <li><a class="dropdown-item" asp-action="Disable" asp-route-id="@item.Name"><i class="fa-solid fa-stop"></i>&nbsp;Disable</a></li>
+                            @* Enabled: <i class="fa-solid fa-play"></i> *@
+                            @* Disabled: <i class="fa-solid fa-stop"></i> *@
+                            <li><a class="dropdown-item" asp-action="Reload" asp-route-id="@item.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Reload</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
-                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Name"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
                         </ul>
                     </div>
                 </td>
@@ -56,7 +64,7 @@
         $(document).ready(function() {
             $('#table-plugins').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 2 },
+                    { orderable: false, targets: 3 },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,

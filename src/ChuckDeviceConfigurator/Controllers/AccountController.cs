@@ -38,6 +38,10 @@
         // GET: AccountController
         public async Task<ActionResult> Index()
         {
+            // TODO: Speed up query
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+
             var accounts = await _context.Accounts.ToListAsync();
             var devices = await _context.Devices.ToListAsync();
 
@@ -108,6 +112,12 @@
                     Total = (ulong)suspendedAccounts.LongCount(),
                 },
             };
+
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogDebug($"Account stats took {totalSeconds}s");
+            // Time: 0.1302 - So it's not the query, it's Razor being slow in the frontend :(
+
             return View(model);
         }
 
