@@ -18,9 +18,13 @@
         Task InitializeAsync();
     }
 
-    public interface IJobControllerHost
+    #region Job Controller Contracts
+
+    public interface IJobControllerServiceHost
     {
         Task AddJobControllerAsync(IJobController jobController);
+
+        //Task AddInstanceAsync(IInstance instance);
     }
 
     public interface ICoordinate
@@ -32,10 +36,11 @@
 
     public interface IJobControllerCoordinates
     {
-        IEnumerable<ICoordinate> Coordinates { get; }
+        IReadOnlyList<ICoordinate> Coordinates { get; }
     }
 
     // TODO: Use ChuckDeviceConfigurator.JobControllers.IJobController interface
+    // TODO: Possibly allow Instance creations to link job controller type with
     public interface IJobController : IJobControllerCoordinates
     {
         /// <summary>
@@ -83,11 +88,32 @@
         Task ReloadAsync();
     }
 
+    // NOTE: Just for testing purposes
     public interface ITask
     {
     }
 
+    // NOTE: Just for testing purposes
     public class TaskOptions
     {
     }
+
+    public interface IInstanceControllerService
+    {
+        Task CreateInstance(string name, InstanceType type, ushort minLevel, ushort maxLevel, List<string> geofences, IInstanceData data);
+
+        Task RegisterInstanceType(InstanceType type);
+    }
+
+    // NOTE: Just for testing purposes
+    public enum InstanceType
+    {
+    }
+
+    // NOTE: Just for testing purposes
+    public interface IInstanceData
+    {
+    }
+
+    #endregion
 }

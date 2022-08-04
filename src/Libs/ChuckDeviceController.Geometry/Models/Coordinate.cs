@@ -2,7 +2,14 @@
 {
     using System.Text.Json.Serialization;
 
-    public class Coordinate : IComparable
+    public interface ICoordinate
+    {
+        double Latitude { get; }
+
+        double Longitude { get; }
+    }
+
+    public class Coordinate : ICoordinate, IComparable
     {
         [JsonPropertyName("lat")]
         public double Latitude { get; set; }

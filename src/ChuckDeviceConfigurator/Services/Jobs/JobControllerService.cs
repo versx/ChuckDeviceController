@@ -18,7 +18,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
-    public class JobControllerService : IJobControllerService
+    public class JobControllerService : IJobControllerService, ChuckDeviceController.Plugins.IJobControllerServiceHost
     {
         #region Variables
 
@@ -125,6 +125,23 @@
         }
 
         #endregion
+
+        public async Task AddJobControllerAsync(ChuckDeviceController.Plugins.IJobController jobController)
+        {
+            /* TODO: Unify IJobController interfaces and eventually move all (maybe) job controller instances to plugins
+            if (jobController == null)
+            {
+                _logger.LogError($"[{instance.Name}] Unable to instantiate job instance controller with instance name '{instance.Name}' and type '{instance.Type}'");
+                return;
+            }
+
+            lock (_instancesLock)
+            {
+                _instances[instance.Name] = jobController;
+            }
+            */
+            await Task.CompletedTask;
+        }
 
         #region Instances
 
@@ -397,6 +414,8 @@
 
         #endregion
 
+        #region Quest Queue
+
         public IReadOnlyList<PokestopWithMode> GetQuestQueue(string instanceName)
         {
             var queue = new List<PokestopWithMode>();
@@ -414,6 +433,8 @@
             }
             return queue;
         }
+
+        #endregion
 
         #region Receivers
 
