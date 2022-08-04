@@ -6,7 +6,7 @@
     /// Job controller instance minimum contract all job controllers
     /// must adhere to.
     /// </summary>
-    public interface IJobController : IEventController
+    public interface IJobController : IEventInstanceController
     {
         /// <summary>
         /// Gets the name of the job controller.

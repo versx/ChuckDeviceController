@@ -11,6 +11,7 @@
     using ChuckDeviceConfigurator.Services.IvLists;
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.TimeZone;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;

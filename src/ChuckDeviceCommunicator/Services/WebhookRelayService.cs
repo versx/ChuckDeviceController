@@ -5,7 +5,8 @@
     using Microsoft.Extensions.Options;
 
     using ChuckDeviceCommunicator.Services.Rpc;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Json;

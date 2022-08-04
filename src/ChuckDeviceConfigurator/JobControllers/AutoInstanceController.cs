@@ -9,6 +9,7 @@
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;

@@ -3,6 +3,8 @@
     using System.ComponentModel;
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common.Data;
+
     /* TODO: Possibly use the same `OptimizeRoute` property between Dynamic/Bootstrap/Spawnpoint
      * job controllers for ease. Can't think of any conflicts/issues unless someone edits an
      * existing instance the UI will display the previous value instead of using the default,
@@ -65,7 +67,7 @@
             DisplayName("Quest Mode"),
             JsonPropertyName("quest_mode"),
         ]
-        public QuestMode? QuestMode { get; set; } = Data.QuestMode.Normal;
+        public QuestMode? QuestMode { get; set; } = Common.Data.QuestMode.Normal;
 
         [
             DisplayName("Maximum Pokestop Spin Attempts"),

@@ -3,6 +3,7 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceConfigurator.JobControllers;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
 

@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Data
+﻿namespace ChuckDeviceController.Common
 {
     public static class WebhookHeaders
     {

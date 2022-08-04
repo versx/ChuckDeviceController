@@ -1,9 +1,9 @@
-﻿namespace ChuckDeviceController.Common.Jobs
+﻿namespace ChuckDeviceConfigurator.JobControllers
 {
     /// <summary>
     /// Unique event job controller.
     /// </summary>
-    public interface IEventController
+    public interface IEventInstanceController
     {
         /// <summary>
         /// Gets a unique group name to use with job controller instances

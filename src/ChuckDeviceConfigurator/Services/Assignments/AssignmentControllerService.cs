@@ -5,6 +5,7 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -167,7 +168,7 @@
                                            .ToList();
             using var context = _factory.CreateDbContext();
             var instances = context.Instances
-                                   .Where(instance => instance.Type == ChuckDeviceController.Data.InstanceType.AutoQuest)
+                                   .Where(instance => instance.Type == InstanceType.AutoQuest)
                                    .ToList();
             var geofences = context.Geofences.ToList()
                                              .Where(geofence => instances.Any(i => i.Geofences.Contains(geofence.Name)))

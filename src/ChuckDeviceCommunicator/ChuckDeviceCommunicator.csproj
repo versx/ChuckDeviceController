@@ -33,6 +33,9 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

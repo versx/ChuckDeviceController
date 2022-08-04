@@ -2,7 +2,7 @@
 {
     using System;
 
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common.Data;
 
     public sealed class AutoInstanceCompleteEventArgs : EventArgs
     {

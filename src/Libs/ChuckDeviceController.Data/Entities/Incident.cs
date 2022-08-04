@@ -6,6 +6,7 @@
 
     using POGOProtos.Rpc;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;

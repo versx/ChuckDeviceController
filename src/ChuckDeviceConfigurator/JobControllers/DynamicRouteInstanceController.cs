@@ -1,7 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
     using ChuckDeviceConfigurator.Services.Routing;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry.Models;
 

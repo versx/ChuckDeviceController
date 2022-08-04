@@ -2,7 +2,7 @@
 {
     using System.ComponentModel;
 
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
 
     public class ManageInstanceViewModel

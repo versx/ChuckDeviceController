@@ -13,7 +13,7 @@
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
 
     using ChuckDeviceController.Collections.Queues;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;

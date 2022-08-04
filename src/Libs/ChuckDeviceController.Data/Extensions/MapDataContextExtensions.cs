@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
 
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry;

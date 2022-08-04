@@ -7,6 +7,7 @@
     using System.Linq;
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Geometry.Models;
 
     [Table("webhook")]
