@@ -141,17 +141,11 @@
 
         #region Plugin Host
 
-        public async Task AddJobControllerAsync(string name, InstanceType type, IJobController jobController)
+        public async Task AddJobControllerAsync(string name, IJobController jobController)
         {
-            if (!_registeredInstanceTypes.Contains(type))
-            {
-                _logger.LogError($"[{name}] Unable to add job controller, job controller instance type '{type}' is not registered. Please register it before adding a job controller");
-                return;
-            }
-
             if (jobController == null)
             {
-                _logger.LogError($"[{name}] Unable to instantiate job instance controller with instance name '{name}' and type '{type}'");
+                _logger.LogError($"[{name}] Unable to instantiate job instance controller with instance name '{name}'");
                 return;
             }
 

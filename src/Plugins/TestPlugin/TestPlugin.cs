@@ -1,12 +1,14 @@
 ﻿namespace TestPlugin
 {
-    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Plugins;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.DependencyInjection;
+
+    using JobControllers;
 
     //http://127.0.0.1:8881/plugin/v1
     //http://127.0.0.1:8881/Test
@@ -121,7 +123,9 @@
         {
             _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
             // TODO: Add/register TestInstanceController
-            _jobControllerHost.RegisterJobControllerTypeAsync(InstanceType)
+            //var coords = new List<ICoordinate>();
+            //var testController = new TestInstanceController("Name", 30, 39, coords);
+            //await _jobControllerHost.AddJobControllerAsync("Test", testController);
         }
 
         /// <summary>

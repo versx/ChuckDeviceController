@@ -111,30 +111,26 @@
                 // Loop plugin's constructor parameters to see which host types to provide it
                 foreach (var param in parameters)
                 {
-                    // Loop shared host types dictionary
-                    //foreach (var (hostType, hostObj) in _sharedHosts)
-                    {
-                        // TODO: Either figure out the parameters order or standardize the order
-                        // TODO: Fix ordering
-                        if (!_sharedHosts.ContainsKey(param.ParameterType))
-                            continue;
+                    // TODO: Either figure out the parameters order or standardize the order
+                    // TODO: Fix ordering
+                    if (!_sharedHosts.ContainsKey(param.ParameterType))
+                        continue;
 
-                        var index = sharedHostsImpl.IndexOf(param.ParameterType);
-                        if (index > -1)
-                        {
-                            var typeKey = sharedHostsImpl[index];
-                            var typeObj = _sharedHosts[typeKey];
-                            list[index] = typeObj;
-                        }
+                    var index = sharedHostsImpl.IndexOf(param.ParameterType);
+                    if (index > -1)
+                    {
+                        var typeKey = sharedHostsImpl[index];
+                        var typeObj = _sharedHosts[typeKey];
+                        list[index] = typeObj;
                     }
                 }
             }
 
-            IPlugin instance;
+            IPlugin? instance;
             try
             {
                 var args = list.Reverse().ToArray();
-                instance = Activator.CreateInstance(pluginType, args) as IPlugin;
+                instance = (IPlugin?)Activator.CreateInstance(pluginType, args);
             }
             catch (Exception ex)
             {
