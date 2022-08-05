@@ -4,10 +4,8 @@
     using System.Text.Json.Serialization;
 
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
-    using ChuckDeviceController.Plugins;
 
     public class TestInstanceController : IJobController, IScanNextInstanceController
     {

@@ -35,13 +35,6 @@ if (config.Providers.Count() == 2)
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
 
-// Load plugins immediately
-var pluginManager = new PluginManager
-{
-    PluginsFolder = Strings.PluginsFolder,
-};
-await pluginManager.LoadPluginsAsync();
-
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
@@ -64,22 +57,6 @@ builder.WebHost.ConfigureLogging(configure =>
 
 #endregion
 
-#region Plugin Registration
-
-var mvcBuilder = builder.Services.AddMvc();
-
-var pluginFinder = new PluginFinder<IPlugin>(Strings.PluginsFolder);
-var pluginAssemblies = pluginFinder.FindAssemliesWithPlugins();
-if (pluginAssemblies.Count > 0)
-{
-    foreach (var pluginFile in pluginAssemblies)
-    {
-        mvcBuilder.AddPluginFromAssemblyFile(pluginFile);
-    }
-}
-
-#endregion
-
 #region User Identity
 
 // https://codewithmukesh.com/blog/user-management-in-aspnet-core-mvc/
@@ -87,6 +64,7 @@ builder.Services.AddDbContext<UserIdentityContext>(options =>
 {
     options.UseMySql(connectionString, serverVersion, opt =>
     {
+
         //opt.MigrationsHistoryTable("migrations");
         opt.MigrationsAssembly(Strings.AssemblyName);
     });
@@ -162,11 +140,17 @@ builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerServ
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
+// TODO: Remove extra service registration of 'JobControllerService' or confirm there are no issues and two instances are not created
+builder.Services.AddSingleton<IJobControllerServiceHost, JobControllerService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
-builder.Services.AddSingleton<IPluginManager>(pluginManager);
+builder.Services.AddSingleton<IPluginManager, PluginManager>();
+// TODO: Implement plugin hosts
+builder.Services.AddSingleton<ILoggingHost, LoggingHost>();
+builder.Services.AddSingleton<IDatabaseHost, DatabaseHost>();
+builder.Services.AddSingleton<IUiHost, UiHost>();
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
 
 builder.Services.AddGrpc(options =>
@@ -176,17 +160,17 @@ builder.Services.AddGrpc(options =>
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });
 
-#endregion
-
-// Call ConfigureServices method in plugins
+// Call 'ConfigureServices' method in plugins
 ConfigureServices(builder.Services);
+
+#endregion
 
 #region App Builder
 
 var app = builder.Build();
 
 // Seed default user and roles
-await SeedDefaultData(app.Services);
+await SeedDefaultDataAsync(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -222,29 +206,94 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
-// Call Configure method in plugins
-Configure(app);
+// Call 'Configure' method in plugins
+Configure(app.Services, app);
 
 app.Run();
 
 #endregion
 
+#region Plugin Callback/Event Handlers
 
-void Configure(IApplicationBuilder app)
+void Configure(IServiceProvider serviceProvider, IApplicationBuilder app)
 {
-    foreach (var (pluginName, plugin) in pluginManager!.Plugins)
+    using (var scope = serviceProvider.CreateScope())
     {
-        plugin.Configure(app);
+        var provider = scope.ServiceProvider;
+        var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+        try
+        {
+            var pluginManager = provider.GetRequiredService<IPluginManager>();
+            // Call 'Configure(IApplicationBuilder)' event handler in each plugin
+            foreach (var (_, plugin) in pluginManager!.Plugins)
+            {
+                plugin.Configure(app);
+            }
+        }
+        catch (Exception ex)
+        {
+            var logger = loggerFactory.CreateLogger<Program>();
+            logger.LogError(ex, "An error occurred while calling the 'Configure(IApplicationBuilder)' method in plugins.");
+        }
     }
 }
 
+// NOTE: Called first before Configure
 void ConfigureServices(IServiceCollection services)
 {
-    foreach (var (pluginName, plugin) in pluginManager!.Plugins)
+    var mvcBuilder = services.AddMvc();
+    var serviceProvider = services.BuildServiceProvider();
+
+    using (var scope = serviceProvider.CreateScope())
     {
-        plugin.ConfigureServices(services);
+        var provider = scope.ServiceProvider;
+        var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+        try
+        {
+            var pluginManager = provider.GetRequiredService<IPluginManager>();
+            var jobControllerHost = provider.GetRequiredService<IJobControllerServiceHost>();
+            var loggingHost = provider.GetRequiredService<ILoggingHost>();
+            var databaseHost = provider.GetRequiredService<IDatabaseHost>();
+            var uiHost = provider.GetRequiredService<IUiHost>();
+
+            var sharedHosts = new Dictionary<Type, object>
+            {
+                { typeof(IJobControllerServiceHost), jobControllerHost },
+                { typeof(ILoggingHost), loggingHost },
+                { typeof(IUiHost), uiHost },
+                { typeof(IDatabaseHost), databaseHost },
+            };
+            var pluginFinder = new PluginFinder<IPlugin>(Strings.PluginsFolder);
+            var pluginAssemblies = pluginFinder.FindAssemliesWithPlugins();
+            if (pluginAssemblies.Count > 0)
+            {
+                // Register all plugins with MvcBuilder
+                foreach (var pluginFile in pluginAssemblies)
+                {
+                    mvcBuilder.AddPluginFromAssemblyFile(pluginFile, sharedHosts);
+                }
+
+                // Load all plugins via PluginManager
+                pluginManager.LoadPluginsAsync(pluginAssemblies);
+            }
+
+            // Call 'ConfigureServices(IServiceCollection)' event handler in each plugin
+            foreach (var (_, plugin) in pluginManager!.Plugins)
+            {
+                plugin.ConfigureServices(services);
+            }
+        }
+        catch (Exception ex)
+        {
+            var logger = loggerFactory.CreateLogger<Program>();
+            logger.LogError(ex, "An error occurred while calling the 'ConfigureServices(IServiceCollection)' method in plugins.");
+        }
     }
 }
+
+#endregion
+
+#region Helpers
 
 void RegisterAuthProviders(AuthenticationBuilder auth)
 {
@@ -303,7 +352,7 @@ void RegisterAuthProviders(AuthenticationBuilder auth)
     }
 }
 
-async Task SeedDefaultData(IServiceProvider serviceProvider)
+async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
 {
     using (var scope = serviceProvider.CreateScope())
     {
@@ -376,3 +425,5 @@ IdentityOptions GetDefaultIdentityOptions()
     };
     return options;
 }
+
+#endregion

@@ -3,15 +3,16 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceConfigurator.JobControllers;
+    using ChuckDeviceConfigurator.Services.Rpc.Models;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
-    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Plugins;
 
     /// <summary>
     /// Service to manage all <see cref="IJobController"/> instances.
     /// </summary>
-    public interface IJobControllerService
+    public interface IJobControllerService : IJobControllerServiceHost
     {
         #region Properties
 
@@ -32,7 +33,6 @@
         IReadOnlyList<InstanceType> RegisteredInstanceTypes { get; }
 
         #endregion
-
 
         /// <summary>
         /// Starts the <see cref="IJobControllerService"/>.

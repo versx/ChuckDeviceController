@@ -1,10 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
-    using System;
-
-    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Plugins;
 
     // TODO: Abstract Plugin class inheriting IPlugin for cache plugin related data and to interact with
@@ -15,14 +12,13 @@
         #region Variables
 
         private readonly ILogger<IPluginManager> _logger;
-        private readonly Dictionary<string, IPlugin> _plugins = new();
+        private readonly static Dictionary<string, IPlugin> _plugins = new();
 
-        #endregion
-
-        #region Singleton
-
-        private static IPluginManager? _instance;
-        public static IPluginManager Instance => _instance ??= new PluginManager();
+        // Shared plugin contract hosts
+        private readonly IJobControllerService _jobControllerService;
+        private readonly ILoggingHost _loggingHost;
+        private readonly IDatabaseHost _databaseHost;
+        private readonly IUiHost _uiHost;
 
         #endregion
 
@@ -42,14 +38,18 @@
 
         #region Constructors
 
-        public PluginManager()
-            : this(new Logger<IPluginManager>(LoggerFactory.Create(x => x.AddConsole())))
-        {
-        }
-
-        public PluginManager(ILogger<IPluginManager> logger)
+        public PluginManager(
+            ILogger<IPluginManager> logger,
+            IJobControllerService jobControllerService,
+            ILoggingHost loggingHost,
+            IDatabaseHost databaseHost,
+            IUiHost uiHost)
         {
             _logger = logger;
+            _jobControllerService = jobControllerService;
+            _loggingHost = loggingHost;
+            _databaseHost = databaseHost;
+            _uiHost = uiHost;
 
             PluginsFolder = Strings.PluginsFolder;
         }
@@ -105,7 +105,7 @@
 
         public async Task StopAllAsync()
         {
-            foreach (var (pluginName, plugin) in _plugins)
+            foreach (var (_, plugin) in _plugins)
             {
                 plugin.OnStop();
             }
@@ -125,7 +125,7 @@
 
         public async Task ReloadAllAsync()
         {
-            foreach (var (pluginName, plugin) in _plugins)
+            foreach (var (_, plugin) in _plugins)
             {
                 plugin.OnReload();
             }
@@ -159,7 +159,14 @@
 
         private async Task LoadPluginAsync(string pluginFilePath)
         {
-            var loader = new PluginLoader<IPlugin>(pluginFilePath);
+            var sharedHosts = new Dictionary<Type, object>
+            {
+                { typeof(IJobControllerServiceHost), _jobControllerService },
+                { typeof(ILoggingHost), _loggingHost },
+                { typeof(IUiHost), _uiHost },
+                { typeof(IDatabaseHost), _databaseHost },
+            };
+            var loader = new PluginLoader<IPlugin>(pluginFilePath, sharedHosts);
             var loadedPlugins = loader.LoadedPlugins;
             if (!loadedPlugins.Any())
             {
@@ -189,6 +196,8 @@
             _plugins.Add(plugin.Name, plugin);
             _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");
         }
+
+        // TODO: UnregisterPlugin when removed
 
         #endregion
     }
@@ -226,6 +235,7 @@
     {
         public Task<T> GetByIdAsync<T, TId>(TId id) where T : IBaseEntity
         {
+            Console.WriteLine($"Id: {id}");
             return null;
         }
 

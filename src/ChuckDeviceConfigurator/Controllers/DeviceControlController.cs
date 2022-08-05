@@ -54,7 +54,7 @@
 
         private async Task<DeviceResponse> HandleControllerRequestAsync(DevicePayload payload)
         {
-            _logger.LogInformation($"[{payload.Uuid}] Received control request: {payload.Type}");
+            _logger.LogInformation($"[{payload?.Uuid}] Received control request: {payload?.Type}");
 
             if (string.IsNullOrEmpty(payload?.Uuid))
             {
@@ -71,7 +71,7 @@
             }
             */
 
-            switch (payload.Type.ToLower())
+            switch (payload!.Type!.ToLower())
             {
                 case "init":
                     return await HandleInitializeRequestAsync(payload.Uuid, device);

@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-	  <NoWarn>CA2254,IDE0063</NoWarn>
+	  <NoWarn>CA2254,IDE0063,CS8603</NoWarn>
 	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>

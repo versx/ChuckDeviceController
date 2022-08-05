@@ -86,13 +86,13 @@
                 Accounts = accounts ?? new(),
                 AccountLevelStatistics = accountLevelStatistics,
                 TotalAccounts = (ulong)total,
-                InCooldown = (ulong)accounts.LongCount(x => x.LastEncounterTime > 0 && now - x.LastEncounterTime < Strings.CooldownLimitS),
+                InCooldown = (ulong)accounts!.LongCount(x => x.LastEncounterTime > 0 && now - x.LastEncounterTime < Strings.CooldownLimitS),
                 AccountsInUse = (ulong)accountsInUse.Count,
-                OverSpinLimit = (ulong)accounts.LongCount(x => x.Spins >= Strings.DefaultSpinLimit),
+                OverSpinLimit = (ulong)accounts!.LongCount(x => x.Spins >= Strings.DefaultSpinLimit),
                 CleanLevel30s = (ulong)cleanAccounts.LongCount(x => x.Level >= 30),
                 SuspendedAccounts = (ulong)suspendedAccounts.LongCount(),
                 NewAccounts = (ulong)cleanAccounts.LongCount(),
-                OverLevel30 = (ulong)accounts.LongCount(x => x.Level >= 30),
+                OverLevel30 = (ulong)accounts!.LongCount(x => x.Level >= 30),
                 Bans = new AccountWarningsBansViewModel
                 {
                     Last24Hours = (ulong)bannedAccounts.LongCount(x => now - x.FailedTimestamp < Strings.OneDayS),

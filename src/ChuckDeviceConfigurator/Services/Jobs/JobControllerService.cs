@@ -10,18 +10,19 @@
     using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceConfigurator.Services.IvLists;
     using ChuckDeviceConfigurator.Services.Routing;
+    using ChuckDeviceConfigurator.Services.Rpc.Models;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
-    using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
-    using ChuckDeviceController.Plugins;
 
-    public class JobControllerService : IJobControllerService, IJobControllerServiceHost
+    // TODO: Refactor class into separate smaller classes
+
+    public class JobControllerService : IJobControllerService
     {
         #region Variables
 
@@ -87,6 +88,8 @@
             _assignmentService = assignmentService;
             _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
             _registeredInstanceTypes = new List<InstanceType>();
+
+            RegisterAllJobControllerTypesAsync().ConfigureAwait(false);
         }
 
         #endregion
@@ -779,22 +782,5 @@
         }
 
         #endregion
-    }
-
-    // TODO: Move to separate file: Services.Rpc.Models
-    public class TrainerLevelingStatus
-    {
-        public string? Username { get; }
-
-        public bool StoreLevelingData { get; }
-
-        public bool IsTrainerLeveling { get; }
-
-        public TrainerLevelingStatus(string? username, bool storeLevelingData = false, bool isTrainerLeveling = false)
-        {
-            StoreLevelingData = storeLevelingData;
-            IsTrainerLeveling = isTrainerLeveling;
-            Username = username;
-        }
     }
 }

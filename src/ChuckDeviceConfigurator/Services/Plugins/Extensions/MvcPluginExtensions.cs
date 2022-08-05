@@ -16,9 +16,9 @@
         /// <param name="mvcBuilder">The MVC builder</param>
         /// <param name="assemblyFile">Full path the main .dll file for the plugin.</param>
         /// <returns>The builder</returns>
-        public static IMvcBuilder AddPluginFromAssemblyFile(this IMvcBuilder mvcBuilder, string assemblyFile)
+        public static IMvcBuilder AddPluginFromAssemblyFile(this IMvcBuilder mvcBuilder, string assemblyFile, Dictionary<Type, object> sharedHosts)
         {
-            var pluginLoader = new PluginLoader<IPlugin>(assemblyFile);
+            var pluginLoader = new PluginLoader<IPlugin>(assemblyFile, sharedHosts);
             return mvcBuilder.AddPluginLoader(pluginLoader);
         }
 
@@ -65,7 +65,6 @@
                 var otherParts = partFactory.GetApplicationParts(assembly);
                 foreach (var part in otherParts)
                 {
-                    Console.WriteLine($"Part: {part.Name}");
                     mvcBuilder.PartManager.ApplicationParts.Add(part);
                 }
             }

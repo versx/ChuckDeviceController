@@ -57,15 +57,15 @@
             switch (options.RouteType)
             {
                 case RouteGenerationType.Bootstrap:
-                    var bootstrapRoute = GenerateBootstrapRoute(geofences, circleSize);
+                    var bootstrapRoute = GenerateBootstrapRoute(geofences!, circleSize);
                     coordinates.AddRange(bootstrapRoute);
                     break;
                 case RouteGenerationType.Randomized:
-                    var randomRoute = GenerateRandomRoute(geofences, maxPoints, circleSize);
+                    var randomRoute = GenerateRandomRoute(geofences!, maxPoints, circleSize);
                     coordinates.AddRange(randomRoute);
                     break;
                 case RouteGenerationType.Optimized:
-                    var optimizedRoute = GenerateOptimizedRoute(geofences, circleSize);
+                    var optimizedRoute = GenerateOptimizedRoute(geofences!, circleSize);
                     coordinates.AddRange(optimizedRoute);
                     break;
                 default:

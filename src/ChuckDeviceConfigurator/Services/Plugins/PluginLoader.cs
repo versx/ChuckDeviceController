@@ -10,6 +10,7 @@
 
         private static readonly ILogger<IPluginLoader<TPlugin>> _logger =
             new Logger<IPluginLoader<TPlugin>>(LoggerFactory.Create(x => x.AddConsole()));
+        private readonly Dictionary<Type, object> _sharedHosts = new();
 
         #endregion
 
@@ -23,7 +24,7 @@
 
         #region Constructor
 
-        public PluginLoader(string filePath)
+        public PluginLoader(string filePath, Dictionary<Type, object> sharedHosts)
         {
             if (!File.Exists(filePath))
             {
@@ -31,6 +32,7 @@
             }
 
             PluginFilePath = filePath;
+            _sharedHosts = sharedHosts;
 
             var assembly = LoadAssembly(PluginFilePath);
             if (assembly == null)
@@ -54,7 +56,7 @@
         /// Load an assembly from path.
         /// </summary>
         /// <param name="assemblyPath">The assembly path.</param>
-        /// <returns>The assembly.</returns>
+        /// <returns>The loaded assembly.</returns>
         public Assembly? LoadAssemblyFromPath(string assemblyPath)
             => LoadAssembly(assemblyPath);
 
@@ -69,17 +71,17 @@
             return loadContext.LoadFromAssemblyName(new AssemblyName(fileName));
         }
 
-        private static IEnumerable<IPlugin> CreatePlugins(Assembly assembly)
+        private IEnumerable<IPlugin> CreatePlugins(Assembly assembly)
         {
             var count = 0;
             var pluginTypes = PluginFinder<IPlugin>.GetPluginTypes(assembly);
             foreach (var pluginType in pluginTypes)
             {
-                var parameters = BuildConstructorParameters(pluginType);
-                if (Activator.CreateInstance(pluginType, parameters) is IPlugin result)
+                var plugin = LoadPluginWithDataParameters(pluginType);
+                if (plugin != null)
                 {
                     count++;
-                    yield return result;
+                    yield return plugin;
                 }
             }
 
@@ -92,25 +94,54 @@
             }
         }
 
-        private static object[] BuildConstructorParameters(Type pluginType)
+        private IPlugin LoadPluginWithDataParameters(Type pluginType)
         {
-            var list = new List<object>();
-            var constructorInfo = pluginType.GetConstructors()[0];
+            var constructors = pluginType.GetConstructors();
+            // TODO: Check that there is at least one constructor
+            var constructorInfo = constructors[0];
             var parameters = constructorInfo.GetParameters();
+            //var list = new List<object>(parameters.Length);
+            var list = new object[parameters.Length];
 
-            foreach (var param in parameters)
+            // Check that we were provided shared host types
+            if ((_sharedHosts?.Count ?? 0) > 0)
             {
-                if (typeof(ILoggingHost) == param.ParameterType)
-                    list.Add(new LoggingHost());
-                else if (typeof(IUiHost) == param.ParameterType)
-                    list.Add(new UiHost());
-                else if (typeof(IDatabaseHost) == param.ParameterType)
-                    list.Add(new DatabaseHost());
-                // TODO: else if (typeof(IJobControllerServiceHost) == param.ParameterType)
-                //    list.Add(_jobControllerService);
+                var sharedHostsImpl = _sharedHosts!.Keys.ToList();
+
+                // Loop plugin's constructor parameters to see which host types to provide it
+                foreach (var param in parameters)
+                {
+                    // Loop shared host types dictionary
+                    //foreach (var (hostType, hostObj) in _sharedHosts)
+                    {
+                        // TODO: Either figure out the parameters order or standardize the order
+                        // TODO: Fix ordering
+                        if (!_sharedHosts.ContainsKey(param.ParameterType))
+                            continue;
+
+                        var index = sharedHostsImpl.IndexOf(param.ParameterType);
+                        if (index > -1)
+                        {
+                            var typeKey = sharedHostsImpl[index];
+                            var typeObj = _sharedHosts[typeKey];
+                            list[index] = typeObj;
+                        }
+                    }
+                }
             }
 
-            var instance = Activator.CreateInstance(pluginType, list.ToArray());
+            IPlugin instance;
+            try
+            {
+                var args = list.Reverse().ToArray();
+                instance = Activator.CreateInstance(pluginType, args) as IPlugin;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to instantiate a new instance of Plugin '{pluginType.Name}': {ex}");
+                return null;
+            }
+
             if (instance == null)
             {
                 _logger.LogError($"Failed to initialize new instance of Plugin '{pluginType.Name}'");
@@ -128,7 +159,8 @@
                 //else if (typeof(IJobControllerServiceHost) == type)
                 //    _pluginHandlers.JobControllerEvents = (IJobControllerServiceHost)objectValue;
             }
-            return list.ToArray();
+            //return list.ToArray();
+            return (IPlugin)objectValue;
         }
 
         private static object GetObjectValue(object o)
