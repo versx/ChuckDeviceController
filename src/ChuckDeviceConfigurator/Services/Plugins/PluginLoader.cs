@@ -118,14 +118,16 @@
             }
 
             // TOOD: PluginHost to contain event handlers class(es)
-            //var objectValue = GetObjectValue(instance);
-            //foreach (var type in pluginType.GetInterfaces())
-            //{
-            //    if (typeof(IAppEvents) == type)
-            //        _pluginHandlers.AppEvents = (IAppEvents)objectValue;
-            //    else if (typeof(IUiEvents) == type)
-            //        _pluginHandlers.UiEvents = (IUiEvents)objectValue;
-            //}
+            var objectValue = GetObjectValue(instance);
+            foreach (var type in pluginType.GetInterfaces())
+            {
+                //if (typeof(IUiEvents) == type)
+                //    _pluginHandlers.UiEvents = (IUiEvents)objectValue;
+                //else if (typeof(IDatabaseEvents) == type)
+                //    _pluginHandlers.DatabaseEvents = (IDatabaseEvents)objectValue;
+                //else if (typeof(IJobControllerServiceHost) == type)
+                //    _pluginHandlers.JobControllerEvents = (IJobControllerServiceHost)objectValue;
+            }
             return list.ToArray();
         }
 

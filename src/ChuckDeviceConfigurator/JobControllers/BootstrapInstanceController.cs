@@ -38,7 +38,7 @@
 
         public bool OptimizeRoute { get; }
 
-        public string OnCompleteInstanceName { get; set; }
+        public string OnCompleteInstanceName { get; }
 
         public Queue<ICoordinate> ScanNextCoordinates { get; } = new();
 

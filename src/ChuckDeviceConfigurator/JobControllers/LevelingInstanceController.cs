@@ -11,7 +11,7 @@
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -115,7 +115,7 @@
         // TODO: Use gRPC to get 'StoreLevelData' property value from leveling job controller instance.
         public bool StoreLevelData { get; }
 
-        public ulong Radius { get; set; }
+        public ulong Radius { get; }
 
         #endregion
 

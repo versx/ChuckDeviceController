@@ -1,12 +1,16 @@
 ﻿namespace ChuckDeviceController.Plugins
 {
+    using ChuckDeviceController.Common.Data.Contracts;
+
+    // TODO: Allow fetching database entities from plugins
+
+    /// <summary>
+    /// 
+    /// </summary>
     public interface IDatabaseHost
     {
-        // TODO: Allow fetching database entities from plugins
-        /*
-         * - Decide whether to allow modifications or strictly only readonly
-         * - Fetch Instances, Geofences, Devices, etc
-         * - Possibly allow fetching map data entities
-         */
+        Task<IReadOnlyList<T>> GetListAsync<T>() where T : IBaseEntity;
+
+        Task<T> GetByIdAsync<T, TId>(TId id) where T : IBaseEntity;
     }
 }

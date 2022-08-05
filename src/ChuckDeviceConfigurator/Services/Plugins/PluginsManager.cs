@@ -3,6 +3,7 @@
     using System;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Plugins;
 
@@ -220,8 +221,18 @@
         }
     }
 
+    // TODO: Register with DI to obtain DeviceController/MapDataContext to fetch entities for plugin
     public class DatabaseHost : IDatabaseHost
     {
+        public Task<T> GetByIdAsync<T, TId>(TId id) where T : IBaseEntity
+        {
+            return null;
+        }
+
+        public Task<IReadOnlyList<T>> GetListAsync<T>() where T : IBaseEntity
+        {
+            return null;
+        }
     }
 
     #endregion

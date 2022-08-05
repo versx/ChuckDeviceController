@@ -1,12 +1,24 @@
 ﻿namespace TestPlugin.JobControllers
 {
+    using System;
+    using System.Text.Json.Serialization;
+
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Plugins;
 
-    public class TestInstanceController : IJobController
+    public class TestInstanceController : IJobController, IScanNextInstanceController
     {
+        #region Variables
+
+        internal int _lastIndex = 0;
+        internal double _lastCompletedTime;
+        internal double _lastLastCompletedTime;
+
+        #endregion
+
         #region Properties
 
         public string Name { get; }
@@ -21,12 +33,14 @@
 
         public bool IsEvent { get; }
 
+        public Queue<ICoordinate> ScanNextCoordinates { get; } = new();
+
         #endregion
 
         #region Constructor
 
         public TestInstanceController(string name, ushort minLevel, ushort maxLevel,
-            List<ICoordinate> coords, string? groupName = null, bool isEvent = false)
+            List<ICoordinate> coords, string groupName = null, bool isEvent = false)
         {
             Name = name;
             MinimumLevel = minLevel;
@@ -42,26 +56,117 @@
 
         public async Task<ITask> GetTaskAsync(TaskOptions options)
         {
-            await Task.CompletedTask;
-            return null;
+            // Check if on demand scanning coordinates list has any to send to workers
+            if (ScanNextCoordinates.Count > 0)
+            {
+                var coord = ScanNextCoordinates.Dequeue();
+                var scanNextTask = CreateTask(coord);
+                Console.WriteLine($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
+                return await Task.FromResult(scanNextTask);
+            }
+
+            var currentIndex = _lastIndex;
+
+            if ((Coordinates?.Count ?? 0) == 0)
+            {
+                Console.WriteLine($"[{Name}] [{options.Uuid}] Instance requires at least one coordinate, returning empty task for device");
+                return null;
+            }
+
+            // Get next scan coordinate for device based on route type
+            var currentCoord = Coordinates![currentIndex];
+            // Check if current index is last in coordinates list,
+            // if so we've completed the route. Reset route to first
+            // coordinate for next device.
+            if (_lastIndex == Coordinates.Count)
+            {
+                _lastLastCompletedTime = _lastCompletedTime;
+                _lastCompletedTime = Convert.ToUInt64(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
+                _lastIndex = 0;
+            }
+            else
+            {
+                _lastIndex++;
+            }
+
+            // Check if we were unable to retrieve a coordinate to send
+            if (currentCoord == null)
+            {
+                Console.WriteLine($"[{Name}] [{options.Uuid}] Failed to retrieve next scan coordinate");
+                return null;
+            }
+
+            var task = CreateTask(currentCoord);
+            return await Task.FromResult(task);
         }
 
         public async Task<string> GetStatusAsync()
         {
-            await Task.CompletedTask;
-            return null;
+            var status = "--";
+            // device assigned to the route that has completed it.
+            if (_lastCompletedTime == 0 || _lastLastCompletedTime == 0)
+                return status;
+
+            var timeDiffSeconds = _lastCompletedTime - _lastLastCompletedTime;
+            if (timeDiffSeconds > 0)
+            {
+                var time = Math.Round(timeDiffSeconds, 2);
+                status = $"Round Time: {time:N0}s";
+            }
+            return await Task.FromResult(status);
         }
 
         public Task ReloadAsync()
         {
+            Console.WriteLine($"[{Name}] Reloading instance");
+
+            // TODO: Lock lastIndex
+            _lastIndex = 0;
+
             return Task.CompletedTask;
         }
 
         public Task StopAsync()
         {
+            Console.WriteLine($"[{Name}] Stopping instance");
+
             return Task.CompletedTask;
         }
 
         #endregion
+
+        private TestTask CreateTask(ICoordinate coord)
+        {
+            return new TestTask
+            {
+                Area = Name,
+                Action = DeviceActionType.ScanPokemon,
+                Latitude = coord.Latitude,
+                Longitude = coord.Longitude,
+                MinimumLevel = MinimumLevel,
+                MaximumLevel = MaximumLevel,
+            };
+        }
+    }
+
+    public class TestTask : ITask
+    {
+        [JsonPropertyName("area")]
+        public string Area { get; set; }
+
+        [JsonPropertyName("action")]
+        public string Action { get; set; }
+
+        [JsonPropertyName("lat")]
+        public double Latitude { get; set; }
+
+        [JsonPropertyName("lon")]
+        public double Longitude { get; set; }
+
+        [JsonPropertyName("min_level")]
+        public ushort MinimumLevel { get; set; }
+
+        [JsonPropertyName("max_level")]
+        public ushort MaximumLevel { get; set; }
     }
 }

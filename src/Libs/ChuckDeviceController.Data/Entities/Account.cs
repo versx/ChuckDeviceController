@@ -6,7 +6,7 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 

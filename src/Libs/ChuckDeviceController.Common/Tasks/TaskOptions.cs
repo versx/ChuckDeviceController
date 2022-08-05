@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Common.Tasks
 {
-    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
 
     /// <summary>
     /// Job controller instance task options used when requesting a
