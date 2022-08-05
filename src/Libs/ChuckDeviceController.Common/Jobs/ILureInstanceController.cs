@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers.Contracts
+﻿namespace ChuckDeviceController.Common.Jobs
 {
     public interface ILureInstanceController
     {

@@ -1,5 +1,8 @@
 ﻿namespace TestPlugin.JobControllers
 {
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Jobs;
+    using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Plugins;
 
     public class TestInstanceController : IJobController
@@ -14,20 +17,23 @@
 
         public ushort MaximumLevel { get; }
 
-        //public string GroupName { get; }
+        public string? GroupName { get; }
 
-        //public bool IsEvent { get; }
+        public bool IsEvent { get; }
 
         #endregion
 
         #region Constructor
 
-        public TestInstanceController(string name, ushort minLevel, ushort maxLevel, List<ICoordinate> coords)
+        public TestInstanceController(string name, ushort minLevel, ushort maxLevel,
+            List<ICoordinate> coords, string? groupName = null, bool isEvent = false)
         {
             Name = name;
             MinimumLevel = minLevel;
             MaximumLevel = maxLevel;
             Coordinates = coords;
+            GroupName = groupName;
+            IsEvent = isEvent;
         }
 
         #endregion

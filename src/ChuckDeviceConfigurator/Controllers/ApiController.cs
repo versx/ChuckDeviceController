@@ -2,8 +2,8 @@
 {
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.Services.Jobs;
+    using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 

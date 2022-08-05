@@ -2,7 +2,7 @@
 {
     using System.Text.Json.Serialization;
 
-    using ChuckDeviceController.Geometry.Contracts;
+    using ChuckDeviceController.Common;
 
     public class Coordinate : ICoordinate, IComparable
     {

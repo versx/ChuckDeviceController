@@ -4,11 +4,11 @@
 
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -68,7 +68,7 @@
 
         public bool EnableLureEncounters { get; }
 
-        public Queue<Coordinate> ScanNextCoordinates { get; } = new();
+        public Queue<ICoordinate> ScanNextCoordinates { get; } = new();
 
         #endregion
 
@@ -377,7 +377,7 @@
             };
         }
 
-        private CircleTask CreateScanNextTask(Coordinate currentCoord)
+        private CircleTask CreateScanNextTask(ICoordinate currentCoord)
         {
             return new CircleTask
             {

@@ -13,11 +13,7 @@
     /// Base Plugin interface contract all plugins will inherit
     /// at a minimum.
     /// </summary>
-    public interface IPlugin : IMetadata, IWebPlugin
+    public interface IPlugin : IMetadata, IPluginEvents, IWebPlugin
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        Task InitializeAsync();
     }
 }

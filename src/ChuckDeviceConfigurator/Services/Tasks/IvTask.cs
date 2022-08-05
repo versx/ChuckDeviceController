@@ -2,7 +2,9 @@
 {
 	using System.Text.Json.Serialization;
 
-	public class IvTask : BaseJobTask
+    using ChuckDeviceController.Common;
+
+    public class IvTask : BaseJobTask
 	{
         [JsonPropertyName("id")]
 		public string EncounterId { get; set; }

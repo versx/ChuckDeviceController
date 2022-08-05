@@ -11,7 +11,7 @@
     "ChuckDeviceConfigurator": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:39402",
+      "applicationUrl": "http://localhost:47219",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

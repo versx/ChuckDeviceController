@@ -2,6 +2,8 @@
 {
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common;
+
     public class QuestTask : BaseJobTask
     {
         [JsonPropertyName("delay")]

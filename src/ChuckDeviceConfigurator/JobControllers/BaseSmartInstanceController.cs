@@ -2,9 +2,9 @@
 {
     using System.Threading.Tasks;
 
-    using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
@@ -302,7 +302,7 @@
 
         #region Private Methods
 
-        internal virtual CircleTask CreateTask(Coordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
+        internal virtual CircleTask CreateTask(ICoordinate coord, CircleInstanceType circleType = CircleInstanceType.Pokemon)
         {
             return new CircleTask
             {

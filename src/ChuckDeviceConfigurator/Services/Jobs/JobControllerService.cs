@@ -19,8 +19,9 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugins;
 
-    public class JobControllerService : IJobControllerService, ChuckDeviceController.Plugins.IJobControllerServiceHost
+    public class JobControllerService : IJobControllerService, IJobControllerServiceHost
     {
         #region Variables
 
@@ -135,50 +136,59 @@
 
         #endregion
 
-        public async Task AddJobControllerAsync(ChuckDeviceController.Plugins.IJobController jobController)
+        #region Plugin Host
+
+        public async Task AddJobControllerAsync(string name, InstanceType type, IJobController jobController)
         {
-            /* TODO: Unify IJobController interfaces and eventually move all (maybe) job controller instances to plugins
+            if (!_registeredInstanceTypes.Contains(type))
+            {
+                _logger.LogError($"[{name}] Unable to add job controller, job controller instance type '{type}' is not registered. Please register it before adding a job controller");
+                return;
+            }
+
             if (jobController == null)
             {
-                _logger.LogError($"[{instance.Name}] Unable to instantiate job instance controller with instance name '{instance.Name}' and type '{instance.Type}'");
+                _logger.LogError($"[{name}] Unable to instantiate job instance controller with instance name '{name}' and type '{type}'");
                 return;
             }
 
             lock (_instancesLock)
             {
-                _instances[instance.Name] = jobController;
+                if (_instances.ContainsKey(name))
+                {
+                    _logger.LogError($"[{name}] Job controller instance with name '{name}' already exists, unable to add job controller");
+                    return;
+                }
+                _instances.Add(name, jobController);
             }
-            */
+
             await Task.CompletedTask;
         }
 
         public async Task RegisterAllJobControllerTypesAsync()
         {
-            var values = Enum.GetValues(typeof(InstanceType));
-            foreach (var value in values)
+            var types = Enum.GetValues(typeof(InstanceType));
+            foreach (var type in types)
             {
-                var type = (ChuckDeviceController.Plugins.InstanceType)((ushort)value);
-                await RegisterJobControllerTypeAsync(type);
+                await RegisterJobControllerTypeAsync((InstanceType)type);
             }
             await Task.CompletedTask;
         }
 
-        // TODO: Add Register all available job controllers method and add manifest, check against when adding instances and registering new job controllers via plugins
-        // TODO: Use ChuckDeviceController.Common contracts. Would do it right now but tired and need to get up early and it's 1am zzzz
-        public async Task RegisterJobControllerTypeAsync(ChuckDeviceController.Plugins.InstanceType type)
+        public async Task RegisterJobControllerTypeAsync(InstanceType type)
         {
-            // TODO: Just for testing until ChuckDeviceController.Common is referenced
-            var instanceType = (InstanceType)(ushort)type;
-            if (_registeredInstanceTypes.Contains(instanceType))
+            if (_registeredInstanceTypes.Contains(type))
             {
                 _logger.LogWarning($"Job controller instance type is already registered, unable to register '{type}'");
                 return;
             }
 
-            _registeredInstanceTypes.Add(instanceType);
+            _registeredInstanceTypes.Add(type);
             _logger.LogInformation($"Job controller instance type registered '{type}'");
             await Task.CompletedTask;
         }
+
+        #endregion
 
         #region Instances
 

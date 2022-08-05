@@ -12,7 +12,7 @@
     //http://127.0.0.1:8881/plugin/v1
     //http://127.0.0.1:8881/Test
 
-    public class TestPlugin : IPlugin, IAppEvents
+    public class TestPlugin : IPlugin
     {
         #region Metadata Properties
 
@@ -26,15 +26,15 @@
 
         #endregion
 
-        private readonly IAppHost _appHost;
         private readonly ILoggingHost _loggingHost;
+        private readonly IJobControllerServiceHost _jobControllerHost;
 
-        public TestPlugin(IAppHost appHost, ILoggingHost loggingHost)
+        public TestPlugin(ILoggingHost loggingHost, IJobControllerServiceHost jobControllerHost)
         {
-            _appHost = appHost;
             _loggingHost = loggingHost;
+            _jobControllerHost = jobControllerHost;
 
-            _appHost.Restart();
+            //_appHost.Restart();
         }
 
         public void Configure(IApplicationBuilder appBuilder)
@@ -60,22 +60,24 @@
             //services.AddControllersWithViews();
         }
 
-        public async Task InitializeAsync()
+        public void OnLoad()
         {
             _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
-            await Task.CompletedTask;
         }
 
-        public Task OnInitializedAsync()
+        public void OnReload()
         {
-            _loggingHost.LogMessage($"OnInitializedAsync called from plugin");
-            return Task.CompletedTask;
+            _loggingHost.LogMessage($"OnReload called from plugin");
         }
 
-        public Task OnStopAsync()
+        public void OnStop()
         {
-            _loggingHost.LogMessage($"OnStopAsync called from plugin");
-            return Task.CompletedTask;
+            _loggingHost.LogMessage($"OnStop called from plugin");
+        }
+
+        public void OnRemove()
+        {
+            _loggingHost.LogMessage($"OnRemove called from plugin");
         }
     }
 

@@ -2,6 +2,8 @@
 {
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common;
+
     public class LevelingTask : BaseJobTask
     {
         [JsonPropertyName("deploy_egg")]

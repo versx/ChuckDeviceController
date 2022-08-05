@@ -1,6 +1,8 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Tasks
 {
-	public class SwitchAccountTask : BaseJobTask
+    using ChuckDeviceController.Common;
+
+    public class SwitchAccountTask : BaseJobTask
 	{
 		public SwitchAccountTask()
         {

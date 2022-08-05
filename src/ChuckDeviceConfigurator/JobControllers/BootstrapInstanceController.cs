@@ -3,13 +3,14 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Routing.Utilities;
     using ChuckDeviceConfigurator.Services.Tasks;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
@@ -39,7 +40,7 @@
 
         public string OnCompleteInstanceName { get; set; }
 
-        public Queue<Coordinate> ScanNextCoordinates { get; } = new();
+        public Queue<ICoordinate> ScanNextCoordinates { get; } = new();
 
         #endregion
 
@@ -162,7 +163,7 @@
 
         #region Private Methods
 
-        private BootstrapTask CreateBootstrapTask(Coordinate currentCoord)
+        private BootstrapTask CreateBootstrapTask(ICoordinate currentCoord)
         {
             return new BootstrapTask
             {
@@ -178,7 +179,7 @@
             };
         }
 
-        private CircleTask CreateScanNextTask(Coordinate currentCoord)
+        private CircleTask CreateScanNextTask(ICoordinate currentCoord)
         {
             return new CircleTask
             {

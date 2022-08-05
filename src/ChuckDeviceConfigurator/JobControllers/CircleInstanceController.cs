@@ -2,10 +2,11 @@
 {
     using System.Threading.Tasks;
 
-    using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry.Models;
@@ -22,7 +23,7 @@
 
         public override IReadOnlyList<Coordinate> Coordinates { get; internal set; }
 
-        public Queue<Coordinate> ScanNextCoordinates { get; } = new();
+        public Queue<ICoordinate> ScanNextCoordinates { get; } = new();
 
         #endregion
 

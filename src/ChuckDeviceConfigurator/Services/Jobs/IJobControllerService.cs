@@ -13,6 +13,8 @@
     /// </summary>
     public interface IJobControllerService
     {
+        #region Properties
+
         /// <summary>
         /// Gets a dictionary of active and configured devices.
         /// </summary>
@@ -28,6 +30,9 @@
         /// currently registered.
         /// </summary>
         IReadOnlyList<InstanceType> RegisteredInstanceTypes { get; }
+
+        #endregion
+
 
         /// <summary>
         /// Starts the <see cref="IJobControllerService"/>.

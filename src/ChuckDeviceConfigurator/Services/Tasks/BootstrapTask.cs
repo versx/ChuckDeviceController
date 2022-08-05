@@ -1,6 +1,8 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Tasks
 {
-	public class BootstrapTask : BaseJobTask
+    using ChuckDeviceController.Common;
+
+    public class BootstrapTask : BaseJobTask
 	{
 		public BootstrapTask()
 		{

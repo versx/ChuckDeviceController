@@ -100,14 +100,14 @@
 
             foreach (var param in parameters)
             {
-                if (typeof(IAppHost) == param.ParameterType)
-                    list.Add(new AppHost());
-                else if (typeof(ILoggingHost) == param.ParameterType)
+                if (typeof(ILoggingHost) == param.ParameterType)
                     list.Add(new LoggingHost());
                 else if (typeof(IUiHost) == param.ParameterType)
                     list.Add(new UiHost());
                 else if (typeof(IDatabaseHost) == param.ParameterType)
                     list.Add(new DatabaseHost());
+                // TODO: else if (typeof(IJobControllerServiceHost) == param.ParameterType)
+                //    list.Add(_jobControllerService);
             }
 
             var instance = Activator.CreateInstance(pluginType, list.ToArray());

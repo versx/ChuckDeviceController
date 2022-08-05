@@ -19,15 +19,18 @@
         Task LoadPluginsAsync(IEnumerable<string> pluginFilePaths);
 
         // TODO: StartAsync
-        // TODO: ReloadAsync
 
         Task StopAsync(string pluginName);
 
         Task StopAllAsync();
 
-        Task UnloadAsync(string pluginName);
+        Task ReloadAsync(string pluginName);
 
-        Task UnloadAllAsync();
+        Task ReloadAllAsync();
+
+        Task RemoveAsync(string pluginName);
+
+        Task RemoveAllAsync();
 
         #endregion
     }

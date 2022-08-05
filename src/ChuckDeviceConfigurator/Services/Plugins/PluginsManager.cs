@@ -2,9 +2,12 @@
 {
     using System;
 
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Plugins;
 
     // TODO: Abstract Plugin class inheriting IPlugin for cache plugin related data and to interact with
+    // TODO: Add FileSystemWatcher for plugins added manually or changed
 
     public class PluginManager : IPluginManager
     {
@@ -93,41 +96,59 @@
                 return;
             }
 
-            // TODO: Call IAppEvents.OnStopped
+            var plugin = _plugins[pluginName];
+            plugin.OnStop();
 
             await Task.CompletedTask;
         }
 
         public async Task StopAllAsync()
         {
-            foreach (var plugin in _plugins)
+            foreach (var (pluginName, plugin) in _plugins)
             {
-                // TODO: Call IAppEvents.OnStopped
+                plugin.OnStop();
             }
-
             await Task.CompletedTask;
         }
 
-        public async Task UnloadAsync(string pluginName)
+        public async Task ReloadAsync(string pluginName)
         {
             if (!_plugins.ContainsKey(pluginName))
             {
-                Console.WriteLine($"Unable to unload plugin '', no plugin with that name is currently loaded or registered");
+                Console.WriteLine($"Unable to reload plugin '{pluginName}', no plugin with that name is currently loaded or registered");
                 return;
             }
+            _plugins[pluginName].OnReload();
+            await Task.CompletedTask;
+        }
 
-            // TODO: Call IAppEvents.OnUnloaded
+        public async Task ReloadAllAsync()
+        {
+            foreach (var (pluginName, plugin) in _plugins)
+            {
+                plugin.OnReload();
+            }
+            await Task.CompletedTask;
+        }
+
+        public async Task RemoveAsync(string pluginName)
+        {
+            if (!_plugins.ContainsKey(pluginName))
+            {
+                Console.WriteLine($"Unable to remove plugin '{pluginName}', no plugin with that name is currently loaded or registered");
+                return;
+            }
             _plugins.Remove(pluginName);
             await Task.CompletedTask;
         }
 
-        public async Task UnloadAllAsync()
+        public async Task RemoveAllAsync()
         {
-            foreach (var plugin in _plugins)
+            foreach (var (pluginName, plugin) in _plugins)
             {
-                // TODO: Call IAppEvents.OnStopped
+                _plugins.Remove(pluginName);
+                plugin.OnRemove();
             }
-            _plugins.Clear();
             await Task.CompletedTask;
         }
 
@@ -147,9 +168,12 @@
 
             foreach (var plugin in loadedPlugins)
             {
-                await plugin.InitializeAsync();
                 RegisterPlugin(plugin);
+
+                plugin.OnLoad();
             }
+
+            await Task.CompletedTask;
         }
 
         private void RegisterPlugin(IPlugin plugin)
@@ -168,43 +192,7 @@
         #endregion
     }
 
-    public class JobControllerServiceHost : IJobControllerServiceHost
-    {
-        public Task AddJobControllerAsync(IJobController controller)
-        {
-            return Task.CompletedTask;
-        }
-
-        public async Task RegisterAllJobControllerTypesAsync()
-        {
-            await Task.CompletedTask;
-        }
-
-        public Task RegisterJobControllerTypeAsync(InstanceType type)
-        {
-            return Task.CompletedTask;
-        }
-    }
-
     #region Mock Host Classes (for now)
-
-    public class AppHost : IAppHost
-    {
-        public void Restart()
-        {
-            Console.WriteLine($"Restart");
-        }
-
-        public void Shutdown()
-        {
-            Console.WriteLine($"Shutdown");
-        }
-
-        public void Uninstall()
-        {
-            Console.WriteLine($"Uninstall");
-        }
-    }
 
     public class LoggingHost : ILoggingHost
     {

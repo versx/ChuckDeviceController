@@ -10,4 +10,7 @@
     <PackageReference Include="S2Geometry" Version="1.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
+  </ItemGroup>
 </Project>
