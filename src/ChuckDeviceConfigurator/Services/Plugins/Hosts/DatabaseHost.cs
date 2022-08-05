@@ -1,18 +1,25 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins.Hosts
 {
+    using Microsoft.EntityFrameworkCore;
+
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Plugins;
 
     public class DatabaseHost : IDatabaseHost
     {
-        private readonly MapDataContext _mapDataContext;
-        private readonly DeviceControllerContext _deviceContext;
+        private readonly ILogger<IDatabaseHost> _logger;
+        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
+        private readonly IDbContextFactory<MapDataContext> _mapFactory;
 
-        public DatabaseHost(MapDataContext mapDataContext, DeviceControllerContext deviceContext)
+        public DatabaseHost(
+            ILogger<IDatabaseHost> logger,
+            IDbContextFactory<DeviceControllerContext> deviceFactory,
+            IDbContextFactory<MapDataContext> mapFactory)
         {
-            _mapDataContext = mapDataContext;
-            _deviceContext = deviceContext;
+            _logger = logger;
+            _deviceFactory = deviceFactory;
+            _mapFactory = mapFactory;
         }
 
         public Task<T> GetByIdAsync<T, TId>(TId id) where T : IBaseEntity
