@@ -143,6 +143,12 @@
 
         public async Task AddJobControllerAsync(string name, IJobController jobController)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                _logger.LogError($"Job controller name cannot be null, skipping...");
+                return;
+            }
+
             if (jobController == null)
             {
                 _logger.LogError($"[{name}] Unable to instantiate job instance controller with instance name '{name}'");

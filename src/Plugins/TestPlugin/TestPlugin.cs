@@ -119,13 +119,22 @@
         /// <summary>
         /// Called when the plugin is loaded and registered with the host application.
         /// </summary>
-        public void OnLoad()
+        public async void OnLoad()
         {
             _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
-            // TODO: Add/register TestInstanceController
-            //var coords = new List<ICoordinate>();
-            //var testController = new TestInstanceController("Name", 30, 39, coords);
-            //await _jobControllerHost.AddJobControllerAsync("Test", testController);
+
+            // Add/register TestInstanceController
+            var coords = new List<ICoordinate>
+            {
+                new Coordinate(34.01, -117.01),
+                new Coordinate(34.02, -117.02),
+                new Coordinate(34.03, -117.03),
+            };
+            var testController = new TestInstanceController("TestName", 30, 39, coords);
+            var host = _jobControllerHost;
+            await host.AddJobControllerAsync(testController.Name, testController);
+
+            // TODO: Show in Instances create/edit page
         }
 
         /// <summary>
@@ -153,6 +162,19 @@
         }
 
         #endregion
+    }
+
+    public class Coordinate : ICoordinate
+    {
+        public double Latitude { get; set; }
+
+        public double Longitude { get; set; }
+
+        public Coordinate(double latitude, double longitude)
+        {
+            Latitude = latitude;
+            Longitude = longitude;
+        }
     }
 
     public class TestPluginService : IPluginService
