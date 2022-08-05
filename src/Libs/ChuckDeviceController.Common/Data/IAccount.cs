@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Common
+﻿namespace ChuckDeviceController.Common.Data
 {
     public interface IAccount
     {

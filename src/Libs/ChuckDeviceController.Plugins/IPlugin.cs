@@ -15,6 +15,9 @@
     /// </summary>
     public interface IPlugin : IMetadata, IWebPlugin
     {
+        /// <summary>
+        /// 
+        /// </summary>
         Task InitializeAsync();
     }
 }

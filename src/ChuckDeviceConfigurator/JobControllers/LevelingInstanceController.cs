@@ -10,6 +10,9 @@
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Jobs;
+    using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
@@ -453,7 +456,7 @@
             };
         }
 
-        private Coordinate? GetNextScanLocation(string username, Account? account = null)
+        private Coordinate? GetNextScanLocation(string username, IAccount? account = null)
         {
             AddPlayer(username);
 
@@ -496,7 +499,7 @@
             return currentCoord;
         }
 
-        private async Task<double> GetDelayAsync(Coordinate currentCoord, string uuid, Account? account = null)
+        private async Task<double> GetDelayAsync(Coordinate currentCoord, string uuid, IAccount account = null)
         {
             double delay;
             ulong encounterTime;
@@ -517,7 +520,7 @@
             try
             {
                 // TODO: Call SetEncounter event instead of passing around IDbContextFactories
-                await Cooldown.SetEncounterAsync(_deviceFactory, account, currentCoord, encounterTime);
+                await Cooldown.SetEncounterAsync(_deviceFactory, (Account)account, currentCoord, encounterTime);
             }
             catch (Exception ex)
             {
@@ -529,7 +532,7 @@
             return delay;
         }
 
-        private PokemonFortProto? FindClosestPokestop(PlayerLevelingData player, Account? account = null)
+        private PokemonFortProto? FindClosestPokestop(PlayerLevelingData player, IAccount? account = null)
         {
             PokemonFortProto? closest = null;
             double closestDistance = Strings.DefaultDistance;

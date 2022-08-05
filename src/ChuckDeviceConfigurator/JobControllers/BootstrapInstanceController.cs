@@ -10,6 +10,7 @@
     using ChuckDeviceConfigurator.Services.Routing.Utilities;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;

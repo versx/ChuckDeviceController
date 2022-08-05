@@ -2,6 +2,8 @@
 {
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common.Tasks;
+
     public class BaseJobTask : ITask
     {
         [JsonPropertyName("area")]

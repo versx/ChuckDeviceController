@@ -4,6 +4,7 @@
 
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
 
@@ -22,6 +23,10 @@
         /// </summary>
         public IReadOnlyDictionary<string, IJobController> Instances { get; }
 
+        /// <summary>
+        /// Gets a list of all available job controller instance types
+        /// currently registered.
+        /// </summary>
         IReadOnlyList<InstanceType> RegisteredInstanceTypes { get; }
 
         /// <summary>

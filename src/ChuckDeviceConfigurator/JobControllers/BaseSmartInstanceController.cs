@@ -6,7 +6,8 @@
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common.Jobs;
+    using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;

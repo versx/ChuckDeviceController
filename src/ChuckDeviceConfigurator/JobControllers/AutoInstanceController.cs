@@ -10,7 +10,8 @@
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common.Jobs;
+    using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
@@ -261,7 +262,7 @@
 
                         await Cooldown.SetEncounterAsync(
                             _deviceFactory,
-                            options.Account,
+                            (Account)options.Account,
                             pokestop.Pokestop.ToCoordinate(),
                             encounterTime
                         );

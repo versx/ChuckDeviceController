@@ -6,11 +6,12 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("account")]
-    public class Account : BaseEntity, IWebhookEntity
+    public class Account : BaseEntity, IAccount, IWebhookEntity
     {
         #region Properties
 
