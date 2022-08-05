@@ -201,49 +201,4 @@
 
         #endregion
     }
-
-    #region Mock Host Classes (for now)
-
-    public class LoggingHost : ILoggingHost
-    {
-        public void LogException(Exception ex)
-        {
-            Console.WriteLine($"Exception occurred from plugin: {ex}");
-        }
-
-        public void LogMessage(string text, params object[] args)
-        {
-            Console.WriteLine($"Message from plugin: {text}", args);
-        }
-    }
-
-    public class UiHost : IUiHost
-    {
-        public Task AddNavbarHeaderAsync(NavbarHeaderOptions options)
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task AddPathAsync()
-        {
-            return Task.CompletedTask;
-        }
-    }
-
-    // TODO: Register with DI to obtain DeviceController/MapDataContext to fetch entities for plugin
-    public class DatabaseHost : IDatabaseHost
-    {
-        public Task<T> GetByIdAsync<T, TId>(TId id) where T : IBaseEntity
-        {
-            Console.WriteLine($"Id: {id}");
-            return null;
-        }
-
-        public Task<IReadOnlyList<T>> GetListAsync<T>() where T : IBaseEntity
-        {
-            return null;
-        }
-    }
-
-    #endregion
 }
