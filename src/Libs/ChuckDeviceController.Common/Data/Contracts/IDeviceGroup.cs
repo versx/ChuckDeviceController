@@ -4,6 +4,6 @@
     {
         string Name { get; }
 
-        IList<string> DeviceUuids { get; }
+        List<string> DeviceUuids { get; }
     }
 }

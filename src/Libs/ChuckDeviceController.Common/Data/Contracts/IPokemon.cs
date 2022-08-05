@@ -68,7 +68,7 @@
 
         uint? DisplayPokemonId { get; }
 
-        IDictionary<string, dynamic>? PvpRankings { get; }
+        Dictionary<string, dynamic>? PvpRankings { get; }
 
         double BaseHeight { get; }
 

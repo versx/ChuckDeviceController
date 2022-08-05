@@ -1,16 +1,16 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("s2cell")]
-    public class Cell : BaseEntity, ICoordinateEntity
+    public class Cell : BaseEntity, ICell, ICoordinateEntity
     {
         private const ushort S2CellLevel = 15;
 

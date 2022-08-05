@@ -12,7 +12,7 @@
 
         List<string> Geofences { get; }
 
-        IInstanceData Data { get; }
+        // TODO: IInstanceData Data { get; }
     }
 
     public interface IInstanceData

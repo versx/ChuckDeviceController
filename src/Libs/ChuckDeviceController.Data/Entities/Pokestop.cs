@@ -11,12 +11,13 @@
 
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("pokestop")]
-    public class Pokestop : BaseEntity, ICoordinateEntity, IFortEntity, IWebhookEntity
+    public class Pokestop : BaseEntity, IPokestop, ICoordinateEntity, IFortEntity, IWebhookEntity
     {
         #region Constants
 

@@ -4,12 +4,13 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("spawnpoint")]
-    public class Spawnpoint : BaseEntity, ICoordinateEntity
+    public class Spawnpoint : BaseEntity, ISpawnpoint, ICoordinateEntity
     {
         #region Properties
 

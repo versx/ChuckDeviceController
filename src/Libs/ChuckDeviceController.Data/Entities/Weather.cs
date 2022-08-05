@@ -8,13 +8,14 @@
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("weather")]
-    public partial class Weather : BaseEntity, ICoordinateEntity, IWebhookEntity
+    public partial class Weather : BaseEntity, IWeather, ICoordinateEntity, IWebhookEntity
     {
         #region Properties
 

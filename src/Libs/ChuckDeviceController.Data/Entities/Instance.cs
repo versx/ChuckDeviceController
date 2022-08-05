@@ -5,9 +5,10 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
 
     [Table("instance")]
-    public class Instance : BaseEntity
+    public class Instance : BaseEntity, IInstance
     {
         #region Properties
 

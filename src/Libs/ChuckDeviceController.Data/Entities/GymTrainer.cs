@@ -6,8 +6,10 @@
 
     using POGOProtos.Rpc;
 
+    using ChuckDeviceController.Common.Data.Contracts;
+
     [Table("gym_trainer")]
-    public class GymTrainer : BaseEntity
+    public class GymTrainer : BaseEntity, IGymTrainer
     {
         #region Properties
 

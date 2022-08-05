@@ -9,12 +9,13 @@
 
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("gym")]
-    public class Gym : BaseEntity, ICoordinateEntity, IFortEntity, IWebhookEntity
+    public class Gym : BaseEntity, IGym, ICoordinateEntity, IFortEntity, IWebhookEntity
     {
         #region Constants
 

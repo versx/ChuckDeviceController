@@ -5,8 +5,10 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common.Data.Contracts;
+
     [Table("iv_list")]
-    public class IvList : BaseEntity
+    public class IvList : BaseEntity, IIvList
     {
         [
             DisplayName("Name"),

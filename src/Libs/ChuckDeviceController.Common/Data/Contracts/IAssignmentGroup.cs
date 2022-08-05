@@ -4,6 +4,6 @@
     {
         string Name { get; }
 
-        IList<uint> AssignmentIds { get; }
+        List<uint> AssignmentIds { get; }
     }
 }

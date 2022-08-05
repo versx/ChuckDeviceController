@@ -8,10 +8,11 @@
     using System.Text.Json.Serialization;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Geometry.Models;
 
     [Table("webhook")]
-    public class Webhook : BaseEntity
+    public class Webhook : BaseEntity, IWebhook
     {
         #region Properties
 

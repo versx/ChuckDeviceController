@@ -7,10 +7,11 @@
     using POGOProtos.Rpc;
     using Gender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("gym_defender")]
-    public class GymDefender : BaseEntity
+    public class GymDefender : BaseEntity, IGymDefender
     {
         #region Properties
 

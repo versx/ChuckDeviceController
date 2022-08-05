@@ -4,7 +4,7 @@
     {
         string Name { get; }
 
-        IList<WebhookType> Types { get; }
+        List<WebhookType> Types { get; }
 
         double Delay { get; }
 
@@ -12,27 +12,27 @@
 
         bool Enabled { get; }
 
-        IList<string> Geofences { get; }
+        List<string> Geofences { get; }
 
-        IWebhookData Data { get; }
+        // TODO: IWebhookData Data { get; }
     }
 
     public interface IWebhookData
     {
-        IList<uint> PokemonIds { get; }
+        List<uint> PokemonIds { get; }
 
-        IList<string> PokestopIds { get; }
+        List<string> PokestopIds { get; }
 
-        IList<uint> RaidPokemonIds { get; }
+        List<uint> RaidPokemonIds { get; }
 
-        IList<ushort> EggLevels { get; }
+        List<ushort> EggLevels { get; }
 
-        IList<ushort> LureIds { get; }
+        List<ushort> LureIds { get; }
 
-        IList<ushort> InvasionIds { get; }
+        List<ushort> InvasionIds { get; }
 
-        IList<ushort> GymTeamIds { get; }
+        List<ushort> GymTeamIds { get; }
 
-        IList<ushort> WeatherConditionIds { get; }
+        List<ushort> WeatherConditionIds { get; }
     }
 }

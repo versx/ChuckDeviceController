@@ -5,9 +5,10 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
 
     [Table("geofence")]
-    public class Geofence : BaseEntity
+    public class Geofence : BaseEntity, IGeofence
     {
         #region Properties
 

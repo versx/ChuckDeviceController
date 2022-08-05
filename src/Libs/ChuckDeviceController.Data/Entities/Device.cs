@@ -5,8 +5,10 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common.Data.Contracts;
+
     [Table("device")]
-    public class Device : BaseEntity
+    public class Device : BaseEntity, IDevice
     {
         [
             DisplayName("UUID"),

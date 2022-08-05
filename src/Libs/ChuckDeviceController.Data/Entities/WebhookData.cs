@@ -3,7 +3,9 @@
     using System.ComponentModel;
     using System.Text.Json.Serialization;
 
-    public class WebhookData
+    using ChuckDeviceController.Common.Data.Contracts;
+
+    public class WebhookData : IWebhookData
     {
         [
             DisplayName("Pokemon IDs"),

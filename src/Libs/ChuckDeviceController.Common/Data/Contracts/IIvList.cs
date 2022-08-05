@@ -4,6 +4,6 @@
     {
         string Name { get; }
 
-        IList<uint> PokemonIds { get; }
+        List<uint> PokemonIds { get; }
     }
 }

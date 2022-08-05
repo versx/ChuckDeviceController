@@ -6,7 +6,7 @@
 
         GeofenceType Type { get; }
 
-        IGeofenceData Data { get; }
+        // TODO: IGeofenceData Data { get; }
     }
 
     public interface IGeofenceData

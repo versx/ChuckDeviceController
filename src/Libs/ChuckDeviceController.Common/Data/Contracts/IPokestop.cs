@@ -62,9 +62,9 @@
 
         #endregion
 
-        IList<IDictionary<string, dynamic>>? QuestConditions { get; }
+        List<Dictionary<string, dynamic>>? QuestConditions { get; }
 
-        IList<IDictionary<string, dynamic>>? QuestRewards { get; }
+        List<Dictionary<string, dynamic>>? QuestRewards { get; }
 
         uint? AlternativeQuestType { get; }
 
@@ -88,12 +88,12 @@
 
         #endregion
 
-        IList<IDictionary<string, dynamic>>? AlternativeQuestConditions { get; }
+        List<Dictionary<string, dynamic>>? AlternativeQuestConditions { get; }
 
-        IList<IDictionary<string, dynamic>>? AlternativeQuestRewards { get; }
+        List<Dictionary<string, dynamic>>? AlternativeQuestRewards { get; }
 
         #endregion
 
-        ICollection<IIncident> Incidents { get; }
+        // TODO: ICollection<IIncident> Incidents { get; }
     }
 }

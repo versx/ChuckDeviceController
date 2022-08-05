@@ -4,7 +4,9 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
 
-    public class GeofenceData
+    using ChuckDeviceController.Common.Data.Contracts;
+
+    public class GeofenceData : IGeofenceData
     {
         [
             DisplayName("Area"),

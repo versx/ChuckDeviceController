@@ -7,12 +7,13 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("incident")]
-    public class Incident : BaseEntity, IWebhookEntity
+    public class Incident : BaseEntity, IIncident, IWebhookEntity
     {
         public const string UnknownPokestopName = "Unknown";
 
