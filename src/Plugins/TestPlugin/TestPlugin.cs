@@ -1,6 +1,7 @@
 ﻿namespace TestPlugin
 {
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Plugins;
 
     using Microsoft.AspNetCore.Builder;
@@ -25,6 +26,7 @@
         // to interact with services the host application is running.
         private readonly ILoggingHost _loggingHost;
         private readonly IJobControllerServiceHost _jobControllerHost;
+        private readonly IDatabaseHost _databaseHost;
 
         #endregion
 
@@ -67,10 +69,14 @@
         /// </summary>
         /// <param name="loggingHost"></param>
         /// <param name="jobControllerHost"></param>
-        public TestPlugin(ILoggingHost loggingHost, IJobControllerServiceHost jobControllerHost)
+        public TestPlugin(
+            ILoggingHost loggingHost,
+            IJobControllerServiceHost jobControllerHost,
+            IDatabaseHost databaseHost)
         {
             _loggingHost = loggingHost;
             _jobControllerHost = jobControllerHost;
+            _databaseHost = databaseHost;
 
             //_appHost.Restart();
         }
@@ -85,7 +91,7 @@
         /// <param name="appBuilder">
         /// Provides the mechanisms to configure an application's request pipeline.
         /// </param>
-        public void Configure(IApplicationBuilder appBuilder)
+        public async void Configure(IApplicationBuilder appBuilder)
         {
             _loggingHost.LogMessage($"Configure called");
 
@@ -94,20 +100,43 @@
             {
                 app.Run(async (httpContext) =>
                 {
-                    Console.WriteLine($"Plugin route called");
+                    _loggingHost.LogMessage($"Plugin route called");
                     await httpContext.Response.WriteAsync($"Hello from plugin {Name}");
                 });
             });
+
+            try
+            {
+                var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
+                _loggingHost.LogMessage($"Device: {device.Uuid}");
+                var devices = await _databaseHost.GetListAsync<IDevice>();
+                _loggingHost.LogMessage($"Devices: {devices.Count}");
+
+                //var device = await _databaseHost.Devices.GetByIdAsync("SGV7SE");
+                //_loggingHost.LogMessage($"Device: {device}");
+
+                //var accounts = await _databaseHost.Accounts.GetListAsync();
+                var accounts = await _databaseHost.GetListAsync<IAccount>();
+                _loggingHost.LogMessage($"Accounts: {accounts}");
+                var pokestop = await _databaseHost.GetByIdAsync<IPokestop, string>("0192086043834f1c9c577a54a7890b32.16");
+                _loggingHost.LogMessage($"Pokestop: {pokestop}");
+            }
+            catch (Exception ex)
+            {
+                _loggingHost.LogException(ex);
+            }
         }
 
         /// <summary>
         /// Register services into the IServiceCollection to use with Dependency Injection.
+        /// This method is called first before the 'Configure(IApplicationBuilder)' method.
         /// </summary>
         /// <param name="services">Specifies the contract for a collection of service descriptors.</param>
         public void ConfigureServices(IServiceCollection services)
         {
             _loggingHost.LogMessage($"ConfigureServices called");
             services.AddSingleton<IPluginService, TestPluginService>();
+
             //services.AddMvc();
             //services.AddControllersWithViews();
         }
@@ -119,11 +148,12 @@
         /// <summary>
         /// Called when the plugin is loaded and registered with the host application.
         /// </summary>
-        public async void OnLoad()
+        public void OnLoad()
         {
             _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
 
             // Add/register TestInstanceController
+            /*
             var coords = new List<ICoordinate>
             {
                 new Coordinate(34.01, -117.01),
@@ -131,8 +161,8 @@
                 new Coordinate(34.03, -117.03),
             };
             var testController = new TestInstanceController("TestName", 30, 39, coords);
-            var host = _jobControllerHost;
-            await host.AddJobControllerAsync(testController.Name, testController);
+            await _jobControllerHost.AddJobControllerAsync(testController.Name, testController);
+            */
 
             // TODO: Show in Instances create/edit page
         }

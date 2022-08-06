@@ -89,7 +89,7 @@
             _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
             _registeredInstanceTypes = new List<InstanceType>();
 
-            RegisterAllJobControllerTypesAsync().ConfigureAwait(false);
+            //RegisterAllJobControllerTypesAsync().ConfigureAwait(false);
         }
 
         #endregion
@@ -168,6 +168,7 @@
             await Task.CompletedTask;
         }
 
+        /*
         public async Task RegisterAllJobControllerTypesAsync()
         {
             var types = Enum.GetValues(typeof(InstanceType));
@@ -190,6 +191,7 @@
             _logger.LogInformation($"Job controller instance type registered '{type}'");
             await Task.CompletedTask;
         }
+        */
 
         #endregion
 

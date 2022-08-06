@@ -96,40 +96,37 @@
 
         private IPlugin LoadPluginWithDataParameters(Type pluginType)
         {
+            // Check that there is only one constructor configured
             var constructors = pluginType.GetConstructors();
-            // TODO: Check that there is at least one constructor
-            var constructorInfo = constructors[0];
+            if ((constructors?.Length ?? 0) == 0)
+            {
+                _logger.LogError($"Plugins must only contain one constructor for each class that inherits from '{nameof(IPlugin)}', skipping registration for plugin '{pluginType.Name}'");
+                return null;
+            }
+
+            var constructorInfo = constructors![0];
             var parameters = constructorInfo.GetParameters();
-            //var list = new List<object>(parameters.Length);
-            var list = new object[parameters.Length];
+            var list = new List<object>(parameters.Length);
 
             // Check that we were provided shared host types
             if ((_sharedHosts?.Count ?? 0) > 0)
             {
-                var sharedHostsImpl = _sharedHosts!.Keys.ToList();
-
-                // Loop plugin's constructor parameters to see which host types to provide it
+                // Loop the plugin's constructor parameters to see which host type handlers
+                // to provide it when we instantiate a new instance.
                 foreach (var param in parameters)
                 {
-                    // TODO: Either figure out the parameters order or standardize the order
-                    // TODO: Fix ordering
-                    if (!_sharedHosts.ContainsKey(param.ParameterType))
+                    if (!_sharedHosts!.ContainsKey(param.ParameterType))
                         continue;
 
-                    var index = sharedHostsImpl.IndexOf(param.ParameterType);
-                    if (index > -1)
-                    {
-                        var typeKey = sharedHostsImpl[index];
-                        var typeObj = _sharedHosts[typeKey];
-                        list[index] = typeObj;
-                    }
+                    var pluginHostHandler = _sharedHosts[param.ParameterType];
+                    list.Add(pluginHostHandler);
                 }
             }
 
             IPlugin? instance;
             try
             {
-                var args = list.Reverse().ToArray();
+                var args = list.ToArray();
                 instance = (IPlugin?)Activator.CreateInstance(pluginType, args);
             }
             catch (Exception ex)
@@ -146,15 +143,15 @@
 
             // TOOD: PluginHost to contain event handlers class(es)
             var objectValue = GetObjectValue(instance);
-            foreach (var type in pluginType.GetInterfaces())
-            {
-                //if (typeof(IUiEvents) == type)
-                //    _pluginHandlers.UiEvents = (IUiEvents)objectValue;
-                //else if (typeof(IDatabaseEvents) == type)
-                //    _pluginHandlers.DatabaseEvents = (IDatabaseEvents)objectValue;
-                //else if (typeof(IJobControllerServiceHost) == type)
-                //    _pluginHandlers.JobControllerEvents = (IJobControllerServiceHost)objectValue;
-            }
+            //foreach (var type in pluginType.GetInterfaces())
+            //{
+            //    if (typeof(IUiEvents) == type)
+            //        _pluginHandlers.UiEvents = (IUiEvents)objectValue;
+            //    else if (typeof(IDatabaseEvents) == type)
+            //        _pluginHandlers.DatabaseEvents = (IDatabaseEvents)objectValue;
+            //    else if (typeof(IJobControllerServiceHost) == type)
+            //        _pluginHandlers.JobControllerEvents = (IJobControllerServiceHost)objectValue;
+            //}
             //return list.ToArray();
             return (IPlugin)objectValue;
         }

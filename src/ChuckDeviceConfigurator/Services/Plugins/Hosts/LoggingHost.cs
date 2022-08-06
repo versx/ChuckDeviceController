@@ -13,13 +13,13 @@
 
         public void LogException(Exception ex)
         {
-            _logger.LogError($"Exception occurred from plugin: {ex}");
+            _logger.LogError($"----------------------- Exception occurred from plugin: {ex}");
         }
 
         public void LogMessage(string text, params object[] args)
         {
             var message = string.Format(text, args);
-            _logger.LogInformation($"Message from plugin: {message}");
+            _logger.LogInformation($"----------------------- Message from plugin: {message}");
         }
     }
 }
