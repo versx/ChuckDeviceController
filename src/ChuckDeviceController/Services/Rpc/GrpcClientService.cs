@@ -21,17 +21,22 @@
             _grpcConfiguratorServerEndpoint = configuratorEndpoint;
 
             var webhookEndpoint = configuration.GetValue<string>("GrpcWebhookServer");
-            if (string.IsNullOrEmpty(webhookEndpoint))
+            if (!string.IsNullOrEmpty(webhookEndpoint))
             {
-                // TODO: Make optional if no webhooks are wanted
-                throw new ArgumentNullException($"gRPC webhook server endpoint is not set but is required!", nameof(webhookEndpoint));
+                // Make optional if no webhooks are wanted
+                //throw new ArgumentNullException($"gRPC webhook server endpoint is not set but is required!", nameof(webhookEndpoint));
+                _grpcWebhookServerEndpoint = webhookEndpoint;
             }
-            _grpcWebhookServerEndpoint = webhookEndpoint;
         }
 
         // Reference: https://stackoverflow.com/a/70099900
         public async Task SendRpcPayloadAsync<T>(T data, PayloadType payloadType, string? username = null, bool hasIV = false)
         {
+            if (string.IsNullOrEmpty(_grpcConfiguratorServerEndpoint))
+            {
+                throw new Exception($"ChuckDeviceConfigurator gRPC server endpoint is empty but is required!");
+            }
+
             // Create gRPC channel for receiving gRPC server address
             using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
 
@@ -57,6 +62,11 @@
 
         public async Task<TrainerInfoResponse> GetTrainerLevelingStatusAsync(string username)
         {
+            if (string.IsNullOrEmpty(_grpcConfiguratorServerEndpoint))
+            {
+                throw new Exception($"ChuckDeviceConfigurator gRPC server endpoint is empty but is required!");
+            }
+
             // Create gRPC channel for receiving gRPC server address
             using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
 
@@ -76,6 +86,11 @@
 
         public async Task<WebhookPayloadResponse> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json)
         {
+            if (string.IsNullOrEmpty(_grpcConfiguratorServerEndpoint))
+            {
+                return null;
+            }
+
             if (string.IsNullOrEmpty(_grpcConfiguratorServerEndpoint))
             {
                 // User does not want to process/receive webhooks

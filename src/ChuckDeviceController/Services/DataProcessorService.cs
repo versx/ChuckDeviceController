@@ -84,6 +84,12 @@
 
         #endregion
 
+        #region Properties
+
+        public bool ClearOldForts { get; set; } = true; // TODO: Make 'ClearOldForts' configurable (load from ChuckDeviceController config)
+
+        #endregion
+
         #region Constructor
 
         public DataProcessorService(
@@ -326,9 +332,11 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             _logger.LogInformation($"Data processer inserted {count:N0} items in {totalSeconds}s");
 
-            // TODO Add 'ClearOldForts' config option
-            // Clear any old Gyms or Pokestops that might have been removed from the game
-            await ClearOldFortsAsync();
+            if (ClearOldForts)
+            {
+                // Clear any old Gyms or Pokestops that might have been removed from the game
+                await ClearOldFortsAsync();
+            }
 
             return stoppingToken;
         }
@@ -344,12 +352,6 @@
                 foreach (var data in playerData)
                 {
                     // TODO: Update related accounts
-                    /*
-                    string username = data.username;
-                    ushort level = data.level;
-                    uint xp = data.xp;
-                    await HandlePlayerDataAsync(username, level, xp);
-                    */
                 }
             }
             catch (Exception ex)
@@ -633,82 +635,6 @@
                 }
             }
         }
-
-        /*
-        private async Task UpdatePokemonAsync(List<dynamic> wildPokemon, List<dynamic> nearbyPokemon, List<dynamic> mapPokemon)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                try
-                {
-                    var pokemonToUpsert = new List<Pokemon>();
-                    // Parse wild Pokemon
-                    foreach (var wild in wildPokemon)
-                    {
-                        var cellId = wild.cell;
-                        var data = (WildPokemonProto)wild.data;
-                        var timestampMs = wild.timestampMs;
-                        var username = wild.username;
-                        var isEvent = wild.isEvent;
-                        var pokemon = new Pokemon(context, data, cellId, timestampMs, username, isEvent);
-                        await pokemon.UpdateAsync(context, updateIv: false);
-                        pokemonToUpsert.Add(pokemon);
-                    }
-
-                    // Parse nearby Pokemon
-                    foreach (var nearby in nearbyPokemon)
-                    {
-                        var cellId = nearby.cell;
-                        var data = (NearbyPokemonProto)nearby.data;
-                        var username = nearby.username;
-                        var isEvent = nearby.isEvent;
-                        var pokemon = new Pokemon(context, data, cellId, username, isEvent);
-                        await pokemon.UpdateAsync(context, updateIv: false);
-                        pokemonToUpsert.Add(pokemon);
-                    }
-
-                    // Parse MapPokemon/lure spawns
-                    foreach (var map in mapPokemon)
-                    {
-                        var cellId = map.cell;
-                        var data = (MapPokemonProto)map.data;
-                        var username = map.username;
-                        var isEvent = map.isEvent;
-                        var pokemon = new Pokemon(context, data, cellId, username, isEvent);
-                        await pokemon.UpdateAsync(context, updateIv: false);
-
-                        // Check if we have a pending disk encounter cache
-                        var displayId = data.PokemonDisplay.DisplayId;
-                        var cachedDiskEncounter = _diskCache.Get<DiskEncounterOutProto>(displayId);
-                        if (cachedDiskEncounter != null)
-                        {
-                            // Thanks Fabio <3
-                            _logger.LogDebug($"Found Pokemon disk encounter with id '{displayId}' in cache");
-
-                            pokemon.AddDiskEncounter(cachedDiskEncounter, username);
-                            await pokemon.UpdateAsync(context, updateIv: true);
-                        }
-                        else
-                        {
-                            // Failed to get DiskEncounter from cache
-                            _logger.LogWarning($"Unable to fetch cached Pokemon disk encounter with id '{displayId}' from cache");
-                        }
-
-                        pokemonToUpsert.Add(pokemon);
-                    }
-
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options => options.UseTableLock = true);
-                    
-                    //var inserted = await context.SaveChangesAsync();
-                    //_logger.LogInformation($"Inserted {inserted:N0} Wild Pokemon");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"UpdatePokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
-                }
-            }
-        }
-        */
 
         private async Task UpdateFortsAsync(string username, List<dynamic> forts)
         {

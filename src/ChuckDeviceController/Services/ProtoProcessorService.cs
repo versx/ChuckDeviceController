@@ -399,7 +399,6 @@
                                             data = wild,
                                             timestampMs,
                                             username,
-                                            isEvent = false, // TODO: IsEvent
                                         });
                                     }
 
@@ -411,7 +410,6 @@
                                             cell = mapCell.S2CellId,
                                             data = nearby,
                                             username,
-                                            isEvent = false,
                                         });
                                     }
 
@@ -432,7 +430,6 @@
                                                 cell = mapCell.S2CellId,
                                                 data = fort.ActivePokemon,
                                                 username,
-                                                isEvent = false,
                                             });
                                         }
                                     }

@@ -158,7 +158,7 @@
             return new ProtoResponse
             {
                 Status = "ok",
-                // TODO: Provide actual response details, pretty sure most of it doesn't matter though
+                // NOTE: Provide actual response details, pretty sure most of it doesn't matter though
                 Data = new ProtoDataDetails
                 {
                     InArea = true,
