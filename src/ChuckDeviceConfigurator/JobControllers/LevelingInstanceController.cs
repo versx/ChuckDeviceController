@@ -111,8 +111,6 @@
 
         public Coordinate StartingCoordinate { get; }
 
-        // NOTE: 'StoreLevelData' is used by proto processor to ignore encountered/received leveling data
-        // TODO: Use gRPC to get 'StoreLevelData' property value from leveling job controller instance.
         public bool StoreLevelData { get; }
 
         public ulong Radius { get; }

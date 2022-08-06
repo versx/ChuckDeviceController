@@ -592,7 +592,7 @@
 
         #region Helpers
 
-        // TODO: Move to separate class
+        // TODO: Move to separate extensions class
         private static HoloPokemonId GetPokemonFromName(string name)
         {
             var allPokemon = new List<HoloPokemonId>(Enum.GetValues<HoloPokemonId>());
@@ -629,12 +629,5 @@
         }
 
         #endregion
-
-        /*
-        private class PvpRankComparer : IComparer<uint>
-        {
-            public int Compare(uint x, uint y) => x.CompareTo(y);
-        }
-        */
     }
 }

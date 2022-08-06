@@ -148,10 +148,11 @@ builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
 builder.Services.AddSingleton<IPluginManager, PluginManager>();
-// TODO: Implement plugin hosts
+// Plugin host handlers
 builder.Services.AddSingleton<ILoggingHost, LoggingHost>();
 builder.Services.AddSingleton<IDatabaseHost, DatabaseHost>();
 builder.Services.AddSingleton<IUiHost, UiHost>();
+
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
 
 builder.Services.AddGrpc(options =>

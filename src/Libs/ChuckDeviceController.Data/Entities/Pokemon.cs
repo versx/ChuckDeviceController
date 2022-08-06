@@ -801,7 +801,7 @@
                             display_pokemon_id = DisplayPokemonId,
                             pvp = PvpRankings,
                             is_event = IsEvent,
-                            seen_type = SeenType, // TODO: Make sure it's sending as string variant not integer value
+                            seen_type = SeenType,
                         },
                     };
             }

@@ -457,7 +457,6 @@
 
                         if (pokemon.SendWebhook)
                         {
-                            // TODO: Decide whether to send individually or send as list to webhook service
                             await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
                         }
                     }
@@ -532,7 +531,6 @@
 
                         if (pokemon.SendWebhook)
                         {
-                            // TODO: Decide whether to send individually or send as list to webhook service
                             await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
                         }
                     }
@@ -611,7 +609,6 @@
 
                         if (pokemon.SendWebhook)
                         {
-                            // TODO: Decide whether to send individually or send as list to webhook service
                             await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
                         }
                     }
@@ -1004,7 +1001,7 @@
 
                         foreach (var gymDefenderData in gymDefenders)
                         {
-                            // TODO: Webhooks
+                            // TODO: GymDefender and GymTrainer webhooks
                             if (gymDefenderData.TrainerPublicProfile != null)
                             {
                                 var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
@@ -1170,7 +1167,6 @@
 
                         if (pokemon.SendWebhook)
                         {
-                            // TODO: Decide whether to send individually or send as list to webhook service
                             await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
                         }
                     }
@@ -1256,7 +1252,6 @@
 
                             if (pokemon.SendWebhook)
                             {
-                                // TODO: Decide whether to send individually or send as list to webhook service
                                 await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
                             }
                         }

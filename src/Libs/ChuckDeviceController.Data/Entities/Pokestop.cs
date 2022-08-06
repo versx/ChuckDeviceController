@@ -289,7 +289,6 @@
                 };
             }
 
-            // TODO: Assign Incidents = incidents.
             if (incidents != null)
             {
                 Incidents = incidents.Select(pokestopDisplay => new Incident(now, Id, pokestopDisplay))
@@ -711,7 +710,7 @@
         {
             return type.ToLower() switch
             {
-                "quest" => new // TODO: Create webhook type constants
+                "quest" => new
                 {
                     type = WebhookHeaders.Quest,
                     message = new

@@ -107,32 +107,45 @@
             var split = webhookTypes.Split(',');
             foreach (var item in split)
             {
-                var itemLower = item.ToLower();
-                // TODO: Use switch case instead
-                if (itemLower == "pokemon")
-                    list.Add(WebhookType.Pokemon);
-                if (itemLower == "pokestops")
-                    list.Add(WebhookType.Pokestops);
-                if (itemLower == "raids")
-                    list.Add(WebhookType.Raids);
-                if (itemLower == "eggs")
-                    list.Add(WebhookType.Eggs);
-                if (itemLower == "quests")
-                    list.Add(WebhookType.Quests);
-                if (itemLower == "alternative_quests")
-                    list.Add(WebhookType.AlternativeQuests);
-                if (itemLower == "lures")
-                    list.Add(WebhookType.Lures);
-                if (itemLower == "invasions")
-                    list.Add(WebhookType.Invasions);
-                if (itemLower == "gyms")
-                    list.Add(WebhookType.Gyms);
-                if (itemLower == "gym_info")
-                    list.Add(WebhookType.GymInfo);
-                if (itemLower == "weather")
-                    list.Add(WebhookType.Weather);
-                if (itemLower == "accounts")
-                    list.Add(WebhookType.Accounts);
+                switch (item.ToLower())
+                {
+                    case "pokemon":
+                        list.Add(WebhookType.Pokemon);
+                        break;
+                    case "pokestops":
+                        list.Add(WebhookType.Pokestops);
+                        break;
+                    case "raids":
+                        list.Add(WebhookType.Raids);
+                        break;
+                    case "eggs":
+                        list.Add(WebhookType.Eggs);
+                        break;
+                    case "quests":
+                        list.Add(WebhookType.Quests);
+                        break;
+                    case "alternative_quests":
+                        list.Add(WebhookType.AlternativeQuests);
+                        break;  
+                    case "lures":
+                        list.Add(WebhookType.Lures);
+                        break;
+                    case "invasions":
+                        list.Add(WebhookType.Invasions);
+                        break;
+                    case "gyms":
+                        list.Add(WebhookType.Gyms);
+                        break;
+                    case "gym_info":
+                        list.Add(WebhookType.GymInfo);
+                        break;
+                    case "weather":
+                        list.Add(WebhookType.Weather);
+                        break;
+                    case "accounts":
+                        list.Add(WebhookType.Accounts);
+                        break;
+                }
             }
             return list;
         }

@@ -65,7 +65,6 @@
 
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
-            // TODO: UpdateLastSeen property
             LastSeen = now;
 
             if (!update && oldSpawnpoint != null)
@@ -88,11 +87,6 @@
                     return;
                 }
             }
-
-            // TODO: Probably redundant below and can remove
-            Updated = now;
-            // TODO: UpdateLastSeen property
-            LastSeen = now;
         }
 
         #endregion

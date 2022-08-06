@@ -465,7 +465,6 @@
                     }
                 }
 
-                // TODO: Check usage
                 Thread.Sleep(100);
             }
         }
