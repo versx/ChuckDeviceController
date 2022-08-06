@@ -50,6 +50,8 @@
 
         public const string DefaultDateTimeFormat = "MM/dd/yyyy hh:mm:ss tt";
 
+        public const string DefaultTableRefreshRateS = "10";
+
         public const string DeviceOnlineIcon = "🟢"; // green dot
         public const string DeviceOfflineIcon = "🔴"; // red dot
 

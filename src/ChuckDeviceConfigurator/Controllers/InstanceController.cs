@@ -6,7 +6,6 @@
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -54,8 +53,7 @@
             };
             if (autoRefresh)
             {
-                // TODO: Make table refresh configurable (implement server side table data fetch vs reloading actual page)
-                Response.Headers["Refresh"] = "10";
+                Response.Headers["Refresh"] = Strings.DefaultTableRefreshRateS;
             }
             ViewBag.AutoRefresh = autoRefresh;
             return View(model);
@@ -336,7 +334,7 @@
                 };
                 if (autoRefresh)
                 {
-                    Response.Headers["Refresh"] = "10";
+                    Response.Headers["Refresh"] = Strings.DefaultTableRefreshRateS;
                 }
                 return View(model);
             }
@@ -410,7 +408,7 @@
                 };
                 if (autoRefresh)
                 {
-                    Response.Headers["Refresh"] = "10";
+                    Response.Headers["Refresh"] = Strings.DefaultTableRefreshRateS;
                 }
                 return View(model);
             }

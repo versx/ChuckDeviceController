@@ -1,13 +1,12 @@
-﻿@using System.Web
-@using ChuckDeviceConfigurator.Utilities
+﻿@using ChuckDeviceConfigurator.Utilities
 @using ChuckDeviceConfigurator.ViewModels
 @using ChuckDeviceController.Data.Entities
 @model QuestQueueViewModel
 @{
     ViewData["Title"] = "Quest Queue " + Model?.Name;
-    var confirmText = "Are you sure you want to clear all pending Pokemon encounters from the queue?";
-    var clearAllText = "Clears all pending Pokemon encounters in the IV queue.";
-    var removeEncounterText = "Removes the pending Pokemon encounter from the IV queue.";
+    var confirmText = "Are you sure you want to clear all pending Pokestops from the Quest queue?";
+    var clearAllText = "Clears all pending Pokestops in the Quest queue.";
+    var removeEncounterText = "Removes the pending Pokestops from the Quest queue.";
 }
 
 <h1>Quest Queue @Model?.Name</h1>
@@ -30,9 +29,6 @@
     <thead class="table-dark">
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Queue[0].Index)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Queue[0].Image)
             </th>
             <th>
@@ -52,13 +48,9 @@
     </thead>
     <tbody>
     @{
-        var index = 1;
         foreach (var item in Model!.Queue)
         {
             <tr>
-                <th scope="row">
-                    @index
-                </th>
                 <td>
                     @Html.Raw(item.Image)
                 </td>
@@ -80,7 +72,6 @@
                     </a>
                 </td>
             </tr>
-            index++;
         }
     }
     </tbody>
@@ -94,7 +85,7 @@
                 columnDefs: [
                     { orderable: false, targets: 5 },
                 ],
-                order: [[0, 'asc']],
+                order: [[2, 'asc']],
                 stateSave: true,
                 searching: true,
                 paging: true,

@@ -19,8 +19,6 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
-    using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Plugins;
 
     // TODO: Refactor class into separate smaller classes
 
@@ -40,9 +38,11 @@
 
         private readonly Dictionary<string, Device> _devices = new();
         private readonly Dictionary<string, IJobController> _instances = new();
+        private readonly Dictionary<string, IJobController> _pluginInstances = new();
 
         private readonly object _devicesLock = new();
         private readonly object _instancesLock = new();
+        private readonly object _pluginInstancesLock = new();
 
         #endregion
 
@@ -83,8 +83,6 @@
             _routeCalculator = routeCalculator;
             _assignmentService = assignmentService;
             _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
-
-            //RegisterAllJobControllerTypesAsync().ConfigureAwait(false);
         }
 
         #endregion
@@ -150,16 +148,16 @@
                 return;
             }
 
-            lock (_instancesLock)
+            lock (_pluginInstancesLock)
             {
-                if (_instances.ContainsKey(name))
+                if (_pluginInstances.ContainsKey(name))
                 {
                     _logger.LogError($"[{name}] Job controller instance with name '{name}' already exists, unable to add job controller");
                     return;
                 }
-                _instances.Add(name, jobController);
+                _pluginInstances.Add(name, jobController);
 
-                _logger.LogInformation($"Job controller '{name}' added from plugin successfully");
+                _logger.LogInformation($"Successfully added job controller '{name}' to plugin job controllers cache from plugin");
             }
 
             await Task.CompletedTask;

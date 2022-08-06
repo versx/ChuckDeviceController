@@ -13,9 +13,6 @@
 
     public class QuestQueueItemViewModel
     {
-        [DisplayName("#")]
-        public uint Index { get; set; }
-
         [DisplayName("Image")]
         public string? Image { get; set; }
 
