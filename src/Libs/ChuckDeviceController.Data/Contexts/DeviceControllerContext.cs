@@ -65,7 +65,7 @@
 
             modelBuilder.Entity<IvList>()
                         .Property(p => p.PokemonIds)
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
+                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
 
             modelBuilder.Entity<Webhook>()
                         .Property(p => p.Types)

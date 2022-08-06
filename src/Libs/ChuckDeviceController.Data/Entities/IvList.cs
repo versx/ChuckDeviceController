@@ -19,13 +19,12 @@
         ]
         public string Name { get; set; }
 
-        // TODO: Change IvList.PokemonIds to List<string> to accommodate forms and possibly costumes
         [
             DisplayName("Pokemon"),
             Column("pokemon_ids"),
             JsonPropertyName("pokemon_ids"),
         ]
-        public List<uint> PokemonIds { get; set; } = new();
+        public List<string> PokemonIds { get; set; } = new();
     }
 
     /*

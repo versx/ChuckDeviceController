@@ -4,7 +4,7 @@
 @model IvList
 @{
     ViewData["Title"] = "Edit IV List " + Model?.Name;
-    var pokemonIds = string.Join(Environment.NewLine, Model?.PokemonIds ?? new List<uint>());
+    var pokemonIds = string.Join(Environment.NewLine, Model?.PokemonIds ?? new());
 }
 
 <h1>Edit IV List</h1>

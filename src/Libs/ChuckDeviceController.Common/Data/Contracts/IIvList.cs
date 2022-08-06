@@ -4,6 +4,6 @@
     {
         string Name { get; }
 
-        List<uint> PokemonIds { get; }
+        List<string> PokemonIds { get; }
     }
 }

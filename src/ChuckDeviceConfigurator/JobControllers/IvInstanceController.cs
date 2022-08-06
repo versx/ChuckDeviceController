@@ -78,7 +78,7 @@
             IDbContextFactory<MapDataContext> mapFactory,
             Instance instance,
             List<MultiPolygon> multiPolygons,
-            List<uint> pokemonIds)
+            List<string> pokemonIds)
         {
             Name = instance.Name;
             MultiPolygons = multiPolygons;
@@ -87,8 +87,7 @@
             GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
             IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
             QueueLimit = instance.Data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit;
-            PokemonIds = pokemonIds.Select(id => Convert.ToString(id))
-                                   .ToList();
+            PokemonIds = pokemonIds;
             EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
 
             _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));

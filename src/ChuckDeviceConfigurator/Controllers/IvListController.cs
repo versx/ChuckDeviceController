@@ -70,7 +70,7 @@
                     : pokemonIds.Replace("<br>", "\r\n")
                                 .Replace("\r\n", "\n")
                                 .Split('\n')
-                                .Select(uint.Parse)
+                                //.Select(uint.Parse)
                                 .ToList();
 
                 if (_context.IvLists.Any(iv => iv.Name == name))
@@ -148,7 +148,6 @@
                                 .Replace("<br />", "\n")
                                 .Replace("\r\n", "\n")
                                 .Split('\n')
-                                .Select(uint.Parse)
                                 .ToList();
 
                 // Compare list counts or if any elements are different
@@ -215,10 +214,10 @@
             }
         }
 
-        private static List<uint> GeneratePokemonList(int start = 1, int end = 999)
+        private static List<string> GeneratePokemonList(int start = 1, int end = 999)
         {
-            var pokemonIds = Enumerable.Range(start, end - start)
-                                       .Select(Convert.ToUInt32)
+            var pokemonIds = Enumerable.Range(start, end)
+                                       .Select(x => Convert.ToString(x))
                                        .ToList();
             return pokemonIds;
         }

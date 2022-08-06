@@ -18,18 +18,12 @@
         /// <summary>
         /// Gets a dictionary of active and configured devices.
         /// </summary>
-        IReadOnlyDictionary<string, Device> Devices { get; }
+        //IReadOnlyDictionary<string, Device> Devices { get; }
 
         /// <summary>
         /// Gets a dictionary of all loaded job controller instances.
         /// </summary>
-        IReadOnlyDictionary<string, IJobController> Instances { get; }
-
-        /// <summary>
-        /// Gets a list of all available job controller instance types
-        /// currently registered.
-        /// </summary>
-        //IReadOnlyList<InstanceType> RegisteredInstanceTypes { get; }
+        //IReadOnlyDictionary<string, IJobController> Instances { get; }
 
         #endregion
 

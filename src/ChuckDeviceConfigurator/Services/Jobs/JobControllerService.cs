@@ -19,6 +19,8 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Plugins;
 
     // TODO: Refactor class into separate smaller classes
 
@@ -38,7 +40,6 @@
 
         private readonly Dictionary<string, Device> _devices = new();
         private readonly Dictionary<string, IJobController> _instances = new();
-        //private readonly List<InstanceType> _registeredInstanceTypes = new();
 
         private readonly object _devicesLock = new();
         private readonly object _instancesLock = new();
@@ -56,11 +57,6 @@
         /// Gets a dictionary of all loaded job controller instances.
         /// </summary>
         public IReadOnlyDictionary<string, IJobController> Instances => _instances;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        //public IReadOnlyList<InstanceType> RegisteredInstanceTypes => _registeredInstanceTypes;
 
         #endregion
 
@@ -162,35 +158,12 @@
                     return;
                 }
                 _instances.Add(name, jobController);
+
+                _logger.LogInformation($"Job controller '{name}' added from plugin successfully");
             }
 
             await Task.CompletedTask;
         }
-
-        /*
-        public async Task RegisterAllJobControllerTypesAsync()
-        {
-            var types = Enum.GetValues(typeof(InstanceType));
-            foreach (var type in types)
-            {
-                await RegisterJobControllerTypeAsync((InstanceType)type);
-            }
-            await Task.CompletedTask;
-        }
-
-        public async Task RegisterJobControllerTypeAsync(InstanceType type)
-        {
-            if (_registeredInstanceTypes.Contains(type))
-            {
-                _logger.LogWarning($"Job controller instance type is already registered, unable to register '{type}'");
-                return;
-            }
-
-            _registeredInstanceTypes.Add(type);
-            _logger.LogInformation($"Job controller instance type registered '{type}'");
-            await Task.CompletedTask;
-        }
-        */
 
         #endregion
 

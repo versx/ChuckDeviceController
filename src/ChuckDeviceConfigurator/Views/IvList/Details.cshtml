@@ -48,7 +48,7 @@
                 @* TODO: Limit Pokemon ids to 25ish *@
                 @foreach (var pokemonId in Model?.PokemonIds ?? new())
                 {
-                    var icon = Utils.GetPokemonIcon(pokemonId, "32", "32", html: true);
+                    var icon = Utils.GetPokemonIcon(Convert.ToUInt32(pokemonId), "32", "32", html: true);
                     var id = $"<b>#{pokemonId}</b>";
                     @* TODO: Include Pokemon name *@
                     <li class="list-group-item">@Html.Raw($"{icon}&nbsp;{id}")</li>
