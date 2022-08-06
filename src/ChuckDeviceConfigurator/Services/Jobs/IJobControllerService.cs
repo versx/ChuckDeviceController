@@ -4,7 +4,6 @@
 
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Rpc.Models;
-    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Plugins;
@@ -19,18 +18,18 @@
         /// <summary>
         /// Gets a dictionary of active and configured devices.
         /// </summary>
-        public IReadOnlyDictionary<string, Device> Devices { get; }
+        IReadOnlyDictionary<string, Device> Devices { get; }
 
         /// <summary>
         /// Gets a dictionary of all loaded job controller instances.
         /// </summary>
-        public IReadOnlyDictionary<string, IJobController> Instances { get; }
+        IReadOnlyDictionary<string, IJobController> Instances { get; }
 
         /// <summary>
         /// Gets a list of all available job controller instance types
         /// currently registered.
         /// </summary>
-        IReadOnlyList<InstanceType> RegisteredInstanceTypes { get; }
+        //IReadOnlyList<InstanceType> RegisteredInstanceTypes { get; }
 
         #endregion
 

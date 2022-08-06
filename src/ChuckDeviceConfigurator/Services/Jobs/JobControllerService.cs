@@ -38,7 +38,7 @@
 
         private readonly Dictionary<string, Device> _devices = new();
         private readonly Dictionary<string, IJobController> _instances = new();
-        private readonly List<InstanceType> _registeredInstanceTypes = new();
+        //private readonly List<InstanceType> _registeredInstanceTypes = new();
 
         private readonly object _devicesLock = new();
         private readonly object _instancesLock = new();
@@ -60,7 +60,7 @@
         /// <summary>
         /// 
         /// </summary>
-        public IReadOnlyList<InstanceType> RegisteredInstanceTypes => _registeredInstanceTypes;
+        //public IReadOnlyList<InstanceType> RegisteredInstanceTypes => _registeredInstanceTypes;
 
         #endregion
 
@@ -87,7 +87,6 @@
             _routeCalculator = routeCalculator;
             _assignmentService = assignmentService;
             _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
-            _registeredInstanceTypes = new List<InstanceType>();
 
             //RegisterAllJobControllerTypesAsync().ConfigureAwait(false);
         }
