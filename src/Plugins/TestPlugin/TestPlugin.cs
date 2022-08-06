@@ -107,6 +107,25 @@
 
             try
             {
+                // Add/register TestInstanceController
+                var coords = new List<ICoordinate>
+                {
+                    new Coordinate(34.01, -117.01),
+                    new Coordinate(34.02, -117.02),
+                    new Coordinate(34.03, -117.03),
+                };
+                var testController = new TestInstanceController("TestName", 30, 39, coords);
+                await _jobControllerHost.AddJobControllerAsync(testController.Name, testController);
+
+                // TODO: Show in Instances create/edit page
+            }
+            catch (Exception ex)
+            {
+                _loggingHost.LogException(ex);
+            }
+
+            try
+            {
                 var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
                 _loggingHost.LogMessage($"Device: {device.Uuid}");
                 var devices = await _databaseHost.GetListAsync<IDevice>();
@@ -117,9 +136,9 @@
 
                 //var accounts = await _databaseHost.Accounts.GetListAsync();
                 var accounts = await _databaseHost.GetListAsync<IAccount>();
-                _loggingHost.LogMessage($"Accounts: {accounts}");
+                _loggingHost.LogMessage($"Accounts: {accounts.Count}");
                 var pokestop = await _databaseHost.GetByIdAsync<IPokestop, string>("0192086043834f1c9c577a54a7890b32.16");
-                _loggingHost.LogMessage($"Pokestop: {pokestop}");
+                _loggingHost.LogMessage($"Pokestop: {pokestop.Name}");
             }
             catch (Exception ex)
             {
@@ -151,20 +170,6 @@
         public void OnLoad()
         {
             _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
-
-            // Add/register TestInstanceController
-            /*
-            var coords = new List<ICoordinate>
-            {
-                new Coordinate(34.01, -117.01),
-                new Coordinate(34.02, -117.02),
-                new Coordinate(34.03, -117.03),
-            };
-            var testController = new TestInstanceController("TestName", 30, 39, coords);
-            await _jobControllerHost.AddJobControllerAsync(testController.Name, testController);
-            */
-
-            // TODO: Show in Instances create/edit page
         }
 
         /// <summary>
