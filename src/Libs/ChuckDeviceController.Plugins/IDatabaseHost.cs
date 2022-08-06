@@ -14,7 +14,7 @@
         Task<T> GetByIdAsync<T, TId>(TId id);
     }
 
-    public interface IRepository<TEntity, TId> //where TEntity : IBaseEntity
+    public interface IRepository<TEntity, TId>
     {
         Task<IReadOnlyList<TEntity>> GetListAsync();
 

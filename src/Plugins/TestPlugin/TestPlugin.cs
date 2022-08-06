@@ -126,19 +126,20 @@
 
             try
             {
+                // Retrieve database entities 
                 var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
                 _loggingHost.LogMessage($"Device: {device.Uuid}");
-                var devices = await _databaseHost.GetListAsync<IDevice>();
-                _loggingHost.LogMessage($"Devices: {devices.Count}");
+                //var devices = await _databaseHost.GetListAsync<IDevice>();
+                //_loggingHost.LogMessage($"Devices: {devices.Count}");
 
                 //var device = await _databaseHost.Devices.GetByIdAsync("SGV7SE");
                 //_loggingHost.LogMessage($"Device: {device}");
 
                 //var accounts = await _databaseHost.Accounts.GetListAsync();
-                var accounts = await _databaseHost.GetListAsync<IAccount>();
-                _loggingHost.LogMessage($"Accounts: {accounts.Count}");
-                var pokestop = await _databaseHost.GetByIdAsync<IPokestop, string>("0192086043834f1c9c577a54a7890b32.16");
-                _loggingHost.LogMessage($"Pokestop: {pokestop.Name}");
+                //var accounts = await _databaseHost.GetListAsync<IAccount>();
+                //_loggingHost.LogMessage($"Accounts: {accounts.Count}");
+                //var pokestop = await _databaseHost.GetByIdAsync<IPokestop, string>("0192086043834f1c9c577a54a7890b32.16");
+                //_loggingHost.LogMessage($"Pokestop: {pokestop.Name}");
             }
             catch (Exception ex)
             {

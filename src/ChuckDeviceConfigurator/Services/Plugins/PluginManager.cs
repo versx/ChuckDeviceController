@@ -1,7 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
     using ChuckDeviceConfigurator.Services.Jobs;
-    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Plugins;
 
     // TODO: Abstract Plugin class inheriting IPlugin for cache plugin related data and to interact with
