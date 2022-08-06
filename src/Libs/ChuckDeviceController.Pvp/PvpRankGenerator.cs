@@ -30,20 +30,10 @@
         private readonly object _littleLock = new();
         private readonly object _greatLock = new();
         private readonly object _ultraLock = new();
-
         private static readonly object _instanceLock = new();
 
         private readonly Timer _timer;
-
         private string? _lastETag;
-
-        private static readonly JsonSerializerOptions _jsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true,
-            AllowTrailingCommas = true,
-            WriteIndented = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-        };
 
         #endregion
 

@@ -1,11 +1,13 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
     using ChuckDeviceConfigurator.Services.Plugins;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Plugins;
 
+    [Authorize(Roles = RoleConsts.PluginsRole)]
     public class PluginController : Controller
     {
         private readonly ILogger<PluginController> _logger;

@@ -59,6 +59,11 @@
         IvLists,
 
         /// <summary>
+        /// Access to Plugin management pages.
+        /// </summary>
+        Plugins,
+
+        /// <summary>
         /// Access to Webhooks management pages.
         /// </summary>
         Webhooks,

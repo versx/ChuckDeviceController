@@ -22,6 +22,8 @@
 
         public const string IvListsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.IvLists)}";
 
+        public const string PluginsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Plugins)}";
+
         public const string WebhooksRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Webhooks)}";
 
         public const string UsersRole = nameof(Roles.SuperAdmin);
