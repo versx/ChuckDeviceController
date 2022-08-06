@@ -500,11 +500,10 @@
                     var baseAttack = pokedexBaseStats.BaseAttack;
                     var baseDefense = pokedexBaseStats.BaseDefense;
                     var baseStamina = pokedexBaseStats.BaseStamina;
-                    var pokemon = GetPokemonFromName(pokemonName);
+                    var pokemon = pokemonName.GetPokemonFromName();
                     if (pokemon == HoloPokemonId.Missingno)
                     {
                         Console.WriteLine($"Failed to get Pokemon for '{pokemonName}'");
-                        // TODO: Should we just continue to allow the rest or exit all together?
                         continue;
                     }
 
@@ -512,7 +511,7 @@
                     PokemonForm? form = null;
                     if (!string.IsNullOrEmpty(formName))
                     {
-                        var formId = GetFormFromName(formName);
+                        var formId = formName.GetFormFromName();
                         if (formId == PokemonForm.Unset)
                         {
                             Console.WriteLine($"Failed to get form for '{formName}'");
@@ -533,17 +532,17 @@
                                 // Skip
                                 continue;
                             }
-                            var evoPokemon = GetPokemonFromName(evoName);
+                            var evoPokemon = evoName.GetPokemonFromName();
                             if (!string.IsNullOrEmpty(evoName) && evoPokemon != HoloPokemonId.Missingno)
                             {
                                 var evoFormName = info.Form;
                                 var genderName = info.GenderRequirement;
                                 PokemonForm? evoForm = string.IsNullOrEmpty(evoFormName)
                                     ? null
-                                    : GetFormFromName(evoFormName);
+                                    : evoFormName.GetFormFromName();
                                 PokemonGender? evoGender = string.IsNullOrEmpty(genderName)
                                     ? null
-                                    : GetGenderFromName(genderName);
+                                    : genderName.GetGenderFromName();
                                 evolutions.Add(new PokemonWithFormAndGender { Pokemon = evoPokemon, Form = evoForm, Gender = evoGender });
                             }
                         }
@@ -552,10 +551,10 @@
                     var costumeEvolution = pokemonInfo.ObCostumeEvolution?
                         .Where(costumeName =>
                         {
-                            var costume = GetCostumeFromName(costumeName);
+                            var costume = costumeName.GetCostumeFromName();
                             return costume != PokemonCostume.Unset && costume != null;
                         })
-                        .Select(GetCostumeFromName)
+                        .Select(PokemonExtensions.GetCostumeFromName)
                         .ToList();
                     var baseStats = new PokemonBaseStats
                     {
@@ -586,46 +585,6 @@
             }
 
             Console.WriteLine($"New game master file parsed successfully");
-        }
-
-        #endregion
-
-        #region Helpers
-
-        // TODO: Move to separate extensions class
-        private static HoloPokemonId GetPokemonFromName(string name)
-        {
-            var allPokemon = new List<HoloPokemonId>(Enum.GetValues<HoloPokemonId>());
-            var pokemon = GetEnumFromName(name, allPokemon);
-            return pokemon;
-        }
-
-        private static PokemonForm? GetFormFromName(string name)
-        {
-            var allForms = new List<PokemonForm>(Enum.GetValues<PokemonForm>());
-            var form = GetEnumFromName(name, allForms);
-            return form;
-        }
-
-        private static PokemonGender? GetGenderFromName(string name)
-        {
-            var allGenders = new List<PokemonGender>(Enum.GetValues<PokemonGender>());
-            var gender = GetEnumFromName(name, allGenders);
-            return gender;
-        }
-
-        private static PokemonCostume? GetCostumeFromName(string name)
-        {
-            var allCostumes = new List<PokemonCostume>(Enum.GetValues<PokemonCostume>());
-            var costume = GetEnumFromName(name, allCostumes);
-            return costume;
-        }
-
-        private static T? GetEnumFromName<T>(string name, List<T> values)
-        {
-            var lowerName = name.Replace("_", "").ToLower();
-            var result = values.FirstOrDefault(x => x.ToString().ToLower() == lowerName);
-            return result;
         }
 
         #endregion

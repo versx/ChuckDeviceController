@@ -60,8 +60,6 @@
         ]
         public ulong? LastSeen { get; set; } = 0; // Last job request requested
 
-        // TODO: Add Device LastDataReceived timestamp
-
         [
             DisplayName("Is Pending Account Switch"),
             Column("pending_account_switch"),
