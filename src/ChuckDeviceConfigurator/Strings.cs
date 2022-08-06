@@ -12,6 +12,9 @@
         public static readonly string AssemblyName = StrongAssemblyName?.Name ?? "ChuckDeviceConfigurator";
         public static readonly string AssemblyVersion = StrongAssemblyName?.Version?.ToString() ?? "v1.0.0";
 
+        private static DateTime? _uptime = null;
+        public static DateTime Uptime => _uptime ??= DateTime.UtcNow;
+
         // Folder paths
         public const string WebRoot = "wwwroot";
         public static readonly string DataFolder = Path.Combine(WebRoot, "data");

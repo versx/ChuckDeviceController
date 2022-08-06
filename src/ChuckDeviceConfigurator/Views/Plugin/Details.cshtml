@@ -20,8 +20,11 @@
 <div>
     <h4>Plugin '@Model?.Name'</h4>
     <div>
-        <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">
-            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
+        <a asp-action="Reload" asp-route-id="@Model?.Name" class="btn btn-primary">
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Reload
+        </a>
+        <a asp-action="Manage" asp-route-id="@Model?.Name" class="btn btn-danger">
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Disable
         </a>
         <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger">
             <i class="fa-solid fa-trash"></i>&nbsp;Delete

@@ -137,11 +137,11 @@
 
             if (instance == null)
             {
-                _logger.LogError($"Failed to initialize new instance of Plugin '{pluginType.Name}'");
+                _logger.LogError($"Failed to instantiate a new instance of Plugin '{pluginType.Name}'");
                 return null;
             }
 
-            // TOOD: PluginHost to contain event handlers class(es)
+            // TOOD: PluginHost to contain host event handler class(es)
             var objectValue = GetObjectValue(instance);
             //foreach (var type in pluginType.GetInterfaces())
             //{

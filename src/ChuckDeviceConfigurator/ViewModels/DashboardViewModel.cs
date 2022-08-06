@@ -138,5 +138,8 @@
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]
         public ulong Weather { get; set; }
+
+        [DisplayName("Uptime")]
+        public string? Uptime { get; set; }
     }
 }

@@ -8,6 +8,7 @@
 
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions;
 
@@ -59,6 +60,8 @@
                 Cells = (ulong)_mapContext.Cells.LongCount(),
                 Spawnpoints = (ulong)_mapContext.Spawnpoints.LongCount(),
                 Weather = (ulong)_mapContext.Weather.LongCount(),
+
+                Uptime = TimeSpanUtils.ToReadableString(Strings.Uptime.ToTotalSeconds(), includeAgoText: false),
             };
             return View(model);
         }

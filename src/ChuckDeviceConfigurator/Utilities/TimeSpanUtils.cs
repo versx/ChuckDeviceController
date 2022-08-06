@@ -4,7 +4,7 @@
 
     public static class TimeSpanUtils
     {
-        public static string ToReadableString(ulong timestampS)
+        public static string ToReadableString(ulong timestampS, bool includeAgoText = true)
         {
             var now = DateTime.UtcNow;
             var date = timestampS.FromSeconds();
@@ -24,7 +24,7 @@
 
             var result = string.IsNullOrEmpty(formatted)
                 ? "Now"
-                : $"{formatted.TrimEnd(' ')} ago";
+                : $"{formatted.TrimEnd(' ')}{(includeAgoText ? " ago" : "")}";
             return result;
         }
     }
