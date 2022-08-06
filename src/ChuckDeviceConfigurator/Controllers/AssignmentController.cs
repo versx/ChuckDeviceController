@@ -165,8 +165,6 @@
             var devices = BuildDevicesSelectList(assignment);
             var instances = _context.Instances.ToList();
 
-            // TODO: Fix loading time value into element
-
             ViewBag.Devices = devices;
             ViewBag.Instances = instances;
             return View(assignment);

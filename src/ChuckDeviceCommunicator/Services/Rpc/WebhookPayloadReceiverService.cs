@@ -29,7 +29,6 @@
                 };
             }
 
-            // TODO: Decide whether to deserialize webhook payload json here or in relay service
             await _webhookRelayService.EnqueueAsync(request.PayloadType, request.Payload);
 
             return new WebhookPayloadResponse

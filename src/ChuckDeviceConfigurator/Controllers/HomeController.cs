@@ -9,6 +9,7 @@
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Extensions;
 
     [Authorize(Roles = RoleConsts.DefaultRole)]
     public class HomeController : Controller
@@ -32,6 +33,7 @@
 
         public IActionResult Index()
         {
+            var now = DateTime.UtcNow.ToTotalSeconds();
             var model = new DashboardViewModel
             {
                 Accounts = (ulong)_deviceContext.Accounts.LongCount(),
@@ -48,12 +50,12 @@
                 Gyms = (ulong)_mapContext.Gyms.LongCount(),
                 GymDefenders = (ulong)_mapContext.GymDefenders.LongCount(),
                 GymTrainers = (ulong)_mapContext.GymTrainers.LongCount(),
-                // TODO: Raids
+                Raids = (ulong)_mapContext.Gyms.LongCount(gym => gym.RaidEndTimestamp >= now),
                 Incidents = (ulong)_mapContext.Incidents.LongCount(),
                 Pokemon = (ulong)_mapContext.Pokemon.LongCount(),
                 Pokestops = (ulong)_mapContext.Pokestops.LongCount(),
-                // TODO: Lures
-                // TODO: Quests
+                Lures = (ulong)_mapContext.Pokestops.LongCount(pokestop => pokestop.LureExpireTimestamp >= now),
+                Quests = (ulong)_mapContext.Pokestops.LongCount(pokestop => pokestop.QuestType != null || pokestop.AlternativeQuestType != null),
                 Cells = (ulong)_mapContext.Cells.LongCount(),
                 Spawnpoints = (ulong)_mapContext.Spawnpoints.LongCount(),
                 Weather = (ulong)_mapContext.Weather.LongCount(),

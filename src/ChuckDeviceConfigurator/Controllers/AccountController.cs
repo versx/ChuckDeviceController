@@ -38,7 +38,7 @@
         // GET: AccountController
         public async Task<ActionResult> Index()
         {
-            // TODO: Speed up query
+            // NOTE: Speed up query
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
