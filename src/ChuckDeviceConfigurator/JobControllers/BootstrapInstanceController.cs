@@ -167,7 +167,6 @@
         {
             return new BootstrapTask
             {
-                Area = Name,
                 Action = FastBootstrapMode
                     ? DeviceActionType.ScanRaid // 5 second loads
                     : DeviceActionType.ScanPokemon, // 10 second loads
@@ -183,7 +182,6 @@
         {
             return new CircleTask
             {
-                Area = Name,
                 Action = DeviceActionType.ScanPokemon,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,

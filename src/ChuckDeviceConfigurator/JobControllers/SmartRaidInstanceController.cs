@@ -109,7 +109,6 @@
 
             var task = new CircleTask
             {
-                Area = Name,
                 Action = DeviceActionType.ScanRaid,
                 Latitude = coord.Latitude,
                 Longitude = coord.Longitude,

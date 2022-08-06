@@ -9,13 +9,6 @@
     public interface ITask
     {
         /// <summary>
-        /// Gets the name of the instance controller that
-        /// produced the job task.
-        /// </summary>
-        [JsonPropertyName("area")]
-        string Area { get; } // TODO: Can probably remove since this isn't used anymore with current provider
-
-        /// <summary>
         /// Gets the action type the device is expected to
         /// perform.
         /// </summary>

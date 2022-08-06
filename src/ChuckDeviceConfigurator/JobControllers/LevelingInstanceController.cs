@@ -433,7 +433,6 @@
         {
             return new LevelingTask
             {
-                Area = Name,
                 Action = DeviceActionType.SpinPokestop,
                 Delay = delay,
                 DeployEgg = deployEgg,
@@ -448,7 +447,6 @@
         {
             return new SwitchAccountTask
             {
-                Area = Name,
                 Action = DeviceActionType.SwitchAccount,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,

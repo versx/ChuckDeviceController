@@ -364,7 +364,6 @@
         {
             return new IvTask
             {
-                Area = Name,
                 Action = DeviceActionType.ScanIV,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
@@ -380,7 +379,6 @@
         {
             return new CircleTask
             {
-                Area = Name,
                 Action = DeviceActionType.ScanPokemon,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,

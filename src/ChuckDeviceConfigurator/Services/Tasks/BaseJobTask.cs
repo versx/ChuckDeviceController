@@ -6,9 +6,6 @@
 
     public class BaseJobTask : ITask
     {
-        [JsonPropertyName("area")]
-        public string Area { get; set; }
-
         [JsonPropertyName("action")]
         public string Action { get; set; }
 

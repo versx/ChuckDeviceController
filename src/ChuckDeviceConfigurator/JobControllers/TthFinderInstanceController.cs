@@ -174,7 +174,6 @@
         {
             return await Task.FromResult(new BootstrapTask
             {
-                Area = Name,
                 Action = DeviceActionType.ScanPokemon,
                 Latitude = currentCoord.Latitude,
                 Longitude = currentCoord.Longitude,

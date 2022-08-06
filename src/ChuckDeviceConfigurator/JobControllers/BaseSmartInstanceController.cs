@@ -306,7 +306,6 @@
         {
             return new CircleTask
             {
-                Area = Name,
                 Action = circleType == CircleInstanceType.Pokemon
                     ? DeviceActionType.ScanPokemon
                     : DeviceActionType.ScanRaid,

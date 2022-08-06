@@ -814,7 +814,6 @@
 
             return new BootstrapTask
             {
-                Area = Name,
                 Action = DeviceActionType.ScanRaid,
                 Latitude = coord.Latitude,
                 Longitude = coord.Longitude,
@@ -827,14 +826,13 @@
         {
             return new QuestTask
             {
-                Area = Name,
                 Action = DeviceActionType.ScanQuest,
-                DeployEgg = false,
                 Latitude = pokestop?.Pokestop?.Latitude ?? 0,
                 Longitude = pokestop?.Pokestop?.Longitude ?? 0,
-                Delay = delay,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
+                DeployEgg = false,
+                Delay = delay,
                 QuestType = (pokestop?.IsAlternative ?? false)
                     ? "ar"
                     : "normal",
@@ -845,7 +843,6 @@
         {
             return new SwitchAccountTask
             {
-                Area = Name,
                 Action = DeviceActionType.SwitchAccount,
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
