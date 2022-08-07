@@ -67,6 +67,7 @@ builder.WebHost.ConfigureLogging(configure =>
         options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
     });
     configure.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+    configure.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", LogLevel.Error);
     configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
     configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
 });
