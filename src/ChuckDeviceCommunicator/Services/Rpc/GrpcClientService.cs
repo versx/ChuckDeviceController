@@ -10,7 +10,7 @@
 
         public GrpcClientService(IConfiguration configuration)
         {
-            var configuratorEndpoint = configuration.GetValue<string>("ConfiguratorServerEndpoint");
+            var configuratorEndpoint = configuration.GetValue<string>("GrpcConfiguratorServer");
             if (string.IsNullOrEmpty(configuratorEndpoint))
             {
                 throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(configuratorEndpoint));

@@ -138,7 +138,7 @@ View all available API routes:
 }
 ```
 
-### ChuckDeviceConfigurator (Dashboard/Management UI)  
+### ChuckDeviceConfigurator (Dashboard/Management UI & Device Controller)  
 ```json
 {
 {
@@ -207,8 +207,8 @@ View all available API routes:
     }
   },
   "AllowedHosts": "*",
-  // Endpoint of the controller's gRPC service (used to request updated webhook endpoints)
-  "ConfiguratorServerEndpoint": "http://localhost:5002",
+  // Endpoint of the configurator's gRPC service (used to request updated webhook endpoints)
+  "GrpcConfiguratorServer": "http://localhost:5002",
   // Webhook relay settings
   "Relay": {
     // Maximum amount of attempts to try resending a webhook that initially failed before
@@ -236,7 +236,7 @@ View all available API routes:
 <hr>
 
 ## TODO:  
-- Finish plugin system
+- Finish plugin system  
 - Improve database performance  
 - Add MAD support  
 - Localization  
