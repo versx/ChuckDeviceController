@@ -143,7 +143,7 @@
             }
 
             var permissions = GetPermissions(pluginType);
-            var pluginHost = new PluginHost(instance, permissions, new PluginEventHandlers());
+            var pluginHost = new PluginHost(instance, permissions);
             //var objectValue = GetObjectValue(instance);
 
             foreach (var type in pluginType.GetInterfaces())

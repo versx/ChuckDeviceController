@@ -2,18 +2,20 @@
 {
     using ChuckDeviceController.Plugins;
 
-    public class PluginHost : IPluginHost
+    public sealed class PluginHost : IPluginHost
     {
+        #region Properties
+
         public IPlugin Plugin { get; }
 
-        public PluginPermissions Permissions { get; }
+        // TODO: Change 'Permissions' to 'RequestedPermissions' and add 'AllowedPermissions' property
+        public PluginPermissions Permissions { get; } = PluginPermissions.None;
 
-        public PluginEventHandlers EventHandlers { get; }
+        public PluginEventHandlers EventHandlers { get; } = new();
 
-        public PluginHost()
-        {
-            EventHandlers = new();
-        }
+        #endregion
+
+        #region Constructors
 
         public PluginHost(IPlugin plugin, PluginPermissions permissions)
             : this(plugin, permissions, new())
@@ -26,5 +28,7 @@
             Permissions = permissions;
             EventHandlers = handlers;
         }
+
+        #endregion
     }
 }

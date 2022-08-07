@@ -75,69 +75,70 @@
         {
             if (!_plugins.ContainsKey(pluginName))
             {
-                Console.WriteLine($"Unable to stop plugin '{pluginName}', no plugin with that name is currently loaded or registered");
+                _logger.LogWarning($"Unable to stop plugin '{pluginName}', no plugin with that name is currently loaded or registered");
                 return;
             }
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnStop();
 
+            _logger.LogInformation($"[{pluginName}] Plugin has been stopped");
             await Task.CompletedTask;
         }
 
         public async Task StopAllAsync()
         {
-            foreach (var (_, plugin) in _plugins)
+            foreach (var (pluginName, _) in _plugins)
             {
-                plugin.Plugin.OnStop();
+                await StopAsync(pluginName);
             }
-            await Task.CompletedTask;
         }
 
         public async Task ReloadAsync(string pluginName)
         {
             if (!_plugins.ContainsKey(pluginName))
             {
-                Console.WriteLine($"Unable to reload plugin '{pluginName}', no plugin with that name is currently loaded or registered");
+                _logger.LogWarning($"Unable to reload plugin '{pluginName}', no plugin with that name is currently loaded or registered");
                 return;
             }
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnReload();
 
+            _logger.LogInformation($"[{pluginName}] Plugin has been reloaded");
             await Task.CompletedTask;
         }
 
         public async Task ReloadAllAsync()
         {
-            foreach (var (_, plugin) in _plugins)
+            foreach (var (pluginName, _) in _plugins)
             {
-                plugin.Plugin.OnReload();
+                await ReloadAsync(pluginName);
             }
-            await Task.CompletedTask;
         }
 
         public async Task RemoveAsync(string pluginName)
         {
             if (!_plugins.ContainsKey(pluginName))
             {
-                Console.WriteLine($"Unable to remove plugin '{pluginName}', no plugin with that name is currently loaded or registered");
+                _logger.LogWarning($"Unable to remove plugin '{pluginName}', no plugin with that name is currently loaded or registered");
                 return;
             }
 
+            var pluginHost = _plugins[pluginName];
+            pluginHost.Plugin.OnRemove();
             _plugins.Remove(pluginName);
+
+            _logger.LogInformation($"[{pluginName}] Plugin has been removed");
             await Task.CompletedTask;
         }
 
         public async Task RemoveAllAsync()
         {
-            foreach (var (pluginName, plugin) in _plugins)
+            foreach (var (pluginName, _) in _plugins)
             {
-                _plugins.Remove(pluginName);
-
-                plugin.Plugin.OnRemove();
+                await RemoveAsync(pluginName);
             }
-            await Task.CompletedTask;
         }
 
         #endregion
@@ -146,15 +147,6 @@
 
         private async Task LoadPluginAsync(string pluginFilePath, IReadOnlyDictionary<Type, object> sharedHosts)
         {
-            /*
-            var sharedHosts = new Dictionary<Type, object>
-            {
-                { typeof(IJobControllerServiceHost), _jobControllerService },
-                { typeof(ILoggingHost), _loggingHost },
-                { typeof(IUiHost), _uiHost },
-                { typeof(IDatabaseHost), _databaseHost },
-            };
-            */
             var loader = new PluginLoader<IPlugin>(pluginFilePath, sharedHosts);
             var loadedPlugins = loader.LoadedPlugins;
             if (!loadedPlugins.Any())
@@ -165,28 +157,48 @@
 
             foreach (var plugin in loadedPlugins)
             {
-                RegisterPlugin(plugin);
+                await RegisterPluginAsync(plugin);
+
+                // TODO: Add requested plugin permissions to cache and show list in dashboard
+                // to accept plugin permissions request or just allow it regardless? or add
+                // config option to set which permissions plugins are allowed? idk
 
                 plugin.Plugin.OnLoad();
             }
-
-            await Task.CompletedTask;
         }
 
-        private void RegisterPlugin(PluginHost plugin)
+        private async Task RegisterPluginAsync(PluginHost plugin)
         {
             if (_plugins.ContainsKey(plugin.Plugin.Name))
             {
-                // TODO: Check if version is higher than current, if so replace existing instead of skipping
-                _logger.LogWarning($"Plugin with name '{plugin.Plugin.Name}' already loaded and registered, skipping...");
-                return;
+                // Check if version is higher than current, if so replace existing
+                var oldVersion = _plugins[plugin.Plugin.Name].Plugin.Version;
+                var newVersion = plugin.Plugin.Version;
+                if (oldVersion > newVersion)
+                {
+                    // Existing is newer
+                    _logger.LogWarning($"Existing plugin version with name '{plugin.Plugin.Name}' is newer than incoming plugin version, skipping registration...");
+                    return;
+                }
+                else if (oldVersion < newVersion)
+                {
+                    // Incoming is newer
+                    _logger.LogWarning($"Existing plugin version with name '{plugin.Plugin.Name}' is newer than incoming plugin version, removing old version and adding new version...");
+
+                    // Remove existing plugin so we can add newer version of plugin
+                    await RemoveAsync(plugin.Plugin.Name);
+                }
+                else
+                {
+                    // Plugin versions are the same
+                    _logger.LogWarning($"Existing plugin version with name '{plugin.Plugin.Name}' is the same version as incoming plugin version, skipping registration...");
+                    return;
+                }
             }
 
             _plugins.Add(plugin.Plugin.Name, plugin);
             _logger.LogInformation($"Plugin '{plugin.Plugin.Name}' v{plugin.Plugin.Version} by {plugin.Plugin.Author} initialized and registered to plugin manager cache.");
         }
-
-        // TODO: UnregisterPlugin when removed
 
         #endregion
     }
