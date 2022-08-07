@@ -1,6 +1,7 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
+﻿@using ChuckDeviceConfigurator.Services.Plugins
+@using ChuckDeviceConfigurator.ViewModels
 @using ChuckDeviceController.Plugins
-@model ViewModelsModel<IPlugin>
+@model ViewModelsModel<PluginHost>
 @{
     ViewData["Title"] = "Plugin Manager";
 }
@@ -16,13 +17,16 @@
     <thead class="table-dark">
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].Name)
+                @Html.DisplayNameFor(model => model.Items[0].Plugin.Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].Author)
+                @Html.DisplayNameFor(model => model.Items[0].Plugin.Author)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].Version)
+                @Html.DisplayNameFor(model => model.Items[0].Permissions)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Plugin.Version)
             </th>
             <th width="5%">Action</th>
         </tr>
@@ -32,13 +36,16 @@
         {
             <tr>
                 <th scope="row">
-                    @Html.DisplayFor(modelItem => item.Name)
+                    @Html.DisplayFor(modelItem => item.Plugin.Name)
                 </th>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Author)
+                    @Html.DisplayFor(modelItem => item.Plugin.Author)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Version)
+                    @Html.DisplayFor(modelItem => item.Permissions)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Plugin.Version)
                 </td>
                 <td>
                     <div class="dropdown">
@@ -46,11 +53,11 @@
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item" asp-action="Disable" asp-route-id="@item.Name"><i class="fa-solid fa-stop"></i>&nbsp;Disable</a></li>
+                            <li><a class="dropdown-item" asp-action="Disable" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-stop"></i>&nbsp;Disable</a></li>
                             @* Enabled: <i class="fa-solid fa-play"></i> *@
                             @* Disabled: <i class="fa-solid fa-stop"></i> *@
-                            <li><a class="dropdown-item" asp-action="Reload" asp-route-id="@item.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Reload</a></li>
-                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
+                            <li><a class="dropdown-item" asp-action="Reload" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Reload</a></li>
+                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                         </ul>
                     </div>
                 </td>
@@ -65,8 +72,9 @@
             $('#table-plugins').DataTable({
                 columnDefs: [
                     { responsivePriority: 0, targets: 0 },
-                    { responsivePriority: 3, targets: 1 },
-                    { responsivePriority: 2, targets: 2 },
+                    { responsivePriority: 4, targets: 1 },
+                    { responsivePriority: 3, targets: 2 },
+                    { responsivePriority: 2, targets: 3 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],

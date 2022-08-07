@@ -25,7 +25,7 @@
         public ActionResult Index()
         {
             var plugins = _pluginManager.Plugins.Values.ToList();
-            var model = new ViewModelsModel<IPlugin>
+            var model = new ViewModelsModel<PluginHost>
             {
                 Items = plugins,
             };

@@ -5,7 +5,7 @@
 
     using ChuckDeviceController.Extensions.Json;
 
-    public class Language<TFrom, TTo, TDictionary> : IEnumerable<KeyValuePair<TFrom, TTo>>
+    public class Language<TFrom, TTo, TDictionary> : ILanguage<TFrom, TTo, TDictionary>
         where TDictionary : IDictionary<TFrom, TTo>, new()
     {
         private const string DefaultLanguage = "en";
@@ -89,7 +89,7 @@
         /// <summary>
         /// Sets the current locale.
         /// </summary>
-        /// <param name="localeCode"></param>
+        /// <param name="localeCode">Two letter locale code</param>
         public void SetLocale(string localeCode)
         {
             CurrentCulture = new CultureInfo(localeCode);
