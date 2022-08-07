@@ -91,7 +91,8 @@
                 OverSpinLimit = (ulong)accounts!.LongCount(x => x.Spins >= Strings.DefaultSpinLimit),
                 CleanLevel30s = (ulong)cleanAccounts.LongCount(x => x.Level >= 30),
                 SuspendedAccounts = (ulong)suspendedAccounts.LongCount(),
-                NewAccounts = (ulong)cleanAccounts.LongCount(),
+                CleanAccounts = (ulong)cleanAccounts.LongCount(),
+                FreshAccounts = (ulong)cleanAccounts.LongCount(x => x.Level == 0),
                 OverLevel30 = (ulong)accounts!.LongCount(x => x.Level >= 30),
                 Bans = new AccountWarningsBansViewModel
                 {

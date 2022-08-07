@@ -10,10 +10,16 @@
         public List<Account> Accounts { get; set; } = new();
 
         [
-            DisplayName("New"),
+            DisplayName("Clean"),
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]
-        public ulong NewAccounts { get; set; }
+        public ulong CleanAccounts { get; set; }
+
+        [
+            DisplayName("Fresh"),
+            DisplayFormat(DataFormatString = "{0:N0}"),
+        ]
+        public ulong FreshAccounts { get; set; }
 
         [
             DisplayName("In Use"),

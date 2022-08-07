@@ -27,7 +27,7 @@
             <div class="card-body">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-3 p-1">
+                        <div class="col-md-4 p-1">
                             <div class="list-group">
                                 <a class="list-group-item">
                                     <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.TotalAccounts)</h4>
@@ -35,7 +35,7 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-md-4 p-1">
                             <div class="list-group">
                                 <a class="list-group-item">
                                     <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.OverLevel30)</h4>
@@ -43,15 +43,33 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-md-4 p-1">
                             <div class="list-group">
                                 <a class="list-group-item">
-                                    <h4 class="list-group-item-heading account-new">@Html.DisplayFor(model => model.NewAccounts)</h4>
-                                    <p class="list-group-item-text">@Html.DisplayNameFor(model => model.NewAccounts)</p>
+                                    <h4 class="list-group-item-heading account-inuse">@Html.DisplayFor(model => model.AccountsInUse)</h4>
+                                    <p class="list-group-item-text">@Html.DisplayNameFor(model => model.AccountsInUse)</p>
                                 </a>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 p-1">
+                            <div class="list-group">
+                                <a class="list-group-item">
+                                    <h4 class="list-group-item-heading account-new">@Html.DisplayFor(model => model.FreshAccounts)</h4>
+                                    <p class="list-group-item-text">@Html.DisplayNameFor(model => model.FreshAccounts)</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 p-1">
+                            <div class="list-group">
+                                <a class="list-group-item">
+                                    <h4 class="list-group-item-heading account-good">@Html.DisplayFor(model => model.CleanAccounts)</h4>
+                                    <p class="list-group-item-text">@Html.DisplayNameFor(model => model.CleanAccounts)</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 p-1">
                             <div class="list-group">
                                 <a class="list-group-item">
                                     <h4 class="list-group-item-heading account-good">@Html.DisplayFor(model => model.CleanLevel30s)</h4>
@@ -61,15 +79,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-3 p-1">
-                            <div class="list-group">
-                                <a class="list-group-item">
-                                    <h4 class="list-group-item-heading account-inuse">@Html.DisplayFor(model => model.AccountsInUse)</h4>
-                                    <p class="list-group-item-text">@Html.DisplayNameFor(model => model.AccountsInUse)</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-md-4 p-1">
                             <div class="list-group">
                                 <a class="list-group-item">
                                     <h4 class="list-group-item-heading account-suspended">@Html.DisplayFor(model => model.SuspendedAccounts)</h4>
@@ -77,7 +87,7 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-md-4 p-1">
                             <div class="list-group">
                                 <a class="list-group-item">
                                     <h4 class="list-group-item-heading account-cooldown">@Html.DisplayFor(model => model.InCooldown)</h4>
@@ -85,7 +95,7 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-md-4 p-1">
                             <div class="list-group">
                                 <a class="list-group-item">
                                     <h4 class="list-group-item-heading account-spinlimit">@Html.DisplayFor(model => model.OverSpinLimit)</h4>
@@ -225,7 +235,7 @@
                 {
                     <tr class="text-center">
                         <th scope="row">
-                            <b>@Html.DisplayFor(model => item.Level)</b>
+                            @Html.DisplayFor(model => item.Level)
                         </th>
                         <td>
                             <span class="badge bg-primary rounded-pill">@Html.DisplayFor(model => item.Total)</span>
@@ -259,8 +269,9 @@
             </tbody>
         </table>
     </div>
-    <div class="tab-pane" id="accounts" role="tabpanel" aria-labelledby="pills-accounts-tab">
-        <table id="table-accounts" class="table table-striped table-bordered dt-responsive nowrap w-100">
+    <div class="tab-pane fade" id="accounts" role="tabpanel" aria-labelledby="pills-accounts-tab">
+        @*<table id="table-accounts" class="table table-striped table-bordered dt-responsive nowrap w-100">*@
+        <table id="table-accounts" class="table table-striped table-bordered dt-responsive nowrap">
             <thead class="table-dark">
                 <tr>
                     <th>
@@ -334,17 +345,6 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Credits: https://stackoverflow.com/a/19015027
-            // Store the currently selected tab in the hash value
-            $("ul.nav-pills > li > a").on("shown.bs.tab", function(e) {
-                const id = $(e.target).attr("href").substr(1);
-                window.location.hash = id;
-            });
-
-            // Upon page load, switch to the currently selected tab
-            const hash = window.location.hash;
-            $('#pills-tab a[href="' + hash + '"]').tab('show');
-
             $('#table-account-level-stats').DataTable({
                 columnDefs: [
                     { responsivePriority: 0, targets: 0 },
@@ -364,6 +364,7 @@
                 info: false,
             });
 
+            /* TODO: Look into why account table isn't adhering to the prioritized columns and still showing all */
             $('#table-accounts').DataTable({
                 columnDefs: [
                     // Username Level Status LastEncounter Spins Group InUse Action
@@ -391,6 +392,17 @@
                 responsive: true,
                 info: true,
             });
+
+            // Credits: https://stackoverflow.com/a/19015027
+            // Store the currently selected tab in the hash value
+            $('ul.nav-pills > li > a').on('shown.bs.tab', function(e) {
+                const id = $(e.target).attr('href').substr(1);
+                window.location.hash = id;
+            });
+
+            // Upon page load, switch to the currently selected tab
+            const hash = window.location.hash;
+            $('#pills-tab a[href="' + hash + '"]').tab('show');
         });
 
     /*
@@ -420,7 +432,7 @@
             },
             responsive: {
                 //breakpoints: '',
-                //details: true,
+                //details: true, // determines whether to show the 'details' + button to expand/show the hidden columns in a panel below the row
             },
             stateRestore: {
                 create: true,
