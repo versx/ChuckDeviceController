@@ -249,6 +249,7 @@
             switch (type.ToLower())
             {
                 case "gym-defender":
+                default:
                     return new
                     {
                         type = WebhookHeaders.GymDefender,
@@ -313,9 +314,6 @@
                         },
                     };
             }
-
-            Console.WriteLine($"Received unknown gym defender webhook payload type: {type}, returning null");
-            return null;
         }
 
         #endregion

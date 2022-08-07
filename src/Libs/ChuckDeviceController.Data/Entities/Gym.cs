@@ -438,7 +438,6 @@
 
         public dynamic GetWebhookData(string type)
         {
-            // TODO: Add GymDefender and GymTrainer webhooks support
             switch (type.ToLower())
             {
                 case "gym":

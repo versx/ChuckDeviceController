@@ -89,6 +89,7 @@
             switch (type.ToLower())
             {
                 case "gym-trainer":
+                default:
                     return new
                     {
                         type = WebhookHeaders.GymTrainer,
@@ -110,9 +111,6 @@
                         },
                     };
             }
-
-            Console.WriteLine($"Received unknown gym trainer webhook payload type: {type}, returning null");
-            return null;
         }
 
         #endregion

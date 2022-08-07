@@ -927,16 +927,21 @@
 
                         foreach (var gymDefenderData in gymDefenders)
                         {
-                            // TODO: GymDefender and GymTrainer webhooks
                             if (gymDefenderData.TrainerPublicProfile != null)
                             {
                                 var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
                                 gymTrainersToUpsert.Add(gymTrainer);
+
+                                // Send webhook
+                                await SendWebhookPayloadAsync(WebhookPayloadType.GymTrainer, gymTrainer);
                             }
                             if (gymDefenderData.MotivatedPokemon != null)
                             {
                                 var gymDefender = new GymDefender(gymDefenderData, fortId);
                                 gymDefendersToUpsert.Add(gymDefender);
+
+                                // Send webhook
+                                await SendWebhookPayloadAsync(WebhookPayloadType.GymDefender, gymDefender);
                             }
                         }
                     }
