@@ -23,6 +23,7 @@
     using ChuckDeviceController.Plugins;
 
     // TODO: Refactor class into separate smaller classes
+    // TODO: Refactor to accommodate instances/job controllers from plugins
 
     public class JobControllerService : IJobControllerService
     {
@@ -144,8 +145,9 @@
                 Name = options.Name,
                 MinimumLevel = options.MinimumLevel,
                 MaximumLevel = options.MaximumLevel,
+                // TODO: When InstanceType.Custom selected via UI - maybe show a separate select listing available job controllers from plugins (add InstanceData property for 'custom_instance_name' or something)
                 Type = InstanceType.Custom,
-                Geofences = new(),
+                Geofences = options.Geofences,
                 Data = new InstanceData
                 {
                     AccountGroup = options.GroupName,
@@ -153,6 +155,10 @@
                     // TODO: Allow for custom instance data properties
                 },
             };
+
+            // TODO: Add to database?
+            // TODO: Allow geofence creation/assignment?
+
             await AddInstanceAsync(instance);
         }
 
@@ -200,12 +206,14 @@
                     _logger.LogError($"Device with name '{device.Uuid}' does not exist, unable to assign job controller instance");
                     return;
                 }
-
-                var jobController = _pluginInstances[jobControllerName];
-                //ReloadDevice(device, device.Uuid);
             }
+            //var jobController = _pluginInstances[jobControllerName];
 
-            await Task.CompletedTask;
+            // Assign device to plugin job controller instance name
+            await AssignDevice((Device)device, jobControllerName);
+
+            // Reload device to take new job controller instance assignment in effect
+            ReloadDevice((Device)device, device.Uuid);
         }
 
         #endregion
@@ -293,6 +301,12 @@
                     break;
                 case InstanceType.Custom:
                     // TODO: Use for job controllers created by plugins
+                    if (!_pluginInstances.ContainsKey(instance.Name))
+                    {
+                        _logger.LogError($"[{instance.Name}] Plugin job controller has not been registered, unable to initialize job controller instance");
+                        return;
+                    }
+                    jobController = _pluginInstances[instance.Name];
                     break;
             }
 
@@ -306,7 +320,7 @@
             {
                 lock (_pluginInstancesLock)
                 {
-                    _instances[instance.Name] = jobController;
+                    _pluginInstances[instance.Name] = jobController;
                 }
             }
             else
@@ -719,6 +733,16 @@
                 // Return non-DST offset for time zone
                 : tzData.Utc;
             return timeZoneOffset;
+        }
+
+        private async Task AssignDevice(Device device, string instanceName)
+        {
+            using (var context = _deviceFactory.CreateDbContext())
+            {
+                device.InstanceName = instanceName;
+                context.Devices.Update(device);
+                await context.SaveChangesAsync();
+            }
         }
 
         #endregion

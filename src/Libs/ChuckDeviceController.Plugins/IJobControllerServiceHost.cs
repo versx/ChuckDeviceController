@@ -26,17 +26,4 @@
         /// <returns></returns>
         Task AssignDeviceToJobControllerAsync(IDevice device, string jobControllerName);
     }
-
-    public interface IInstanceCreationOptions
-    {
-        string Name { get; }
-
-        ushort MinimumLevel { get; }
-
-        ushort MaximumLevel { get; }
-
-        string GroupName { get; }
-
-        bool IsEvent { get; }
-    }
 }
