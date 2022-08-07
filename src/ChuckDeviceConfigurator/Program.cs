@@ -135,17 +135,13 @@ builder.Services.AddRazorPages();
 #region Database Contexts
 
 builder.Services.AddDbContextFactory<DeviceControllerContext>(options =>
-    options.EnableSensitiveDataLogging()
-           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+         options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<MapDataContext>(options =>
-    options.EnableSensitiveDataLogging()
-           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+         options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<DeviceControllerContext>(options =>
-    options.EnableSensitiveDataLogging()
-           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+         options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
 builder.Services.AddDbContext<MapDataContext>(options =>
-    options.EnableSensitiveDataLogging()
-           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+         options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
 
 #endregion
 
