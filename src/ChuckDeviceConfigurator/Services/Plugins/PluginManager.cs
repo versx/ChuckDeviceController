@@ -1,9 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Plugins;
 
-    // TODO: Abstract Plugin class inheriting IPlugin for cache plugin related data and to interact with
     // TODO: Add FileSystemWatcher for plugins added manually or changed
 
     public class PluginManager : IPluginManager
@@ -11,13 +9,13 @@
         #region Variables
 
         private readonly ILogger<IPluginManager> _logger;
-        private readonly static Dictionary<string, IPlugin> _plugins = new();
+        private readonly static Dictionary<string, PluginHost> _plugins = new();
 
         #endregion
 
         #region Properties
 
-        public IReadOnlyDictionary<string, IPlugin> Plugins => _plugins;
+        public IReadOnlyDictionary<string, PluginHost> Plugins => _plugins;
 
         public string PluginsFolder { get; set; }
 
@@ -81,8 +79,8 @@
                 return;
             }
 
-            var plugin = _plugins[pluginName];
-            plugin.OnStop();
+            var pluginHost = _plugins[pluginName];
+            pluginHost.Plugin.OnStop();
 
             await Task.CompletedTask;
         }
@@ -91,7 +89,7 @@
         {
             foreach (var (_, plugin) in _plugins)
             {
-                plugin.OnStop();
+                plugin.Plugin.OnStop();
             }
             await Task.CompletedTask;
         }
@@ -103,7 +101,10 @@
                 Console.WriteLine($"Unable to reload plugin '{pluginName}', no plugin with that name is currently loaded or registered");
                 return;
             }
-            _plugins[pluginName].OnReload();
+
+            var pluginHost = _plugins[pluginName];
+            pluginHost.Plugin.OnReload();
+
             await Task.CompletedTask;
         }
 
@@ -111,7 +112,7 @@
         {
             foreach (var (_, plugin) in _plugins)
             {
-                plugin.OnReload();
+                plugin.Plugin.OnReload();
             }
             await Task.CompletedTask;
         }
@@ -123,6 +124,7 @@
                 Console.WriteLine($"Unable to remove plugin '{pluginName}', no plugin with that name is currently loaded or registered");
                 return;
             }
+
             _plugins.Remove(pluginName);
             await Task.CompletedTask;
         }
@@ -132,7 +134,8 @@
             foreach (var (pluginName, plugin) in _plugins)
             {
                 _plugins.Remove(pluginName);
-                plugin.OnRemove();
+
+                plugin.Plugin.OnRemove();
             }
             await Task.CompletedTask;
         }
@@ -164,23 +167,23 @@
             {
                 RegisterPlugin(plugin);
 
-                plugin.OnLoad();
+                plugin.Plugin.OnLoad();
             }
 
             await Task.CompletedTask;
         }
 
-        private void RegisterPlugin(IPlugin plugin)
+        private void RegisterPlugin(PluginHost plugin)
         {
-            if (_plugins.ContainsKey(plugin.Name))
+            if (_plugins.ContainsKey(plugin.Plugin.Name))
             {
                 // TODO: Check if version is higher than current, if so replace existing instead of skipping
-                _logger.LogWarning($"Plugin with name '{plugin.Name}' already loaded and registered, skipping...");
+                _logger.LogWarning($"Plugin with name '{plugin.Plugin.Name}' already loaded and registered, skipping...");
                 return;
             }
 
-            _plugins.Add(plugin.Name, plugin);
-            _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");
+            _plugins.Add(plugin.Plugin.Name, plugin);
+            _logger.LogInformation($"Plugin '{plugin.Plugin.Name}' v{plugin.Plugin.Version} by {plugin.Plugin.Author} initialized and registered to plugin manager cache.");
         }
 
         // TODO: UnregisterPlugin when removed

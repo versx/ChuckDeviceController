@@ -18,6 +18,11 @@
     /// Example plugin demonstrating the capabilities of
     /// the plugin system and how it works.
     /// </summary>
+    [PluginPermissions(PluginPermissions.ReadDatabase |
+                       PluginPermissions.WriteDatabase |
+                       PluginPermissions.DeleteDatabase |
+                       PluginPermissions.AddControllers |
+                       PluginPermissions.AddJobControllers)]
     public class TestPlugin : IPlugin
     {
         #region Plugin Host Variables

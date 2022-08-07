@@ -18,7 +18,7 @@
 
         public string PluginFilePath { get; }
 
-        public IEnumerable<IPlugin> LoadedPlugins { get; }
+        public IEnumerable<PluginHost> LoadedPlugins { get; }
 
         #endregion
 
@@ -71,7 +71,7 @@
             return loadContext.LoadFromAssemblyName(new AssemblyName(fileName));
         }
 
-        private IEnumerable<IPlugin> CreatePlugins(Assembly assembly)
+        private IEnumerable<PluginHost> CreatePlugins(Assembly assembly)
         {
             var count = 0;
             var pluginTypes = PluginFinder<IPlugin>.GetPluginTypes(assembly);
@@ -88,13 +88,14 @@
             if (count == 0)
             {
                 var availableTypes = string.Join(",", assembly.GetTypes().Select(t => t.FullName));
-                throw new ApplicationException(
-                    $"Can't find any type which implements {nameof(IPlugin)} in {assembly} from {assembly.Location}.\n" +
-                    $"Available types: {availableTypes}");
+                var error = $"Can't find any type which implements {nameof(IPlugin)} in {assembly} from {assembly.Location}.\n" +
+                    $"Available types: {availableTypes}";
+                _logger.LogError(error);
+                throw new ApplicationException(error);
             }
         }
 
-        private IPlugin LoadPluginWithDataParameters(Type pluginType)
+        private PluginHost LoadPluginWithDataParameters(Type pluginType)
         {
             // Check that there is only one constructor configured
             var constructors = pluginType.GetConstructors();
@@ -141,25 +142,39 @@
                 return null;
             }
 
-            // TOOD: PluginHost to contain host event handler class(es)
-            var objectValue = GetObjectValue(instance);
-            //foreach (var type in pluginType.GetInterfaces())
-            //{
-            //    if (typeof(IUiEvents) == type)
-            //        _pluginHandlers.UiEvents = (IUiEvents)objectValue;
-            //    else if (typeof(IDatabaseEvents) == type)
-            //        _pluginHandlers.DatabaseEvents = (IDatabaseEvents)objectValue;
-            //    else if (typeof(IJobControllerServiceHost) == type)
-            //        _pluginHandlers.JobControllerEvents = (IJobControllerServiceHost)objectValue;
-            //}
-            //return list.ToArray();
-            return (IPlugin)objectValue;
+            var permissions = GetPermissions(pluginType);
+            var pluginHost = new PluginHost(instance, permissions, new PluginEventHandlers());
+            //var objectValue = GetObjectValue(instance);
+
+            foreach (var type in pluginType.GetInterfaces())
+            {
+                if (typeof(IUiEvents) == type)
+                    pluginHost.EventHandlers.UiEvents = (IUiEvents)instance;
+                else if (typeof(IDatabaseEvents) == type)
+                    pluginHost.EventHandlers.DatabaseEvents = (IDatabaseEvents)instance;
+                else if (typeof(IJobControllerServiceHost) == type)
+                    pluginHost.EventHandlers.JobControllerEvents = (IJobControllerServiceEvents)instance;
+            }
+
+            //return (IPlugin)objectValue;
+            return pluginHost;
         }
 
-        private static object GetObjectValue(object o)
+        private static PluginPermissions GetPermissions(Type pluginType)
         {
-            return System.Runtime.CompilerServices.RuntimeHelpers.GetObjectValue(o);
+            var attributes = pluginType.GetCustomAttributes<PluginPermissionsAttribute>();
+            if (attributes.Any())
+            {
+                var attr = attributes.FirstOrDefault();
+                return attr?.Permissions ?? PluginPermissions.None;
+            }
+            return PluginPermissions.None;
         }
+
+        //private static object GetObjectValue(object o)
+        //{
+        //    return System.Runtime.CompilerServices.RuntimeHelpers.GetObjectValue(o);
+        //}
 
         #endregion
     }

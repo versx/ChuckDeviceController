@@ -4,6 +4,6 @@
 
     public interface IPluginLoader<TPlugin> where TPlugin : class, IPlugin
     {
-        IEnumerable<IPlugin> LoadedPlugins { get; }
+        IEnumerable<PluginHost> LoadedPlugins { get; }
     }
 }

@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\Geofences\" />
+    <Folder Include="Services\Plugins\EventHandlers\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="appsettings.json">

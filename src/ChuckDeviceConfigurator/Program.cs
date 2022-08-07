@@ -244,7 +244,7 @@ void Configure(IServiceProvider serviceProvider, IApplicationBuilder app)
             // Call 'Configure(IApplicationBuilder)' event handler in each plugin
             foreach (var (_, plugin) in pluginManager!.Plugins)
             {
-                plugin.Configure(app);
+                plugin.Plugin.Configure(app);
             }
         }
         catch (Exception ex)
@@ -298,7 +298,7 @@ void ConfigureServices(IServiceCollection services)
             // Call 'ConfigureServices(IServiceCollection)' event handler in each plugin
             foreach (var (_, plugin) in pluginManager!.Plugins)
             {
-                plugin.ConfigureServices(services);
+                plugin.Plugin.ConfigureServices(services);
             }
         }
         catch (Exception ex)

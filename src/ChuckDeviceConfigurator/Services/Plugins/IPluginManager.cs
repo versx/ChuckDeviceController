@@ -6,7 +6,7 @@
     {
         #region Properties
 
-        IReadOnlyDictionary<string, IPlugin> Plugins { get; }
+        IReadOnlyDictionary<string, PluginHost> Plugins { get; }
 
         string PluginsFolder { get; }
 
@@ -17,8 +17,6 @@
         Task LoadPluginsAsync(IReadOnlyDictionary<Type, object> sharedHosts);
 
         Task LoadPluginsAsync(IEnumerable<string> pluginFilePaths, IReadOnlyDictionary<Type, object> sharedHosts);
-
-        // TODO: StartAsync
 
         Task StopAsync(string pluginName);
 
