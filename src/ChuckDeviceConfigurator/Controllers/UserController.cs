@@ -301,6 +301,13 @@
                 ModelState.AddModelError("User", $"User account does not exist with username '{userId}'.");
                 return View();
             }
+
+            if (user.UserName == Strings.DefaultUserName)
+            {
+                ModelState.AddModelError($"User", $"Default 'root' user account cannot be deleted");
+                return View();
+            }
+
             return View(user);
         }
 
@@ -317,6 +324,12 @@
                     // Failed to retrieve user account from database, does it exist?
                     ModelState.AddModelError("User", $"User account does not exist with username '{userId}'.");
                     return View(user);
+                }
+
+                if (userAccount.UserName == Strings.DefaultUserName)
+                {
+                    ModelState.AddModelError($"User", $"Default 'root' user account cannot be deleted");
+                    return View();
                 }
 
                 // Delete user account from database
