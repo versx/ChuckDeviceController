@@ -1,0 +1,14 @@
+site_name: ChuckDeviceController
+site_url: https://github.com/versx/ChuckDeviceController
+site_description: ChuckDeviceController
+site_author: versx
+
+repo_url: https://github.com/versx/chuckdevicecontroller/
+edit_uri: ""
+
+theme:
+    name: readthedocs #mkdocs, bootstrap4, cinder, cosmo, cyborg, flatly, ivory, material, readthedocs, slate, yeti
+
+nav:
+    - General:
+        - Home: index.md
