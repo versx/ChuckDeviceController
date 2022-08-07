@@ -10,7 +10,7 @@
 
         private static readonly ILogger<IPluginLoader<TPlugin>> _logger =
             new Logger<IPluginLoader<TPlugin>>(LoggerFactory.Create(x => x.AddConsole()));
-        private readonly Dictionary<Type, object> _sharedHosts = new();
+        private readonly IReadOnlyDictionary<Type, object> _sharedHosts;
 
         #endregion
 
@@ -24,7 +24,7 @@
 
         #region Constructor
 
-        public PluginLoader(string filePath, Dictionary<Type, object> sharedHosts)
+        public PluginLoader(string filePath, IReadOnlyDictionary<Type, object> sharedHosts)
         {
             if (!File.Exists(filePath))
             {

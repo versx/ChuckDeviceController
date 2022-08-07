@@ -12,8 +12,9 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Net.Utilities;
+    using ChuckDeviceController.Plugins;
 
-    public class Translator : Language<string, string, Dictionary<string, string>>
+    public class Translator : Language<string, string, Dictionary<string, string>>, ILocalizationHost
     {
         private static readonly ILogger<Translator> _logger =
             new Logger<Translator>(LoggerFactory.Create(x => x.AddConsole()));
@@ -126,8 +127,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to find locale translation for key '{value}'");
-                Console.WriteLine(ex);
+                _logger.LogError($"Failed to find locale translation for key '{value}': {ex}");
             }
             return value;
         }
@@ -143,8 +143,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to find locale translation for key '{value}' and arguments: '{string.Join(",", args)}'");
-                Console.WriteLine(ex);
+                _logger.LogError($"Failed to find locale translation for key '{value}' and arguments: '{string.Join(",", args)}': {ex}");
             }
             return value;
         }
@@ -175,6 +174,14 @@
             return costume;
         }
 
+        public string GetEvolutionName(TemporaryEvolutionId evolution)
+        {
+            if (evolution == TemporaryEvolutionId.TempEvolutionUnset)
+                return null;
+
+            return Translate($"evo_{(int)evolution}");
+        }
+
         public string GetEvolutionName(uint evoId)
         {
             if (evoId == 0)
@@ -197,9 +204,19 @@
             return Translate($"throw_type_{(int)throwTypeId}");
         }
 
+        public string GetThrowName(uint throwTypeId)
+        {
+            return GetThrowName((ActivityType)throwTypeId);
+        }
+
         public string GetItem(ItemId item)
         {
             return Translate($"item_{(int)item}");
+        }
+
+        public string GetItem(uint itemId)
+        {
+            return GetItem((ItemId)itemId);
         }
 
         public string GetWeather(WeatherCondition weather)
@@ -207,9 +224,19 @@
             return Translate($"weather_{(int)weather}");
         }
 
+        public string GetWeather(uint weatherConditionId)
+        {
+            return GetWeather((WeatherCondition)weatherConditionId);
+        }
+
         public string GetAlignmentName(AlignmentType alignment)
         {
             return Translate($"alignment_{(int)alignment}");
+        }
+
+        public string GetAlignmentName(uint alignmentTypeId)
+        {
+            return GetAlignmentName((AlignmentType)alignmentTypeId);
         }
 
         public string GetCharacterCategoryName(CharacterCategory category)
@@ -217,14 +244,19 @@
             return Translate($"character_category_{(int)category}");
         }
 
-        public string GetEvolutionName(TemporaryEvolutionId evolution)
+        public string GetCharacterCategoryName(uint characterCategoryId)
         {
-            return Translate($"evo_{(int)evolution}");
+            return GetCharacterCategoryName((CharacterCategory)characterCategoryId);
         }
 
         public string GetGruntType(InvasionCharacter gruntType)
         {
             return Translate($"grunt_{(int)gruntType}");
+        }
+
+        public string GetGruntType(uint invasionCharacterId)
+        {
+            return GetGruntType((InvasionCharacter)invasionCharacterId);
         }
 
         #endregion

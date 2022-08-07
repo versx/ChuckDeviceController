@@ -27,6 +27,7 @@
         private readonly ILoggingHost _loggingHost;
         private readonly IJobControllerServiceHost _jobControllerHost;
         private readonly IDatabaseHost _databaseHost;
+        private readonly ILocalizationHost _localeHost;
 
         #endregion
 
@@ -69,14 +70,18 @@
         /// </summary>
         /// <param name="loggingHost"></param>
         /// <param name="jobControllerHost"></param>
+        /// <param name="databaseHost"></param>
+        /// <param name="localeHost"></param>
         public TestPlugin(
             ILoggingHost loggingHost,
             IJobControllerServiceHost jobControllerHost,
-            IDatabaseHost databaseHost)
+            IDatabaseHost databaseHost,
+            ILocalizationHost localeHost)
         {
             _loggingHost = loggingHost;
             _jobControllerHost = jobControllerHost;
             _databaseHost = databaseHost;
+            _localeHost = localeHost;
 
             //_appHost.Restart();
         }
@@ -104,6 +109,9 @@
                     await httpContext.Response.WriteAsync($"Hello from plugin {Name}");
                 });
             });
+
+            var translated = _localeHost.GetPokemonName(1);
+            _loggingHost.LogMessage($"Pokemon: {translated}");
 
             try
             {

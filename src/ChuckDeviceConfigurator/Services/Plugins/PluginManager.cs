@@ -13,12 +13,6 @@
         private readonly ILogger<IPluginManager> _logger;
         private readonly static Dictionary<string, IPlugin> _plugins = new();
 
-        // Shared plugin contract hosts
-        private readonly IJobControllerService _jobControllerService;
-        private readonly ILoggingHost _loggingHost;
-        private readonly IDatabaseHost _databaseHost;
-        private readonly IUiHost _uiHost;
-
         #endregion
 
         #region Properties
@@ -37,18 +31,9 @@
 
         #region Constructors
 
-        public PluginManager(
-            ILogger<IPluginManager> logger,
-            IJobControllerService jobControllerService,
-            ILoggingHost loggingHost,
-            IDatabaseHost databaseHost,
-            IUiHost uiHost)
+        public PluginManager(ILogger<IPluginManager> logger)
         {
             _logger = logger;
-            _jobControllerService = jobControllerService;
-            _loggingHost = loggingHost;
-            _databaseHost = databaseHost;
-            _uiHost = uiHost;
 
             PluginsFolder = Strings.PluginsFolder;
         }
@@ -57,7 +42,7 @@
 
         #region Public Methods
 
-        public async Task LoadPluginsAsync()
+        public async Task LoadPluginsAsync(IReadOnlyDictionary<Type, object> sharedHosts)
         {
             if (!Directory.Exists(PluginsFolder))
             {
@@ -69,11 +54,11 @@
 
             foreach (var pluginFile in pluginFiles)
             {
-                await LoadPluginAsync(pluginFile);
+                await LoadPluginAsync(pluginFile, sharedHosts);
             }
         }
 
-        public async Task LoadPluginsAsync(IEnumerable<string> pluginFilePaths)
+        public async Task LoadPluginsAsync(IEnumerable<string> pluginFilePaths, IReadOnlyDictionary<Type, object> sharedHosts)
         {
             foreach (var pluginFile in pluginFilePaths)
             {
@@ -83,7 +68,7 @@
                     continue;
                 }
 
-                await LoadPluginAsync(pluginFile);
+                await LoadPluginAsync(pluginFile, sharedHosts);
             }
         }
 
@@ -156,8 +141,9 @@
 
         #region Private Methods
 
-        private async Task LoadPluginAsync(string pluginFilePath)
+        private async Task LoadPluginAsync(string pluginFilePath, IReadOnlyDictionary<Type, object> sharedHosts)
         {
+            /*
             var sharedHosts = new Dictionary<Type, object>
             {
                 { typeof(IJobControllerServiceHost), _jobControllerService },
@@ -165,6 +151,7 @@
                 { typeof(IUiHost), _uiHost },
                 { typeof(IDatabaseHost), _databaseHost },
             };
+            */
             var loader = new PluginLoader<IPlugin>(pluginFilePath, sharedHosts);
             var loadedPlugins = loader.LoadedPlugins;
             if (!loadedPlugins.Any())

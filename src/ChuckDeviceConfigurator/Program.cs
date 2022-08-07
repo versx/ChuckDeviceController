@@ -279,6 +279,7 @@ void ConfigureServices(IServiceCollection services)
                 { typeof(ILoggingHost), loggingHost },
                 { typeof(IUiHost), uiHost },
                 { typeof(IDatabaseHost), databaseHost },
+                { typeof(ILocalizationHost), Translator.Instance },
             };
             var pluginFinder = new PluginFinder<IPlugin>(Strings.PluginsFolder);
             var pluginAssemblies = pluginFinder.FindAssemliesWithPlugins();
@@ -291,7 +292,7 @@ void ConfigureServices(IServiceCollection services)
                 }
 
                 // Load all plugins via PluginManager
-                pluginManager.LoadPluginsAsync(pluginAssemblies);
+                pluginManager.LoadPluginsAsync(pluginAssemblies, sharedHosts);
             }
 
             // Call 'ConfigureServices(IServiceCollection)' event handler in each plugin

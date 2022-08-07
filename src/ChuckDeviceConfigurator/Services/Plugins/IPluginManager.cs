@@ -14,9 +14,9 @@
 
         #region Methods
 
-        Task LoadPluginsAsync();
+        Task LoadPluginsAsync(IReadOnlyDictionary<Type, object> sharedHosts);
 
-        Task LoadPluginsAsync(IEnumerable<string> pluginFilePaths);
+        Task LoadPluginsAsync(IEnumerable<string> pluginFilePaths, IReadOnlyDictionary<Type, object> sharedHosts);
 
         // TODO: StartAsync
 

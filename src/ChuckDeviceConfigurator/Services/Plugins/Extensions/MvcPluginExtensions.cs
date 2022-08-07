@@ -15,8 +15,9 @@
         /// </summary>
         /// <param name="mvcBuilder">The MVC builder</param>
         /// <param name="assemblyFile">Full path the main .dll file for the plugin.</param>
+        /// <param name="sharedHosts">Shared types</param>
         /// <returns>The builder</returns>
-        public static IMvcBuilder AddPluginFromAssemblyFile(this IMvcBuilder mvcBuilder, string assemblyFile, Dictionary<Type, object> sharedHosts)
+        public static IMvcBuilder AddPluginFromAssemblyFile(this IMvcBuilder mvcBuilder, string assemblyFile, IReadOnlyDictionary<Type, object> sharedHosts)
         {
             var pluginLoader = new PluginLoader<IPlugin>(assemblyFile, sharedHosts);
             return mvcBuilder.AddPluginLoader(pluginLoader);
