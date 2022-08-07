@@ -17,7 +17,7 @@
         public string? Image { get; set; }
 
         [DisplayName("ID")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [DisplayName("Name")]
         public string? Name { get; set; }

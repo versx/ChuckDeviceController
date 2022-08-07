@@ -14,6 +14,7 @@
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
 
     [Table("pokestop")]
@@ -195,7 +196,7 @@
         #endregion
 
         [Column("incidents")]
-        public ICollection<Incident> Incidents { get; set; }
+        public ICollection<Incident>? Incidents { get; set; }
 
         [NotMapped]
         public bool HasChanges { get; set; }
@@ -210,7 +211,7 @@
             DisplayName("Last Updated"),
             NotMapped,
         ]
-        public string UpdatedTime { get; set; }
+        public string? UpdatedTime { get; set; }
 
         #endregion
 
@@ -218,6 +219,7 @@
 
         public Pokestop()
         {
+            Id = string.Empty;
         }
 
         public Pokestop(PokemonFortProto fortData, ulong s2cellId)
@@ -233,32 +235,10 @@
             IsEnabled = fortData.Enabled;
             IsArScanEligible = fortData.IsArScanEligible;
 
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var powerUpLevelExpirationMs = Convert.ToUInt32(fortData.PowerUpLevelExpirationMs / 1000);
-            PowerUpPoints = Convert.ToUInt32(fortData.PowerUpProgressPoints);
-            if (fortData.PowerUpProgressPoints < 50)
-            {
-                PowerUpLevel = 0;
-            }
-            else if (fortData.PowerUpProgressPoints < 100 && powerUpLevelExpirationMs > now)
-            {
-                PowerUpLevel = 1;
-                PowerUpEndTimestamp = powerUpLevelExpirationMs;
-            }
-            else if (fortData.PowerUpProgressPoints < 150 && powerUpLevelExpirationMs > now)
-            {
-                PowerUpLevel = 2;
-                PowerUpEndTimestamp = powerUpLevelExpirationMs;
-            }
-            else if (powerUpLevelExpirationMs > now)
-            {
-                PowerUpLevel = 3;
-                PowerUpEndTimestamp = powerUpLevelExpirationMs;
-            }
-            else
-            {
-                PowerUpLevel = 0;
-            }
+            var fortPowerLevel = fortData.GetFortPowerLevel();
+            PowerUpPoints = fortPowerLevel.PowerUpPoints;
+            PowerUpLevel = fortPowerLevel.PowerUpLevel;
+            PowerUpEndTimestamp = fortPowerLevel.PowerUpEndTimestamp;
 
             var lastModifiedTimestamp = Convert.ToUInt64(fortData.LastModifiedMs / 1000);
             if (fortData.ActiveFortModifier != null)
@@ -291,6 +271,7 @@
 
             if (incidents != null)
             {
+                var now = DateTime.UtcNow.ToTotalSeconds();
                 Incidents = incidents.Select(pokestopDisplay => new Incident(now, Id, pokestopDisplay))
                                      .ToList();
             }
@@ -392,8 +373,8 @@
                         if (conditionData.WithThrowType != null && conditionData.WithThrowType.ThrowType != HoloActivityType.ActivityUnknown)
                         {
                             infoData.Add("throw_type_id", Convert.ToUInt32(conditionData.WithThrowType.ThrowType));
+                            infoData.Add("hit", conditionData.WithThrowType.Hit);
                         }
-                        infoData.Add("hit", conditionData.WithThrowType.Hit);
                         break;
                     case ConditionType.WithLocation:
                         infoData.Add("cell_ids", conditionData.WithLocation.S2CellId);
@@ -600,7 +581,6 @@
             {
                 // Brand new Pokestop to insert, set first_seen_timestamp
                 FirstSeenTimestamp = now;
-                //return;
 
                 webhooks.Add(WebhookType.Pokestops, this);
                 if (LureExpireTimestamp > 0)
@@ -620,22 +600,18 @@
             {
                 // Pokestop already exists, compare against this instance to see if anything needs
                 // to be updated
-                //context.Attach(this);
 
                 if (oldPokestop.CellId > 0 && CellId == 0)
                 {
                     CellId = oldPokestop.CellId;
-                    //context.Entry(this).Property(p => p.CellId).IsModified = true;
                 }
                 if (oldPokestop.Name != null && Name == null)
                 {
                     Name = oldPokestop.Name;
-                    //context.Entry(this).Property(p => p.Name).IsModified = true;
                 }
                 if (oldPokestop.Url != null && Url == null)
                 {
                     Url = oldPokestop.Url;
-                    //context.Entry(this).Property(p => p.Url).IsModified = true;
                 }
                 if (updateQuest && oldPokestop.QuestType != null && QuestType == null)
                 {
@@ -646,14 +622,6 @@
                     QuestTimestamp = oldPokestop.QuestTimestamp;
                     QuestTemplate = oldPokestop.QuestTemplate;
                     QuestTitle = oldPokestop.QuestTitle;
-
-                    //context.Entry(this).Property(p => p.QuestType).IsModified = true;
-                    //context.Entry(this).Property(p => p.QuestTarget).IsModified = true;
-                    //context.Entry(this).Property(p => p.QuestConditions).IsModified = true;
-                    //context.Entry(this).Property(p => p.QuestRewards).IsModified = true;
-                    //context.Entry(this).Property(p => p.QuestTimestamp).IsModified = true;
-                    //context.Entry(this).Property(p => p.QuestTemplate).IsModified = true;
-                    //context.Entry(this).Property(p => p.QuestTitle).IsModified = true;
                 }
                 if (updateQuest && oldPokestop.AlternativeQuestType != null && AlternativeQuestType == null)
                 {
@@ -664,25 +632,15 @@
                     AlternativeQuestTimestamp = oldPokestop.AlternativeQuestTimestamp;
                     AlternativeQuestTemplate = oldPokestop.AlternativeQuestTemplate;
                     AlternativeQuestTitle = oldPokestop.AlternativeQuestTitle;
-
-                    //context.Entry(this).Property(p => p.AlternativeQuestType).IsModified = true;
-                    //context.Entry(this).Property(p => p.AlternativeQuestTarget).IsModified = true;
-                    //context.Entry(this).Property(p => p.AlternativeQuestConditions).IsModified = true;
-                    //context.Entry(this).Property(p => p.AlternativeQuestRewards).IsModified = true;
-                    //context.Entry(this).Property(p => p.AlternativeQuestTimestamp).IsModified = true;
-                    //context.Entry(this).Property(p => p.AlternativeQuestTemplate).IsModified = true;
-                    //context.Entry(this).Property(p => p.AlternativeQuestTitle).IsModified = true;
                 }
                 if (oldPokestop.LureId > 0 && LureId == 0)
                 {
                     LureId = oldPokestop.LureId;
-                    //context.Entry(this).Property(p => p.LureId).IsModified = true;
                 }
                 if ((oldPokestop.LureExpireTimestamp != null || oldPokestop.LureExpireTimestamp > 0) &&
                     (LureExpireTimestamp == null || LureExpireTimestamp == 0))
                 {
                     LureExpireTimestamp = oldPokestop.LureExpireTimestamp;
-                    //context.Entry(this).Property(p => p.LureExpireTimestamp).IsModified = true;
                 }
 
                 // TODO: Check shouldUpdate
@@ -706,7 +664,7 @@
             return webhooks;
         }
 
-        public dynamic GetWebhookData(string type)
+        public dynamic? GetWebhookData(string type)
         {
             return type.ToLower() switch
             {

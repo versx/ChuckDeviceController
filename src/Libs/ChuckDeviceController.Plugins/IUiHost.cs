@@ -4,10 +4,10 @@
     {
         Task AddPathAsync();
 
-        Task AddNavbarHeaderAsync(NavbarHeaderOptions options);
+        Task AddNavbarHeaderAsync(NavbarHeader header);
     }
 
-    public class NavbarHeaderOptions : INavbarHeader
+    public class NavbarHeader : INavbarHeader
     {
         public string Text { get; set; }
 
@@ -17,16 +17,32 @@
 
         public bool IsDropdown { get; set; }
 
-        public IEnumerable<NavbarHeaderDropdownItem> DropdownItems { get; set; }
+        public IEnumerable<NavbarHeaderDropdown> DropdownItems { get; set; }
+
+        public NavbarHeader(string text, string controllerPath, uint displayIndex, bool isDropdown, IEnumerable<NavbarHeaderDropdown> dropdownItems)
+        {
+            Text = text;
+            ControllerPath = controllerPath;
+            DisplayIndex = displayIndex;
+            IsDropdown = isDropdown;
+            DropdownItems = dropdownItems;
+        }
     }
 
-    public class NavbarHeaderDropdownItem : INavbarHeader
+    public class NavbarHeaderDropdown : INavbarHeader
     {
         public string Text { get; set; }
 
         public string ControllerPath { get; set; }
 
         public uint DisplayIndex { get; set; }
+
+        public NavbarHeaderDropdown(string text, string controllerPath, uint displayIndex)
+        {
+            Text = text;
+            ControllerPath = controllerPath;
+            DisplayIndex = displayIndex;
+        }
     }
 
     public interface INavbarHeader

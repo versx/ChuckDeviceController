@@ -209,7 +209,7 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             _logger.LogInformation($"[{Name}] Bootstrap route generation took {totalSeconds}s");
 
-            if (bootstrapRoute?.Count == 0)
+            if ((bootstrapRoute?.Count ?? 0) == 0)
             {
                 throw new Exception($"No bootstrap coordinates generated!");
             }
@@ -228,7 +228,7 @@
                 //Utilities.Utils.BenchmarkAction(() => RouteOptimizeUtil.Optimize(bootstrapRoute));
 
                 // Optimized route with no big jumps, although takes a lot longer to generate
-                var optimizedRoute = RouteOptimizeUtil.Optimize(bootstrapRoute);
+                var optimizedRoute = RouteOptimizeUtil.Optimize(bootstrapRoute!);
 
                 stopwatch.Stop();
                 totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);

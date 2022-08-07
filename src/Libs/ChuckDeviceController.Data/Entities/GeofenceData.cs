@@ -13,6 +13,6 @@
             Column("area"),
             JsonPropertyName("area"),
         ]
-        public dynamic Area { get; set; }
+        public dynamic? Area { get; set; }
     }
 }

@@ -591,9 +591,7 @@
             catch (Exception ex)
             {
                 _logger.LogError($"An error occurred while trying to convert Pokestop ('{pokestop.Id}') to Gym: {ex}");
-                return false;
             }
-
             return false;
         }
 
@@ -669,7 +667,6 @@
             {
                 _logger.LogError($"An error occurred while trying to convert Gym ('{gym.Id}') to Pokestop: {ex}");
             }
-
             return false;
         }
 

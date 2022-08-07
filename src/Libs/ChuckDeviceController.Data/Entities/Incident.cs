@@ -27,7 +27,7 @@
         public string Id { get; set; }
 
         [Column("pokestop_id")]
-        public string PokestopId { get; set; }
+        public string? PokestopId { get; set; }
 
         [Column("start")]
         public ulong Start { get; set; }
@@ -59,6 +59,7 @@
 
         public Incident()
         {
+            Id = string.Empty;
         }
 
         public Incident(ulong now, string pokestopId, PokestopIncidentDisplayProto pokestopDisplay)
@@ -144,12 +145,12 @@
             }
         }
 
-        public dynamic GetWebhookData(string type)
+        public dynamic? GetWebhookData(string type)
         {
             throw new NotImplementedException();
         }
 
-        public dynamic GetWebhookData(string type, Pokestop pokestop)
+        public dynamic? GetWebhookData(string type, Pokestop pokestop)
         {
             switch (type.ToLower())
             {

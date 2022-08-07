@@ -4,7 +4,7 @@
     {
         string Id { get; }
 
-        string PokestopId { get; }
+        string? PokestopId { get; }
 
         ulong Start { get; }
 

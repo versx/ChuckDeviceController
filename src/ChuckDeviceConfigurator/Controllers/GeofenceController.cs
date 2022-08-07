@@ -38,14 +38,14 @@
         public ActionResult Index()
         {
             var geofences = _context.Geofences.ToList();
-            geofences.ForEach(geofence =>
+            foreach (var geofence in geofences)
             {
                 string area = Convert.ToString(geofence.Data.Area);
                 var areasCount = geofence.Type == GeofenceType.Circle
-                    ? area.FromJson<List<Coordinate>>().Count
-                    : area.FromJson<List<List<Coordinate>>>().Count;
+                    ? area?.FromJson<List<Coordinate>>()?.Count ?? 0
+                    : area?.FromJson<List<List<Coordinate>>>()?.Count ?? 0;
                 geofence.AreasCount = (uint)areasCount;
-            });
+            }
             return View(new ViewModelsModel<Geofence>
             {
                 Items = geofences,

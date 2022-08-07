@@ -271,12 +271,7 @@
                     if ((shouldUpdateEgg && gym.RaidEndTimestamp == null) ||
                         (now >= gym.RaidEndTimestamp + NoRaidTimeS))
                     {
-                        noRaid.Add(new SmartRaidGym
-                        {
-                            Gym = gym,
-                            Updated = updated,
-                            Coordinate = point,
-                        });
+                        noRaid.Add(new SmartRaidGym(gym, updated, point));
                     }
                     else if (shouldUpdateBoss &&
                         (gym.RaidPokemonId == null || gym.RaidPokemonId == 0) &&
@@ -286,12 +281,7 @@
                         RaidInfoBeforeHatchS &&
                         now <= gym.RaidEndTimestamp)
                     {
-                        noBoss.Add(new SmartRaidGym
-                        {
-                            Gym = gym,
-                            Updated = updated,
-                            Coordinate = point,
-                        });
+                        noBoss.Add(new SmartRaidGym(gym, updated, point));
                     }
                 }
             }
@@ -360,7 +350,7 @@
 
             // Retrieve and sync all gyms/gym info from the database that match
             // the gym ids from the smart raid gyms cache.
-            foreach (var gym in gyms)
+            foreach (var gym in gyms!)
             {
                 _smartRaidGyms[gym.Id] = gym;
             }
@@ -404,7 +394,7 @@
                     return await Task.FromResult(allGyms);
                 }
 
-                var gyms = context.Gyms.Where(gym => ids.Contains(gym.Id))
+                var gyms = context.Gyms.Where(gym => ids!.Contains(gym.Id))
                                        .ToList();
                 return gyms;
             }
@@ -419,6 +409,13 @@
             public ulong Updated { get; set; }
 
             public Coordinate Coordinate { get; set; }
+
+            public SmartRaidGym(Gym gym, ulong updated, Coordinate coordinate)
+            {
+                Gym = gym;
+                Updated = updated;
+                Coordinate = coordinate;
+            }
         }
 
         private class GymsResult

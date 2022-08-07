@@ -430,11 +430,11 @@
                         _devices[uuid] = device;
                     }
                     _instances[oldInstanceName]?.StopAsync().ConfigureAwait(false);
-                    _instances[oldInstanceName] = null;
+                    _instances.Remove(oldInstanceName);
+                    //_instances[oldInstanceName] = null;
                 }
             }
 
-            //await RemoveInstanceAsync(oldInstanceName);
             await AddInstanceAsync(newInstance);
         }
 
@@ -443,16 +443,17 @@
             lock (_instancesLock)
             {
                 _instances[instanceName]?.StopAsync();
-                _instances[instanceName] = null;
+                //_instances[instanceName] = null;
                 _instances.Remove(instanceName);
             }
 
             lock (_devicesLock)
             {
                 var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, instanceName, true) == 0);
-                foreach (var device in devices)
+                foreach (var (uuid, _) in devices)
                 {
-                    _devices[device.Key] = null;
+                    //_devices[device.Key] = null;
+                    _devices.Remove(uuid);
                 }
             }
 

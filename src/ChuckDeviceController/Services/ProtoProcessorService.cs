@@ -11,6 +11,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Services.Rpc;
 
@@ -160,7 +161,8 @@
 
             var processedProtos = new List<dynamic>();
 
-            foreach (var rawData in payload.Payload.Contents)
+            var contents = payload?.Payload?.Contents ?? new List<ProtoData>();
+            foreach (var rawData in contents)
             {
                 if (string.IsNullOrEmpty(rawData.Data))
                 {
@@ -225,7 +227,7 @@
                                 var quests = itemData?.Quests?.Quest;
                                 if (uuid != null && (quests?.Count ?? 0) > 0)
                                 {
-                                    foreach (var quest in quests)
+                                    foreach (var quest in quests!)
                                     {
                                         if (quest.QuestContext == QuestProto.Types.Context.ChallengeQuest &&
                                             quest.QuestType == QuestType.QuestGeotargetedArScan)
@@ -252,7 +254,7 @@
                                     // Check for AR quest or if AR quest is required
                                     var hasAr = hasArQuestReqGlobal
                                         ?? hasArQuestReq
-                                        ?? GetArQuestMode(uuid, timestamp);
+                                        ?? GetArQuestMode(uuid!, timestamp);
                                     var title = fsr.ChallengeQuest.QuestDisplay.Title;
                                     var quest = fsr.ChallengeQuest.Quest;
                                     _logger.LogDebug($"[{uuid}] Has AR: {hasAr}");
@@ -599,10 +601,13 @@
                 // var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
                 // _logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
-                var storeData = await IsAllowedToSaveDataAsync(username);
-                if (storeData)
+                if (!string.IsNullOrEmpty(username))
                 {
-                    await _dataProcessor.ConsumeDataAsync(username, processedProtos);
+                    var storeData = await IsAllowedToSaveDataAsync(username);
+                    if (storeData)
+                    {
+                        await _dataProcessor.ConsumeDataAsync(username, processedProtos);
+                    }
                 }
             }
 

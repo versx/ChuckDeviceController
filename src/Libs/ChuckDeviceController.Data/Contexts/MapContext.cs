@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Contexts
 {
-    using System;
     using System.Collections.Generic;
 
     using Microsoft.EntityFrameworkCore;
@@ -10,43 +9,35 @@
 
     public class MapContext : DbContext
     {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public MapContext(DbContextOptions<MapContext> options)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {
-            // Migrate to latest
-            //var createSql = Database.GenerateCreateScript();
-            //Console.WriteLine($"CreateSql: {createSql}");
-            //base.Database.Migrate();
-
             base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         // Map entities
-        public DbSet<Gym>? Gyms { get; set; }
+        public DbSet<Gym> Gyms { get; set; }
 
-        public DbSet<GymDefender>? GymDefenders { get; set; }
+        public DbSet<GymDefender> GymDefenders { get; set; }
 
-        public DbSet<GymTrainer>? GymTrainers { get; set; }
+        public DbSet<GymTrainer> GymTrainers { get; set; }
 
-        public DbSet<Pokemon>? Pokemon { get; set; }
+        public DbSet<Pokemon> Pokemon { get; set; }
 
-        public DbSet<Pokestop>? Pokestops { get; set; }
+        public DbSet<Pokestop> Pokestops { get; set; }
 
-        public DbSet<Incident>? Incidents { get; set; }
+        public DbSet<Incident> Incidents { get; set; }
 
-        public DbSet<Cell>? Cells { get; set; }
+        public DbSet<Cell> Cells { get; set; }
 
-        public DbSet<Spawnpoint>? Spawnpoints { get; set; }
+        public DbSet<Spawnpoint> Spawnpoints { get; set; }
 
-        public DbSet<Weather>? Weather { get; set; }
+        public DbSet<Weather> Weather { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            /*
-            modelBuilder.Entity<Pokemon>()
-                        .Property(p => p.Pvp)
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<Dictionary<string, List<dynamic>>>()); // TODO: PvpRank
-            */
             modelBuilder.Entity<Pokestop>()
                         .Property(nameof(Pokestop.QuestConditions))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<Dictionary<string, dynamic>>>());
@@ -101,8 +92,11 @@
             modelBuilder.Entity<Pokemon>()
                         .Property(p => p.SeenType)
                         .HasConversion(x => Entities.Pokemon.SeenTypeToString(x), x => Entities.Pokemon.StringToSeenType(x));
+            //modelBuilder.Entity<Pokemon>()
+            //            .Property(p => p.PvpRankings)
+            //            .HasConversion(DbContextFactory.CreateJsonValueConverter<Dictionary<string, dynamic>>());
             modelBuilder.Entity<Pokemon>()
-                        .Property(p => p.PvpRankings)
+                        .Property(nameof(Entities.Pokemon.PvpRankings))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<Dictionary<string, dynamic>>());
 
             base.OnModelCreating(modelBuilder);

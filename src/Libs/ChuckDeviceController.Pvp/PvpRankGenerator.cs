@@ -209,7 +209,7 @@
                 : pvp;
         }
 
-        public IReadOnlyList<PvpRank> GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm? form, PvpLeague league)
+        public IReadOnlyList<PvpRank>? GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm? form, PvpLeague league)
         {
             var info = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
             List<PvpRank>? cached = null;
@@ -249,13 +249,9 @@
             {
                 if (!_pokemonBaseStats.ContainsKey(info))
                 {
-                    Console.WriteLine($"Nope");
-                }
-                var baseStats = _pokemonBaseStats[info];
-                if (baseStats == null)
-                {
                     return null;
                 }
+                var baseStats = _pokemonBaseStats[info];
                 var values = CalculateAllRanks(baseStats, (ushort)league);
                 switch (league)
                 {
@@ -296,18 +292,18 @@
             var pkmn = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
             if (!_pokemonBaseStats.ContainsKey(pkmn))
             {
-                Console.WriteLine($"Nope");
+                Console.WriteLine($"Pokemon base stats manifest does not contains Pokemon '{pkmn.Pokemon}_{pkmn.Form}_{pkmn.Gender}', skipping...");
+                //return null;
+                return result; // TODO: Double check
             }
             var baseStats = _pokemonBaseStats[pkmn];
-            var hasNoEvolveForm = costume!.ToString().ToLower().Contains(Strings.NoEvolveForm);
+            var hasNoEvolveForm = (costume ?? PokemonCostume.Unset).ToString().ToLower().Contains(Strings.NoEvolveForm);
             var hasCostumeEvoOverride = baseStats.CostumeEvolutionOverride != null &&
                 baseStats.CostumeEvolutionOverride.Count > 0 &&
                 costume != null && baseStats.CostumeEvolutionOverride.Contains(costume ?? null);
 
             // Check if Pokemon has evolutions but has form or costume that cannot evolve
-            if (baseStats != null && baseStats.Evolutions != null &&
-                baseStats.Evolutions.Count > 0 &&
-                (hasNoEvolveForm || hasCostumeEvoOverride))
+            if ((baseStats.Evolutions?.Count ?? 0) > 0 && (hasNoEvolveForm || hasCostumeEvoOverride))
             {
                 return result;
             }
@@ -554,7 +550,7 @@
                         Evolutions = evolutions,
                         BaseHeight = pokedexHeightM,
                         BaseWeight = pokedexWeightKg,
-                        CostumeEvolutionOverride = costumeEvolution,
+                        CostumeEvolutionOverride = costumeEvolution!,
                     };
                     pokemonBaseStats[new PokemonWithFormAndGender { Pokemon = pokemon, Form = form }] = baseStats;
                 }

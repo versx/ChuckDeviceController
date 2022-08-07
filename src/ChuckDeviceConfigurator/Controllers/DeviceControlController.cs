@@ -80,7 +80,7 @@
                 case "get_account":
                     return await HandleGetAccountAsync(device);
                 case "get_job":
-                    return await HandleGetJobRequestAsync(device, payload.Username);
+                    return await HandleGetJobRequestAsync(device, payload?.Username);
                 case "account_banned" or
                      "account_warning" or
                      "account_invalid_credentials" or
@@ -91,10 +91,10 @@
                 case "logged_out":
                     return await HandleLogoutAsync(device);
                 case "job_failed":
-                    _logger.LogWarning($"[{device.Uuid}] Job failed");
+                    _logger.LogWarning($"[{device?.Uuid}] Job failed");
                     return CreateErrorResponse("Job failed");
                 default:
-                    _logger.LogWarning($"[{device.Uuid}] Unhandled request type '{payload.Type}'");
+                    _logger.LogWarning($"[{device?.Uuid}] Unhandled request type '{payload.Type}'");
                     return CreateErrorResponse($"Unhandled request type '{payload.Type}'");
             }
         }
@@ -255,7 +255,7 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleGetJobRequestAsync(Device device, string username)
+        private async Task<DeviceResponse> HandleGetJobRequestAsync(Device device, string? username)
         {
             if (device == null)
             {
@@ -310,12 +310,8 @@
                 }
             }
 
-            var task = await jobController.GetTaskAsync(new TaskOptions
-            {
-                Uuid = device.Uuid,
-                AccountUsername = device.AccountUsername,
-                Account = account,
-            });
+            var options = new TaskOptions(device.Uuid, device.AccountUsername, account);
+            var task = await jobController.GetTaskAsync(options);
             if (task == null)
             {
                 return CreateErrorResponse("No tasks available yet", logWarning: true);

@@ -11,6 +11,6 @@
 
     public interface IGeofenceData
     {
-        dynamic Area { get; }
+        dynamic? Area { get; }
     }
 }

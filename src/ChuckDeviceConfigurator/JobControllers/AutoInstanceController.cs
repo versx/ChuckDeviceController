@@ -192,12 +192,12 @@
                         var nearbyStops = new List<PokestopWithMode> { pokestop };
                         var pokestopCoord = pokestop.Pokestop.ToCoordinate();
                         var todayStopsC = _todayStops;
-                        foreach (var stop in todayStopsC)
+                        foreach (var todayStop in todayStopsC)
                         {
-                            var distance = pokestopCoord.DistanceTo(stop.Pokestop.ToCoordinate());
-                            if (pokestop.IsAlternative == stop.IsAlternative && distance <= Strings.SpinRangeM)
+                            var distance = pokestopCoord.DistanceTo(todayStop.Pokestop.ToCoordinate());
+                            if (pokestop.IsAlternative == todayStop.IsAlternative && distance <= Strings.SpinRangeM)
                             {
-                                nearbyStops.Add(stop);
+                                nearbyStops.Add(todayStop);
                             }
                         }
 
@@ -263,7 +263,7 @@
 
                         await Cooldown.SetEncounterAsync(
                             _deviceFactory,
-                            (Account)options.Account,
+                            (Account?)options.Account,
                             pokestop.Pokestop.ToCoordinate(),
                             encounterTime
                         );
@@ -487,11 +487,7 @@
                                     if (!GeofenceService.InPolygon(polygon, coord))
                                         continue;
 
-                                    _allStops.Add(new PokestopWithMode
-                                    {
-                                        Pokestop = stop,
-                                        IsAlternative = isAlternative,
-                                    });
+                                    _allStops.Add(new PokestopWithMode(stop, isAlternative));
                                 }
                             }
                             catch (Exception ex)
@@ -638,11 +634,7 @@
                 var isAlternative = QuestMode == QuestMode.Alternative || QuestMode == QuestMode.Both;
                 if (isNormal || isAlternative)
                 {
-                    var pokestopWithMode = new PokestopWithMode
-                    {
-                        Pokestop = stop,
-                        IsAlternative = isAlternative,
-                    };
+                    var pokestopWithMode = new PokestopWithMode(stop, isAlternative);
                     var key = (stop.Id, isAlternative);
                     var spinAttemptsCount = _todayStopsAttempts.ContainsKey(key)
                         ? _todayStopsAttempts[key]
@@ -688,7 +680,7 @@
             return (localTime, seconds);
         }
 
-        private async Task<SwitchAccountTask> HandlePokestopDelayAsync(PokestopWithMode pokestop, string uuid, string accountUsername)
+        private async Task<SwitchAccountTask> HandlePokestopDelayAsync(PokestopWithMode pokestop, string uuid, string? accountUsername)
         {
             // TODO: Lock _todayStops
             _todayStops.Add(pokestop);
@@ -696,12 +688,18 @@
             string newUsername;
             try
             {
-                var pokestopCoord = pokestop.Pokestop.ToCoordinate();
+                var pokestopCoord = pokestop.Pokestop!.ToCoordinate();
                 var newAccount = await GetAccountAsync(uuid, pokestopCoord);
+                if (newAccount == null)
+                {
+                    _logger.LogWarning($"[{Name}] [{uuid}] Failed to get new account from database for device to set cache");
+                    return CreateSwitchAccountTask();
+                }
+
                 if (!_accounts.ContainsKey(uuid))
                 {
-                    newUsername = newAccount?.Username;
-                    _accounts.Add(uuid, newAccount?.Username);
+                    newUsername = newAccount.Username;
+                    _accounts.Add(uuid, newAccount.Username);
 
                     _logger.LogDebug($"[{Name}] [{uuid}] Over logout delay. Switching account from {accountUsername ?? "?"} to {newUsername ?? "?"}");
                 }
@@ -718,7 +716,7 @@
             return CreateSwitchAccountTask();
         }
 
-        private PokestopWithMode? HandleModeSwitch(Coordinate lastCoord, string uuid, string accountUsername)
+        private PokestopWithMode? HandleModeSwitch(Coordinate lastCoord, string uuid, string? accountUsername)
         {
             var (closest, mode) = GetNextClosestPokestop(lastCoord, accountUsername ?? uuid);
             if (closest == null)
@@ -728,7 +726,8 @@
 
             if ((mode ?? false) && !(closest?.IsAlternative ?? false))
             {
-                _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] Switching quest mode from {((mode ?? false) ? "alternative" : "none")} to normal.");
+                var modeName = (mode ?? false) ? "alternative" : "none";
+                _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] Switching quest mode from {modeName} to normal.");
 
                 PokestopWithMode? closestAr = null;
                 double closestArDistance = Strings.DefaultDistance;
@@ -884,8 +883,14 @@
 
     public class PokestopWithMode
     {
-        public Pokestop? Pokestop { get; set; }
+        public Pokestop Pokestop { get; set; }
 
         public bool IsAlternative { get; set; }
+
+        public PokestopWithMode(Pokestop pokestop, bool isAlternative)
+        {
+            Pokestop = pokestop;
+            IsAlternative = isAlternative;
+        }
     }
 }

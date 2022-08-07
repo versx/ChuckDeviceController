@@ -66,7 +66,7 @@
                 return new JsonResult(new BadRequestResult());
             }
 
-            foreach (var coord in coords)
+            foreach (var coord in coords!)
             {
                 _logger.LogInformation($"[{jobController.Name}] Queuing coordinate '{coord}' to ScanNext job controller instance");
                 scanNextController.ScanNextCoordinates.Enqueue(coord);

@@ -141,7 +141,7 @@
             {
                 // Retrieve database entities 
                 var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
-                _loggingHost.LogMessage($"Device: {device.Uuid}");
+                _loggingHost.LogMessage($"Device: {device?.Uuid}");
                 //var devices = await _databaseHost.GetListAsync<IDevice>();
                 //_loggingHost.LogMessage($"Devices: {devices.Count}");
 

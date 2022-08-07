@@ -8,7 +8,7 @@
         public ushort Level { get; set; }
 
         [DisplayName("Accounts")]
-        public string Accounts { get; set; }
+        public string? Accounts { get; set; }
 
         [DisplayName("Group Name")]
         public string? Group { get; set; }

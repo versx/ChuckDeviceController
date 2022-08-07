@@ -26,7 +26,7 @@
             BaseHeight = 0;
             BaseWeight = 0;
             Evolutions = new();
-            CostumeEvolutionOverride = null;
+            CostumeEvolutionOverride = new();
         }
 
         public bool Equals(PokemonBaseStats? other)

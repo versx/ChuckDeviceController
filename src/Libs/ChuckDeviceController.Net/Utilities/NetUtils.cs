@@ -11,7 +11,7 @@
         public const string DefaultUserAgent = "test123456"; // TODO: Set actual UserAgent
         public const string DefaultMimeType = "application/json";
 
-        public static string Get(string url)
+        public static string? Get(string url)
         {
             return GetAsync(url).Result;
         }
@@ -21,7 +21,7 @@
         /// </summary>
         /// <param name="url">Url to send the request to.</param>
         /// <returns>Returns the response string of the HTTP GET request.</returns>
-        public static async Task<string> GetAsync(string url)
+        public static async Task<string?> GetAsync(string url)
         {
             try
             {
@@ -81,12 +81,12 @@
             return (HttpStatusCode.BadRequest, null);
         }
 
-        public static HttpResponseMessage Head(string url)
+        public static HttpResponseMessage? Head(string url)
         {
             return HeadAsync(url).Result;
         }
 
-        public static async Task<HttpResponseMessage> HeadAsync(string url)
+        public static async Task<HttpResponseMessage?> HeadAsync(string url)
         {
             try
             {

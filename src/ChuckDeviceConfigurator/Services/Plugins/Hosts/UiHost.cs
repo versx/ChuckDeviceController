@@ -4,7 +4,7 @@
 
     public class UiHost : IUiHost
     {
-        public Task AddNavbarHeaderAsync(NavbarHeaderOptions options)
+        public Task AddNavbarHeaderAsync(NavbarHeader header)
         {
             return Task.CompletedTask;
         }

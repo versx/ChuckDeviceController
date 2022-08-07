@@ -4,11 +4,11 @@
 
     public class PluginEventHandlers
     {
-        public IDatabaseEvents DatabaseEvents { get; set; }
+        public IDatabaseEvents? DatabaseEvents { get; set; }
 
-        public IUiEvents UiEvents { get; set; }
+        public IUiEvents? UiEvents { get; set; }
 
-        public IJobControllerServiceEvents JobControllerEvents { get; set; }
+        public IJobControllerServiceEvents? JobControllerEvents { get; set; }
 
         public PluginEventHandlers()
         {

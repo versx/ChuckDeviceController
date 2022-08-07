@@ -8,6 +8,6 @@
 
         Task<TrainerInfoResponse> GetTrainerLevelingStatusAsync(string username);
 
-        Task<WebhookPayloadResponse> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json);
+        Task<WebhookPayloadResponse?> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json);
     }
 }

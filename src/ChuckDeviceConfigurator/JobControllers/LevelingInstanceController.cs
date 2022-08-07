@@ -496,7 +496,7 @@
             return currentCoord;
         }
 
-        private async Task<double> GetDelayAsync(Coordinate currentCoord, string uuid, IAccount account = null)
+        private async Task<double> GetDelayAsync(Coordinate currentCoord, string uuid, IAccount? account = null)
         {
             double delay;
             ulong encounterTime;
@@ -517,7 +517,7 @@
             try
             {
                 // TODO: Call SetEncounter event instead of passing around IDbContextFactories
-                await Cooldown.SetEncounterAsync(_deviceFactory, (Account)account, currentCoord, encounterTime);
+                await Cooldown.SetEncounterAsync(_deviceFactory, (Account?)account, currentCoord, encounterTime);
             }
             catch (Exception ex)
             {
@@ -660,7 +660,7 @@
 
             public ushort Level { get; set; }
 
-            public string Username { get; set; }
+            public string? Username { get; set; }
 
             public double XpPerHour { get; set; }
 

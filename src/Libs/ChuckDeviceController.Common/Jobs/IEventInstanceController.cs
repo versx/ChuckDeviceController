@@ -9,7 +9,7 @@
         /// Gets a unique group name to use with job controller instances
         /// to group related accounts with.
         /// </summary>
-        string GroupName { get; }
+        string? GroupName { get; }
 
         /// <summary>
         /// Gets a value determining whether the instance is for an event or

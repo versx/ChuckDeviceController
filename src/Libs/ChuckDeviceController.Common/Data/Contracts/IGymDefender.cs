@@ -32,9 +32,9 @@
 
         ulong DeploymentDuration { get; }
 
-        string TrainerName { get; }
+        string? TrainerName { get; }
 
-        string FortId { get; }
+        string? FortId { get; }
 
         ushort AttackIV { get; }
 

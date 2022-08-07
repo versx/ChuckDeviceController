@@ -7,7 +7,7 @@
     public class IvTask : BaseJobTask
 	{
         [JsonPropertyName("id")]
-		public string EncounterId { get; set; }
+		public string? EncounterId { get; set; }
 
         [JsonPropertyName("is_spawnpoint")]
         public bool IsSpawnpoint { get; set; }

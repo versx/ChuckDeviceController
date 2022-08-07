@@ -1202,7 +1202,7 @@
             }
         }
 
-        private static async Task<Spawnpoint> UpdateSpawnpointAsync(MapContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
+        private static async Task<Spawnpoint?> UpdateSpawnpointAsync(MapContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
         {
             var spawnId = pokemon.SpawnId ?? 0;
             if (spawnId == 0)
@@ -1374,35 +1374,24 @@
 
         private static WebhookPayloadType ConvertWebhookType(WebhookType type)
         {
-            switch (type)
+            return type switch
             {
-                case WebhookType.Pokemon:
-                    return WebhookPayloadType.Pokemon;
-                case WebhookType.Pokestops:
-                    return WebhookPayloadType.Pokestop;
-                case WebhookType.Lures:
-                    return WebhookPayloadType.Lure;
-                case WebhookType.Invasions:
-                    return WebhookPayloadType.Invasion;
-                case WebhookType.Quests:
-                    return WebhookPayloadType.Quest;
-                case WebhookType.AlternativeQuests:
-                    return WebhookPayloadType.AlternativeQuest;
-                case WebhookType.Gyms:
-                    return WebhookPayloadType.Gym;
-                case WebhookType.GymInfo:
-                    return WebhookPayloadType.GymInfo;
-                case WebhookType.Eggs:
-                    return WebhookPayloadType.Egg;
-                case WebhookType.Raids:
-                    return WebhookPayloadType.Raid;
-                case WebhookType.Weather:
-                    return WebhookPayloadType.Weather;
-                case WebhookType.Accounts:
-                    return WebhookPayloadType.Account;
-                default:
-                    return WebhookPayloadType.Pokemon;
-            }
+                WebhookType.Pokemon => WebhookPayloadType.Pokemon,
+                WebhookType.Pokestops => WebhookPayloadType.Pokestop,
+                WebhookType.Lures => WebhookPayloadType.Lure,
+                WebhookType.Invasions => WebhookPayloadType.Invasion,
+                WebhookType.Quests => WebhookPayloadType.Quest,
+                WebhookType.AlternativeQuests => WebhookPayloadType.AlternativeQuest,
+                WebhookType.Gyms => WebhookPayloadType.Gym,
+                WebhookType.GymInfo => WebhookPayloadType.GymInfo,
+                WebhookType.GymDefenders => WebhookPayloadType.GymDefender,
+                WebhookType.GymTrainers => WebhookPayloadType.GymTrainer,
+                WebhookType.Eggs => WebhookPayloadType.Egg,
+                WebhookType.Raids => WebhookPayloadType.Raid,
+                WebhookType.Weather => WebhookPayloadType.Weather,
+                WebhookType.Accounts => WebhookPayloadType.Account,
+                _ => WebhookPayloadType.Pokemon,
+            };
         }
 
         /*

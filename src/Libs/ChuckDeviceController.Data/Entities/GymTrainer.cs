@@ -61,6 +61,7 @@
 
         public GymTrainer()
         {
+            Name = string.Empty;
         }
 
         public GymTrainer(PlayerPublicProfileProto profileData)
@@ -84,33 +85,31 @@
 
         #region Public Methods
 
-        public dynamic GetWebhookData(string type)
+        public dynamic? GetWebhookData(string type)
         {
-            switch (type.ToLower())
+            return type.ToLower() switch
             {
-                case "gym-trainer":
-                default:
-                    return new
+                "gym-trainer" or _ => new
+                {
+                    type = WebhookHeaders.GymTrainer,
+                    message = new
                     {
-                        type = WebhookHeaders.GymTrainer,
-                        message = new
-                        {
-                            name = Name,
-                            level = Level,
-                            //gym_name = Name ?? UnknownGymName,
-                            team_id = Convert.ToUInt16(TeamId),
-                            battles_won = BattlesWon,
-                            km_walked = KmWalked,
-                            pokemon_caught = PokemonCaught,
-                            experience = Experience,
-                            combat_rank = CombatRank,
-                            combat_rating = CombatRating,
-                            has_shared_ex_pass = HasSharedExPass,
-                            gym_badge_type = GymBadgeType,
-                            updated = Updated,
-                        },
-                    };
-            }
+                        name = Name,
+                        level = Level,
+                        //gym_name = Name ?? UnknownGymName,
+                        team_id = Convert.ToUInt16(TeamId),
+                        battles_won = BattlesWon,
+                        km_walked = KmWalked,
+                        pokemon_caught = PokemonCaught,
+                        experience = Experience,
+                        combat_rank = CombatRank,
+                        combat_rating = CombatRating,
+                        has_shared_ex_pass = HasSharedExPass,
+                        gym_badge_type = GymBadgeType,
+                        updated = Updated,
+                    },
+                },
+            };
         }
 
         #endregion

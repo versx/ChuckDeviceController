@@ -45,7 +45,7 @@
         #region Constructor
 
         public TestInstanceController(string name, ushort minLevel, ushort maxLevel,
-            List<ICoordinate> coords, string groupName = null, bool isEvent = false)
+            List<ICoordinate> coords, string? groupName = null, bool isEvent = false)
         {
             Name = name;
             MinimumLevel = minLevel;
@@ -75,7 +75,7 @@
             if ((Coordinates?.Count ?? 0) == 0)
             {
                 Console.WriteLine($"[{Name}] [{options.Uuid}] Instance requires at least one coordinate, returning empty task for device");
-                return null;
+                return new TestTask();
             }
 
             // Get next scan coordinate for device based on route type
@@ -98,7 +98,7 @@
             if (currentCoord == null)
             {
                 Console.WriteLine($"[{Name}] [{options.Uuid}] Failed to retrieve next scan coordinate");
-                return null;
+                return new TestTask();
             }
 
             var task = CreateTask(currentCoord);
@@ -144,7 +144,6 @@
         {
             return new TestTask
             {
-                Area = Name,
                 Action = DeviceActionType.ScanPokemon,
                 Latitude = coord.Latitude,
                 Longitude = coord.Longitude,
@@ -156,9 +155,6 @@
 
     public class TestTask : ITask
     {
-        [JsonPropertyName("area")]
-        public string Area { get; set; }
-
         [JsonPropertyName("action")]
         public string Action { get; set; }
 

@@ -23,5 +23,18 @@
         /// assigned to the device.
         /// </summary>
         public IAccount? Account { get; set; } = null;
+
+        /// <summary>
+        /// Instantiates a new job controller task options
+        /// </summary>
+        /// <param name="uuid"></param>
+        /// <param name="accountUsername"></param>
+        /// <param name="account"></param>
+        public TaskOptions(string uuid, string? accountUsername, IAccount? account)
+        {
+            Uuid = uuid;
+            AccountUsername = accountUsername;
+            Account = account;
+        }
     }
 }

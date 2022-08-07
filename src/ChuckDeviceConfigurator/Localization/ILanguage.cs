@@ -34,7 +34,7 @@
         /// Property to get/set the default to value if a lookup fails
         /// </summary>
         /// <value>The default value.</value>
-        TTo DefaultValue { get; }
+        TTo? DefaultValue { get; }
 
         /// <summary>
         /// Property that returns the number of elements in the lookup table

@@ -1,23 +1,17 @@
 ﻿namespace ChuckDeviceController.Data.Contracts
 {
-    public interface IFortEntity
+    public interface IFortEntity : IFortPowerLevel
     {
-        string Id { get; set; }
+        string Id { get; }
 
-        string Name { get; set; }
+        string? Name { get; }
 
-        string Url { get; set; }
+        string? Url { get; }
 
         bool IsEnabled { get; }
 
         bool IsDeleted { get; }
 
         ulong CellId { get; }
-
-        uint? PowerUpPoints { get; }
-
-        ushort? PowerUpLevel { get; }
-
-        ulong? PowerUpEndTimestamp { get; }
     }
 }

@@ -132,7 +132,7 @@
             }
         }
 
-        public dynamic GetWebhookData(string type)
+        public dynamic? GetWebhookData(string type)
         {
             switch (type.ToLower())
             {
@@ -153,7 +153,7 @@
                             s2_cell_id = Id,
                             latitude = Latitude,
                             longitude = Longitude,
-                            polygon = polygon,
+                            polygon,
                             gameplay_condition = GameplayCondition,
                             wind_direction = WindDirection,
                             cloud_level = CloudLevel,

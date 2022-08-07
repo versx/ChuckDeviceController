@@ -49,7 +49,7 @@
             HttpPost("/raw"),
             Produces("application/json"),
         ]
-        public async Task<ProtoResponse> PostAsync(ProtoPayload payload)
+        public async Task<ProtoResponse?> PostAsync(ProtoPayload payload)
         {
             var response = await HandleProtoRequest(payload).ConfigureAwait(false);
             if (response?.Data == null)
@@ -85,7 +85,7 @@
 
         #region Request Handlers
 
-        private async Task<ProtoResponse> HandleProtoRequest(ProtoPayload payload)
+        private async Task<ProtoResponse?> HandleProtoRequest(ProtoPayload payload)
         {
             if (payload == null)
             {

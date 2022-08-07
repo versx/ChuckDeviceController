@@ -292,7 +292,7 @@
 
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while starting re-quest for assignment group {id}.");
                 return View();

@@ -35,7 +35,7 @@
             return null;
         }
 
-        public static ControllerContext CreateDeviceControllerContext(string connectionString) // where T : DbContext
+        public static ControllerContext CreateDeviceControllerContext(string connectionString)
         {
             try
             {
@@ -62,7 +62,7 @@
                 optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
                 var ctx = new MapContext(optionsBuilder.Options);
-                //ctx.ChangeTracker.AutoDetectChangesEnabled = false;
+                ctx.ChangeTracker.AutoDetectChangesEnabled = false;
                 return ctx;
             }
             catch (Exception ex)
@@ -79,18 +79,18 @@
         {
             var serverVersion = ServerVersion.AutoDetect(connectionString);
             return new DbContextOptionsBuilder()
-                .EnableSensitiveDataLogging()
+                //.EnableSensitiveDataLogging()
                 .UseMySql(connectionString, serverVersion, opt =>
                     opt.MigrationsAssembly(assemblyName)
                 );
         }
 
-        public static ValueConverter<T, string> CreateJsonValueConverter<T>()
+        public static ValueConverter<T, string?> CreateJsonValueConverter<T>()
         {
-            return new ValueConverter<T, string>
+            return new ValueConverter<T, string?>
             (
                 v => v.ToJson(true),
-                v => v.FromJson<T>()
+                v => v!.FromJson<T>()!
             );
         }
     }

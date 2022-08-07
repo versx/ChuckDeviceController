@@ -186,6 +186,7 @@
 
         public Pokemon()
         {
+            Id = string.Empty;
         }
 
         public Pokemon(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
@@ -385,11 +386,6 @@
             var wildPokemon = encounterData.Pokemon;
             var spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
             SpawnId = spawnId;
-
-            //var now = DateTime.UtcNow.ToTotalSeconds();
-            //var timestampMs = now * 1000;
-            //await UpdateSpawnpointAsync(context, wildPokemon, timestampMs, spawnId);
-
             SeenType = SeenType.Encounter;
             Updated = DateTime.UtcNow.ToTotalSeconds();
             Changed = Updated;
@@ -443,7 +439,7 @@
             Gender = gender;
             //Weather = weather;
 
-            IsShiny = diskEncounterData.Pokemon.PokemonDisplay.Shiny;
+            IsShiny = diskEncounterData.Pokemon?.PokemonDisplay?.Shiny ?? false;
             Username = username;
 
             if (HasIvChanges)
@@ -456,7 +452,7 @@
                     Capture2 = diskEncounterData.CaptureProbability.CaptureProbability[1];
                     Capture3 = diskEncounterData.CaptureProbability.CaptureProbability[2];
                 }
-                var cpMultiplier = diskEncounterData.Pokemon.CpMultiplier;
+                var cpMultiplier = diskEncounterData.Pokemon?.CpMultiplier ?? 0;
                 Level = CalculateLevel(cpMultiplier);
 
                 IsDitto = IsDittoDisguised(this);
@@ -477,8 +473,6 @@
             var setIvForWeather = false;
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
-
-            //context.Attach(this);
 
             Pokemon? oldPokemon = null;
             try
@@ -519,19 +513,6 @@
                     Capture3 = null;
                     updateIV = true;
                     //CalculatePvpRankings();
-
-                    //context.Entry(this).Property(p => p.AttackIV).IsModified = true;
-                    //context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
-                    //context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
-                    //context.Entry(this).Property(p => p.CP).IsModified = true;
-                    //context.Entry(this).Property(p => p.Weight).IsModified = true;
-                    //context.Entry(this).Property(p => p.Size).IsModified = true;
-                    //context.Entry(this).Property(p => p.Move1).IsModified = true;
-                    //context.Entry(this).Property(p => p.Move2).IsModified = true;
-                    //context.Entry(this).Property(p => p.Level).IsModified = true;
-                    //context.Entry(this).Property(p => p.Capture1).IsModified = true;
-                    //context.Entry(this).Property(p => p.Capture2).IsModified = true;
-                    //context.Entry(this).Property(p => p.Capture3).IsModified = true;
                 }
             }
             if (IsEvent && !IsExpireTimestampVerified)
@@ -660,36 +641,10 @@
                     SeenType = oldPokemon.SeenType;
                     IsDitto = IsDittoDisguised(oldPokemon);
 
-                    //context.Entry(this).Property(p => p.AttackIV).IsModified = true;
-                    //context.Entry(this).Property(p => p.DefenseIV).IsModified = true;
-                    //context.Entry(this).Property(p => p.StaminaIV).IsModified = true;
-                    //context.Entry(this).Property(p => p.CP).IsModified = true;
-                    //context.Entry(this).Property(p => p.Weight).IsModified = true;
-                    //context.Entry(this).Property(p => p.Size).IsModified = true;
-                    //context.Entry(this).Property(p => p.Move1).IsModified = true;
-                    //context.Entry(this).Property(p => p.Move2).IsModified = true;
-                    //context.Entry(this).Property(p => p.Level).IsModified = true;
-                    //context.Entry(this).Property(p => p.Capture1).IsModified = true;
-                    //context.Entry(this).Property(p => p.Capture2).IsModified = true;
-                    //context.Entry(this).Property(p => p.Capture3).IsModified = true;
-                    //context.Entry(this).Property(p => p.IsShiny).IsModified = true;
-                    //context.Entry(this).Property(p => p.SeenType).IsModified = true;
-                    //context.Entry(this).Property(p => p.IsDitto).IsModified = true;
-
                     if (IsDitto)
                     {
                         Console.WriteLine($"oldPokemon {Id} Ditto found, disguised as {PokemonId}");
                         SetDittoAttributes(PokemonId, oldPokemon.Weather ?? 0, oldPokemon.Level ?? 0);
-
-                        //context.Entry(this).Property(p => p.DisplayPokemonId).IsModified = true;
-                        //context.Entry(this).Property(p => p.PokemonId).IsModified = true;
-                        //context.Entry(this).Property(p => p.Form).IsModified = true;
-                        //context.Entry(this).Property(p => p.Costume).IsModified = true;
-                        //context.Entry(this).Property(p => p.Gender).IsModified = true;
-                        //context.Entry(this).Property(p => p.Move1).IsModified = true;
-                        //context.Entry(this).Property(p => p.Move2).IsModified = true;
-                        //context.Entry(this).Property(p => p.Weight).IsModified = true;
-                        //context.Entry(this).Property(p => p.Size).IsModified = true;
                     }
                 }
                 else if ((AttackIV != null && oldPokemon.AttackIV == null) ||
@@ -727,7 +682,7 @@
 
                 if (updateIV || setIvForWeather)
                 {
-                    HasIvChanges = true; // TODO: Check if HasIvChanges and add properties to modify
+                    HasIvChanges = true;
                 }
 
                 if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
@@ -759,7 +714,7 @@
             // TODO: Cache pokemon
         }
 
-        public dynamic GetWebhookData(string type)
+        public dynamic? GetWebhookData(string type)
         {
             switch (type.ToLower())
             {
@@ -792,7 +747,7 @@
                             weight = Weight,
                             height = Size,
                             weather = Weather,
-                            // TODO: Remove captures eventually
+                            // TODO: Remove capture rates eventually
                             capture_1 = Capture1,
                             capture_2 = Capture2,
                             capture_3 = Capture3,
@@ -813,113 +768,6 @@
         #endregion
 
         #region Private Methods
-
-        /*
-        private async Task UpdateSpawnpointAsync(MapDataContext context, WildPokemonProto wild, ulong timestampMs, ulong spawnId)
-        {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            if (wild.TimeTillHiddenMs <= 90000 && wild.TimeTillHiddenMs > 0)
-            {
-                ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(wild.TimeTillHiddenMs)) / 1000);
-                IsExpireTimestampVerified = true;
-                var date = timestampMs.FromMilliseconds();
-                var secondOfHour = date.Second + (date.Minute * 60);
-
-                var spawnpoint = new Spawnpoint
-                {
-                    Id = spawnId,
-                    Latitude = Latitude,
-                    Longitude = Longitude,
-                    DespawnSecond = Convert.ToUInt16(secondOfHour),
-                    LastSeen = SaveSpawnpointLastSeen ? now : null,
-                    Updated = now,
-                };
-                await spawnpoint.UpdateAsync(context, update: true);
-
-                OnSpawnpointUpdated(spawnpoint, isNew: false);
-                //context.Spawnpoints.SingleMergeAsync(spawnpoint, options =>
-                //{
-                //    options.UseTableLock = true;
-                //    options.OnMergeUpdateInputExpression = p => new
-                //    {
-                //        p.Id,
-                //        p.LastSeen,
-                //        p.Updated,
-                //        p.DespawnSecond,
-                //    };
-                //});
-            }
-            else
-            {
-                IsExpireTimestampVerified = false;
-            }
-
-            if (!IsExpireTimestampVerified && spawnId > 0)
-            {
-                var spawnpoint = await context.Spawnpoints.FindAsync(SpawnId);
-                if (spawnpoint != null && spawnpoint.DespawnSecond != null)
-                {
-                    var despawnSecond = spawnpoint.DespawnSecond;
-                    var timestampS = timestampMs / 1000;
-                    var date = timestampS.FromMilliseconds();
-                    var secondOfHour = date.Second + (date.Minute * 60);
-                    var despawnOffset = despawnSecond - secondOfHour;
-                    if (despawnSecond < secondOfHour)
-                        despawnOffset += 3600;
-
-                    // Update spawnpoint last_seen if enabled
-                    if (SaveSpawnpointLastSeen)
-                    {
-                        //context.Attach(spawnpoint);
-                        //context.Entry(spawnpoint).Property(p => p.LastSeen).IsModified = true;
-                        spawnpoint.LastSeen = now;
-                        //context.Spawnpoints.Update(spawnpoint);
-                        //context.Spawnpoints.SingleMerge(spawnpoint, options =>
-                        //{
-                        //    options.UseTableLock = true;
-                        //    options.OnMergeUpdateInputExpression = p => new
-                        //    {
-                        //        p.Id,
-                        //        p.LastSeen,
-                        //    };
-                        //});
-
-                        OnSpawnpointUpdated(spawnpoint, isNew: false);
-                    }
-
-                    ExpireTimestamp = timestampS + (ulong)despawnOffset;
-                    IsExpireTimestampVerified = true;
-                }
-                else
-                {
-                    var newSpawnpoint = new Spawnpoint
-                    {
-                        Id = spawnId,
-                        Latitude = Latitude,
-                        Longitude = Longitude,
-                        DespawnSecond = null,
-                        LastSeen = SaveSpawnpointLastSeen ? now : null,
-                        Updated = now,
-                    };
-                    await newSpawnpoint.UpdateAsync(context, update: true);
-
-                    OnSpawnpointUpdated(newSpawnpoint, isNew: true);
-                    /*
-                    //context.Spawnpoints.SingleMergeAsync(spawnpoint, options =>
-                    //{
-                    //    options.UseTableLock = true;
-                    //    options.OnMergeUpdateInputExpression = p => new
-                    //    {
-                    //        p.Id,
-                    //        p.LastSeen,
-                    //        p.Updated,
-                    //        p.DespawnSecond,
-                    //    };
-                    //});
-                }
-            }
-        }
-        */
 
         private static ushort CalculateLevel(double cpMultiplier)
         {

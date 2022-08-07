@@ -36,7 +36,7 @@
         /// Property to get/set the default to value if a lookup fails
         /// </summary>
         /// <value>The default value.</value>
-        public TTo DefaultValue { get; set; }
+        public TTo? DefaultValue { get; set; }
 
         /// <summary>
         /// Property that returns the number of elements in the lookup table
@@ -64,10 +64,10 @@
         /// type and ZERO for value types)
         /// </summary>
         public Language()
-            : this(default)
         {
             CurrentCulture = new CultureInfo(DefaultLanguage);
             LocaleDirectory = Path.Combine(Strings.BasePath, Strings.LocaleFolder);
+            _map = new TDictionary();
             //_map = LoadCountry(CurrentCulture.TwoLetterISOLanguageName);
         }
 
@@ -75,11 +75,9 @@
         /// Create a translator with a default to and from value specified
         /// </summary>
         /// <param name="defaultValue">Default value.</param>
-        public Language(TTo defaultValue)
+        public Language(TTo defaultValue) : this()
         {
             DefaultValue = defaultValue;
-
-            _map = new TDictionary();
         }
 
         #endregion
@@ -105,7 +103,7 @@
         public virtual TTo Translate(TFrom value)
         {
             // loop through table looking for result
-            if (value == null || !_map.TryGetValue(value, out TTo result))
+            if (value == null || !_map.TryGetValue(value, out TTo? result))
             {
                 result = DefaultValue;
             }

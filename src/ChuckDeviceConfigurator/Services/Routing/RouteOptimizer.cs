@@ -181,13 +181,13 @@
             var bestAttempt = new List<Coordinate>();
             for (var i = 0; i < optimizationAttempts; i++)
             {
-                var coords = new List<Coordinate>(coordinates);
+                var coords = new List<Coordinate>(coordinates!);
                 coords.Shuffle();
 
                 var attempt = new List<Coordinate>();
                 while (coords.Count > 0)
                 {
-                    var coord1 = coords.FirstOrDefault();
+                    var coord1 = coords.FirstOrDefault()!;
                     coords.Remove(coord1);
                     for (var j = 0; j < coords.Count; j++)
                     {

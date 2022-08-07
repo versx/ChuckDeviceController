@@ -199,7 +199,7 @@
             return "Good";
         }
 
-        public dynamic GetWebhookData(string type)
+        public dynamic? GetWebhookData(string type)
         {
             switch (type.ToLower())
             {

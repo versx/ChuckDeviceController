@@ -5,10 +5,10 @@
     public class ProtoResponse
     {
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [JsonPropertyName("data")]
-        public ProtoDataDetails Data { get; set; }
+        public ProtoDataDetails? Data { get; set; }
     }
 
     public class ProtoDataDetails

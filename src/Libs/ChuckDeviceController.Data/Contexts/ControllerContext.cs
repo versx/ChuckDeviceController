@@ -7,14 +7,11 @@
 
     public class ControllerContext : DbContext
     {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public ControllerContext(DbContextOptions<ControllerContext> options)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {
-            // Migrate to latest
-            //var createSql = Database.GenerateCreateScript();
-            //Console.WriteLine($"CreateSql: {createSql}");
-            //base.Database.Migrate();
-
             //base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 

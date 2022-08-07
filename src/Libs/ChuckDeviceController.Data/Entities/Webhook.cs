@@ -1,10 +1,8 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System.Collections.Generic;
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Linq;
     using System.Text.Json.Serialization;
 
     using ChuckDeviceController.Common.Data;
@@ -64,13 +62,13 @@
             Column("data"),
             JsonPropertyName("data"),
         ]
-        public WebhookData Data { get; set; }
+        public WebhookData? Data { get; set; }
 
         [
             NotMapped,
             JsonPropertyName("multiPolygons"),
         ]
-        public List<List<Coordinate>> GeofenceMultiPolygons { get; set; }
+        public List<List<Coordinate>>? GeofenceMultiPolygons { get; set; }
 
         #endregion
 

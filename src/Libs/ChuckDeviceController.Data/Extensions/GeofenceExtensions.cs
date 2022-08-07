@@ -20,7 +20,7 @@
             return coords;
         }
 
-        public static List<Coordinate> ConvertToCoordinates(this Geofence geofence)
+        public static List<Coordinate>? ConvertToCoordinates(this Geofence geofence)
         {
             var coords = new List<Coordinate>();
             var area = geofence.Data?.Area;
@@ -62,7 +62,7 @@
             if (coordsArray == null)
             {
                 Console.WriteLine($"Failed to parse MultiPolygon coordinates from geofence");
-                return (null, null);
+                return default;
             }
             coordinates.AddRange(coordsArray);
 

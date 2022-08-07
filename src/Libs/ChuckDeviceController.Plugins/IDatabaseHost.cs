@@ -23,7 +23,7 @@
         /// <typeparam name="TId">Database entity primary key type</typeparam>
         /// <param name="id">Primary key of the database entity</param>
         /// <returns>REturns a database entity</returns>
-        Task<T> GetByIdAsync<T, TId>(TId id);
+        Task<T?> GetByIdAsync<T, TId>(TId id);
     }
 
     /// <summary>

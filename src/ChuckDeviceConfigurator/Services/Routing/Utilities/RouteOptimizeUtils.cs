@@ -9,6 +9,11 @@
         public static List<Coordinate> Optimize(List<Coordinate> coords)
         {
             var start = coords.FirstOrDefault();
+            if (start == null)
+            {
+                Console.WriteLine($"Unable to get first starting coordinate from coordinates list");
+                return null;
+            }
             var route = Optimize(coords, start.Latitude, start.Longitude);
             return route;
         }

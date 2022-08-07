@@ -152,7 +152,7 @@
             var level = Convert.ToUInt16(Convert.ToString(data["level"]));
             var xp = Convert.ToUInt64(Convert.ToString(data["xp"]));
 
-            _jobControllerService.GotPlayerInfo(username, level, xp);
+            _jobControllerService.GotPlayerInfo(username!, level, xp);
         }
 
         #endregion

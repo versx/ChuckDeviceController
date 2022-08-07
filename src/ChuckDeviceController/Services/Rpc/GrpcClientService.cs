@@ -8,7 +8,7 @@
     public class GrpcClientService : IGrpcClientService
     {
         private readonly string _grpcConfiguratorServerEndpoint;
-        private readonly string _grpcWebhookServerEndpoint;
+        private readonly string? _grpcWebhookServerEndpoint;
 
         public GrpcClientService(IConfiguration configuration)
         {
@@ -84,9 +84,9 @@
             return response;
         }
 
-        public async Task<WebhookPayloadResponse> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json)
+        public async Task<WebhookPayloadResponse?> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json)
         {
-            if (string.IsNullOrEmpty(_grpcConfiguratorServerEndpoint))
+            if (string.IsNullOrEmpty(_grpcWebhookServerEndpoint))
             {
                 return null;
             }

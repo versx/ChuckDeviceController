@@ -43,10 +43,14 @@
         /// <typeparam name="T">The type of object to convert.</typeparam>
         /// <param name="value">The actual object value.</param>
         /// <returns>Returns the string representation of the converted object.</returns>
-        public static string ObjectToString<T>(this T value)
+        public static string? ObjectToString<T>(this T value)
         {
             //TypeConverter tc = TypeDescriptor.GetConverter(typeof(T));
             //return tc.ConvertToString(value);
+            if (value == null)
+            {
+                return null;
+            }
             try
             {
                 return Enum.GetName(typeof(T), value);
@@ -54,7 +58,7 @@
             catch (Exception ex)
             {
                 Debug.WriteLine($"ObjectToString: {ex}");
-                return value.ToString();
+                return value?.ToString();
             }
         }
 

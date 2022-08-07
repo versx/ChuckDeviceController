@@ -65,7 +65,7 @@
             {
                 throw new ArgumentNullException(nameof(coordinates));
             }
-            foreach (var coordinate in coordinates)
+            foreach (var coordinate in coordinates!)
             {
                 AddCoordinate(coordinate);
             }

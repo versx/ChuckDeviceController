@@ -31,7 +31,7 @@
             Column("data"),
             Required,
         ]
-        public GeofenceData Data { get; set; }
+        public GeofenceData? Data { get; set; }
 
         [
 

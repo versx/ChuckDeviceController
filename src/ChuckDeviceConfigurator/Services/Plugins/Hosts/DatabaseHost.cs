@@ -67,30 +67,30 @@
 
         #region Public Methods
 
-        public async Task<T> GetByIdAsync<T, TId>(TId id)
+        public async Task<T?> GetByIdAsync<T, TId>(TId id)
         {
             if (_controllerEntityTypes.Contains(typeof(T)))
             {
                 using (var context = _deviceFactory.CreateDbContext())
                 {
                     if (typeof(T) == typeof(IAccount))
-                        return (T)(await context.Accounts.FindAsync(id) as IAccount);
+                        return (T?)(await context.Accounts.FindAsync(id) as IAccount);
                     else if (typeof(T) == typeof(IAssignment))
-                        return (T)(await context.Assignments.FindAsync(id) as IAssignment);
+                        return (T?)(await context.Assignments.FindAsync(id) as IAssignment);
                     else if (typeof(T) == typeof(IAssignmentGroup))
-                        return (T)(await context.AssignmentGroups.FindAsync(id) as IAssignmentGroup);
+                        return (T?)(await context.AssignmentGroups.FindAsync(id) as IAssignmentGroup);
                     else if (typeof(T) == typeof(IDevice))
-                        return (T)(await context.Devices.FindAsync(id) as IDevice);
+                        return (T?)(await context.Devices.FindAsync(id) as IDevice);
                     else if (typeof(T) == typeof(IDeviceGroup))
-                        return (T)(await context.DeviceGroups.FindAsync(id) as IDeviceGroup);
+                        return (T?)(await context.DeviceGroups.FindAsync(id) as IDeviceGroup);
                     else if (typeof(T) == typeof(IGeofence))
-                        return (T)(await context.Geofences.FindAsync(id) as IGeofence);
+                        return (T?)(await context.Geofences.FindAsync(id) as IGeofence);
                     else if (typeof(T) == typeof(IInstance))
-                        return (T)(await context.Instances.FindAsync(id) as IInstance);
+                        return (T?)(await context.Instances.FindAsync(id) as IInstance);
                     else if (typeof(T) == typeof(IIvList))
-                        return (T)(await context.IvLists.FindAsync(id) as IIvList);
+                        return (T?)(await context.IvLists.FindAsync(id) as IIvList);
                     else if (typeof(T) == typeof(IWebhook))
-                        return (T)(await context.Webhooks.FindAsync(id) as IWebhook);
+                        return (T?)(await context.Webhooks.FindAsync(id) as IWebhook);
                 }
             }
             else if (_mapEntityTypes.Contains(typeof(T)))
@@ -98,23 +98,23 @@
                 using (var context = _mapFactory.CreateDbContext())
                 {
                     if (typeof(T) == typeof(ICell))
-                        return (T)(await context.Cells.FindAsync(id) as ICell);
+                        return (T?)(await context.Cells.FindAsync(id) as ICell);
                     else if (typeof(T) == typeof(IGym))
-                        return (T)(await context.Gyms.FindAsync(id) as IGym);
+                        return (T?)(await context.Gyms.FindAsync(id) as IGym);
                     else if (typeof(T) == typeof(IGymDefender))
-                        return (T)(await context.GymDefenders.FindAsync(id) as IGymDefender);
+                        return (T?)(await context.GymDefenders.FindAsync(id) as IGymDefender);
                     else if (typeof(T) == typeof(IGymTrainer))
-                        return (T)(await context.GymTrainers.FindAsync(id) as IGymTrainer);
+                        return (T?)(await context.GymTrainers.FindAsync(id) as IGymTrainer);
                     else if (typeof(T) == typeof(IIncident))
-                        return (T)(await context.Incidents.FindAsync(id) as IIncident);
+                        return (T?)(await context.Incidents.FindAsync(id) as IIncident);
                     else if (typeof(T) == typeof(IPokemon))
-                        return (T)(await context.Pokemon.FindAsync(id) as IPokemon);
+                        return (T?)(await context.Pokemon.FindAsync(id) as IPokemon);
                     else if (typeof(T) == typeof(IPokestop))
-                        return (T)(await context.Pokestops.FindAsync(id) as IPokestop);
+                        return (T?)(await context.Pokestops.FindAsync(id) as IPokestop);
                     else if (typeof(T) == typeof(ISpawnpoint))
-                        return (T)(await context.Spawnpoints.FindAsync(id) as ISpawnpoint);
+                        return (T?)(await context.Spawnpoints.FindAsync(id) as ISpawnpoint);
                     else if (typeof(T) == typeof(IWeather))
-                        return (T)(await context.Weather.FindAsync(id) as IWeather);
+                        return (T?)(await context.Weather.FindAsync(id) as IWeather);
                 }
             }
 

@@ -51,7 +51,7 @@
             DisplayName("Data"),
             Column("data"),
         ]
-        public InstanceData Data { get; set; }
+        public InstanceData? Data { get; set; }
 
         [
             DisplayName("Device Count"),
@@ -64,7 +64,7 @@
             DisplayName("Status"),
             NotMapped,
         ]
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         #endregion
 

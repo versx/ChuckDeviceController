@@ -164,7 +164,7 @@
         {
             var assignmentIds = assignmentGroup.AssignmentIds;
             var assignments = assignmentIds.Select(id => _assignments.FirstOrDefault(a => a.Id == id))
-                                           .Where(assignment => assignment.Enabled)
+                                           .Where(assignment => assignment!.Enabled)
                                            .ToList();
             using var context = _factory.CreateDbContext();
             var instances = context.Instances
@@ -176,7 +176,7 @@
             var instancesToClear = new List<Instance>();
             foreach (var assignment in assignments)
             {
-                var affectedInstanceNames = ResolveAssignmentChain(assignment);
+                var affectedInstanceNames = ResolveAssignmentChain(assignment!);
                 var affectedInstances = instances.Where(x => affectedInstanceNames.Contains(x.Name)).ToList();
                 var affectedInstanceNotAdded = affectedInstances.Where(x => !instancesToClear.Contains(x));
                 foreach (var instance in affectedInstanceNotAdded)
@@ -328,7 +328,7 @@
                         if ((deviceGroup?.DeviceUuids?.Count ?? 0) > 0)
                         {
                             // Get device entities from uuids.
-                            var devicesInGroup = context.Devices.Where(d => deviceGroup.DeviceUuids.Contains(d.Uuid))
+                            var devicesInGroup = context.Devices.Where(d => deviceGroup!.DeviceUuids.Contains(d.Uuid))
                                                                 .ToList();
                             if (devicesInGroup != null && devicesInGroup?.Count > 0)
                             {

@@ -146,11 +146,7 @@
 
             lock (_scannedLock)
             {
-                _scannedPokemon.Add(new ScannedPokemon
-                {
-                    DateScanned = DateTime.UtcNow.ToTotalSeconds(),
-                    Pokemon = pokemon,
-                });
+                _scannedPokemon.Add(new ScannedPokemon(pokemon, DateTime.UtcNow.ToTotalSeconds()));
             }
 
             var task = CreateIvTask(pokemon);
@@ -545,9 +541,15 @@
 
         private class ScannedPokemon
         {
+            public Pokemon Pokemon { get; set; }
+
             public ulong DateScanned { get; set; }
 
-            public Pokemon Pokemon { get; set; }
+            public ScannedPokemon(Pokemon pokemon, ulong dateScanned)
+            {
+                Pokemon = pokemon;
+                DateScanned = dateScanned;
+            }
         }
     }
 }
