@@ -94,29 +94,23 @@
                         type = WebhookHeaders.GymTrainer,
                         message = new
                         {
-                            gym_id = Id,
-                            gym_name = Name ?? UnknownGymName,
-                            latitude = Latitude,
-                            longitude = Longitude,
-                            url = Url,
-                            enabled = IsEnabled,
-                            team_id = Convert.ToUInt16(Team),
-                            last_modified = LastModifiedTimestamp,
-                            guard_pokemon_id = GuardingPokemonId,
-                            slots_available = AvailableSlots,
-                            raid_active_until = RaidEndTimestamp ?? 0,
-                            ex_raid_eligible = IsExRaidEligible,
-                            sponsor_id = SponsorId ?? 0,
-                            //partner_id = PartnerId,
-                            power_up_points = PowerUpPoints ?? 0,
-                            power_up_level = PowerUpLevel ?? 0,
-                            power_up_end_timestamp = PowerUpEndTimestamp ?? 0,
-                            ar_scan_eligible = IsArScanEligible ?? false,
+                            name = Name,
+                            //gym_name = Name ?? UnknownGymName,
+                            team_id = Convert.ToUInt16(TeamId),
+                            battles_won = BattlesWon,
+                            km_walked = KmWalked,
+                            pokemon_caught = PokemonCaught,
+                            experience = Experience,
+                            combat_rank = CombatRank,
+                            combat_rating = CombatRating,
+                            has_shared_ex_pass = HasSharedExPass,
+                            gym_badge_type = GymBadgeType,
+                            updated = Updated,
                         },
                     };
             }
 
-            Console.WriteLine($"Received unknown gym defender webhook payload type: {type}, returning null");
+            Console.WriteLine($"Received unknown gym trainer webhook payload type: {type}, returning null");
             return null;
         }
 
