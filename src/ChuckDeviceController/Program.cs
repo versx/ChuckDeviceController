@@ -61,15 +61,12 @@ builder.Services.AddSingleton<IBackgroundTaskQueue>(_ =>
 #region Database Contexts
 
 // Register data contexts and factories
-builder.Services.AddDbContextFactory<MapDataContext>(options =>
-    options.EnableSensitiveDataLogging()
-           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
-builder.Services.AddDbContext<MapDataContext>(options =>
-    options.EnableSensitiveDataLogging()
-           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
-builder.Services.AddDbContext<DeviceControllerContext>(options =>
-    options.EnableSensitiveDataLogging()
-           .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+builder.Services.AddDbContextFactory<MapContext>(options =>
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+builder.Services.AddDbContext<MapContext>(options =>
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+builder.Services.AddDbContext<ControllerContext>(options =>
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
 
 #endregion
 
@@ -99,7 +96,7 @@ var app = builder.Build();
 if (config.GetValue<bool>("AutomaticMigrations"))
 {
     // Migrate database if needed
-    await app.Services.MigrateDatabase<MapDataContext>();
+    await app.Services.MigrateDatabase<MapContext>();
 }
 
 // Configure the HTTP request pipeline.

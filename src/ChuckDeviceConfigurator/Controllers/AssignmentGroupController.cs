@@ -16,12 +16,12 @@
     public class AssignmentGroupController : Controller
     {
         private readonly ILogger<AssignmentGroupController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentGroupController(
             ILogger<AssignmentGroupController> logger,
-            DeviceControllerContext context,
+            ChuckDeviceController.Data.Contexts.ControllerContext context,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;

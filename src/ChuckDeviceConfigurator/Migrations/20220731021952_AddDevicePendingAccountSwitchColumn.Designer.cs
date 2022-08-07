@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChuckDeviceConfigurator.Migrations
 {
-    [DbContext(typeof(DeviceControllerContext))]
+    [DbContext(typeof(ControllerContext))]
     [Migration("20220731021952_AddDevicePendingAccountSwitchColumn")]
     partial class AddDevicePendingAccountSwitchColumn
     {

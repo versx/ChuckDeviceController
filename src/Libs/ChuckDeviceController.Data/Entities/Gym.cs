@@ -275,7 +275,7 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MapDataContext context)
+        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MapContext context)
         {
             var webhooks = new Dictionary<WebhookType, Gym>();
             Gym? oldGym = null;

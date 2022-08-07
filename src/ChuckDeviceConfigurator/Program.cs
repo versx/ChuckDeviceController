@@ -134,13 +134,13 @@ builder.Services.AddRazorPages();
 
 #region Database Contexts
 
-builder.Services.AddDbContextFactory<DeviceControllerContext>(options =>
+builder.Services.AddDbContextFactory<ControllerContext>(options =>
          options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<MapDataContext>(options =>
+builder.Services.AddDbContextFactory<MapContext>(options =>
          options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
-builder.Services.AddDbContext<DeviceControllerContext>(options =>
+builder.Services.AddDbContext<ControllerContext>(options =>
          options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
-builder.Services.AddDbContext<MapDataContext>(options =>
+builder.Services.AddDbContext<MapContext>(options =>
          options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
 
 #endregion
@@ -386,7 +386,7 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
                 await app.Services.MigrateDatabase<UserIdentityContext>();
 
                 // Migrate the device controller tables
-                await app.Services.MigrateDatabase<DeviceControllerContext>();
+                await app.Services.MigrateDatabase<ControllerContext>();
             }
 
             // Start job controller service

@@ -31,7 +31,7 @@
         #region Variables
 
         private readonly ILogger<IvInstanceController> _logger;
-        private readonly IDbContextFactory<MapDataContext> _mapFactory;
+        private readonly IDbContextFactory<MapContext> _mapFactory;
         private readonly PokemonPriorityQueue<Pokemon> _pokemonQueue;
         private readonly PokemonPriorityQueue<ScannedPokemon> _scannedPokemon;
         private static readonly List<ushort> EventAttackIV = new() { 0, 1, 15 };
@@ -75,7 +75,7 @@
         #region Constructor
 
         public IvInstanceController(
-            IDbContextFactory<MapDataContext> mapFactory,
+            IDbContextFactory<MapContext> mapFactory,
             Instance instance,
             List<MultiPolygon> multiPolygons,
             List<string> pokemonIds)

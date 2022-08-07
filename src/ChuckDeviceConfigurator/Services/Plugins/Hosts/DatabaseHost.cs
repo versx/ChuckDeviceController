@@ -15,8 +15,8 @@
         #region Variables
 
         private readonly ILogger<IDatabaseHost> _logger;
-        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
-        private readonly IDbContextFactory<MapDataContext> _mapFactory;
+        private readonly IDbContextFactory<ControllerContext> _deviceFactory;
+        private readonly IDbContextFactory<MapContext> _mapFactory;
         private readonly IReadOnlyList<Type> _controllerEntityTypes = new List<Type>
         {
             typeof(IAccount),
@@ -52,8 +52,8 @@
 
         public DatabaseHost(
             ILogger<IDatabaseHost> logger,
-            IDbContextFactory<DeviceControllerContext> deviceFactory,
-            IDbContextFactory<MapDataContext> mapFactory)
+            IDbContextFactory<ControllerContext> deviceFactory,
+            IDbContextFactory<MapContext> mapFactory)
         {
             _logger = logger;
             _deviceFactory = deviceFactory;

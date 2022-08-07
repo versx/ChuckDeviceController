@@ -89,7 +89,7 @@
         };
 
         private readonly ILogger<LevelingInstanceController> _logger;
-        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
+        private readonly IDbContextFactory<ControllerContext> _deviceFactory;
         private readonly Dictionary<string, PlayerLevelingData> _players = new();
         private readonly object _playersLock = new();
 
@@ -130,7 +130,7 @@
         #region Constructor
 
         public LevelingInstanceController(
-            IDbContextFactory<DeviceControllerContext> deviceFactory,
+            IDbContextFactory<ControllerContext> deviceFactory,
             Instance instance,
             List<MultiPolygon> multiPolygons)
         {

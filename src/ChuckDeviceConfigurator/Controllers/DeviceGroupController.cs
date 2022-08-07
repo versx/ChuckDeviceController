@@ -14,11 +14,11 @@
     public class DeviceGroupController : Controller
     {
         private readonly ILogger<DeviceGroupController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
 
         public DeviceGroupController(
             ILogger<DeviceGroupController> logger,
-            DeviceControllerContext context)
+            ChuckDeviceController.Data.Contexts.ControllerContext context)
         {
             _logger = logger;
             _context = context;

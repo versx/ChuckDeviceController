@@ -209,7 +209,7 @@
             SeenType = SeenType.Wild;
         }
 
-        public Pokemon(MapDataContext context, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
+        public Pokemon(MapContext context, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
         {
             Id = Convert.ToString(nearbyPokemon.EncounterId);
 
@@ -258,7 +258,7 @@
             IsExpireTimestampVerified = false;
         }
 
-        public Pokemon(MapDataContext context, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
+        public Pokemon(MapContext context, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
         {
             var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
             Id = encounterId.ToString();
@@ -471,7 +471,7 @@
             Changed = Updated;
         }
 
-        public async Task UpdateAsync(MapDataContext context, bool updateIv = false)
+        public async Task UpdateAsync(MapContext context, bool updateIv = false)
         {
             var updateIV = updateIv;
             var setIvForWeather = false;

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChuckDeviceController.Migrations
 {
-    [DbContext(typeof(DeviceControllerContext))]
+    [DbContext(typeof(ControllerContext))]
     [Migration("20220629073039_AddControllerModels")]
     partial class AddControllerModels
     {

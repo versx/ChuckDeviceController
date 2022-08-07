@@ -16,14 +16,14 @@
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly DeviceControllerContext _deviceContext;
-        private readonly MapDataContext _mapContext;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _deviceContext;
+        private readonly MapContext _mapContext;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public HomeController(
             ILogger<HomeController> logger,
-            DeviceControllerContext deviceContext,
-            MapDataContext mapContext,
+            ChuckDeviceController.Data.Contexts.ControllerContext deviceContext,
+            MapContext mapContext,
             UserManager<ApplicationUser> userManager)
         {
             _logger = logger;

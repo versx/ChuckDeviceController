@@ -14,12 +14,12 @@
     public class WebhookController : Controller
     {
         private readonly ILogger<WebhookController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
         private readonly IWebhookControllerService _webhookService;
 
         public WebhookController(
             ILogger<WebhookController> logger,
-            DeviceControllerContext context,
+            ChuckDeviceController.Data.Contexts.ControllerContext context,
             IWebhookControllerService webhookService)
         {
             _logger = logger;

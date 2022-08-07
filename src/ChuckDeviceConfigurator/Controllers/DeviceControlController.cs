@@ -17,12 +17,12 @@
     public class DeviceControlController : ControllerBase
     {
         private readonly ILogger<DeviceControlController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
         private readonly IJobControllerService _jobControllerService;
 
         public DeviceControlController(
             ILogger<DeviceControlController> logger,
-            DeviceControllerContext context,
+            ChuckDeviceController.Data.Contexts.ControllerContext context,
             IJobControllerService jobControllerService)
         {
             _logger = logger;

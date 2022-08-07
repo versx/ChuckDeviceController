@@ -17,13 +17,13 @@
     public class InstanceController : Controller
     {
         private readonly ILogger<InstanceController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
         private readonly IJobControllerService _jobControllerService;
         private readonly ITimeZoneService _timeZoneService;
 
         public InstanceController(
             ILogger<InstanceController> logger,
-            DeviceControllerContext context,
+            ChuckDeviceController.Data.Contexts.ControllerContext context,
             IJobControllerService jobControllerService,
             ITimeZoneService timeZoneService)
         {

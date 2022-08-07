@@ -30,8 +30,8 @@
         #region Variables
 
         private readonly ILogger<IJobControllerService> _logger;
-        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
-        private readonly IDbContextFactory<MapDataContext> _mapFactory;
+        private readonly IDbContextFactory<ControllerContext> _deviceFactory;
+        private readonly IDbContextFactory<MapContext> _mapFactory;
         private readonly ITimeZoneService _timeZoneService;
         private readonly IGeofenceControllerService _geofenceService;
         private readonly IIvListControllerService _ivListService;
@@ -67,8 +67,8 @@
 
         public JobControllerService(
             ILogger<IJobControllerService> logger,
-            IDbContextFactory<DeviceControllerContext> deviceFactory,
-            IDbContextFactory<MapDataContext> mapFactory,
+            IDbContextFactory<ControllerContext> deviceFactory,
+            IDbContextFactory<MapContext> mapFactory,
             ITimeZoneService timeZoneService,
             IGeofenceControllerService geofenceService,
             IIvListControllerService ivListService,
@@ -759,7 +759,7 @@
             return jobController;
         }
 
-        private static IJobController CreateSmartRaidJobController(IDbContextFactory<MapDataContext> factory, Instance instance, List<MultiPolygon> multiPolygons)
+        private static IJobController CreateSmartRaidJobController(IDbContextFactory<MapContext> factory, Instance instance, List<MultiPolygon> multiPolygons)
         {
             var jobController = new SmartRaidInstanceController(
                 factory,
@@ -769,7 +769,7 @@
             return jobController;
         }
 
-        private static IJobController CreateAutoQuestJobController(IDbContextFactory<MapDataContext> mapFactory, IDbContextFactory<DeviceControllerContext> deviceFactory, Instance instance, List<MultiPolygon> multiPolygons, short timeZoneOffset)
+        private static IJobController CreateAutoQuestJobController(IDbContextFactory<MapContext> mapFactory, IDbContextFactory<ControllerContext> deviceFactory, Instance instance, List<MultiPolygon> multiPolygons, short timeZoneOffset)
         {
             var jobController = new AutoInstanceController(
                 mapFactory,
@@ -803,7 +803,7 @@
             return jobController;
         }
 
-        private static IJobController CreateIvJobController(IDbContextFactory<MapDataContext> mapFactory, Instance instance, List<MultiPolygon> multiPolygons, IvList ivList)
+        private static IJobController CreateIvJobController(IDbContextFactory<MapContext> mapFactory, Instance instance, List<MultiPolygon> multiPolygons, IvList ivList)
         {
             var jobController = new IvInstanceController(
                 mapFactory,
@@ -814,7 +814,7 @@
             return jobController;
         }
 
-        private static IJobController CreateLevelingJobController(IDbContextFactory<DeviceControllerContext> deviceFactory, Instance instance, List<MultiPolygon> multiPolygons)
+        private static IJobController CreateLevelingJobController(IDbContextFactory<ControllerContext> deviceFactory, Instance instance, List<MultiPolygon> multiPolygons)
         {
             var jobController = new LevelingInstanceController(
                 deviceFactory,
@@ -824,7 +824,7 @@
             return jobController;
         }
 
-        private static IJobController CreateSpawnpointJobController(IDbContextFactory<MapDataContext> mapFactory, Instance instance, List<MultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
+        private static IJobController CreateSpawnpointJobController(IDbContextFactory<MapContext> mapFactory, Instance instance, List<MultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
         {
             var jobController = new TthFinderInstanceController(
                 mapFactory,

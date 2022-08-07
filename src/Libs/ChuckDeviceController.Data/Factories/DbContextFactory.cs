@@ -35,14 +35,14 @@
             return null;
         }
 
-        public static DeviceControllerContext CreateDeviceControllerContext(string connectionString) // where T : DbContext
+        public static ControllerContext CreateDeviceControllerContext(string connectionString) // where T : DbContext
         {
             try
             {
-                var optionsBuilder = new DbContextOptionsBuilder<DeviceControllerContext>();
+                var optionsBuilder = new DbContextOptionsBuilder<ControllerContext>();
                 optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
-                var ctx = new DeviceControllerContext(optionsBuilder.Options);
+                var ctx = new ControllerContext(optionsBuilder.Options);
                 //ctx.ChangeTracker.AutoDetectChangesEnabled = false;
                 return ctx;
             }
@@ -54,14 +54,14 @@
             return null;
         }
 
-        public static MapDataContext CreateMapDataContext(string connectionString)
+        public static MapContext CreateMapDataContext(string connectionString)
         {
             try
             {
-                var optionsBuilder = new DbContextOptionsBuilder<MapDataContext>();
+                var optionsBuilder = new DbContextOptionsBuilder<MapContext>();
                 optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
-                var ctx = new MapDataContext(optionsBuilder.Options);
+                var ctx = new MapContext(optionsBuilder.Options);
                 //ctx.ChangeTracker.AutoDetectChangesEnabled = false;
                 return ctx;
             }

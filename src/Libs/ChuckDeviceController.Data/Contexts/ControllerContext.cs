@@ -5,9 +5,9 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
 
-    public class DeviceControllerContext : DbContext
+    public class ControllerContext : DbContext
     {
-        public DeviceControllerContext(DbContextOptions<DeviceControllerContext> options)
+        public ControllerContext(DbContextOptions<ControllerContext> options)
             : base(options)
         {
             // Migrate to latest

@@ -15,11 +15,11 @@
     public class AccountController : Controller
     {
         private readonly ILogger<AccountController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
 
         public AccountController(
             ILogger<AccountController> logger,
-            DeviceControllerContext context)
+            ChuckDeviceController.Data.Contexts.ControllerContext context)
         {
             _logger = logger;
             _context = context;

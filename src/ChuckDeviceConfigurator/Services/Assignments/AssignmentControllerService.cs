@@ -13,7 +13,7 @@
     {
         #region Variables
 
-        private readonly IDbContextFactory<DeviceControllerContext> _factory;
+        private readonly IDbContextFactory<ControllerContext> _factory;
         private readonly ILogger<IAssignmentControllerService> _logger;
 
         private readonly object _assignmentsLock = new();
@@ -38,7 +38,7 @@
 
         public AssignmentControllerService(
             ILogger<IAssignmentControllerService> logger,
-            IDbContextFactory<DeviceControllerContext> factory)
+            IDbContextFactory<ControllerContext> factory)
         {
             _logger = logger;
             _factory = factory;

@@ -26,8 +26,8 @@
         #region Variables
 
         private readonly ILogger<AutoInstanceController> _logger;
-        private readonly IDbContextFactory<MapDataContext> _mapFactory;
-        private readonly IDbContextFactory<DeviceControllerContext> _deviceFactory;
+        private readonly IDbContextFactory<MapContext> _mapFactory;
+        private readonly IDbContextFactory<ControllerContext> _deviceFactory;
 
         private readonly List<PokestopWithMode> _allStops = new();
         private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops = new();
@@ -92,8 +92,8 @@
         #region Constructor
 
         public AutoInstanceController(
-            IDbContextFactory<MapDataContext> mapFactory,
-            IDbContextFactory<DeviceControllerContext> deviceFactory,
+            IDbContextFactory<MapContext> mapFactory,
+            IDbContextFactory<ControllerContext> deviceFactory,
             Instance instance,
             List<MultiPolygon> multiPolygons,
             short timeZoneOffset = Strings.DefaultTimeZoneOffset)

@@ -20,7 +20,7 @@
         private static readonly Dictionary<string, ushort> _levelCache = new();
 
         private readonly ILogger<ProtoController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly Data.Contexts.ControllerContext _context;
         private readonly IProtoProcessorService _protoProcessor;
 
         #endregion
@@ -29,7 +29,7 @@
 
         public ProtoController(
             ILogger<ProtoController> logger,
-            DeviceControllerContext context,
+            Data.Contexts.ControllerContext context,
             IProtoProcessorService protoProcessor)
         {
             _logger = logger;

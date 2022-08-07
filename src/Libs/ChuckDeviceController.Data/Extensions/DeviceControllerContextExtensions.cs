@@ -14,13 +14,13 @@
 
         #region Accounts
 
-        public static async Task<Account?> GetAccountAsync(this DeviceControllerContext context, string username)
+        public static async Task<Account?> GetAccountAsync(this ControllerContext context, string username)
         {
             var account = await context.Accounts.FindAsync(username);
             return account;
         }
 
-        public static async Task<Account?> GetNewAccountAsync(this DeviceControllerContext context,
+        public static async Task<Account?> GetNewAccountAsync(this ControllerContext context,
             ushort minLevel = 0, ushort maxLevel = 35, bool ignoreWarning = false, uint spins = 3500,
             bool noCooldown = true, string? group = null, ushort cooldownLimitS = CooldownLimitS,
             uint suspensionTimeLimitS = SuspensionTimeLimitS)
@@ -50,7 +50,7 @@
             return await Task.FromResult(account);
         }
 
-        public static Account? GetNewAccount(this DeviceControllerContext context,
+        public static Account? GetNewAccount(this ControllerContext context,
             ushort minLevel, ushort maxLevel, uint maxSpins = 3500, IReadOnlyList<string>? accountsInUse = null)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();

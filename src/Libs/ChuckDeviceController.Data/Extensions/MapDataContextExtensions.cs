@@ -17,7 +17,7 @@
         /// Clear all Pokestops with quests
         /// </summary>
         /// <param name="context"></param>
-        public static async Task ClearQuestsAsync(this MapDataContext context)
+        public static async Task ClearQuestsAsync(this MapContext context)
         {
             var pokestops = context.Pokestops.ToList();
             await ClearQuestsAsync(context, pokestops);
@@ -29,7 +29,7 @@
         /// <param name="context"></param>
         /// <param name="pokestops"></param>
         /// <returns></returns>
-        public static async Task ClearQuestsAsync(this MapDataContext context, List<Pokestop> pokestops)
+        public static async Task ClearQuestsAsync(this MapContext context, List<Pokestop> pokestops)
         {
             pokestops.ForEach(pokestop =>
             {
@@ -82,7 +82,7 @@
         /// </summary>
         /// <param name="context"></param>
         /// <param name="pokestopIds"></param>
-        public static async Task ClearQuestsAsync(this MapDataContext context, IEnumerable<string> pokestopIds)
+        public static async Task ClearQuestsAsync(this MapContext context, IEnumerable<string> pokestopIds)
         {
             var pokestopsToUpsert = new List<Pokestop>();
             var pokestops = GetPokestopsByIds(context, pokestopIds);
@@ -94,7 +94,7 @@
         /// </summary>
         /// <param name="context"></param>
         /// <param name="multiPolygons"></param>
-        public static async Task ClearQuestsAsync(this MapDataContext context, IEnumerable<MultiPolygon> multiPolygons)
+        public static async Task ClearQuestsAsync(this MapContext context, IEnumerable<MultiPolygon> multiPolygons)
         {
             foreach (var multiPolygon in multiPolygons)
             {
@@ -107,7 +107,7 @@
         /// </summary>
         /// <param name="context"></param>
         /// <param name="multiPolygon"></param>
-        public static async Task ClearQuestsAsync(this MapDataContext context, MultiPolygon multiPolygon)
+        public static async Task ClearQuestsAsync(this MapContext context, MultiPolygon multiPolygon)
         {
             // TODO: Use GeofenceService.InMultiPolygon instead
             var bbox = multiPolygon.GetBoundingBox();
@@ -119,7 +119,7 @@
         /// </summary>
         /// <param name="context"></param>
         /// <param name="bbox"></param>
-        public static async Task ClearQuestsAsync(this MapDataContext context, BoundingBox bbox)
+        public static async Task ClearQuestsAsync(this MapContext context, BoundingBox bbox)
         {
             var pokestopIds = context.Pokestops.Where(stop =>
                 stop.Latitude >= bbox.MinimumLatitude &&
@@ -136,7 +136,7 @@
 
         #region Pokestops
 
-        public static async Task<ulong> GetPokestopQuestCountAsync(this MapDataContext context, List<string> pokestopIds, QuestMode mode)
+        public static async Task<ulong> GetPokestopQuestCountAsync(this MapContext context, List<string> pokestopIds, QuestMode mode)
         {
             if (pokestopIds.Count > 10000)
             {
@@ -159,7 +159,7 @@
             return await Task.FromResult(Convert.ToUInt64(count));
         }
 
-        public static async Task<List<Pokestop>> GetPokestopsInBoundsAsync(this MapDataContext context, BoundingBox bbox, bool isEnabled = true)
+        public static async Task<List<Pokestop>> GetPokestopsInBoundsAsync(this MapContext context, BoundingBox bbox, bool isEnabled = true)
         {
             var pokestops = context.Pokestops.Where(stop =>
                 stop.Latitude >= bbox.MinimumLatitude &&
@@ -172,7 +172,7 @@
             return await Task.FromResult(pokestops);
         }
 
-        public static List<Pokestop> GetPokestopsByIds(this MapDataContext context, IEnumerable<string> pokestopIds, bool isEnabled = true, bool isDeleted = false)
+        public static List<Pokestop> GetPokestopsByIds(this MapContext context, IEnumerable<string> pokestopIds, bool isEnabled = true, bool isDeleted = false)
         {
             var pokestops = context.Pokestops
                                    .Where(pokestop => pokestopIds.Contains(pokestop.Id))
@@ -190,7 +190,7 @@
         /// Get all S2 cells
         /// </summary>
         /// <param name="context"></param>
-        public static async Task<List<Cell>> GetS2CellsAsync(this MapDataContext context)
+        public static async Task<List<Cell>> GetS2CellsAsync(this MapContext context)
         {
             var cells = context.Cells.ToList();
             return await Task.FromResult(cells);
@@ -201,7 +201,7 @@
         /// </summary>
         /// <param name="context"></param>
         /// <param name="bbox"></param>
-        public static async Task<List<Cell>> GetS2CellsAsync(this MapDataContext context, BoundingBox bbox)
+        public static async Task<List<Cell>> GetS2CellsAsync(this MapContext context, BoundingBox bbox)
         {
             var cells = context.Cells.Where(cell =>
                 cell.Latitude >= bbox.MinimumLatitude &&
@@ -218,7 +218,7 @@
         /// <param name="context"></param>
         /// <param name="multiPolygon"></param>
         /// <returns></returns>
-        public static async Task<List<Cell>> GetS2CellsAsync(this MapDataContext context, MultiPolygon multiPolygon)
+        public static async Task<List<Cell>> GetS2CellsAsync(this MapContext context, MultiPolygon multiPolygon)
         {
             var bbox = multiPolygon.GetBoundingBox();
             // Get S2 cells within geofence bounding box
@@ -235,7 +235,7 @@
         /// <param name="context"></param>
         /// <param name="multiPolygons"></param>
         /// <returns></returns>
-        public static async Task<List<Cell>> GetS2CellsAsync(this MapDataContext context, IEnumerable<MultiPolygon> multiPolygons)
+        public static async Task<List<Cell>> GetS2CellsAsync(this MapContext context, IEnumerable<MultiPolygon> multiPolygons)
         {
             var cells = new List<Cell>();
             foreach (var multiPolygon in multiPolygons)

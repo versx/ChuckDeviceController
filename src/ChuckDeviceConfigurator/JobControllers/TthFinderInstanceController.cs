@@ -33,7 +33,7 @@
         #region Variables
 
         private readonly ILogger<TthFinderInstanceController> _logger;
-        private readonly IDbContextFactory<MapDataContext> _factory;
+        private readonly IDbContextFactory<MapContext> _factory;
         private readonly IRouteCalculator _routeCalculator;
         private int _lastIndex = 0;
         private ulong _startTime = 0;
@@ -67,7 +67,7 @@
         #region Constructor
 
         public TthFinderInstanceController(
-            IDbContextFactory<MapDataContext> factory,
+            IDbContextFactory<MapContext> factory,
             Instance instance,
             List<MultiPolygon> multiPolygons,
             IRouteCalculator routeCalculator)

@@ -10,7 +10,7 @@
         #region Variables
 
         //private readonly ILogger<IGeofenceControllerService> _logger;
-        private readonly IDbContextFactory<DeviceControllerContext> _factory;
+        private readonly IDbContextFactory<ControllerContext> _factory;
 
 		private readonly object _geofencesLock = new();
         private List<Geofence> _geofences;
@@ -21,7 +21,7 @@
 
         public GeofenceControllerService(
 			//ILogger<IGeofenceControllerService> logger,
-            IDbContextFactory<DeviceControllerContext> factory)
+            IDbContextFactory<ControllerContext> factory)
         {
             //_logger = logger;
             _factory = factory;

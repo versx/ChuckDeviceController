@@ -32,7 +32,7 @@
 
         private readonly ILogger<IProtoProcessorService> _logger;
         private readonly IBackgroundTaskQueue _taskQueue;
-        private readonly IDbContextFactory<MapDataContext> _dbFactory;
+        private readonly IDbContextFactory<MapContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
 
@@ -64,7 +64,7 @@
         public DataProcessorService(
             ILogger<IProtoProcessorService> logger,
             IBackgroundTaskQueue taskQueue,
-            IDbContextFactory<MapDataContext> factory,
+            IDbContextFactory<MapContext> factory,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService)
         {
@@ -1202,7 +1202,7 @@
             }
         }
 
-        private static async Task<Spawnpoint> UpdateSpawnpointAsync(MapDataContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
+        private static async Task<Spawnpoint> UpdateSpawnpointAsync(MapContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
         {
             var spawnId = pokemon.SpawnId ?? 0;
             if (spawnId == 0)

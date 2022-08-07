@@ -18,14 +18,14 @@
     public class UtilitiesController : Controller
     {
         private readonly ILogger<UtilitiesController> _logger;
-        private readonly DeviceControllerContext _deviceContext;
-        private readonly MapDataContext _mapContext;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _deviceContext;
+        private readonly MapContext _mapContext;
         private readonly IJobControllerService _jobControllerService;
 
         public UtilitiesController(
             ILogger<UtilitiesController> logger,
-            DeviceControllerContext deviceContext,
-            MapDataContext mapContext,
+            ChuckDeviceController.Data.Contexts.ControllerContext deviceContext,
+            MapContext mapContext,
             IJobControllerService jobControllerService)
         {
             _logger = logger;

@@ -18,13 +18,13 @@
     public class GeofenceController : Controller
     {
         private readonly ILogger<GeofenceController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
         private readonly IGeofenceControllerService _geofenceService;
         private readonly IJobControllerService _jobControllerService;
 
         public GeofenceController(
             ILogger<GeofenceController> logger,
-            DeviceControllerContext context,
+            ChuckDeviceController.Data.Contexts.ControllerContext context,
             IGeofenceControllerService geofenceService,
             IJobControllerService jobControllerService)
         {

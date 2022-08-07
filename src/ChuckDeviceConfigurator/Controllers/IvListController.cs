@@ -14,12 +14,12 @@
     public class IvListController : Controller
     {
         private readonly ILogger<IvListController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
         private readonly IIvListControllerService _ivListService;
 
         public IvListController(
             ILogger<IvListController> logger,
-            DeviceControllerContext context,
+            ChuckDeviceController.Data.Contexts.ControllerContext context,
             IIvListControllerService ivListService)
         {
             _logger = logger;

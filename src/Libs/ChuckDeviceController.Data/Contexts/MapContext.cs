@@ -8,9 +8,9 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
 
-    public class MapDataContext : DbContext
+    public class MapContext : DbContext
     {
-        public MapDataContext(DbContextOptions<MapDataContext> options)
+        public MapContext(DbContextOptions<MapContext> options)
             : base(options)
         {
             // Migrate to latest
@@ -22,23 +22,23 @@
         }
 
         // Map entities
-        public DbSet<Gym> Gyms { get; set; }
+        public DbSet<Gym>? Gyms { get; set; }
 
-        public DbSet<GymDefender> GymDefenders { get; set; }
+        public DbSet<GymDefender>? GymDefenders { get; set; }
 
-        public DbSet<GymTrainer> GymTrainers { get; set; }
+        public DbSet<GymTrainer>? GymTrainers { get; set; }
 
-        public DbSet<Pokemon> Pokemon { get; set; }
+        public DbSet<Pokemon>? Pokemon { get; set; }
 
-        public DbSet<Pokestop> Pokestops { get; set; }
+        public DbSet<Pokestop>? Pokestops { get; set; }
 
-        public DbSet<Incident> Incidents { get; set; }
+        public DbSet<Incident>? Incidents { get; set; }
 
-        public DbSet<Cell> Cells { get; set; }
+        public DbSet<Cell>? Cells { get; set; }
 
-        public DbSet<Spawnpoint> Spawnpoints { get; set; }
+        public DbSet<Spawnpoint>? Spawnpoints { get; set; }
 
-        public DbSet<Weather> Weather { get; set; }
+        public DbSet<Weather>? Weather { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

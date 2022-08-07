@@ -66,7 +66,7 @@
             return new CooldownResult(delay, encounterTime);
         }
 
-        public static async Task SetEncounterAsync(IDbContextFactory<DeviceControllerContext> factory, Account? account, Coordinate location, ulong encounterTime)
+        public static async Task SetEncounterAsync(IDbContextFactory<ControllerContext> factory, Account? account, Coordinate location, ulong encounterTime)
         {
             if (factory == null)
             {
@@ -94,7 +94,7 @@
             }
         }
 
-        public static async Task SetSpinCountAsync(IDbContextFactory<DeviceControllerContext> factory, string accountUsername)
+        public static async Task SetSpinCountAsync(IDbContextFactory<ControllerContext> factory, string accountUsername)
         {
             if (string.IsNullOrEmpty(accountUsername))
             {
