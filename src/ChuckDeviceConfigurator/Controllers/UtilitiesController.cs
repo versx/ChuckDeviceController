@@ -540,23 +540,58 @@
                     needsUpdate = true;
                 }
 
-                // Delete old Pokestop
-                _mapContext.Pokestops.Remove(pokestop);
-                await _mapContext.SaveChangesAsync();
-
-                if (needsUpdate)
+                try
                 {
-                    // Update Gym details
-                    gym.IsEnabled = true;
-                    gym.IsDeleted = false;
-                    _mapContext.Gyms.Update(gym);
+                    // Delete old Pokestop
+                    _mapContext.Pokestops.Remove(pokestop);
+
+                    if (needsUpdate)
+                    {
+                        // Update Gym details
+                        gym.IsEnabled = true;
+                        gym.IsDeleted = false;
+                        _mapContext.Gyms.Update(gym);
+                    }
                     await _mapContext.SaveChangesAsync();
+                    return true;
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"An error occurred while trying to convert Pokestop ('{pokestop.Id}') to Gym: {ex}");
+                    return false;
+                }
+            }
+
+            // Insert new gym with pokestop properties
+            gym = new Gym
+            {
+                Id = pokestop.Id,
+                Name = pokestop.Name,
+                Url = pokestop.Url,
+                Latitude = pokestop.Latitude,
+                Longitude = pokestop.Longitude,
+                IsArScanEligible = pokestop.IsArScanEligible,
+                IsEnabled = true,
+                SponsorId = pokestop.SponsorId,
+                PowerUpEndTimestamp = pokestop.PowerUpEndTimestamp,
+                PowerUpLevel = pokestop.PowerUpLevel,
+                PowerUpPoints = pokestop.PowerUpPoints,
+                FirstSeenTimestamp = pokestop.FirstSeenTimestamp,
+                LastModifiedTimestamp = pokestop.LastModifiedTimestamp,
+                Updated = pokestop.Updated,
+                CellId = pokestop.CellId,
+            };
+
+            try
+            {
+                await _mapContext.Gyms.AddAsync(gym);
+                await _mapContext.SaveChangesAsync();
                 return true;
             }
-            else
+            catch (Exception ex)
             {
-                // TODO: Insert new gym from pokestop properties
+                _logger.LogError($"An error occurred while trying to convert Pokestop ('{pokestop.Id}') to Gym: {ex}");
+                return false;
             }
 
             return false;
@@ -579,23 +614,60 @@
                     needsUpdate = true;
                 }
 
-                // Delete old Gym
-                _mapContext.Gyms.Remove(gym);
-                await _mapContext.SaveChangesAsync();
-
-                if (needsUpdate)
+                try
                 {
-                    // Update Pokestop details
-                    pokestop.IsEnabled = true;
-                    pokestop.IsDeleted = false;
-                    _mapContext.Pokestops.Update(pokestop);
+                    // Delete old Gym
+                    _mapContext.Gyms.Remove(gym);
+
+                    if (needsUpdate)
+                    {
+                        // Update Pokestop details
+                        pokestop.IsEnabled = true;
+                        pokestop.IsDeleted = false;
+                        _mapContext.Pokestops.Update(pokestop);
+                    }
                     await _mapContext.SaveChangesAsync();
+                    return true;
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"An error occurred while trying to convert Gym ('{gym.Id}') to Pokestop: {ex}");
+                    return false;
+                }
+            }
+
+            // Delete old Pokestop
+            _mapContext.Gyms.Remove(gym);
+
+            // Insert new pokestop with gym properties
+            pokestop = new Pokestop
+            {
+                Id = gym.Id,
+                Name = gym.Name,
+                Url = gym.Url,
+                Latitude = gym.Latitude,
+                Longitude = gym.Longitude,
+                IsArScanEligible = gym.IsArScanEligible ?? false,
+                IsEnabled = true,
+                SponsorId = gym.SponsorId,
+                PowerUpEndTimestamp = gym.PowerUpEndTimestamp,
+                PowerUpLevel = gym.PowerUpLevel,
+                PowerUpPoints = gym.PowerUpPoints,
+                FirstSeenTimestamp = gym.FirstSeenTimestamp,
+                LastModifiedTimestamp = gym.LastModifiedTimestamp,
+                Updated = gym.Updated,
+                CellId = gym.CellId,
+            };
+
+            try
+            {
+                await _mapContext.Pokestops.AddAsync(pokestop);
+                await _mapContext.SaveChangesAsync();
                 return true;
             }
-            else
+            catch (Exception ex)
             {
-                // TODO: Insert new pokestop from gym properties
+                _logger.LogError($"An error occurred while trying to convert Gym ('{gym.Id}') to Pokestop: {ex}");
             }
 
             return false;
