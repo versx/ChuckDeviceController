@@ -1,7 +1,5 @@
-﻿namespace ChuckDeviceController.Plugins
+﻿namespace ChuckDeviceController.Common.Jobs
 {
-    using ChuckDeviceController.Common;
-
     public interface IJobControllerCoordinates
     {
         IReadOnlyList<ICoordinate> Coordinates { get; }

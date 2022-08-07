@@ -9,11 +9,34 @@
 
         //IReadOnlyDictionary<string, IJobController> Instances { get; }
 
+        Task CreateInstanceTypeAsync(IInstanceCreationOptions options);
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="name"></param>
         /// <param name="controller"></param>
         Task AddJobControllerAsync(string name, IJobController controller);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="jobControllerName"></param>
+        /// <returns></returns>
+        Task AssignDeviceToJobControllerAsync(IDevice device, string jobControllerName);
+    }
+
+    public interface IInstanceCreationOptions
+    {
+        string Name { get; }
+
+        ushort MinimumLevel { get; }
+
+        ushort MaximumLevel { get; }
+
+        string GroupName { get; }
+
+        bool IsEvent { get; }
     }
 }

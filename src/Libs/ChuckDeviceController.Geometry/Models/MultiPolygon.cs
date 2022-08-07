@@ -1,14 +1,14 @@
 ﻿namespace ChuckDeviceController.Geometry.Models
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
 
     using Google.Common.Geometry;
 
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
 
-    public class MultiPolygon : List<Polygon>
+    public class MultiPolygon : List<IPolygon>, IMultiPolygon
     {
         /// <summary>
         /// Gets the S2 cells within the current multi polygon

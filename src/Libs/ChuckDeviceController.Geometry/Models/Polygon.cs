@@ -2,7 +2,9 @@
 {
     using System.Collections.Generic;
 
-    public class Polygon : List<double>
+    using ChuckDeviceController.Common.Geometry;
+
+    public class Polygon : List<double>, IPolygon
     {
         public Polygon(double lat, double lon)
         {

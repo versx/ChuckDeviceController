@@ -13,12 +13,14 @@
     using ChuckDeviceConfigurator.Services.Rpc.Models;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugins;
 
     // TODO: Refactor class into separate smaller classes
 
@@ -134,6 +136,26 @@
 
         #region Plugin Host
 
+        public async Task CreateInstanceTypeAsync(IInstanceCreationOptions options)
+        {
+            // TODO: Allow plugins to create instances to link with job controllers, that way they are easily used via the UI
+            var instance = new Instance
+            {
+                Name = options.Name,
+                MinimumLevel = options.MinimumLevel,
+                MaximumLevel = options.MaximumLevel,
+                Type = InstanceType.Custom,
+                Geofences = new(),
+                Data = new InstanceData
+                {
+                    AccountGroup = options.GroupName,
+                    IsEvent = options.IsEvent,
+                    // TODO: Allow for custom instance data properties
+                },
+            };
+            await AddInstanceAsync(instance);
+        }
+
         public async Task AddJobControllerAsync(string name, IJobController jobController)
         {
             if (string.IsNullOrEmpty(name))
@@ -158,6 +180,29 @@
                 _pluginInstances.Add(name, jobController);
 
                 _logger.LogInformation($"Successfully added job controller '{name}' to plugin job controllers cache from plugin");
+            }
+
+            await Task.CompletedTask;
+        }
+
+        public async Task AssignDeviceToJobControllerAsync(IDevice device, string jobControllerName)
+        {
+            lock (_pluginInstancesLock)
+            {
+                if (!_pluginInstances.ContainsKey(jobControllerName))
+                {
+                    _logger.LogError($"Job controller instance with name '{jobControllerName}' does not exist, unable to assign device '{device.Uuid}'. Make sure you add the job controller first before assigning devices to it.");
+                    return;
+                }
+
+                if (!_devices.ContainsKey(device.Uuid))
+                {
+                    _logger.LogError($"Device with name '{device.Uuid}' does not exist, unable to assign job controller instance");
+                    return;
+                }
+
+                var jobController = _pluginInstances[jobControllerName];
+                //ReloadDevice(device, device.Uuid);
             }
 
             await Task.CompletedTask;
@@ -246,6 +291,9 @@
                             break;
                     }
                     break;
+                case InstanceType.Custom:
+                    // TODO: Use for job controllers created by plugins
+                    break;
             }
 
             if (jobController == null)
@@ -254,9 +302,19 @@
                 return;
             }
 
-            lock (_instancesLock)
+            if (instance.Type == InstanceType.Custom)
             {
-                _instances[instance.Name] = jobController;
+                lock (_pluginInstancesLock)
+                {
+                    _instances[instance.Name] = jobController;
+                }
+            }
+            else
+            {
+                lock (_instancesLock)
+                {
+                    _instances[instance.Name] = jobController;
+                }
             }
 
             await Task.CompletedTask;

@@ -8,6 +8,13 @@
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Plugins;
 
+    /* Available interfaces to extend job controller:
+     * IJobControllerCoordinates - Adds coordinates list vs geofence
+     * IScanNextInstanceController - Enables on-demand Pokemon encountering
+     * ILureInstanceController - Enables nearby lure (MapPokemon) encountering
+     * IEventInstanceController - Enables event specific Pokemon re-encountering
+     */
+
     public class TestInstanceController : IJobController, IJobControllerCoordinates, IScanNextInstanceController
     {
         #region Variables

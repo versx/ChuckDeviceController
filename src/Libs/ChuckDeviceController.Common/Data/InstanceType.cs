@@ -15,5 +15,6 @@
         Bootstrap,
         FindTth,
         Leveling,
+        Custom,
     }
 }
