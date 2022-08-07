@@ -57,7 +57,10 @@
         [Column("last_modified_timestamp")]
         public ulong LastModifiedTimestamp { get; set; }
 
-        [Column("updated")]
+        [
+            DisplayName("Last Updated"),
+            Column("updated"),
+        ]
         public ulong Updated { get; set; }
 
         [
@@ -206,12 +209,6 @@
 
         [NotMapped]
         public bool HasAlternativeQuestChanges { get; set; }
-
-        [
-            DisplayName("Last Updated"),
-            NotMapped,
-        ]
-        public string? UpdatedTime { get; set; }
 
         #endregion
 

@@ -1,4 +1,5 @@
-﻿@using ChuckDeviceController.Data.Entities
+﻿@using ChuckDeviceConfigurator.Utilities
+@using ChuckDeviceController.Data.Entities
 @model List<Pokestop>
 @{
     ViewData["Title"] = "Utilities - Clear Stale Pokestops";
@@ -43,7 +44,7 @@
                             @Html.DisplayNameFor(model => model[0].Name)
                         </th>
                         <th scope="col">
-                            @Html.DisplayNameFor(model => model[0].UpdatedTime)
+                            @Html.DisplayNameFor(model => model[0].Updated)
                         </th>
                         <th scope="col">
                             @Html.DisplayNameFor(model => model[0].IsEnabled)
@@ -68,13 +69,13 @@
                                 @Html.DisplayFor(modelItem => item.Name)
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.UpdatedTime)
+                                @Utils.GetLastUpdatedStatus(item.Updated)
                             </td>
                             <td>
-                                @Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")
+                                @Utils.FormatBoolean(item.IsEnabled, html: true) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
                             </td>
                             <td>
-                                @(item.IsDeleted ? "Yes" : "No")
+                                @Utils.FormatBoolean(item.IsDeleted)
                             </td>
                             <td>
                                 <a class="btn btn-danger btn-sm" asp-action="DeletePokestop" asp-route-id="@item.Id" title="Delete Stale Pokestop" onclick="return confirm('You are about to delete Pokestop \'@(item.Name ?? item.Id)\', are you sure this is what you want to do?');"><i class="fa-solid fa-trash-can"></i></a>

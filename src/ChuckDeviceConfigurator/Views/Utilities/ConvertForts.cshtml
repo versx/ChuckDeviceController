@@ -1,4 +1,5 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
+﻿@using ChuckDeviceConfigurator.Utilities
+@using ChuckDeviceConfigurator.ViewModels
 @model ConvertFortsViewModel
 @{
     ViewData["Title"] = "Utilities - Convert Forts";
@@ -44,7 +45,7 @@
                             @Html.DisplayNameFor(model => model.PokestopsToGyms[0].Name)
                         </th>
                         <th scope="col">
-                            @Html.DisplayNameFor(model => model.PokestopsToGyms[0].UpdatedTime)
+                            @Html.DisplayNameFor(model => model.PokestopsToGyms[0].Updated)
                         </th>
                         <th scope="col">
                             @Html.DisplayNameFor(model => model.PokestopsToGyms[0].IsEnabled)
@@ -69,13 +70,13 @@
                                 @Html.DisplayFor(modelItem => item.Name)
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.UpdatedTime)
+                                @Utils.GetLastUpdatedStatus(item.Updated)
                             </td>
                             <td>
-                                @Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")
+                                @Utils.FormatBoolean(item.IsEnabled, html: true) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
                             </td>
                             <td>
-                                @(item.IsDeleted ? "Yes" : "No")
+                                @Utils.FormatBoolean(item.IsDeleted)
                             </td>
                             <td>
                                 <a class="btn btn-primary btn-sm" asp-action="ConvertPokestop" asp-route-id="@item.Id" title="Convert Pokestop to Gym"><i class="fas fa-exchange"></i></a>
@@ -105,7 +106,7 @@
                             @Html.DisplayNameFor(model => model.GymsToPokestops[0].Name)
                         </th>
                         <th scope="col">
-                            @Html.DisplayNameFor(model => model.GymsToPokestops[0].UpdatedTime)
+                            @Html.DisplayNameFor(model => model.GymsToPokestops[0].Updated)
                         </th>
                         <th scope="col">
                             @Html.DisplayNameFor(model => model.GymsToPokestops[0].IsEnabled)
@@ -130,13 +131,13 @@
                                 @Html.DisplayFor(modelItem => item.Name)
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.UpdatedTime)
+                                @Utils.GetLastUpdatedStatus(item.Updated)
                             </td>
                             <td>
-                                @Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")
+                                @Utils.FormatBoolean(item.IsEnabled, html: true) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
                             </td>
                             <td>
-                                @(item.IsDeleted ? "Yes" : "No")
+                                @Utils.FormatBoolean(item.IsDeleted)
                             </td>
                             <td>
                                 <a class="btn btn-primary btn-sm" asp-action="ConvertGym" asp-route-id="@item.Id" title="Convert Gym to Pokestop"><i class="fas fa-exchange"></i></a>

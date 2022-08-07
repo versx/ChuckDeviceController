@@ -60,7 +60,10 @@
         [Column("raid_battle_timestamp")]
         public ulong? RaidBattleTimestamp { get; set; }
 
-        [Column("updated")]
+        [
+            DisplayName("Last Updated"),
+            Column("updated"),
+        ]
         public ulong Updated { get; set; }
 
         [Column("raid_pokemon_id")]
@@ -146,12 +149,6 @@
 
         [NotMapped]
         public bool HasChanges { get; set; }
-
-        [
-            DisplayName("Last Updated"),
-            NotMapped,
-        ]
-        public string? UpdatedTime { get; set; }
 
         #endregion
 

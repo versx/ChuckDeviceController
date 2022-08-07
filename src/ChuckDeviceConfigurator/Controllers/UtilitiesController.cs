@@ -128,10 +128,8 @@
             var gyms = _mapContext.Gyms.ToList();
             var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
                                                 .ToList();
-            convertiblePokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
             var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
                                       .ToList();
-            convertibleGyms.ForEach(gym => gym.UpdatedTime = gym.Updated.GetLastUpdatedStatus());
 
             var model = new ConvertFortsViewModel
             {
@@ -358,8 +356,6 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             var pokestops = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
                                                  .ToList();
-
-            pokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
             return View(pokestops);
         }
 

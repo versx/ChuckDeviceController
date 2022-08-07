@@ -314,10 +314,10 @@
             var task = await jobController.GetTaskAsync(options);
             if (task == null)
             {
-                return CreateErrorResponse("No tasks available yet", logWarning: true);
+                return CreateErrorResponse($"[{device.Uuid}] No tasks available yet", logWarning: true);
             }
 
-            _logger.LogInformation($"[{device?.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
+            _logger.LogInformation($"[{device.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
             return new DeviceResponse
             {
                 Status = "ok",

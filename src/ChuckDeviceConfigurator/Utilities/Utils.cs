@@ -37,17 +37,15 @@
             return displayText;
         }
 
-        public static string FormatBoolean(bool isTrue)
+        public static string FormatBoolean(bool isTrue, bool html = false)
         {
-            return isTrue ? "Yes" : "No";
-        }
-
-        public static string FormatEnabled(bool enabled)
-        {
-            var status = FormatBoolean(enabled);
-            var color = enabled ? "green" : "red";
+            var status = isTrue ? "Yes" : "No";
+            if (!html)
+            {
+                return status;
+            }
+            var color = isTrue ? "green" : "red";
             var displayText = $"<span style='color: {color}'>{status}</span>";
-            //var displayText = $"<span class=\"{(enabled ? "webhook-enabled" : "webhook-disabled")}\">{status}</span>";
             return displayText;
         }
 
