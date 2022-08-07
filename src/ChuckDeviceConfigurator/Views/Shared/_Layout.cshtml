@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="~/lib/datatables/datatables.css" />
     <link rel="stylesheet" href="~/lib/fontawesome-free-6.1.1-web/css/all.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ChuckDeviceConfigurator.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
@@ -32,38 +31,6 @@
                     <ul class="navbar-nav flex-grow-1">
                         @if (SignInManager.IsSignedIn(User))
                         {
-                            @*
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Account" asp-action="Index">Accounts</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Assignment" asp-action="Index">Assignments</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="AssignmentGroup" asp-action="Index">Assignment Groups</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Device" asp-action="Index">Devices</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="DeviceGroup" asp-action="Index">Device Groups</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Geofence" asp-action="Index">Geofences</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Instance" asp-action="Index">Instances</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="IvList" asp-action="Index">IV Lists</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="Webhook" asp-action="Index">Webhooks</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-area="" asp-controller="User" asp-action="Index">Users</a>
-                            </li>
-                            *@
                             <li class="nav-item">
                                 <a class="nav-link text-light" asp-area="" asp-controller="Account" asp-action="Index">Accounts</a>
                             </li>
@@ -167,19 +134,31 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            <div class="float-start">&copy; 2022 - ChuckDeviceConfigurator</div>
-            <div class="float-end">
-                &#10084;&#65039; 
-                <a asp-controller="" asp-action="About">
-                    In loving memory of Chuckleslove, rest in peace brother.
+    <div class="container">
+        <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+            <p class="col-md-4 mb-0 text-muted">&copy; 2022 - ChuckDeviceController</p>
+
+            <div class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto">
+                &#10084;&#65039;&nbsp;
+                <a asp-controller="Home" asp-action="About" class="text-decoration-none text-muted text-nowrap">
+                    In loving memory of Chuckleslove, rest in peace brother
                 </a>
             </div>
-        </div>
-    </footer>
+
+            <ul class="nav col-md-4 justify-content-end">
+                <li class="nav-item">
+                    <a class="nav-link px-2 text-muted" href="https://github.com/versx/ChuckDeviceController">
+                        <i class="fa-brands fa-github"></i>
+                        &nbsp;GitHub
+                    </a>
+                </li>
+            </ul>
+        </footer>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/datatables/datatables.min.js"></script>
+    <script src="~/lib/datatables-plugins/ellipsis.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
