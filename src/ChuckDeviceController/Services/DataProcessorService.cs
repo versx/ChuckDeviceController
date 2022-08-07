@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Services
 {
-    using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
 
     using Microsoft.EntityFrameworkCore;
@@ -23,35 +21,6 @@
     using ChuckDeviceController.Pvp;
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
-
-    /*
-    public interface IDataConsumer
-    {
-    }
-
-    public class DataConsumer : IDataConsumer
-    {
-        private readonly ILogger<IProtoProcessorService> _logger;
-        //private readonly IConfiguration _config;
-        private readonly IDbContextFactory<MapDataContext> _dbFactory;
-        private readonly MapDataContext _context;
-
-        public DataConsumer(
-            ILogger<IProtoProcessorService> logger,
-            //IConfiguration config,
-            IDbContextFactory<MapDataContext> factory)
-        {
-            _logger = logger;
-            //_config = config;
-            _dbFactory = factory;
-            _context = _dbFactory.CreateDbContext();
-        }
-
-        public void ProcessCells(List<dynamic> cells)
-        {
-        }
-    }
-    */
 
     // TODO: Use/benchmark Dapper Micro ORM
     // TODO: Implement memory cache for all map data entities

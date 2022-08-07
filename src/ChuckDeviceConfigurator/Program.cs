@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
+using ChuckDeviceConfigurator.Localization;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
@@ -31,6 +32,18 @@ if (config.Providers.Count() == 2)
     // Only environment variables and command line providers added,
     // failed to load config provider.
     Environment.FailFast($"Failed to find or load configuration file, exiting...");
+}
+
+// Create locale translation files
+try
+{
+    await Translator.CreateLocaleFilesAsync();
+    var locale = config.GetValue<string>("Locale") ?? "en";
+    Translator.Instance.SetLocale(locale);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Failed to generate locale files, make sure the base locales exist: {ex}");
 }
 
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");

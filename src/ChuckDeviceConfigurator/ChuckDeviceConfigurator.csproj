@@ -66,6 +66,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="wwwroot\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Microsoft.AspNetCore.Authentication.Google" />
     <None Remove="AspNet.Security.OAuth.Discord" />
     <None Remove="AspNet.Security.OAuth.GitHub" />

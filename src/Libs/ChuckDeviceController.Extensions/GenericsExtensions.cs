@@ -114,5 +114,25 @@
             var value = obj.GetType()!.GetProperty(propertyName)!.GetValue(obj);
             return value;
         }
+
+        public static Dictionary<string, string> Merge(this Dictionary<string, string> locales1, Dictionary<string, string> locales2, bool updateValues = false)
+        {
+            var result = locales1;
+            foreach (var (key, value) in locales2)
+            {
+                if (!result.ContainsKey(key))
+                {
+                    result.Add(key, value);
+                    continue;
+                }
+
+                // Key already exists, check if values are the same
+                if (result[key] != value && updateValues)
+                {
+                    result[key] = value;
+                }
+            }
+            return result;
+        }
     }
 }

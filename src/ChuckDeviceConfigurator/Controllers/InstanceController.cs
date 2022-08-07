@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Localization;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceConfigurator.ViewModels;
@@ -310,18 +311,17 @@
                 {
                     var lat = Math.Round(item.Latitude, 5);
                     var lon = Math.Round(item.Longitude, 5);
+                    var name = Translator.Instance.GetPokemonName(item.PokemonId);
+                    var form = Translator.Instance.GetFormName(item.Form ?? 0);
+                    var costume = Translator.Instance.GetCostumeName(item.Costume ?? 0);
                     return new IvQueueItemViewModel
                     {
                         // TODO: Make image url configurable
                         EncounterId = item.Id,
                         PokemonId = item.PokemonId,
-                        PokemonName = item.PokemonId.ToString(), // TODO: Get pokemon name
-                        PokemonForm = (item.Form ?? 0) == 0 // TODO: Get form name
-                            ? "--"
-                            : Convert.ToString(item.Form),
-                        PokemonCostume = (item.Costume ?? 0) == 0 // TODO: Get costume name
-                            ? "--"
-                            : Convert.ToString(item.Costume),
+                        PokemonName = name,
+                        PokemonForm = form,
+                        PokemonCostume = costume,
                         Latitude = lat,
                         Longitude = lon,
                     };
@@ -387,14 +387,15 @@
                 var questQueue = _jobControllerService.GetQuestQueue(name);
                 var queueItems = questQueue.Select(item =>
                 {
-                    var lat = Math.Round(item.Pokestop.Latitude, 5);
-                    var lon = Math.Round(item.Pokestop.Longitude, 5);
+                    var pokestop = item.Pokestop!;
+                    var lat = Math.Round(pokestop.Latitude, 5);
+                    var lon = Math.Round(pokestop.Longitude, 5);
                     return new QuestQueueItemViewModel
                     {
                         // TODO: Make image url configurable
-                        Id = item.Pokestop.Id,
-                        Name = item.Pokestop.Name,
-                        Image = $"<img src='{item.Pokestop.Url}' height='48' width='48' />",
+                        Id = pokestop.Id,
+                        Name = pokestop.Name,
+                        Image = $"<img src='{pokestop.Url}' height='48' width='48' />",
                         IsAlternative = item.IsAlternative,
                         Latitude = lat,
                         Longitude = lon,

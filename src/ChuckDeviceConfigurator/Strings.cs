@@ -16,9 +16,12 @@
         public static DateTime Uptime => _uptime ??= DateTime.UtcNow;
 
         // Folder paths
-        public const string WebRoot = "wwwroot";
+        public const string BasePath = "./bin/debug/";
+        public const string WebRootFolder = "wwwroot";
+        public const string WebRoot = BasePath + "wwwroot";
         public static readonly string DataFolder = Path.Combine(WebRoot, "data");
-        public static readonly string PluginsFolder = "./bin/debug/plugins/";
+        public static readonly string LocaleFolder = Path.Combine(WebRootFolder, "locales");
+        public static readonly string PluginsFolder = Path.Combine(BasePath, "plugins");
 
         // Default user properties
         public const string DefaultUserName = "root";
