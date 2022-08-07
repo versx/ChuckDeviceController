@@ -205,6 +205,7 @@
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.AccountLevelStatistics[0].Warning)
+                    </th>
                     <th>
                         @Html.DisplayNameFor(model => model.AccountLevelStatistics[0].Invalid)
                     </th>
@@ -345,6 +346,14 @@
             $('#pills-tab a[href="' + hash + '"]').tab('show');
 
             $('#table-account-level-stats').DataTable({
+                columnDefs: [
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 1, targets: 1 },
+                    { responsivePriority: 10, targets: 2 },
+                    { responsivePriority: 2, targets: 3 },
+                    { responsivePriority: 3, targets: 4 },
+                    { responsivePriority: 4, targets: 5 },
+                ],
                 order: [[0, 'desc']],
                 paging: false,
                 colReorder: {
@@ -357,7 +366,17 @@
 
             $('#table-accounts').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 7 },
+                    // Username Level Status LastEncounter Spins Group InUse Action
+                    // 0        1     2      3             4     5     6     7
+                    // 0        2     3      10            5     6     4     1
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 2, targets: 1 },
+                    { responsivePriority: 3, targets: 2 },
+                    { responsivePriority: 10, targets: 3 },
+                    { responsivePriority: 5, targets: 4 },
+                    { responsivePriority: 6, targets: 5 },
+                    { responsivePriority: 4, targets: 6 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -369,10 +388,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });
@@ -380,7 +396,7 @@
     /*
         $('#table').DataTable({
             colDefs: [
-                { orderable: false, targets: 7 },
+                { orderable: false, targets: -1 },
             ],
             order: [[0, 'desc']],
             stateSave: true,

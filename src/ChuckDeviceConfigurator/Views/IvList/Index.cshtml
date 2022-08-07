@@ -56,7 +56,9 @@
         $(document).ready(function() {
             $('#table-ivlists').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 2 },
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 2, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -71,10 +73,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });

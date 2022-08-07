@@ -81,7 +81,16 @@
         $(document).ready(function() {
             $('#table-webhooks').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 6 },
+                    // Name Url Types Delay Geofences Enabled Action
+                    // 0    1   2     3     4         5       6
+                    // 0    4   5     6     4         2       1
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 3, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 5, targets: 2, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 6, targets: 3 },
+                    { responsivePriority: 4, targets: 4 },
+                    { responsivePriority: 2, targets: 5 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -96,10 +105,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });

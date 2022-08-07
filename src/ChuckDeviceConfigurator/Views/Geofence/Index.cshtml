@@ -62,7 +62,10 @@
         $(document).ready(function() {
             $('#table-geofences').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 3 },
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 3, targets: 1 },
+                    { responsivePriority: 2, targets: 2 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,

@@ -96,7 +96,18 @@
         $(document).ready(function() {
             $('#table-assignments').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 8 },
+                    // Id Source Target Device Device Group Date Time Enabled Action
+                    // 0  1      2      3      4            5    6    7       8
+                    // 8  7      0      3      4            6    5    2       1
+                    { responsivePriority: 10, targets: 0 },
+                    { responsivePriority: 7, targets: 1 },
+                    { responsivePriority: 0, targets: 2 },
+                    { responsivePriority: 3, targets: 3 },
+                    { responsivePriority: 4, targets: 4 },
+                    { responsivePriority: 6, targets: 5 },
+                    { responsivePriority: 5, targets: 6 },
+                    { responsivePriority: 2, targets: 7 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -108,10 +119,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });

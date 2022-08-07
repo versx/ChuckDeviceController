@@ -34,6 +34,9 @@
                 <thead class="table-dark">
                     <tr>
                         <th scope="col">
+                            Image
+                        </th>
+                        <th scope="col">
                             @Html.DisplayNameFor(model => model[0].Id)
                         </th>
                         <th scope="col">
@@ -57,8 +60,10 @@
                         <tr>
                             <th scope="row">
                                 <img src="@item.Url" height="48" width="48" />
-                                @Html.DisplayFor(modelItem => item.Id)
                             </th>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Id)
+                            </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.Name)
                             </td>
@@ -88,7 +93,16 @@
         $(document).ready(function() {
             $('#table-stale-pokestops').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 5 },
+                    // Image Id Name LastUpdated Enabled Deleted Action
+                    // 0     1  2    3           4       5       6
+                    // 0     5  2    10          3       4       1
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 5, targets: 1 },
+                    { responsivePriority: 2, targets: 2, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 10, targets: 3 },
+                    { responsivePriority: 3, targets: 4 },
+                    { responsivePriority: 4, targets: 5 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -103,10 +117,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });
