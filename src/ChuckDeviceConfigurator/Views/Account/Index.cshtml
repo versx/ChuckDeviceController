@@ -269,31 +269,30 @@
             </tbody>
         </table>
     </div>
-    <div class="tab-pane fade" id="accounts" role="tabpanel" aria-labelledby="pills-accounts-tab">
-        @*<table id="table-accounts" class="table table-striped table-bordered dt-responsive nowrap w-100">*@
-        <table id="table-accounts" class="table table-striped table-bordered dt-responsive nowrap">
+    <div class="tab-pane" id="accounts" role="tabpanel" aria-labelledby="pills-accounts-tab">
+        <table id="table-accounts" class="table table-striped table-bordered dt-responsive nowrap w-100">
             <thead class="table-dark">
                 <tr>
-                    <th>
+                    <th class="col">
                         @Html.DisplayNameFor(model => model.Accounts[0].Username)
                     </th>
-                    <th>
+                    <th class="col">
                         @Html.DisplayNameFor(model => model.Accounts[0].Level)
                     </th>
-                    <th>
+                    <th class="col">
                         @Html.DisplayNameFor(model => model.Accounts[0].Status)
                     </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.Accounts[0].LastEncounter)
+                    <th class="col">
+                        @Html.DisplayNameFor(model => model.Accounts[0].IsInUse)
                     </th>
-                    <th>
+                    <th class="col">
                         @Html.DisplayNameFor(model => model.Accounts[0].Spins)
                     </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.Accounts[0].GroupName)
+                    <th class="col">
+                        @Html.DisplayNameFor(model => model.Accounts[0].LastEncounter)
                     </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.Accounts[0].IsInUse)
+                    <th class="col">
+                        @Html.DisplayNameFor(model => model.Accounts[0].GroupName)
                     </th>
                     <th width="5%">Action</th>
                 </tr>
@@ -312,16 +311,16 @@
                             @Html.Raw(Utils.GetAccountStatusColor(item.Status))
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.LastEncounter)
+                            @Utils.FormatBoolean(item.IsInUse)
                         </td>
                         <td>
                             @item.Spins.ToString("N0")
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.GroupName)
+                            @Html.DisplayFor(modelItem => item.LastEncounter)
                         </td>
                         <td>
-                            @(item.IsInUse ? "Yes" : "No")
+                            @Html.DisplayFor(modelItem => item.GroupName)
                         </td>
                         <td>
                             <div class="dropdown">
@@ -345,6 +344,17 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            // Credits: https://stackoverflow.com/a/19015027
+            // Store the currently selected tab in the hash value
+            $('ul.nav-pills > li > a').on('shown.bs.tab', function(e) {
+                const id = $(e.target).attr('href').substr(1);
+                window.location.hash = id;
+            });
+
+            // Upon page load, switch to the currently selected tab
+            const hash = window.location.hash;
+            $('#pills-tab a[href="' + hash + '"]').tab('show');
+
             $('#table-account-level-stats').DataTable({
                 columnDefs: [
                     { responsivePriority: 0, targets: 0 },
@@ -367,16 +377,16 @@
             /* TODO: Look into why account table isn't adhering to the prioritized columns and still showing all */
             $('#table-accounts').DataTable({
                 columnDefs: [
-                    // Username Level Status LastEncounter Spins Group InUse Action
-                    // 0        1     2      3             4     5     6     7
-                    // 0        2     3      10            5     6     4     1
+                    // Username Level Status InUse Spins LastEncounter Group Action
+                    // 0        1     2      3     4     5             6     7
+                    // 0        2     3      4     5     10            6     1
                     { responsivePriority: 0, targets: 0 },
                     { responsivePriority: 2, targets: 1 },
                     { responsivePriority: 3, targets: 2 },
-                    { responsivePriority: 10, targets: 3 },
+                    { responsivePriority: 4, targets: 3 },
                     { responsivePriority: 5, targets: 4 },
-                    { responsivePriority: 6, targets: 5 },
-                    { responsivePriority: 4, targets: 6 },
+                    { responsivePriority: 10, targets: 5 },
+                    { responsivePriority: 6, targets: 6 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
@@ -392,17 +402,6 @@
                 responsive: true,
                 info: true,
             });
-
-            // Credits: https://stackoverflow.com/a/19015027
-            // Store the currently selected tab in the hash value
-            $('ul.nav-pills > li > a').on('shown.bs.tab', function(e) {
-                const id = $(e.target).attr('href').substr(1);
-                window.location.hash = id;
-            });
-
-            // Upon page load, switch to the currently selected tab
-            const hash = window.location.hash;
-            $('#pills-tab a[href="' + hash + '"]').tab('show');
         });
 
     /*

@@ -35,6 +35,8 @@ if (config.Providers.Count() == 2)
 
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
+// Need to call at startup so time gets set now and not when first visit to dashboard
+Console.WriteLine($"Uptime: {Strings.Uptime}");
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
