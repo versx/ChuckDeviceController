@@ -1,3 +1,4 @@
+using ChuckDeviceCommunicator.Configuration;
 using ChuckDeviceCommunicator.Services;
 using ChuckDeviceCommunicator.Services.Rpc;
 using ChuckDeviceController.Configuration;

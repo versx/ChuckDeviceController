@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceCommunicator.Services
+﻿namespace ChuckDeviceCommunicator.Configuration
 {
     public class WebhookRelayConfig
     {

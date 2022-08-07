@@ -4,6 +4,7 @@
 
     using Microsoft.Extensions.Options;
 
+    using ChuckDeviceCommunicator.Configuration;
     using ChuckDeviceCommunicator.Services.Rpc;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
