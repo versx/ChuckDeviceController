@@ -9,6 +9,21 @@ edit_uri: ""
 theme:
     name: readthedocs #mkdocs, bootstrap4, cinder, cosmo, cyborg, flatly, ivory, material, readthedocs, slate, yeti
 
+plugins:
+    - search:
+        separator: '[\s\-\.]+'
+        lang: en
+
 nav:
     - General:
         - Home: index.md
+
+markdown_extensions:
+    - toc:
+        permalink: 
+
+copyright: Copyright &copy; 2021, Maintained by <a href="https://github.com/versx">versx</a>.
+
+extra_css:
+    - css/base.css
+    - css/bootstrap-custom.min.css
