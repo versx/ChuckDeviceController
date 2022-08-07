@@ -55,7 +55,7 @@
             var baseLocaleFileNames = GetBaseLocaleFileNames();
 
             // Copy any missing base locale files to bin directory
-            await CopyLocaleFilesAsync(baseLocaleFileNames);
+            await CopyLocaleFilesAsync(baseLocaleFileNames, ignoreExisting: true);
 
             foreach (var file in baseLocaleFileNames)
             {
@@ -231,15 +231,15 @@
 
         #region Private Methods
 
-        private static async Task CopyLocaleFilesAsync(IReadOnlyList<string> baseLocaleFileNames)
+        private static async Task CopyLocaleFilesAsync(IReadOnlyList<string> baseLocaleFileNames, bool ignoreExisting = true)
         {
             // Copy base locale files from app directory to bin directory if they do not exist
             foreach (var baseLocaleFileName in baseLocaleFileNames)
             {
                 // Replace locale prefix
-                var localeFile = Path.GetFileName(baseLocaleFileName);
+                var localeFile = baseLocaleFileName;
                 var localeBin = Path.Combine(_binLocalesFolder, localeFile);
-                if (File.Exists(localeBin))
+                if (ignoreExisting && File.Exists(localeBin))
                     continue;
 
                 _logger.LogDebug($"Copying base locale '{localeFile}' to {localeBin}...");
