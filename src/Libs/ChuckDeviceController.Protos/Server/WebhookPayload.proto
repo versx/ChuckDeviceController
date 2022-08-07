@@ -31,8 +31,10 @@ enum WebhookPayloadType {
     AlternativeQuest = 5;
     Gym = 6;
     GymInfo = 7;
-    Egg = 8;
-    Raid = 9;
-    Weather = 10;
-    Account = 11;
+    GymDefender = 8;
+    GymTrainer = 9;
+    Egg = 10;
+    Raid = 11;
+    Weather = 12;
+    Account = 13;
 }

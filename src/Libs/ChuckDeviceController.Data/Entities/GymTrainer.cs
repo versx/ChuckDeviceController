@@ -95,6 +95,7 @@
                         message = new
                         {
                             name = Name,
+                            level = Level,
                             //gym_name = Name ?? UnknownGymName,
                             team_id = Convert.ToUInt16(TeamId),
                             battles_won = BattlesWon,

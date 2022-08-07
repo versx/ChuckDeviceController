@@ -13,6 +13,8 @@
         AlternativeQuests,
         Gyms,
         GymInfo,
+        GymDefenders,
+        GymTrainers,
         Eggs,
         Raids,
         Weather,
