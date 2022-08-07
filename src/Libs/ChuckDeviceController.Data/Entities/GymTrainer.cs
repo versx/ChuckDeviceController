@@ -6,10 +6,12 @@
 
     using POGOProtos.Rpc;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Data.Contracts;
 
     [Table("gym_trainer")]
-    public class GymTrainer : BaseEntity, IGymTrainer
+    public class GymTrainer : BaseEntity, IGymTrainer, IWebhookEntity
     {
         #region Properties
 
@@ -76,6 +78,46 @@
             CombatRating = Convert.ToUInt64(profileData.CombatRating);
             HasSharedExPass = profileData.HasSharedExPass;
             GymBadgeType = Convert.ToUInt16(profileData.GymBadgeType);
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public dynamic GetWebhookData(string type)
+        {
+            switch (type.ToLower())
+            {
+                case "gym-trainer":
+                    return new
+                    {
+                        type = WebhookHeaders.GymTrainer,
+                        message = new
+                        {
+                            gym_id = Id,
+                            gym_name = Name ?? UnknownGymName,
+                            latitude = Latitude,
+                            longitude = Longitude,
+                            url = Url,
+                            enabled = IsEnabled,
+                            team_id = Convert.ToUInt16(Team),
+                            last_modified = LastModifiedTimestamp,
+                            guard_pokemon_id = GuardingPokemonId,
+                            slots_available = AvailableSlots,
+                            raid_active_until = RaidEndTimestamp ?? 0,
+                            ex_raid_eligible = IsExRaidEligible,
+                            sponsor_id = SponsorId ?? 0,
+                            //partner_id = PartnerId,
+                            power_up_points = PowerUpPoints ?? 0,
+                            power_up_level = PowerUpLevel ?? 0,
+                            power_up_end_timestamp = PowerUpEndTimestamp ?? 0,
+                            ar_scan_eligible = IsArScanEligible ?? false,
+                        },
+                    };
+            }
+
+            Console.WriteLine($"Received unknown gym defender webhook payload type: {type}, returning null");
+            return null;
         }
 
         #endregion

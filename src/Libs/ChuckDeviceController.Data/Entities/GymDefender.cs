@@ -7,11 +7,13 @@
     using POGOProtos.Rpc;
     using Gender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
 
     [Table("gym_defender")]
-    public class GymDefender : BaseEntity, IGymDefender
+    public class GymDefender : BaseEntity, IGymDefender, IWebhookEntity
     {
         #region Properties
 
@@ -144,6 +146,8 @@
 
         #endregion
 
+        #region Constructors
+
         public GymDefender()
         {
         }
@@ -235,5 +239,85 @@
             //pokemon.Pokemon.TradedTimeMs
             //pokemon.Pokemon.TradingOriginalOwnerHash
         }
+
+        #endregion
+
+        #region Public Methods
+
+        public dynamic GetWebhookData(string type)
+        {
+            switch (type.ToLower())
+            {
+                case "gym-defender":
+                    return new
+                    {
+                        type = WebhookHeaders.GymDefender,
+                        message = new
+                        {
+                            id = Id,
+                            nickname = Nickname,
+                            move_1 = Move1,
+                            move_2 = Move2,
+                            move_3 = Move3,
+                            gym_id = FortId,
+                            fort_id = FortId,
+                            //gym_name = Name ?? UnknownGymName,
+                            pokemon_id = PokemonId,
+                            form = Form,
+                            costume = Costume,
+                            gender = Gender,
+                            individual_attack = AttackIV,
+                            individual_defense = DefenseIV,
+                            individual_stamina = StaminaIV,
+                            cp = Cp,
+                            cp_now = CpNow,
+                            cp_when_deployed = CpWhenDeployed,
+                            coins_returned = CoinsReturned,
+                            times_fed = TimesFed,
+                            berry_value = BerryValue,
+                            deployment_duration = DeploymentDuration,
+                            display_pokemon_id = DisplayPokemonId,
+                            from_raid = FromFort,
+                            from_fort = FromFort,
+                            hatched_from_egg = HatchedFromEgg,
+                            is_egg = IsEgg,
+                            is_shiny = IsShiny,
+                            is_bad = IsBad,
+                            is_striked = IsBad,
+                            is_lucky = IsLucky,
+                            buddy = new
+                            {
+                                candy_awarded = BuddyCandyAwarded,
+                                km_walked = BuddyKmWalked,
+                            },
+                            battles = new
+                            {
+                                attacked = BattlesAttacked,
+                                defended = BattlesDefended,
+                                won = BattlesWon,
+                                lost = BattlesLost,
+                            },
+                            pvp_combat = new
+                            {
+                                won = PvpCombatWon,
+                                total = PvpCombatTotal,
+                            },
+                            npm_combat = new
+                            {
+                                won = NpcCombatWon,
+                                total = NpcCombatTotal,
+                            },
+                            height_m = HeightM,
+                            weight_kb = WeightKg,
+                            updated = Updated,
+                        },
+                    };
+            }
+
+            Console.WriteLine($"Received unknown gym defender webhook payload type: {type}, returning null");
+            return null;
+        }
+
+        #endregion
     }
 }
