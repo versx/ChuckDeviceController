@@ -7,7 +7,7 @@
 ![](https://raw.githubusercontent.com/versx/ChuckDeviceController/net6/src/ChuckDeviceConfigurator/wwwroot/favicons/chuck.gif)
 
 # Chuck Device Controller  
-ChuckDeviceController is a C# based backend written in .NET 6.0 using ASP.NET Core and EntityFramework Core to control and parse protobuff proto data from iOS devices running Pokemon Go.
+ChuckDeviceController is a .NET based frontend and backend written in C# 9.0 using ASP.NET Core and EntityFramework Core to control real devices and parse received protobuff data from iOS devices running Pokemon Go.
 
 
 ## Features  
@@ -30,8 +30,8 @@ ChuckDeviceController is a C# based backend written in .NET 6.0 using ASP.NET Co
 - User and access management system  
   - 2FA capability  
   - 3rd party authentication for Discord, GitHub, and Google accounts as well as local accounts  
-- Separate device controller, proto parser & data upsert service, and webhook relay service to load balance across multiple machines if needed or desired  
-- Reusable Geofences and Circle point lists  
+- Separate device controller, proto parser & data upsert service as well as a webhook relay service to load balance across multiple machines if needed or desired  
+- Reusable Geofence and Circle point lists  
 - Reusable IV lists for Pokemon IV job controller instances  
 - Quality of life utilities  
   - Clear Quests (by instance, geofence, or all)  
@@ -39,7 +39,7 @@ ChuckDeviceController is a C# based backend written in .NET 6.0 using ASP.NET Co
   - Stale Pokestop clearing  
   - Instance reloader  
   - Truncate expired Pokemon and Incident (Invasions) data  
-  - Assignments/Assignment groups re-Quester  
+  - Assignments/Assignment groups re-quester  
 - and more...  
 
 ## Requirements
@@ -247,4 +247,4 @@ View all available API routes:
 TODO  
 
 ## Dedication  
-- In remembrance of [Chuckleslove](https://github.com/Chuckleslove) - rest in peace brother.  
+❤️ In loving memory of [Chuckleslove](https://github.com/Chuckleslove), rest in peace brother

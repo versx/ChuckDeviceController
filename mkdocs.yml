@@ -17,6 +17,8 @@ plugins:
 nav:
     - General:
         - Home: index.md
+        - Screenshots: screenshots.md
+        - Getting Started: getting-started.md
 
 markdown_extensions:
     - toc:
