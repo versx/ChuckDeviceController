@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
-    using ChuckDeviceController.Plugins;
-
     public interface IPluginManager
     {
         #region Properties

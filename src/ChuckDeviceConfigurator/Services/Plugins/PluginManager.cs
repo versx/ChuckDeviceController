@@ -2,6 +2,7 @@
 {
     using ChuckDeviceController.Plugins;
 
+    // TODO: Keep track of plugin states in database or local file
     // TODO: Add FileSystemWatcher for plugins added manually or changed
 
     public class PluginManager : IPluginManager

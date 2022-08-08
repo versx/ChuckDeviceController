@@ -48,35 +48,34 @@
         }
 
         // GET: PluginController/Reload/5
-        public ActionResult Reload(string id)
+        public async Task<ActionResult> Reload(string id)
         {
-            // TODO: Reload Plugin
             if (!_pluginManager.Plugins.ContainsKey(id))
             {
                 ModelState.AddModelError("Plugin", $"Plugin with name '{id}' has not been loaded or registered.");
                 return View();
             }
-            //var plugin = _pluginManager.Plugins[id];
-            //plugin.Reload();
-            _logger.LogInformation($"Plugin '{id}' has been reloaded");
 
+            await _pluginManager.ReloadAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: PluginController/Manage/5
-        public ActionResult Manage(string id)
+        // GET: PluginController/Manage/5/true
+        public async Task<ActionResult> Manage(string id, bool enabled)
         {
-            // TODO: Toggle - Enable/Disable Plugin
             if (!_pluginManager.Plugins.ContainsKey(id))
             {
-                ModelState.AddModelError("Plugin", $"Plugin with name '{id}' has not been loaded or registered.");
+                ModelState.AddModelError("Plugin", $"Plugin with name '{id}' has not been loaded or registered yet.");
                 return View();
             }
-            //var plugin = _pluginManager.Plugins[id];
-            //plugin.SetState(); / ToggleState
-            //var enabled = plugin.State == PluginState.Enabled;
-            //_logger.LogInformation($"Plugin '{id}' has been '{(enabled ? "enabled" : "disabled")}");
 
+            var plugin = _pluginManager.Plugins[id];
+            plugin.SetEnabled(enabled);
+            plugin.SetState(enabled ? PluginState.Running : PluginState.Disabled); // NOTE: Maybe just use Stopped
+
+            await _pluginManager.StopAsync(id);
+            
+            _logger.LogInformation($"Plugin '{id}' has been '{(enabled ? "enabled" : "disabled")}'");
             return RedirectToAction(nameof(Index));
         }
 

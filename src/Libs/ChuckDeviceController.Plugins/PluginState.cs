@@ -21,6 +21,12 @@
         Stopped,
 
         /// <summary>
+        /// Plugin has been disabled and is not curretly running
+        /// or enabled
+        /// </summary>
+        Disabled,
+
+        /// <summary>
         /// Plugin has been removed from the host application
         /// and is no longer available
         /// </summary>

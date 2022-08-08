@@ -23,7 +23,7 @@
 <div>
     <h4>Plugin '@Model?.Plugin.Name'</h4>
     <div>
-        <a asp-action="Manage" asp-route-id="@Model?.Plugin.Name" class="btn btn-@(isEnabled ? "danger" : "success")">
+        <a asp-action="Manage" asp-route-id="@Model?.Plugin.Name" asp-route-enabled="@(!isEnabled)" class="btn btn-@(isEnabled ? "danger" : "success")">
             <i class="fa-solid @(isEnabled ? "fa-stop" : "fa-play")"></i>&nbsp; @(isEnabled ? "Disable" : "Enable")
         </a>
         <a asp-action="Reload" asp-route-id="@Model?.Plugin.Name" class="btn btn-primary">
