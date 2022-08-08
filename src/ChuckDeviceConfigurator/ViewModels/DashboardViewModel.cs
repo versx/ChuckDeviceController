@@ -3,6 +3,8 @@
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
 
+    using ChuckDeviceController.Plugins;
+
     public class DashboardViewModel
     {
         // Controller counts
@@ -141,5 +143,7 @@
 
         [DisplayName("Uptime")]
         public string? Uptime { get; set; }
+
+        public IReadOnlyList<IDashboardStatsItem> PluginDashboardStats { get; set; }
     }
 }

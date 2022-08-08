@@ -11,18 +11,33 @@
         IReadOnlyList<NavbarHeader> NavbarHeaders { get; }
 
         /// <summary>
+        /// Gets a list of dashboard statistics registered by plugins
+        /// </summary>
+        IReadOnlyList<IDashboardStatsItem> DashboardStatsItems { get; }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="header"></param>
-        /// <returns></returns>
         Task AddNavbarHeaderAsync(NavbarHeader header);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="headers"></param>
-        /// <returns></returns>
         Task AddNavbarHeadersAsync(IEnumerable<NavbarHeader> headers);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stat"></param>
+        Task AddDashboardStatisticAsync(IDashboardStatsItem stat);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stats"></param>
+        Task AddDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats);
     }
 
     /// <summary>
@@ -100,6 +115,31 @@
             ControllerName = controllerName;
             ActionName = actionName;
             DisplayIndex = displayIndex;
+        }
+    }
+
+    public interface IDashboardStatsItem
+    {
+        string Name { get; }
+
+        string Value { get; }
+
+        bool IsHtml { get; }
+    }
+
+    public class DashboardStatsItem : IDashboardStatsItem
+    {
+        public string Name { get; }
+
+        public string Value { get; }
+
+        public bool IsHtml { get; }
+
+        public DashboardStatsItem(string name, string value, bool isHtml = false)
+        {
+            Name = name;
+            Value = value;
+            IsHtml = isHtml;
         }
     }
 }

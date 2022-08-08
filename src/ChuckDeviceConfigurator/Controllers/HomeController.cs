@@ -10,26 +10,31 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Data.Contexts;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Plugins;
 
     [Authorize(Roles = RoleConsts.DefaultRole)]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _deviceContext;
+        private readonly ControllerContext _deviceContext;
         private readonly MapContext _mapContext;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUiHost _uiHost;
 
         public HomeController(
             ILogger<HomeController> logger,
-            ChuckDeviceController.Data.Contexts.ControllerContext deviceContext,
+            ControllerContext deviceContext,
             MapContext mapContext,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IUiHost uiHost)
         {
             _logger = logger;
             _deviceContext = deviceContext;
             _mapContext = mapContext;
             _userManager = userManager;
+            _uiHost = uiHost;
         }
 
         public IActionResult Index()
@@ -60,6 +65,8 @@
                 Cells = (ulong)_mapContext.Cells.LongCount(),
                 Spawnpoints = (ulong)_mapContext.Spawnpoints.LongCount(),
                 Weather = (ulong)_mapContext.Weather.LongCount(),
+
+                PluginDashboardStats = _uiHost.DashboardStatsItems,
 
                 Uptime = TimeSpanUtils.ToReadableString(Strings.Uptime.ToTotalSeconds(), includeAgoText: false),
             };

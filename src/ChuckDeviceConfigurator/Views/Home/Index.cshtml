@@ -166,6 +166,13 @@
                         @Html.DisplayNameFor(model => model.Weather)
                         <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Weather)</span>
                     </li>
+                    @foreach (var statsItem in Model.PluginDashboardStats)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            @statsItem.Name
+                            <span class="badge rounded-pill bg-primary">@(statsItem.IsHtml ? @Html.Raw(statsItem.Value) : @statsItem.Value)</span>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>

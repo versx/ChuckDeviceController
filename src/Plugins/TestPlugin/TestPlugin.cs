@@ -119,6 +119,14 @@
                 });
             });
 
+            var stats = new List<IDashboardStatsItem>
+            {
+                new DashboardStatsItem("Test", "100", false),
+                new DashboardStatsItem("Test2", "<b><u>1,000</u></b>", true),
+                //new DashboardStatsItem("Test3", "<b>2,000</b>", false),
+            };
+            await _uiHost.AddDashboardStatisticsAsync(stats);
+
             // Register new navbar headers
             var pluginNavbarHeaders = new List<NavbarHeader>
             {
