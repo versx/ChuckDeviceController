@@ -1,6 +1,14 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using ChuckDeviceConfigurator.Data
+@using ChuckDeviceConfigurator.Extensions
+@using ChuckDeviceController.Extensions.Json
+@using ChuckDeviceController.Plugins
 @inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    var data = Html.RenderAction("GetPluginNavbarHeaders", "Plugin");
+    var navbarHeaders = Convert.ToString(data)?.FromJson<List<NavbarHeader>>();
+}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -31,6 +39,37 @@
                     <ul class="navbar-nav flex-grow-1">
                         @if (SignInManager.IsSignedIn(User))
                         {
+                            if (navbarHeaders != null)
+                            {
+                                foreach (var navLink in navbarHeaders)
+                                {
+                                    var navHeader = (NavbarHeader)navLink;
+                                    if (navHeader.IsDropdown && navHeader.DropdownItems.Any())
+                                    {
+                                        <li class="nav-item">
+                                            <div class="dropdown">
+                                                <a href="#" class="nav-link dropdown-toggle text-light" id="dropdownMenuHeader" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    @navHeader.Text
+                                                </a>
+                                                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuHeader">
+                                                    @foreach (var dropdownHeader in navHeader.DropdownItems)
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a class="dropdown-item" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@navHeader.ActionName">@dropdownHeader.Text</a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="nav-item">
+                                            <a class="nav-link text-light" asp-area="" asp-controller="@navHeader.ControllerName" asp-action="@navHeader.ActionName">@navHeader.Text</a>
+                                        </li>
+                                    }
+                                }
+                            }
                             <li class="nav-item">
                                 <a class="nav-link text-light" asp-area="" asp-controller="Account" asp-action="Index">Accounts</a>
                             </li>

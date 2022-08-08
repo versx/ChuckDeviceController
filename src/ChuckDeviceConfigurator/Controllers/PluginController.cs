@@ -5,19 +5,23 @@
 
     using ChuckDeviceConfigurator.Services.Plugins;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Plugins;
 
     [Authorize(Roles = RoleConsts.PluginsRole)]
     public class PluginController : Controller
     {
         private readonly ILogger<PluginController> _logger;
         private readonly IPluginManager _pluginManager;
+        private readonly IUiHost _uiHost;
 
         public PluginController(
             ILogger<PluginController> logger,
-            IPluginManager pluginManager)
+            IPluginManager pluginManager,
+            IUiHost uiHost)
         {
             _logger = logger;
             _pluginManager = pluginManager;
+            _uiHost = uiHost;
         }
 
         // GET: PluginController
@@ -107,6 +111,12 @@
                 ModelState.AddModelError("Plugin", $"Unknown error occurred while uploading plugin.");
                 return View();
             }
+        }
+
+        public ActionResult GetPluginNavbarHeaders()
+        {
+            // Get cached navbar headers from plugins
+            return new JsonResult(_uiHost.NavbarHeaders);
         }
     }
 }

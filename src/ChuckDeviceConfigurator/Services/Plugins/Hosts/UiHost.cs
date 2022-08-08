@@ -4,14 +4,39 @@
 
     public class UiHost : IUiHost
     {
-        public Task AddNavbarHeaderAsync(NavbarHeader header)
+        private readonly ILogger<IUiHost> _logger;
+        private static readonly List<NavbarHeader> _navbarHeaders = new();
+
+        public IReadOnlyList<NavbarHeader> NavbarHeaders => _navbarHeaders;
+
+        public UiHost(ILogger<IUiHost> logger)
         {
-            return Task.CompletedTask;
+            _logger = logger;
         }
 
-        public Task AddPathAsync()
+        public async Task AddNavbarHeadersAsync(IEnumerable<NavbarHeader> headers)
         {
-            return Task.CompletedTask;
+            foreach (var header in headers)
+            {
+                await AddNavbarHeaderAsync(header);
+            }
+        }
+
+        public async Task AddNavbarHeaderAsync(NavbarHeader header)
+        {
+            if (_navbarHeaders.Contains(header))
+            {
+                _logger.LogWarning($"Navbar header '{header.Text}' already registered");
+                return;
+            }
+
+            _navbarHeaders.Add(header);
+            await Task.CompletedTask;
+        }
+
+        public async Task AddPathAsync()
+        {
+            await Task.CompletedTask;
         }
     }
 }

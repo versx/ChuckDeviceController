@@ -33,6 +33,7 @@
         private readonly IJobControllerServiceHost _jobControllerHost;
         private readonly IDatabaseHost _databaseHost;
         private readonly ILocalizationHost _localeHost;
+        private readonly IUiHost _uiHost;
 
         #endregion
 
@@ -77,16 +78,19 @@
         /// <param name="jobControllerHost"></param>
         /// <param name="databaseHost"></param>
         /// <param name="localeHost"></param>
+        /// <param name="uiHost"></param>
         public TestPlugin(
             ILoggingHost loggingHost,
             IJobControllerServiceHost jobControllerHost,
             IDatabaseHost databaseHost,
-            ILocalizationHost localeHost)
+            ILocalizationHost localeHost,
+            IUiHost uiHost)
         {
             _loggingHost = loggingHost;
             _jobControllerHost = jobControllerHost;
             _databaseHost = databaseHost;
             _localeHost = localeHost;
+            _uiHost = uiHost;
 
             //_appHost.Restart();
         }
@@ -114,6 +118,39 @@
                     await httpContext.Response.WriteAsync($"Hello from plugin {Name}");
                 });
             });
+
+            var pluginNavbarHeaders = new List<NavbarHeader>
+            {
+                new NavbarHeader
+                {
+                    Text = "Test",
+                    ControllerName = "Test",
+                    ActionName = "Index",
+                },
+                new NavbarHeader
+                {
+                    Text = "TestNavDropdown",
+                    ControllerName = "Device",
+                    ActionName = "Index",
+                    IsDropdown = true,
+                    DropdownItems = new List<NavbarHeaderDropdownItem>
+                    {
+                        new NavbarHeaderDropdownItem
+                        {
+                            Text = "Item1",
+                            ControllerName = "Device",
+                            ActionName = "Index",
+                        },
+                        new NavbarHeaderDropdownItem
+                        {
+                            Text = "Item2",
+                            ControllerName = "Device",
+                            ActionName = "Index",
+                        },
+                    },
+                },
+            };
+            await _uiHost.AddNavbarHeadersAsync(pluginNavbarHeaders);
 
             var translated = _localeHost.GetPokemonName(1);
             _loggingHost.LogMessage($"Pokemon: {translated}");
@@ -191,7 +228,7 @@
         /// </summary>
         public void OnReload()
         {
-            _loggingHost.LogMessage($"OnReload called from plugin");
+            _loggingHost.LogMessage($"[{Name}] OnReload called");
         }
 
         /// <summary>
@@ -199,7 +236,7 @@
         /// </summary>
         public void OnStop()
         {
-            _loggingHost.LogMessage($"OnStop called from plugin");
+            _loggingHost.LogMessage($"[{Name}] OnStop called");
         }
 
         /// <summary>
@@ -207,7 +244,7 @@
         /// </summary>
         public void OnRemove()
         {
-            _loggingHost.LogMessage($"OnRemove called from plugin");
+            _loggingHost.LogMessage($"[{Name}] Onremove called");
         }
 
         /// <summary>

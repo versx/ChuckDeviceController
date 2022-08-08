@@ -5,6 +5,8 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry.Models;
 
+    // TODO: Calculate proper status for DynamicRoute job controller instance
+
     public class DynamicRouteInstanceController : CircleInstanceController
     {
         #region Variables
@@ -39,20 +41,6 @@
             MultiPolygons = multiPolygons;
             OptimizeDynamicRoute = instance.Data?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute;
             Coordinates = GenerateDynamicRoute();
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        public override async Task<string> GetStatusAsync()
-        {
-            // TODO: Calculate proper status for DynamicRoute job controller instance
-            var circleStatus = await base.GetStatusAsync();
-            var status = circleStatus == Strings.DefaultInstanceStatus
-                ? Strings.DefaultInstanceStatus
-                : $"{circleStatus}, (Coordinates: {Coordinates.Count:N0})";
-            return await Task.FromResult(status);
         }
 
         #endregion
