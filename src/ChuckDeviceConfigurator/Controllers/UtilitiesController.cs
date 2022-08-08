@@ -501,7 +501,7 @@
 
         #region ReQuest
 
-        // POST: UtilitiesController/ReQuest
+        // GET: UtilitiesController/ReQuest
         public ActionResult ReQuest()
         {
             return View();
