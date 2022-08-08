@@ -41,18 +41,21 @@
                         {
                             if (navbarHeaders != null)
                             {
+                                navbarHeaders.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
                                 foreach (var navLink in navbarHeaders)
                                 {
                                     var navHeader = (NavbarHeader)navLink;
                                     if (navHeader.IsDropdown && (navHeader?.DropdownItems?.Any() ?? false))
                                     {
+                                        var sortedDropdownItems = navHeader.DropdownItems.ToList();
+                                        sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
                                         <li class="nav-item">
                                             <div class="dropdown">
                                                 <a href="#" class="nav-link dropdown-toggle text-light" id="dropdownMenuHeader" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                     @navHeader.Text
                                                 </a>
                                                 <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuHeader">
-                                                    @foreach (var dropdownHeader in navHeader.DropdownItems)
+                                                    @foreach (var dropdownHeader in sortedDropdownItems)
                                                     {
                                                         <li class="nav-item">
                                                             <a class="dropdown-item" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@navHeader.ActionName">@dropdownHeader.Text</a>

@@ -125,12 +125,14 @@
                 new NavbarHeader
                 {
                     Text = "Test",
-                    ControllerName = "Test",
-                    ActionName = "Index",
+                    DisplayIndex = 1,
+                    ControllerName = "Test", // TestController class
+                    ActionName = "Index", // TestController.Index method
                 },
                 new NavbarHeader
                 {
                     Text = "TestNavDropdown",
+                    DisplayIndex = 4,
                     IsDropdown = true,
                     DropdownItems = new List<NavbarHeaderDropdownItem>
                     {
