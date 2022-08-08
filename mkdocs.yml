@@ -19,6 +19,7 @@ nav:
         - Home: index.md
         - Screenshots: screenshots.md
         - Getting Started: getting-started.md
+    - Plugin System: plugin-system.md
 
 markdown_extensions:
     - toc:
