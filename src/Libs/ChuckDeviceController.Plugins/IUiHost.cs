@@ -1,14 +1,54 @@
 ﻿namespace ChuckDeviceController.Plugins
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public interface IUiHost
     {
+        /// <summary>
+        /// Gets a list of navbar headers registered by plugins
+        /// </summary>
         IReadOnlyList<NavbarHeader> NavbarHeaders { get; }
 
-        Task AddPathAsync();
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
         Task AddNavbarHeaderAsync(NavbarHeader header);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="headers"></param>
+        /// <returns></returns>
         Task AddNavbarHeadersAsync(IEnumerable<NavbarHeader> headers);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public interface INavbarHeader
+    {
+        /// <summary>
+        /// Gets the text displayed in the navbar
+        /// </summary>
+        string Text { get; }
+
+        /// <summary>
+        /// Gets the controller name related to the navbar header
+        /// </summary>
+        string ControllerName { get; }
+
+        /// <summary>
+        /// Gets the action to execute in the controller
+        /// </summary>
+        string ActionName { get; }
+
+        /// <summary>
+        /// Gets the display index in the navbar
+        /// </summary>
+        uint DisplayIndex { get; }
     }
 
     public class NavbarHeader : INavbarHeader
@@ -61,16 +101,5 @@
             ActionName = actionName;
             DisplayIndex = displayIndex;
         }
-    }
-
-    public interface INavbarHeader
-    {
-        string Text { get; }
-
-        string ControllerName { get; }
-
-        string ActionName { get; }
-
-        uint DisplayIndex { get; }
     }
 }

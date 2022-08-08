@@ -33,10 +33,5 @@
             _navbarHeaders.Add(header);
             await Task.CompletedTask;
         }
-
-        public async Task AddPathAsync()
-        {
-            await Task.CompletedTask;
-        }
     }
 }

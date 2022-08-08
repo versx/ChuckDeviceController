@@ -119,6 +119,7 @@
                 });
             });
 
+            // Register new navbar headers
             var pluginNavbarHeaders = new List<NavbarHeader>
             {
                 new NavbarHeader
@@ -130,8 +131,6 @@
                 new NavbarHeader
                 {
                     Text = "TestNavDropdown",
-                    ControllerName = "Device",
-                    ActionName = "Index",
                     IsDropdown = true,
                     DropdownItems = new List<NavbarHeaderDropdownItem>
                     {

@@ -4,26 +4,25 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Infrastructure;
     using Microsoft.AspNetCore.Mvc.Rendering;
-    //using Microsoft.AspNetCore.Routing;
 
+    // Credits: https://stackoverflow.com/a/66258565
     public static class HtmlHelperViewExtensions
     {
-
-        public static IHtmlContent RenderAction(this IHtmlHelper helper, string action, object parameters = null)
+        public static IHtmlContent RenderAction(this IHtmlHelper helper, string action, object? parameters = null)
         {
-            var controller = (string)helper.ViewContext.RouteData.Values["controller"];
+            var controller = Convert.ToString(helper.ViewContext.RouteData.Values["controller"]);
 
             return RenderAction(helper, action, controller, parameters);
         }
 
-        public static IHtmlContent RenderAction(this IHtmlHelper helper, string action, string controller, object parameters = null)
+        public static IHtmlContent RenderAction(this IHtmlHelper helper, string action, string controller, object? parameters = null)
         {
-            var area = (string)helper.ViewContext.RouteData.Values["area"];
+            var area = Convert.ToString(helper.ViewContext.RouteData.Values["area"]);
 
             return RenderAction(helper, action, controller, area, parameters);
         }
 
-        public static IHtmlContent RenderAction(this IHtmlHelper helper, string action, string controller, string area, object parameters = null)
+        public static IHtmlContent RenderAction(this IHtmlHelper helper, string action, string controller, string area, object? parameters = null)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
@@ -32,14 +31,14 @@
                 throw new ArgumentNullException(nameof(controller));
 
             //if (area == null)
-            //    throw new ArgumentNullException("area");
+            //    throw new ArgumentNullException(nameof(area));
 
             var task = RenderActionAsync(helper, action, controller, area, parameters);
 
             return task.Result;
         }
 
-        private static async Task<IHtmlContent> RenderActionAsync(this IHtmlHelper helper, string action, string controller, string area, object parameters = null)
+        private static async Task<IHtmlContent> RenderActionAsync(this IHtmlHelper helper, string action, string controller, string area, object? parameters = null)
         {
             // fetching required services for invocation
             var currentHttpContext = helper.ViewContext?.HttpContext;
