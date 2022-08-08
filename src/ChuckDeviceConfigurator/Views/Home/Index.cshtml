@@ -169,8 +169,10 @@
                     @foreach (var statsItem in Model.PluginDashboardStats)
                     {
                         <li class="list-group-item d-flex justify-content-between">
-                            @statsItem.Name
-                            <span class="badge rounded-pill bg-primary">@(statsItem.IsHtml ? @Html.Raw(statsItem.Value) : @statsItem.Value)</span>
+                            @(statsItem.IsHtml ? Html.Raw(statsItem.Name) : statsItem.Name)
+                            <span class="badge rounded-pill bg-primary">
+                                @(statsItem.IsHtml ? Html.Raw(statsItem.Value) : @statsItem.Value)
+                            </span>
                         </li>
                     }
                 </ul>

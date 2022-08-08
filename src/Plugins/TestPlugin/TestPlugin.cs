@@ -119,6 +119,7 @@
                 });
             });
 
+            // Add dashboard stats
             var stats = new List<IDashboardStatsItem>
             {
                 new DashboardStatsItem("Test", "100", false),
@@ -130,13 +131,12 @@
             // Register new navbar headers
             var pluginNavbarHeaders = new List<NavbarHeader>
             {
-                new NavbarHeader
-                {
-                    Text = "Test",
-                    DisplayIndex = 1,
-                    ControllerName = "Test", // TestController class
-                    ActionName = "Index", // TestController.Index method
-                },
+                new(
+                    text: "Test",
+                    controllerName: "Test", // TestController class
+                    actionName: "Index", // TestController.Index method
+                    displayIndex: 1
+                ),
                 new NavbarHeader
                 {
                     Text = "TestNavDropdown",
@@ -144,18 +144,8 @@
                     IsDropdown = true,
                     DropdownItems = new List<NavbarHeaderDropdownItem>
                     {
-                        new NavbarHeaderDropdownItem
-                        {
-                            Text = "Item1",
-                            ControllerName = "Device",
-                            ActionName = "Index",
-                        },
-                        new NavbarHeaderDropdownItem
-                        {
-                            Text = "Item2",
-                            ControllerName = "Device",
-                            ActionName = "Index",
-                        },
+                        new("Item1", "Device", "Index"),
+                        new("Item2", "Device", "Index"),
                     },
                 },
             };

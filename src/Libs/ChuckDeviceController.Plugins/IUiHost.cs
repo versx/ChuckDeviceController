@@ -38,6 +38,18 @@
         /// </summary>
         /// <param name="stats"></param>
         Task AddDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stat"></param>
+        Task UpdateDashboardStatisticAsync(IDashboardStatsItem stat);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="stats"></param>
+        Task UpdateDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats);
     }
 
     /// <summary>
@@ -104,10 +116,6 @@
         public string ActionName { get; set; }
 
         public uint DisplayIndex { get; set; }
-
-        public NavbarHeaderDropdownItem()
-        {
-        }
 
         public NavbarHeaderDropdownItem(string text, string controllerName = "", string actionName = "Index", uint displayIndex = 999)
         {

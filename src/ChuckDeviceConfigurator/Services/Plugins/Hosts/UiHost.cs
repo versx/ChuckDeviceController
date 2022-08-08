@@ -56,5 +56,25 @@
             _dashboardStats.Add(stats.Name, stats);
             await Task.CompletedTask;
         }
+
+        public async Task UpdateDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats)
+        {
+            foreach (var stat in stats)
+            {
+                await UpdateDashboardStatisticAsync(stat);
+            }
+        }
+
+        public async Task UpdateDashboardStatisticAsync(IDashboardStatsItem stats)
+        {
+            if (!_dashboardStats.ContainsKey(stats.Name))
+            {
+                // Does not exist
+                return;
+            }
+
+            _dashboardStats[stats.Name] = stats;
+            await Task.CompletedTask;
+        }
     }
 }
