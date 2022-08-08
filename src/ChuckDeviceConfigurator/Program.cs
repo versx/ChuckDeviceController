@@ -253,7 +253,7 @@ void Configure(IServiceProvider serviceProvider, IApplicationBuilder app)
 }
 
 // NOTE: Called first before Configure
-void ConfigureServices(IServiceCollection services)
+async void ConfigureServices(IServiceCollection services)
 {
     var mvcBuilder = services.AddMvc();
     var serviceProvider = services.BuildServiceProvider();
@@ -269,6 +269,41 @@ void ConfigureServices(IServiceCollection services)
             var loggingHost = provider.GetRequiredService<ILoggingHost>();
             var databaseHost = provider.GetRequiredService<IDatabaseHost>();
             var uiHost = provider.GetRequiredService<IUiHost>();
+
+            var navbarHeaders = new List<NavbarHeader>
+            {
+                new("Accounts", "Account", displayIndex: 0),
+                new("Devices", displayIndex: 1, isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
+                {
+                    new("Devices", "Device", "Index", 0),
+                    new("Device Groups", "DeviceGroup", "Index", 1),
+                }),
+                new("Instances", displayIndex: 2, isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
+                {
+                    new("Geofences", "Geofence", "Index", 0),
+                    new("Instances", "Instance", "Index", 1),
+                    new("IV Lists", "IvList", "Index", 2),
+                }),
+                new("Plugins", "Plugin", displayIndex: 3),
+                new("Schedules", displayIndex: 4, isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
+                {
+                    new("Assignments", "Assignment", "Index", 0),
+                    new("Assignment Groups", "AssignmentGroup", "Index", 1),
+                }),
+                new("Webhooks", "Webhook", displayIndex: 5),
+                new("Users", "User", displayIndex: 6),
+                new("Utilities", displayIndex: 7, isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
+                {
+                    new("Clear Quests", "Utilities", "ClearQuests", 0),
+                    new("Convert Forts", "Utilities", "ConvertForts", 1),
+                    new("Clear Stale Pokestops", "Utilities", "ClearStalePokestops", 2),
+                    new("Reload Instance", "Utilities", "ReloadInstance", 3),
+                    new("Truncate Data", "Utilities", "TruncateData", 4),
+                    new("Re-Quest", "Utilities", "ReQuest", 5),
+                    new("Route Generator", "Utilities", "RouteGenerator", 6),
+                }),
+            };
+            await uiHost.AddNavbarHeadersAsync(navbarHeaders);
 
             var sharedHosts = new Dictionary<Type, object>
             {

@@ -63,13 +63,13 @@
 
         public bool IsDropdown { get; set; }
 
-        public IEnumerable<NavbarHeaderDropdownItem> DropdownItems { get; set; }
+        public IEnumerable<NavbarHeaderDropdownItem>? DropdownItems { get; set; }
 
         public NavbarHeader()
         {
         }
 
-        public NavbarHeader(string text, string controllerName, string actionName, uint displayIndex, bool isDropdown, IEnumerable<NavbarHeaderDropdownItem> dropdownItems)
+        public NavbarHeader(string text, string controllerName = "", string actionName = "Index", uint displayIndex = 999, bool isDropdown = false, IEnumerable<NavbarHeaderDropdownItem>? dropdownItems = null)
         {
             Text = text;
             ControllerName = controllerName;
@@ -94,7 +94,7 @@
         {
         }
 
-        public NavbarHeaderDropdownItem(string text, string controllerName, string actionName, uint displayIndex)
+        public NavbarHeaderDropdownItem(string text, string controllerName = "", string actionName = "Index", uint displayIndex = 999)
         {
             Text = text;
             ControllerName = controllerName;
