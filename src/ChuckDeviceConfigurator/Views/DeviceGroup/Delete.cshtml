@@ -41,6 +41,6 @@
         @Html.DisplayNameFor(model => model.DeviceUuids)
     </dt>
     <dd class = "col-sm-10">
-        @string.Join(", ", Model?.DeviceUuids ?? new())
+        @Html.Raw(string.Join("<br>", Model?.DeviceUuids ?? new()))
     </dd>
 </dl>

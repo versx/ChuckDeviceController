@@ -70,10 +70,10 @@
                                 @Html.DisplayFor(modelItem => item.Name)
                             </td>
                             <td>
-                                @Utils.GetLastUpdatedStatus(item.Updated)
+                                @Html.Raw(Utils.GetLastUpdatedStatus(item.Updated, html: true))
                             </td>
                             <td>
-                                @Utils.FormatBoolean(item.IsEnabled, html: true) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
+                                @Html.Raw(Utils.FormatBoolean(item.IsEnabled, html: true)) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
                             </td>
                             <td>
                                 @Utils.FormatBoolean(item.IsDeleted)
@@ -134,7 +134,7 @@
                                 @Utils.GetLastUpdatedStatus(item.Updated)
                             </td>
                             <td>
-                                @Utils.FormatBoolean(item.IsEnabled, html: true) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
+                                @Html.Raw(Utils.FormatBoolean(item.IsEnabled, html: true)) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
                             </td>
                             <td>
                                 @Utils.FormatBoolean(item.IsDeleted)

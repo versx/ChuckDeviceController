@@ -1,7 +1,10 @@
-﻿@using ChuckDeviceController.Plugins;
-@model IPlugin
+﻿@using ChuckDeviceConfigurator.Services.Plugins
+@using ChuckDeviceConfigurator.Utilities
+@using ChuckDeviceController.Plugins
+@model PluginHost
 @{
-    ViewData["Title"] = "Plugin Details " + Model?.Name;
+    ViewData["Title"] = "Plugin Details " + Model?.Plugin.Name;
+    var isEnabled = Model?.IsEnabled ?? false;
 }
 
 <h1>Plugin Details</h1>
@@ -18,15 +21,15 @@
 </nav>
 
 <div>
-    <h4>Plugin '@Model?.Name'</h4>
+    <h4>Plugin '@Model?.Plugin.Name'</h4>
     <div>
-        <a asp-action="Reload" asp-route-id="@Model?.Name" class="btn btn-primary">
+        <a asp-action="Manage" asp-route-id="@Model?.Plugin.Name" class="btn btn-@(isEnabled ? "danger" : "success")">
+            <i class="fa-solid @(isEnabled ? "fa-stop" : "fa-play")"></i>&nbsp; @(isEnabled ? "Disable" : "Enable")
+        </a>
+        <a asp-action="Reload" asp-route-id="@Model?.Plugin.Name" class="btn btn-primary">
             <i class="fa-solid fa-pen-to-square"></i>&nbsp;Reload
         </a>
-        <a asp-action="Manage" asp-route-id="@Model?.Name" class="btn btn-danger">
-            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Disable
-        </a>
-        <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger">
+        <a asp-action="Delete" asp-route-id="@Model?.Plugin.Name" class="btn btn-danger">
             <i class="fa-solid fa-trash"></i>&nbsp;Delete
         </a>
     </div>
@@ -35,27 +38,45 @@
 <hr />
 <dl class="row">
     <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Name)
+        @Html.DisplayNameFor(model => model.Plugin.Name)
     </dt>
     <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Name)
+        @Html.DisplayFor(model => model.Plugin.Name)
     </dd>
     <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Description)
+        @Html.DisplayNameFor(model => model.Plugin.Description)
     </dt>
     <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Description)
+        @Html.DisplayFor(model => model.Plugin.Description)
     </dd>
     <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Author)
+        @Html.DisplayNameFor(model => model.Plugin.Author)
     </dt>
     <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Author)
+        @Html.DisplayFor(model => model.Plugin.Author)
     </dd>
     <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Version)
+        @Html.DisplayNameFor(model => model.Permissions)
     </dt>
     <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Version)
+        @Html.Raw(string.Join("<br>", (Model?.Permissions ?? PluginPermissions.None).ToString().Split(", ")))
+    </dd>
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.Plugin.Version)
+    </dt>
+    <dd class = "col-sm-10">
+        @Html.DisplayFor(model => model.Plugin.Version)
+    </dd>
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.State)
+    </dt>
+    <dd class = "col-sm-10">
+        @Html.DisplayFor(model => model.State)
+    </dd>
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.IsEnabled)
+    </dt>
+    <dd class = "col-sm-10">
+        @Html.Raw(Utils.FormatBoolean(Model?.IsEnabled ?? false, html: true))
     </dd>
 </dl>

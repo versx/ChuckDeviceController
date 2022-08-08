@@ -1,4 +1,5 @@
 ﻿@using ChuckDeviceConfigurator.Services.Plugins
+@using ChuckDeviceConfigurator.Utilities
 @using ChuckDeviceConfigurator.ViewModels
 @using ChuckDeviceController.Plugins
 @model ViewModelsModel<PluginHost>
@@ -20,6 +21,9 @@
                 @Html.DisplayNameFor(model => model.Items[0].Plugin.Name)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.Items[0].State)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Items[0].Plugin.Author)
             </th>
             <th>
@@ -27,6 +31,9 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Plugin.Version)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].IsEnabled)
             </th>
             <th width="5%">Action</th>
         </tr>
@@ -39,6 +46,9 @@
                     @Html.DisplayFor(modelItem => item.Plugin.Name)
                 </th>
                 <td>
+                    @Html.DisplayFor(modelItem => item.State)
+                </td>
+                <td>
                     @Html.DisplayFor(modelItem => item.Plugin.Author)
                 </td>
                 <td>
@@ -48,14 +58,15 @@
                     @Html.DisplayFor(modelItem => item.Plugin.Version)
                 </td>
                 <td>
+                    @Html.Raw(Utils.FormatBoolean(item.IsEnabled, html: true))
+                </td>
+                <td>
                     <div class="dropdown">
                         <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownGroup" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item" asp-action="Disable" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-stop"></i>&nbsp;Disable</a></li>
-                            @* Enabled: <i class="fa-solid fa-play"></i> *@
-                            @* Disabled: <i class="fa-solid fa-stop"></i> *@
+                            <li><a class="dropdown-item" asp-action="Disable" asp-route-id="@item.Plugin.Name"><i class="fa-solid @(item.IsEnabled ? "fa-stop" : "fa-play")"></i>&nbsp; @(item.IsEnabled ? "Disable" : "Enable")</a></li>
                             <li><a class="dropdown-item" asp-action="Reload" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Reload</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                         </ul>
@@ -71,10 +82,15 @@
         $(document).ready(function() {
             $('#table-plugins').DataTable({
                 columnDefs: [
+                    // Name State Author Permissions Version Enabled Action
+                    // 0    1     2      3           4       5       6
+                    // 0    2     5      6           4       3       1
                     { responsivePriority: 0, targets: 0 },
-                    { responsivePriority: 4, targets: 1 },
-                    { responsivePriority: 3, targets: 2 },
-                    { responsivePriority: 2, targets: 3 },
+                    { responsivePriority: 2, targets: 1 },
+                    { responsivePriority: 5, targets: 2 },
+                    { responsivePriority: 6, targets: 3 },
+                    { responsivePriority: 4, targets: 4 },
+                    { responsivePriority: 3, targets: 5 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],

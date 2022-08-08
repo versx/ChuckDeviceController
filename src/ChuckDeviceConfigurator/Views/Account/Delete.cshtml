@@ -54,7 +54,7 @@
         @Html.DisplayNameFor(model => model.Status)
     </dt>
     <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.Status)
+        @Html.Raw(Utils.GetAccountStatusColor(Model?.Status))
     </dd>
     <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.Spins)
@@ -72,7 +72,7 @@
         @Html.DisplayNameFor(model => model.GroupName)
     </dt>
     <dd class="col-sm-10">
-        @(Model?.GroupName ?? "N/A")
+        @Utils.FormatNull(Model?.GroupName)
     </dd>
     <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.LastEncounterTime)
@@ -104,13 +104,13 @@
             @Html.DisplayNameFor(model => model.Failed)
         </dt>
         <dd class="col-sm-10">
-            @(Model?.Failed ?? "N/A")
+            @Utils.FormatNull(Model?.Failed)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.FailedTimestamp)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.FailedTimestamp)
+            @Utils.GetLastUpdatedStatus(Model?.FailedTimestamp ?? 0)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.FirstWarningTimestamp)
@@ -130,7 +130,7 @@
                 @Html.DisplayNameFor(model => model.Warn)
             </dt>
             <dd class="col-sm-10">
-                @Utils.FormatBoolean(Model?.Warn ?? false)
+                @Html.Raw(Utils.FormatBoolean(!(Model?.Warn ?? false), html: true))
             </dd>
             <dt class="col-sm-2">
                 @Html.DisplayNameFor(model => model.WarnExpireTimestamp)
@@ -151,7 +151,7 @@
                 @Html.DisplayNameFor(model => model.WasSuspended)
             </dt>
             <dd class="col-sm-10">
-                @Utils.FormatBoolean(Model?.WasSuspended ?? false)
+                @Html.Raw(Utils.FormatBoolean(!(Model?.WasSuspended ?? false), html: true))
             </dd>
             <dt class="col-sm-2">
                 @Html.DisplayNameFor(model => model.SuspendedMessageAcknowledged)

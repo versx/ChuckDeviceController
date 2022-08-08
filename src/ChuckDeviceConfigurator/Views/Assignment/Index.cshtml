@@ -69,7 +69,7 @@
                     @Utils.FormatAssignmentTime(item.Time)
                 </td>
                 <td>
-                    @Html.Raw(Utils.FormatEnabled(item.Enabled))
+                    @Html.Raw(Utils.FormatBoolean(item.Enabled, html: true))
                 </td>
                 <td>
                     <div class="dropdown">

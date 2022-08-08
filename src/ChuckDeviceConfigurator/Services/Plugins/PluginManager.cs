@@ -163,6 +163,7 @@
                 // to accept plugin permissions request or just allow it regardless? or add
                 // config option to set which permissions plugins are allowed? idk
 
+                //plugin.Plugin.OnLoad(plugin.State, plugin.IsEnabled);
                 plugin.Plugin.OnLoad();
             }
         }
@@ -195,6 +196,9 @@
                     return;
                 }
             }
+
+            plugin.SetState(PluginState.Running);
+            plugin.SetEnabled(true);
 
             _plugins.Add(plugin.Plugin.Name, plugin);
             _logger.LogInformation($"Plugin '{plugin.Plugin.Name}' v{plugin.Plugin.Version} by {plugin.Plugin.Author} initialized and registered to plugin manager cache.");

@@ -317,7 +317,7 @@
                             @item.Spins.ToString("N0")
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.LastEncounter)
+                            @Utils.GetLastUpdatedStatus(item.LastEncounterTime ?? 0)
                         </td>
                         <td>
                             @Html.DisplayFor(modelItem => item.GroupName)

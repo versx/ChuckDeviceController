@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
+    using System.ComponentModel;
+
     using ChuckDeviceController.Plugins;
 
     public sealed class PluginHost : IPluginHost
@@ -10,6 +12,11 @@
 
         // TODO: Change 'Permissions' to 'RequestedPermissions' and add 'AllowedPermissions' property
         public PluginPermissions Permissions { get; } = PluginPermissions.None;
+
+        public PluginState State { get; private set; }
+
+        [DisplayName("Enabled")]
+        public bool IsEnabled { get; private set; }
 
         public PluginEventHandlers EventHandlers { get; } = new();
 
@@ -27,6 +34,22 @@
             Plugin = plugin;
             Permissions = permissions;
             EventHandlers = handlers;
+            State = PluginState.Unset;
+            //IsEnabled = true;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public void SetEnabled(bool enabled)
+        {
+            IsEnabled = enabled;
+        }
+
+        public void SetState(PluginState state)
+        {
+            State = state;
         }
 
         #endregion

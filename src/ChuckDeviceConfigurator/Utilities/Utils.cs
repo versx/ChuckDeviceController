@@ -49,6 +49,15 @@
             return displayText;
         }
 
+        public static string FormatNull(string? value, string defaultValue = "N/A")
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return defaultValue;
+            }
+            return value;
+        }
+
         public static string GetDeviceStatus(ulong lastSeen)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
@@ -81,7 +90,7 @@
                 : updatedTime;
         }
 
-        public static string GetAccountStatusColor(string status)
+        public static string GetAccountStatusColor(string? status)
         {
             var cssClass = "text-dark";
             switch (status)

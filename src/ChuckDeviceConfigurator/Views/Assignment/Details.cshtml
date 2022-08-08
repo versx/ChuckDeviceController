@@ -91,6 +91,6 @@
         @Html.DisplayNameFor(model => model.Enabled)
     </dt>
     <dd class="col-sm-10">
-        @Html.Raw(Utils.FormatEnabled(Model?.Enabled ?? false))
+        @Html.Raw(Utils.FormatBoolean(Model?.Enabled ?? false, html: true))
     </dd>
 </dl>
