@@ -37,5 +37,17 @@
         /// related plugin event type.
         /// </summary>
         PluginEventHandlers EventHandlers { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="state"></param>
+        void SetState(PluginState state);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="enabled"></param>
+        void SetEnabled(bool enabled);
     }
 }

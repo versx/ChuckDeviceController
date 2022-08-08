@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Services.Plugins
+﻿namespace ChuckDeviceController.Plugins
 {
     /// <summary>
     /// Determines the state of a plugin
@@ -19,6 +19,12 @@
         /// Plugin has been stopped and is not currently running
         /// </summary>
         Stopped,
+
+        /// <summary>
+        /// Plugin has been removed from the host application
+        /// and is no longer available
+        /// </summary>
+        Removed,
 
         /// <summary>
         /// Plugin has encountered an error and unable to recover

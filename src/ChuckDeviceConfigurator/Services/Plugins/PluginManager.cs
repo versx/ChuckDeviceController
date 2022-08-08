@@ -81,6 +81,7 @@
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnStop();
+            pluginHost.Plugin.OnStateChanged(PluginState.Stopped, pluginHost.IsEnabled);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been stopped");
             await Task.CompletedTask;
@@ -104,6 +105,7 @@
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnReload();
+            pluginHost.Plugin.OnStateChanged(PluginState.Running, pluginHost.IsEnabled);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been reloaded");
             await Task.CompletedTask;
@@ -127,6 +129,7 @@
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnRemove();
+            pluginHost.Plugin.OnStateChanged(PluginState.Removed, pluginHost.IsEnabled);
             _plugins.Remove(pluginName);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been removed");
@@ -163,7 +166,6 @@
                 // to accept plugin permissions request or just allow it regardless? or add
                 // config option to set which permissions plugins are allowed? idk
 
-                //plugin.Plugin.OnLoad(plugin.State, plugin.IsEnabled);
                 plugin.Plugin.OnLoad();
             }
         }

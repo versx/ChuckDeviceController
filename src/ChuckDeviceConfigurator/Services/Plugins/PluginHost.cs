@@ -35,7 +35,6 @@
             Permissions = permissions;
             EventHandlers = handlers;
             State = PluginState.Unset;
-            //IsEnabled = true;
         }
 
         #endregion
@@ -50,6 +49,9 @@
         public void SetState(PluginState state)
         {
             State = state;
+
+            // Call 'OnStateChanged' event handler for plugin
+            Plugin.OnStateChanged(state, IsEnabled);
         }
 
         #endregion

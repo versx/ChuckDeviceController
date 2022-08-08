@@ -210,6 +210,18 @@
             _loggingHost.LogMessage($"OnRemove called from plugin");
         }
 
+        /// <summary>
+        /// Called when the plugin's state has been
+        /// changed by the host application.
+        /// </summary>
+        /// <param name="state">Plugin's current state</param>
+        /// <param name="isEnabled">Whether the plugin is
+        /// currently enabled or disabled</param>
+        public void OnStateChanged(PluginState state, bool isEnabled)
+        {
+            _loggingHost.LogMessage($"[{Name}] Plugin state has changed to '{state}'");
+        }
+
         #endregion
     }
 
