@@ -19,7 +19,15 @@ nav:
         - Home: index.md
         - Screenshots: screenshots.md
         - Getting Started: getting-started.md
-    - Plugin System: plugin-system.md
+    - Plugin System:
+        - API: plugin-system/api.md
+        - Examples: plugin-system/examples.md
+        - IDatabase: plugin-system/database.md
+        - ILocalization: plugin-system/localization.md
+        - ILogging: plugin-system/logging.md
+        - IJobControllers: plugin-system/job-controllers.md
+        - IUi: plugin-system/ui.md
+
 
 markdown_extensions:
     - toc:
