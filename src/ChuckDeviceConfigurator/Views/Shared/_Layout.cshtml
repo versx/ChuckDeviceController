@@ -18,79 +18,123 @@
     <title>@ViewData["Title"] - ChuckDeviceConfigurator</title>
 
     <link rel="icon" href="~/favicons/chuck.ico" type="image/x-icon" asp-append-version="true" />
+    <link rel="apple-touch-icon" href="~/favicons/chuck.gif" sizes="180x180">
+    <link rel="icon" href="~/favicons/chuck.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="~/favicons/chuck.png" type="image/png" sizes="16x16">
+    <link rel="mask-icon" href="~/favicons/chuck.png" color="#5bbad5">
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/datatables/datatables.css" />
     <link rel="stylesheet" href="~/lib/fontawesome-free-6.1.1-web/css/all.css" />
+    <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/favicons/chuck.gif" alt="Chuck logo" width="28" height="28" />
-                    ChuckDeviceConfigurator
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="sidebar-header text-center">
+                <a href="/" class="navbar-brand">
+                    <img src="/favicons/chuck.gif" border="0" height="48">
+                    <div class="text-wrap">Chuck Device Configurator</div>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            if (navbarHeaders != null)
-                            {
-                                navbarHeaders.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                                foreach (var header in navbarHeaders)
-                                {
-                                    if (header.IsDropdown && (header?.DropdownItems?.Any() ?? false))
-                                    {
-                                        var dropDirection = header.DropDirection.ToString().ToLower();
-                                        var sortedDropdownItems = header.DropdownItems.ToList();
-                                        sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                                        <li class="nav-item">
-                                            <div class="dropdown @(dropDirection)">
-                                                <a href="#" class="nav-link dropdown-toggle text-light" id="dropdownMenuHeader" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    @header.Text
-                                                </a>
-                                                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuHeader">
-                                                    @foreach (var dropdownHeader in sortedDropdownItems)
-                                                    {
-                                                        if (dropdownHeader.IsSeparator)
-                                                        {
-                                                            <li><hr class="dropdown-divider"></li>
-                                                        }
-                                                        else
-                                                        {
-                                                            <li class="nav-item">
-                                                                <a class="dropdown-item @(dropdownHeader.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">@dropdownHeader.Text</a>
-                                                            </li>
-                                                        }
-                                                    }
-                                                </ul>
-                                            </div>
-                                        </li>
-                                    }
-                                    else
-                                    {
-                                        <li class="nav-item">
-                                            <a class="nav-link text-light @(header.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@header.ControllerName" asp-action="@header.ActionName">@header?.Text</a>
-                                        </li>
-                                    }
-                                }
-                            }
-                        }
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
             </div>
+            <ul class="list-unstyled components">
+                <li class="nav-item">
+                    <a href="/">
+                        <i class="fa-solid fa-fw fa-house"></i>
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/Account">
+                        <i class="fa-solid fa-fw fa-user"></i>
+                        Accounts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#devicesSubmenu" aria-expanded="false" class="dropdown-toggle">
+                        <i class="fa-solid fa-fw fa-mobile-alt"></i>
+                        Devices
+                    </a>
+                    <ul class="collapse list-unstyled" id="devicesSubmenu">
+                        <li><a href="/Device"><i class="fa-solid fa-fw fa-mobile-alt"></i> Devices</a></li>
+                        <li><a href="/DeviceGroup"><i class="fa-solid fa-fw fa-layer-group"></i> Device Groups</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#instancesSubmenu" aria-expanded="false" class="dropdown-toggle collpased">
+                        <i class="fa-solid fa-fw fa-cubes-stacked"></i>
+                        Instances
+                    </a>
+                    <ul class="collapse list-unstyled" id="instancesSubmenu">
+                        <li><a href="/Instance"><i class="fa-solid fa-fw fa-cubes-stacked"></i> Instances</a></li>
+                        <li><a href="/Geofence"><i class="fa-solid fa-fw fa-map-marked"></i> Geofences</a></li>
+                        <li><a href="/IvList"><i class="fa-solid fa-fw fa-list"></i> IV Lists</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="/Plugin">
+                        <i class="fa-solid fa-fw fa-puzzle-piece"></i>
+                        Plugins
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#schedulesSubmenu" aria-expanded="false" class="dropdown-toggle collpased">
+                        <i class="fa-solid fa-fw fa-calendar-days"></i>
+                        Schedules
+                    </a>
+                    <ul class="collapse list-unstyled" id="schedulesSubmenu">
+                        <li><a href="/Assignment"><i class="fa-solid fa-fw fa-cog"></i> Assignments</a></li>
+                        <li><a href="/AssignmentGroup"><i class="fa-solid fa-fw fa-cogs"></i> Assignment Groups</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="/Webhook">
+                        <i class="fa-solid fa-fw fa-circle-nodes"></i>
+                        Webhooks
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/User">
+                        <i class="fa-solid fa-fw fa-users"></i>
+                        Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/Utilities">
+                        <i class="fa-solid fa-fw fa-toolbox"></i>
+                        Utilities
+                    </a>
+                </li>
+            </ul>
+            <ul class="list-unstyled components">
+                <li class="nav-item">
+                    <a href="/swagger" target="_blank">
+                        <i class="fa fa-fw fas fa-file-alt"></i>
+                        Swagger API
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/profiler/results" target="_blank">
+                        <i class="fa fa-fw fa-chart-bar"></i>
+                        Profiler
+                    </a>
+                </li>
+            </ul>
+            <partial name="_LoginPartial" />
         </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        <div id="content">
+            <button id="sidebarCollapse" type="button" class="navbar-btn" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="container">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -123,3 +167,14 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+<script>
+    // Get current URL path and toggle 'active' class for sidebar and sidebar collapse/expand button
+    const pathname = window.location.pathname;
+    $('#sidebar > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
+    $('#sidebar > ul > li > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').toggleClass('active');
+        $(this).toggleClass('active');
+    });
+</script>
