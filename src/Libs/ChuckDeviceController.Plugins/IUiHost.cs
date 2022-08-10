@@ -88,11 +88,13 @@
         /// </summary>
         uint DisplayIndex { get; }
 
+        /// <summary>
+        /// Gets or sets a value determining whether the
+        /// navbar header is disabled or not.
+        /// </summary>
+        bool IsDisabled { get; }
 
         // theme - dark/light
-        // drop direction - dropdown (default), dropstart (left), dropup, dropend (right)
-        // separator //<li><hr class="dropdown-divider"></li>
-        // disabled
         // fontawesome icon
     }
 
@@ -162,7 +164,17 @@
         /// </summary>
         public IEnumerable<NavbarHeaderDropdownItem>? DropdownItems { get; set; }
 
+        /// <summary>
+        /// Gets or sets the direction the dropdown arrow and menu
+        /// positioning to use.
+        /// </summary>
         public NavbarHeaderDropDirection DropDirection { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value determining whether the
+        /// navbar header is disabled or not.
+        /// </summary>
+        public bool IsDisabled { get; set; }
 
         /// <summary>
         /// Instantiates a new navbar header instance using default 
@@ -186,7 +198,9 @@
         /// <param name="displayIndex"></param>
         /// <param name="isDropdown"></param>
         /// <param name="dropdownItems"></param>
-        public NavbarHeader(string text, string controllerName = "", string actionName = "Index", uint displayIndex = 999, bool isDropdown = false, IEnumerable<NavbarHeaderDropdownItem>? dropdownItems = null)
+        /// <param name="dropDirection"></param>
+        /// <param name="isDisabled"></param>
+        public NavbarHeader(string text, string controllerName = "", string actionName = "Index", uint displayIndex = 999, bool isDropdown = false, IEnumerable<NavbarHeaderDropdownItem>? dropdownItems = null, NavbarHeaderDropDirection dropDirection = NavbarHeaderDropDirection.Dropdown, bool isDisabled = false)
         {
             Text = text;
             ControllerName = controllerName;
@@ -194,6 +208,8 @@
             DisplayIndex = displayIndex;
             IsDropdown = isDropdown;
             DropdownItems = dropdownItems;
+            DropDirection = dropDirection;
+            IsDisabled = isDisabled;
         }
     }
 
@@ -227,6 +243,18 @@
         public uint DisplayIndex { get; set; }
 
         /// <summary>
+        /// Gets or sets a value determining whether to insert a dropdown
+        /// separator instead of a dropdown item.
+        /// </summary>
+        public bool IsSeparator { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value determining whether the navbar
+        /// header dropdown item is disabled or not.
+        /// </summary>
+        public bool IsDisabled { get; set; }
+
+        /// <summary>
         /// Instantiates a new instance of a navbar header with
         /// dropdown items.
         /// </summary>
@@ -234,12 +262,16 @@
         /// <param name="controllerName"></param>
         /// <param name="actionName"></param>
         /// <param name="displayIndex"></param>
-        public NavbarHeaderDropdownItem(string text, string controllerName = "", string actionName = "Index", uint displayIndex = 999)
+        /// <param name="isSeparator"></param>
+        /// <param name="isDisabled"></param>
+        public NavbarHeaderDropdownItem(string text, string controllerName = "", string actionName = "Index", uint displayIndex = 999, bool isSeparator = false, bool isDisabled = false)
         {
             Text = text;
             ControllerName = controllerName;
             ActionName = actionName;
             DisplayIndex = displayIndex;
+            IsSeparator = isSeparator;
+            IsDisabled = isDisabled;
         }
     }
 

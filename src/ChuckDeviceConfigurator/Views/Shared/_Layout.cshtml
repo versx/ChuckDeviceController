@@ -42,25 +42,31 @@
                             if (navbarHeaders != null)
                             {
                                 navbarHeaders.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                                foreach (var navLink in navbarHeaders)
+                                foreach (var header in navbarHeaders)
                                 {
-                                    var navHeader = (NavbarHeader)navLink;
-                                    if (navHeader.IsDropdown && (navHeader?.DropdownItems?.Any() ?? false))
+                                    if (header.IsDropdown && (header?.DropdownItems?.Any() ?? false))
                                     {
-                                        var dropDirection = navHeader.DropDirection.ToString().ToLower();
-                                        var sortedDropdownItems = navHeader.DropdownItems.ToList();
+                                        var dropDirection = header.DropDirection.ToString().ToLower();
+                                        var sortedDropdownItems = header.DropdownItems.ToList();
                                         sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
                                         <li class="nav-item">
                                             <div class="dropdown @(dropDirection)">
                                                 <a href="#" class="nav-link dropdown-toggle text-light" id="dropdownMenuHeader" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    @navHeader.Text
+                                                    @header.Text
                                                 </a>
                                                 <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuHeader">
                                                     @foreach (var dropdownHeader in sortedDropdownItems)
                                                     {
-                                                        <li class="nav-item">
-                                                            <a class="dropdown-item" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">@dropdownHeader.Text</a>
-                                                        </li>
+                                                        if (dropdownHeader.IsSeparator)
+                                                        {
+                                                            <li><hr class="dropdown-divider"></li>
+                                                        }
+                                                        else
+                                                        {
+                                                            <li class="nav-item">
+                                                                <a class="dropdown-item @(dropdownHeader.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">@dropdownHeader.Text</a>
+                                                            </li>
+                                                        }
                                                     }
                                                 </ul>
                                             </div>
@@ -69,7 +75,7 @@
                                     else
                                     {
                                         <li class="nav-item">
-                                            <a class="nav-link text-light" asp-area="" asp-controller="@navHeader.ControllerName" asp-action="@navHeader.ActionName">@navHeader.Text</a>
+                                            <a class="nav-link text-light @(header.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@header.ControllerName" asp-action="@header.ActionName">@header?.Text</a>
                                         </li>
                                     }
                                 }

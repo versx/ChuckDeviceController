@@ -135,7 +135,8 @@
                     text: "Test",
                     controllerName: "Test", // TestController class
                     actionName: "Index", // TestController.Index method
-                    displayIndex: 1
+                    displayIndex: 1,
+                    isDisabled: true
                 ),
                 new NavbarHeader
                 {
@@ -146,7 +147,8 @@
                     DropdownItems = new List<NavbarHeaderDropdownItem>
                     {
                         new("Item1", "Device"),
-                        new("Item2", "Device"),
+                        new("Hmm", isSeparator: true),
+                        new("Item2", "Device", isDisabled: true),
                     },
                 },
             };
