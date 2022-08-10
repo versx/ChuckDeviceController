@@ -272,35 +272,36 @@ async void ConfigureServices(IServiceCollection services)
 
             var navbarHeaders = new List<NavbarHeader>
             {
-                new("Accounts", "Account", displayIndex: 0),
-                new("Devices", displayIndex: 1, isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
+                new("Home", "Home", displayIndex: 0, icon: "fa-solid fa-fw fa-house"),
+                new("Accounts", "Account", displayIndex: 1, icon: "fa-solid fa-fw fa-user"),
+                new("Devices", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
                 {
-                    new("Devices", "Device", "Index", 0),
-                    new("Device Groups", "DeviceGroup", "Index", 1),
+                    new("Devices", "Device", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-layer-group"),
+                    new("Device Groups", "DeviceGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-mobile-alt"),
                 }),
-                new("Instances", displayIndex: 2, isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
+                new("Instances", displayIndex: 3, icon: "fa-solid fa-fw fa-cubes-stacked", isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
                 {
-                    new("Geofences", "Geofence", "Index", 0),
-                    new("Instances", "Instance", "Index", 1),
-                    new("IV Lists", "IvList", "Index", 2),
+                    new("Geofences", "Geofence", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-map-marked"),
+                    new("Instances", "Instance", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-cubes-stacked"),
+                    new("IV Lists", "IvList", "Index", displayIndex: 2, icon: "fa-solid fa-fw fa-list"),
                 }),
-                new("Plugins", "Plugin", displayIndex: 3),
-                new("Schedules", displayIndex: 4, isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
+                new("Plugins", "Plugin", displayIndex: 4, icon: "fa-solid fa-fw fa-puzzle-piece"),
+                new("Schedules", displayIndex: 5, icon: "fa-solid fa-fw fa-calendar-days", isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
                 {
-                    new("Assignments", "Assignment", "Index", 0),
-                    new("Assignment Groups", "AssignmentGroup", "Index", 1),
+                    new("Assignments", "Assignment", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-cog"),
+                    new("Assignment Groups", "AssignmentGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-cogs"),
                 }),
-                new("Webhooks", "Webhook", displayIndex: 5),
-                new("Users", "User", displayIndex: 6),
-                new("Utilities", displayIndex: 7, isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
+                new("Webhooks", "Webhook", displayIndex: 6, icon: "fa-solid fa-fw fa-circle-nodes"),
+                new("Users", "User", displayIndex: 7, icon: "fa-solid fa-fw fa-users"),
+                new("Utilities", displayIndex: 8, icon: "fa-solid fa-fw fa-toolbox", isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
                 {
-                    new("Clear Quests", "Utilities", "ClearQuests", 0),
-                    new("Convert Forts", "Utilities", "ConvertForts", 1),
-                    new("Clear Stale Pokestops", "Utilities", "ClearStalePokestops", 2),
-                    new("Reload Instance", "Utilities", "ReloadInstance", 3),
-                    new("Truncate Data", "Utilities", "TruncateData", 4),
-                    new("Re-Quest", "Utilities", "ReQuest", 5),
-                    new("Route Generator", "Utilities", "RouteGenerator", 6),
+                    new("Clear Quests", "Utilities", "ClearQuests", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Convert Forts", "Utilities", "ConvertForts", displayIndex: 1, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Clear Stale Pokestops", "Utilities", "ClearStalePokestops", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Reload Instance", "Utilities", "ReloadInstance", displayIndex: 3, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Truncate Data", "Utilities", "TruncateData", displayIndex: 4, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Re-Quest", "Utilities", "ReQuest", displayIndex: 5, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Route Generator", "Utilities", "RouteGenerator", displayIndex: 6, icon: "fa-solid fa-fw fa-mobile-alt"),
                 }),
             };
             await uiHost.AddNavbarHeadersAsync(navbarHeaders);

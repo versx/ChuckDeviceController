@@ -135,6 +135,7 @@
                     text: "Test",
                     controllerName: "Test", // TestController class
                     actionName: "Index", // TestController.Index method
+                    icon: "fa-solid fa-fw fa-microscope",
                     displayIndex: 1,
                     isDisabled: true
                 ),
@@ -142,6 +143,7 @@
                 {
                     Text = "TestNavDropdown",
                     DisplayIndex = 4,
+                    Icon = "fa-solid fa-fw fa-microscope",
                     IsDropdown = true,
                     DropDirection = NavbarHeaderDropDirection.Dropstart,
                     DropdownItems = new List<NavbarHeaderDropdownItem>

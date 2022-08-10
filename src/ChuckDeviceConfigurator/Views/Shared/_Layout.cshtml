@@ -15,7 +15,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ChuckDeviceConfigurator</title>
+    <title>ChuckDeviceConfigurator - @ViewData["Title"]</title>
 
     <link rel="icon" href="~/favicons/chuck.ico" type="image/x-icon" asp-append-version="true" />
     <link rel="apple-touch-icon" href="~/favicons/chuck.gif" sizes="180x180">
@@ -52,8 +52,8 @@
                                 var sortedDropdownItems = header.DropdownItems.ToList();
                                 sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
                                 <li class="nav-item">
-                                    <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(header.Text)Submenu" class="dropdown-toggle text-light" role="button" aria-expanded="false">
-                                        <i class="fa-solid fa-fw fa-mobile-alt"></i>
+                                    <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(header.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
+                                        @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
                                         @header.Text
                                     </a>
                                     <ul class="collapse list-unstyled" id="@(header.Text)Submenu">
@@ -66,8 +66,8 @@
                                             else
                                             {
                                                 <li class="nav-item">
-                                                    <a class="dropdown-item text-light @(dropdownHeader.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">
-                                                        <i class="fa-solid fa-fw fa-mobile-alt"></i>
+                                                    <a class="dropdown-item text-white @(dropdownHeader.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">
+                                                        @Html.Raw(string.IsNullOrEmpty(dropdownHeader.Icon) ? "" : $"<i class='{dropdownHeader.Icon}'></i>")
                                                         @dropdownHeader.Text
                                                     </a>
                                                 </li>
@@ -80,7 +80,7 @@
                             {
                                 <li class="nav-item">
                                     <a class="@(header.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@header.ControllerName" asp-action="@header.ActionName">
-                                        <i class="fa-solid fa-fw fa-house"></i>
+                                        @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
                                         @header.Text
                                     </a>
                                 </li>

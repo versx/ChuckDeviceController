@@ -83,6 +83,12 @@
         string ActionName { get; }
 
         /// <summary>
+        /// Gets or sets the FontAwesome v6 icon key to use for 
+        /// the navbar header. https://fontawesome.com/icons
+        /// </summary>
+        string Icon { get; }
+
+        /// <summary>
         /// Gets or sets the numeric display index order of
         /// the navbar header in the list of navbar headers.
         /// </summary>
@@ -95,7 +101,6 @@
         bool IsDisabled { get; }
 
         // theme - dark/light
-        // fontawesome icon
     }
 
     /// <summary>
@@ -148,6 +153,12 @@
         public string ActionName { get; set; }
 
         /// <summary>
+        /// Gets or sets the FontAwesome v6 icon key to use for 
+        /// the navbar header. https://fontawesome.com/icons
+        /// </summary>
+        public string Icon { get; set; }
+
+        /// <summary>
         /// Gets or sets the numeric display index order of
         /// the navbar header in the list of navbar headers.
         /// </summary>
@@ -186,6 +197,7 @@
             ControllerName = string.Empty;
             ActionName = string.Empty;
             DropDirection = NavbarHeaderDropDirection.Dropdown;
+            Icon = string.Empty;
         }
 
         /// <summary>
@@ -195,16 +207,18 @@
         /// <param name="text"></param>
         /// <param name="controllerName"></param>
         /// <param name="actionName"></param>
+        /// <param name="icon"></param>
         /// <param name="displayIndex"></param>
         /// <param name="isDropdown"></param>
         /// <param name="dropdownItems"></param>
         /// <param name="dropDirection"></param>
         /// <param name="isDisabled"></param>
-        public NavbarHeader(string text, string controllerName = "", string actionName = "Index", uint displayIndex = 999, bool isDropdown = false, IEnumerable<NavbarHeaderDropdownItem>? dropdownItems = null, NavbarHeaderDropDirection dropDirection = NavbarHeaderDropDirection.Dropdown, bool isDisabled = false)
+        public NavbarHeader(string text, string controllerName = "", string actionName = "Index", string icon = "", uint displayIndex = 999, bool isDropdown = false, IEnumerable<NavbarHeaderDropdownItem>? dropdownItems = null, NavbarHeaderDropDirection dropDirection = NavbarHeaderDropDirection.Dropdown, bool isDisabled = false)
         {
             Text = text;
             ControllerName = controllerName;
             ActionName = actionName;
+            Icon = icon;
             DisplayIndex = displayIndex;
             IsDropdown = isDropdown;
             DropdownItems = dropdownItems;
@@ -237,6 +251,12 @@
         public string ActionName { get; set; }
 
         /// <summary>
+        /// Gets or sets the FontAwesome v6 icon key to use for 
+        /// the navbar header dropdown item. https://fontawesome.com/icons
+        /// </summary>
+        public string Icon { get; set; }
+
+        /// <summary>
         /// Gets or sets the numeric display index order of
         /// the navbar header in the list of navbar headers.
         /// </summary>
@@ -261,14 +281,16 @@
         /// <param name="text"></param>
         /// <param name="controllerName"></param>
         /// <param name="actionName"></param>
+        /// <param name="icon"></param>
         /// <param name="displayIndex"></param>
         /// <param name="isSeparator"></param>
         /// <param name="isDisabled"></param>
-        public NavbarHeaderDropdownItem(string text, string controllerName = "", string actionName = "Index", uint displayIndex = 999, bool isSeparator = false, bool isDisabled = false)
+        public NavbarHeaderDropdownItem(string text, string controllerName = "", string actionName = "Index", string icon = "", uint displayIndex = 999, bool isSeparator = false, bool isDisabled = false)
         {
             Text = text;
             ControllerName = controllerName;
             ActionName = actionName;
+            Icon = icon;
             DisplayIndex = displayIndex;
             IsSeparator = isSeparator;
             IsDisabled = isDisabled;
