@@ -144,8 +144,8 @@
                     IsDropdown = true,
                     DropdownItems = new List<NavbarHeaderDropdownItem>
                     {
-                        new("Item1", "Device", "Index"),
-                        new("Item2", "Device", "Index"),
+                        new("Item1", "Device"),
+                        new("Item2", "Device"),
                     },
                 },
             };
