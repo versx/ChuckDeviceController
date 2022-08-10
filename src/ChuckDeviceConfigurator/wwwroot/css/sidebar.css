@@ -86,12 +86,14 @@ a, a:hover, a:focus {
     padding: 10px;
 }
 
+.account-link,
 #sidebar ul li a {
     padding: 10px;
     font-size: 1.1em;
     display: block;
+    color: #fff;
 }
-
+.account-link:hover,
 #sidebar ul li a:hover {
     color: #7386D5;
     background: #fff;
@@ -120,12 +122,6 @@ ul ul a {
     padding-left: 30px !important;
     background: #44464d;/*#6d7fcc;*/
 }
-
-a.article, a.article:hover {
-    background: #6d7fcc !important;
-    color: #fff !important;
-}
-
 
 
 /* ---------------------------------------------------

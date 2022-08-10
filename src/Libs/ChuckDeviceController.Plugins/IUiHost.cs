@@ -99,8 +99,6 @@
         /// navbar header is disabled or not.
         /// </summary>
         bool IsDisabled { get; }
-
-        // theme - dark/light
     }
 
     /// <summary>

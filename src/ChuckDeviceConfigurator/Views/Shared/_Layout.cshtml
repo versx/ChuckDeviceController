@@ -38,71 +38,71 @@
                     <div class="text-wrap">Chuck Device Configurator</div>
                 </a>
             </div>
-            <ul class="list-unstyled components">
-                @if (SignInManager.IsSignedIn(User))
+            @if (SignInManager.IsSignedIn(User))
+            {
+                if (navbarHeaders != null)
                 {
-                    if (navbarHeaders != null)
+                    navbarHeaders.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+                    <ul class="list-unstyled components">
+                    @foreach (var header in navbarHeaders)
                     {
-                        navbarHeaders.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                        foreach (var header in navbarHeaders)
+                        if (header.IsDropdown && (header?.DropdownItems?.Any() ?? false))
                         {
-                            if (header.IsDropdown && (header?.DropdownItems?.Any() ?? false))
-                            {
-                                var dropDirection = header.DropDirection.ToString().ToLower();
-                                var sortedDropdownItems = header.DropdownItems.ToList();
-                                sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                                <li class="nav-item">
-                                    <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(header.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
-                                        @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
-                                        @header.Text
-                                    </a>
-                                    <ul class="collapse list-unstyled" id="@(header.Text)Submenu">
-                                        @foreach (var dropdownHeader in sortedDropdownItems)
+                            var dropDirection = header.DropDirection.ToString().ToLower();
+                            var sortedDropdownItems = header.DropdownItems.ToList();
+                            sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+                            <li class="nav-item">
+                                <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(header.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
+                                    @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
+                                    @header.Text
+                                </a>
+                                <ul class="collapse list-unstyled" id="@(header.Text)Submenu">
+                                    @foreach (var dropdownHeader in sortedDropdownItems)
+                                    {
+                                        if (dropdownHeader.IsSeparator)
                                         {
-                                            if (dropdownHeader.IsSeparator)
-                                            {
-                                                <li><hr class="dropdown-divider"></li>
-                                            }
-                                            else
-                                            {
-                                                <li class="nav-item">
-                                                    <a class="dropdown-item text-white @(dropdownHeader.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">
-                                                        @Html.Raw(string.IsNullOrEmpty(dropdownHeader.Icon) ? "" : $"<i class='{dropdownHeader.Icon}'></i>")
-                                                        @dropdownHeader.Text
-                                                    </a>
-                                                </li>
-                                            }
+                                            <li><hr class="dropdown-divider"></li>
                                         }
-                                    </ul>
-                                </li>
-                            }
-                            else
-                            {
-                                <li class="nav-item">
-                                    <a class="@(header.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@header.ControllerName" asp-action="@header.ActionName">
-                                        @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
-                                        @header.Text
-                                    </a>
-                                </li>
-                            }
+                                        else
+                                        {
+                                            <li class="nav-item">
+                                                <a class="dropdown-item @(dropdownHeader.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">
+                                                    @Html.Raw(string.IsNullOrEmpty(dropdownHeader.Icon) ? "" : $"<i class='{dropdownHeader.Icon}'></i>")
+                                                    @dropdownHeader.Text
+                                                </a>
+                                            </li>
+                                        }
+                                    }
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="@(header.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@header.ControllerName" asp-action="@header.ActionName">
+                                    @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
+                                    @header.Text
+                                </a>
+                            </li>
                         }
                     }
+                    </ul>
                 }
-            </ul>
-            <ul class="list-unstyled components">
-                <li class="nav-item">
-                    <a href="/swagger" target="_blank">
-                        <i class="fa fa-fw fas fa-file-alt"></i>
-                        Swagger API
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/profiler/results" target="_blank">
-                        <i class="fa fa-fw fa-chart-bar"></i>
-                        Profiler
-                    </a>
-                </li>
-            </ul>
+                <ul class="list-unstyled components">
+                    <li class="nav-item">
+                        <a href="/swagger" target="_blank">
+                            <i class="fa fa-fw fas fa-file-alt"></i>
+                            Swagger API
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/profiler/results" target="_blank">
+                            <i class="fa fa-fw fa-chart-bar"></i>
+                            Profiler
+                        </a>
+                    </li>
+                </ul>
+            }
             <partial name="_LoginPartial" />
         </nav>
         <div id="content">
