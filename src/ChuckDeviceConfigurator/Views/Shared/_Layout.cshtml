@@ -47,10 +47,11 @@
                                     var navHeader = (NavbarHeader)navLink;
                                     if (navHeader.IsDropdown && (navHeader?.DropdownItems?.Any() ?? false))
                                     {
+                                        var dropDirection = navHeader.DropDirection.ToString().ToLower();
                                         var sortedDropdownItems = navHeader.DropdownItems.ToList();
                                         sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
                                         <li class="nav-item">
-                                            <div class="dropdown">
+                                            <div class="dropdown @(dropDirection)">
                                                 <a href="#" class="nav-link dropdown-toggle text-light" id="dropdownMenuHeader" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                     @navHeader.Text
                                                 </a>

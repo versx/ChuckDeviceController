@@ -142,6 +142,7 @@
                     Text = "TestNavDropdown",
                     DisplayIndex = 4,
                     IsDropdown = true,
+                    DropDirection = NavbarHeaderDropDirection.Dropstart,
                     DropdownItems = new List<NavbarHeaderDropdownItem>
                     {
                         new("Item1", "Device"),

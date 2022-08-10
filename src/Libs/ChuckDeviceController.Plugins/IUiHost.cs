@@ -87,11 +87,39 @@
         /// the navbar header in the list of navbar headers.
         /// </summary>
         uint DisplayIndex { get; }
+
+
         // theme - dark/light
         // drop direction - dropdown (default), dropstart (left), dropup, dropend (right)
         // separator //<li><hr class="dropdown-divider"></li>
         // disabled
         // fontawesome icon
+    }
+
+    /// <summary>
+    /// Enumeration of the direction a dropdown menu should use.
+    /// </summary>
+    public enum NavbarHeaderDropDirection
+    {
+        /// <summary>
+        /// Typical dropdown style, arrow and menu pointing downwards. (default)
+        /// </summary>
+        Dropdown,
+
+        /// <summary>
+        /// Drop arrow and menu are displayed in the left positioning.
+        /// </summary>
+        Dropstart, // left
+
+        /// <summary>
+        /// Drop arrow and menu are displayed above upwards.
+        /// </summary>
+        Dropup,
+
+        /// <summary>
+        /// Drop arrow and menu are displayed in the right positioning.
+        /// </summary>
+        Dropend, // right
     }
 
     /// <summary>
@@ -134,6 +162,8 @@
         /// </summary>
         public IEnumerable<NavbarHeaderDropdownItem>? DropdownItems { get; set; }
 
+        public NavbarHeaderDropDirection DropDirection { get; set; }
+
         /// <summary>
         /// Instantiates a new navbar header instance using default 
         /// property values.
@@ -143,6 +173,7 @@
             Text = string.Empty;
             ControllerName = string.Empty;
             ActionName = string.Empty;
+            DropDirection = NavbarHeaderDropDirection.Dropdown;
         }
 
         /// <summary>
