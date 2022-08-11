@@ -12,7 +12,8 @@
     /// Set the [Produces(MediaTypeNAmes.Application.Json)] attribute to determine
     /// the format of the response data.
     /// 
-    /// Inherit the controller class using 'Controller' when Mvc View support is needed.
+    /// Inherit the controller class using 'Controller' when Mvc View support is
+    /// needed and a user interface will be shown.
     /// Inherit the controller class using 'ControllerBase' when Mvc View support is
     /// not needed and no Views will be used. (i.e. backend web API)
     /// </summary>
@@ -21,11 +22,11 @@
     [Route("[controller]")]
     // Sets the default base route for all methods in the class
     // to the '[controller]' placeholder, in this case 'Test'.
-    public class TestController : Controller // ControllerBase, Controller
+    public class TestViewController : Controller // ControllerBase, Controller
     {
         private readonly IPluginService _testService;
 
-        public TestController(IPluginService testService)
+        public TestViewController(IPluginService testService)
         {
             _testService = testService;
             Console.WriteLine($"TestService: {_testService.Test}");
