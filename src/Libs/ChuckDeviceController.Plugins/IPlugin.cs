@@ -10,7 +10,7 @@
     /// Base Plugin interface contract all plugins will inherit
     /// at a minimum.
     /// </summary>
-    public interface IPlugin : IMetadata, IPluginEvents, IWebPlugin
+    public interface IPlugin : IMetadata, IPluginEvents, IWebPlugin // REVIEW: Possibly make 'IWebPlugin' optional
     {
     }
 }

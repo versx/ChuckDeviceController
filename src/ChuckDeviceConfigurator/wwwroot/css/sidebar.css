@@ -99,11 +99,11 @@ a, a:hover, a:focus {
     background: #fff;
 }
 
+#sidebar > ul li > a.active,
 #sidebar ul li.active > a, a[aria-expanded="true"] {
     color: #fff;
     background: #6d7fcc;
 }
-
 
 a[data-toggle="collapse"] {
     position: relative;

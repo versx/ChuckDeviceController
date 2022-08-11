@@ -148,14 +148,30 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-
 <script>
     // Get current URL path and toggle 'active' class for sidebar and sidebar collapse/expand button
     const pathname = window.location.pathname;
-    $('#sidebar > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
-    $('#sidebar > ul > li > ul > li > a[href="' + pathname + '"]').parent().addClass('active');
+    // Get navbar header based on current path name comparing against anchor reference
+    const navItem = $('#sidebar > ul li.nav-item > a[href="' + pathname + '"]');
+    if (navItem) {
+        // Top level navbar header with no dropdowns
+        navItem.addClass('active');
+
+        // Get top level navbar 'li' element
+        const parent = navItem.parent().parent();
+        // Get child anchor 'a' element from top level element
+        const parentAnchor = parent.parent().children()[0]; // TODO: Provide correct css selector
+        // Add active class so parent (top level) navbar section is highlighted
+        $(parentAnchor).addClass('active');
+        // Let css know navbar section has expanded
+        $(parentAnchor).attr('aria-expanded', 'true');
+        // Expand the actual navbar section
+        parent.addClass('show');
+    }
     $('#sidebarCollapse').on('click', function () {
+        // Show/hide sidebar depending on sidebar button state
         $('#sidebar').toggleClass('active');
+        // Toggle sidebar toggle button icon, i.e. X or menu/sandwich icon
         $(this).toggleClass('active');
     });
 </script>

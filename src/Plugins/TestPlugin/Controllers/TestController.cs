@@ -22,11 +22,11 @@
     [Route("[controller]")]
     // Sets the default base route for all methods in the class
     // to the '[controller]' placeholder, in this case 'Test'.
-    public class TestViewController : Controller // ControllerBase, Controller
+    public class TestController : Controller // ControllerBase, Controller
     {
         private readonly IPluginService _testService;
 
-        public TestViewController(IPluginService testService)
+        public TestController(IPluginService testService)
         {
             _testService = testService;
             Console.WriteLine($"TestService: {_testService.Test}");
@@ -38,7 +38,15 @@
         /// <returns>Returns an action result for the route.</returns>
         public ActionResult Index()
         {
-            // Render default 'Index' view in `Views/Test` views folder.
+            // Render default 'Index.cshtml' view in `Views/Test` views folder.
+            return View();
+        }
+
+        // GET: TestController/Details
+        [HttpGet]
+        public ActionResult Details()
+        {
+            // TODO: Add example using view models
             return View();
         }
     }
