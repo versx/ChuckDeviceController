@@ -325,7 +325,7 @@ async void ConfigureServices(IServiceCollection services)
                 }
 
                 // Load all plugins via PluginManager
-                pluginManager.LoadPluginsAsync(pluginAssemblies, sharedHosts);
+                await pluginManager.LoadPluginsAsync(pluginAssemblies, sharedHosts);
             }
 
             // Call 'ConfigureServices(IServiceCollection)' event handler in each plugin

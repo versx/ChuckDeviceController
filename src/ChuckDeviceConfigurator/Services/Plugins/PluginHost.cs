@@ -20,6 +20,8 @@
 
         public PluginEventHandlers EventHandlers { get; } = new();
 
+        // TODO: JobControllers cache created by plugin
+
         #endregion
 
         #region Constructors

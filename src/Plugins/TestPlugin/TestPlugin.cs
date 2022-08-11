@@ -15,8 +15,8 @@
     //http://127.0.0.1:8881/Test
 
     /// <summary>
-    /// Example plugin demonstrating the capabilities of
-    /// the plugin system and how it works.
+    ///     Example plugin demonstrating the capabilities
+    ///     of the plugin system and how it works.
     /// </summary>
     [PluginPermissions(PluginPermissions.ReadDatabase |
                        PluginPermissions.WriteDatabase |
@@ -28,7 +28,7 @@
         #region Plugin Host Variables
 
         // Plugin host variables are interface contracts that the plugin
-        // to interact with services the host application is running.
+        // uses to interact with services the host application is running.
         private readonly ILoggingHost _loggingHost;
         private readonly IJobControllerServiceHost _jobControllerHost;
         private readonly IDatabaseHost _databaseHost;
@@ -100,12 +100,12 @@
         #region ASP.NET WebApi Event Handlers
 
         /// <summary>
-        /// Configures the application to set up middlewares, routing rules, etc.
+        ///     Configures the application to set up middlewares, routing rules, etc.
         /// </summary>
         /// <param name="appBuilder">
-        /// Provides the mechanisms to configure an application's request pipeline.
+        ///     Provides the mechanisms to configure an application's request pipeline.
         /// </param>
-        public async void Configure(IApplicationBuilder appBuilder)
+        public void Configure(IApplicationBuilder appBuilder)
         {
             _loggingHost.LogMessage($"Configure called");
 
@@ -118,13 +118,42 @@
                     await httpContext.Response.WriteAsync($"Hello from plugin {Name}");
                 });
             });
+        }
+
+        /// <summary>
+        ///     Register services into the IServiceCollection to use with Dependency Injection.
+        ///     This method is called first before the 'Configure(IApplicationBuilder)' method.
+        /// </summary>
+        /// <param name="services">
+        ///     Specifies the contract for a collection of service descriptors.
+        /// </param>
+        public void ConfigureServices(IServiceCollection services)
+        {
+            _loggingHost.LogMessage($"ConfigureServices called");
+            // Register service(s) with Mvc 
+            services.AddSingleton<IPluginService, TestPluginService>();
+
+            //services.AddMvc();
+            //services.AddControllersWithViews();
+        }
+
+        #endregion
+
+        #region Plugin Event Handlers
+
+        /// <summary>
+        ///     Called when the plugin is loaded and registered with the host application.
+        /// </summary>
+        public async void OnLoad()
+        {
+            _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
 
             // Add dashboard stats
             var stats = new List<IDashboardStatsItem>
             {
-                new DashboardStatsItem("Test", "100", false),
-                new DashboardStatsItem("Test2", "<b><u>1,000</u></b>", true),
-                //new DashboardStatsItem("Test3", "<b>2,000</b>", false),
+                new DashboardStatsItem("Test", "100", isHtml: false),
+                new DashboardStatsItem("Test2", "<b><u>1,000</u></b>", isHtml: true),
+                //new DashboardStatsItem("Test3", "<b>2,000</b>", isHtml: false),
             };
             await _uiHost.AddDashboardStatisticsAsync(stats);
 
@@ -145,17 +174,17 @@
                     DisplayIndex = 4,
                     Icon = "fa-solid fa-fw fa-microscope",
                     IsDropdown = true,
-                    DropDirection = NavbarHeaderDropDirection.Dropstart,
                     DropdownItems = new List<NavbarHeaderDropdownItem>
                     {
                         new("Item1", "Device"),
                         new("Hmm", isSeparator: true),
-                        new("Item2", "Device", isDisabled: true),
+                        new("Item2", "Instance", isDisabled: true),
                     },
                 },
             };
             await _uiHost.AddNavbarHeadersAsync(pluginNavbarHeaders);
 
+            // Translate 1 to Bulbasaur
             var translated = _localeHost.GetPokemonName(1);
             _loggingHost.LogMessage($"Pokemon: {translated}");
 
@@ -202,33 +231,7 @@
         }
 
         /// <summary>
-        /// Register services into the IServiceCollection to use with Dependency Injection.
-        /// This method is called first before the 'Configure(IApplicationBuilder)' method.
-        /// </summary>
-        /// <param name="services">Specifies the contract for a collection of service descriptors.</param>
-        public void ConfigureServices(IServiceCollection services)
-        {
-            _loggingHost.LogMessage($"ConfigureServices called");
-            services.AddSingleton<IPluginService, TestPluginService>();
-
-            //services.AddMvc();
-            //services.AddControllersWithViews();
-        }
-
-        #endregion
-
-        #region Plugin Event Handlers
-
-        /// <summary>
-        /// Called when the plugin is loaded and registered with the host application.
-        /// </summary>
-        public void OnLoad()
-        {
-            _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
-        }
-
-        /// <summary>
-        /// Called when the plugin has been reloaded by the host application.
+        ///     Called when the plugin has been reloaded by the host application.
         /// </summary>
         public void OnReload()
         {
@@ -236,7 +239,7 @@
         }
 
         /// <summary>
-        /// Called when the plugin has been stopped by the host application.
+        ///     Called when the plugin has been stopped by the host application.
         /// </summary>
         public void OnStop()
         {
@@ -244,7 +247,7 @@
         }
 
         /// <summary>
-        /// Called when the plugin has been removed by the host application.
+        ///     Called when the plugin has been removed by the host application.
         /// </summary>
         public void OnRemove()
         {
@@ -252,8 +255,8 @@
         }
 
         /// <summary>
-        /// Called when the plugin's state has been
-        /// changed by the host application.
+        ///     Called when the plugin's state has been
+        ///     changed by the host application.
         /// </summary>
         /// <param name="state">Plugin's current state</param>
         /// <param name="isEnabled">Whether the plugin is
@@ -266,12 +269,26 @@
         #endregion
     }
 
+    /// <summary>
+    ///     Default implementation of <seealso cref="ICoordinate"/> contract.
+    /// </summary>
     public class Coordinate : ICoordinate
     {
+        /// <summary>
+        ///     Gets or sets the geocoordinate latitude.
+        /// </summary>
         public double Latitude { get; set; }
 
+        /// <summary>
+        ///     Gets or sets the geocoordinate longitude.
+        /// </summary>
         public double Longitude { get; set; }
 
+        /// <summary>
+        ///     Instantiates a new coordinate instance.
+        /// </summary>
+        /// <param name="latitude">Geocoordinate latitude.</param>
+        /// <param name="longitude">Geocoordinate longitude.</param>
         public Coordinate(double latitude, double longitude)
         {
             Latitude = latitude;
@@ -279,6 +296,12 @@
         }
     }
 
+    /// <summary>
+    ///     TODO: Test service class for dependency injection. **DO NOT USE**:
+    ///     There is no implementation. Need to add support for host application
+    ///     referencing plugin shared assemblies between host and plugin for 
+    ///     service registration to work properly.
+    /// </summary>
     public class TestPluginService : IPluginService
     {
         public string Test => $"Testing";
