@@ -1,5 +1,5 @@
 <a name='assembly'></a>
-# ChuckDeviceController Plugin API Documentation
+# Plugin API Reference
 
 ## Contents
 
@@ -23,9 +23,27 @@
 - [IDatabaseHost](#T-ChuckDeviceController-Plugins-IDatabaseHost 'ChuckDeviceController.Plugins.IDatabaseHost')
     - [GetByIdAsync\`\`2(id)](#M-ChuckDeviceController-Plugins-IDatabaseHost-GetByIdAsync``2-``1- 'ChuckDeviceController.Plugins.IDatabaseHost.GetByIdAsync``2(``1)')
     - [GetListAsync\`\`1()](#M-ChuckDeviceController-Plugins-IDatabaseHost-GetListAsync``1 'ChuckDeviceController.Plugins.IDatabaseHost.GetListAsync``1')
+- [IJobControllerServiceEvents](#T-ChuckDeviceController-Plugins-IJobControllerServiceEvents 'ChuckDeviceController.Plugins.IJobControllerServiceEvents')
 - [IJobControllerServiceHost](#T-ChuckDeviceController-Plugins-IJobControllerServiceHost 'ChuckDeviceController.Plugins.IJobControllerServiceHost')
     - [AddJobControllerAsync(name,controller)](#M-ChuckDeviceController-Plugins-IJobControllerServiceHost-AddJobControllerAsync-System-String,ChuckDeviceController-Common-Jobs-IJobController- 'ChuckDeviceController.Plugins.IJobControllerServiceHost.AddJobControllerAsync(System.String,ChuckDeviceController.Common.Jobs.IJobController)')
     - [AssignDeviceToJobControllerAsync(device,jobControllerName)](#M-ChuckDeviceController-Plugins-IJobControllerServiceHost-AssignDeviceToJobControllerAsync-ChuckDeviceController-Common-Data-Contracts-IDevice,System-String- 'ChuckDeviceController.Plugins.IJobControllerServiceHost.AssignDeviceToJobControllerAsync(ChuckDeviceController.Common.Data.Contracts.IDevice,System.String)')
+- [ILocalizationHost](#T-ChuckDeviceController-Plugins-ILocalizationHost 'ChuckDeviceController.Plugins.ILocalizationHost')
+    - [GetAlignmentName(alignmentTypeId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetAlignmentName-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetAlignmentName(System.UInt32)')
+    - [GetCharacterCategoryName(characterCategoryId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetCharacterCategoryName-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetCharacterCategoryName(System.UInt32)')
+    - [GetCostumeName(costumeId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetCostumeName-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetCostumeName(System.UInt32)')
+    - [GetEvolutionName(evolutionId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetEvolutionName-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetEvolutionName(System.UInt32)')
+    - [GetFormName(formId,includeNormal)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetFormName-System-UInt32,System-Boolean- 'ChuckDeviceController.Plugins.ILocalizationHost.GetFormName(System.UInt32,System.Boolean)')
+    - [GetGruntType(invasionCharacterId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetGruntType-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetGruntType(System.UInt32)')
+    - [GetItem(itemId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetItem-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetItem(System.UInt32)')
+    - [GetMoveName(moveId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetMoveName-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetMoveName(System.UInt32)')
+    - [GetPokemonName(pokemonId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetPokemonName-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetPokemonName(System.UInt32)')
+    - [GetThrowName(throwTypeId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetThrowName-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetThrowName(System.UInt32)')
+    - [GetWeather(weatherConditionId)](#M-ChuckDeviceController-Plugins-ILocalizationHost-GetWeather-System-UInt32- 'ChuckDeviceController.Plugins.ILocalizationHost.GetWeather(System.UInt32)')
+    - [Translate(key)](#M-ChuckDeviceController-Plugins-ILocalizationHost-Translate-System-String- 'ChuckDeviceController.Plugins.ILocalizationHost.Translate(System.String)')
+    - [Translate(keyWithArgs,args)](#M-ChuckDeviceController-Plugins-ILocalizationHost-Translate-System-String,System-Object[]- 'ChuckDeviceController.Plugins.ILocalizationHost.Translate(System.String,System.Object[])')
+- [ILoggingHost](#T-ChuckDeviceController-Plugins-ILoggingHost 'ChuckDeviceController.Plugins.ILoggingHost')
+    - [LogException(ex)](#M-ChuckDeviceController-Plugins-ILoggingHost-LogException-System-Exception- 'ChuckDeviceController.Plugins.ILoggingHost.LogException(System.Exception)')
+    - [LogMessage(text,args)](#M-ChuckDeviceController-Plugins-ILoggingHost-LogMessage-System-String,System-Object[]- 'ChuckDeviceController.Plugins.ILoggingHost.LogMessage(System.String,System.Object[])')
 - [IMetadata](#T-ChuckDeviceController-Plugins-IMetadata 'ChuckDeviceController.Plugins.IMetadata')
     - [Author](#P-ChuckDeviceController-Plugins-IMetadata-Author 'ChuckDeviceController.Plugins.IMetadata.Author')
     - [Description](#P-ChuckDeviceController-Plugins-IMetadata-Description 'ChuckDeviceController.Plugins.IMetadata.Description')
@@ -35,6 +53,8 @@
     - [ActionName](#P-ChuckDeviceController-Plugins-INavbarHeader-ActionName 'ChuckDeviceController.Plugins.INavbarHeader.ActionName')
     - [ControllerName](#P-ChuckDeviceController-Plugins-INavbarHeader-ControllerName 'ChuckDeviceController.Plugins.INavbarHeader.ControllerName')
     - [DisplayIndex](#P-ChuckDeviceController-Plugins-INavbarHeader-DisplayIndex 'ChuckDeviceController.Plugins.INavbarHeader.DisplayIndex')
+    - [Icon](#P-ChuckDeviceController-Plugins-INavbarHeader-Icon 'ChuckDeviceController.Plugins.INavbarHeader.Icon')
+    - [IsDisabled](#P-ChuckDeviceController-Plugins-INavbarHeader-IsDisabled 'ChuckDeviceController.Plugins.INavbarHeader.IsDisabled')
     - [Text](#P-ChuckDeviceController-Plugins-INavbarHeader-Text 'ChuckDeviceController.Plugins.INavbarHeader.Text')
 - [IPlugin](#T-ChuckDeviceController-Plugins-IPlugin 'ChuckDeviceController.Plugins.IPlugin')
 - [IPluginEvents](#T-ChuckDeviceController-Plugins-IPluginEvents 'ChuckDeviceController.Plugins.IPluginEvents')
@@ -43,9 +63,9 @@
     - [OnRemove()](#M-ChuckDeviceController-Plugins-IPluginEvents-OnRemove 'ChuckDeviceController.Plugins.IPluginEvents.OnRemove')
     - [OnStateChanged(state,isEnabled)](#M-ChuckDeviceController-Plugins-IPluginEvents-OnStateChanged-ChuckDeviceController-Plugins-PluginState,System-Boolean- 'ChuckDeviceController.Plugins.IPluginEvents.OnStateChanged(ChuckDeviceController.Plugins.PluginState,System.Boolean)')
     - [OnStop()](#M-ChuckDeviceController-Plugins-IPluginEvents-OnStop 'ChuckDeviceController.Plugins.IPluginEvents.OnStop')
-- [IRepository\`2](#T-ChuckDeviceController-Plugins-IRepository`2 'ChuckDeviceController.Plugins.IRepository`2')
-    - [GetByIdAsync(id)](#M-ChuckDeviceController-Plugins-IRepository`2-GetByIdAsync-`1- 'ChuckDeviceController.Plugins.IRepository`2.GetByIdAsync(`1)')
-    - [GetListAsync()](#M-ChuckDeviceController-Plugins-IRepository`2-GetListAsync 'ChuckDeviceController.Plugins.IRepository`2.GetListAsync')
+- [IRepository\`2](#T-ChuckDeviceController-Plugins-Data-IRepository`2 'ChuckDeviceController.Plugins.Data.IRepository`2')
+    - [GetByIdAsync(id)](#M-ChuckDeviceController-Plugins-Data-IRepository`2-GetByIdAsync-`1- 'ChuckDeviceController.Plugins.Data.IRepository`2.GetByIdAsync(`1)')
+    - [GetListAsync()](#M-ChuckDeviceController-Plugins-Data-IRepository`2-GetListAsync 'ChuckDeviceController.Plugins.Data.IRepository`2.GetListAsync')
 - [IUiEvents](#T-ChuckDeviceController-Plugins-IUiEvents 'ChuckDeviceController.Plugins.IUiEvents')
 - [IUiHost](#T-ChuckDeviceController-Plugins-IUiHost 'ChuckDeviceController.Plugins.IUiHost')
     - [DashboardStatsItems](#P-ChuckDeviceController-Plugins-IUiHost-DashboardStatsItems 'ChuckDeviceController.Plugins.IUiHost.DashboardStatsItems')
@@ -61,18 +81,23 @@
     - [ConfigureServices(services)](#M-ChuckDeviceController-Plugins-IWebPlugin-ConfigureServices-Microsoft-Extensions-DependencyInjection-IServiceCollection- 'ChuckDeviceController.Plugins.IWebPlugin.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)')
 - [NavbarHeader](#T-ChuckDeviceController-Plugins-NavbarHeader 'ChuckDeviceController.Plugins.NavbarHeader')
     - [#ctor()](#M-ChuckDeviceController-Plugins-NavbarHeader-#ctor 'ChuckDeviceController.Plugins.NavbarHeader.#ctor')
-    - [#ctor(text,controllerName,actionName,displayIndex,isDropdown,dropdownItems)](#M-ChuckDeviceController-Plugins-NavbarHeader-#ctor-System-String,System-String,System-String,System-UInt32,System-Boolean,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugins-NavbarHeaderDropdownItem}- 'ChuckDeviceController.Plugins.NavbarHeader.#ctor(System.String,System.String,System.String,System.UInt32,System.Boolean,System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.NavbarHeaderDropdownItem})')
+    - [#ctor(text,controllerName,actionName,icon,displayIndex,isDropdown,dropdownItems,isDisabled)](#M-ChuckDeviceController-Plugins-NavbarHeader-#ctor-System-String,System-String,System-String,System-String,System-UInt32,System-Boolean,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugins-NavbarHeaderDropdownItem},System-Boolean- 'ChuckDeviceController.Plugins.NavbarHeader.#ctor(System.String,System.String,System.String,System.String,System.UInt32,System.Boolean,System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.NavbarHeaderDropdownItem},System.Boolean)')
     - [ActionName](#P-ChuckDeviceController-Plugins-NavbarHeader-ActionName 'ChuckDeviceController.Plugins.NavbarHeader.ActionName')
     - [ControllerName](#P-ChuckDeviceController-Plugins-NavbarHeader-ControllerName 'ChuckDeviceController.Plugins.NavbarHeader.ControllerName')
     - [DisplayIndex](#P-ChuckDeviceController-Plugins-NavbarHeader-DisplayIndex 'ChuckDeviceController.Plugins.NavbarHeader.DisplayIndex')
     - [DropdownItems](#P-ChuckDeviceController-Plugins-NavbarHeader-DropdownItems 'ChuckDeviceController.Plugins.NavbarHeader.DropdownItems')
+    - [Icon](#P-ChuckDeviceController-Plugins-NavbarHeader-Icon 'ChuckDeviceController.Plugins.NavbarHeader.Icon')
+    - [IsDisabled](#P-ChuckDeviceController-Plugins-NavbarHeader-IsDisabled 'ChuckDeviceController.Plugins.NavbarHeader.IsDisabled')
     - [IsDropdown](#P-ChuckDeviceController-Plugins-NavbarHeader-IsDropdown 'ChuckDeviceController.Plugins.NavbarHeader.IsDropdown')
     - [Text](#P-ChuckDeviceController-Plugins-NavbarHeader-Text 'ChuckDeviceController.Plugins.NavbarHeader.Text')
 - [NavbarHeaderDropdownItem](#T-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem')
-    - [#ctor(text,controllerName,actionName,displayIndex)](#M-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-#ctor-System-String,System-String,System-String,System-UInt32- 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem.#ctor(System.String,System.String,System.String,System.UInt32)')
+    - [#ctor(text,controllerName,actionName,icon,displayIndex,isSeparator,isDisabled)](#M-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-#ctor-System-String,System-String,System-String,System-String,System-UInt32,System-Boolean,System-Boolean- 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem.#ctor(System.String,System.String,System.String,System.String,System.UInt32,System.Boolean,System.Boolean)')
     - [ActionName](#P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-ActionName 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem.ActionName')
     - [ControllerName](#P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-ControllerName 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem.ControllerName')
     - [DisplayIndex](#P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-DisplayIndex 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem.DisplayIndex')
+    - [Icon](#P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-Icon 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem.Icon')
+    - [IsDisabled](#P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-IsDisabled 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem.IsDisabled')
+    - [IsSeparator](#P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-IsSeparator 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem.IsSeparator')
     - [Text](#P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-Text 'ChuckDeviceController.Plugins.NavbarHeaderDropdownItem.Text')
 - [PluginPermissions](#T-ChuckDeviceController-Plugins-PluginPermissions 'ChuckDeviceController.Plugins.PluginPermissions')
     - [AddControllers](#F-ChuckDeviceController-Plugins-PluginPermissions-AddControllers 'ChuckDeviceController.Plugins.PluginPermissions.AddControllers')
@@ -345,12 +370,29 @@ This method has no parameters.
 | ---- | ----------- |
 | T | Database entity contract type. |
 
+<a name='T-ChuckDeviceController-Plugins-IJobControllerServiceEvents'></a>
+## IJobControllerServiceEvents `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugins
+
+##### Summary
+
+Job controller service related events that have occurred
+in the host application.
+
 <a name='T-ChuckDeviceController-Plugins-IJobControllerServiceHost'></a>
 ## IJobControllerServiceHost `type`
 
 ##### Namespace
 
 ChuckDeviceController.Plugins
+
+##### Summary
+
+Plugin host handler contract used to interact with and manage the
+job controller service.
 
 <a name='M-ChuckDeviceController-Plugins-IJobControllerServiceHost-AddJobControllerAsync-System-String,ChuckDeviceController-Common-Jobs-IJobController-'></a>
 ### AddJobControllerAsync(name,controller) `method`
@@ -371,6 +413,32 @@ ChuckDeviceController.Plugins
 
 ##### Summary
 
+Assigns the specified device to a specific job controller
+instance by name.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| device | [ChuckDeviceController.Common.Data.Contracts.IDevice](#T-ChuckDeviceController-Common-Data-Contracts-IDevice 'ChuckDeviceController.Common.Data.Contracts.IDevice') | Device entity. |
+| jobControllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Job controller instance name. |
+
+<a name='T-ChuckDeviceController-Plugins-ILocalizationHost'></a>
+## ILocalizationHost `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugins
+
+##### Summary
+
+Plugin host handler contract used to translate strings.
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetAlignmentName-System-UInt32-'></a>
+### GetAlignmentName(alignmentTypeId) `method`
+
+##### Summary
+
 
 
 ##### Returns
@@ -381,8 +449,252 @@ ChuckDeviceController.Plugins
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| device | [ChuckDeviceController.Common.Data.Contracts.IDevice](#T-ChuckDeviceController-Common-Data-Contracts-IDevice 'ChuckDeviceController.Common.Data.Contracts.IDevice') |  |
-| jobControllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| alignmentTypeId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetCharacterCategoryName-System-UInt32-'></a>
+### GetCharacterCategoryName(characterCategoryId) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| characterCategoryId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetCostumeName-System-UInt32-'></a>
+### GetCostumeName(costumeId) `method`
+
+##### Summary
+
+Translate a Pokemon costume id to name.
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| costumeId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') | Costume ID to translate to name. |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetEvolutionName-System-UInt32-'></a>
+### GetEvolutionName(evolutionId) `method`
+
+##### Summary
+
+Translate a Pokemon evolution id to name.
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| evolutionId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') | Evolution ID to translate to name. |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetFormName-System-UInt32,System-Boolean-'></a>
+### GetFormName(formId,includeNormal) `method`
+
+##### Summary
+
+Translate a Pokemon form id to name.
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| formId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') | Form ID to translate to name. |
+| includeNormal | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') | Include 'Normal' form name or not. |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetGruntType-System-UInt32-'></a>
+### GetGruntType(invasionCharacterId) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| invasionCharacterId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetItem-System-UInt32-'></a>
+### GetItem(itemId) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| itemId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetMoveName-System-UInt32-'></a>
+### GetMoveName(moveId) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| moveId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetPokemonName-System-UInt32-'></a>
+### GetPokemonName(pokemonId) `method`
+
+##### Summary
+
+Translate a Pokemon id to name.
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| pokemonId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') | Pokemon ID to translate to name. |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetThrowName-System-UInt32-'></a>
+### GetThrowName(throwTypeId) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| throwTypeId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-GetWeather-System-UInt32-'></a>
+### GetWeather(weatherConditionId) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| weatherConditionId | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-Translate-System-String-'></a>
+### Translate(key) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| key | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+
+<a name='M-ChuckDeviceController-Plugins-ILocalizationHost-Translate-System-String,System-Object[]-'></a>
+### Translate(keyWithArgs,args) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| keyWithArgs | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| args | [System.Object[]](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object[] 'System.Object[]') |  |
+
+<a name='T-ChuckDeviceController-Plugins-ILoggingHost'></a>
+## ILoggingHost `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugins
+
+##### Summary
+
+Plugin host handler for logging messages from plugins.
+
+<a name='M-ChuckDeviceController-Plugins-ILoggingHost-LogException-System-Exception-'></a>
+### LogException(ex) `method`
+
+##### Summary
+
+Log an exception that has been thrown to the
+host application.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| ex | [System.Exception](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Exception 'System.Exception') | Exception that was thrown. |
+
+<a name='M-ChuckDeviceController-Plugins-ILoggingHost-LogMessage-System-String,System-Object[]-'></a>
+### LogMessage(text,args) `method`
+
+##### Summary
+
+Log a message to the host application.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Formatted log message string. |
+| args | [System.Object[]](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object[] 'System.Object[]') | Arguments to parse with log message. |
 
 <a name='T-ChuckDeviceController-Plugins-IMetadata'></a>
 ## IMetadata `type`
@@ -457,6 +769,22 @@ should relate to.
 
 Gets or sets the numeric display index order of
 the navbar header in the list of navbar headers.
+
+<a name='P-ChuckDeviceController-Plugins-INavbarHeader-Icon'></a>
+### Icon `property`
+
+##### Summary
+
+Gets or sets the FontAwesome v6 icon key to use for 
+the navbar header. https://fontawesome.com/icons
+
+<a name='P-ChuckDeviceController-Plugins-INavbarHeader-IsDisabled'></a>
+### IsDisabled `property`
+
+##### Summary
+
+Gets or sets a value determining whether the
+navbar header is disabled or not.
 
 <a name='P-ChuckDeviceController-Plugins-INavbarHeader-Text'></a>
 ### Text `property`
@@ -554,12 +882,12 @@ the host application.
 
 This method has no parameters.
 
-<a name='T-ChuckDeviceController-Plugins-IRepository`2'></a>
+<a name='T-ChuckDeviceController-Plugins-Data-IRepository`2'></a>
 ## IRepository\`2 `type`
 
 ##### Namespace
 
-ChuckDeviceController.Plugins
+ChuckDeviceController.Plugins.Data
 
 ##### Summary
 
@@ -572,7 +900,7 @@ Repository contract for specific database entity types.
 | TEntity | Database entity contract type. |
 | TId | Database entity primary key type. |
 
-<a name='M-ChuckDeviceController-Plugins-IRepository`2-GetByIdAsync-`1-'></a>
+<a name='M-ChuckDeviceController-Plugins-Data-IRepository`2-GetByIdAsync-`1-'></a>
 ### GetByIdAsync(id) `method`
 
 ##### Summary
@@ -589,7 +917,7 @@ Returns a database entity.
 | ---- | ---- | ----------- |
 | id | [\`1](#T-`1 '`1') | Primary key of the database entity. |
 
-<a name='M-ChuckDeviceController-Plugins-IRepository`2-GetListAsync'></a>
+<a name='M-ChuckDeviceController-Plugins-Data-IRepository`2-GetListAsync'></a>
 ### GetListAsync() `method`
 
 ##### Summary
@@ -785,8 +1113,8 @@ property values.
 
 This constructor has no parameters.
 
-<a name='M-ChuckDeviceController-Plugins-NavbarHeader-#ctor-System-String,System-String,System-String,System-UInt32,System-Boolean,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugins-NavbarHeaderDropdownItem}-'></a>
-### #ctor(text,controllerName,actionName,displayIndex,isDropdown,dropdownItems) `constructor`
+<a name='M-ChuckDeviceController-Plugins-NavbarHeader-#ctor-System-String,System-String,System-String,System-String,System-UInt32,System-Boolean,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugins-NavbarHeaderDropdownItem},System-Boolean-'></a>
+### #ctor(text,controllerName,actionName,icon,displayIndex,isDropdown,dropdownItems,isDisabled) `constructor`
 
 ##### Summary
 
@@ -800,9 +1128,11 @@ property values.
 | text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
 | controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
 | actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
 | displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
 | isDropdown | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
 | dropdownItems | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.NavbarHeaderDropdownItem}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.NavbarHeaderDropdownItem}') |  |
+| isDisabled | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
 
 <a name='P-ChuckDeviceController-Plugins-NavbarHeader-ActionName'></a>
 ### ActionName `property`
@@ -835,6 +1165,22 @@ the navbar header in the list of navbar headers.
 
 Gets or sets a list of navbar header dropdown items.
 
+<a name='P-ChuckDeviceController-Plugins-NavbarHeader-Icon'></a>
+### Icon `property`
+
+##### Summary
+
+Gets or sets the FontAwesome v6 icon key to use for 
+the navbar header. https://fontawesome.com/icons
+
+<a name='P-ChuckDeviceController-Plugins-NavbarHeader-IsDisabled'></a>
+### IsDisabled `property`
+
+##### Summary
+
+Gets or sets a value determining whether the
+navbar header is disabled or not.
+
 <a name='P-ChuckDeviceController-Plugins-NavbarHeader-IsDropdown'></a>
 ### IsDropdown `property`
 
@@ -862,8 +1208,8 @@ ChuckDeviceController.Plugins
 
 Navigation bar header dropdown item plugin contract implemention.
 
-<a name='M-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-#ctor-System-String,System-String,System-String,System-UInt32-'></a>
-### #ctor(text,controllerName,actionName,displayIndex) `constructor`
+<a name='M-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-#ctor-System-String,System-String,System-String,System-String,System-UInt32,System-Boolean,System-Boolean-'></a>
+### #ctor(text,controllerName,actionName,icon,displayIndex,isSeparator,isDisabled) `constructor`
 
 ##### Summary
 
@@ -877,7 +1223,10 @@ dropdown items.
 | text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
 | controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
 | actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
 | displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+| isSeparator | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
+| isDisabled | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
 
 <a name='P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-ActionName'></a>
 ### ActionName `property`
@@ -902,6 +1251,30 @@ should relate to.
 
 Gets or sets the numeric display index order of
 the navbar header in the list of navbar headers.
+
+<a name='P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-Icon'></a>
+### Icon `property`
+
+##### Summary
+
+Gets or sets the FontAwesome v6 icon key to use for 
+the navbar header dropdown item. https://fontawesome.com/icons
+
+<a name='P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-IsDisabled'></a>
+### IsDisabled `property`
+
+##### Summary
+
+Gets or sets a value determining whether the navbar
+header dropdown item is disabled or not.
+
+<a name='P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-IsSeparator'></a>
+### IsSeparator `property`
+
+##### Summary
+
+Gets or sets a value determining whether to insert a dropdown
+separator instead of a dropdown item.
 
 <a name='P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-Text'></a>
 ### Text `property`

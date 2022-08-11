@@ -1,5 +1,8 @@
 ﻿namespace ChuckDeviceController.Common.Data.Contracts
 {
+    /// <summary>
+    /// Device model entity contract.
+    /// </summary>
     public interface IDevice : IBaseEntity
     {
         string Uuid { get; }

@@ -48,7 +48,6 @@
                     {
                         if (header.IsDropdown && (header?.DropdownItems?.Any() ?? false))
                         {
-                            var dropDirection = header.DropDirection.ToString().ToLower();
                             var sortedDropdownItems = header.DropdownItems.ToList();
                             sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
                             <li class="nav-item">
@@ -80,8 +79,8 @@
                         {
                             <li class="nav-item">
                                 <a class="@(header.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@header.ControllerName" asp-action="@header.ActionName">
-                                    @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
-                                    @header.Text
+                                    @Html.Raw(string.IsNullOrEmpty(header?.Icon) ? "" : $"<i class='{header.Icon}'></i>")
+                                    @header?.Text
                                 </a>
                             </li>
                         }

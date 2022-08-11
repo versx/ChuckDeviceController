@@ -20,4 +20,12 @@
   <ItemGroup>
     <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="UI\" />
+    <None Remove="Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UI\" />
+    <Folder Include="Data\" />
+  </ItemGroup>
 </Project>
