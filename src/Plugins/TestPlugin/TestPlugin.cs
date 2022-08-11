@@ -167,10 +167,10 @@
                     isDropdown: true,
                     dropdownItems: new List<NavbarHeaderDropdownItem>
                     {
-                        new("Test Page", "Test", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
+                        new("Page", "Test", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
                         new(
                             // Name that's displayed
-                            "Test Details",
+                            "Details",
                             // 'Test' is the MVC view controller 'TestController.cs'
                             "Test",
                             // 'Details' is the controller action (method name) that is executed when the navbar header is clicked
@@ -178,9 +178,9 @@
                             // Display index in the sidebar
                             displayIndex: 1,
                             // Fontawesome icon to include (optional)
-                            icon: "fa-solid fa-fw fa-traffic-cone"
+                            icon: "fa-solid fa-fw fa-hammer",
                             // Whether the sidebar item is disabled and not clickable
-                            //isDisabled: false
+                            isDisabled: true
                         ),
                     }
                 ),
