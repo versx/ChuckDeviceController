@@ -15,5 +15,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Views\" />
+    <None Remove="Views\Test\Details.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Test\Details.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 </Project>

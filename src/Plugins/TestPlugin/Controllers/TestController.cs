@@ -19,7 +19,7 @@
     /// </summary>
     // [Produces(MediaTypeNames.Application.Json)]
     // [ApiController]
-    [Route("[controller]")]
+    // [Route("[controller]")]
     // Sets the default base route for all methods in the class
     // to the '[controller]' placeholder, in this case 'Test'.
     public class TestController : Controller // ControllerBase, Controller
@@ -42,8 +42,7 @@
             return View();
         }
 
-        // GET: TestController/Details
-        [HttpGet]
+        // GET: TestController/Details/test
         public ActionResult Details()
         {
             // TODO: Add example using view models
