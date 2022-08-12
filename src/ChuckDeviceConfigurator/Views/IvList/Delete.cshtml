@@ -1,4 +1,5 @@
-﻿@using ChuckDeviceConfigurator.Utilities
+﻿@using ChuckDeviceConfigurator.Localization
+@using ChuckDeviceConfigurator.Utilities
 @using ChuckDeviceController.Data.Entities
 @model IvList
 @{
@@ -48,10 +49,10 @@
                 @* TODO: Limit Pokemon ids to 25ish *@
                 @foreach (var pokemonId in Model?.PokemonIds ?? new())
                 {
-                    var icon = Utils.GetPokemonIcon(Convert.ToUInt32(pokemonId), "32", "32", html: true);
-                    var id = $"<b>#{pokemonId}</b>";
-                    @* TODO: Include Pokemon name *@
-                    <li class="list-group-item">@Html.Raw($"{icon}&nbsp;{id}")</li>
+                    var pokeId = Convert.ToUInt32(pokemonId);
+                    var icon = Utils.GetPokemonIcon(pokeId, "32", "32", html: true);
+                    var name = Translator.Instance.GetPokemonName(pokeId);
+                    <li class="list-group-item">@Html.Raw($"{icon}&nbsp;{name} (#{pokeId})")</li>
                 }
             </ul>
         }
