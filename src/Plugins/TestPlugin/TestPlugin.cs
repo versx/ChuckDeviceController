@@ -192,9 +192,9 @@
                     IsDropdown = true,
                     DropdownItems = new List<NavbarHeaderDropdownItem>
                     {
-                        new("Item1", "Device"),
+                        new("Item1", "Device", icon: "fa-solid fa-fw fa-mobile-alt"),
                         new("Hmm", isSeparator: true),
-                        new("Item2", "Instance", isDisabled: true),
+                        new("Item2", "Instance", isDisabled: true, icon: "fa-solid fa-fw fa-cubes-stacked"),
                     },
                 },
             };

@@ -24,6 +24,8 @@ using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Plugins;
 
+// TODO: Show top navbar on mobile when sidebar is closed?
+
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
@@ -295,13 +297,13 @@ async void ConfigureServices(IServiceCollection services)
                 new("Users", "User", displayIndex: 7, icon: "fa-solid fa-fw fa-users"),
                 new("Utilities", displayIndex: 8, icon: "fa-solid fa-fw fa-toolbox", isDropdown: true, dropdownItems: new List<NavbarHeaderDropdownItem>
                 {
-                    new("Clear Quests", "Utilities", "ClearQuests", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt"),
-                    new("Convert Forts", "Utilities", "ConvertForts", displayIndex: 1, icon: "fa-solid fa-fw fa-mobile-alt"),
-                    new("Clear Stale Pokestops", "Utilities", "ClearStalePokestops", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt"),
-                    new("Reload Instance", "Utilities", "ReloadInstance", displayIndex: 3, icon: "fa-solid fa-fw fa-mobile-alt"),
-                    new("Truncate Data", "Utilities", "TruncateData", displayIndex: 4, icon: "fa-solid fa-fw fa-mobile-alt"),
-                    new("Re-Quest", "Utilities", "ReQuest", displayIndex: 5, icon: "fa-solid fa-fw fa-mobile-alt"),
-                    new("Route Generator", "Utilities", "RouteGenerator", displayIndex: 6, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Clear Quests", "Utilities", "ClearQuests", displayIndex: 0, icon: "fa-solid fa-fw fa-broom"),
+                    new("Convert Forts", "Utilities", "ConvertForts", displayIndex: 1, icon: "fa-solid fa-fw fa-arrows-up-down"),
+                    new("Clear Stale Pokestops", "Utilities", "ClearStalePokestops", displayIndex: 2, icon: "fa-solid fa-fw fa-clock"),
+                    new("Reload Instance", "Utilities", "ReloadInstance", displayIndex: 3, icon: "fa-solid fa-fw fa-rotate"),
+                    new("Truncate Data", "Utilities", "TruncateData", displayIndex: 4, icon: "fa-solid fa-fw fa-trash-can"),
+                    new("Re-Quest", "Utilities", "ReQuest", displayIndex: 5, icon: "fa-solid fa-fw fa-clock-rotate-left"),
+                    new("Route Generator", "Utilities", "RouteGenerator", displayIndex: 6, icon: "fa-solid fa-fw fa-route"),
                 }),
             };
             await uiHost.AddNavbarHeadersAsync(navbarHeaders);
