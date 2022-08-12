@@ -8,6 +8,7 @@
 @{
     var data = Html.RenderAction("GetPluginNavbarHeaders", "Plugin");
     var navbarHeaders = Convert.ToString(data)?.FromJson<List<NavbarHeader>>();
+    var theme = Convert.ToString(ViewData["Theme"]); // ?? "dark");
 }
 
 <!DOCTYPE html>
@@ -28,9 +29,12 @@
     <link rel="stylesheet" href="~/lib/fontawesome-free-6.1.1-web/css/all.css" />
     <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    @if (theme == "dark")
+    {
+        <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    }
 </head>
-<body class="theme-dark">
+<body class="theme-@theme">
     <div class="wrapper">
         <nav id="sidebar">
             <div class="sidebar-header text-center">
