@@ -3,10 +3,8 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Jobs;
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -457,24 +455,24 @@
                 {
                     case "Pokemon":
                         sw.Start();
-                        var pokemon = _mapContext.Pokemon.Where(pokemon => pokemon.ExpireTimestamp < now && now - pokemon.ExpireTimestamp > time).ToList();
-                        var pokemonCount = pokemon.Count;
-                        await _mapContext.Pokemon.BulkDeleteAsync(pokemon, options =>
-                        {
-                            options.UseTableLock = true;
-                        });
+                        var pokemonCount = await _mapContext.Pokemon
+                                                            .Where(pokemon => pokemon.ExpireTimestamp < now && now - pokemon.ExpireTimestamp > time)
+                                                            .DeleteFromQueryAsync(options =>
+                                                            {
+                                                                options.UseTableLock = true;
+                                                            });
                         sw.Stop();
                         var pkmnSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
                         _logger.LogInformation($"Successfully deleted {pokemonCount:N0} old Pokemon from the database in {pkmnSeconds}s");
                         break;
                     case "Incidents":
                         sw.Start();
-                        var invasions = _mapContext.Incidents.Where(incident => incident.Expiration < now && now - incident.Expiration > time).ToList();
-                        var invasionsCount = invasions.Count;
-                        await _mapContext.Incidents.BulkDeleteAsync(invasions, options =>
-                        {
-                            options.UseTableLock = true;
-                        });
+                        var invasionsCount = await _mapContext.Incidents
+                                                              .Where(incident => incident.Expiration < now && now - incident.Expiration > time)
+                                                              .DeleteFromQueryAsync(options =>
+                                                              {
+                                                                  options.UseTableLock = true;
+                                                              });
                         sw.Stop();
                         var invasionSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
                         _logger.LogInformation($"Successfully deleted {invasionsCount:N0} old Invasions from the database in {invasionSeconds}s");
