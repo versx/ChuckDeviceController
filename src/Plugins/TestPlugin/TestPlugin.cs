@@ -205,7 +205,9 @@
             (
                 text: "Test",
                 value: "5,000",
-                icon: "fa-solid fa-fw fa-hammer"
+                icon: "fa-solid fa-fw fa-hammer",
+                controllerName: "Test",
+                actionName: "Index"
             );
             await _uiHost.AddDashboardTileAsync(pluginTile);
 

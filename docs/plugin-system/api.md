@@ -1,5 +1,5 @@
 <a name='assembly'></a>
-# Plugin API Reference
+# Plugins API Reference
 
 ## Contents
 
@@ -8,6 +8,13 @@
     - [IsHtml](#P-ChuckDeviceController-Plugins-DashboardStatsItem-IsHtml 'ChuckDeviceController.Plugins.DashboardStatsItem.IsHtml')
     - [Name](#P-ChuckDeviceController-Plugins-DashboardStatsItem-Name 'ChuckDeviceController.Plugins.DashboardStatsItem.Name')
     - [Value](#P-ChuckDeviceController-Plugins-DashboardStatsItem-Value 'ChuckDeviceController.Plugins.DashboardStatsItem.Value')
+- [DashboardTile](#T-ChuckDeviceController-Plugins-DashboardTile 'ChuckDeviceController.Plugins.DashboardTile')
+    - [#ctor(text,value,icon,controllerName,actionName)](#M-ChuckDeviceController-Plugins-DashboardTile-#ctor-System-String,System-String,System-String,System-String,System-String- 'ChuckDeviceController.Plugins.DashboardTile.#ctor(System.String,System.String,System.String,System.String,System.String)')
+    - [ActionName](#P-ChuckDeviceController-Plugins-DashboardTile-ActionName 'ChuckDeviceController.Plugins.DashboardTile.ActionName')
+    - [ControllerName](#P-ChuckDeviceController-Plugins-DashboardTile-ControllerName 'ChuckDeviceController.Plugins.DashboardTile.ControllerName')
+    - [Icon](#P-ChuckDeviceController-Plugins-DashboardTile-Icon 'ChuckDeviceController.Plugins.DashboardTile.Icon')
+    - [Text](#P-ChuckDeviceController-Plugins-DashboardTile-Text 'ChuckDeviceController.Plugins.DashboardTile.Text')
+    - [Value](#P-ChuckDeviceController-Plugins-DashboardTile-Value 'ChuckDeviceController.Plugins.DashboardTile.Value')
 - [DatabaseConnectionState](#T-ChuckDeviceController-Plugins-DatabaseConnectionState 'ChuckDeviceController.Plugins.DatabaseConnectionState')
     - [Connected](#F-ChuckDeviceController-Plugins-DatabaseConnectionState-Connected 'ChuckDeviceController.Plugins.DatabaseConnectionState.Connected')
     - [Disconnected](#F-ChuckDeviceController-Plugins-DatabaseConnectionState-Disconnected 'ChuckDeviceController.Plugins.DatabaseConnectionState.Disconnected')
@@ -15,6 +22,12 @@
     - [IsHtml](#P-ChuckDeviceController-Plugins-IDashboardStatsItem-IsHtml 'ChuckDeviceController.Plugins.IDashboardStatsItem.IsHtml')
     - [Name](#P-ChuckDeviceController-Plugins-IDashboardStatsItem-Name 'ChuckDeviceController.Plugins.IDashboardStatsItem.Name')
     - [Value](#P-ChuckDeviceController-Plugins-IDashboardStatsItem-Value 'ChuckDeviceController.Plugins.IDashboardStatsItem.Value')
+- [IDashboardTile](#T-ChuckDeviceController-Plugins-IDashboardTile 'ChuckDeviceController.Plugins.IDashboardTile')
+    - [ActionName](#P-ChuckDeviceController-Plugins-IDashboardTile-ActionName 'ChuckDeviceController.Plugins.IDashboardTile.ActionName')
+    - [ControllerName](#P-ChuckDeviceController-Plugins-IDashboardTile-ControllerName 'ChuckDeviceController.Plugins.IDashboardTile.ControllerName')
+    - [Icon](#P-ChuckDeviceController-Plugins-IDashboardTile-Icon 'ChuckDeviceController.Plugins.IDashboardTile.Icon')
+    - [Text](#P-ChuckDeviceController-Plugins-IDashboardTile-Text 'ChuckDeviceController.Plugins.IDashboardTile.Text')
+    - [Value](#P-ChuckDeviceController-Plugins-IDashboardTile-Value 'ChuckDeviceController.Plugins.IDashboardTile.Value')
 - [IDatabaseEvents](#T-ChuckDeviceController-Plugins-IDatabaseEvents 'ChuckDeviceController.Plugins.IDatabaseEvents')
     - [OnEntityAdded\`\`1(entity)](#M-ChuckDeviceController-Plugins-IDatabaseEvents-OnEntityAdded``1-``0- 'ChuckDeviceController.Plugins.IDatabaseEvents.OnEntityAdded``1(``0)')
     - [OnEntityDeleted\`\`1(entity)](#M-ChuckDeviceController-Plugins-IDatabaseEvents-OnEntityDeleted``1-``0- 'ChuckDeviceController.Plugins.IDatabaseEvents.OnEntityDeleted``1(``0)')
@@ -69,9 +82,12 @@
 - [IUiEvents](#T-ChuckDeviceController-Plugins-IUiEvents 'ChuckDeviceController.Plugins.IUiEvents')
 - [IUiHost](#T-ChuckDeviceController-Plugins-IUiHost 'ChuckDeviceController.Plugins.IUiHost')
     - [DashboardStatsItems](#P-ChuckDeviceController-Plugins-IUiHost-DashboardStatsItems 'ChuckDeviceController.Plugins.IUiHost.DashboardStatsItems')
+    - [DashboardTiles](#P-ChuckDeviceController-Plugins-IUiHost-DashboardTiles 'ChuckDeviceController.Plugins.IUiHost.DashboardTiles')
     - [NavbarHeaders](#P-ChuckDeviceController-Plugins-IUiHost-NavbarHeaders 'ChuckDeviceController.Plugins.IUiHost.NavbarHeaders')
     - [AddDashboardStatisticAsync(stat)](#M-ChuckDeviceController-Plugins-IUiHost-AddDashboardStatisticAsync-ChuckDeviceController-Plugins-IDashboardStatsItem- 'ChuckDeviceController.Plugins.IUiHost.AddDashboardStatisticAsync(ChuckDeviceController.Plugins.IDashboardStatsItem)')
     - [AddDashboardStatisticsAsync(stats)](#M-ChuckDeviceController-Plugins-IUiHost-AddDashboardStatisticsAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugins-IDashboardStatsItem}- 'ChuckDeviceController.Plugins.IUiHost.AddDashboardStatisticsAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.IDashboardStatsItem})')
+    - [AddDashboardTileAsync(tile)](#M-ChuckDeviceController-Plugins-IUiHost-AddDashboardTileAsync-ChuckDeviceController-Plugins-IDashboardTile- 'ChuckDeviceController.Plugins.IUiHost.AddDashboardTileAsync(ChuckDeviceController.Plugins.IDashboardTile)')
+    - [AddDashboardTilesAsync(tiles)](#M-ChuckDeviceController-Plugins-IUiHost-AddDashboardTilesAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugins-IDashboardTile}- 'ChuckDeviceController.Plugins.IUiHost.AddDashboardTilesAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.IDashboardTile})')
     - [AddNavbarHeaderAsync(header)](#M-ChuckDeviceController-Plugins-IUiHost-AddNavbarHeaderAsync-ChuckDeviceController-Plugins-NavbarHeader- 'ChuckDeviceController.Plugins.IUiHost.AddNavbarHeaderAsync(ChuckDeviceController.Plugins.NavbarHeader)')
     - [AddNavbarHeadersAsync(headers)](#M-ChuckDeviceController-Plugins-IUiHost-AddNavbarHeadersAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugins-NavbarHeader}- 'ChuckDeviceController.Plugins.IUiHost.AddNavbarHeadersAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.NavbarHeader})')
     - [UpdateDashboardStatisticAsync(stat)](#M-ChuckDeviceController-Plugins-IUiHost-UpdateDashboardStatisticAsync-ChuckDeviceController-Plugins-IDashboardStatsItem- 'ChuckDeviceController.Plugins.IUiHost.UpdateDashboardStatisticAsync(ChuckDeviceController.Plugins.IDashboardStatsItem)')
@@ -169,6 +185,71 @@ Gets or sets the name or title of the statistic.
 
 Gets or sets the value of the statistic.
 
+<a name='T-ChuckDeviceController-Plugins-DashboardTile'></a>
+## DashboardTile `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugins
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugins-DashboardTile-#ctor-System-String,System-String,System-String,System-String,System-String-'></a>
+### #ctor(text,value,icon,controllerName,actionName) `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| value | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+
+<a name='P-ChuckDeviceController-Plugins-DashboardTile-ActionName'></a>
+### ActionName `property`
+
+##### Summary
+
+Gets or sets the controller action name to execute
+when the navbar header is clicked.
+
+<a name='P-ChuckDeviceController-Plugins-DashboardTile-ControllerName'></a>
+### ControllerName `property`
+
+##### Summary
+
+Gets or sets the controller name the action name
+should relate to when the tile is clicked.
+
+<a name='P-ChuckDeviceController-Plugins-DashboardTile-Icon'></a>
+### Icon `property`
+
+##### Summary
+
+Gets or sets the Fontawesome icon to display.
+
+<a name='P-ChuckDeviceController-Plugins-DashboardTile-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the text displayed for the dashboard tile.
+
+<a name='P-ChuckDeviceController-Plugins-DashboardTile-Value'></a>
+### Value `property`
+
+##### Summary
+
+Gets or sets the value for the dashboard tile.
+
 <a name='T-ChuckDeviceController-Plugins-DatabaseConnectionState'></a>
 ## DatabaseConnectionState `type`
 
@@ -227,6 +308,54 @@ Gets or sets the name or title of the statistic.
 ##### Summary
 
 Gets or sets the value of the statistic.
+
+<a name='T-ChuckDeviceController-Plugins-IDashboardTile'></a>
+## IDashboardTile `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugins
+
+##### Summary
+
+
+
+<a name='P-ChuckDeviceController-Plugins-IDashboardTile-ActionName'></a>
+### ActionName `property`
+
+##### Summary
+
+Gets or sets the controller action name to execute
+when the navbar header is clicked.
+
+<a name='P-ChuckDeviceController-Plugins-IDashboardTile-ControllerName'></a>
+### ControllerName `property`
+
+##### Summary
+
+Gets or sets the controller name the action name
+should relate to when the tile is clicked.
+
+<a name='P-ChuckDeviceController-Plugins-IDashboardTile-Icon'></a>
+### Icon `property`
+
+##### Summary
+
+Gets or sets the Fontawesome icon to display.
+
+<a name='P-ChuckDeviceController-Plugins-IDashboardTile-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the text displayed for the dashboard tile.
+
+<a name='P-ChuckDeviceController-Plugins-IDashboardTile-Value'></a>
+### Value `property`
+
+##### Summary
+
+Gets or sets the value for the dashboard tile.
 
 <a name='T-ChuckDeviceController-Plugins-IDatabaseEvents'></a>
 ## IDatabaseEvents `type`
@@ -752,7 +881,7 @@ Navigation bar header plugin contract.
 ##### Summary
 
 Gets or sets the controller action name to execute
-when the navbar header is selected.
+when the navbar header is clicked.
 
 <a name='P-ChuckDeviceController-Plugins-INavbarHeader-ControllerName'></a>
 ### ControllerName `property`
@@ -962,6 +1091,13 @@ Plugin host handler for executing user interface operations.
 
 Gets a list of dashboard statistics registered by plugins.
 
+<a name='P-ChuckDeviceController-Plugins-IUiHost-DashboardTiles'></a>
+### DashboardTiles `property`
+
+##### Summary
+
+Gets a list of dashboard tiles registered by plugins.
+
 <a name='P-ChuckDeviceController-Plugins-IUiHost-NavbarHeaders'></a>
 ### NavbarHeaders `property`
 
@@ -996,6 +1132,32 @@ the dashboard front page.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | stats | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.IDashboardStatsItem}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.IDashboardStatsItem}') | List of dashboard statistic items to add. |
+
+<a name='M-ChuckDeviceController-Plugins-IUiHost-AddDashboardTileAsync-ChuckDeviceController-Plugins-IDashboardTile-'></a>
+### AddDashboardTileAsync(tile) `method`
+
+##### Summary
+
+Adds a statistic tile to the front page dashboard.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| tile | [ChuckDeviceController.Plugins.IDashboardTile](#T-ChuckDeviceController-Plugins-IDashboardTile 'ChuckDeviceController.Plugins.IDashboardTile') | Dashboard statistics tile to add. |
+
+<a name='M-ChuckDeviceController-Plugins-IUiHost-AddDashboardTilesAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugins-IDashboardTile}-'></a>
+### AddDashboardTilesAsync(tiles) `method`
+
+##### Summary
+
+Adds a list of statistic tiles to the front page dashboard.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| tiles | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.IDashboardTile}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugins.IDashboardTile}') | List of dashboard statistic tiles to add. |
 
 <a name='M-ChuckDeviceController-Plugins-IUiHost-AddNavbarHeaderAsync-ChuckDeviceController-Plugins-NavbarHeader-'></a>
 ### AddNavbarHeaderAsync(header) `method`
@@ -1140,7 +1302,7 @@ property values.
 ##### Summary
 
 Gets or sets the controller action name to execute
-when the navbar header is selected.
+when the navbar header is clicked.
 
 <a name='P-ChuckDeviceController-Plugins-NavbarHeader-ControllerName'></a>
 ### ControllerName `property`
@@ -1234,7 +1396,7 @@ dropdown items.
 ##### Summary
 
 Gets or sets the controller action name to execute
-when the navbar header is selected.
+when the navbar header is clicked.
 
 <a name='P-ChuckDeviceController-Plugins-NavbarHeaderDropdownItem-ControllerName'></a>
 ### ControllerName `property`

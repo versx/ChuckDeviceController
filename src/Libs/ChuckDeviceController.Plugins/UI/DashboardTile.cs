@@ -40,7 +40,7 @@
         /// <param name="icon"></param>
         /// <param name="controllerName"></param>
         /// <param name="actionName"></param>
-        public DashboardTile(string text, string value, string icon = "", string controllerName = "", string actionName = "")
+        public DashboardTile(string text, string value, string icon = "", string controllerName = "", string actionName = "Index")
         {
             Text = text;
             Value = value;
