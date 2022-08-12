@@ -69,7 +69,7 @@
                 InstanceType.CircleRaid => "Circle Raid",
                 InstanceType.CircleSmartPokemon => "Circle Smart Pokemon",
                 InstanceType.Custom => "Custom",
-                InstanceType.DynamicPokemon => "Dynamic Route",
+                InstanceType.DynamicRoute => "Dynamic Route",
                 InstanceType.FindTth => "Find TTH",
                 InstanceType.Leveling => "Leveling",
                 InstanceType.PokemonIV => "Pokemon IV",

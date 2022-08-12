@@ -257,7 +257,7 @@
                     break;
                 case InstanceType.AutoQuest:
                 case InstanceType.Bootstrap:
-                case InstanceType.DynamicPokemon:
+                case InstanceType.DynamicRoute:
                 case InstanceType.FindTth:
                 case InstanceType.Leveling:
                 case InstanceType.PokemonIV:
@@ -275,7 +275,7 @@
                             jobController = CreateBootstrapJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
                             ((BootstrapInstanceController)jobController).InstanceComplete += OnBootstrapInstanceComplete;
                             break;
-                        case InstanceType.DynamicPokemon:
+                        case InstanceType.DynamicRoute:
                             jobController = CreateDynamicJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
                             break;
                         case InstanceType.FindTth:

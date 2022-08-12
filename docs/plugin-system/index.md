@@ -1,6 +1,7 @@
 # Plugin System  
 
 ## Creating a Plugin  
+Microsoft MVC 'Views' are very similar to Mustache, Handlebars.js, and other templating engines. 
 
 ### Requirements:
 - 

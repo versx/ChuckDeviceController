@@ -7,7 +7,7 @@
     {
         CirclePokemon,
         CircleSmartPokemon, // TODO: redundant remove eventually
-        DynamicPokemon,
+        DynamicRoute,
         CircleRaid,
         SmartRaid,
         AutoQuest,
