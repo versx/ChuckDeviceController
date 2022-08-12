@@ -54,7 +54,7 @@
         public InstanceData? Data { get; set; }
 
         [
-            DisplayName("Device Count"),
+            DisplayName("No. Devices"),
             NotMapped,
         ]
         public int DeviceCount { get; set; }

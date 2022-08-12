@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Utilities
 {
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
@@ -56,6 +57,25 @@
                 return defaultValue;
             }
             return value;
+        }
+
+        public static string FormatInstanceType(InstanceType instanceType)
+        {
+            return instanceType switch
+            {
+                InstanceType.AutoQuest => "Auto Quest",
+                InstanceType.Bootstrap => "Bootstrap",
+                InstanceType.CirclePokemon => "Circle Pokemon",
+                InstanceType.CircleRaid => "Circle Raid",
+                InstanceType.CircleSmartPokemon => "Circle Smart Pokemon",
+                InstanceType.Custom => "Custom",
+                InstanceType.DynamicPokemon => "Dynamic Route",
+                InstanceType.FindTth => "Find TTH",
+                InstanceType.Leveling => "Leveling",
+                InstanceType.PokemonIV => "Pokemon IV",
+                InstanceType.SmartRaid => "Smart Raid",
+                _ => "Unknown",
+            };
         }
 
         public static string GetDeviceStatus(ulong lastSeen)

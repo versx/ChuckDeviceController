@@ -1,4 +1,5 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
+﻿@using ChuckDeviceConfigurator.Utilities
+@using ChuckDeviceConfigurator.ViewModels
 @using ChuckDeviceController.Data.Entities
 @model ViewModelsModel<Instance>
 @{
@@ -49,7 +50,7 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </th>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Type)
+                    @Utils.FormatInstanceType(item.Type)
                 </td>
                 <td>
                     @Html.Raw(item.Status)
