@@ -7,10 +7,13 @@
         private readonly ILogger<IUiHost> _logger;
         private static readonly List<NavbarHeader> _navbarHeaders = new();
         private static readonly Dictionary<string, IDashboardStatsItem> _dashboardStats = new();
+        private static readonly Dictionary<string, IDashboardTile> _dashboardTiles = new();
 
         public IReadOnlyList<NavbarHeader> NavbarHeaders => _navbarHeaders;
 
         public IReadOnlyList<IDashboardStatsItem> DashboardStatsItems => _dashboardStats?.Values.ToList();
+
+        public IReadOnlyList<IDashboardTile> DashboardTiles => _dashboardTiles?.Values.ToList();
 
         public UiHost(ILogger<IUiHost> logger)
         {
@@ -75,6 +78,26 @@
 
             _dashboardStats[stats.Name] = stats;
             await Task.CompletedTask;
+        }
+
+        public async Task AddDashboardTileAsync(IDashboardTile tile)
+        {
+            if (_dashboardTiles.ContainsKey(tile.Text))
+            {
+                // Already exists with name
+                return;
+            }
+
+            _dashboardTiles.Add(tile.Text, tile);
+            await Task.CompletedTask;
+        }
+
+        public async Task AddDashboardTilesAsync(IEnumerable<IDashboardTile> tiles)
+        {
+            foreach (var tile in tiles)
+            {
+                await AddDashboardTileAsync(tile);
+            }
         }
     }
 }

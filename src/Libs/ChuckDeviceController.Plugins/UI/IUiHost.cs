@@ -15,6 +15,11 @@
         /// </summary>
         IReadOnlyList<IDashboardStatsItem> DashboardStatsItems { get; }
 
+        /// <summary>
+        /// Gets a list of dashboard tiles registered by plugins.
+        /// </summary>
+        IReadOnlyList<IDashboardTile> DashboardTiles { get; }
+
 
         /// <summary>
         /// Adds a <seealso cref="NavbarHeader"/> item to the main
@@ -57,5 +62,19 @@
         /// </summary>
         /// <param name="stats">List of dashboard statistic items to update.</param>
         Task UpdateDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats);
+
+        /// <summary>
+        /// Adds a statistic tile to the front page dashboard.
+        /// </summary>
+        /// <param name="tile">Dashboard statistics tile to add.</param>
+        Task AddDashboardTileAsync(IDashboardTile tile);
+
+        /// <summary>
+        /// Adds a list of statistic tiles to the front page dashboard.
+        /// </summary>
+        /// <param name="tiles">List of dashboard statistic tiles to add.</param>
+        Task AddDashboardTilesAsync(IEnumerable<IDashboardTile> tiles);
+
+        // TODO: UpdateDashboardTileAsync?
     }
 }

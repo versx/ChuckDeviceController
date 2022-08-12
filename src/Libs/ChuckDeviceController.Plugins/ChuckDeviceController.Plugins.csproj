@@ -25,7 +25,6 @@
     <None Remove="Data\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="UI\" />
     <Folder Include="Data\" />
   </ItemGroup>
 </Project>

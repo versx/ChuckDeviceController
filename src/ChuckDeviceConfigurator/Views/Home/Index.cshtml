@@ -1,7 +1,13 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
+﻿@using ChuckDeviceConfigurator.Extensions
+@using ChuckDeviceConfigurator.ViewModels
+@using ChuckDeviceController.Extensions.Json
+@using ChuckDeviceController.Plugins
 @model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
+
+    var data = Html.RenderAction("GetTiles", "Helper");
+    var dashboardTiles = Convert.ToString(data)?.FromJson<List<DashboardTile>>();
 }
 
 <div class="text-center">
@@ -109,6 +115,23 @@
                         </div>
                     </div>
                 </div>
+                @if (dashboardTiles != null)
+                {
+                    <div class="row justify-content-center">
+                    @foreach (var tile in dashboardTiles)
+                    {
+                        <div class="col-md-3 p-1">
+                            <div class="list-group">
+                                <a class="list-group-item" asp-controller="User" asp-action="Index">
+                                    <h3 class="pull-right"><i class="@tile.Icon"></i></h3>
+                                    <h4 class="list-group-item-heading">@tile.Value</h4>
+                                    <p class="list-group-item-text">@tile.Text</p>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    </div>
+                }
             </div>
         </div>
     </div>

@@ -200,6 +200,15 @@
             };
             await _uiHost.AddNavbarHeadersAsync(pluginNavbarHeaders);
 
+            // Add/register dashboard tiles
+            var pluginTile = new DashboardTile
+            (
+                text: "Test",
+                value: "5,000",
+                icon: "fa-solid fa-fw fa-hammer"
+            );
+            await _uiHost.AddDashboardTileAsync(pluginTile);
+
             // Translate 1 to Bulbasaur
             var translated = _localeHost.GetPokemonName(1);
             _loggingHost.LogMessage($"Pokemon: {translated}");

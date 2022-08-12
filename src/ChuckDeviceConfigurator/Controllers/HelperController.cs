@@ -39,5 +39,12 @@
             var theme = _configuration.GetValue<string>("Theme") ?? DefaultTheme;
             return new JsonResult(theme);
         }
+
+        [HttpGet("GetTiles")]
+        public IActionResult GetTiles()
+        {
+            var tiles = _uiHost.DashboardTiles;
+            return new JsonResult(tiles);
+        }
     }
 }
