@@ -102,6 +102,10 @@ table > tbody > tr > td > a {
     background: #fff;
 }
 
+#sidebar ul li.nav-item a.disabled {
+    color: grey;
+}
+
 #sidebar > ul li > a.active,
 #sidebar ul li.active > a, a[aria-expanded="true"] {
     color: #fff;
