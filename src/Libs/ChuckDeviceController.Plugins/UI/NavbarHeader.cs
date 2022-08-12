@@ -19,7 +19,7 @@
 
         /// <summary>
         /// Gets or sets the controller action name to execute
-        /// when the navbar header is selected.
+        /// when the navbar header is clicked.
         /// </summary>
         public string ActionName { get; set; }
 

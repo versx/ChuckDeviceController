@@ -20,8 +20,18 @@
         /// </summary>
         string Icon { get; }
 
+        /// <summary>
+        /// Gets or sets the controller name the action name
+        /// should relate to when the tile is clicked.
+        /// </summary>
+        string ControllerName { get; }
+
+        /// <summary>
+        /// Gets or sets the controller action name to execute
+        /// when the navbar header is clicked.
+        /// </summary>
+        string ActionName { get; }
+
         // TODO: Add IsSeparateSection property
-        // TODO: ControllerName
-        // TODO: ActionName
     }
 }
