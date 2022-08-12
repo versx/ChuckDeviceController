@@ -6,9 +6,11 @@
 @inject SignInManager<ApplicationUser> SignInManager
 
 @{
-    var data = Html.RenderAction("GetPluginNavbarHeaders", "Plugin");
+    var data = Html.RenderAction("GetNavbarHeaders", "Helper");
     var navbarHeaders = Convert.ToString(data)?.FromJson<List<NavbarHeader>>();
-    var theme = Convert.ToString(ViewData["Theme"]); // ?? "dark");
+
+    var themeData = Html.RenderAction("GetTheme", "Helper");
+    var theme = Convert.ToString(themeData)?.FromJson<string>() ?? "dark";
 }
 
 <!DOCTYPE html>

@@ -111,11 +111,5 @@
                 return View();
             }
         }
-
-        public ActionResult GetPluginNavbarHeaders()
-        {
-            // Get cached navbar headers from plugins
-            return new JsonResult(_uiHost.NavbarHeaders);
-        }
     }
 }
