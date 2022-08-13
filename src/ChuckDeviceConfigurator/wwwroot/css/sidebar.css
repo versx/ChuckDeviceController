@@ -176,6 +176,10 @@ ul ul a {
     margin: 5px auto;
 }
 
+/* Dumb workaround for tables causing scrollbars to unnecessarily show */
+.table {
+    width: 99.99% !important;
+}
 
 /* ---------------------------------------------------
     MEDIAQUERIES
