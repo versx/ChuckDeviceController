@@ -117,7 +117,7 @@
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnReload();
-            pluginHost.Plugin.OnStateChanged(PluginState.Running);
+            pluginHost.SetState(PluginState.Running);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been reloaded");
             await Task.CompletedTask;
@@ -141,7 +141,7 @@
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnRemove();
-            pluginHost.Plugin.OnStateChanged(PluginState.Removed);
+            pluginHost.SetState(PluginState.Removed);
             _plugins.Remove(pluginName);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been removed");
@@ -166,10 +166,20 @@
 
             // Set state in plugin cache
             var pluginHost = _plugins[pluginName];
+            var previousState = pluginHost.State;
             pluginHost.SetState(state);
 
             // Save plugin state to database
             await SaveStateAsync(pluginName, state);
+
+            if (state == PluginState.Running &&
+                previousState != PluginState.Running &&
+                state != previousState)
+            {
+                // Call 'OnLoad' event in case plugin was disabled upon startup,
+                // which none of the UI elements were registered. (if it has any)
+                pluginHost.Plugin.OnLoad();
+            }
         }
 
         #endregion

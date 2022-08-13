@@ -140,24 +140,18 @@
                     color = "green";
                     break;
                 case PluginState.Stopped:
-                    color = "black";
-                    break;
                 case PluginState.Disabled:
+                case PluginState.Error:
                     color = "red";
                     break;
                 case PluginState.Removed:
                     color = "blue";
-                    break;
-                case PluginState.Error:
-                    color = "red";
                     break;
                 case PluginState.Unset: // should never hit
                 default:
                     break;
             }
             var html = $"<span style='color: {color};'>{state}</span>";
-            //var html = "<span class='{0}'>{1}</span>";
-            //return string.Format(html, color, state);
             return html;
         }
 
