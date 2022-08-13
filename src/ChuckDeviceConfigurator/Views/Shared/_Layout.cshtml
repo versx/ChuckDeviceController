@@ -140,6 +140,7 @@
     // Get current URL path and toggle 'active' class for sidebar and sidebar collapse/expand button
     const pathname = window.location.pathname;
     // Get navbar header based on current path name comparing against anchor reference
+    // NOTE: This will highlight multiple navbar headers if multiple have the same href path
     const navItem = $('#sidebar > ul li.nav-item > a[href="' + pathname + '"]');
     if (navItem) {
         // Top level navbar header with no dropdowns
@@ -157,19 +158,10 @@
         parent.addClass('show');
     }
 
-    const setFooterPosition = () => {
-        const isActive = $('#sidebarCollapse').hasClass('active');
-        $('#footer').css('left', isActive ? '0px' : '285px');
-    };
-
     $('#sidebarCollapse').on('click', function () {
         // Show/hide sidebar depending on sidebar button state
         $('#sidebar').toggleClass('active');
         // Toggle sidebar toggle button icon, i.e. X or menu/sandwich icon
         $(this).toggleClass('active');
-
-        setFooterPosition();
     });
-
-    setFooterPosition();
 </script>

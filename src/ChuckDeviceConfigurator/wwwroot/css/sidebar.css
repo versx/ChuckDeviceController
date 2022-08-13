@@ -186,10 +186,10 @@ ul ul a {
         transform: rotateY(90deg);
     }
 
-        #sidebar.active {
-            margin-left: 0;
-            transform: none;
-        }
+    #sidebar.active {
+        margin-left: 0;
+        transform: none;
+    }
 
     #sidebarCollapse span:first-of-type,
     #sidebarCollapse span:nth-of-type(2),
@@ -203,15 +203,15 @@ ul ul a {
         margin: 0 auto;
     }
 
-        #sidebarCollapse.active span:first-of-type {
-            transform: rotate(45deg) translate(2px, 2px);
-        }
+    #sidebarCollapse.active span:first-of-type {
+        transform: rotate(45deg) translate(2px, 2px);
+    }
 
-        #sidebarCollapse.active span:nth-of-type(2) {
-            opacity: 0;
-        }
+    #sidebarCollapse.active span:nth-of-type(2) {
+        opacity: 0;
+    }
 
-        #sidebarCollapse.active span:last-of-type {
-            transform: rotate(-45deg) translate(1px, -1px);
-        }
+    #sidebarCollapse.active span:last-of-type {
+        transform: rotate(-45deg) translate(1px, -1px);
+    }
 }
