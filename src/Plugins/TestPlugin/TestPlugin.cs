@@ -186,15 +186,15 @@
                 ),
                 new NavbarHeader
                 {
-                    Text = "TestNavDropdown",
+                    Text = "Devices", //"TestNavDropdown",
                     DisplayIndex = 4,
                     Icon = "fa-solid fa-fw fa-microscope",
                     IsDropdown = true,
                     DropdownItems = new List<NavbarHeaderDropdownItem>
                     {
-                        new("Item1", "Device", icon: "fa-solid fa-fw fa-mobile-alt"),
-                        new("Hmm", isSeparator: true),
-                        new("Item2", "Instance", isDisabled: true, icon: "fa-solid fa-fw fa-cubes-stacked"),
+                        new("Item1", "Device", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt"),
+                        new("Hmm", isSeparator: true, displayIndex: 3),
+                        new("Item2", "Instance", isDisabled: true, displayIndex: 999, icon: "fa-solid fa-fw fa-cubes-stacked"),
                     },
                 },
             };

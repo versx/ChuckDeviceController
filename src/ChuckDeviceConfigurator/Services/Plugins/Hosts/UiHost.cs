@@ -5,11 +5,11 @@
     public class UiHost : IUiHost
     {
         private readonly ILogger<IUiHost> _logger;
-        private static readonly List<NavbarHeader> _navbarHeaders = new();
+        private static readonly Dictionary<string, NavbarHeader> _navbarHeaders = new();
         private static readonly Dictionary<string, IDashboardStatsItem> _dashboardStats = new();
         private static readonly Dictionary<string, IDashboardTile> _dashboardTiles = new();
 
-        public IReadOnlyList<NavbarHeader> NavbarHeaders => _navbarHeaders;
+        public IReadOnlyList<NavbarHeader> NavbarHeaders => _navbarHeaders?.Values.ToList();
 
         public IReadOnlyList<IDashboardStatsItem> DashboardStatsItems => _dashboardStats?.Values.ToList();
 
@@ -30,13 +30,31 @@
 
         public async Task AddNavbarHeaderAsync(NavbarHeader header)
         {
-            if (_navbarHeaders.Contains(header))
+            if (_navbarHeaders.ContainsKey(header.Text))
             {
-                _logger.LogWarning($"Navbar header '{header.Text}' already registered");
-                return;
-            }
+                if (!header.IsDropdown)
+                {
+                    _logger.LogWarning($"Navbar header '{header.Text}' already registered");
+                    return;
+                }
 
-            _navbarHeaders.Add(header);
+                // Add dropdown items to existing headers
+                var existingHeader = _navbarHeaders[header.Text];
+                var newDropdownItems = new List<NavbarHeaderDropdownItem>();
+                if (existingHeader.DropdownItems != null)
+                {
+                    newDropdownItems.AddRange(existingHeader.DropdownItems);
+                }
+                if (header.DropdownItems != null)
+                {
+                    newDropdownItems.AddRange(header.DropdownItems);
+                }
+                _navbarHeaders[header.Text].DropdownItems = newDropdownItems;
+            }
+            else
+            {
+                _navbarHeaders.Add(header.Text, header);
+            }
             await Task.CompletedTask;
         }
 
