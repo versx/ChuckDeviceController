@@ -2,9 +2,17 @@
 {
     using ChuckDeviceController.Plugins;
 
+    public class PluginUiCache<T> : Dictionary<string, Dictionary<string, T>>
+    {
+    }
+
     public class UiHost : IUiHost
     {
         private readonly ILogger<IUiHost> _logger;
+        // TODO: Index dictionaries by plugin name i.e. Dictionary<string, Dictionary<string, Interface>>
+        //private static readonly PluginUiCache<NavbarHeader> _navbarHeaders = new();
+        //private static readonly PluginUiCache<IDashboardStatsItem> _dashboardStats = new();
+        //private static readonly PluginUiCache<IDashboardTile> _dashboardTiles = new();
         private static readonly Dictionary<string, NavbarHeader> _navbarHeaders = new();
         private static readonly Dictionary<string, IDashboardStatsItem> _dashboardStats = new();
         private static readonly Dictionary<string, IDashboardTile> _dashboardTiles = new();

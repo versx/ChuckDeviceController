@@ -75,10 +75,11 @@
             if (state == PluginState.Disabled)
             {
                 await _pluginManager.StopAsync(id);
+
+                // TODO: Remove any UI elements registered by plugin if state == Disabled
+                //await pluginHost.HostHandlers.UiHost.RemoveUiElementsAsync(id);
             }
             await _pluginManager.SetStateAsync(id, state);
-
-            // TODO: Remove any UI elements registered by plugin if state == Disabled
 
             _logger.LogInformation($"Plugin '{id}' has been '{(pluginHost.State == PluginState.Running ? "enabled" : "disabled")}'");
             return RedirectToAction(nameof(Index));

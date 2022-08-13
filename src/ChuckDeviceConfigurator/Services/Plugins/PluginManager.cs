@@ -93,8 +93,9 @@
             pluginHost.Plugin.OnStop();
             pluginHost.SetState(PluginState.Stopped);
 
+            await SaveStateAsync(pluginName, PluginState.Removed);
+
             _logger.LogInformation($"[{pluginName}] Plugin has been stopped");
-            await Task.CompletedTask;
         }
 
         public async Task StopAllAsync()
@@ -119,8 +120,9 @@
             pluginHost.Plugin.OnReload();
             pluginHost.SetState(PluginState.Running);
 
+            await SaveStateAsync(pluginName, PluginState.Removed);
+
             _logger.LogInformation($"[{pluginName}] Plugin has been reloaded");
-            await Task.CompletedTask;
         }
 
         public async Task ReloadAllAsync()
@@ -144,8 +146,9 @@
             pluginHost.SetState(PluginState.Removed);
             _plugins.Remove(pluginName);
 
+            await SaveStateAsync(pluginName, PluginState.Removed);
+
             _logger.LogInformation($"[{pluginName}] Plugin has been removed");
-            await Task.CompletedTask;
         }
 
         public async Task RemoveAllAsync()

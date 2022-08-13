@@ -21,6 +21,8 @@
 
         public IReadOnlyDictionary<string, IJobController> JobControllers => _jobControllers;
 
+        // TODO: Cache plugin file path for reloading
+
         #endregion
 
         #region Constructors
@@ -30,11 +32,11 @@
         {
         }
 
-        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginEventHandlers handlers, PluginState state = PluginState.Unset)
+        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginEventHandlers eventHandlers, PluginState state = PluginState.Unset)
         {
             Plugin = plugin;
             Permissions = permissions;
-            EventHandlers = handlers;
+            EventHandlers = eventHandlers;
             State = state;
         }
 
