@@ -6,11 +6,12 @@
 @inject SignInManager<ApplicationUser> SignInManager
 
 @{
+    const string DarkTheme = "dark";
     var data = Html.RenderAction("GetNavbarHeaders", "Helper");
     var navbarHeaders = Convert.ToString(data)?.FromJson<List<NavbarHeader>>();
 
     var themeData = Html.RenderAction("GetTheme", "Helper");
-    var theme = Convert.ToString(themeData)?.FromJson<string>() ?? "dark";
+    var theme = Convert.ToString(themeData)?.FromJson<string>() ?? DarkTheme;
 }
 
 <!DOCTYPE html>
@@ -31,7 +32,7 @@
     <link rel="stylesheet" href="~/lib/fontawesome-free-6.1.2-web/css/all.css" />
     <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @if (theme == "dark")
+    @if (theme == DarkTheme)
     {
         <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
     }
@@ -121,25 +122,7 @@
                 <main role="main" class="pb-3">
                     @RenderBody()
                 </main>
-                <footer class="d-flex flex-wrap justify-content-between align-items-center my-4 py-3 border-top" style="position: fixed; bottom: 0; right: 0; left: 25%; z-index: 1030;">
-                    <p class="col-md-4 mb-0 text-muted">&copy; 2022 - ChuckDeviceController</p>
-
-                    <div class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto">
-                        &#10084;&#65039;&nbsp;
-                        <a asp-controller="Home" asp-action="About" class="text-decoration-none text-muted">
-                            In loving memory of Chuckleslove, rest in peace brother
-                        </a>
-                    </div>
-
-                    <ul class="nav col-md-4 justify-content-end">
-                        <li class="nav-item">
-                            <a class="nav-link px-2 text-muted" href="https://github.com/versx/ChuckDeviceController" target="_blank">
-                                <i class="fa-brands fa-github"></i>
-                                &nbsp;GitHub
-                            </a>
-                        </li>
-                    </ul>
-                </footer>
+                <partial name="_Footer" />
             </div>
         </div>
     </div>
@@ -173,10 +156,20 @@
         // Expand the actual navbar section
         parent.addClass('show');
     }
+
+    const setFooterPosition = () => {
+        const isActive = $('#sidebarCollapse').hasClass('active');
+        $('#footer').css('left', isActive ? '0px' : '285px');
+    };
+
     $('#sidebarCollapse').on('click', function () {
         // Show/hide sidebar depending on sidebar button state
         $('#sidebar').toggleClass('active');
         // Toggle sidebar toggle button icon, i.e. X or menu/sandwich icon
         $(this).toggleClass('active');
+
+        setFooterPosition();
     });
+
+    setFooterPosition();
 </script>

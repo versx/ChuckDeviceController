@@ -63,7 +63,7 @@ table > tbody > tr > td > a {
 #sidebar {
     min-width: 275px;
     max-width: 275px;
-    background: #44464d;/*#7386D5;*/
+    background: #44464d; /*#7386D5;*/
     color: #fff;
     transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
     transform-origin: bottom left;
@@ -169,7 +169,6 @@ ul ul a {
 #sidebarCollapse span:last-of-type {
     transform: rotate(-45deg) translate(1px, -1px);
 }
-
 
 #sidebarCollapse.active span {
     transform: none;
