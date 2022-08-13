@@ -3,7 +3,7 @@
     /// <summary>
     /// Navigation bar header dropdown item plugin contract implemention.
     /// </summary>
-    public class NavbarHeaderDropdownItem : INavbarHeader
+    public class NavbarHeaderDropdownItem : INavbarHeader  // TODO: Rename to 'SidebarDropdownItem' or something
     {
         /// <summary>
         /// Gets or sets the text to display for this navbar

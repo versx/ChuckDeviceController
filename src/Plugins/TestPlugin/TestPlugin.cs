@@ -24,16 +24,25 @@
                        PluginPermissions.DeleteDatabase |
                        PluginPermissions.AddControllers |
                        PluginPermissions.AddJobControllers)]
-    public class TestPlugin : IPlugin
+    public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents
     {
         #region Plugin Host Variables
 
-        // Plugin host variables are interface contracts that the plugin
-        // uses to interact with services the host application is running.
+        // Plugin host variables are interface contracts that are used
+        // to interact with services the host application has registered
+        // and is running.
+
+        // Used for logging messages to the host application from the plugin
         private readonly ILoggingHost _loggingHost;
+        // Interacts with the job controller instance service to add new job
+        // controllers.
         private readonly IJobControllerServiceHost _jobControllerHost;
+        // Retrieve data from the database, READONLY.
         private readonly IDatabaseHost _databaseHost;
+        // Translate text based on the set locale in the host application.
         private readonly ILocalizationHost _localeHost;
+        // Expand your plugin implementation by adding user interface elements
+        // and pages to the dashboard.
         private readonly IUiHost _uiHost;
 
         #endregion
@@ -66,20 +75,20 @@
         #region Constructor
 
         /// <summary>
-        ///     Instantiates a new instance of <see cref="TestPlugin"/> with the host
+        ///     Instantiates a new instance of <see cref="IPlugin"/> with the host
         ///     application. It is important to only create one constructor for the
-        ///     class that inherits the <see cref="IPlugin"/> interface contract,
-        ///     otherwise the plugin will fail to load.
+        ///     class that inherits the <see cref="IPlugin"/> interface contract.
+        ///     Failure to do so will prevent the plugin from loading.
         /// 
-        ///     This is so the host application knows which constructor to use when
-        ///     it instantiates an instance with the host handler classes for each
-        ///     parameter.
+        ///     This is so the host application knows which constructor to use
+        ///     when it instantiates an instance with the host handlers for each 
+        ///     parameter, essentially dependency injection.
         /// </summary>
-        /// <param name="loggingHost"></param>
-        /// <param name="jobControllerHost"></param>
-        /// <param name="databaseHost"></param>
-        /// <param name="localeHost"></param>
-        /// <param name="uiHost"></param>
+        /// <param name="loggingHost">Logging host handler.</param>
+        /// <param name="jobControllerHost">Job controller host handler.</param>
+        /// <param name="databaseHost">Database host handler.</param>
+        /// <param name="localeHost">Localization host handler.</param>
+        /// <param name="uiHost">User interface host handler.</param>
         public TestPlugin(
             ILoggingHost loggingHost,
             IJobControllerServiceHost jobControllerHost,
@@ -126,6 +135,17 @@
         /// <summary>
         ///     Register services into the IServiceCollection to use with Dependency Injection.
         ///     This method is called first before the 'Configure(IApplicationBuilder)' method.
+        /// 
+        ///     Register service(s) with Mvc using dependency injection. Services can be passed to
+        ///     other services via the constructor. Depending on the service, you can register the
+        ///     service lifetime as 'Singleton', 'Transient', or 'Scoped'.
+        /// 
+        ///
+        ///     - Transient objects are always different.The transient OperationId value is different in the IndexModel and in the middleware.
+        ///     - Scoped objects are the same for a given request but differ across each new request.
+        ///     - Singleton objects are the same for every request.
+        ///     
+        ///     More details: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0#constructor-injection-behavior
         /// </summary>
         /// <param name="services">
         ///     Specifies the contract for a collection of service descriptors.
@@ -133,7 +153,7 @@
         public void ConfigureServices(IServiceCollection services)
         {
             _loggingHost.LogMessage($"ConfigureServices called");
-            // Register service(s) with Mvc 
+
             services.AddSingleton<IPluginService, TestPluginService>();
 
             //services.AddMvc();
@@ -164,15 +184,23 @@
             var pluginNavbarHeaders = new List<NavbarHeader>
             {
                 new(
+                    // Dropdown header text that is displayed in the sidebar
                     text: "Test",
+                    // Dropdown header display index in the sidebar
                     displayIndex: 0,
+                    // Dropdown header Fontawesome icon
                     icon: "fa-solid fa-fw fa-microscope",
+                    // Yes we want this to be used as a dropdown and not just
+                    // a single sidebar entry
                     isDropdown: true,
+                    // List of children sidebar item
                     dropdownItems: new List<NavbarHeaderDropdownItem>
                     {
+                        // Sidebar item #1
                         new("Page", "Test", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
+                        // Sidebar item #2
                         new(
-                            // Name that's displayed
+                            // Text that is displayed in the sidebar
                             "Details",
                             // 'Test' is the MVC view controller 'TestController.cs'
                             "Test",
@@ -266,6 +294,7 @@
         public void OnReload()
         {
             _loggingHost.LogMessage($"[{Name}] OnReload called");
+            // TODO: Reload/re-register UI elements that might have been removed
         }
 
         /// <summary>
@@ -274,6 +303,7 @@
         public void OnStop()
         {
             _loggingHost.LogMessage($"[{Name}] OnStop called");
+            // TODO: Unregister all UI items (or leave that up to the host app)?
         }
 
         /// <summary>
@@ -292,6 +322,30 @@
         public void OnStateChanged(PluginState state)
         {
             _loggingHost.LogMessage($"[{Name}] Plugin state has changed to '{state}'");
+        }
+
+        #endregion
+
+        #region IDatabase Event Handlers
+
+        public void OnStateChanged(DatabaseConnectionState state)
+        {
+            _loggingHost.LogMessage($"[{Name}] Plugin database connection state has changed: {state}");
+        }
+
+        public void OnEntityAdded<T>(T entity)
+        {
+            _loggingHost.LogMessage($"[{Name}] Plugin database entity has been added: {entity}");
+        }
+
+        public void OnEntityModified<T>(T oldEntity, T newEntity)
+        {
+            _loggingHost.LogMessage($"[{Name}] Plugin database entity has been modified: {oldEntity}->{newEntity}");
+        }
+
+        public void OnEntityDeleted<T>(T entity)
+        {
+            _loggingHost.LogMessage($"[{Name}] Plugin database entity has been deleted: {entity}");
         }
 
         #endregion

@@ -3,7 +3,7 @@
     /// <summary>
     /// Navigation bar header plugin contract.
     /// </summary>
-    public interface INavbarHeader
+    public interface INavbarHeader  // TODO: Rename to 'ISidebarItem' or something
     {
         /// <summary>
         /// Gets or sets the text to display for this navbar
