@@ -120,7 +120,7 @@
             pluginHost.Plugin.OnReload();
             pluginHost.SetState(PluginState.Running);
 
-            await SaveStateAsync(pluginName, PluginState.Removed);
+            await SaveStateAsync(pluginName, PluginState.Running);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been reloaded");
         }
