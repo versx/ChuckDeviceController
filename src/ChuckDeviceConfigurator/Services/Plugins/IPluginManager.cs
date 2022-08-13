@@ -4,7 +4,7 @@
     {
         #region Properties
 
-        IReadOnlyDictionary<string, PluginHost> Plugins { get; }
+        IReadOnlyDictionary<string, IPluginHost> Plugins { get; }
 
         string PluginsFolder { get; }
 

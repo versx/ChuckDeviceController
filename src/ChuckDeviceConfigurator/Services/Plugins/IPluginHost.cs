@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugins;
 
     /// <summary>
@@ -20,8 +21,8 @@
         PluginPermissions Permissions { get; }
 
         /// <summary>
-        /// Gets the state of the plugin, whether it's running,
-        /// stopped, or in an error state.
+        /// Gets the state of the plugin, whether it is enabled and running,
+        /// stopped, disabled, in an error state, etc.
         /// </summary>
         PluginState State { get; }
 

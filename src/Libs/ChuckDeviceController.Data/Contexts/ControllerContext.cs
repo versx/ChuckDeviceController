@@ -31,6 +31,8 @@
 
         public DbSet<IvList> IvLists { get; set; }
 
+        public DbSet<Plugin> Plugins { get; set; }
+
         public DbSet<Webhook> Webhooks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -47,14 +49,14 @@
                         .Property(p => p.Type)
                         .HasConversion(x => Geofence.GeofenceTypeToString(x), x => Geofence.StringToGeofenceType(x));
             modelBuilder.Entity<Geofence>()
-                        .Property(p => p.Data)
+                        .Property(nameof(Geofence.Data))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData>());
 
             modelBuilder.Entity<Instance>()
                         .Property(p => p.Type)
                         .HasConversion(x => Instance.InstanceTypeToString(x), x => Instance.StringToInstanceType(x));
             modelBuilder.Entity<Instance>()
-                        .Property(p => p.Data)
+                        .Property(nameof(Instance.Data))
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData>());
             modelBuilder.Entity<Instance>()
                         .Property(p => p.Geofences)

@@ -2,10 +2,14 @@
 {
     using System.ComponentModel;
 
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Plugins;
 
     public sealed class PluginHost : IPluginHost
     {
+        private readonly Dictionary<string, IJobController> _jobControllers = new();
+
         #region Properties
 
         public IPlugin Plugin { get; }
@@ -20,7 +24,7 @@
 
         public PluginEventHandlers EventHandlers { get; } = new();
 
-        // TODO: JobControllers cache created by plugin
+        public IReadOnlyDictionary<string, IJobController> JobControllers => _jobControllers;
 
         #endregion
 
@@ -31,17 +35,22 @@
         {
         }
 
-        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginEventHandlers handlers)
+        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginEventHandlers handlers, PluginState state = PluginState.Unset)
         {
             Plugin = plugin;
             Permissions = permissions;
             EventHandlers = handlers;
-            State = PluginState.Unset;
+            State = state;
         }
 
         #endregion
 
         #region Public Methods
+
+        public void AddJobController(string name, IJobController jobController)
+        {
+            // TODO: JobControllers cache created by plugin
+        }
 
         public void SetEnabled(bool enabled)
         {

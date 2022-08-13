@@ -5,6 +5,7 @@
 
     using ChuckDeviceConfigurator.Services.Plugins;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugins;
 
     [Authorize(Roles = RoleConsts.PluginsRole)]
@@ -28,7 +29,7 @@
         public ActionResult Index()
         {
             var plugins = _pluginManager.Plugins.Values.ToList();
-            var model = new ViewModelsModel<PluginHost>
+            var model = new ViewModelsModel<IPluginHost>
             {
                 Items = plugins,
             };

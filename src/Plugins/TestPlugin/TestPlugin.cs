@@ -1,6 +1,7 @@
 ﻿namespace TestPlugin
 {
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Plugins;
 

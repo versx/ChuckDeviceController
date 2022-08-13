@@ -1,11 +1,7 @@
-﻿/*
-namespace ChuckDeviceController.Plugins
+﻿namespace ChuckDeviceController.Common.Data
 {
     using System.Text.Json.Serialization;
 
-    /// <summary>
-    /// Determines the state of a plugin
-    /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum PluginState
     {
@@ -42,4 +38,3 @@ namespace ChuckDeviceController.Plugins
         Error,
     }
 }
-*/

@@ -1,5 +1,8 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Plugins;
 
     // TODO: Keep track of plugin states in database or local file
@@ -10,13 +13,14 @@
         #region Variables
 
         private readonly ILogger<IPluginManager> _logger;
-        private readonly static Dictionary<string, PluginHost> _plugins = new();
+        private readonly static Dictionary<string, IPluginHost> _plugins = new();
+        private readonly ControllerContext _context;
 
         #endregion
 
         #region Properties
 
-        public IReadOnlyDictionary<string, PluginHost> Plugins => _plugins;
+        public IReadOnlyDictionary<string, IPluginHost> Plugins => _plugins;
 
         public string PluginsFolder { get; set; }
 
@@ -30,9 +34,12 @@
 
         #region Constructors
 
-        public PluginManager(ILogger<IPluginManager> logger)
+        public PluginManager(
+            ILogger<IPluginManager> logger,
+            ControllerContext context)
         {
             _logger = logger;
+            _context = context;
 
             PluginsFolder = Strings.PluginsFolder;
         }
@@ -200,11 +207,39 @@
                 }
             }
 
-            plugin.SetState(PluginState.Running);
-            plugin.SetEnabled(true);
+            // Cache plugin host state in database
+            await CachePluginHostAsync(plugin);
 
             _plugins.Add(plugin.Plugin.Name, plugin);
             _logger.LogInformation($"Plugin '{plugin.Plugin.Name}' v{plugin.Plugin.Version} by {plugin.Plugin.Author} initialized and registered to plugin manager cache.");
+        }
+
+        private async Task CachePluginHostAsync(IPluginHost pluginHost)
+        {
+            // Get cached plugin state from database
+            var dbPlugin = await _context.Plugins.FindAsync(pluginHost.Plugin.Name);
+            if (dbPlugin != null)
+            {
+                // Plugin host is cached in database, set previous plugin state
+                pluginHost.SetState(dbPlugin.State);
+                pluginHost.SetEnabled(dbPlugin.IsEnabled);
+                return;
+            }
+
+            // Plugin host is not cached in database. Set current state to plugin
+            // host and add insert into database
+            pluginHost.SetState(PluginState.Running);
+            pluginHost.SetEnabled(true);
+            dbPlugin = new Plugin
+            {
+                Name = pluginHost.Plugin.Name,
+                State = pluginHost.State,
+                IsEnabled = pluginHost.IsEnabled,
+            };
+
+            // Save plugin host to database
+            await _context.Plugins.AddAsync(dbPlugin);
+            await _context.SaveChangesAsync();
         }
 
         #endregion
