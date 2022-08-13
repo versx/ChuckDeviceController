@@ -39,9 +39,9 @@
         private readonly IRouteGenerator _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
 
-        private readonly Dictionary<string, Device> _devices = new();
-        private readonly Dictionary<string, IJobController> _instances = new();
-        private readonly Dictionary<string, IJobController> _pluginInstances = new();
+        private static readonly Dictionary<string, Device> _devices = new();
+        private static readonly Dictionary<string, IJobController> _instances = new();
+        private static readonly Dictionary<string, IJobController> _pluginInstances = new();
 
         private readonly object _devicesLock = new();
         private readonly object _instancesLock = new();

@@ -45,7 +45,7 @@
                     @Html.DisplayFor(modelItem => item.Plugin.Name)
                 </th>
                 <td>
-                    @Html.DisplayFor(modelItem => item.State)
+                    @Html.Raw(Utils.GetPluginStateColor(item.State))
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Plugin.Author)

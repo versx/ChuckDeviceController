@@ -72,6 +72,6 @@
         @Html.DisplayNameFor(model => model.State)
     </dt>
     <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.State)
+        @Html.Raw(Utils.GetPluginStateColor(Model.State))
     </dd>
 </dl>

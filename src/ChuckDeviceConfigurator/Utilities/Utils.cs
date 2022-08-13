@@ -131,6 +131,36 @@
             return string.Format(html, cssClass, status);
         }
 
+        public static string GetPluginStateColor(PluginState state)
+        {
+            var color = "black";
+            switch (state)
+            {
+                case PluginState.Running:
+                    color = "green";
+                    break;
+                case PluginState.Stopped:
+                    color = "black";
+                    break;
+                case PluginState.Disabled:
+                    color = "red";
+                    break;
+                case PluginState.Removed:
+                    color = "blue";
+                    break;
+                case PluginState.Error:
+                    color = "red";
+                    break;
+                case PluginState.Unset: // should never hit
+                default:
+                    break;
+            }
+            var html = $"<span style='color: {color};'>{state}</span>";
+            //var html = "<span class='{0}'>{1}</span>";
+            //return string.Format(html, color, state);
+            return html;
+        }
+
         public static string GetPokemonIcon(uint pokemonId, string width = "32", string height = "32", bool html = false)
         {
             var url = $"{Strings.PokemonImageUrl}/{pokemonId}.png";
