@@ -31,6 +31,7 @@
         #region Variables
 
         private readonly ILogger<IProtoProcessorService> _logger;
+        private readonly IConfiguration _configuration;
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly IDbContextFactory<MapContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
@@ -55,7 +56,7 @@
 
         #region Properties
 
-        public bool ClearOldForts { get; set; } = true; // TODO: Make 'ClearOldForts' configurable (load from ChuckDeviceController config)
+        public bool ClearOldForts { get; }
 
         #endregion
 
@@ -63,16 +64,20 @@
 
         public DataProcessorService(
             ILogger<IProtoProcessorService> logger,
+            IConfiguration configuration,
             IBackgroundTaskQueue taskQueue,
             IDbContextFactory<MapContext> factory,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService)
         {
             _logger = logger;
+            _configuration = configuration;
             _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
             _dbFactory = factory;
             _diskCache = diskCache;
             _grpcClientService = grpcClientService;
+
+            ClearOldForts = _configuration.GetValue<bool>("ClearOldForts", false);
         }
 
         #endregion

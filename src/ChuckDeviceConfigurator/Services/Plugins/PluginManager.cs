@@ -28,12 +28,6 @@
 
         #endregion
 
-        #region Events
-
-        // TODO: Events for plugins added/removed/stopped/reloaded
-
-        #endregion
-
         #region Constructors
 
         public PluginManager(
