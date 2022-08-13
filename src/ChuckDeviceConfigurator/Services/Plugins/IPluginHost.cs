@@ -27,12 +27,6 @@
         PluginState State { get; }
 
         /// <summary>
-        /// Gets a value determining whether the plugin is enabled
-        /// or not.
-        /// </summary>
-        bool IsEnabled { get; }
-
-        /// <summary>
         /// Gets the <seealso cref="PluginEventHandlers"/> for the
         /// loaded plugin that are called when events occur for the
         /// related plugin event type.
@@ -40,15 +34,9 @@
         PluginEventHandlers EventHandlers { get; }
 
         /// <summary>
-        /// 
+        /// Sets the state of the plugin.
         /// </summary>
-        /// <param name="state"></param>
+        /// <param name="state">Plugin state to set.</param>
         void SetState(PluginState state);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="enabled"></param>
-        void SetEnabled(bool enabled);
     }
 }

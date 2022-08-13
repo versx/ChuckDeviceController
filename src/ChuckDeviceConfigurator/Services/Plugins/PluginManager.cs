@@ -89,7 +89,7 @@
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnStop();
-            pluginHost.Plugin.OnStateChanged(PluginState.Stopped, pluginHost.IsEnabled);
+            pluginHost.Plugin.OnStateChanged(PluginState.Stopped);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been stopped");
             await Task.CompletedTask;
@@ -111,9 +111,11 @@
                 return;
             }
 
+            // TODO: Reload - Remove and add plugin
+
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnReload();
-            pluginHost.Plugin.OnStateChanged(PluginState.Running, pluginHost.IsEnabled);
+            pluginHost.Plugin.OnStateChanged(PluginState.Running);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been reloaded");
             await Task.CompletedTask;
@@ -137,7 +139,7 @@
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnRemove();
-            pluginHost.Plugin.OnStateChanged(PluginState.Removed, pluginHost.IsEnabled);
+            pluginHost.Plugin.OnStateChanged(PluginState.Removed);
             _plugins.Remove(pluginName);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been removed");
@@ -166,6 +168,7 @@
                 return;
             }
 
+            // Loop all valid plugins found within assembly
             foreach (var plugin in loadedPlugins)
             {
                 await RegisterPluginAsync(plugin);
@@ -174,47 +177,56 @@
                 // to accept plugin permissions request or just allow it regardless? or add
                 // config option to set which permissions plugins are allowed? idk
 
-                plugin.Plugin.OnLoad();
+                if (plugin.State == PluginState.Running)
+                {
+                    // Only call plugin 'OnLoad' event if the plugin in the enabled/running state.
+                    plugin.Plugin.OnLoad();
+                }
             }
         }
 
-        private async Task RegisterPluginAsync(PluginHost plugin)
+        private async Task RegisterPluginAsync(IPluginHost pluginHost)
         {
-            if (_plugins.ContainsKey(plugin.Plugin.Name))
+            var plugin = pluginHost.Plugin;
+            if (_plugins.ContainsKey(plugin.Name))
             {
                 // Check if version is higher than current, if so replace existing
-                var oldVersion = _plugins[plugin.Plugin.Name].Plugin.Version;
-                var newVersion = plugin.Plugin.Version;
+                var oldVersion = _plugins[pluginHost.Plugin.Name].Plugin.Version;
+                var newVersion = plugin.Version;
                 if (oldVersion > newVersion)
                 {
                     // Existing is newer
-                    _logger.LogWarning($"Existing plugin version with name '{plugin.Plugin.Name}' is newer than incoming plugin version, skipping registration...");
+                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is newer than incoming plugin version, skipping registration...");
                     return;
                 }
                 else if (oldVersion < newVersion)
                 {
                     // Incoming is newer
-                    _logger.LogWarning($"Existing plugin version with name '{plugin.Plugin.Name}' is newer than incoming plugin version, removing old version and adding new version...");
+                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is newer than incoming plugin version, removing old version and adding new version...");
 
                     // Remove existing plugin so we can add newer version of plugin
-                    await RemoveAsync(plugin.Plugin.Name);
+                    await RemoveAsync(plugin.Name);
                 }
                 else
                 {
                     // Plugin versions are the same
-                    _logger.LogWarning($"Existing plugin version with name '{plugin.Plugin.Name}' is the same version as incoming plugin version, skipping registration...");
+                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is the same version as incoming plugin version, skipping registration...");
                     return;
                 }
             }
 
             // Cache plugin host state in database
-            await CachePluginHostAsync(plugin);
+            var state = await CachePluginHostStateAsync(pluginHost);
+            if (state.State != PluginState.Running)
+            {
+                _logger.LogWarning($"Plugin '{state.Name}' state was previously set to '{state.State}'.");
+            }
 
-            _plugins.Add(plugin.Plugin.Name, plugin);
-            _logger.LogInformation($"Plugin '{plugin.Plugin.Name}' v{plugin.Plugin.Version} by {plugin.Plugin.Author} initialized and registered to plugin manager cache.");
+            _plugins.Add(plugin.Name, pluginHost);
+            _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");
         }
 
-        private async Task CachePluginHostAsync(IPluginHost pluginHost)
+        private async Task<Plugin> CachePluginHostStateAsync(IPluginHost pluginHost)
         {
             // Get cached plugin state from database
             var dbPlugin = await _context.Plugins.FindAsync(pluginHost.Plugin.Name);
@@ -222,24 +234,23 @@
             {
                 // Plugin host is cached in database, set previous plugin state
                 pluginHost.SetState(dbPlugin.State);
-                pluginHost.SetEnabled(dbPlugin.IsEnabled);
-                return;
+                return null;
             }
 
             // Plugin host is not cached in database. Set current state to plugin
             // host and add insert into database
             pluginHost.SetState(PluginState.Running);
-            pluginHost.SetEnabled(true);
             dbPlugin = new Plugin
             {
                 Name = pluginHost.Plugin.Name,
                 State = pluginHost.State,
-                IsEnabled = pluginHost.IsEnabled,
             };
 
             // Save plugin host to database
             await _context.Plugins.AddAsync(dbPlugin);
             await _context.SaveChangesAsync();
+
+            return dbPlugin;
         }
 
         #endregion

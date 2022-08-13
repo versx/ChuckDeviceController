@@ -1,6 +1,7 @@
 ﻿@using ChuckDeviceConfigurator.Services.Plugins
 @using ChuckDeviceConfigurator.Utilities
 @using ChuckDeviceConfigurator.ViewModels
+@using ChuckDeviceController.Common.Data
 @using ChuckDeviceController.Plugins
 @model ViewModelsModel<PluginHost>
 @{
@@ -32,15 +33,13 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Plugin.Version)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Items[0].IsEnabled)
-            </th>
             <th width="5%">Action</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.Items)
         {
+            var isEnabled = item.State == PluginState.Running;
             <tr>
                 <th scope="row">
                     @Html.DisplayFor(modelItem => item.Plugin.Name)
@@ -58,15 +57,12 @@
                     @Html.DisplayFor(modelItem => item.Plugin.Version)
                 </td>
                 <td>
-                    @Html.Raw(Utils.FormatBoolean(item.IsEnabled, html: true))
-                </td>
-                <td>
                     <div class="dropdown">
                         <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownGroup" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item" asp-action="Manage" asp-route-id="@item.Plugin.Name" asp-route-enabled="@(!item.IsEnabled)"><i class="fa-solid @(item.IsEnabled ? "fa-stop" : "fa-play")"></i>&nbsp; @(item.IsEnabled ? "Disable" : "Enable")</a></li>
+                            <li><a class="dropdown-item" asp-action="Manage" asp-route-id="@item.Plugin.Name" asp-route-enabled="@(!isEnabled)"><i class="fa-solid @(isEnabled ? "fa-stop" : "fa-play")"></i>&nbsp; @(isEnabled ? "Disable" : "Enable")</a></li>
                             <li><a class="dropdown-item" asp-action="Reload" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Reload</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                         </ul>

@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
-    using System.ComponentModel;
-
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Plugins;
@@ -18,9 +16,6 @@
         public PluginPermissions Permissions { get; } = PluginPermissions.None;
 
         public PluginState State { get; private set; }
-
-        [DisplayName("Enabled")]
-        public bool IsEnabled { get; private set; }
 
         public PluginEventHandlers EventHandlers { get; } = new();
 
@@ -52,17 +47,12 @@
             // TODO: JobControllers cache created by plugin
         }
 
-        public void SetEnabled(bool enabled)
-        {
-            IsEnabled = enabled;
-        }
-
         public void SetState(PluginState state)
         {
             State = state;
 
             // Call 'OnStateChanged' event handler for plugin
-            Plugin.OnStateChanged(state, IsEnabled);
+            Plugin.OnStateChanged(state);
         }
 
         #endregion

@@ -1,10 +1,11 @@
 ﻿@using ChuckDeviceConfigurator.Services.Plugins
 @using ChuckDeviceConfigurator.Utilities
+@using ChuckDeviceController.Common.Data
 @using ChuckDeviceController.Plugins
 @model PluginHost
 @{
     ViewData["Title"] = "Plugin Details " + Model?.Plugin.Name;
-    var isEnabled = Model?.IsEnabled ?? false;
+    var isEnabled = Model?.State == PluginState.Running;
 }
 
 <h1>Plugin Details</h1>
@@ -72,11 +73,5 @@
     </dt>
     <dd class = "col-sm-10">
         @Html.DisplayFor(model => model.State)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.IsEnabled)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.Raw(Utils.FormatBoolean(Model?.IsEnabled ?? false, html: true))
     </dd>
 </dl>

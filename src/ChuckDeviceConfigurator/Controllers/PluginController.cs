@@ -61,8 +61,8 @@
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: PluginController/Manage/5/true
-        public async Task<ActionResult> Manage(string id, bool enabled)
+        // GET: PluginController/Manage/5
+        public async Task<ActionResult> Manage(string id)
         {
             if (!_pluginManager.Plugins.ContainsKey(id))
             {
@@ -70,13 +70,12 @@
                 return View();
             }
 
-            var plugin = _pluginManager.Plugins[id];
-            plugin.SetEnabled(enabled);
-            plugin.SetState(enabled ? PluginState.Running : PluginState.Disabled); // NOTE: Maybe just use Stopped
+            var pluginHost = _pluginManager.Plugins[id];
+            pluginHost.SetState(pluginHost.State != PluginState.Running ? PluginState.Running : PluginState.Disabled);
 
             await _pluginManager.StopAsync(id);
             
-            _logger.LogInformation($"Plugin '{id}' has been '{(enabled ? "enabled" : "disabled")}'");
+            _logger.LogInformation($"Plugin '{id}' has been '{(pluginHost.State == PluginState.Running ? "enabled" : "disabled")}'");
             return RedirectToAction(nameof(Index));
         }
 

@@ -18,7 +18,7 @@
         [Column("state")]
         public PluginState State { get; set; }
 
-        [Column("enabled")]
-        public bool IsEnabled { get; set; }
+        // TODO: RequestedPermissions
+        // TODO: AllowedPermissions
     }
 }

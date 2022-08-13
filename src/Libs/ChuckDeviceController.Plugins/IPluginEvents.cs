@@ -37,8 +37,6 @@
         /// changed by the host application.
         /// </summary>
         /// <param name="state">Plugin's current state</param>
-        /// <param name="isEnabled">Whether the plugin is
-        /// currently enabled or disabled</param>
-        void OnStateChanged(PluginState state, bool isEnabled);
+        void OnStateChanged(PluginState state);
     }
 }
