@@ -36,6 +36,8 @@ if (config.Providers.Count() == 2)
     Environment.FailFast($"Failed to find or load configuration file, exiting...");
 }
 
+var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
+
 // Create locale translation files
 try
 {
@@ -45,13 +47,13 @@ try
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"Failed to generate locale files, make sure the base locales exist: {ex}");
+    logger.LogError($"Failed to generate locale files, make sure the base locales exist: {ex}");
 }
 
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
 // Need to call at startup so time gets set now and not when first visit to dashboard
-Console.WriteLine($"Uptime: {Strings.Uptime}");
+logger.LogDebug($"Uptime: {Strings.Uptime}");
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
@@ -130,10 +132,12 @@ RegisterAuthProviders(auth);
 #endregion
 
 // Add services to the container.
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+}
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-//builder.Services.AddMvc().AddMvcOptions(o => o.EnableEndpointRouting = false);
 
 #region Database Contexts
 
@@ -176,8 +180,15 @@ builder.Services.AddGrpc(options =>
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });
 
+// No bueno calling BuildServiceProvider manually, but it works :person_shrugging: 
+// TODO: Think of proper logic/order instead of cheating and using BuildServiceProvider
+var provider = builder.Services.BuildServiceProvider();
+
 // Call 'ConfigureServices' method in plugins
-ConfigureServices(builder.Services);
+ConfigureServices(builder.Services, provider);
+
+// Database migration needs to be run before plugin registration/loading in 'ConfigureServices'
+await SeedDefaultDataAsync(provider);
 
 #endregion
 
@@ -186,11 +197,11 @@ ConfigureServices(builder.Services);
 var app = builder.Build();
 
 // Seed default user and roles
-await SeedDefaultDataAsync(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseMigrationsEndPoint();
 }
 else
@@ -214,6 +225,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// gRPC listener server services
 app.MapGrpcService<ProtoPayloadServerService>();
 app.MapGrpcService<TrainerInfoServerService>();
 app.MapGrpcService<WebhookEndpointServerService>();
@@ -223,7 +235,7 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 // Call 'Configure' method in plugins
-Configure(app.Services, app);
+Configure(app, app.Services);
 
 app.Run();
 
@@ -231,46 +243,41 @@ app.Run();
 
 #region Plugin Callback/Event Handlers
 
-void Configure(IServiceProvider serviceProvider, IApplicationBuilder app)
+void Configure(IApplicationBuilder app, IServiceProvider serviceProvider)
 {
+    //var serviceProvider = app.ApplicationServices;
     using (var scope = serviceProvider.CreateScope())
     {
-        var provider = scope.ServiceProvider;
-        var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
         try
         {
-            var pluginManager = provider.GetRequiredService<IPluginManager>();
-            // Call 'Configure(IApplicationBuilder)' event handler in each plugin
+            var pluginManager = serviceProvider.GetRequiredService<IPluginManager>();
             foreach (var (_, plugin) in pluginManager!.Plugins)
             {
+                // Call 'Configure(IApplicationBuilder)' event handler for each plugin
                 plugin.Plugin.Configure(app);
             }
         }
         catch (Exception ex)
         {
-            var logger = loggerFactory.CreateLogger<Program>();
             logger.LogError(ex, "An error occurred while calling the 'Configure(IApplicationBuilder)' method in plugins.");
         }
     }
 }
 
 // NOTE: Called first before Configure
-async void ConfigureServices(IServiceCollection services)
+async void ConfigureServices(IServiceCollection services, IServiceProvider serviceProvider)
 {
-    var mvcBuilder = services.AddMvc();
-    var serviceProvider = services.BuildServiceProvider();
-
+    var mvcBuilder = services.AddMvc(); //.AddMvcOptions(options => options.EnableEndpointRouting = false);
+    //var serviceProvider = services.BuildServiceProvider();
     using (var scope = serviceProvider.CreateScope())
     {
-        var provider = scope.ServiceProvider;
-        var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
         try
         {
-            var pluginManager = provider.GetRequiredService<IPluginManager>();
-            var jobControllerHost = provider.GetRequiredService<IJobControllerServiceHost>();
-            var loggingHost = provider.GetRequiredService<ILoggingHost>();
-            var databaseHost = provider.GetRequiredService<IDatabaseHost>();
-            var uiHost = provider.GetRequiredService<IUiHost>();
+            var pluginManager = serviceProvider.GetRequiredService<IPluginManager>();
+            var jobControllerHost = serviceProvider.GetRequiredService<IJobControllerServiceHost>();
+            var loggingHost = serviceProvider.GetRequiredService<ILoggingHost>();
+            var databaseHost = serviceProvider.GetRequiredService<IDatabaseHost>();
+            var uiHost = serviceProvider.GetRequiredService<IUiHost>();
 
             var navbarHeaders = new List<NavbarHeader>
             {
@@ -330,7 +337,7 @@ async void ConfigureServices(IServiceCollection services)
                 await pluginManager.LoadPluginsAsync(pluginAssemblies, sharedHosts);
             }
 
-            // Call 'ConfigureServices(IServiceCollection)' event handler in each plugin
+            // Call 'ConfigureServices(IServiceCollection)' event handler for each plugin
             foreach (var (_, plugin) in pluginManager!.Plugins)
             {
                 plugin.Plugin.ConfigureServices(services);
@@ -338,7 +345,6 @@ async void ConfigureServices(IServiceCollection services)
         }
         catch (Exception ex)
         {
-            var logger = loggerFactory.CreateLogger<Program>();
             logger.LogError(ex, "An error occurred while calling the 'ConfigureServices(IServiceCollection)' method in plugins.");
         }
     }
@@ -422,17 +428,19 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
             if (config.GetValue<bool>("AutomaticMigrations"))
             {
                 // Migrate the UserIdentity tables
-                await app.Services.MigrateDatabase<UserIdentityContext>();
+                await serviceProvider.MigrateDatabaseAsync<UserIdentityContext>();
 
                 // Migrate the device controller tables
-                await app.Services.MigrateDatabase<ControllerContext>();
+                await serviceProvider.MigrateDatabaseAsync<ControllerContext>();
             }
+
+            // TODO: Add database meta or something to determine if default entities have been seeded
 
             // Start job controller service
             jobController.Start();
+
             // Start assignment controller service
             assignmentController.Start();
-
             // Seed default user roles
             await UserIdentityContextSeed.SeedRolesAsync(roleManager);
 
@@ -441,7 +449,6 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
         }
         catch (Exception ex)
         {
-            var logger = loggerFactory.CreateLogger<Program>();
             logger.LogError(ex, "An error occurred while seeding the database.");
         }
     }

@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
+    using ChuckDeviceController.Common.Data;
+
     public interface IPluginManager
     {
         #region Properties
@@ -27,6 +29,8 @@
         Task RemoveAsync(string pluginName);
 
         Task RemoveAllAsync();
+
+        Task SetStateAsync(string pluginName, PluginState state);
 
         #endregion
     }

@@ -71,9 +71,12 @@
             }
 
             var pluginHost = _pluginManager.Plugins[id];
-            pluginHost.SetState(pluginHost.State != PluginState.Running ? PluginState.Running : PluginState.Disabled);
-
-            await _pluginManager.StopAsync(id);
+            var state = pluginHost.State != PluginState.Running ? PluginState.Running : PluginState.Disabled;
+            await _pluginManager.SetStateAsync(id, state);
+            if (state == PluginState.Disabled)
+            {
+                await _pluginManager.StopAsync(id);
+            }
             
             _logger.LogInformation($"Plugin '{id}' has been '{(pluginHost.State == PluginState.Running ? "enabled" : "disabled")}'");
             return RedirectToAction(nameof(Index));

@@ -47,12 +47,15 @@
             // TODO: JobControllers cache created by plugin
         }
 
-        public void SetState(PluginState state)
+        public void SetState(PluginState state, bool ignoreEvent = false)
         {
             State = state;
 
-            // Call 'OnStateChanged' event handler for plugin
-            Plugin.OnStateChanged(state);
+            if (!ignoreEvent)
+            {
+                // Call 'OnStateChanged' event handler for plugin
+                Plugin.OnStateChanged(state);
+            }
         }
 
         #endregion

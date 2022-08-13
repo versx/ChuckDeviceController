@@ -259,15 +259,13 @@
         {
             if (device == null)
             {
-                _logger.LogError($"Unable to get job for device, device is null");
                 return CreateErrorResponse("Unable to get job for device, device is null");
             }
 
             var jobController = _jobControllerService.GetInstanceController(device.Uuid);
             if (jobController == null)
             {
-                _logger.LogError($"[{device.Uuid}] Failed to get job instance controller");
-                return CreateErrorResponse($"Failed to get job instance controller");
+                return CreateErrorResponse($"[{device.Uuid}] Failed to get job instance controller");
             }
 
             var minLevel = jobController.MinimumLevel;

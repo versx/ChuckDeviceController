@@ -66,6 +66,10 @@
                         .Property(p => p.PokemonIds)
                         .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
 
+            modelBuilder.Entity<Plugin>()
+                        .Property(p => p.State)
+                        .HasConversion(x => Plugin.PluginStateToString(x), x => Plugin.StringToPluginState(x));
+
             modelBuilder.Entity<Webhook>()
                         .Property(p => p.Types)
                         .HasConversion(x => Webhook.WebhookTypeToString(x), x => Webhook.StringToWebhookTypes(x));

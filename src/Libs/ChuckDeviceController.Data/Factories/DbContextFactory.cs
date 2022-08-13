@@ -35,7 +35,7 @@
             return null;
         }
 
-        public static ControllerContext CreateDeviceControllerContext(string connectionString)
+        public static ControllerContext CreateControllerContext(string connectionString)
         {
             try
             {

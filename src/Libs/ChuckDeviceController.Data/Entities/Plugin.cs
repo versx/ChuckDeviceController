@@ -20,5 +20,38 @@
 
         // TODO: RequestedPermissions
         // TODO: AllowedPermissions
+
+        #region Helper Methods
+
+        public static string PluginStateToString(PluginState state)
+        {
+            return state switch
+            {
+                //PluginState.Unset => "unset",
+                PluginState.Running => "running",
+                PluginState.Stopped => "stopped",
+                PluginState.Disabled => "disabled",
+                PluginState.Removed => "removed",
+                PluginState.Error => "error",
+                //_ => state.ToString(),
+                _ => "unset",
+            };
+        }
+
+        public static PluginState StringToPluginState(string pluginState)
+        {
+            return pluginState.ToLower() switch
+            {
+                //"unset" => PluginState.Unset,
+                "running" => PluginState.Running,
+                "stopped" => PluginState.Stopped,
+                "disabled" => PluginState.Disabled,
+                "removed" => PluginState.Removed,
+                "error" => PluginState.Error,
+                _ => PluginState.Unset,
+            };
+        }
+
+        #endregion
     }
 }

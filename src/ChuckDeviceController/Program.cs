@@ -97,7 +97,7 @@ var app = builder.Build();
 if (config.GetValue<bool>("AutomaticMigrations"))
 {
     // Migrate database if needed
-    await app.Services.MigrateDatabase<MapContext>();
+    await app.Services.MigrateDatabaseAsync<MapContext>();
 }
 
 // Configure the HTTP request pipeline.

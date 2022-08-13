@@ -2,7 +2,7 @@
 @using ChuckDeviceConfigurator.Utilities
 @using ChuckDeviceController.Common.Data
 @using ChuckDeviceController.Plugins
-@model PluginHost
+@model IPluginHost
 @{
     ViewData["Title"] = "Plugin Details " + Model?.Plugin.Name;
     var isEnabled = Model?.State == PluginState.Running;

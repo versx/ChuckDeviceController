@@ -1,11 +1,12 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
+    using Microsoft.EntityFrameworkCore;
+
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Plugins;
 
-    // TODO: Keep track of plugin states in database or local file
     // TODO: Add FileSystemWatcher for plugins added manually or changed
 
     public class PluginManager : IPluginManager
@@ -13,8 +14,9 @@
         #region Variables
 
         private readonly ILogger<IPluginManager> _logger;
+        private readonly IDbContextFactory<ControllerContext> _factory;
+
         private readonly static Dictionary<string, IPluginHost> _plugins = new();
-        private readonly ControllerContext _context;
 
         #endregion
 
@@ -36,10 +38,10 @@
 
         public PluginManager(
             ILogger<IPluginManager> logger,
-            ControllerContext context)
+            IDbContextFactory<ControllerContext> factory)
         {
             _logger = logger;
-            _context = context;
+            _factory = factory;
 
             PluginsFolder = Strings.PluginsFolder;
         }
@@ -89,7 +91,7 @@
 
             var pluginHost = _plugins[pluginName];
             pluginHost.Plugin.OnStop();
-            pluginHost.Plugin.OnStateChanged(PluginState.Stopped);
+            pluginHost.SetState(PluginState.Stopped);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been stopped");
             await Task.CompletedTask;
@@ -154,6 +156,22 @@
             }
         }
 
+        public async Task SetStateAsync(string pluginName, PluginState state)
+        {
+            if (!_plugins.ContainsKey(pluginName))
+            {
+                _logger.LogError($"Failed to set plugin state, plugin with name '{pluginName}' does not exist in cache");
+                return;
+            }
+
+            // Set state in plugin cache
+            var pluginHost = _plugins[pluginName];
+            pluginHost.SetState(state);
+
+            // Save plugin state to database
+            await SaveStateAsync(pluginName, state);
+        }
+
         #endregion
 
         #region Private Methods
@@ -177,15 +195,15 @@
                 // to accept plugin permissions request or just allow it regardless? or add
                 // config option to set which permissions plugins are allowed? idk
 
+                // Only call plugin 'OnLoad' event if the plugin in the enabled/running state.
                 if (plugin.State == PluginState.Running)
                 {
-                    // Only call plugin 'OnLoad' event if the plugin in the enabled/running state.
                     plugin.Plugin.OnLoad();
                 }
             }
         }
 
-        private async Task RegisterPluginAsync(IPluginHost pluginHost)
+        private async Task RegisterPluginAsync(PluginHost pluginHost)
         {
             var plugin = pluginHost.Plugin;
             if (_plugins.ContainsKey(plugin.Name))
@@ -226,31 +244,73 @@
             _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");
         }
 
-        private async Task<Plugin> CachePluginHostStateAsync(IPluginHost pluginHost)
+        private async Task<Plugin> CachePluginHostStateAsync(PluginHost pluginHost)//, PluginState state = PluginState.Unset)
         {
-            // Get cached plugin state from database
-            var dbPlugin = await _context.Plugins.FindAsync(pluginHost.Plugin.Name);
-            if (dbPlugin != null)
+            using (var context = _factory.CreateDbContext())
             {
-                // Plugin host is cached in database, set previous plugin state
-                pluginHost.SetState(dbPlugin.State);
-                return null;
+                // Get cached plugin state from database
+                var dbPlugin = await context.Plugins.FindAsync(pluginHost.Plugin.Name);
+                if (dbPlugin != null)
+                {
+                    // Plugin host is cached in database, set previous plugin state,
+                    // otherwise set state from param
+                    //var isStateSet = state != dbPlugin.State && state != PluginState.Unset;
+                    //pluginHost.SetState(isStateSet ? state : dbPlugin.State);
+                    pluginHost.SetState(dbPlugin.State);
+                    return dbPlugin;
+                }
+                else
+                {
+                    // Plugin host is not cached in database. Set current state to plugin
+                    // host and add insert into database
+                    pluginHost.SetState(PluginState.Running);
+                    dbPlugin = new Plugin
+                    {
+                        Name = pluginHost.Plugin.Name,
+                        State = pluginHost.State,
+                    };
+                }
+
+                // Save plugin host to database
+                if (context.Plugins.Any(x => x.Name == pluginHost.Plugin.Name))
+                {
+                    context.Plugins.Update(dbPlugin);
+                }
+                else
+                {
+                    await context.Plugins.AddAsync(dbPlugin);
+                }
+                await context.SaveChangesAsync();
+
+                return dbPlugin;
             }
+        }
 
-            // Plugin host is not cached in database. Set current state to plugin
-            // host and add insert into database
-            pluginHost.SetState(PluginState.Running);
-            dbPlugin = new Plugin
+        private async Task SaveStateAsync(string pluginName, PluginState state)
+        {
+            using (var context = _factory.CreateDbContext())
             {
-                Name = pluginHost.Plugin.Name,
-                State = pluginHost.State,
-            };
+                // Get cached plugin state from database
+                var plugin = await context.Plugins.FindAsync(pluginName);
+                if (plugin == null)
+                {
+                    _logger.LogError($"Failed to find plugin with name '{pluginName}' in database");
+                    return;
+                }
 
-            // Save plugin host to database
-            await _context.Plugins.AddAsync(dbPlugin);
-            await _context.SaveChangesAsync();
+                plugin.State = state;
 
-            return dbPlugin;
+                // Save plugin host to database
+                if (context.Plugins.Any(x => x.Name == pluginName))
+                {
+                    context.Plugins.Update(plugin);
+                }
+                else
+                {
+                    await context.Plugins.AddAsync(plugin);
+                }
+                await context.SaveChangesAsync();
+            }
         }
 
         #endregion

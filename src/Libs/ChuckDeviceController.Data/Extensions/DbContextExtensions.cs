@@ -6,7 +6,7 @@
 
     public static class DbContextExtensions
     {
-        public static async Task MigrateDatabase<TDbContext>(this IServiceProvider serviceProvider)
+        public static async Task MigrateDatabaseAsync<TDbContext>(this IServiceProvider serviceProvider)
             where TDbContext : DbContext
         {
             using var scope = serviceProvider.CreateScope();

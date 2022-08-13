@@ -15,15 +15,18 @@
     {
         private readonly ILogger<DeviceController> _logger;
         private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
+        //private readonly ChuckDeviceController.Plugins.IPluginService _pluginService;
         private readonly IJobControllerService _jobControllerService;
 
         public DeviceController(
             ILogger<DeviceController> logger,
             ChuckDeviceController.Data.Contexts.ControllerContext context,
+            //ChuckDeviceController.Plugins.IPluginService pluginService,
             IJobControllerService jobControllerService)
         {
             _logger = logger;
             _context = context;
+            //_pluginService = pluginService;
             _jobControllerService = jobControllerService;
         }
 

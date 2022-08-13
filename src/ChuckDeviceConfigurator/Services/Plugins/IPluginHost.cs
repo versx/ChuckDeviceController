@@ -37,6 +37,7 @@
         /// Sets the state of the plugin.
         /// </summary>
         /// <param name="state">Plugin state to set.</param>
-        void SetState(PluginState state);
+        /// <param name="ignoreEvent"></param>
+        void SetState(PluginState state, bool ignoreEvent = false);
     }
 }

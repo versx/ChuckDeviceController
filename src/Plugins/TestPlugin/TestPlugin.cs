@@ -110,6 +110,8 @@
         {
             _loggingHost.LogMessage($"Configure called");
 
+            var testService = appBuilder.ApplicationServices.GetService<IPluginService>();
+
             // We can configure routing here or using Mvc Controller classes
             appBuilder.Map("/plugin/v1", app =>
             {
