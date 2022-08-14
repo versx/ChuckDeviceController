@@ -421,6 +421,22 @@
             }
         }
 
+        // GET: InstanceController/QuestQueue/test/Remove/5
+        [HttpGet("/Instance/QuestQueue/{name}/Remove/{id}")]
+        public ActionResult QuestQueueRemove(string name, string id)
+        {
+            try
+            {
+                // Remove Pokestop from Quest queue list by name
+                _jobControllerService.RemoveFromQuestQueue(name, id);
+            }
+            catch
+            {
+                _logger.LogError($"Unknown error occurred while removing Pokestop ({id}) from Quest queue '{name}'.");
+            }
+            return RedirectToAction(nameof(QuestQueue), new { name });
+        }
+
         #region Private Methods
 
         private async Task AssignDevicesToInstance(List<string> deviceUuids, string instanceName)

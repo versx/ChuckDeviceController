@@ -164,6 +164,14 @@
 
         IReadOnlyList<PokestopWithMode> GetQuestQueue(string instanceName);
 
+        /// <summary>
+        /// Removes a queued Pokestop from the specified Quest queue by
+        /// Pokestop ID.
+        /// </summary>
+        /// <param name="instanceName">Name of Quest instance.</param>
+        /// <param name="pokestopId">Pokestop ID to remove.</param>
+        void RemoveFromQuestQueue(string instanceName, string pokestopId);
+
         #endregion
 
         #region Receivers

@@ -9,7 +9,7 @@
     var removeEncounterText = "Removes the pending Pokemon encounter from the IV queue.";
 }
 
-<h1>IV Queue @Model?.Name</h1>
+<h1>IV Queue - @Model?.Name</h1>
 <br />
 
 <p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
@@ -58,7 +58,7 @@
     <tbody>
     @{
         var index = 1;
-        foreach (var item in Model!.Queue)
+        foreach (var item in Model?.Queue ?? new())
         {
             <tr>
                 <th scope="row">
@@ -86,7 +86,7 @@
                     @Html.Raw(Utils.GetGoogleMapsLink(item.Latitude, item.Longitude, html: true))
                 </td>
                 <td>
-                    <a class="btn btn-danger btn-sm" href="@Model.Name/Remove/@item.EncounterId" title="@(removeEncounterText)">
+                    <a class="btn btn-danger btn-sm" href="@Model?.Name/Remove/@item.EncounterId" title="@(removeEncounterText)">
                         <i class="fa-solid fa-trash-can"></i>
                     </a>
                 </td>
@@ -133,9 +133,9 @@
         const handleAutoRefresh = (e) => {
             const isChecked = $(e).is(':checked');
             if (isChecked) {
-                location.href = '@Url.Action("IvQueue", new { name = Model.Name, autoRefresh = true })';
+                location.href = '@Url.Action("IvQueue", new { name = Model?.Name, autoRefresh = true })';
             } else {
-                location.href = '@Url.Action("IvQueue", new { name = Model.Name, autoRefresh = false })';
+                location.href = '@Url.Action("IvQueue", new { name = Model?.Name, autoRefresh = false })';
             }
         };
     </script>

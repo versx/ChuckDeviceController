@@ -529,6 +529,18 @@
             return queue;
         }
 
+        public void RemoveFromQuestQueue(string instanceName, string pokestopId)
+        {
+            lock (_instancesLock)
+            {
+                var jobController = GetInstanceControllerByName(instanceName);
+                if (jobController is AutoInstanceController questController)
+                {
+                    questController.RemoveFromQueue(pokestopId);
+                }
+            }
+        }
+
         #endregion
 
         #region Receivers

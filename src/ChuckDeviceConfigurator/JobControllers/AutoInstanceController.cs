@@ -36,6 +36,7 @@
         private readonly PokemonPriorityQueue<ulong> _bootstrapCellIds = new();
         private readonly Dictionary<string, string> _accounts = new();
         private readonly Dictionary<string, bool> _lastMode = new();
+        private readonly List<string> _ignorePokestopIds = new();
 
         private readonly object _bootstrapCellIdsLock = new();
 
@@ -354,6 +355,17 @@
         }
 
         public IReadOnlyList<PokestopWithMode> GetQueue() => _todayStops.ToList();
+
+        public void RemoveFromQueue(string pokestopId)
+        {
+            // Add pokestop to ignore list
+            if (_ignorePokestopIds.Contains(pokestopId))
+            {
+                _ignorePokestopIds.Add(pokestopId);
+            }
+
+            // TODO: Check ignore list against todays list when retrieving next pokestop
+        }
 
         public async Task ReloadAsync()
         {
