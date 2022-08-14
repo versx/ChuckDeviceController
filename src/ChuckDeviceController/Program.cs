@@ -57,6 +57,7 @@ builder.Services.AddSingleton<IBackgroundTaskQueue>(_ =>
     return new DefaultBackgroundTaskQueue(Strings.MaximumQueueCapacity);
 });
 
+builder.Services.AddSingleton<IClearFortsService, ClearFortsService>();
 builder.Services.Configure<ProcessorOptions>(builder.Configuration.GetSection("Options"));
 
 #endregion

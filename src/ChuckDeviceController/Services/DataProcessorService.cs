@@ -37,9 +37,7 @@
         private readonly IDbContextFactory<MapContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
-
-        private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
-        private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
+        private readonly IClearFortsService _clearFortsService;
 
         private readonly AsyncLock _cellsLock = new();
         private readonly AsyncLock _weatherLock = new();
@@ -309,7 +307,7 @@
             if (Options.ClearOldForts)
             {
                 // Clear any old Gyms or Pokestops that might have been removed from the game
-                await ClearOldFortsAsync();
+                await _clearFortsService.ClearOldFortsAsync();
             }
 
             return stoppingToken;
@@ -350,20 +348,7 @@
 
                     foreach (var cell in s2cells)
                     {
-                        lock (_gymIdsPerCell)
-                        {
-                            if (!_gymIdsPerCell.ContainsKey(cell.Id))
-                            {
-                                _gymIdsPerCell.Add(cell.Id, new());
-                            }
-                        }
-                        lock (_stopIdsPerCell)
-                        {
-                            if (!_stopIdsPerCell.ContainsKey(cell.Id))
-                            {
-                                _stopIdsPerCell.Add(cell.Id, new());
-                            }
-                        }
+                        _clearFortsService.AddCell(cell.Id);
                     }
 
                     //var inserted = await context.SaveChangesAsync();
@@ -670,14 +655,7 @@
                                     incidentsToUpsert.AddRange(pokestop.Incidents);
                                 }
 
-                                lock (_stopIdsPerCell)
-                                {
-                                    if (!_stopIdsPerCell.ContainsKey(cellId))
-                                    {
-                                        _stopIdsPerCell.Add(cellId, new());
-                                    }
-                                    _stopIdsPerCell[cellId].Add(data.FortId);
-                                }
+                                _clearFortsService.AddPokestop(cellId, data.FortId);
                                 break;
                             case FortType.Gym:
                                 // Init Gym model from fort proto data
@@ -694,14 +672,7 @@
 
                                 gymsToUpsert.Add(gym);
 
-                                lock (_gymIdsPerCell)
-                                {
-                                    if (!_gymIdsPerCell.ContainsKey(cellId))
-                                    {
-                                        _gymIdsPerCell.Add(cellId, new());
-                                    }
-                                    _gymIdsPerCell[cellId].Add(data.FortId);
-                                }
+                                _clearFortsService.AddGym(cellId, data.FortId);
                                 break;
                         }
                     }
@@ -1321,66 +1292,6 @@
             pokemon.PvpRankings = pvpRanks != null && pvpRanks.Count > 0
                 ? (Dictionary<string, dynamic>)pvpRanks
                 : null;
-        }
-
-        private async Task ClearOldFortsAsync()
-        {
-            // TODO: Use BackgroundTask/HostedService
-
-            var gymsToDelete = new List<Gym>();
-            var stopsToDelete = new List<Pokestop>();
-
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                foreach (var (cellId, pokestopIds) in _stopIdsPerCell)
-                {
-                    // Get pokestops within S2 cell and not marked deleted
-                    var pokestops = context.Pokestops.Where(stop => stop.CellId == cellId && !stop.IsDeleted)
-                                                     .ToList();
-                    if (pokestopIds.Count > 0)
-                    {
-                        // Filter pokestops that have not been seen within S2 cell by devices
-                        pokestops = pokestops.Where(stop => !pokestopIds.Contains(stop.Id))
-                                             .ToList();
-                    }
-                    if (pokestops.Count > 0)
-                    {
-                        // Mark gyms as deleted
-                        pokestops.ForEach(stop => stop.IsDeleted = true);
-                        stopsToDelete.AddRange(pokestops);
-                    }
-                }
-
-                foreach (var (cellId, gymIds) in _gymIdsPerCell)
-                {
-                    // Get gyms within S2 cell and not marked deleted
-                    var gyms = context.Gyms.Where(gym => gym.CellId == cellId && !gym.IsDeleted)
-                                           .ToList();
-                    if (gymIds.Count > 0)
-                    {
-                        // Filter gyms that have not been seen within S2 cell by devices
-                        gyms = gyms.Where(gym => !gymIds.Contains(gym.Id))
-                                   .ToList();
-                    }
-                    if (gyms.Count > 0)
-                    {
-                        // Mark gyms as deleted
-                        gyms.ForEach(gym => gym.IsDeleted = true);
-                        gymsToDelete.AddRange(gyms);
-                    }
-                }
-
-                if (stopsToDelete.Count > 0)
-                {
-                    _logger.LogInformation($"Marking {stopsToDelete.Count:N0} Pokestops as deleted since they seem to no longer exist.");
-                    await context.Pokestops.BulkMergeAsync(stopsToDelete);
-                }
-                if (gymsToDelete.Count > 0)
-                {
-                    _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they seem to no longer exist.");
-                    await context.Gyms.BulkMergeAsync(gymsToDelete);
-                }
-            }
         }
 
         private static WebhookPayloadType ConvertWebhookType(WebhookType type)
