@@ -24,9 +24,12 @@
         <a asp-action="Start" asp-route-id="@Model?.Name" class="btn btn-success">
             <i class="fa-solid fa-play"></i>&nbsp;Start
         </a>
-        <a asp-action="ReQuest" asp-route-id="@Model?.Name" class="btn btn-warning">
-            <i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest
-        </a>
+        @if (ViewBag?.HasQuestInstance ?? false)
+        {
+            <a asp-action="ReQuest" asp-route-id="@Model?.Name" class="btn btn-warning">
+                <i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest
+            </a>
+        }
         <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">
             <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
         </a>
@@ -48,7 +51,7 @@
         @Html.DisplayNameFor(model => model.AssignmentIds)
     </dt>
     <dd class="col-sm-10">
-        @if ((ViewBag.Assignments?.Count ?? 0) > 0)
+        @if ((ViewBag?.Assignments?.Count ?? 0) > 0)
         {
             <ul class="list-group">
                 @foreach (var assignment in ViewBag.Assignments)

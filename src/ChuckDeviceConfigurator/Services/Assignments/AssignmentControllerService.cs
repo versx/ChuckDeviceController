@@ -192,6 +192,46 @@
                 foreach (var geofence in instanceGeofences)
                 {
                     Console.WriteLine($"Clearing quests for geofence: {geofence.Name}");
+                    // TODO: Clear quests for geofence
+                }
+            }
+
+            await Task.CompletedTask;
+        }
+
+        public async Task ReQuestAssignmentAsync(Assignment assignment)
+        {
+            var assignmentToReQuest = _assignments.FirstOrDefault(a => a.Id == assignment.Id && a.Enabled);
+            if (assignmentToReQuest == null)
+            {
+                _logger.LogError($"Failed to find assignment with id '{assignment?.Id}' to start re-quest");
+                return;
+            }
+
+            using var context = _factory.CreateDbContext();
+            var instances = context.Instances
+                                   .Where(instance => instance.Type == InstanceType.AutoQuest)
+                                   .ToList();
+            var geofences = context.Geofences.ToList()
+                                             .Where(geofence => instances.Any(i => i.Geofences.Contains(geofence.Name)))
+                                             .ToList();
+            var instancesToClear = new List<Instance>();
+            var affectedInstanceNames = ResolveAssignmentChain(assignmentToReQuest);
+            var affectedInstances = instances.Where(x => affectedInstanceNames.Contains(x.Name)).ToList();
+            var affectedInstanceNotAdded = affectedInstances.Where(x => !instancesToClear.Contains(x));
+            foreach (var instance in affectedInstanceNotAdded)
+            {
+                instancesToClear.Add(instance);
+            }
+            _logger.LogInformation($"Re-Quest will clear quests for {instancesToClear.Count:N0} instances");
+
+            foreach (var instance in instancesToClear)
+            {
+                var instanceGeofences = geofences.Where(geofence => instance.Geofences.Contains(geofence.Name)).ToList();
+                foreach (var geofence in instanceGeofences)
+                {
+                    Console.WriteLine($"Clearing quests for geofence: {geofence.Name}");
+                    // TODO: Clear quests for geofence
                 }
             }
 
@@ -200,12 +240,38 @@
 
         public Assignment GetByName(uint name)
         {
-            throw new NotImplementedException();
+            List<Assignment> assignments;
+            lock (_assignmentsLock)
+            {
+                assignments = _assignments;
+            }
+
+            var assignment = assignments?.FirstOrDefault(x => x.Id == name);
+            return assignment;
         }
 
         public IReadOnlyList<Assignment> GetByNames(IReadOnlyList<uint> names)
         {
-            throw new NotImplementedException();
+            List<Assignment> assignments;
+            lock (_assignmentsLock)
+            {
+                assignments = _assignments;
+            }
+
+            var result = new List<Assignment>();
+            if (assignments == null)
+            {
+                return result;
+            }
+
+            foreach (var assignment in assignments)
+            {
+                if (!names.Contains(assignment.Id))
+                    continue;
+
+                result.Add(assignment);
+            }
+            return result;
         }
 
         public async Task InstanceControllerCompleteAsync(string instanceName)

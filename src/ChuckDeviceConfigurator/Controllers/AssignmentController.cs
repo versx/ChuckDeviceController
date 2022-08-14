@@ -8,19 +8,19 @@
     using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
 
     [Authorize(Roles = RoleConsts.AssignmentsRole)]
     public class AssignmentController : Controller
     {
         private readonly ILogger<AssignmentController> _logger;
-        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
+        private readonly ControllerContext _context;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentController(
             ILogger<AssignmentController> logger,
-            ChuckDeviceController.Data.Contexts.ControllerContext context,
+            ControllerContext context,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;
@@ -32,7 +32,11 @@
         public ActionResult Index()
         {
             var assignments = _context.Assignments.ToList();
-            // TODO: Include instance type for removing Re-Quest button
+            // Include instance type for removing Re-Quest button
+            var questInstances = _context.Instances.Where(x => x.Type == InstanceType.AutoQuest)
+                                                   .Select(x => x.Name)
+                                                   .ToList();
+            ViewBag.QuestInstances = questInstances;
             return View(new ViewModelsModel<Assignment>
             {
                 Items = assignments,
@@ -306,6 +310,39 @@
                 ModelState.AddModelError("Assignment", $"Unknown error occurred while starting assignment '{id}'.");
                 return View();
             }
+        }
+
+        // GET: AssignmentController/ReQuest/test
+        public async Task<ActionResult> ReQuest(uint id)
+        {
+            try
+            {
+                var assignment = await _context.Assignments.FindAsync(id);
+                if (assignment == null)
+                {
+                    // Failed to retrieve assignment from database, does it exist?
+                    ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+                    return View();
+                }
+
+                // Start re-quest for assignment
+                await _assignmentService.ReQuestAssignmentAsync(assignment);
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch //(Exception ex)
+            {
+                ModelState.AddModelError("Assignment", $"Unknown error occurred while starting re-quest for assignment {id}.");
+                return View();
+            }
+        }
+
+        // GET: AssignmentController/ClearQuests/test
+        public async Task<ActionResult> ClearQuests(uint id)
+        {
+            // TODO: Clear quests for assignment
+            await Task.CompletedTask;
+            return View();
         }
 
         private uint GetTimeNumeric(string time)

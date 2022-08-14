@@ -24,7 +24,7 @@
         <a asp-action="Start" asp-route-id="@Model?.Id" class="btn btn-success @(Model?.Enabled ?? false ? "" : "disabled")">
             <i class="fa-solid fa-play"></i>&nbsp;Start
         </a>
-        @if (ViewBag.IsQuest)
+        @if (ViewBag?.IsQuest ?? false)
         {
             <a asp-action="ReQuest" asp-route-id="@Model?.Id" class="btn btn-warning @(Model?.Enabled ?? false ? "" : "disabled")">
                 <i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest

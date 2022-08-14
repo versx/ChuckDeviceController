@@ -78,8 +78,11 @@
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
                             <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="Start" asp-route-id="@item.Id"><i class="fa-solid fa-play"></i>&nbsp;Start</a></li>
-                            @* TODO: Check if target instance is quest, otherwise remove button *@
-                            <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Id"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest</a></li>
+                            @if (ViewBag?.QuestInstances?.Contains(item.InstanceName) ?? false)
+                            {
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ClearQuests" asp-route-id="@item.Id"><i class="fa-solid fa-broom"></i>&nbsp;Clear Quests</a></li>
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Id"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest</a></li>
+                            }
                             <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                             <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>

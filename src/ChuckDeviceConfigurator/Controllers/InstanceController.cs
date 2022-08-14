@@ -439,6 +439,7 @@
             return RedirectToAction(nameof(QuestQueue), new { name });
         }
 
+        // GET: InstanceController/QuestQueue/test/Clear
         [HttpGet("/Instance/QuestQueue/{name}/Clear")]
         public ActionResult ClearQuestQueue(string name)
         {
