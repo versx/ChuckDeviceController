@@ -225,6 +225,71 @@
 
         #endregion
 
+        #region Clear Quests
+
+        public async Task ClearQuestsAsync(Assignment assignment)
+        {
+            // Clear quests for assignment
+            await ClearQuestsAsync(new[] { assignment });
+        }
+
+        public async Task ClearQuestsAsync(IEnumerable<uint> assignmentIds)
+        {
+            // Clear quests for assignments
+            var assignments = GetAssignments().Where(x => assignmentIds.Contains(x.Id))
+                                              .ToList();
+            await ClearQuestsAsync(assignments);
+        }
+
+        public async Task ClearQuestsAsync(IEnumerable<Assignment> assignments)
+        {
+            // Clear quests for assignments
+            using var controllerContext = _controllerFactory.CreateDbContext();
+            using var mapContext = _mapFactory.CreateDbContext();
+
+            foreach (var assignment in assignments)
+            {
+                var instance = await controllerContext.Instances.FindAsync(assignment.InstanceName);
+                if (instance == null)
+                {
+                    // Failed to retrieve instance from database, does it exist?
+                    _logger.LogError($"Assignment instance does not exist with name '{assignment.InstanceName}'.");
+                    return;
+                }
+
+                //var geofences = instance.Geofences.Select(async geofence => await _context.Geofences.FindAsync(geofence)).ToList();
+                var geofences = new List<Geofence>();
+                foreach (var geofenceName in instance.Geofences)
+                {
+                    var geofence = await controllerContext.Geofences.FindAsync(geofenceName);
+                    if (geofence == null)
+                        continue;
+
+                    geofences.Add(geofence);
+                }
+
+                // TODO: Create GetInstanceGeofences method
+
+                if ((geofences?.Count ?? 0) == 0)
+                {
+                    // Failed to retrieve assignment from database, does it exist?
+                    _logger.LogError($"Failed to retrieve geofence(s) ('{string.Join(", ", instance.Geofences)}') for assignment instance '{instance.Name}'.");
+                    return;
+                }
+
+                // Clear quests for all geofences assigned to instance
+                foreach (var geofence in geofences!)
+                {
+                    _logger.LogInformation($"Clearing quests for geofence '{geofence.Name}'");
+                    await mapContext.ClearQuestsAsync(geofence);
+                }
+
+                _logger.LogInformation($"All quests have been cleared for assignment '{assignment.Id}' (Instance: {instance.Name}, Geofences: {string.Join(", ", instance.Geofences)})");
+            }
+        }
+
+        #endregion
+
         public async Task InstanceControllerCompleteAsync(string instanceName)
         {
             List<Assignment> assignments;

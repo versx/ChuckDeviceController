@@ -355,40 +355,7 @@
                 return View();
             }
 
-            var instance = await _controllerContext.Instances.FindAsync(assignment.InstanceName);
-            if (instance == null)
-            {
-                // Failed to retrieve instance from database, does it exist?
-                ModelState.AddModelError("Assignment", $"Assignment instance does not exist with name '{assignment.InstanceName}'.");
-                return View();
-            }
-
-            //var geofences = instance.Geofences.Select(async geofence => await _context.Geofences.FindAsync(geofence)).ToList();
-            var geofences = new List<Geofence>();
-            foreach (var geofenceName in instance.Geofences)
-            {
-                var geofence = await _controllerContext.Geofences.FindAsync(geofenceName);
-                if (geofence == null)
-                    continue;
-
-                geofences.Add(geofence);
-            }
-
-            if ((geofences?.Count ?? 0) == 0)
-            {
-                // Failed to retrieve assignment from database, does it exist?
-                ModelState.AddModelError("Assignment", $"Failed to retrieve geofence(s) ('{string.Join(", ", instance.Geofences)}') for assignment instance '{instance.Name}'.");
-                return View();
-            }
-
-            // Clear quests for all geofences assigned to instance
-            foreach (var geofence in geofences!)
-            {
-                _logger.LogInformation($"Clearing quests for geofence '{geofence.Name}'");
-                await _mapContext.ClearQuestsAsync(geofence);
-            }
-
-            _logger.LogInformation($"All quests have been cleared for assignment '{id}' (Instance: {instance.Name}, Geofences: {string.Join(", ", instance.Geofences)})");
+            await _assignmentService.ClearQuestsAsync(assignment);
 
             return RedirectToAction(nameof(Index));
         }

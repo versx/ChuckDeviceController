@@ -31,6 +31,8 @@
         /// <param name="assignment">Assignment to delete from the cache.</param>
         void Delete(Assignment assignment);
 
+        #region Start Assignments
+
         /// <summary>
         /// Starts the assignment for any devices specified for it.
         /// </summary>
@@ -42,6 +44,10 @@
         /// </summary>
         /// <param name="assignmentGroup">Assignment group to start.</param>
         Task StartAssignmentGroupAsync(AssignmentGroup assignmentGroup);
+
+        #endregion
+
+        #region ReQuest Assignments
 
         /// <summary>
         /// Clears all quests for related instances affected by assignment group
@@ -56,6 +62,30 @@
         /// </summary>
         /// <param name="assignmentId">Assignment ID to re-quest.</param>
         Task ReQuestAssignmentAsync(uint assignmentId);
+
+        #endregion
+
+        #region Clear Quests
+
+        /// <summary>
+        /// Clears all quests for related instances affected by assignment.
+        /// </summary>
+        /// <param name="assignment">Assignment to clear instance Pokestop quests from.</param>
+        Task ClearQuestsAsync(Assignment assignment);
+
+        /// <summary>
+        /// Clears all quests for related instances affected by assignments.
+        /// </summary>
+        /// <param name="assignmentIds">Assignment IDs to clear instance Pokestop quests from.</param>
+        Task ClearQuestsAsync(IEnumerable<uint> assignmentIds);
+
+        /// <summary>
+        /// Clears all quests for related instances affected by assignments.
+        /// </summary>
+        /// <param name="assignments">Assignments to clear instance Pokestop quests from.</param>
+        Task ClearQuestsAsync(IEnumerable<Assignment> assignments);
+
+        #endregion
 
         /// <summary>
         ///     Called when an AutoInstanceController completes. Triggers all "On-Complete"
