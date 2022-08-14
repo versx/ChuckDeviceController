@@ -138,6 +138,18 @@
             await ClearQuestsAsync(context, pokestopIds);
         }
 
+        /// <summary>
+        /// Clear all Pokestop quests within geofence
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="geofence"></param>
+        /// <returns></returns>
+        public static async Task ClearQuestsAsync(this MapContext context, Geofence geofence)
+        {
+            var (multiPolygons, _) = geofence.ConvertToMultiPolygons();
+            await ClearQuestsAsync(context, multiPolygons);
+        }
+
         #endregion
 
         #region Pokestops

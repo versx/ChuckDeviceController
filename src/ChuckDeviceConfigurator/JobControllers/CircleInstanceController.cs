@@ -85,7 +85,6 @@
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
-            // TODO: Lock lastIndex
             _lastIndex = 0;
 
             // Clear all existing devices from route index cache

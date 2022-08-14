@@ -125,7 +125,6 @@
         {
             Console.WriteLine($"[{Name}] Reloading instance");
 
-            // TODO: Lock lastIndex
             _lastIndex = 0;
 
             return Task.CompletedTask;
