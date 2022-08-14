@@ -343,11 +343,15 @@
                     var completedDate = _completionDate.FromSeconds()
                                                        .ToLocalTime()
                                                        .ToString("hh:mm:ss tt");
+                    var ignoredStatus = _ignorePokestopIds.Count > 0
+                        ? $", Ign: {_ignorePokestopIds.Count:N0}"
+                        : string.Empty;
                     var isCompleted = _completionDate != default;
                     var html = Utils.GetQueueLink(Name, displayText: "Queue", basePath: "/Instance/QuestQueue", html: true);
-                    var status = $"{(isCompleted ? $"Status: " : $"{html}: {_todayStops.Count:N0},")} {currentCountDb:N0}|{currentCount:N0}/{maxCount:N0} " +
-                        $"({Math.Round(percentReal, 1)}|" +
-                        $"{Math.Round(percent, 1)}%)" +
+                    var status = $"{(isCompleted ? $"Status: " : $"{html}: {_todayStops.Count:N0},")} " +
+                        $"{currentCountDb:N0}|{currentCount:N0}/{maxCount:N0}" +
+                        ignoredStatus +
+                        $" ({Math.Round(percentReal, 1)}|{Math.Round(percent, 1)}%)" +
                         $"{(isCompleted ? $", Completed @ {completedDate}" : "")}";
                     return status;
             }
