@@ -82,6 +82,69 @@
     <script>
         $(document).ready(function() {
             $('#table-devices').DataTable({
+                /*
+                ajax: {
+                    url: '/api/devices',
+                    method: 'POST',
+                    dataType: 'json',
+                    dataSrc: 'devices',
+                },
+                columns: [
+                    { data: 'uuid', name: 'UUID', width: 'auto' },
+                    { data: 'instance_name', name: 'Instance Name', width: 'auto' },
+                    { data: 'account_username', name: 'Account Username', width: 'auto' },
+                    { data: 'last_host', name: 'Last Host', width: 'auto' },
+                    {
+                        data: null,
+                        name: 'Last Location',
+                        width: 'auto',
+                        render: function(data, type, row) {
+                            return `${row.last_lat.toFixed(5)},${row.last_lon.toFixed(5)}`;
+                        },
+                    },
+                    { data: 'last_seen', name: 'Last Seen', width: 'auto' },
+                    {
+                        data: null,
+                        width: '5%',
+                        render: function(data, type, row) {
+                            const html = `
+<div class="dropdown">
+    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownGroup" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
+        <li>
+            <a class="dropdown-item" asp-action="Edit" asp-route-id="${row.uuid}">
+                <i class="fa-solid fa-pen-to-square"></i>
+                &nbsp;Edit
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="Details" asp-route-id="${row.uuid}">
+                <i class="fa-solid fa-circle-info"></i>
+                &nbsp;Details
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="Delete" asp-route-id="${row.uuid}">
+                <i class="fa-solid fa-trash-can"></i>
+                &nbsp;Delete
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="ForceAccountSwitch" asp-route-id="${row.uuid}" onclick="return confirm('Are you sure you want to force device \\'${row.uuid}\\' to logout and switch accounts?');">
+                <i class="fa-solid fa-repeat"></i>
+                &nbsp;Switch Account
+            </a>
+        </li>
+    </ul>
+</div>
+                            `;
+                            return html;
+                        },
+                    },
+                ],
+                */
                 columnDefs: [
                     { responsivePriority: 0, targets: 0 },
                     { responsivePriority: 2, targets: 1 },

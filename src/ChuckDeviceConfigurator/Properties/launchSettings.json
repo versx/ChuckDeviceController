@@ -10,6 +10,7 @@
   "profiles": {
     "ChuckDeviceConfigurator": {
       "commandName": "Project",
+      "hotReloadEnabled": true,
       "launchBrowser": true,
       "applicationUrl": "http://localhost:57176",
       "environmentVariables": {

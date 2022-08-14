@@ -66,17 +66,5 @@
             JsonPropertyName("pending_account_switch"),
         ]
         public bool IsPendingAccountSwitch { get; set; } // used internally
-
-        [
-            DisplayName("Last Seen"),
-            NotMapped,
-        ]
-        public string? LastSeenTime { get; set; }
-
-        [
-            DisplayName("Online Status"),
-            NotMapped,
-        ]
-        public string? OnlineStatus { get; set; }
     }
 }

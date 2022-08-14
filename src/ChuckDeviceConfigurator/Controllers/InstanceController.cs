@@ -9,7 +9,7 @@
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
 
@@ -17,13 +17,13 @@
     public class InstanceController : Controller
     {
         private readonly ILogger<InstanceController> _logger;
-        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
+        private readonly ControllerContext _context;
         private readonly IJobControllerService _jobControllerService;
         private readonly ITimeZoneService _timeZoneService;
 
         public InstanceController(
             ILogger<InstanceController> logger,
-            ChuckDeviceController.Data.Contexts.ControllerContext context,
+            ControllerContext context,
             IJobControllerService jobControllerService,
             ITimeZoneService timeZoneService)
         {

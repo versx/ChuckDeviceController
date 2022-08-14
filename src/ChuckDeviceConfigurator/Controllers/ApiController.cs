@@ -1,9 +1,13 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
+    using System.Net.Mime;
+
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Common.Jobs;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
@@ -14,6 +18,7 @@
 
         private readonly ILogger<IJobControllerService> _logger;
         private readonly IJobControllerService _jobControllerService;
+        private readonly ControllerContext _controllerContext;
 
         #endregion
 
@@ -21,10 +26,12 @@
 
         public ApiController(
             ILogger<IJobControllerService> logger,
-            IJobControllerService jobControllerService)
+            IJobControllerService jobControllerService,
+            ControllerContext controllerContext)
         {
             _logger = logger;
             _jobControllerService = jobControllerService;
+            _controllerContext = controllerContext;
         }
 
         #endregion
@@ -81,6 +88,19 @@
                 timestamp = DateTime.UtcNow.ToTotalSeconds(),
             };
             return new JsonResult(obj);
+        }
+
+        [HttpPost("api/devices")]
+        [Produces(MediaTypeNames.Application.Json)]
+        public async Task<JsonResult> GetDevicesAsync()
+        {
+            var devices = await _controllerContext.Devices.ToListAsync();
+            var obj = new
+            {
+                devices,
+            };
+            var json = new JsonResult(obj);
+            return json;
         }
     }
 }

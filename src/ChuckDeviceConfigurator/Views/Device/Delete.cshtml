@@ -57,7 +57,7 @@
         @Html.DisplayFor(model => model.LastHost)
     </dd>
     <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.LastSeenTime)
+        @Html.DisplayNameFor(model => model.LastSeen)
     </dt>
     <dd class = "col-sm-10">
         @Html.Raw(Utils.GetLastUpdatedStatus(Model?.LastSeen ?? 0, html: true))
