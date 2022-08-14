@@ -16,7 +16,7 @@
         #region Properties
 
         /// <summary>
-        /// 
+        /// Gets or sets the current culture localization to use.
         /// </summary>
         public CultureInfo CurrentCulture { get; set; }
 
@@ -85,13 +85,13 @@
         #region Public Methods
 
         /// <summary>
-        /// Sets the current locale.
+        /// Sets the country locale code to use for translations.
         /// </summary>
-        /// <param name="localeCode">Two letter locale code</param>
-        public void SetLocale(string localeCode)
+        /// <param name="locale">Two letter ISO language name code.</param>
+        public void SetLocale(string locale)
         {
-            CurrentCulture = new CultureInfo(localeCode);
-            _map = LoadCountry(localeCode);
+            CurrentCulture = new CultureInfo(locale);
+            _map = LoadCountry(locale);
         }
 
         /// <summary>
@@ -202,13 +202,13 @@
         /// <summary>
         /// Load specified locale code associated with locale translation file
         /// </summary>
-        /// <param name="localeCode">Two digit country code (i.e. en, de, es, etc..)</param>
+        /// <param name="locale">Two digit country code (i.e. en, de, es, etc..)</param>
         /// <returns>Returns a dictionary of locale translations</returns>
-        private TDictionary LoadCountry(string localeCode)
+        private TDictionary LoadCountry(string locale)
         {
-            CurrentCulture = new CultureInfo(localeCode);
+            CurrentCulture = new CultureInfo(locale);
 
-            var path = Path.Combine(LocaleDirectory, localeCode + ".json");
+            var path = Path.Combine(LocaleDirectory, locale + ".json");
             var data = File.ReadAllText(path);
             var obj = data.FromJson<TDictionary>();
             return obj;

@@ -1,11 +1,32 @@
 ﻿namespace ChuckDeviceController.Plugins
 {
+    using System.Globalization;
+
     /// <summary>
     /// Plugin host handler contract used to translate strings.
     /// </summary>
     public interface ILocalizationHost
     {
-        // TODO: Set locale or provide current locale via property
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the current culture localization to use.
+        /// </summary>
+        CultureInfo CurrentCulture { get; }
+
+        /// <summary>
+        /// Gets the two letter ISO country code for the currently set localization.
+        /// </summary>
+        /// <value>The two letter ISO country code.</value>
+        string CountryCode { get; }
+
+        #endregion
+
+        /// <summary>
+        /// Sets the country locale code to use for translations.
+        /// </summary>
+        /// <param name="locale">Two letter ISO language name code.</param>
+        void SetLocale(string locale);
 
         /// <summary>
         /// 

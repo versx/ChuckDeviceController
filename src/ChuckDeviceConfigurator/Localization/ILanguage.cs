@@ -14,12 +14,12 @@
         #region Properties
 
         /// <summary>
-        /// 
+        /// Gets or sets the current culture localization to use.
         /// </summary>
         CultureInfo CurrentCulture { get; }
 
         /// <summary>
-        /// Gets the two letter ISO country code.
+        /// Gets the two letter ISO country code for the currently set localization.
         /// </summary>
         /// <value>The two letter ISO country code.</value>
         string CountryCode { get; }
@@ -49,8 +49,8 @@
         /// <summary>
         /// Sets the current locale.
         /// </summary>
-        /// <param name="localeCode">Two letter locale code</param>
-        void SetLocale(string localeCode);
+        /// <param name="locale">Two letter ISO language name code.</param>
+        void SetLocale(string locale);
 
         /// <summary>
         /// Performs a translation using the table, returns the default from value
