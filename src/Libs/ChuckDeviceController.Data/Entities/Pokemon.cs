@@ -267,7 +267,7 @@
 
             var spawnpointId = mapPokemon.SpawnpointId;
             // Get Pokestop via spawnpoint id
-            var pokestop = context.Pokestops.FindAsync(spawnpointId).Result; // TODO: Need to double check this
+            var pokestop = context.Pokestops.FindAsync(spawnpointId).Result;
             if (pokestop == null)
             {
                 Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{Id}' to find location, skipping");

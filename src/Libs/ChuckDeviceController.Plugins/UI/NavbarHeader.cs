@@ -3,7 +3,7 @@
     /// <summary>
     /// Navigation bar header plugin contract implementation.
     /// </summary>
-    public class NavbarHeader : INavbarHeader // TODO: Rename to 'SidebarItem' or something
+    public class NavbarHeader : INavbarHeader
     {
         /// <summary>
         /// Gets or sets the text to display for this navbar

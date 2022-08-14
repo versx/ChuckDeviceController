@@ -1,14 +1,11 @@
 ﻿namespace ChuckDeviceController.Net.Utilities
 {
-    using System;
     using System.Net;
-    using System.Net.Http;
     using System.Text;
-    using System.Threading.Tasks;
 
     public static class NetUtils
     {
-        public const string DefaultUserAgent = "test123456"; // TODO: Set actual UserAgent
+        public const string DefaultUserAgent = "Mozilla/5.0";
         public const string DefaultMimeType = "application/json";
 
         public static string? Get(string url)
