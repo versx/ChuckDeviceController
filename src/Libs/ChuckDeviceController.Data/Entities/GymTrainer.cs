@@ -87,6 +87,11 @@
 
         public dynamic? GetWebhookData(string type)
         {
+            throw new NotImplementedException();
+        }
+
+        public dynamic? GetWebhookData(string type, Gym gym)
+        {
             return type.ToLower() switch
             {
                 "gym-trainer" or _ => new
@@ -96,7 +101,12 @@
                     {
                         name = Name,
                         level = Level,
-                        //gym_name = Name ?? UnknownGymName,
+                        fort_id = gym?.Id,
+                        gym_id = gym?.Id,
+                        gym_name = gym?.Name ?? Gym.UnknownGymName,
+                        gym_url = gym?.Url,
+                        latitude = gym?.Latitude,
+                        longitude = gym?.Longitude,
                         team_id = Convert.ToUInt16(TeamId),
                         battles_won = BattlesWon,
                         km_walked = KmWalked,

@@ -77,9 +77,12 @@
             return inside;
         }
 
-        public static bool IsPointInPolygon(Coordinate point, List<List<Coordinate>> multiPolygons)
+        public static bool IsPointInPolygon(Coordinate point, List<List<Coordinate>>? multiPolygons)
         {
-            foreach (var multiPolygon in multiPolygons)
+            if ((multiPolygons?.Count ?? 0) == 0)
+                return true;
+
+            foreach (var multiPolygon in multiPolygons!)
             {
                 if (IsPointInPolygon(point, multiPolygon))
                 {

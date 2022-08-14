@@ -247,6 +247,11 @@
 
         public dynamic? GetWebhookData(string type)
         {
+            throw new NotImplementedException();
+        }
+
+        public dynamic? GetWebhookData(string type, Gym gym)
+        {
             return type.ToLower() switch
             {
                 "gym-defender" or _ => new
@@ -260,9 +265,12 @@
                         move_1 = Move1,
                         move_2 = Move2,
                         move_3 = Move3,
-                        gym_id = FortId,
                         fort_id = FortId,
-                        //gym_name = Name ?? UnknownGymName,
+                        gym_id = FortId,
+                        gym_name = gym?.Name ?? Gym.UnknownGymName,
+                        gym_url = gym?.Url,
+                        latitude = gym?.Latitude,
+                        longitude = gym?.Longitude,
                         pokemon_id = PokemonId,
                         form = Form,
                         costume = Costume,

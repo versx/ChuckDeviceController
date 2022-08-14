@@ -879,16 +879,22 @@
                                 var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
                                 gymTrainersToUpsert.Add(gymTrainer);
 
-                                // Send webhook
-                                await SendWebhookPayloadAsync(WebhookPayloadType.GymTrainer, gymTrainer);
+                                if (gym != null)
+                                {
+                                    // Send webhook
+                                    await SendWebhookPayloadAsync(WebhookPayloadType.GymTrainer, new GymWithTrainer(gym, gymTrainer));
+                                }
                             }
                             if (gymDefenderData.MotivatedPokemon != null)
                             {
                                 var gymDefender = new GymDefender(gymDefenderData, fortId);
                                 gymDefendersToUpsert.Add(gymDefender);
 
-                                // Send webhook
-                                await SendWebhookPayloadAsync(WebhookPayloadType.GymDefender, gymDefender);
+                                if (gym != null)
+                                {
+                                    // Send webhook
+                                    await SendWebhookPayloadAsync(WebhookPayloadType.GymDefender, new GymWithDefender(gym, gymDefender));
+                                }
                             }
                         }
                     }

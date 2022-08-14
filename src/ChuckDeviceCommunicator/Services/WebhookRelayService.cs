@@ -30,7 +30,6 @@
 
         private readonly ILogger<IWebhookRelayService> _logger;
         private readonly IGrpcClientService _grpcClientService;
-        //private readonly IConfiguration _configuration;
         private readonly List<Webhook> _webhookEndpoints = new();
         private readonly Timer _timer;
         private readonly Timer _requestTimer;
@@ -44,8 +43,8 @@
         private readonly Dictionary<string, Pokestop> _alternativeQuestEvents = new();
         private readonly Dictionary<string, Gym> _gymEvents = new();
         private readonly Dictionary<string, Gym> _gymInfoEvents = new();
-        private readonly Dictionary<ulong, GymDefender> _gymDefenderEvents = new();
-        private readonly Dictionary<string, GymTrainer> _gymTrainerEvents = new();
+        private readonly Dictionary<ulong, GymWithDefender> _gymDefenderEvents = new();
+        private readonly Dictionary<string, GymWithTrainer> _gymTrainerEvents = new();
         private readonly Dictionary<string, Gym> _eggEvents = new();
         private readonly Dictionary<string, Gym> _raidEvents = new();
         private readonly Dictionary<long, Weather> _weatherEvents = new();
@@ -95,11 +94,11 @@
         public WebhookRelayService(
             ILogger<IWebhookRelayService> logger,
             IGrpcClientService grpcClientService,
-            IOptions<WebhookRelayConfig> optionsAccessor)
+            IOptions<WebhookRelayConfig> options)
         {
             _logger = logger;
             _grpcClientService = grpcClientService;
-            Options = optionsAccessor.Value;
+            Options = options.Value;
 
             _timer = new Timer(WebhookRelayIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckWebhooksAsync();
@@ -269,27 +268,27 @@
                     }
                     break;
                 case WebhookPayloadType.GymDefender:
-                    var gymDefender = json.FromJson<GymDefender>();
-                    if (gymDefender == null)
+                    var gymWithDefender = json.FromJson<GymWithDefender>();
+                    if (gymWithDefender == null)
                     {
                         _logger.LogError($"Failed to deserialize GymDefender webhook payload");
                         return;
                     }
                     lock (_gymDefendersLock)
                     {
-                        _gymDefenderEvents[gymDefender.Id] = gymDefender;
+                        _gymDefenderEvents[gymWithDefender.Defender.Id] = gymWithDefender;
                     }
                     break;
                 case WebhookPayloadType.GymTrainer:
-                    var gymTrainer = json.FromJson<GymTrainer>();
-                    if (gymTrainer == null)
+                    var gymWithTrainer = json.FromJson<GymWithTrainer>();
+                    if (gymWithTrainer == null)
                     {
                         _logger.LogError($"Failed to deserialize GymTrainer webhook payload");
                         return;
                     }
                     lock (_gymTrainersLock)
                     {
-                        _gymTrainerEvents[gymTrainer.Name] = gymTrainer;
+                        _gymTrainerEvents[gymWithTrainer.Trainer.Name] = gymWithTrainer;
                     }
                     break;
                 case WebhookPayloadType.Egg:
@@ -359,8 +358,8 @@
             Dictionary<string, Pokestop> alternativeQuestEvents = new();
             Dictionary<string, Gym> gymEvents = new();
             Dictionary<string, Gym> gymInfoEvents = new();
-            Dictionary<ulong, GymDefender> gymDefenderEvents = new();
-            Dictionary<string, GymTrainer> gymTrainerEvents = new();
+            Dictionary<ulong, GymWithDefender> gymDefenderEvents = new();
+            Dictionary<string, GymWithTrainer> gymTrainerEvents = new();
             Dictionary<string, Gym> eggEvents = new();
             Dictionary<string, Gym> raidEvents = new();
             Dictionary<long, Weather> weatherEvents = new();
@@ -592,11 +591,10 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            // TODO: Include fort lat/lon with gym defender properties or just ignore geofence check
-                            //if (!GeofenceService.IsPointInPolygon(gymDefender.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                            //    continue;
+                            if (!GeofenceService.IsPointInPolygon(gymDefender.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                                continue;
                         }
-                        events.Add(gymDefender.GetWebhookData("gym-defender"));
+                        events.Add(gymDefender.Defender.GetWebhookData("gym-defender", gymDefender.Gym));
                     }
                 }
                 if (gymTrainerEvents.Count > 0 && endpoint.Types.Contains(WebhookType.GymTrainers))
@@ -605,11 +603,10 @@
                     {
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
-                            // TODO: Include fort lat/lon with gym trainer properties or just ignore geofence check
-                            //if (!GeofenceService.IsPointInPolygon(gymTrainer.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                            //    continue;
+                            if (!GeofenceService.IsPointInPolygon(gymTrainer.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                                continue;
                         }
-                        events.Add(gymTrainer.GetWebhookData("gym-trainer"));
+                        events.Add(gymTrainer.Trainer.GetWebhookData("gym-trainer", gymTrainer.Gym));
                     }
                 }
                 if (eggEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Eggs))
