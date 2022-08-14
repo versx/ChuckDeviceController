@@ -67,13 +67,15 @@
             IBackgroundTaskQueue taskQueue,
             IDbContextFactory<MapContext> factory,
             IMemoryCache diskCache,
-            IGrpcClientService grpcClientService)
+            IGrpcClientService grpcClientService,
+            IClearFortsService clearFortsService)
         {
             _logger = logger;
             _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
             _dbFactory = factory;
             _diskCache = diskCache;
             _grpcClientService = grpcClientService;
+            _clearFortsService = clearFortsService;
 
             Options = options.Value;
         }
