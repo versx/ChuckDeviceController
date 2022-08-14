@@ -116,7 +116,6 @@
 
                 // Send confirmation email so user can login, since we have non-confirmed
                 // accounts set unable to login unless confirmed.
-                // TODO: Need to confirm above
                 var callbackUrl = await BuildConfirmEmailCallbackUrl(user);
                 if (string.IsNullOrEmpty(callbackUrl))
                 {
@@ -177,8 +176,7 @@
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                ViewBag.ErrorMessage = $"User account with Id '{userId}' does not exist";
-                return View("NotFound");
+                return View("Error");
             }
 
             var model = new ManageUserViewModel
@@ -212,14 +210,14 @@
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                ModelState.AddModelError("", $"User account with id '{userId}' does not exist");
+                ModelState.AddModelError("User", $"User account with id '{userId}' does not exist");
                 return View(model);
             }
 
             // Check if any existing user accounts are registered with new email that are not the existing user
             if (_userManager.Users.FirstOrDefault(user => user.Email == model.Email && user.Id != userId) != null)
             {
-                ModelState.AddModelError("", $"User account with email '{model.Email}' already exists, please use a different email address.");
+                ModelState.AddModelError("User", $"User account with email '{model.Email}' already exists, please use a different email address.");
                 return View(model);
             }
 
@@ -229,7 +227,7 @@
                 if (model.Password != model.ConfirmPassword)
                 {
                     // Passwords do not match
-                    ModelState.AddModelError("", $"Provided password and confirm password do not match.");
+                    ModelState.AddModelError("User", $"Provided password and confirm password do not match.");
                     return View(model);
                 }
                 else
@@ -252,8 +250,11 @@
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
                 {
-                    var errors = string.Join("\n", result.Errors.Select(err => err.Description));
-                    ModelState.AddModelError("", errors);
+                    var errors = result.Errors.Select(err => err.Description);
+                    foreach (var error in errors)
+                    {
+                        ModelState.AddModelError("User", error);
+                    }
                     return View(model);
                 }
             }
@@ -284,7 +285,7 @@
             var removeResult = await _userManager.RemoveFromRolesAsync(user, roles);
             if (!removeResult.Succeeded)
             {
-                ModelState.AddModelError("", $"Cannot remove already assigned roles from user account '{model.UserName}'");
+                ModelState.AddModelError("User", $"Cannot remove already assigned roles from user account '{model.UserName}'");
                 return View(model);
             }
 
@@ -292,7 +293,7 @@
             var addResult = await _userManager.AddToRolesAsync(user, selectedRoles);
             if (!addResult.Succeeded)
             {
-                ModelState.AddModelError("", $"Cannot assign selected roles to user account '{model.UserName}'");
+                ModelState.AddModelError("User", $"Cannot assign selected roles to user account '{model.UserName}'");
                 return View(model);
             }
 
@@ -336,7 +337,7 @@
 
                 if (userAccount.UserName == Strings.DefaultUserName)
                 {
-                    ModelState.AddModelError($"User", $"Default 'root' user account cannot be deleted");
+                    ModelState.AddModelError($"User", $"Default '{Strings.DefaultUserName}' user account cannot be deleted");
                     return View();
                 }
 
@@ -344,8 +345,11 @@
                 var result = await _userManager.DeleteAsync(userAccount);
                 if (!result.Succeeded)
                 {
-                    var errors = string.Join("\n", result.Errors.Select(err => err.Description));
-                    ModelState.AddModelError("User", errors);
+                    var errors = result.Errors.Select(err => err.Description);
+                    foreach (var error in errors)
+                    {
+                        ModelState.AddModelError("User", error);
+                    }
                     return View(userAccount);
                 }
 
