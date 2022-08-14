@@ -269,9 +269,16 @@
                     // a single sidebar entry
                     isDropdown: true,
                     // List of children sidebar item
-                    dropdownItems: new List<NavbarHeaderDropdownItem>
+                    dropdownItems: new List<NavbarHeader>
                     {
                         // Sidebar item #1
+                        new("DropTest", displayIndex: 2, icon: "fa-solid fa-fw fa-hammer", isDropdown: true, dropdownItems: new List<NavbarHeader>
+                        {
+                            new("Tester", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<NavbarHeader>
+                            {
+                                new("Ok", "Geofence", displayIndex: 1, icon: "fa-solid fa-fw fa-microscope"),
+                            }),
+                        }),
                         new("Page", "Test", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
                         // Sidebar item #2
                         new(
@@ -296,10 +303,10 @@
                     DisplayIndex = 4,
                     Icon = "fa-solid fa-fw fa-microscope",
                     IsDropdown = true,
-                    DropdownItems = new List<NavbarHeaderDropdownItem>
+                    DropdownItems = new List<NavbarHeader>
                     {
                         new("Item1", "Device", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt"),
-                        new("Hmm", isSeparator: true, displayIndex: 3),
+                        //new("Hmm", isSeparator: true, displayIndex: 3),
                         new("Item2", "Instance", isDisabled: true, displayIndex: 999, icon: "fa-solid fa-fw fa-cubes-stacked"),
                     },
                 },

@@ -44,13 +44,19 @@
         /// <summary>
         /// Gets or sets a list of navbar header dropdown items.
         /// </summary>
-        public IEnumerable<NavbarHeaderDropdownItem>? DropdownItems { get; set; }
+        public IEnumerable<NavbarHeader>? DropdownItems { get; set; }
 
         /// <summary>
         /// Gets or sets a value determining whether the
         /// navbar header is disabled or not.
         /// </summary>
         public bool IsDisabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value determining whether to insert a
+        /// separator instead of a dropdown item.
+        /// </summary>
+        public bool IsSeparator { get; set; }
 
         /// <summary>
         /// Instantiates a new navbar header instance using default 
@@ -76,7 +82,8 @@
         /// <param name="isDropdown"></param>
         /// <param name="dropdownItems"></param>
         /// <param name="isDisabled"></param>
-        public NavbarHeader(string text, string controllerName = "", string actionName = "Index", string icon = "", uint displayIndex = 999, bool isDropdown = false, IEnumerable<NavbarHeaderDropdownItem>? dropdownItems = null, bool isDisabled = false)
+        /// <param name="isSeparator"></param>
+        public NavbarHeader(string text, string controllerName = "", string actionName = "Index", string icon = "", uint displayIndex = 999, bool isDropdown = false, IEnumerable<NavbarHeader>? dropdownItems = null, bool isDisabled = false, bool isSeparator = false)
         {
             Text = text;
             ControllerName = controllerName;
@@ -86,6 +93,7 @@
             IsDropdown = isDropdown;
             DropdownItems = dropdownItems;
             IsDisabled = isDisabled;
+            IsSeparator = isSeparator;
         }
     }
 }

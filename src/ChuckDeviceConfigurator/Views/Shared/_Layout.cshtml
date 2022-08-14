@@ -12,6 +12,63 @@
 
     var themeData = Html.RenderAction("GetTheme", "Helper");
     var theme = Convert.ToString(themeData)?.FromJson<string>() ?? DarkTheme;
+
+    async Task AddSidebarItem(NavbarHeader header)
+    {
+        if (header.IsDropdown && (header?.DropdownItems?.Any() ?? false))
+        {
+            var sortedDropdownItems = header.DropdownItems.ToList();
+            sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+            <li class="nav-item">
+                <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(header.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
+                    @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
+                    @header.Text
+                </a>
+                <ul class="collapse list-unstyled" id="@(header.Text)Submenu">
+                    @foreach (var dropdownHeader in sortedDropdownItems)
+                    {
+                        var hasMore = dropdownHeader.IsDropdown && dropdownHeader.DropdownItems?.Count() > 0;
+                        if (hasMore)
+                        {
+                            await AddSidebarItem(dropdownHeader);
+                        }
+                        else
+                        {
+                            if (dropdownHeader.IsSeparator)
+                            {
+                                <li><hr class="dropdown-divider"></li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="dropdown-item @(dropdownHeader.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">
+                                        @Html.Raw(string.IsNullOrEmpty(dropdownHeader.Icon) ? "" : $"<i class='{dropdownHeader.Icon}'></i>")
+                                        @dropdownHeader.Text
+                                    </a>
+                                </li>
+                            }
+                        }
+                    }
+                </ul>
+            </li>
+        }
+        else
+        {
+            if (header.IsSeparator)
+            {
+                <li><hr class="dropdown-divider"></li>
+            }
+            else
+            {
+                <li class="nav-item">
+                    <a class="@(header.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@header.ControllerName" asp-action="@header.ActionName">
+                        @Html.Raw(string.IsNullOrEmpty(header?.Icon) ? "" : $"<i class='{header.Icon}'></i>")
+                        @header?.Text
+                    </a>
+                </li>
+            }
+        }
+    }
 }
 
 <!DOCTYPE html>
@@ -54,44 +111,7 @@
                     <ul class="list-unstyled components">
                     @foreach (var header in navbarHeaders)
                     {
-                        if (header.IsDropdown && (header?.DropdownItems?.Any() ?? false))
-                        {
-                            var sortedDropdownItems = header.DropdownItems.ToList();
-                            sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                            <li class="nav-item">
-                                <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(header.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
-                                    @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
-                                    @header.Text
-                                </a>
-                                <ul class="collapse list-unstyled" id="@(header.Text)Submenu">
-                                    @foreach (var dropdownHeader in sortedDropdownItems)
-                                    {
-                                        if (dropdownHeader.IsSeparator)
-                                        {
-                                            <li><hr class="dropdown-divider"></li>
-                                        }
-                                        else
-                                        {
-                                            <li class="nav-item">
-                                                <a class="dropdown-item @(dropdownHeader.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">
-                                                    @Html.Raw(string.IsNullOrEmpty(dropdownHeader.Icon) ? "" : $"<i class='{dropdownHeader.Icon}'></i>")
-                                                    @dropdownHeader.Text
-                                                </a>
-                                            </li>
-                                        }
-                                    }
-                                </ul>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="@(header.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@header.ControllerName" asp-action="@header.ActionName">
-                                    @Html.Raw(string.IsNullOrEmpty(header?.Icon) ? "" : $"<i class='{header.Icon}'></i>")
-                                    @header?.Text
-                                </a>
-                            </li>
-                        }
+                        await AddSidebarItem(header);
                     }
                     </ul>
                 }

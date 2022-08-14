@@ -1,4 +1,5 @@
-﻿namespace ChuckDeviceController.Plugins
+﻿/*
+namespace ChuckDeviceController.Plugins
 {
     /// <summary>
     /// Navigation bar header dropdown item plugin contract implemention.
@@ -70,3 +71,4 @@
         }
     }
 }
+*/

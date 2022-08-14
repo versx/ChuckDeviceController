@@ -48,7 +48,7 @@
 
                 // Add dropdown items to existing headers
                 var existingHeader = _navbarHeaders[header.Text];
-                var newDropdownItems = new List<NavbarHeaderDropdownItem>();
+                var newDropdownItems = new List<NavbarHeader>();
                 if (existingHeader.DropdownItems != null)
                 {
                     newDropdownItems.AddRange(existingHeader.DropdownItems);
