@@ -1334,15 +1334,18 @@
             {
                 foreach (var (cellId, pokestopIds) in _stopIdsPerCell)
                 {
+                    // Get pokestops within S2 cell and not marked deleted
                     var pokestops = context.Pokestops.Where(stop => stop.CellId == cellId && !stop.IsDeleted)
                                                      .ToList();
                     if (pokestopIds.Count > 0)
                     {
+                        // Filter pokestops that have not been seen within S2 cell by devices
                         pokestops = pokestops.Where(stop => !pokestopIds.Contains(stop.Id))
                                              .ToList();
                     }
                     if (pokestops.Count > 0)
                     {
+                        // Mark gyms as deleted
                         pokestops.ForEach(stop => stop.IsDeleted = true);
                         stopsToDelete.AddRange(pokestops);
                     }
@@ -1350,15 +1353,18 @@
 
                 foreach (var (cellId, gymIds) in _gymIdsPerCell)
                 {
+                    // Get gyms within S2 cell and not marked deleted
                     var gyms = context.Gyms.Where(gym => gym.CellId == cellId && !gym.IsDeleted)
                                            .ToList();
                     if (gymIds.Count > 0)
                     {
+                        // Filter gyms that have not been seen within S2 cell by devices
                         gyms = gyms.Where(gym => !gymIds.Contains(gym.Id))
                                    .ToList();
                     }
                     if (gyms.Count > 0)
                     {
+                        // Mark gyms as deleted
                         gyms.ForEach(gym => gym.IsDeleted = true);
                         gymsToDelete.AddRange(gyms);
                     }

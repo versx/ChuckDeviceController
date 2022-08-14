@@ -243,7 +243,7 @@ app.Run();
 
 #region Plugin Callback/Event Handlers
 
-void Configure(IApplicationBuilder app, IServiceProvider serviceProvider)
+void Configure(WebApplication app, IServiceProvider serviceProvider)
 {
     //var serviceProvider = app.ApplicationServices;
     using (var scope = serviceProvider.CreateScope())

@@ -23,4 +23,7 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\$(TargetFileName)&quot;" />
+  </Target>
 </Project>

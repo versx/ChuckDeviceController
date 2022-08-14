@@ -6,6 +6,7 @@
     using ChuckDeviceController.Plugins;
 
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.DependencyInjection;
@@ -115,11 +116,12 @@
         /// <param name="appBuilder">
         ///     Provides the mechanisms to configure an application's request pipeline.
         /// </param>
-        public void Configure(IApplicationBuilder appBuilder)
+        public void Configure(WebApplication appBuilder)
         {
             _loggingHost.LogMessage($"Configure called");
 
-            var testService = appBuilder.ApplicationServices.GetService<IPluginService>();
+            //var testService = appBuilder.ApplicationServices.GetService<IPluginService>();
+            var testService = appBuilder.Services.GetService<IPluginService>();
 
             // We can configure routing here or using Mvc Controller classes
             appBuilder.Map("/plugin/v1", app =>
@@ -130,6 +132,45 @@
                     await httpContext.Response.WriteAsync($"Hello from plugin {Name}");
                 });
             });
+
+            // Add additional endpoints to list on
+            appBuilder.Urls.Add("http://*:1199"); // listen on all interfaces
+            appBuilder.Urls.Add("http://+:1199"); // listen on all interfaces
+            appBuilder.Urls.Add("http://0.0.0.0:1199"); // listen on all interfaces
+            appBuilder.Urls.Add("http://localhost:1199");
+            appBuilder.Urls.Add("http://127.0.0.1:1199");
+            appBuilder.Urls.Add("http://10.0.0.2:1199");
+
+            appBuilder.MapGet("hello/{name}", async (httpContext) =>
+            {
+                var method = httpContext.Request.Method;
+                var path = httpContext.Request.Path;
+                var queryValues = httpContext.Request.Query;
+                // httpContext.Request.Form will throw an exception if 'Content-Type' is not 'application/application/www-x-form-urlencoded'
+                //var formValues = httpContext.Request.Form;
+                var routeValues = httpContext.Request.RouteValues;
+                var body = httpContext.Request.Body;
+                var userClaims = httpContext.User;
+                await httpContext.Response.WriteAsync($"Hello, {routeValues["name"]}!");
+            });
+            appBuilder.MapGet("buenosdias/{name}", async (httpContext) =>
+                await httpContext.Response.WriteAsync($"Buenos dias, {httpContext.Request.RouteValues["name"]}!"));
+            appBuilder.MapGet("throw/{message?}", (httpContext) =>
+                throw new Exception(Convert.ToString(httpContext.Request.RouteValues["message"]) ?? "Uh oh!"));
+            appBuilder.MapGet("{greeting}/{name}", async (httpContext) =>
+                await httpContext.Response.WriteAsync($"{httpContext.Request.RouteValues["greeting"]}, {httpContext.Request.RouteValues["name"]}!"));
+            // NOTE: Uncommenting the below routing map will overwrite the default '/' routing path to the dashboard
+            //appBuilder.MapGet("", async (httpContext) => await httpContext.Response.WriteAsync("Hello, World!"));
+
+
+
+            // Register custom middlewares
+            //appBuilder.Use(async (httpContext, next) =>//(HttpContext httpContext, RequestDelegate req, Task next) =>
+            //{
+            //    // Action before next delegate
+            //    await next.Invoke();
+            //    // Action after called middleware
+            //});
         }
 
         /// <summary>

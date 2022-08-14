@@ -15,7 +15,7 @@
         /// <param name="appBuilder">
         /// Provides the mechanisms to configure an application's request pipeline.
         /// </param>
-        void Configure(IApplicationBuilder appBuilder);
+        void Configure(WebApplication appBuilder);
 
         /// <summary>
         /// Register services into the IServiceCollection to use with Dependency Injection.
