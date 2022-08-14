@@ -19,8 +19,6 @@
 
         ulong? LastSeen { get; } // Last job request requested
 
-        // TODO: Add Device LastDataReceived timestamp
-
         bool IsPendingAccountSwitch { get; } // used internally
     }
 }

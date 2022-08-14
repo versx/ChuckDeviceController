@@ -67,7 +67,6 @@
                 InstanceType.Bootstrap => "Bootstrap",
                 InstanceType.CirclePokemon => "Circle Pokemon",
                 InstanceType.CircleRaid => "Circle Raid",
-                InstanceType.CircleSmartPokemon => "Circle Smart Pokemon",
                 InstanceType.Custom => "Custom",
                 InstanceType.DynamicRoute => "Dynamic Route",
                 InstanceType.FindTth => "Find TTH",

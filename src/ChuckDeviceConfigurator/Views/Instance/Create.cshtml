@@ -209,8 +209,7 @@ function hideAllElements(instanceTypeId) {
     const isBootstrap = instanceTypeId == @((int)InstanceType.Bootstrap);
     const isPokemonIV = instanceTypeId == @((int)InstanceType.PokemonIV);
     const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
-        instanceTypeId == @((int)InstanceType.CircleRaid) ||
-        instanceTypeId == @((int)InstanceType.CircleSmartPokemon);
+        instanceTypeId == @((int)InstanceType.CircleRaid);
     const isSpawnpoint = instanceTypeId == @((int)InstanceType.FindTth);
     const isDynamic = instanceTypeId == @((int)InstanceType.DynamicRoute);
     const isLeveling = instanceTypeId == @((int)InstanceType.Leveling);
@@ -235,8 +234,7 @@ function hideElements(className, show) {
 function handleInstanceTypeChanged(instanceTypeId) {
     // Hide geofences (geofence/circle) depending on instance type selected
     const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
-        instanceTypeId == @((int)InstanceType.CircleRaid) ||
-        instanceTypeId == @((int)InstanceType.CircleSmartPokemon);
+        instanceTypeId == @((int)InstanceType.CircleRaid);
 
     // Keep track of already selected geofences to reselect if type matches instance type
     const selectedGeofences = $('#Geofences').val();

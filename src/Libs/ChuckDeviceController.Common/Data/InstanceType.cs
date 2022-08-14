@@ -6,7 +6,6 @@
     public enum InstanceType
     {
         CirclePokemon,
-        CircleSmartPokemon, // TODO: redundant remove eventually
         DynamicRoute,
         CircleRaid,
         SmartRaid,

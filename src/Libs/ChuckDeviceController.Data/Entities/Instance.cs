@@ -76,7 +76,6 @@
             {
                 InstanceType.AutoQuest => "auto_quest",
                 InstanceType.CirclePokemon => "circle_pokemon",
-                InstanceType.CircleSmartPokemon => "circle_smart_pokemon",
                 InstanceType.DynamicRoute => "dynamic_route",
                 InstanceType.CircleRaid => "circle_raid",
                 InstanceType.SmartRaid => "smart_raid",
@@ -94,7 +93,6 @@
             {
                 "auto_quest" => InstanceType.AutoQuest,
                 "circle_pokemon" => InstanceType.CirclePokemon,
-                "circle_smart_pokemon" => InstanceType.CircleSmartPokemon,
                 "dynamic_route" => InstanceType.DynamicRoute,
                 "circle_raid" => InstanceType.CircleRaid,
                 "smart_raid" => InstanceType.SmartRaid,

@@ -120,7 +120,7 @@
                     var indexes = _currentUuid.Values.Select(uuid => uuid.LastRouteIndex).ToList();
                     var indexesStatus = indexes.Count == 0
                         ? "0"
-                        : string.Join(", ", _currentUuid.Values.Select(uuid => uuid.LastRouteIndex));
+                        : string.Join(",", _currentUuid.Values.Select(uuid => uuid.LastRouteIndex));
                     status = $"Route Indexes: {indexesStatus}/{Coordinates.Count}";
                 }
             }

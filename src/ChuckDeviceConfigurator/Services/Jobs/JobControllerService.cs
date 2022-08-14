@@ -241,19 +241,12 @@
             switch (instance.Type)
             {
                 case InstanceType.CirclePokemon:
-                case InstanceType.CircleSmartPokemon:
                 case InstanceType.CircleRaid:
                     var coords = geofences.ConvertToCoordinates();
-                    switch (instance.Type)
-                    {
-                        case InstanceType.CirclePokemon:
-                        case InstanceType.CircleSmartPokemon:
-                            jobController = CreateCircleJobController(instance, CircleInstanceType.Pokemon, coords);
-                            break;
-                        case InstanceType.CircleRaid:
-                            jobController = CreateCircleJobController(instance, CircleInstanceType.Raid, coords);
-                            break;
-                    }
+                    var circleInstanceType = instance.Type == InstanceType.CirclePokemon
+                        ? CircleInstanceType.Pokemon
+                        : CircleInstanceType.Raid;
+                    jobController = CreateCircleJobController(instance, circleInstanceType, coords);
                     break;
                 case InstanceType.AutoQuest:
                 case InstanceType.Bootstrap:
