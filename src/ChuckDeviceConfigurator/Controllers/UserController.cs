@@ -106,8 +106,11 @@
                 var userResult = await _userManager.CreateAsync(user, model.Password);
                 if (!userResult.Succeeded)
                 {
-                    var errors = string.Join("\n", userResult.Errors.Select(err => err.Description));
-                    ModelState.AddModelError("User", errors);
+                    var errors = userResult.Errors.Select(err => err.Description);
+                    foreach (var error in errors)
+                    {
+                        ModelState.AddModelError("User", error);
+                    }
                     return View(model);
                 }
 
@@ -142,8 +145,13 @@
                     var rolesResult = await _userManager.AddToRolesAsync(user, roleNames);
                     if (!rolesResult.Succeeded)
                     {
-                        var errors = string.Join("\n", rolesResult.Errors.Select(err => err.Description));
-                        _logger.LogError($"Failed to assign roles to user account '{model.UserName}'. Returned errors: {errors}");
+                        var errors = rolesResult.Errors.Select(err => err.Description);
+                        _logger.LogError($"Failed to assign roles to user account '{model.UserName}'. Returned errors: {string.Join("\n", errors)}");
+                        foreach (var error in errors)
+                        {
+                            ModelState.AddModelError("User", error);
+                            return View(model);
+                        }
                     }
 
                     // REVIEW: Make assigning default 'Registered' role configurable

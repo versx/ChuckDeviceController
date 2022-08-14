@@ -83,7 +83,9 @@
             _smartRaidPointsUpdated = new Dictionary<Coordinate, ulong>();
 
             // Load/build gyms list for smart raid cache
-            LoadGymsAsync();
+            LoadGymsAsync().ConfigureAwait(false)
+                           .GetAwaiter()
+                           .GetResult();
 
             _timer = new System.Timers.Timer(GymInfoSyncS * 1000); // 30 second interval
             _timer.Elapsed += async (sender, e) => await UpdateGymInfoAsync();
@@ -139,7 +141,7 @@
                     // Prevent dividing by zero
                     if (_count > 0 && delta > 0)
                     {
-                        scansPerHour = Convert.ToUInt32((double)_count / (double)delta * Strings.SixtyMinutesS);
+                        scansPerHour = Convert.ToUInt32((double)_count / delta * Strings.SixtyMinutesS);
                     }
                 }
             }
@@ -150,13 +152,13 @@
             //var gymsStatus = $", (Gyms Updated: {gymsUpdated:N0}/{gymsTotal:N0})";
             //var gymsStatus = $", (Raids Updated: {gymsUpdatedCount:N0}/{gymsTotal:N0})";
             var gymsStatus = scansStatus == Strings.DefaultInstanceStatus
-                ? ""
+                ? string.Empty
                 : $", (Active: {gymsWithActiveRaidsCount:N0}/{gymsWithoutActiveRaidsCount:N0}|{gymsTotal:N0})";
             var status = $"Scans/h: {scansStatus}{gymsStatus}";
             return await Task.FromResult(status);
         }
 
-        public Task ReloadAsync()
+        public async Task ReloadAsync()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
 
@@ -166,23 +168,22 @@
             _smartRaidPointsUpdated.Clear();
 
             // Load/gym gyms list for smart raid cache
-            LoadGymsAsync();
-            return Task.CompletedTask;
+            await LoadGymsAsync();
         }
 
-        public Task StopAsync()
+        public async Task StopAsync()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 
             _timer.Stop();
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
 
         #endregion
 
         #region Private Methods
 
-        private async void LoadGymsAsync()
+        private async Task LoadGymsAsync()
         {
             // Instead of running a query for each coordinate,
             // retrieve all gyms from the database and filter which
@@ -202,7 +203,7 @@
             var routeGenerator = new RouteGenerator(_factory);
             var route = routeGenerator.GenerateRoute(new RouteGeneratorOptions
             {
-                CircleSize = 500, // TODO: Make 'CircleSize' configurable?
+                CircleSize = 500,
                 MaximumPoints = 500,
                 MultiPolygons = (List<MultiPolygon>)MultiPolygons,
                 RouteType = RouteGenerationType.Bootstrap,
