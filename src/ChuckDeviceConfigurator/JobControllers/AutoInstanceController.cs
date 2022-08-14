@@ -28,8 +28,6 @@
         private readonly IDbContextFactory<MapContext> _mapFactory;
         private readonly IDbContextFactory<ControllerContext> _deviceFactory;
 
-        // TODO: Add dictionary to keep track of pokestops to ignore quests for (based on input from Quest queue)
-
         private readonly List<PokestopWithMode> _allStops = new();
         private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops = new();
         private readonly Dictionary<(string, bool), byte> _todayStopsAttempts = new(); // (PokestopId, IsAlternative)

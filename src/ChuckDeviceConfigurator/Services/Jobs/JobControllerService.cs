@@ -463,39 +463,43 @@
 
         #endregion
 
-        #region IV Queue
+        #region Queue
 
-        public IReadOnlyList<Pokemon> GetIvQueue(string instanceName)
+        public IReadOnlyList<T> GetQueue<T>(string instanceName)
         {
-            var queue = new List<Pokemon>();
+            var queue = new List<T>();
             lock (_instancesLock)
             {
-                // Check if instance exists in cache by name, if not return empty queue.
-                if (!_instances.ContainsKey(instanceName))
-                    return queue;
-
-                var instance = _instances[instanceName];
-                if (instance is IvInstanceController iv)
+                var jobController = GetInstanceControllerByName(instanceName);
+                if (jobController is IvInstanceController ivController)
                 {
-                    queue = (List<Pokemon>)iv.GetQueue();
+                    queue = (List<T>)ivController.GetQueue();
+                }
+                else if (jobController is AutoInstanceController questController)
+                {
+                    queue = (List<T>)questController.GetQueue();
                 }
             }
             return queue;
         }
 
-        public void RemoveFromIvQueue(string instanceName, string encounterId)
+        public void RemoveFromQueue(string instanceName, string id)
         {
             lock (_instancesLock)
             {
                 var jobController = GetInstanceControllerByName(instanceName);
                 if (jobController is IvInstanceController ivController)
                 {
-                    ivController.RemoveFromQueue(encounterId);
+                    ivController.RemoveFromQueue(id);
+                }
+                else if (jobController is AutoInstanceController questController)
+                {
+                    questController.RemoveFromQueue(id);
                 }
             }
         }
 
-        public void ClearIvQueue(string instanceName)
+        public void ClearQueue(string instanceName)
         {
             lock (_instancesLock)
             {
@@ -504,49 +508,7 @@
                 {
                     ivController.ClearQueue();
                 }
-            }
-        }
-
-        #endregion
-
-        #region Quest Queue
-
-        public IReadOnlyList<PokestopWithMode> GetQuestQueue(string instanceName)
-        {
-            var queue = new List<PokestopWithMode>();
-            lock (_instancesLock)
-            {
-                // Check if instance exists in cache by name, if not return empty queue.
-                if (!_instances.ContainsKey(instanceName))
-                    return queue;
-
-                var instance = _instances[instanceName];
-                if (instance is AutoInstanceController quest)
-                {
-                    queue = (List<PokestopWithMode>)quest.GetQueue();
-                }
-            }
-            return queue;
-        }
-
-        public void RemoveFromQuestQueue(string instanceName, string pokestopId)
-        {
-            lock (_instancesLock)
-            {
-                var jobController = GetInstanceControllerByName(instanceName);
-                if (jobController is AutoInstanceController questController)
-                {
-                    questController.RemoveFromQueue(pokestopId);
-                }
-            }
-        }
-
-        public void ClearQuestQueue(string instanceName)
-        {
-            lock (_instancesLock)
-            {
-                var jobController = GetInstanceControllerByName(instanceName);
-                if (jobController is AutoInstanceController questController)
+                else if (jobController is AutoInstanceController questController)
                 {
                     questController.ClearQueue();
                 }

@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Localization;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
@@ -306,7 +307,7 @@
         {
             try
             {
-                var ivQueue = _jobControllerService.GetIvQueue(name);
+                var ivQueue = _jobControllerService.GetQueue<Pokemon>(name);
                 var queueItems = ivQueue.Select(item =>
                 {
                     var lat = Math.Round(item.Latitude, 5);
@@ -352,7 +353,7 @@
             try
             {
                 // Remove Pokemon with index from IV queue list by name
-                _jobControllerService.RemoveFromIvQueue(name, id);
+                _jobControllerService.RemoveFromQueue(name, id);
             }
             catch
             {
@@ -368,7 +369,7 @@
             try
             {
                 // Clear all pending Pokemon encounters from the specified IV queue
-                _jobControllerService.ClearIvQueue(name);
+                _jobControllerService.ClearQueue(name);
             }
             catch
             {
@@ -387,7 +388,7 @@
         {
             try
             {
-                var questQueue = _jobControllerService.GetQuestQueue(name);
+                var questQueue = _jobControllerService.GetQueue<PokestopWithMode>(name);
                 var queueItems = questQueue.Select(item =>
                 {
                     var pokestop = item.Pokestop!;
@@ -430,7 +431,7 @@
             try
             {
                 // Remove Pokestop from Quest queue list by name
-                _jobControllerService.RemoveFromQuestQueue(name, id);
+                _jobControllerService.RemoveFromQueue(name, id);
             }
             catch
             {
@@ -446,7 +447,7 @@
             try
             {
                 // Clear all pending Pokestop quests from the specified Quest queue
-                _jobControllerService.ClearQuestQueue(name);
+                _jobControllerService.ClearQueue(name);
             }
             catch
             {
