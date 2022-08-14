@@ -4,6 +4,7 @@
 
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Options;
     using Nito.AsyncEx;
     using POGOProtos.Rpc;
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
@@ -12,6 +13,7 @@
 
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
@@ -31,7 +33,6 @@
         #region Variables
 
         private readonly ILogger<IProtoProcessorService> _logger;
-        private readonly IConfiguration _configuration;
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly IDbContextFactory<MapContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
@@ -56,7 +57,7 @@
 
         #region Properties
 
-        public bool ClearOldForts { get; }
+        public ProcessorOptions Options { get; }
 
         #endregion
 
@@ -64,20 +65,19 @@
 
         public DataProcessorService(
             ILogger<IProtoProcessorService> logger,
-            IConfiguration configuration,
+            IOptions<ProcessorOptions> options,
             IBackgroundTaskQueue taskQueue,
             IDbContextFactory<MapContext> factory,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService)
         {
             _logger = logger;
-            _configuration = configuration;
             _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
             _dbFactory = factory;
             _diskCache = diskCache;
             _grpcClientService = grpcClientService;
 
-            ClearOldForts = _configuration.GetValue<bool>("ClearOldForts", false);
+            Options = options.Value;
         }
 
         #endregion
@@ -306,7 +306,7 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             _logger.LogInformation($"Data processer inserted {count:N0} items in {totalSeconds}s");
 
-            if (ClearOldForts)
+            if (Options.ClearOldForts)
             {
                 // Clear any old Gyms or Pokestops that might have been removed from the game
                 await ClearOldFortsAsync();

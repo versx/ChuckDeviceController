@@ -34,7 +34,7 @@
 
         #region Properties
 
-        public ProtoProcessorOptions Options { get; }
+        public ProcessorOptions Options { get; }
 
         #endregion
 
@@ -42,7 +42,7 @@
 
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
-            IOptions<ProtoProcessorOptions> options,
+            IOptions<ProcessorOptions> options,
             IBackgroundTaskQueue taskQueue,
             IDataProcessorService dataProcessor,
             IGrpcClientService grpcClientService)

@@ -57,7 +57,7 @@ builder.Services.AddSingleton<IBackgroundTaskQueue>(_ =>
     return new DefaultBackgroundTaskQueue(Strings.MaximumQueueCapacity);
 });
 
-builder.Services.Configure<ProtoProcessorOptions>(builder.Configuration.GetSection("Options"));
+builder.Services.Configure<ProcessorOptions>(builder.Configuration.GetSection("Options"));
 
 #endregion
 
