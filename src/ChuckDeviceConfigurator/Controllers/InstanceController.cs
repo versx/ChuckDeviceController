@@ -437,6 +437,21 @@
             return RedirectToAction(nameof(QuestQueue), new { name });
         }
 
+        [HttpGet("/Instance/QuestQueue/{name}/Clear")]
+        public ActionResult ClearQuestQueue(string name)
+        {
+            try
+            {
+                // Clear all pending Pokestop quests from the specified Quest queue
+                //_jobControllerService.ClearQuestQueue(name);
+            }
+            catch
+            {
+                _logger.LogError($"Unknown error occurred while clearing Quest queue '{name}'.");
+            }
+            return RedirectToAction(nameof(QuestQueue), new { name });
+        }
+
         #region Private Methods
 
         private async Task AssignDevicesToInstance(List<string> deviceUuids, string instanceName)

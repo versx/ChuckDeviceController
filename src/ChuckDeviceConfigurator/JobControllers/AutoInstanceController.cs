@@ -359,12 +359,21 @@
         public void RemoveFromQueue(string pokestopId)
         {
             // Add pokestop to ignore list
-            if (_ignorePokestopIds.Contains(pokestopId))
+            if (!_ignorePokestopIds.Contains(pokestopId))
             {
                 _ignorePokestopIds.Add(pokestopId);
             }
 
-            // TODO: Check ignore list against todays list when retrieving next pokestop
+            // Check ignore list against todays list when retrieving next pokestop
+            var stopToIgnore = _todayStops.FirstOrDefault(stop => stop.Pokestop.Id == pokestopId);
+            if (stopToIgnore != null)
+            {
+                _todayStops.Remove(stopToIgnore);
+                if (_allStops.Contains(stopToIgnore))
+                {
+                    _allStops.Remove(stopToIgnore);
+                }
+            }
         }
 
         public async Task ReloadAsync()
@@ -495,6 +504,10 @@
                                 var isAlternative = QuestMode == QuestMode.Alternative || QuestMode == QuestMode.Both;
                                 foreach (var stop in stops)
                                 {
+                                    // Skip quests for any Pokestops the user has set to ignore via Quest queue
+                                    if (_ignorePokestopIds.Contains(stop.Id))
+                                        continue;
+
                                     // Filter any Pokestops not within the geofence
                                     var coord = stop.ToCoordinate();
                                     if (!GeofenceService.InPolygon(polygon, coord))
@@ -565,6 +578,10 @@
 
             foreach (var stop in todayStops)
             {
+                // Skip quests for any Pokestops the user has set to ignore via Quest queue
+                if (_ignorePokestopIds.Contains(stop.Pokestop.Id))
+                    continue;
+
                 var coord = stop.Pokestop.ToCoordinate();
                 var dist = lastCoord.DistanceTo(coord);
                 if (dist < closestOverallDistance)
