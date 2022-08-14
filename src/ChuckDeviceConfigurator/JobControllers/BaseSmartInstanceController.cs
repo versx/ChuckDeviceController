@@ -2,7 +2,6 @@
 {
     using System.Threading.Tasks;
 
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;

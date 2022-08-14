@@ -84,7 +84,6 @@
         /// <param name="pokestopIds"></param>
         public static async Task ClearQuestsAsync(this MapContext context, IEnumerable<string> pokestopIds)
         {
-            var pokestopsToUpsert = new List<Pokestop>();
             var pokestops = GetPokestopsByIds(context, pokestopIds);
             await ClearQuestsAsync(context, pokestops);
         }
@@ -109,9 +108,16 @@
         /// <param name="multiPolygon"></param>
         public static async Task ClearQuestsAsync(this MapContext context, MultiPolygon multiPolygon)
         {
-            // TODO: Use GeofenceService.InMultiPolygon instead
             var bbox = multiPolygon.GetBoundingBox();
-            await ClearQuestsAsync(context, bbox);
+            var pokestops = context.Pokestops.Where(stop =>
+                stop.Latitude >= bbox.MinimumLatitude &&
+                stop.Longitude >= bbox.MinimumLongitude &&
+                stop.Latitude <= bbox.MaximumLatitude &&
+                stop.Longitude <= bbox.MaximumLongitude
+            ).ToList();
+            var pokestopIds = pokestops.Where(stop => GeofenceService.InPolygon(multiPolygon, stop.ToCoordinate()))
+                                       .Select(stop => stop.Id);
+            await ClearQuestsAsync(context, pokestopIds);
         }
 
         /// <summary>
