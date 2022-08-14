@@ -4,10 +4,12 @@
     using System.Diagnostics;
 
     using Google.Common.Geometry;
+    using Microsoft.Extensions.Options;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Collections.Cache;
     using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
@@ -32,7 +34,7 @@
 
         #region Properties
 
-        public bool ProcessMapPokemon { get; set; } = true; // TODO: Make `ProcessMapPokemon` configurable
+        public ProtoProcessorOptions Options { get; }
 
         #endregion
 
@@ -40,6 +42,7 @@
 
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
+            IOptions<ProtoProcessorOptions> options,
             IBackgroundTaskQueue taskQueue,
             IDataProcessorService dataProcessor,
             IGrpcClientService grpcClientService)
@@ -48,6 +51,8 @@
             _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
             _dataProcessor = dataProcessor;
             _grpcClientService = grpcClientService;
+
+            Options = options.Value;
         }
 
         #endregion
@@ -313,7 +318,7 @@
                         }
                         break;
                     case Method.DiskEncounter:
-                        if (ProcessMapPokemon && (level >= 30 || isMadData))
+                        if (Options.ProcessMapPokemon && (level >= 30 || isMadData))
                         {
                             try
                             {
@@ -426,7 +431,7 @@
                                             data = fort,
                                             username,
                                         });
-                                        if (ProcessMapPokemon && fort.ActivePokemon != null)
+                                        if (Options.ProcessMapPokemon && fort.ActivePokemon != null)
                                         {
                                             newMapPokemon.Add(new
                                             {
