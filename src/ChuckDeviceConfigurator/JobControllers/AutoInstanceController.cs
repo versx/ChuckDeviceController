@@ -354,28 +354,6 @@
             return null;
         }
 
-        public IReadOnlyList<PokestopWithMode> GetQueue() => _todayStops.ToList();
-
-        public void RemoveFromQueue(string pokestopId)
-        {
-            // Add pokestop to ignore list
-            if (!_ignorePokestopIds.Contains(pokestopId))
-            {
-                _ignorePokestopIds.Add(pokestopId);
-            }
-
-            // Check ignore list against todays list when retrieving next pokestop
-            var stopToIgnore = _todayStops.FirstOrDefault(stop => stop.Pokestop.Id == pokestopId);
-            if (stopToIgnore != null)
-            {
-                _todayStops.Remove(stopToIgnore);
-                if (_allStops.Contains(stopToIgnore))
-                {
-                    _allStops.Remove(stopToIgnore);
-                }
-            }
-        }
-
         public async Task ReloadAsync()
         {
             _logger.LogDebug($"[{Name}] Reloading instance");
@@ -383,13 +361,13 @@
             await UpdateAsync();
         }
 
-        public Task StopAsync()
+        public async Task StopAsync()
         {
             _logger.LogDebug($"[{Name}] Stopping instance");
 
             _timer.Stop();
 
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -422,6 +400,54 @@
             }
 
             await UpdateAsync();
+        }
+
+        #endregion
+
+        #region Quest Queue Management
+
+        public IReadOnlyList<PokestopWithMode> GetQueue() => _todayStops.ToList();
+
+        public void RemoveFromQueue(string pokestopId)
+        {
+            // TODO: Lock
+
+            // Add pokestop to ignore list
+            if (!_ignorePokestopIds.Contains(pokestopId))
+            {
+                _ignorePokestopIds.Add(pokestopId);
+            }
+
+            // Check ignore list against todays list when retrieving next pokestop
+            var stopToIgnore = _todayStops.FirstOrDefault(stop => stop.Pokestop.Id == pokestopId);
+            if (stopToIgnore != null)
+            {
+                _todayStops.Remove(stopToIgnore);
+                if (_allStops.Contains(stopToIgnore))
+                {
+                    _allStops.Remove(stopToIgnore);
+                }
+            }
+        }
+
+        internal void ClearQueue()
+        {
+            // TODO: Lock
+
+            // Add all Pokestop ids from _todayStops to ignore list
+            var todayStops = _todayStops;
+            for (var i = 0; i < todayStops.Count; i++)
+            {
+                // Add pokestop to ignore list
+                var stop = todayStops[i];
+                if (!_ignorePokestopIds.Contains(stop.Pokestop.Id))
+                {
+                    _ignorePokestopIds.Add(stop.Pokestop.Id);
+                }
+            }
+
+            //_allStops.Clear();
+            _todayStops.Clear();
         }
 
         #endregion

@@ -379,6 +379,8 @@
 
         #endregion
 
+        #region Quest Queue Routes
+
         // GET: InstanceController/QuestQueue/test
         [HttpGet("/Instance/QuestQueue/{name}")]
         public ActionResult QuestQueue(string name, bool autoRefresh = false)
@@ -443,7 +445,7 @@
             try
             {
                 // Clear all pending Pokestop quests from the specified Quest queue
-                //_jobControllerService.ClearQuestQueue(name);
+                _jobControllerService.ClearQuestQueue(name);
             }
             catch
             {
@@ -451,6 +453,8 @@
             }
             return RedirectToAction(nameof(QuestQueue), new { name });
         }
+
+        #endregion
 
         #region Private Methods
 

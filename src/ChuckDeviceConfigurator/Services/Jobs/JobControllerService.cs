@@ -541,6 +541,18 @@
             }
         }
 
+        public void ClearQuestQueue(string instanceName)
+        {
+            lock (_instancesLock)
+            {
+                var jobController = GetInstanceControllerByName(instanceName);
+                if (jobController is AutoInstanceController questController)
+                {
+                    questController.ClearQueue();
+                }
+            }
+        }
+
         #endregion
 
         #region Receivers

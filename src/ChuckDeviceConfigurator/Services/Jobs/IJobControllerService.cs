@@ -153,15 +153,24 @@
         void RemoveFromIvQueue(string instanceName, string encounterId);
 
         /// <summary>
-        /// Clears all pending encounters from the specified Pokemon IV job controller instance queue
+        /// Clears all pending encounters from the specified Pokemon IV job controller instance queue.
         /// </summary>
-        /// <param name="instanceName">Name of the Pokemon IV instance queue to clear</param>
+        /// <param name="instanceName">Name of the Pokemon IV instance queue to clear.</param>
         void ClearIvQueue(string instanceName);
 
         #endregion
 
         #region Quest Queue
 
+        /// <summary>
+        /// Gets the Quest queue by instance name. (Must be Quest job controller instance)
+        /// </summary>
+        /// <param name="instanceName">
+        /// Name of the Quest instance to get the queue from.
+        /// </param>
+        /// <returns>
+        /// Returns a read only list of pending queued Pokestops from a Quest queue.
+        /// </returns>
         IReadOnlyList<PokestopWithMode> GetQuestQueue(string instanceName);
 
         /// <summary>
@@ -171,6 +180,12 @@
         /// <param name="instanceName">Name of Quest instance.</param>
         /// <param name="pokestopId">Pokestop ID to remove.</param>
         void RemoveFromQuestQueue(string instanceName, string pokestopId);
+
+        /// <summary>
+        /// Clears all pending Pokestops from the specified Quest job controller instance queue.
+        /// </summary>
+        /// <param name="instanceName">Name of the Quest instance queue to clear.</param>
+        void ClearQuestQueue(string instanceName); // TODO: Use one ClearQueue method and add QueueType param
 
         #endregion
 
