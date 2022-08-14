@@ -537,8 +537,7 @@
                                         continue;
 
                                     // Filter any Pokestops not within the geofence
-                                    var coord = stop.ToCoordinate();
-                                    if (!GeofenceService.InPolygon(polygon, coord))
+                                    if (!GeofenceService.InPolygon(polygon, stop.ToCoordinate()))
                                         continue;
 
                                     _allStops.Add(new PokestopWithMode(stop, isAlternative));

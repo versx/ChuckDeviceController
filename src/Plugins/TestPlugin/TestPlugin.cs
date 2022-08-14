@@ -10,14 +10,18 @@
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
 
+    using Data.Contexts;
     using Extensions;
     using JobControllers;
 
     //http://127.0.0.1:8881/plugin/v1
     //http://127.0.0.1:8881/Test
+
+    // TODO: Include user roles with plugins
 
     /// <summary>
     ///     Example plugin demonstrating the capabilities
@@ -230,6 +234,7 @@
             _loggingHost.LogMessage($"ConfigureServices called");
 
             services.AddSingleton<IPluginService, TestPluginService>();
+            services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"));
 
             //services.AddMvc();
             //services.AddControllersWithViews();
@@ -309,6 +314,20 @@
                         //new("Hmm", isSeparator: true, displayIndex: 3),
                         new("Item2", "Instance", isDisabled: true, displayIndex: 999, icon: "fa-solid fa-fw fa-cubes-stacked"),
                     },
+                },
+                new NavbarHeader
+                {
+                    Text = "Sep",
+                    DisplayIndex = 998,
+                    IsSeparator = true,
+                },
+                new NavbarHeader
+                {
+                    Text = "Todos",
+                    ControllerName = "Todo",
+                    ActionName = "Index",
+                    DisplayIndex = 999,
+                    Icon = "fa-solid fa-fw fa-list",
                 },
             };
             await _uiHost.AddNavbarHeadersAsync(pluginNavbarHeaders);

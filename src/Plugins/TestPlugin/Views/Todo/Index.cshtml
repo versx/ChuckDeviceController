@@ -1,0 +1,51 @@
+﻿@using TestPlugin.Data.Entities
+@model List<Todo>
+@{
+    ViewData["Title"] = "Todos";
+}
+
+<h1>Todos</h1>
+<br />
+
+<p>
+    <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
+</p>
+
+<table id="table-todos" class="table table-striped table-bordered nowrap">
+    <thead class="table-dark">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].IsComplete)
+            </th>
+            <th width="5%">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">
+                    @Html.DisplayFor(modelItem => item.Name)
+                </th>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsComplete);
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownGroup" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
+                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
+                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
+                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

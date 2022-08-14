@@ -26,6 +26,7 @@ using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Plugins;
 
 // TODO: Show top navbar on mobile when sidebar is closed?
+// TODO: Create separate gRPC server service for all gRPC calls
 
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -183,7 +184,7 @@ builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSe
 
 builder.Services.AddGrpc(options =>
 {
-    options.IgnoreUnknownServices = false; // TODO: Set to 'true' for production
+    options.IgnoreUnknownServices = true,
     options.EnableDetailedErrors = true;
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });
