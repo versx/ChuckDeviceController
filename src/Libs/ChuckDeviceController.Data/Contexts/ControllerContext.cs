@@ -37,48 +37,62 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<AssignmentGroup>()
-                        .Property(p => p.AssignmentIds)
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
+            modelBuilder.Entity<Assignment>(entity =>
+            {
+                entity.HasIndex(p => p.InstanceName);
+            });
 
-            modelBuilder.Entity<DeviceGroup>()
-                        .Property(p => p.DeviceUuids)
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+            modelBuilder.Entity<AssignmentGroup>(entity =>
+            {
+                entity.Property(p => p.AssignmentIds)
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
+            });
 
-            modelBuilder.Entity<Geofence>()
-                        .Property(p => p.Type)
-                        .HasConversion(x => Geofence.GeofenceTypeToString(x), x => Geofence.StringToGeofenceType(x));
-            modelBuilder.Entity<Geofence>()
-                        .Property(nameof(Geofence.Data))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData>());
+            modelBuilder.Entity<DeviceGroup>(entity =>
+            {
+                entity.Property(p => p.DeviceUuids)
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+            });
 
-            modelBuilder.Entity<Instance>()
-                        .Property(p => p.Type)
-                        .HasConversion(x => Instance.InstanceTypeToString(x), x => Instance.StringToInstanceType(x));
-            modelBuilder.Entity<Instance>()
-                        .Property(nameof(Instance.Data))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData>());
-            modelBuilder.Entity<Instance>()
-                        .Property(p => p.Geofences)
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+            modelBuilder.Entity<Geofence>(entity =>
+            {
+                entity.Property(p => p.Type)
+                      .HasConversion(x => Geofence.GeofenceTypeToString(x), x => Geofence.StringToGeofenceType(x));
+                entity.Property(nameof(Geofence.Data))
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData>());
+            });
 
-            modelBuilder.Entity<IvList>()
-                        .Property(p => p.PokemonIds)
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+            modelBuilder.Entity<Instance>(entity =>
+            {
+                entity.Property(p => p.Type)
+                      .HasConversion(x => Instance.InstanceTypeToString(x), x => Instance.StringToInstanceType(x));
+                entity.Property(nameof(Instance.Data))
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData>());
+                entity.Property(p => p.Geofences)
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+            });
 
-            modelBuilder.Entity<Plugin>()
-                        .Property(p => p.State)
-                        .HasConversion(x => Plugin.PluginStateToString(x), x => Plugin.StringToPluginState(x));
+            modelBuilder.Entity<IvList>(entity =>
+            {
+                entity.Property(p => p.PokemonIds)
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+            });
 
-            modelBuilder.Entity<Webhook>()
-                        .Property(p => p.Types)
-                        .HasConversion(x => Webhook.WebhookTypeToString(x), x => Webhook.StringToWebhookTypes(x));
-            modelBuilder.Entity<Webhook>()
-                        .Property(nameof(Webhook.Data))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData>());
-            modelBuilder.Entity<Webhook>()
-                        .Property(nameof(Webhook.Geofences))
-                        .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+            modelBuilder.Entity<Plugin>(entity =>
+            {
+                entity.Property(p => p.State)
+                      .HasConversion(x => Plugin.PluginStateToString(x), x => Plugin.StringToPluginState(x));
+            });
+
+            modelBuilder.Entity<Webhook>(entity =>
+            {
+                entity.Property(p => p.Types)
+                      .HasConversion(x => Webhook.WebhookTypeToString(x), x => Webhook.StringToWebhookTypes(x));
+                entity.Property(nameof(Webhook.Data))
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData>());
+                entity.Property(nameof(Webhook.Geofences))
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+            });
 
             base.OnModelCreating(modelBuilder);
         }
