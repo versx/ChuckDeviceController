@@ -54,7 +54,7 @@
         }
 
         [HttpPost("api/coords")]
-        public JsonResult AddCoordinates([FromBody] List<Coordinate> coords)
+        public JsonResult AddCoordinates([FromBody] List<ICoordinate> coords)
         {
             foreach (var coord in coords)
             {

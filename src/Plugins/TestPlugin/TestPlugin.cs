@@ -3,6 +3,7 @@
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Plugins;
 
     using Microsoft.AspNetCore.Builder;
@@ -10,7 +11,9 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
 
+    using Extensions;
     using JobControllers;
 
     //http://127.0.0.1:8881/plugin/v1
@@ -108,7 +111,7 @@
 
         #endregion
 
-        #region ASP.NET WebApi Event Handlers
+        #region ASP.NET WebApi Configure Callback Handlers
 
         /// <summary>
         ///     Configures the application to set up middlewares, routing rules, etc.
@@ -123,7 +126,8 @@
             //var testService = appBuilder.ApplicationServices.GetService<IPluginService>();
             var testService = appBuilder.Services.GetService<IPluginService>();
 
-            // We can configure routing here or using Mvc Controller classes
+            // We can configure routing here using 'Minimal APIs' or using Mvc Controller classes
+            // Minimal API's Reference: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0
             appBuilder.Map("/plugin/v1", app =>
             {
                 app.Run(async (httpContext) =>
@@ -141,7 +145,29 @@
             appBuilder.Urls.Add("http://127.0.0.1:1199");
             appBuilder.Urls.Add("http://10.0.0.2:1199");
 
-            appBuilder.MapGet("hello/{name}", async (httpContext) =>
+            // Example routing using minimal APIs
+            appBuilder.Map("example/{name}", async (httpContext) =>
+            {
+                Console.WriteLine($"Method: {httpContext.Request.Method}");
+                var routeValues = httpContext.Request.RouteValues;
+                var name = Convert.ToString(routeValues["name"]);
+                Console.WriteLine($"Name: {name}");
+                await httpContext.Response.WriteAsync(name);
+            });
+            appBuilder.MapGet("example", () => "Hi :)");
+            appBuilder.MapPost("example", async (httpContext) =>
+            {
+                var body = await httpContext.Request.ReadBodyAsStringAsync();
+                _loggingHost.LogMessage($"Body: {body}");
+                var coords = body?.FromJson<List<Coordinate>>();
+                var response = string.Join(", ", coords ?? new());
+                _loggingHost.LogMessage($"Coords: {response}");
+                await httpContext.Response.WriteAsync(response);
+            });
+            //appBuilder.MapPut("example", async (httpContext) => { });
+            //appBuilder.MapDelete("example", async (httpContext) => { });
+
+            appBuilder.MapGet("example/hello/{name}", async (httpContext) =>
             {
                 var method = httpContext.Request.Method;
                 var path = httpContext.Request.Path;
@@ -150,27 +176,35 @@
                 //var formValues = httpContext.Request.Form;
                 var routeValues = httpContext.Request.RouteValues;
                 var body = httpContext.Request.Body;
+                //using var readStream = new StreamReader(body);
+                //var bodyData = readStream.ReadToEnd();
                 var userClaims = httpContext.User;
                 await httpContext.Response.WriteAsync($"Hello, {routeValues["name"]}!");
             });
-            appBuilder.MapGet("buenosdias/{name}", async (httpContext) =>
+            appBuilder.MapGet("example/buenosdias/{name}", async (httpContext) =>
                 await httpContext.Response.WriteAsync($"Buenos dias, {httpContext.Request.RouteValues["name"]}!"));
-            appBuilder.MapGet("throw/{message?}", (httpContext) =>
+            appBuilder.MapGet("example/throw/{message?}", (httpContext) =>
                 throw new Exception(Convert.ToString(httpContext.Request.RouteValues["message"]) ?? "Uh oh!"));
-            appBuilder.MapGet("{greeting}/{name}", async (httpContext) =>
+            appBuilder.MapGet("example/{greeting}/{name}", async (httpContext) =>
                 await httpContext.Response.WriteAsync($"{httpContext.Request.RouteValues["greeting"]}, {httpContext.Request.RouteValues["name"]}!"));
+
             // NOTE: Uncommenting the below routing map will overwrite the default '/' routing path to the dashboard
             //appBuilder.MapGet("", async (httpContext) => await httpContext.Response.WriteAsync("Hello, World!"));
 
 
 
             // Register custom middlewares
+            // Built in ASP.NET Core Middlewares: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0#aspnet-core-middleware
             //appBuilder.Use(async (httpContext, next) =>//(HttpContext httpContext, RequestDelegate req, Task next) =>
             //{
             //    // Action before next delegate
             //    await next.Invoke();
             //    // Action after called middleware
             //});
+
+
+            // Use built in logger
+            appBuilder.Logger.LogInformation($"Logging from the plugin '{Name}'");
         }
 
         /// <summary>
@@ -416,6 +450,11 @@
         {
             Latitude = latitude;
             Longitude = longitude;
+        }
+
+        public override string ToString()
+        {
+            return $"{Latitude},{Longitude}";
         }
     }
 

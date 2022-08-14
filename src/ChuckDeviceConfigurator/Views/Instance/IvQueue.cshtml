@@ -16,7 +16,8 @@
 
 <div class="pb-5">
     <div class="form-group float-start">
-        <a class="btn btn-danger btn-sm" title="@(clearAllText)" asp-action="ClearQueue" asp-route-name="@Model?.Name" onclick="return confirm('@(confirmText)')">
+        @*<a class="btn btn-danger btn-sm" title="@(clearAllText)" asp-action="ClearQueue" asp-route-name="@Model?.Name" onclick="return confirm('@(confirmText)')">*@
+        <a class="btn btn-danger btn-sm" href="@Model?.Name/Clear" title="@(clearAllText)" onclick="return confirm('@(confirmText)')">
             <i class="fa-solid fa-trash-can"></i>&nbsp;Clear Queue
         </a>
     </div>

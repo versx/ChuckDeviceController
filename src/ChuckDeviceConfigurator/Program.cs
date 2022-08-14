@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
@@ -139,6 +140,13 @@ if (builder.Environment.IsDevelopment())
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+// API endpoint explorer/reference
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = Strings.AssemblyName, Version = "v1" });
+});
+
 #region Database Contexts
 
 builder.Services.AddDbContextFactory<ControllerContext>(options =>
@@ -203,6 +211,9 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseMigrationsEndPoint();
+
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {

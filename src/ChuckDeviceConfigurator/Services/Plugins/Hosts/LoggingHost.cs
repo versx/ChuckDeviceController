@@ -18,7 +18,9 @@
 
         public void LogMessage(string text, params object[] args)
         {
-            var message = string.Format(text, args);
+            var message = args.Length > 0
+                ? string.Format(text, args)
+                : text;
             _logger.LogInformation($"----------------------- Message from plugin: {message}");
         }
     }

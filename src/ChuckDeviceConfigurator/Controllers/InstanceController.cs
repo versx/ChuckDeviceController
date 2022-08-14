@@ -301,7 +301,7 @@
         #region IV Queue Routes
 
         // GET: InstanceController/IvQueue/test
-        [Route("/Instance/IvQueue/{name}")]
+        [HttpGet("/Instance/IvQueue/{name}")]
         public ActionResult IvQueue(string name, bool autoRefresh = false)
         {
             try
@@ -346,7 +346,7 @@
         }
 
         // GET: InstanceController/IvQueue/test/Remove/5
-        [Route("/Instance/IvQueue/{name}/Remove/{id}")]
+        [HttpGet("/Instance/IvQueue/{name}/Remove/{id}")]
         public ActionResult IvQueueRemove(string name, string id)
         {
             try
@@ -361,7 +361,9 @@
             return RedirectToAction(nameof(IvQueue), new { name });
         }
 
-        [Route("/Instance/IvQueue/ClearQueue/{name}")]
+        // GET: InstanceController/IvQueue/test/Clear
+        //[HttpGet("/Instance/IvQueue/ClearQueue/{name}")]
+        [HttpGet("/Instance/IvQueue/{name}/Clear")]
         public ActionResult ClearQueue(string name)
         {
             try
@@ -379,7 +381,7 @@
         #endregion
 
         // GET: InstanceController/QuestQueue/test
-        [Route("/Instance/QuestQueue/{name}")]
+        [HttpGet("/Instance/QuestQueue/{name}")]
         public ActionResult QuestQueue(string name, bool autoRefresh = false)
         {
             try
