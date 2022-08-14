@@ -10,7 +10,7 @@
     {
         /// <summary>
         /// Event that is fired when an AutoInstanceController completes, informs
-        /// <seealso cref="Jobs.JobControllerService"/> that the cached device needs
+        /// <seealso cref="Jobs.IJobControllerService"/> that the cached device needs
         /// to be reloaded.
         /// </summary>
         event EventHandler<AssignmentDeviceReloadedEventArgs> DeviceReloaded;
@@ -35,7 +35,6 @@
         /// Starts the assignment for any devices specified for it.
         /// </summary>
         /// <param name="assignment">Assignment to start.</param>
-        /// <returns></returns>
         Task StartAssignmentAsync(Assignment assignment);
 
         /// <summary>
@@ -48,24 +47,21 @@
         /// Clears all quests for related instances affected by assignment group
         /// assignments and re-quests.
         /// </summary>
-        /// <param name="assignmentGroup">Assignments group to re-quest</param>
-        Task ReQuestAssignmentGroupAsync(AssignmentGroup assignmentGroup);
+        /// <param name="assignmentIds">Assignment IDs to re-quest.</param>
+        Task ReQuestAssignmentsAsync(IEnumerable<uint> assignmentIds);
 
         /// <summary>
         /// Clears all quests for related instances affected by assignment
         /// and re-quests.
         /// </summary>
-        /// <param name="assignment">Assignment to re-quest</param>
-        Task ReQuestAssignmentAsync(Assignment assignment);
+        /// <param name="assignmentId">Assignment ID to re-quest.</param>
+        Task ReQuestAssignmentAsync(uint assignmentId);
 
         /// <summary>
         ///     Called when an AutoInstanceController completes. Triggers all "On-Complete"
         ///     assignments for devices assigned to AutoInstanceController.
         /// </summary>
-        /// <param name="instanceName">
-        ///     (Optional) Instance name device is switching
-        ///     from.
-        /// </param>
+        /// <param name="instanceName">(Optional) Instance name device is switching from.</param>
         Task InstanceControllerCompleteAsync(string instanceName);
     }
 }

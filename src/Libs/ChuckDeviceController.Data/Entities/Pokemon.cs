@@ -108,8 +108,11 @@
         [Column("username")]
         public string? Username { get; set; }
 
-        [Column("pokestop_id")]
-        public string? PokestopId { get; set; }
+        [
+            Column("pokestop_id"),
+            DefaultValue(null),
+        ]
+        public string? PokestopId { get; set; } = null;
 
         [Column("first_seen_timestamp")]
         public ulong? FirstSeenTimestamp { get; set; }
@@ -141,8 +144,10 @@
         [Column("display_pokemon_id")]
         public uint? DisplayPokemonId { get; set; }
 
-        [Column("pvp")]
-        [DefaultValue(null)]
+        [
+            Column("pvp"),
+            DefaultValue(null),
+        ]
         public Dictionary<string, dynamic>? PvpRankings { get; set; } = null;
 
         [Column("base_height")]
@@ -187,6 +192,7 @@
         public Pokemon()
         {
             Id = string.Empty;
+            PokestopId = null;
         }
 
         public Pokemon(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)

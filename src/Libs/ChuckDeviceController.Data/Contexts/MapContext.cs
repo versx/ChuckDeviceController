@@ -91,6 +91,9 @@
                       .HasComputedColumnSql("json_extract(json_extract(`alternative_quest_rewards`,'$[*].info.pokemon_id'),'$[0]')");
 
                 entity.HasIndex(p => p.CellId);
+
+                entity.HasMany(p => p.Incidents);
+                //entity.HasMany<Incident>();
             });
 
             modelBuilder.Entity<Pokemon>(entity =>

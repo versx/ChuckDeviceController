@@ -115,51 +115,58 @@
             }
         }
 
+        public Assignment GetByName(uint name)
+        {
+            List<Assignment> assignments;
+            lock (_assignmentsLock)
+            {
+                assignments = _assignments;
+            }
+
+            var assignment = assignments?.FirstOrDefault(x => x.Id == name);
+            return assignment;
+        }
+
+        public IReadOnlyList<Assignment> GetByNames(IReadOnlyList<uint> names)
+        {
+            List<Assignment> assignments;
+            lock (_assignmentsLock)
+            {
+                assignments = _assignments;
+            }
+
+            var result = new List<Assignment>();
+            if (assignments == null)
+            {
+                return result;
+            }
+
+            foreach (var assignment in assignments)
+            {
+                if (!names.Contains(assignment.Id))
+                    continue;
+
+                result.Add(assignment);
+            }
+            return result;
+        }
+
+        #region Start Assignments
+
         public async Task StartAssignmentAsync(Assignment assignment)
         {
             await TriggerAssignmentAsync(assignment, force: true);
         }
 
-        public List<string> ResolveAssignmentChain(Assignment assignment)
-        {
-            var result = new List<Assignment>();
-            var assignments = _assignments.Where(a => a.Enabled).ToList();
-            var toVisit = new List<Assignment> { assignment };
-            while (toVisit.Count > 0)
-            {
-                var found = false;
-                for (var i = 0; i < toVisit.Count; i++)
-                {
-                    var source = toVisit[i];
-                    var chained = assignments.Where(a => a.SourceInstanceName == source.InstanceName);
-                    foreach (var target in chained)
-                    {
-                        if (!toVisit.Contains(target))
-                        {
-                            toVisit.Add(target);
-                        }
-                    }
-                    if (!result.Contains(source))
-                    {
-                        found = true;
-                        result.Add(source);
-                    }
-                    var index = toVisit.IndexOf(source);
-                    if (index > -1)
-                    {
-                        toVisit.RemoveAt(index);
-                    }
-                }
-                if (!found) break;
-            }
-            var instanceNames = result.Select(a => a.InstanceName).ToList();
-            return instanceNames;
-        }
-
         public async Task StartAssignmentGroupAsync(AssignmentGroup assignmentGroup)
         {
-            var assignments = _assignments.Where(assignment => assignmentGroup.AssignmentIds.Contains(assignment.Id))
+            List<Assignment> assignments;
+            lock (_assignmentsLock)
+            {
+                var assignmentIds = assignmentGroup.AssignmentIds;
+                assignments = _assignments.Where(assignment => assignmentIds.Contains(assignment.Id))
                                           .ToList();
+            }
 
             foreach (var assignment in assignments)
             {
@@ -167,9 +174,18 @@
             }
         }
 
-        public async Task ReQuestAssignmentGroupAsync(AssignmentGroup assignmentGroup)
+        #endregion
+
+        #region ReQuest Assignments
+
+        public async Task ReQuestAssignmentAsync(uint assignmentId)
         {
-            var assignmentIds = assignmentGroup.AssignmentIds;
+            var assignmentIds = new[] { assignmentId };
+            await ReQuestAssignmentsAsync(assignmentIds);
+        }
+
+        public async Task ReQuestAssignmentsAsync(IEnumerable<uint> assignmentIds)
+        {
             var assignments = assignmentIds.Select(id => _assignments.FirstOrDefault(a => a.Id == id))
                                            .Where(assignment => assignment!.Enabled)
                                            .ToList();
@@ -207,97 +223,62 @@
             // TODO: Trigger assignments
         }
 
-        public async Task ReQuestAssignmentAsync(Assignment assignment)
-        {
-            var assignmentToReQuest = _assignments.FirstOrDefault(a => a.Id == assignment.Id && a.Enabled);
-            if (assignmentToReQuest == null)
-            {
-                _logger.LogError($"Failed to find assignment with id '{assignment?.Id}' to start re-quest");
-                return;
-            }
-
-            using var context = _controllerFactory.CreateDbContext();
-            var instances = context.Instances
-                                   .Where(instance => instance.Type == InstanceType.AutoQuest)
-                                   .ToList();
-            var geofences = context.Geofences.ToList()
-                                             .Where(geofence => instances.Any(i => i.Geofences.Contains(geofence.Name)))
-                                             .ToList();
-            var instancesToClear = new List<Instance>();
-            var affectedInstanceNames = ResolveAssignmentChain(assignmentToReQuest);
-            var affectedInstances = instances.Where(x => affectedInstanceNames.Contains(x.Name)).ToList();
-            var affectedInstanceNotAdded = affectedInstances.Where(x => !instancesToClear.Contains(x));
-            foreach (var instance in affectedInstanceNotAdded)
-            {
-                instancesToClear.Add(instance);
-            }
-            _logger.LogInformation($"Re-Quest will clear quests for {instancesToClear.Count:N0} instances");
-
-            using var mapContext = _mapFactory.CreateDbContext();
-            foreach (var instance in instancesToClear)
-            {
-                var instanceGeofences = geofences.Where(geofence => instance.Geofences.Contains(geofence.Name)).ToList();
-                foreach (var geofence in instanceGeofences)
-                {
-                    _logger.LogInformation($"Clearing quests for geofence: {geofence.Name}");
-                    await mapContext.ClearQuestsAsync(geofence);
-                }
-                // TODO: Reload quest instance
-            }
-            // TODO: Trigger assignments
-        }
-
-        public Assignment GetByName(uint name)
-        {
-            List<Assignment> assignments;
-            lock (_assignmentsLock)
-            {
-                assignments = _assignments;
-            }
-
-            var assignment = assignments?.FirstOrDefault(x => x.Id == name);
-            return assignment;
-        }
-
-        public IReadOnlyList<Assignment> GetByNames(IReadOnlyList<uint> names)
-        {
-            List<Assignment> assignments;
-            lock (_assignmentsLock)
-            {
-                assignments = _assignments;
-            }
-
-            var result = new List<Assignment>();
-            if (assignments == null)
-            {
-                return result;
-            }
-
-            foreach (var assignment in assignments)
-            {
-                if (!names.Contains(assignment.Id))
-                    continue;
-
-                result.Add(assignment);
-            }
-            return result;
-        }
+        #endregion
 
         public async Task InstanceControllerCompleteAsync(string instanceName)
         {
-            foreach (var assignment in _assignments)
+            List<Assignment> assignments;
+            lock (_assignmentsLock)
             {
                 // Only trigger enabled on-complete assignments
-                if (assignment.Enabled && assignment.Time == 0)
-                {
-                    await TriggerAssignmentAsync(assignment, instanceName);
-                }
+                assignments = _assignments.Where(x => x.Enabled && x.Time == 0)
+                                          .ToList();
+            }
+            foreach (var assignment in assignments)
+            {
+                await TriggerAssignmentAsync(assignment, instanceName);
             }
         }
 
         #endregion
 
         #region Private Methods
+
+        private List<string> ResolveAssignmentChain(Assignment assignment)
+        {
+            var result = new List<Assignment>();
+            var assignments = _assignments.Where(a => a.Enabled).ToList();
+            var toVisit = new List<Assignment> { assignment };
+            while (toVisit.Count > 0)
+            {
+                var found = false;
+                for (var i = 0; i < toVisit.Count; i++)
+                {
+                    var source = toVisit[i];
+                    var chained = assignments.Where(a => a.SourceInstanceName == source.InstanceName);
+                    foreach (var target in chained)
+                    {
+                        if (!toVisit.Contains(target))
+                        {
+                            toVisit.Add(target);
+                        }
+                    }
+                    if (!result.Contains(source))
+                    {
+                        found = true;
+                        result.Add(source);
+                    }
+                    var index = toVisit.IndexOf(source);
+                    if (index > -1)
+                    {
+                        toVisit.RemoveAt(index);
+                    }
+                }
+                if (!found) break;
+            }
+            var instanceNames = result.Select(a => a.InstanceName).ToList();
+            return instanceNames;
+        }
 
         private async Task CheckAssignmentsAsync()
         {

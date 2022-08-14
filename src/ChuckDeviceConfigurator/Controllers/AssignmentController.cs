@@ -8,32 +8,38 @@
     using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Data.Contexts;
     using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
 
     [Authorize(Roles = RoleConsts.AssignmentsRole)]
     public class AssignmentController : Controller
     {
         private readonly ILogger<AssignmentController> _logger;
-        private readonly ControllerContext _context;
+        private readonly ControllerContext _controllerContext;
+        private readonly MapContext _mapContext;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentController(
             ILogger<AssignmentController> logger,
-            ControllerContext context,
+            ControllerContext controllerContext,
+            MapContext mapContext,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;
-            _context = context;
+            _controllerContext = controllerContext;
+            _mapContext = mapContext;
             _assignmentService = assignmentService;
         }
 
         // GET: AssignmentController
         public ActionResult Index()
         {
-            var assignments = _context.Assignments.ToList();
+            var assignments = _controllerContext.Assignments.ToList();
             // Include instance type for removing Re-Quest button
-            var questInstances = _context.Instances.Where(x => x.Type == InstanceType.AutoQuest)
+            var questInstances = _controllerContext.Instances
+                                                   .Where(x => x.Type == InstanceType.AutoQuest)
                                                    .Select(x => x.Name)
                                                    .ToList();
             ViewBag.QuestInstances = questInstances;
@@ -46,14 +52,14 @@
         // GET: AssignmentController/Details/5
         public async Task<ActionResult> Details(uint id)
         {
-            var assignment = await _context.Assignments.FindAsync(id);
+            var assignment = await _controllerContext.Assignments.FindAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
                 ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
                 return View();
             }
-            var instance = await _context.Instances.FindAsync(assignment.InstanceName);
+            var instance = await _controllerContext.Instances.FindAsync(assignment.InstanceName);
             if (instance == null)
             {
                 _logger.LogWarning($"Failed to retrieve instance with name '{assignment.InstanceName}' for assignment '{id}'.");
@@ -65,7 +71,7 @@
         // GET: AssignmentController/Create
         public ActionResult Create()
         {
-            var instances = _context.Instances.ToList();
+            var instances = _controllerContext.Instances.ToList();
             var devicesAndDeviceGroups = BuildDevicesSelectList();
 
             ViewBag.Devices = devicesAndDeviceGroups;
@@ -99,7 +105,7 @@
                 var createOnComplete = collection["OnComplete"].Contains("true");
                 var enabled = collection["Enabled"].Contains("true");
 
-                if (_context.Assignments.Any(a =>
+                if (_controllerContext.Assignments.Any(a =>
                     a.DeviceUuid == uuid &&
                     a.DeviceGroupName == deviceGroupName &&
                     a.InstanceName == instanceName &&
@@ -124,7 +130,7 @@
                     Time = timeValue,
                     Enabled = enabled,
                 };
-                await _context.AddAsync(assignment);
+                await _controllerContext.AddAsync(assignment);
 
                 if (createOnComplete)
                 {
@@ -139,10 +145,10 @@
                         Time = 0,
                         Enabled = enabled,
                     };
-                    await _context.AddAsync(completeAssignment);
+                    await _controllerContext.AddAsync(completeAssignment);
                 }
 
-                await _context.SaveChangesAsync();
+                await _controllerContext.SaveChangesAsync();
 
                 _assignmentService.Add(assignment);
 
@@ -158,7 +164,7 @@
         // GET: AssignmentController/Edit/5
         public async Task<ActionResult> Edit(uint id)
         {
-            var assignment = await _context.Assignments.FindAsync(id);
+            var assignment = await _controllerContext.Assignments.FindAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
@@ -167,7 +173,7 @@
             }
 
             var devices = BuildDevicesSelectList(assignment);
-            var instances = _context.Instances.ToList();
+            var instances = _controllerContext.Instances.ToList();
 
             ViewBag.Devices = devices;
             ViewBag.Instances = instances;
@@ -181,7 +187,7 @@
         {
             try
             {
-                var assignment = await _context.Assignments.FindAsync(id);
+                var assignment = await _controllerContext.Assignments.FindAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve assignment from database, does it exist?
@@ -207,7 +213,7 @@
                 var timeValue = GetTimeNumeric(time);
                 var enabled = collection["Enabled"].Contains("on");
 
-                if (_context.Assignments.Any(a =>
+                if (_controllerContext.Assignments.Any(a =>
                     a.DeviceUuid == uuid &&
                     a.DeviceGroupName == deviceGroupName &&
                     a.InstanceName == instanceName &&
@@ -230,8 +236,8 @@
                 assignment.Time = timeValue;
                 assignment.Enabled = enabled;
 
-                _context.Assignments.Update(assignment);
-                await _context.SaveChangesAsync();
+                _controllerContext.Assignments.Update(assignment);
+                await _controllerContext.SaveChangesAsync();
 
                 _assignmentService.Edit(assignment, id);
 
@@ -247,7 +253,7 @@
         // GET: AssignmentController/Delete/5
         public async Task<ActionResult> Delete(uint id)
         {
-            var assignment = await _context.Assignments.FindAsync(id);
+            var assignment = await _controllerContext.Assignments.FindAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
@@ -264,7 +270,7 @@
         {
             try
             {
-                var assignment = await _context.Assignments.FindAsync(id);
+                var assignment = await _controllerContext.Assignments.FindAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve geofence from database, does it exist?
@@ -273,8 +279,8 @@
                 }
 
                 // Delete assignment from database
-                _context.Assignments.Remove(assignment);
-                await _context.SaveChangesAsync();
+                _controllerContext.Assignments.Remove(assignment);
+                await _controllerContext.SaveChangesAsync();
 
                 _assignmentService.Delete(assignment);
 
@@ -292,7 +298,7 @@
         {
             try
             {
-                var assignment = await _context.Assignments.FindAsync(id);
+                var assignment = await _controllerContext.Assignments.FindAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve assignment from database, does it exist?
@@ -317,7 +323,7 @@
         {
             try
             {
-                var assignment = await _context.Assignments.FindAsync(id);
+                var assignment = await _controllerContext.Assignments.FindAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve assignment from database, does it exist?
@@ -326,7 +332,7 @@
                 }
 
                 // Start re-quest for assignment
-                await _assignmentService.ReQuestAssignmentAsync(assignment);
+                await _assignmentService.ReQuestAssignmentAsync(assignment.Id);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -340,10 +346,54 @@
         // GET: AssignmentController/ClearQuests/test
         public async Task<ActionResult> ClearQuests(uint id)
         {
-            // TODO: Clear quests for assignment
-            await Task.CompletedTask;
-            return View();
+            // Clear quests for assignment
+            var assignment = await _controllerContext.Assignments.FindAsync(id);
+            if (assignment == null)
+            {
+                // Failed to retrieve assignment from database, does it exist?
+                ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+                return View();
+            }
+
+            var instance = await _controllerContext.Instances.FindAsync(assignment.InstanceName);
+            if (instance == null)
+            {
+                // Failed to retrieve instance from database, does it exist?
+                ModelState.AddModelError("Assignment", $"Assignment instance does not exist with name '{assignment.InstanceName}'.");
+                return View();
+            }
+
+            //var geofences = instance.Geofences.Select(async geofence => await _context.Geofences.FindAsync(geofence)).ToList();
+            var geofences = new List<Geofence>();
+            foreach (var geofenceName in instance.Geofences)
+            {
+                var geofence = await _controllerContext.Geofences.FindAsync(geofenceName);
+                if (geofence == null)
+                    continue;
+
+                geofences.Add(geofence);
+            }
+
+            if ((geofences?.Count ?? 0) == 0)
+            {
+                // Failed to retrieve assignment from database, does it exist?
+                ModelState.AddModelError("Assignment", $"Failed to retrieve geofence(s) ('{string.Join(", ", instance.Geofences)}') for assignment instance '{instance.Name}'.");
+                return View();
+            }
+
+            // Clear quests for all geofences assigned to instance
+            foreach (var geofence in geofences!)
+            {
+                _logger.LogInformation($"Clearing quests for geofence '{geofence.Name}'");
+                await _mapContext.ClearQuestsAsync(geofence);
+            }
+
+            _logger.LogInformation($"All quests have been cleared for assignment '{id}' (Instance: {instance.Name}, Geofences: {string.Join(", ", instance.Geofences)})");
+
+            return RedirectToAction(nameof(Index));
         }
+
+        #region Helper Methods
 
         private uint GetTimeNumeric(string time)
         {
@@ -375,8 +425,8 @@
 
         private List<SelectListItem> BuildDevicesSelectList(Assignment? assignment = null)
         {
-            var devices = _context.Devices.ToList();
-            var deviceGroups = _context.DeviceGroups.ToList();
+            var devices = _controllerContext.Devices.ToList();
+            var deviceGroups = _controllerContext.DeviceGroups.ToList();
             var selectedDevice = assignment?.DeviceUuid;
             var selectedDeviceGroup = assignment?.DeviceGroupName;
 
@@ -406,5 +456,7 @@
             });
             return devicesAndDeviceGroups;
         }
+
+        #endregion
     }
 }

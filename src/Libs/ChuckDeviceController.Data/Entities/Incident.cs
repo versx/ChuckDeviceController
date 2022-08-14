@@ -26,8 +26,14 @@
         ]
         public string Id { get; set; }
 
-        [Column("pokestop_id")]
+        [
+            Column("pokestop_id"),
+            //ForeignKey(typeof(Pokestop)),
+            ForeignKey("pokestop_id"),
+        ]
         public string? PokestopId { get; set; }
+
+        public Pokestop Pokestop { get; set; }
 
         [Column("start")]
         public ulong Start { get; set; }

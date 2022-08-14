@@ -313,7 +313,7 @@
                 }
 
                 // Start re-quest for all device assignments in assignment group
-                await _assignmentService.ReQuestAssignmentGroupAsync(assignmentGroup);
+                await _assignmentService.ReQuestAssignmentsAsync(assignmentGroup.AssignmentIds);
 
                 return RedirectToAction(nameof(Index));
             }
