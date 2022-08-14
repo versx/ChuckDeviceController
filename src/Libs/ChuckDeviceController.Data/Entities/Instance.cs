@@ -57,7 +57,7 @@
             DisplayName("No. Devices"),
             NotMapped,
         ]
-        public int DeviceCount { get; set; }
+        public string? DeviceCount { get; set; }
 
         [
 

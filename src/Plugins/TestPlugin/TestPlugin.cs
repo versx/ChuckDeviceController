@@ -234,7 +234,7 @@
             _loggingHost.LogMessage($"ConfigureServices called");
 
             services.AddSingleton<IPluginService, TestPluginService>();
-            services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"));
+            services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
 
             //services.AddMvc();
             //services.AddControllersWithViews();

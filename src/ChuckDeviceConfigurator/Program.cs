@@ -184,7 +184,7 @@ builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSe
 
 builder.Services.AddGrpc(options =>
 {
-    options.IgnoreUnknownServices = true,
+    options.IgnoreUnknownServices = true;
     options.EnableDetailedErrors = true;
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });

@@ -8,6 +8,7 @@
     using ChuckDeviceConfigurator.Localization;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
     using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
@@ -42,8 +43,11 @@
 
             foreach (var instance in instances)
             {
-                var deviceCount = devices.Count(device => device.InstanceName == instance.Name);
-                instance.DeviceCount += deviceCount;
+                var devicesAssigned = devices.Where(device => device.InstanceName == instance.Name)
+                                             .ToList();
+                var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
+                var devicesOffline = devicesAssigned.Count - devicesOnline;
+                instance.DeviceCount = $"{devicesOnline}/{devicesAssigned.Count}|{devicesOffline}";
                 var status = await _jobControllerService.GetStatusAsync(instance);
                 instance.Status = status;
             }
@@ -75,6 +79,8 @@
             // Get devices assigned to instance
             var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
                                                   .ToList();
+            var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
+            var devicesOffline = devicesAssigned.Count - devicesOnline;
             var status = await _jobControllerService.GetStatusAsync(instance);
             var model = new InstanceDetailsViewModel
             {
@@ -84,7 +90,7 @@
                 MaximumLevel = instance.MaximumLevel,
                 Geofences = instance.Geofences,
                 Data = instance.Data,
-                DeviceCount = devicesAssigned.Count,
+                DeviceCount = $"{devicesOnline}/{devicesAssigned.Count}|{devicesOffline}",
                 Devices = devicesAssigned,
                 Status = status,
             };

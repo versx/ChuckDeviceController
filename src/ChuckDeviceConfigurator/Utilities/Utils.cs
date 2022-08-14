@@ -79,11 +79,17 @@
 
         public static string GetDeviceStatus(ulong lastSeen)
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var status = now - lastSeen <= Strings.DeviceOnlineThresholdS
+            var status = IsDeviceOnline(lastSeen)
                 ? Strings.DeviceOnlineIcon
                 : Strings.DeviceOfflineIcon;
             return status;
+        }
+
+        public static bool IsDeviceOnline(ulong lastSeen, uint onlineThresholdS = Strings.DeviceOnlineThresholdS)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var isOnline = now - lastSeen <= onlineThresholdS;
+            return isOnline;
         }
 
         public static string GetLastUpdatedStatus(ulong updated, bool html = false)
