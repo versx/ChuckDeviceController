@@ -362,7 +362,6 @@
         }
 
         // GET: InstanceController/IvQueue/test/Clear
-        //[HttpGet("/Instance/IvQueue/ClearQueue/{name}")]
         [HttpGet("/Instance/IvQueue/{name}/Clear")]
         public ActionResult ClearQueue(string name)
         {

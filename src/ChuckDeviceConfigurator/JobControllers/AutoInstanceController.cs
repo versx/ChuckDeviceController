@@ -5,7 +5,6 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
@@ -28,6 +27,8 @@
         private readonly ILogger<AutoInstanceController> _logger;
         private readonly IDbContextFactory<MapContext> _mapFactory;
         private readonly IDbContextFactory<ControllerContext> _deviceFactory;
+
+        // TODO: Add dictionary to keep track of pokestops to ignore quests for (based on input from Quest queue)
 
         private readonly List<PokestopWithMode> _allStops = new();
         private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops = new();
