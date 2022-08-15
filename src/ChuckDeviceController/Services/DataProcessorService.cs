@@ -32,7 +32,7 @@
     {
         #region Variables
 
-        private readonly ILogger<IProtoProcessorService> _logger;
+        private readonly ILogger<IDataProcessorService> _logger;
         private readonly IBackgroundTaskQueue _taskQueue;
         private readonly IDbContextFactory<MapContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
@@ -62,7 +62,7 @@
         #region Constructor
 
         public DataProcessorService(
-            ILogger<IProtoProcessorService> logger,
+            ILogger<IDataProcessorService> logger,
             IOptions<ProcessorOptions> options,
             IBackgroundTaskQueue taskQueue,
             IDbContextFactory<MapContext> factory,

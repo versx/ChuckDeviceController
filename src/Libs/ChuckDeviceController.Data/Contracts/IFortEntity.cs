@@ -13,5 +13,13 @@
         bool IsDeleted { get; }
 
         ulong CellId { get; }
+
+        //bool IsArScanEligible { get; }
+
+        ulong FirstSeenTimestamp { get; }
+
+        ulong LastModifiedTimestamp { get; }
+
+        ulong Updated { get; }
     }
 }

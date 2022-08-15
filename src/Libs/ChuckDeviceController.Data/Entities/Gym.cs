@@ -1,8 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
-    using System.ComponentModel;
-    using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
     using POGOProtos.Rpc;
@@ -16,7 +13,8 @@
     using ChuckDeviceController.Extensions;
 
     [Table("gym")]
-    public class Gym : BaseEntity, IGym, ICoordinateEntity, IFortEntity, IWebhookEntity
+    //public class Gym : BaseEntity, IGym, ICoordinateEntity, IFortEntity, IWebhookEntity
+    public class Gym : BaseFort, IGym, IWebhookEntity
     {
         #region Constants
 
@@ -29,27 +27,23 @@
 
         #region Properties
 
-        [
-            Column("id"),
-            Key,
-            DatabaseGenerated(DatabaseGeneratedOption.None),
-        ]
-        public string Id { get; set; }
+        [Column("guarding_pokemon_id")]
+        public uint GuardingPokemonId { get; set; }
 
-        [Column("lat")]
-        public double Latitude { get; set; }
+        [Column("available_slots")]
+        public ushort AvailableSlots { get; set; }
 
-        [Column("lon")]
-        public double Longitude { get; set; }
+        [Column("team_id")]
+        public Team Team { get; set; }
 
-        [Column("name")]
-        public string? Name { get; set; }
+        [Column("in_battle")]
+        public bool InBattle { get; set; }
 
-        [Column("url")]
-        public string? Url { get; set; }
+        [Column("ex_raid_eligible")]
+        public bool IsExRaidEligible { get; set; }
 
-        [Column("last_modified_timestamp")]
-        public ulong LastModifiedTimestamp { get; set; }
+        [Column("raid_level")]
+        public ushort? RaidLevel { get; set; }
 
         [Column("raid_end_timestamp")]
         public ulong? RaidEndTimestamp { get; set; }
@@ -60,38 +54,8 @@
         [Column("raid_battle_timestamp")]
         public ulong? RaidBattleTimestamp { get; set; }
 
-        [
-            DisplayName("Last Updated"),
-            Column("updated"),
-        ]
-        public ulong Updated { get; set; }
-
         [Column("raid_pokemon_id")]
         public uint? RaidPokemonId { get; set; }
-
-        [Column("guarding_pokemon_id")]
-        public uint GuardingPokemonId { get; set; }
-
-        [Column("available_slots")]
-        public ushort AvailableSlots { get; set; }
-
-        [Column("team_id")]
-        public Team Team { get; set; }
-
-        [Column("raid_level")]
-        public ushort? RaidLevel { get; set; }
-
-        [
-            DisplayName("Enabled"),
-            Column("enabled"),
-        ]
-        public bool IsEnabled { get; set; }
-
-        [Column("ex_raid_eligible")]
-        public bool IsExRaidEligible { get; set; }
-
-        [Column("in_battle")]
-        public bool InBattle { get; set; }
 
         [Column("raid_pokemon_move_1")]
         public uint? RaidPokemonMove1 { get; set; }
@@ -117,40 +81,14 @@
         [Column("raid_is_exclusive")]
         public bool? RaidIsExclusive { get; set; }
 
-        [
-            Column("cell_id"),
-            ForeignKey("cell_id"),
-        ]
-        public ulong CellId { get; set; }
-
-        public virtual Cell? Cell { get; set; }
-
-        [
-            DisplayName("Deleted"),
-            Column("deleted"),
-        ]
-        public bool IsDeleted { get; set; }
-
         [Column("total_cp")]
         public int TotalCP { get; set; }
-
-        [Column("first_seen_timestamp")]
-        public ulong FirstSeenTimestamp { get; set; }
 
         [Column("sponsor_id")]
         public uint? SponsorId { get; set; }
 
         [Column("ar_scan_eligible")]
         public bool? IsArScanEligible { get; set; }
-
-        [Column("power_up_points")]
-        public uint? PowerUpPoints { get; set; }
-
-        [Column("power_up_level")]
-        public ushort? PowerUpLevel { get; set; }
-
-        [Column("power_up_end_timestamp")]
-        public ulong? PowerUpEndTimestamp { get; set; }
 
         [NotMapped]
         public bool HasChanges { get; set; }

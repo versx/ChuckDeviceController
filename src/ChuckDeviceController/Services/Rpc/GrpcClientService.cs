@@ -9,9 +9,14 @@
     {
         private readonly string _grpcConfiguratorServerEndpoint;
         private readonly string? _grpcWebhookServerEndpoint;
+        private readonly ILogger<IGrpcClientService> _logger;
 
-        public GrpcClientService(IConfiguration configuration)
+        public GrpcClientService(
+            ILogger<IGrpcClientService> logger,
+            IConfiguration configuration)
         {
+            _logger = logger;
+
             // TODO: Group server endpoints in config
             var configuratorEndpoint = configuration.GetValue<string>("GrpcConfiguratorServer");
             if (string.IsNullOrEmpty(configuratorEndpoint))
@@ -88,31 +93,34 @@
         {
             if (string.IsNullOrEmpty(_grpcWebhookServerEndpoint))
             {
-                return null;
-            }
-
-            if (string.IsNullOrEmpty(_grpcConfiguratorServerEndpoint))
-            {
                 // User does not want to process/receive webhooks
                 return null;
             }
 
-            // Create gRPC channel for receiving gRPC server address
-            using var channel = GrpcChannel.ForAddress(_grpcWebhookServerEndpoint);
-
-            // Create new gRPC client for gRPC channel for address
-            var client = new WebhookPayload.WebhookPayloadClient(channel);
-
-            // Create gRPC payload request
-            var request = new WebhookPayloadRequest
+            try
             {
-                PayloadType = webhookType,
-                Payload = json,
-            };
+                // Create gRPC channel for receiving gRPC server address
+                using var channel = GrpcChannel.ForAddress(_grpcWebhookServerEndpoint);
 
-            // Handle the response of the request
-            var response = await client.ReceivedWebhookPayloadAsync(request);
-            return response;
+                // Create new gRPC client for gRPC channel for address
+                var client = new WebhookPayload.WebhookPayloadClient(channel);
+
+                // Create gRPC payload request
+                var request = new WebhookPayloadRequest
+                {
+                    PayloadType = webhookType,
+                    Payload = json,
+                };
+
+                // Handle the response of the request
+                var response = await client.ReceivedWebhookPayloadAsync(request);
+                return response;
+            }
+            catch //(Exception ex)
+            {
+                _logger.LogWarning($"Unable to send webhook to webhook relay service at '{_grpcWebhookServerEndpoint}'");
+            }
+            return null;
         }
     }
 }

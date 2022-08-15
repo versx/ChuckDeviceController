@@ -1,8 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
-    using System.ComponentModel;
-    using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
     using POGOProtos.Rpc;
@@ -18,7 +15,8 @@
     using ChuckDeviceController.Extensions;
 
     [Table("pokestop")]
-    public class Pokestop : BaseEntity, IPokestop, ICoordinateEntity, IFortEntity, IWebhookEntity
+    //public class Pokestop : BaseEntity, IPokestop, ICoordinateEntity, IFortEntity, IWebhookEntity
+    public class Pokestop : BaseFort, IPokestop, IWebhookEntity
     {
         #region Constants
 
@@ -29,77 +27,17 @@
 
         #region Properties
 
-        [
-            Column("id"),
-            Key,
-            DatabaseGenerated(DatabaseGeneratedOption.None),
-        ]
-        public string Id { get; set; }
-
-        [Column("lat")]
-        public double Latitude { get; set; }
-
-        [Column("lon")]
-        public double Longitude { get; set; }
-
-        [Column("name")]
-        public string? Name { get; set; }
-
-        [Column("url")]
-        public string? Url { get; set; }
-
         [Column("lure_id")]
         public uint LureId { get; set; }
 
         [Column("lure_expire_timestamp")]
         public ulong? LureExpireTimestamp { get; set; }
 
-        [Column("last_modified_timestamp")]
-        public ulong LastModifiedTimestamp { get; set; }
-
-        [
-            DisplayName("Last Updated"),
-            Column("updated"),
-        ]
-        public ulong Updated { get; set; }
-
-        [
-            DisplayName("Enabled"),
-            Column("enabled"),
-        ]
-        public bool IsEnabled { get; set; }
-
-        [
-            Column("cell_id"),
-            ForeignKey("cell_id"),
-        ]
-        public ulong CellId { get; set; }
-
-        public virtual Cell? Cell { get; set; }
-
-        [
-            DisplayName("Deleted"),
-            Column("deleted"),
-        ]
-        public bool IsDeleted { get; set; }
-
-        [Column("first_seen_timestamp")]
-        public ulong FirstSeenTimestamp { get; set; }
-
         [Column("sponsor_id")]
         public uint? SponsorId { get; set; }
 
         [Column("ar_scan_eligible")]
         public bool IsArScanEligible { get; set; }
-
-        [Column("power_up_points")]
-        public uint? PowerUpPoints { get; set; }
-
-        [Column("power_up_level")]
-        public ushort? PowerUpLevel { get; set; }
-
-        [Column("power_up_end_timestamp")]
-        public ulong? PowerUpEndTimestamp { get; set; }
 
         #region Quests
 
