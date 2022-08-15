@@ -205,6 +205,8 @@
 
         public virtual ICollection<Incident>? Incidents { get; set; }
 
+        public virtual ICollection<Pokemon>? Pokemon { get; set; }
+
         [NotMapped]
         public bool HasChanges { get; set; }
 

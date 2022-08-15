@@ -111,8 +111,11 @@
         [
             Column("pokestop_id"),
             DefaultValue(null),
+            ForeignKey("pokestop_id"),
         ]
         public string? PokestopId { get; set; } = null;
+
+        public virtual Pokestop? Pokestop { get; set; }
 
         [Column("first_seen_timestamp")]
         public ulong? FirstSeenTimestamp { get; set; }

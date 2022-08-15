@@ -146,6 +146,10 @@
                       .WithOne(p => p.Pokestop)
                       .HasForeignKey(p => p.PokestopId);
 
+                entity.HasMany(p => p.Pokemon)
+                      .WithOne(p => p.Pokestop)
+                      .HasForeignKey(p => p.PokestopId);
+
                 entity.HasIndex(p => p.CellId);
             });
 
@@ -165,6 +169,10 @@
                 entity.HasOne(p => p.Cell)
                       .WithMany(c => c.Pokemon)
                       .HasForeignKey(p => p.CellId);
+
+                entity.HasOne(p => p.Pokestop)
+                      .WithMany(p => p.Pokemon)
+                      .HasForeignKey(p => p.PokestopId);
 
                 entity.HasIndex(p => p.PokestopId);
                 entity.HasIndex(p => p.CellId);
