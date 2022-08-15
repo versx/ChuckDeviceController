@@ -55,6 +55,8 @@
         [Column("updated")]
         public ulong Updated { get; set; }
 
+        public ICollection<GymDefender>? Defenders { get; set; }
+
         #endregion
 
         #region Constructors

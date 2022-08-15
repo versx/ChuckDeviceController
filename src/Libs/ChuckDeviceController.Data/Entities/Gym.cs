@@ -155,6 +155,8 @@
         [NotMapped]
         public bool HasChanges { get; set; }
 
+        public virtual ICollection<GymDefender>? Defenders { get; set; }
+
         #endregion
 
         #region Constructors

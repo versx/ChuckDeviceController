@@ -57,6 +57,8 @@
                 Console.WriteLine($"Pokestop: {test.Pokestop}");
                 var gym = await _mapContext.Gyms
                                            .Include(p => p.Cell)
+                                           .Include(p => p.Defenders!)
+                                           .ThenInclude(p => p.Trainer)
                                            .FirstOrDefaultAsync(p => p.Id == gymId);
                 var cell = await _mapContext.Cells
                                             .Include(p => p.Gyms)

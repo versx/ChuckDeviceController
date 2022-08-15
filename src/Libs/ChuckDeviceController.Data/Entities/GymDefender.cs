@@ -66,11 +66,21 @@
         [Column("deployment_duration")]
         public ulong DeploymentDuration { get; set; }
 
-        [Column("trainer_name")]
+        [
+            Column("trainer_name"),
+            ForeignKey("trainer_name"),
+        ]
         public string? TrainerName { get; set; }
 
-        [Column("fort_id")]
+        public virtual GymTrainer? Trainer { get; set; }
+
+        [
+            Column("fort_id"),
+            ForeignKey("fort_id"),
+        ]
         public string? FortId { get; set; }
+
+        public virtual Gym? Fort { get; set; }
 
         [Column("atk_iv")]
         public ushort AttackIV { get; set; }

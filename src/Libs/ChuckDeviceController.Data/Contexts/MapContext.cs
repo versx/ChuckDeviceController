@@ -58,12 +58,30 @@
                 entity.HasOne(g => g.Cell)
                       .WithMany(c => c.Gyms)
                       .HasForeignKey(g => g.CellId);
+
+                entity.HasMany(g => g.Defenders)
+                      .WithOne(d => d.Fort)
+                      .HasForeignKey(d => d.FortId);
+
                 entity.HasIndex(p => p.CellId);
             });
 
             modelBuilder.Entity<GymDefender>(entity =>
             {
+                entity.HasOne(g => g.Trainer)
+                      .WithMany(t => t.Defenders)
+                      .HasForeignKey(t => t.TrainerName);
+
                 entity.HasIndex(p => p.TrainerName);
+            });
+
+            modelBuilder.Entity<GymTrainer>(entity =>
+            {
+                entity.HasMany(t => t.Defenders)
+                      .WithOne(g => g.Trainer)
+                      .HasForeignKey(p => p.TrainerName);
+
+                entity.HasIndex(p => p.Name);
             });
 
             modelBuilder.Entity<Incident>(entity =>
@@ -71,6 +89,7 @@
                 entity.HasOne(p => p.Pokestop)
                       .WithMany(p => p.Incidents)
                       .HasForeignKey(p => p.PokestopId);
+
                 entity.HasIndex(p => p.PokestopId);
             });
 
@@ -123,11 +142,11 @@
                       .ValueGeneratedOnAddOrUpdate()
                       .HasComputedColumnSql("json_extract(json_extract(`alternative_quest_rewards`,'$[*].info.pokemon_id'),'$[0]')");
 
-                entity.HasIndex(p => p.CellId);
-
                 entity.HasMany(p => p.Incidents)
                       .WithOne(p => p.Pokestop)
                       .HasForeignKey(p => p.PokestopId);
+
+                entity.HasIndex(p => p.CellId);
             });
 
             modelBuilder.Entity<Pokemon>(entity =>
@@ -143,6 +162,11 @@
                            DbContextFactory.CreateValueComparer<string, dynamic>()
                        );
 
+                entity.HasOne(p => p.Cell)
+                      .WithMany(c => c.Pokemon)
+                      .HasForeignKey(p => p.CellId);
+
+                entity.HasIndex(p => p.PokestopId);
                 entity.HasIndex(p => p.CellId);
                 entity.HasIndex(p => p.SpawnId);
             });
