@@ -28,12 +28,12 @@
 
         [
             Column("pokestop_id"),
-            //ForeignKey(typeof(Pokestop)),
+            //ForeignKey(nameof(Pokestop)),
             ForeignKey("pokestop_id"),
         ]
-        public string? PokestopId { get; set; }
+        public string PokestopId { get; set; }
 
-        public Pokestop Pokestop { get; set; }
+        public virtual Pokestop? Pokestop { get; set; }
 
         [Column("start")]
         public ulong Start { get; set; }

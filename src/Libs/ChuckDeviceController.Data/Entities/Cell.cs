@@ -48,6 +48,12 @@
         ]
         public ulong Updated { get; set; }
 
+        public virtual ICollection<Gym>? Gyms { get; set; }
+
+        public virtual ICollection<Pokemon>? Pokemon { get; set; }
+
+        public virtual ICollection<Pokestop>? Pokestops { get; set; }
+
         #endregion
 
         #region Constructor

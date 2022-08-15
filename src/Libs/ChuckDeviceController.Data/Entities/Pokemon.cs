@@ -123,8 +123,13 @@
         [Column("changed")]
         public ulong Changed { get; set; }
 
-        [Column("cell_id")]
+        [
+            Column("cell_id"),
+            ForeignKey("cell_id"),
+        ]
         public ulong CellId { get; set; }
+
+        public virtual Cell? Cell { get; set; }
 
         [Column("expire_timestamp_verified")]
         public bool IsExpireTimestampVerified { get; set; }

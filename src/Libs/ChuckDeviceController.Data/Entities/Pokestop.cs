@@ -69,8 +69,13 @@
         ]
         public bool IsEnabled { get; set; }
 
-        [Column("cell_id")]
+        [
+            Column("cell_id"),
+            ForeignKey("cell_id"),
+        ]
         public ulong CellId { get; set; }
+
+        public virtual Cell? Cell { get; set; }
 
         [
             DisplayName("Deleted"),
@@ -198,8 +203,7 @@
 
         #endregion
 
-        [Column("incidents")]
-        public ICollection<Incident>? Incidents { get; set; }
+        public virtual ICollection<Incident>? Incidents { get; set; }
 
         [NotMapped]
         public bool HasChanges { get; set; }

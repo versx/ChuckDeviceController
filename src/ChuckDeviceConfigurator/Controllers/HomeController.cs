@@ -5,6 +5,7 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
@@ -37,8 +38,37 @@
             _uiHost = uiHost;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            try
+            {
+                var pokestopId = "39d5ff543a734972a7fb985de1cda1cb.16";
+                var incidentId = "-5561104705402767012";
+                var gymId = "00aa66fad06746c5a945904f50687869.16";
+                var cellId = 9278318482259181568;
+                var pokestop = await _mapContext.Pokestops
+                                                .Include(p => p.Cell)
+                                                .Include(p => p.Incidents)
+                                                .FirstOrDefaultAsync(p => p.Id == pokestopId);
+                var incident = await _mapContext.Incidents
+                                                .Include(p => p.Pokestop)
+                                                .FirstOrDefaultAsync(p => p.Id == incidentId);
+                var test = await _mapContext.Incidents.FindAsync(incidentId);
+                Console.WriteLine($"Pokestop: {test.Pokestop}");
+                var gym = await _mapContext.Gyms
+                                           .Include(p => p.Cell)
+                                           .FirstOrDefaultAsync(p => p.Id == gymId);
+                var cell = await _mapContext.Cells
+                                            .Include(p => p.Gyms)
+                                            .Include(p => p.Pokemon)
+                                            .Include(p => p.Pokestops)
+                                            .FirstOrDefaultAsync(p => p.Id == cellId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+            }
+
             var now = DateTime.UtcNow.ToTotalSeconds();
             var model = new DashboardViewModel
             {

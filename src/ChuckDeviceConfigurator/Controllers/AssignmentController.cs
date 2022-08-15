@@ -8,38 +8,32 @@
     using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
     using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Extensions;
 
     [Authorize(Roles = RoleConsts.AssignmentsRole)]
     public class AssignmentController : Controller
     {
         private readonly ILogger<AssignmentController> _logger;
-        private readonly ControllerContext _controllerContext;
-        private readonly MapContext _mapContext;
+        private readonly ControllerContext _context;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentController(
             ILogger<AssignmentController> logger,
             ControllerContext controllerContext,
-            MapContext mapContext,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;
-            _controllerContext = controllerContext;
-            _mapContext = mapContext;
+            _context = controllerContext;
             _assignmentService = assignmentService;
         }
 
         // GET: AssignmentController
         public ActionResult Index()
         {
-            var assignments = _controllerContext.Assignments.ToList();
+            var assignments = _context.Assignments.ToList();
             // Include instance type for removing Re-Quest button
-            var questInstances = _controllerContext.Instances
-                                                   .Where(x => x.Type == InstanceType.AutoQuest)
+            var questInstances = _context.Instances.Where(x => x.Type == InstanceType.AutoQuest)
                                                    .Select(x => x.Name)
                                                    .ToList();
             ViewBag.QuestInstances = questInstances;
@@ -52,14 +46,14 @@
         // GET: AssignmentController/Details/5
         public async Task<ActionResult> Details(uint id)
         {
-            var assignment = await _controllerContext.Assignments.FindAsync(id);
+            var assignment = await _context.Assignments.FindAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
                 ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
                 return View();
             }
-            var instance = await _controllerContext.Instances.FindAsync(assignment.InstanceName);
+            var instance = await _context.Instances.FindAsync(assignment.InstanceName);
             if (instance == null)
             {
                 _logger.LogWarning($"Failed to retrieve instance with name '{assignment.InstanceName}' for assignment '{id}'.");
@@ -71,7 +65,7 @@
         // GET: AssignmentController/Create
         public ActionResult Create()
         {
-            var instances = _controllerContext.Instances.ToList();
+            var instances = _context.Instances.ToList();
             var devicesAndDeviceGroups = BuildDevicesSelectList();
 
             ViewBag.Devices = devicesAndDeviceGroups;
@@ -105,7 +99,7 @@
                 var createOnComplete = collection["OnComplete"].Contains("true");
                 var enabled = collection["Enabled"].Contains("true");
 
-                if (_controllerContext.Assignments.Any(a =>
+                if (_context.Assignments.Any(a =>
                     a.DeviceUuid == uuid &&
                     a.DeviceGroupName == deviceGroupName &&
                     a.InstanceName == instanceName &&
@@ -130,7 +124,7 @@
                     Time = timeValue,
                     Enabled = enabled,
                 };
-                await _controllerContext.AddAsync(assignment);
+                await _context.AddAsync(assignment);
 
                 if (createOnComplete)
                 {
@@ -145,10 +139,10 @@
                         Time = 0,
                         Enabled = enabled,
                     };
-                    await _controllerContext.AddAsync(completeAssignment);
+                    await _context.AddAsync(completeAssignment);
                 }
 
-                await _controllerContext.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 _assignmentService.Add(assignment);
 
@@ -164,7 +158,7 @@
         // GET: AssignmentController/Edit/5
         public async Task<ActionResult> Edit(uint id)
         {
-            var assignment = await _controllerContext.Assignments.FindAsync(id);
+            var assignment = await _context.Assignments.FindAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
@@ -173,7 +167,7 @@
             }
 
             var devices = BuildDevicesSelectList(assignment);
-            var instances = _controllerContext.Instances.ToList();
+            var instances = _context.Instances.ToList();
 
             ViewBag.Devices = devices;
             ViewBag.Instances = instances;
@@ -187,7 +181,7 @@
         {
             try
             {
-                var assignment = await _controllerContext.Assignments.FindAsync(id);
+                var assignment = await _context.Assignments.FindAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve assignment from database, does it exist?
@@ -213,7 +207,7 @@
                 var timeValue = GetTimeNumeric(time);
                 var enabled = collection["Enabled"].Contains("on");
 
-                if (_controllerContext.Assignments.Any(a =>
+                if (_context.Assignments.Any(a =>
                     a.DeviceUuid == uuid &&
                     a.DeviceGroupName == deviceGroupName &&
                     a.InstanceName == instanceName &&
@@ -236,8 +230,8 @@
                 assignment.Time = timeValue;
                 assignment.Enabled = enabled;
 
-                _controllerContext.Assignments.Update(assignment);
-                await _controllerContext.SaveChangesAsync();
+                _context.Assignments.Update(assignment);
+                await _context.SaveChangesAsync();
 
                 _assignmentService.Edit(assignment, id);
 
@@ -253,7 +247,7 @@
         // GET: AssignmentController/Delete/5
         public async Task<ActionResult> Delete(uint id)
         {
-            var assignment = await _controllerContext.Assignments.FindAsync(id);
+            var assignment = await _context.Assignments.FindAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
@@ -270,7 +264,7 @@
         {
             try
             {
-                var assignment = await _controllerContext.Assignments.FindAsync(id);
+                var assignment = await _context.Assignments.FindAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve geofence from database, does it exist?
@@ -279,8 +273,8 @@
                 }
 
                 // Delete assignment from database
-                _controllerContext.Assignments.Remove(assignment);
-                await _controllerContext.SaveChangesAsync();
+                _context.Assignments.Remove(assignment);
+                await _context.SaveChangesAsync();
 
                 _assignmentService.Delete(assignment);
 
@@ -298,7 +292,7 @@
         {
             try
             {
-                var assignment = await _controllerContext.Assignments.FindAsync(id);
+                var assignment = await _context.Assignments.FindAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve assignment from database, does it exist?
@@ -323,7 +317,7 @@
         {
             try
             {
-                var assignment = await _controllerContext.Assignments.FindAsync(id);
+                var assignment = await _context.Assignments.FindAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve assignment from database, does it exist?
@@ -347,7 +341,7 @@
         public async Task<ActionResult> ClearQuests(uint id)
         {
             // Clear quests for assignment
-            var assignment = await _controllerContext.Assignments.FindAsync(id);
+            var assignment = await _context.Assignments.FindAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
@@ -392,8 +386,8 @@
 
         private List<SelectListItem> BuildDevicesSelectList(Assignment? assignment = null)
         {
-            var devices = _controllerContext.Devices.ToList();
-            var deviceGroups = _controllerContext.DeviceGroups.ToList();
+            var devices = _context.Devices.ToList();
+            var deviceGroups = _context.DeviceGroups.ToList();
             var selectedDevice = assignment?.DeviceUuid;
             var selectedDeviceGroup = assignment?.DeviceGroupName;
 

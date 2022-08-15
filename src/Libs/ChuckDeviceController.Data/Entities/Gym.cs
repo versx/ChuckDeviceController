@@ -117,8 +117,13 @@
         [Column("raid_is_exclusive")]
         public bool? RaidIsExclusive { get; set; }
 
-        [Column("cell_id")]
+        [
+            Column("cell_id"),
+            ForeignKey("cell_id"),
+        ]
         public ulong CellId { get; set; }
+
+        public virtual Cell? Cell { get; set; }
 
         [
             DisplayName("Deleted"),

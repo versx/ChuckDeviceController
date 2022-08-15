@@ -38,8 +38,26 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Cell>(entity =>
+            {
+                entity.HasMany(c => c.Gyms)
+                      .WithOne(g => g.Cell)
+                      .HasForeignKey(g => g.CellId);
+
+                entity.HasMany(c => c.Pokestops)
+                      .WithOne(p => p.Cell)
+                      .HasForeignKey(p => p.CellId);
+
+                entity.HasMany(c => c.Pokemon)
+                      .WithOne(p => p.Cell)
+                      .HasForeignKey(p => p.CellId);
+            });
+
             modelBuilder.Entity<Gym>(entity =>
             {
+                entity.HasOne(g => g.Cell)
+                      .WithMany(c => c.Gyms)
+                      .HasForeignKey(g => g.CellId);
                 entity.HasIndex(p => p.CellId);
             });
 
@@ -50,19 +68,34 @@
 
             modelBuilder.Entity<Incident>(entity =>
             {
+                entity.HasOne(p => p.Pokestop)
+                      .WithMany(p => p.Incidents)
+                      .HasForeignKey(p => p.PokestopId);
                 entity.HasIndex(p => p.PokestopId);
             });
 
             modelBuilder.Entity<Pokestop>(entity =>
             {
-                entity.Property(nameof(Pokestop.QuestConditions))
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<Dictionary<string, dynamic>>>());
-                entity.Property(nameof(Pokestop.QuestRewards))
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<Dictionary<string, dynamic>>>());
-                entity.Property(nameof(Pokestop.AlternativeQuestConditions))
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<Dictionary<string, dynamic>>>());
-                entity.Property(nameof(Pokestop.AlternativeQuestRewards))
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<Dictionary<string, dynamic>>>());
+                entity.Property(p => p.QuestConditions)
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<List<Dictionary<string, dynamic>>?>(),
+                           DbContextFactory.CreateValueComparer<Dictionary<string, dynamic>?>()
+                       );
+                entity.Property(p => p.QuestRewards)
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<List<Dictionary<string, dynamic>>?>(),
+                           DbContextFactory.CreateValueComparer<Dictionary<string, dynamic>?>()
+                       );
+                entity.Property(p => p.AlternativeQuestConditions)
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<List<Dictionary<string, dynamic>>?>(),
+                           DbContextFactory.CreateValueComparer<Dictionary<string, dynamic>?>()
+                       );
+                entity.Property(p => p.AlternativeQuestRewards)
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<List<Dictionary<string, dynamic>>?>(),
+                           DbContextFactory.CreateValueComparer<Dictionary<string, dynamic>?>()
+                       );
 
                 entity.Property(p => p.QuestRewardType)
                       .ValueGeneratedOnAddOrUpdate()
@@ -92,8 +125,9 @@
 
                 entity.HasIndex(p => p.CellId);
 
-                entity.HasMany(p => p.Incidents);
-                //entity.HasMany<Incident>();
+                entity.HasMany(p => p.Incidents)
+                      .WithOne(p => p.Pokestop)
+                      .HasForeignKey(p => p.PokestopId);
             });
 
             modelBuilder.Entity<Pokemon>(entity =>
@@ -103,8 +137,11 @@
                       .HasComputedColumnSql("(`atk_iv` + `def_iv` + `sta_iv`) * 100 / 45");
                 entity.Property(p => p.SeenType)
                       .HasConversion(x => Entities.Pokemon.SeenTypeToString(x), x => Entities.Pokemon.StringToSeenType(x));
-                entity.Property(nameof(Entities.Pokemon.PvpRankings))
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<Dictionary<string, dynamic>>());
+                entity.Property(p => p.PvpRankings)
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<Dictionary<string, dynamic>?>(),
+                           DbContextFactory.CreateValueComparer<string, dynamic>()
+                       );
 
                 entity.HasIndex(p => p.CellId);
                 entity.HasIndex(p => p.SpawnId);

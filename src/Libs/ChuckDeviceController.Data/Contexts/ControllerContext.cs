@@ -2,6 +2,7 @@
 {
     using Microsoft.EntityFrameworkCore;
 
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
 
@@ -45,37 +46,49 @@
             modelBuilder.Entity<AssignmentGroup>(entity =>
             {
                 entity.Property(p => p.AssignmentIds)
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<uint>>());
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<List<uint>>(),
+                           DbContextFactory.CreateValueComparer<uint>()
+                       );
             });
 
             modelBuilder.Entity<DeviceGroup>(entity =>
             {
                 entity.Property(p => p.DeviceUuids)
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<List<string>>(),
+                           DbContextFactory.CreateValueComparer<string>()
+                       );
             });
 
             modelBuilder.Entity<Geofence>(entity =>
             {
                 entity.Property(p => p.Type)
                       .HasConversion(x => Geofence.GeofenceTypeToString(x), x => Geofence.StringToGeofenceType(x));
-                entity.Property(nameof(Geofence.Data))
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData>());
+                entity.Property(p => p.Data)
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData?>());
             });
 
             modelBuilder.Entity<Instance>(entity =>
             {
                 entity.Property(p => p.Type)
                       .HasConversion(x => Instance.InstanceTypeToString(x), x => Instance.StringToInstanceType(x));
-                entity.Property(nameof(Instance.Data))
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData>());
+                entity.Property(p => p.Data)
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData?>());
                 entity.Property(p => p.Geofences)
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<List<string>>(),
+                           DbContextFactory.CreateValueComparer<string>()
+                       );
             });
 
             modelBuilder.Entity<IvList>(entity =>
             {
                 entity.Property(p => p.PokemonIds)
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<List<string>>(),
+                           DbContextFactory.CreateValueComparer<string>()
+                       );
             });
 
             modelBuilder.Entity<Plugin>(entity =>
@@ -87,11 +100,16 @@
             modelBuilder.Entity<Webhook>(entity =>
             {
                 entity.Property(p => p.Types)
-                      .HasConversion(x => Webhook.WebhookTypeToString(x), x => Webhook.StringToWebhookTypes(x));
-                entity.Property(nameof(Webhook.Data))
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData>());
+                      .HasConversion(x => Webhook.WebhookTypeToString(x), x => Webhook.StringToWebhookTypes(x),
+                           DbContextFactory.CreateValueComparer<WebhookType>()
+                       );
+                entity.Property(p => p.Data)
+                      .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData?>());
                 entity.Property(nameof(Webhook.Geofences))
-                      .HasConversion(DbContextFactory.CreateJsonValueConverter<List<string>>());
+                      .HasConversion(
+                           DbContextFactory.CreateJsonValueConverter<List<string>>(),
+                           DbContextFactory.CreateValueComparer<string>()
+                       );
             });
 
             base.OnModelCreating(modelBuilder);
