@@ -492,7 +492,7 @@
                         var pokemonId = Convert.ToUInt32(rewardData.PokemonEncounter.PokemonId);
                         if (rewardData.PokemonEncounter.IsHiddenDitto)
                         {
-                            infoData.Add("pokemon_id", Pokemon.DittoPokemonId);
+                            infoData.Add("pokemon_id", Entities.Pokemon.DittoPokemonId);
                             infoData.Add("pokemon_id_display", pokemonId);
                         }
                         else

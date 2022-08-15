@@ -42,15 +42,18 @@
             {
                 entity.HasMany(c => c.Gyms)
                       .WithOne(g => g.Cell)
-                      .HasForeignKey(g => g.CellId);
+                      .HasForeignKey(g => g.CellId)
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(c => c.Pokestops)
                       .WithOne(p => p.Cell)
-                      .HasForeignKey(p => p.CellId);
+                      .HasForeignKey(p => p.CellId)
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(c => c.Pokemon)
                       .WithOne(p => p.Cell)
-                      .HasForeignKey(p => p.CellId);
+                      .HasForeignKey(p => p.CellId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Gym>(entity =>
@@ -79,7 +82,8 @@
             {
                 entity.HasMany(t => t.Defenders)
                       .WithOne(g => g.Trainer)
-                      .HasForeignKey(p => p.TrainerName);
+                      .HasForeignKey(p => p.TrainerName)
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasIndex(p => p.Name);
             });
@@ -89,6 +93,7 @@
                 entity.HasOne(p => p.Pokestop)
                       .WithMany(p => p.Incidents)
                       .HasForeignKey(p => p.PokestopId);
+                      //.HasConstraintName("FK_incident_pokestop_pokestop_id");
 
                 entity.HasIndex(p => p.PokestopId);
             });
@@ -144,11 +149,13 @@
 
                 entity.HasMany(p => p.Incidents)
                       .WithOne(p => p.Pokestop)
-                      .HasForeignKey(p => p.PokestopId);
+                      .HasForeignKey(p => p.PokestopId)
+                      .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(p => p.Pokemon)
                       .WithOne(p => p.Pokestop)
-                      .HasForeignKey(p => p.PokestopId);
+                      .HasForeignKey(p => p.PokestopId)
+                      .OnDelete(DeleteBehavior.SetNull);
 
                 entity.HasIndex(p => p.CellId);
             });
@@ -172,11 +179,24 @@
 
                 entity.HasOne(p => p.Pokestop)
                       .WithMany(p => p.Pokemon)
+                      //.HasConstraintName("pokestop_id")
                       .HasForeignKey(p => p.PokestopId);
 
-                entity.HasIndex(p => p.PokestopId);
+                entity.HasOne(p => p.Spawnpoint)
+                      .WithMany(p => p.Pokemon)
+                      .HasForeignKey(p => p.SpawnId);
+
                 entity.HasIndex(p => p.CellId);
+                entity.HasIndex(p => p.PokestopId);
                 entity.HasIndex(p => p.SpawnId);
+            });
+
+            modelBuilder.Entity<Spawnpoint>(entity =>
+            {
+                entity.HasMany(p => p.Pokemon)
+                      .WithOne(p => p.Spawnpoint)
+                      .HasForeignKey(p => p.SpawnId)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
 
             base.OnModelCreating(modelBuilder);

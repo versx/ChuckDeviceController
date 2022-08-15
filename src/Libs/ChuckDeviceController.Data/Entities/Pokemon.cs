@@ -51,8 +51,13 @@
         [Column("lon")]
         public double Longitude { get; set; }
 
-        [Column("spawn_id")]
+        [
+            Column("spawn_id"),
+            ForeignKey("spawn_id"),
+        ]
         public ulong? SpawnId { get; set; }
+
+        public virtual Spawnpoint? Spawnpoint { get; set; }
 
         [Column("expire_timestamp")]
         public ulong ExpireTimestamp { get; set; }

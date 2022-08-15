@@ -30,6 +30,7 @@
             Column("pokestop_id"),
             //ForeignKey(nameof(Pokestop)),
             ForeignKey("pokestop_id"),
+            //ForeignKey("FK_incident_pokestop_pokestop_id"),
         ]
         public string PokestopId { get; set; }
 
