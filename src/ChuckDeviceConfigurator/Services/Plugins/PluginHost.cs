@@ -12,6 +12,8 @@
 
         public IPlugin Plugin { get; }
 
+        public Type PluginType { get; }
+
         // TODO: Change 'Permissions' to 'RequestedPermissions' and add 'AllowedPermissions' property
         public PluginPermissions Permissions { get; } = PluginPermissions.None;
 

@@ -13,11 +13,17 @@
 
         public void LogException(Exception ex)
         {
+            if (_logger == null)
+                return;
+
             _logger.LogError($"----------------------- Exception occurred from plugin: {ex}");
         }
 
         public void LogMessage(string text, params object[] args)
         {
+            if (_logger == null)
+                return;
+
             var message = args.Length > 0
                 ? string.Format(text, args)
                 : text;

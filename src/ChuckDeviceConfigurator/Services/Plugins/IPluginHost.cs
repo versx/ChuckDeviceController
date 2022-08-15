@@ -15,6 +15,11 @@
         IPlugin Plugin { get; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        Type PluginType { get; }
+
+        /// <summary>
         /// Gets the requested <seealso cref="PluginPermissions"/>
         /// for the loaded plugin.
         /// </summary>
@@ -25,6 +30,8 @@
         /// stopped, disabled, in an error state, etc.
         /// </summary>
         PluginState State { get; }
+
+
 
         /// <summary>
         /// Gets the <seealso cref="PluginEventHandlers"/> for the

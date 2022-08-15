@@ -20,6 +20,19 @@
     {
         private readonly ILogger<TodoController> _logger;
         private readonly TodoDbContext _context;
+        /*
+        private static readonly string ViewsFolder = //Path.GetFullPath(
+            //Path.Combine(
+                //Directory.GetCurrentDirectory(),
+                "bin/Debug/plugins/TestPlugin/Views/Todo/";
+            //)
+        //);
+        */
+        private readonly string ViewsFolder = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            // TODO: Add to probing paths and get Plugin name
+            @"bin\Debug\plugins\TestPlugin\Views\Todo\"
+        );
 
         public TodoController(
             ILogger<TodoController> logger,
@@ -33,7 +46,12 @@
         public ActionResult Index()
         {
             var todos = _context.Todos.ToList();
-            return View(todos);
+            //var index = @"bin\Debug\plugins\TestPlugin\Views\Todo\Index.cshtml";
+            var index = @"~\bin\Debug\plugins\TestPlugin\Views\Todo\Index.cshtml";
+            //var index = "bin/Debug/plugins/TestPlugin/Views/Todo/Index.cshtml";
+            //var index = "~/bin/Debug/plugins/TestPlugin/Views/Todo/Index.cshtml";
+            var exists = System.IO.File.Exists(index);
+            return View(index, todos);
         }
 
         // GET: TodoController/Complete

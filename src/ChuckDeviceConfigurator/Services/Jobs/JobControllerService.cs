@@ -85,7 +85,10 @@
             _routeGenerator = routeGenerator;
             _routeCalculator = routeCalculator;
             _assignmentService = assignmentService;
-            _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
+            if (_assignmentService != null)
+            {
+                _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
+            }
         }
 
         #endregion

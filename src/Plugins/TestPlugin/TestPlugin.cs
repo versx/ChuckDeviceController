@@ -5,6 +5,7 @@
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugins.Services;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -22,6 +23,17 @@
     //http://127.0.0.1:8881/Test
 
     // TODO: Include user roles with plugins
+
+    [PluginBootstrapper(typeof(TestPlugin))]
+    public class TestPluginBootstrapper : IPluginBootstrapper
+    {
+        public IServiceCollection Bootstrap(IServiceCollection services)
+        {
+            return services
+                .AddSingleton<IPluginService, TestPluginService>()
+                .AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
+        }
+    }
 
     /// <summary>
     ///     Example plugin demonstrating the capabilities
@@ -51,6 +63,7 @@
         private readonly ILocalizationHost _localeHost;
         // Expand your plugin implementation by adding user interface elements
         // and pages to the dashboard.
+        [PluginBootstrapperService(typeof(IUiHost))]
         private readonly IUiHost _uiHost;
 
         #endregion
@@ -78,6 +91,9 @@
         /// </summary>
         public Version Version => new("1.0.0.0");
 
+        [PluginBootstrapperService(typeof(IUiHost))]
+        public IUiHost UiHost { get; set; }
+
         #endregion
 
         #region Constructor
@@ -101,14 +117,14 @@
             ILoggingHost loggingHost,
             IJobControllerServiceHost jobControllerHost,
             IDatabaseHost databaseHost,
-            ILocalizationHost localeHost,
-            IUiHost uiHost)
+            ILocalizationHost localeHost)
+            //IUiHost uiHost)
         {
             _loggingHost = loggingHost;
             _jobControllerHost = jobControllerHost;
             _databaseHost = databaseHost;
             _localeHost = localeHost;
-            _uiHost = uiHost;
+            //_uiHost = uiHost;
 
             //_appHost.Restart();
         }
@@ -236,8 +252,7 @@
             services.AddSingleton<IPluginService, TestPluginService>();
             services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
 
-            //services.AddMvc();
-            //services.AddControllersWithViews();
+            services.AddMvc();
         }
 
         #endregion
@@ -347,6 +362,7 @@
             var translated = _localeHost.GetPokemonName(1);
             _loggingHost.LogMessage($"Pokemon: {translated}");
 
+            /*
             try
             {
                 // Add/register TestInstanceController
@@ -387,6 +403,7 @@
             {
                 _loggingHost.LogException(ex);
             }
+            */
         }
 
         /// <summary>

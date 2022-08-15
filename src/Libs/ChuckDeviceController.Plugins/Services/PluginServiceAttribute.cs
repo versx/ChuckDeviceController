@@ -1,0 +1,47 @@
+﻿namespace ChuckDeviceController.Plugins.Services
+{
+    using Microsoft.Extensions.DependencyInjection;
+
+    /// <summary>
+    /// Registers plugin service classes that are marked with the
+    /// 'PluginService' attribute with the host application.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    public class PluginServiceAttribute : Attribute, IPluginServiceAttribute
+    {
+        /// <summary>
+        /// Gets or sets the service contract type.
+        /// </summary>
+        public Type ServiceType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service implementation type.
+        /// </summary>
+        public Type ProxyType { get; set; }
+
+        /// <summary>
+        /// Gets or sets who provided the service.
+        /// </summary>
+        public PluginServiceProvider ProvidedBy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service lifetime for the plugin service.
+        /// </summary>
+        public ServiceLifetime Lifetime { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <param name="proxyType"></param>
+        /// <param name="providedBy"></param>
+        /// <param name="lifetime"></param>
+        public PluginServiceAttribute(Type serviceType, Type proxyType, PluginServiceProvider providedBy = PluginServiceProvider.Plugin, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        {
+            ServiceType = serviceType;
+            ProxyType = proxyType;
+            ProvidedBy = providedBy;
+            Lifetime = lifetime;
+        }
+    }
+}
