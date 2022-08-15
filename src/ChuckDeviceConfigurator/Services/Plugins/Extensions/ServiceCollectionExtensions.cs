@@ -21,7 +21,7 @@
             return types;
         }
 
-        public static IEnumerable<(FieldInfo, T)> GetFieldsOfCustomAttribute<T>(this TypeInfo type)
+        public static IEnumerable<(FieldInfo, T?)> GetFieldsOfCustomAttribute<T>(this TypeInfo type)
             where T : Attribute
         {
             return type.DeclaredFields
@@ -29,7 +29,7 @@
                        .Select(f => (f, f.GetCustomAttribute<T>()));
         }
 
-        public static IEnumerable<(PropertyInfo, T)> GetPropertiessOfCustomAttribute<T>(this TypeInfo type)
+        public static IEnumerable<(PropertyInfo, T?)> GetPropertiessOfCustomAttribute<T>(this TypeInfo type)
             where T : Attribute
         {
             return type.DeclaredProperties
@@ -37,25 +37,10 @@
                        .Select(p => (p, p.GetCustomAttribute<T>()));
         }
 
-        public static bool TrySetField<T>(this object remoteInstance, string fieldName, T fieldInstance)
-        {
-            return TrySetField(remoteInstance.GetType(), fieldName, fieldInstance);
-        }
-
-        public static bool TrySetField<T>(this Type remoteInstance, string fieldName, T fieldInstance)
-        {
-            return TrySetField(remoteInstance.GetTypeInfo(), fieldName, fieldInstance);
-        }
-
-        public static bool TrySetField<T>(this TypeInfo remoteInstance, string fieldName, T fieldInstance)
+        public static bool TrySetField<T>(this object remoteInstance, FieldInfo field, T fieldInstance)
         {
             try
             {
-                //remoteInstance.DeclaredFields
-                //              .First(f => f.Name == fieldName)
-                //              .SetValue(remoteInstance, fieldInstance);
-                var field = remoteInstance.DeclaredFields
-                              .First(f => f.Name == fieldName);
                 field.SetValue(remoteInstance, fieldInstance);
                 return true;
             }
@@ -66,11 +51,11 @@
             return false;
         }
 
-        public static bool TrySetField<T>(this object remoteInstance, FieldInfo field, T fieldInstance)
+        public static bool TrySetProperty<T>(this object remoteInstance, PropertyInfo property, T propertyInstance)
         {
             try
             {
-                field.SetValue(remoteInstance, fieldInstance);
+                property.SetValue(remoteInstance, propertyInstance);
                 return true;
             }
             catch (ArgumentException ex)
@@ -138,6 +123,11 @@
                         foreach (var (fieldInfo, attr) in fields)
                         {
                             // Instantiate/set field to service
+                            if (!sharedHosts.ContainsKey(attr.ServiceType))
+                            {
+                                Console.WriteLine($"Unable to find registered service for plugin field attribute 'PluginBootstrapperServiceAttribute.ServiceType={attr.ServiceType}'");
+                                continue;
+                            }
                             var serviceHost = sharedHosts[attr.ServiceType];
                             instance.TrySetField(fieldInfo, serviceHost);
 
@@ -147,7 +137,14 @@
                     {
                         foreach (var (propertyInfo, attr) in properties)
                         {
-                            // TODO: Instantiate/set property to service
+                            // Instantiate/set property to service
+                            if (!sharedHosts.ContainsKey(attr.ServiceType))
+                            {
+                                Console.WriteLine($"Unable to find registered service for plugin property attribute 'PluginBootstrapperServiceAttribute.ServiceType={attr.ServiceType}'");
+                                continue;
+                            }
+                            var serviceHost = sharedHosts[attr.ServiceType];
+                            instance.TrySetProperty(propertyInfo, serviceHost);
                         }
                     }
 

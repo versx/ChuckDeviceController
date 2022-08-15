@@ -6,7 +6,7 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
 
-    public static class DeviceControllerContextExtensions
+    public static class ControllerContextExtensions
     {
         private const ushort LastUsedM = 1800; // 30 minutes
         private const ushort CooldownLimitS = 7200; // 2 hours
