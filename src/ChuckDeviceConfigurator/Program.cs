@@ -178,7 +178,6 @@ builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
-builder.Services.AddSingleton<IPluginManager, PluginManager>();
 // Plugin host handlers
 var uiHost = new UiHost(new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConsole())));
 
@@ -198,8 +197,8 @@ builder.Services.AddGrpc(options =>
 
 await LoadUiAsync(uiHost);
 
-// TODO: Use services registered instead of 'sharedHosts'
-var sharedHosts = new Dictionary<Type, object>
+// TODO: Use builder.Services registered instead of 'sharedServiceHosts'
+var sharedServiceHosts = new Dictionary<Type, object>
 {
     { typeof(ILoggingHost), new LoggingHost(new Logger<ILoggingHost>(LoggerFactory.Create(x => x.AddConsole()))) },
     { typeof(IJobControllerServiceHost), new JobControllerService(new Logger<IJobControllerService>(LoggerFactory.Create(x => x.AddConsole())), null, null, null, null, null, null, null, null) },
@@ -207,17 +206,17 @@ var sharedHosts = new Dictionary<Type, object>
     { typeof(ILocalizationHost), Translator.Instance },
     { typeof(IUiHost), uiHost },
 };
-builder.Services.LoadPlugins(Strings.PluginsFolder, sharedHosts);
+var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
+{
+    Configuration = builder.Configuration,
+    RootPluginDirectory = Strings.PluginsFolder,
+    SharedServiceHosts = sharedServiceHosts,
+});
 
-// No bueno calling BuildServiceProvider manually, but it works :person_shrugging: 
-// TODO: Think of proper logic/order instead of cheating and using BuildServiceProvider
-//var provider = builder.Services.BuildServiceProvider();
+await builder.Services.LoadPluginsAsync(pluginManager);
 
-// Call 'ConfigureServices' method in plugins
-//ConfigureServices(builder.Services, provider);
-
-// Database migration needs to be run before plugin registration/loading in 'ConfigureServices'
-//await SeedDefaultDataAsync(provider);
+builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
+builder.Services.AddSingleton<IPluginManager>(pluginManager);
 
 #endregion
 
@@ -296,94 +295,6 @@ void Configure(WebApplication app, IServiceProvider serviceProvider)
         }
     }
 }
-
-/*
-// NOTE: Called first before Configure
-async void ConfigureServices(IServiceCollection services, IServiceProvider serviceProvider)
-{
-    var mvcBuilder = services.AddMvc(); //.AddMvcOptions(options => options.EnableEndpointRouting = false);
-    //var serviceProvider = services.BuildServiceProvider();
-    using (var scope = serviceProvider.CreateScope())
-    {
-        try
-        {
-            var pluginManager = serviceProvider.GetRequiredService<IPluginManager>();
-            var jobControllerHost = serviceProvider.GetRequiredService<IJobControllerServiceHost>();
-            var loggingHost = serviceProvider.GetRequiredService<ILoggingHost>();
-            var databaseHost = serviceProvider.GetRequiredService<IDatabaseHost>();
-            var uiHost = serviceProvider.GetRequiredService<IUiHost>();
-
-            var navbarHeaders = new List<NavbarHeader>
-            {
-                new("Home", "Home", displayIndex: 0, icon: "fa-solid fa-fw fa-house"),
-                new("Accounts", "Account", displayIndex: 1, icon: "fa-solid fa-fw fa-user"),
-                new("Devices", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<NavbarHeader>
-                {
-                    new("Devices", "Device", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-layer-group"),
-                    new("Device Groups", "DeviceGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-mobile-alt"),
-                }),
-                new("Instances", displayIndex: 3, icon: "fa-solid fa-fw fa-cubes-stacked", isDropdown: true, dropdownItems: new List<NavbarHeader>
-                {
-                    new("Geofences", "Geofence", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-map-marked"),
-                    new("Instances", "Instance", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-cubes-stacked"),
-                    new("IV Lists", "IvList", "Index", displayIndex: 2, icon: "fa-solid fa-fw fa-list"),
-                }),
-                new("Plugins", "Plugin", displayIndex: 4, icon: "fa-solid fa-fw fa-puzzle-piece"),
-                new("Schedules", displayIndex: 5, icon: "fa-solid fa-fw fa-calendar-days", isDropdown: true, dropdownItems: new List<NavbarHeader>
-                {
-                    new("Assignments", "Assignment", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-cog"),
-                    new("Assignment Groups", "AssignmentGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-cogs"),
-                }),
-                new("Webhooks", "Webhook", displayIndex: 6, icon: "fa-solid fa-fw fa-circle-nodes"),
-                new("Users", "User", displayIndex: 7, icon: "fa-solid fa-fw fa-users"),
-                new("Utilities", displayIndex: 8, icon: "fa-solid fa-fw fa-toolbox", isDropdown: true, dropdownItems: new List<NavbarHeader>
-                {
-                    new("Clear Quests", "Utilities", "ClearQuests", displayIndex: 0, icon: "fa-solid fa-fw fa-broom"),
-                    new("Convert Forts", "Utilities", "ConvertForts", displayIndex: 1, icon: "fa-solid fa-fw fa-arrows-up-down"),
-                    new("Clear Stale Pokestops", "Utilities", "ClearStalePokestops", displayIndex: 2, icon: "fa-solid fa-fw fa-clock"),
-                    new("Reload Instance", "Utilities", "ReloadInstance", displayIndex: 3, icon: "fa-solid fa-fw fa-rotate"),
-                    new("Truncate Data", "Utilities", "TruncateData", displayIndex: 4, icon: "fa-solid fa-fw fa-trash-can"),
-                    new("Re-Quest", "Utilities", "ReQuest", displayIndex: 5, icon: "fa-solid fa-fw fa-clock-rotate-left"),
-                    new("Route Generator", "Utilities", "RouteGenerator", displayIndex: 6, icon: "fa-solid fa-fw fa-route"),
-                }),
-            };
-            await uiHost.AddNavbarHeadersAsync(navbarHeaders);
-
-            var sharedHosts = new Dictionary<Type, object>
-            {
-                { typeof(IJobControllerServiceHost), jobControllerHost },
-                { typeof(ILoggingHost), loggingHost },
-                { typeof(IUiHost), uiHost },
-                { typeof(IDatabaseHost), databaseHost },
-                { typeof(ILocalizationHost), Translator.Instance },
-            };
-            var pluginFinder = new PluginFinder<IPlugin>(Strings.PluginsFolder);
-            var pluginAssemblies = pluginFinder.FindAssemliesWithPlugins();
-            if (pluginAssemblies.Count > 0)
-            {
-                // Register all plugins with MvcBuilder
-                foreach (var pluginFile in pluginAssemblies)
-                {
-                    mvcBuilder.AddPluginFromAssemblyFile(pluginFile, sharedHosts);
-                }
-
-                // Load all plugins via PluginManager
-                await pluginManager.LoadPluginsAsync(pluginAssemblies, sharedHosts);
-            }
-
-            // Call 'ConfigureServices(IServiceCollection)' event handler for each plugin
-            foreach (var (_, plugin) in pluginManager!.Plugins)
-            {
-                plugin.Plugin.ConfigureServices(services);
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "An error occurred while calling the 'ConfigureServices(IServiceCollection)' method in plugins.");
-        }
-    }
-}
-*/
 
 async Task LoadUiAsync(IUiHost host)
 {

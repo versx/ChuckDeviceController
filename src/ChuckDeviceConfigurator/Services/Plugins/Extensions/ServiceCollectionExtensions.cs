@@ -4,12 +4,15 @@
 
     using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugins;
     using ChuckDeviceController.Plugins.Services;
 
     public class PluginOptions
     {
     }
+
+    // TODO: Keep track of plugins in PluginManager
 
     public static class ServiceCollectionExtensions
     {
@@ -29,7 +32,7 @@
                        .Select(f => (f, f.GetCustomAttribute<T>()));
         }
 
-        public static IEnumerable<(PropertyInfo, T?)> GetPropertiessOfCustomAttribute<T>(this TypeInfo type)
+        public static IEnumerable<(PropertyInfo, T?)> GetPropertiesOfCustomAttribute<T>(this TypeInfo type)
             where T : Attribute
         {
             return type.DeclaredProperties
@@ -65,103 +68,215 @@
             return false;
         }
 
-        public static IServiceCollection LoadPlugins(this IServiceCollection services, string pluginFolderPath, IReadOnlyDictionary<Type, object>? sharedHosts = null, Action<PluginOptions>? configure = null)
+        public static IServiceCollection RegisterPluginServiceWithAttribute(this IServiceCollection services, Type type)
         {
-            var pluginFinder = new PluginFinder<IPlugin>(pluginFolderPath);
-            var pluginFilePaths = pluginFinder.FindAssemliesWithPlugins();
-
-            foreach (var pluginFile in pluginFilePaths)
+            var attr = type.GetCustomAttribute<PluginServiceAttribute>();
+            if (attr != null)
             {
-                var assembly = Assembly.LoadFrom(pluginFile);
-                var part = new AssemblyPart(assembly);
-                services.AddControllers().PartManager.ApplicationParts.Add(part);
+                var serviceType = attr.ServiceType;
+                var implementation = attr.Provider == PluginServiceProvider.Plugin
+                    ? attr.ProxyType
+                    : type; // TODO: Get host service implementation
+                var serviceLifetime = attr.Lifetime;
+                var serviceDescriptor = new ServiceDescriptor(serviceType, implementation, serviceLifetime);
+                services.Add(serviceDescriptor);
+            }
+            return services;
+        }
 
-                var assemblyTypes = assembly.GetTypes();
+        public static void SetPluginServiceFields(this TypeInfo typeInfo, object instance, IReadOnlyDictionary<Type, object> sharedServices)
+        {
+            var fields = typeInfo.GetFieldsOfCustomAttribute<PluginBootstrapperServiceAttribute>();
+            if (!(fields?.Any() ?? false))
+                return;
+
+            foreach (var (fieldInfo, attr) in fields)
+            {
+                if (attr == null)
+                {
+                    Console.WriteLine($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for field '{fieldInfo.Name}' was null, skipping.");
+                    continue;
+                }
+
+                if (sharedServices == null)
+                {
+                    Console.WriteLine($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for field '{fieldInfo.Name}' was found, but shared host services is null, skipping.");
+                    continue;
+                }
+
+                // Instantiate/set field to service
+                if (!sharedServices.ContainsKey(attr.ServiceType))
+                {
+                    Console.WriteLine($"Unable to find registered service '{attr.ServiceType.Name}' for plugin field '{fieldInfo.Name}' with attribute '{nameof(PluginBootstrapperServiceAttribute)}'");
+                    continue;
+                }
+
+                var serviceHost = sharedServices[attr.ServiceType];
+                instance.TrySetField(fieldInfo, serviceHost);
+            }
+        }
+        
+        public static void SetPluginServiceProperties(this TypeInfo typeInfo, object instance, IReadOnlyDictionary<Type, object> sharedServices)
+        {
+            var properties = typeInfo.GetPropertiesOfCustomAttribute<PluginBootstrapperServiceAttribute>();
+            if (!(properties?.Any() ?? false))
+                return;
+
+            foreach (var (propertyInfo, attr) in properties)
+            {
+                if (attr == null)
+                {
+                    Console.WriteLine($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for property '{propertyInfo.Name}' was null, skipping.");
+                    continue;
+                }
+
+                if (sharedServices == null)
+                {
+                    Console.WriteLine($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for property '{propertyInfo.Name}' was found, but shared host services is null, skipping.");
+                    continue;
+                }
+
+                // Instantiate/set property to service
+                if (!sharedServices.ContainsKey(attr.ServiceType))
+                {
+                    Console.WriteLine($"Unable to find registered service '{attr.ServiceType.Name}' for plugin property '{propertyInfo.Name}' with attribute '{nameof(PluginBootstrapperServiceAttribute)}'");
+                    continue;
+                }
+
+                var serviceHost = sharedServices[attr.ServiceType];
+                instance.TrySetProperty(propertyInfo, serviceHost);
+            }
+        }
+
+        public static object CreatePluginInstance(this Type pluginType, IReadOnlyDictionary<Type, object> sharedServices)
+        {
+            object? instance;
+            if (sharedServices == null)
+            {
+                instance = Activator.CreateInstance(pluginType);
+            }
+            else
+            {
+                var args = pluginType.GetConstructorArgs(sharedServices);
+                instance = Activator.CreateInstance(pluginType, args);
+            }
+            return instance;
+        }
+
+        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager, Action<PluginOptions>? configure = null)
+        {
+            var finderOptions = new PluginFinderOptions
+            {
+                PluginType = typeof(IPlugin),
+                RootPluginsDirectory = pluginManager.Options.RootPluginDirectory,
+                ValidFileTypes = new[] { ".dll" },
+            };
+            var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
+            var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
+
+            var mvcBuilder = services.AddControllers();
+            foreach (var pluginResult in pluginFinderResults)
+            {
+                if (pluginResult.Assembly == null)
+                {
+                    Console.WriteLine($"Failed to load assembly for plugin '{pluginResult.FullAssemblyPath}', skipping.");
+                    continue;
+                }
+
+                // Load plugin assembly as AssemblyPart for Mvc controllers
+                var part = new AssemblyPart(pluginResult.Assembly);
+                // Add loaded plugin assembly as application part
+                mvcBuilder.PartManager.ApplicationParts.Add(part);
+
+                //services.AddControllers().PartManager.ApplicationParts.Add(part);
+                // TODO: Make single LoadPlugin(IServiceCollection services, Type type, etc) extension;
+
+                mvcBuilder.AddViewOptions(options =>
+                {
+                    //options.ViewEngines;
+                    //options.HtmlHelperOptions
+                });
+                /*
+                mvcBuilder.AddRazorOptions(options =>
+                {
+                    options.ViewLocationFormats
+                });
+                */
+
+                var assemblyTypes = pluginResult.Assembly.GetTypes();
                 var pluginBootstrapTypes = assemblyTypes.GetAssignableTypes<IPluginBootstrapper>();
                 var pluginTypes = assemblyTypes.GetAssignableTypes<IPlugin>();
 
-                foreach (var type in assemblyTypes) //pluginTypes
+                // Register all marked service classes with 'PluginServiceAttribute'
+                foreach (var type in assemblyTypes) 
                 {
-                    // TODO: Keep track of plugins
-
                     // Register services with 'PluginServiceAttribute'
-                    var pluginServiceAttr = type.GetCustomAttribute<PluginServiceAttribute>();
-                    if (pluginServiceAttr != null)
-                    {
-                        var serviceType = pluginServiceAttr.ServiceType;
-                        var implementation = pluginServiceAttr.ProxyType;
-                        var serviceLifetime = pluginServiceAttr.Lifetime;
-                        var serviceDescriptor = new ServiceDescriptor(serviceType, type, serviceLifetime);
-                        services.Add(serviceDescriptor);
-                    }
+                    services.RegisterPluginServiceWithAttribute(type);
+                }
 
-                    if (!(typeof(IPlugin).IsAssignableFrom(type) && type.IsClass && !type.IsAbstract))
-                        continue;
-
-                    object? instance;
-                    if (sharedHosts == null)
+                // Loop all found plugin types and create/instantiate instances of them
+                foreach (var pluginType in pluginTypes)
+                {
+                    // Instantiate an instance of the plugin type
+                    var pluginInstance = pluginType.CreatePluginInstance(pluginManager.Options.SharedServiceHosts);
+                    if (pluginInstance == null)
                     {
-                        instance = Activator.CreateInstance(type);
-                    }
-                    else
-                    {
-                        var diParams = GetDiParameters(type, sharedHosts);
-                        instance = Activator.CreateInstance(type, diParams);
-                    }
-
-                    if (instance == null)
-                    {
-                        Console.WriteLine($"Failed to instantiate plugin type instance '{type.Name}'");
+                        Console.WriteLine($"Failed to instantiate plugin type instance '{pluginType.Name}'");
                         continue;
                     }
 
-                    var typeInfo = instance.GetType().GetTypeInfo();
-                    var fields = typeInfo.GetFieldsOfCustomAttribute<PluginBootstrapperServiceAttribute>();
-                    var properties = typeInfo.GetPropertiessOfCustomAttribute<PluginBootstrapperServiceAttribute>();
-                    if (fields?.Any() ?? false)
-                    {
-                        foreach (var (fieldInfo, attr) in fields)
-                        {
-                            // Instantiate/set field to service
-                            if (!sharedHosts.ContainsKey(attr.ServiceType))
-                            {
-                                Console.WriteLine($"Unable to find registered service for plugin field attribute 'PluginBootstrapperServiceAttribute.ServiceType={attr.ServiceType}'");
-                                continue;
-                            }
-                            var serviceHost = sharedHosts[attr.ServiceType];
-                            instance.TrySetField(fieldInfo, serviceHost);
-
-                        }
-                    }
-                    if (properties?.Any() ?? false)
-                    {
-                        foreach (var (propertyInfo, attr) in properties)
-                        {
-                            // Instantiate/set property to service
-                            if (!sharedHosts.ContainsKey(attr.ServiceType))
-                            {
-                                Console.WriteLine($"Unable to find registered service for plugin property attribute 'PluginBootstrapperServiceAttribute.ServiceType={attr.ServiceType}'");
-                                continue;
-                            }
-                            var serviceHost = sharedHosts[attr.ServiceType];
-                            instance.TrySetProperty(propertyInfo, serviceHost);
-                        }
-                    }
-
-                    var plugin = instance as IPlugin;
-                    if (plugin == null)
+                    if (pluginInstance is not IPlugin plugin)
                     {
                         Console.WriteLine($"Failed to instantiate '{nameof(IPlugin)}' instance");
                         continue;
                     }
+
+                    // Initialize any fields or properties marked as plugin service types
+                    var typeInfo = pluginInstance.GetType().GetTypeInfo();
+                    typeInfo.SetPluginServiceFields(pluginInstance, pluginManager.Options.SharedServiceHosts);
+                    typeInfo.SetPluginServiceProperties(pluginInstance, pluginManager.Options.SharedServiceHosts);
+
+                    var permissions = pluginType.GetPermissions();
+                    var pluginHost = new PluginHost(
+                        plugin,
+                        permissions,
+                        new PluginEventHandlers(),
+                        PluginState.Running
+                    );
+
+                    foreach (var type in pluginType.GetInterfaces())
+                    {
+                        if (typeof(IUiEvents) == type)
+                            pluginHost.EventHandlers.UiEvents = (IUiEvents)plugin;
+                        else if (typeof(IDatabaseEvents) == type)
+                            pluginHost.EventHandlers.DatabaseEvents = (IDatabaseEvents)plugin;
+                        else if (typeof(IJobControllerServiceHost) == type)
+                            pluginHost.EventHandlers.JobControllerEvents = (IJobControllerServiceEvents)plugin;
+                    }
+
+                    // Call plugin's ConfigureServices method to register any services
                     plugin.ConfigureServices(services);
+                    // Call plugin's load method
                     plugin.OnLoad();
+
+                    await PluginManager.Instance.RegisterPluginAsync(pluginHost);
                 }
             }
             return services;
         }
 
-        public static object[] GetDiParameters(Type pluginType, IReadOnlyDictionary<Type, object>? sharedHosts = null)
+        public static PluginPermissions GetPermissions(this Type pluginType)
+        {
+            var attributes = pluginType.GetCustomAttributes<PluginPermissionsAttribute>();
+            if (attributes.Any())
+            {
+                var attr = attributes.FirstOrDefault();
+                return attr?.Permissions ?? PluginPermissions.None;
+            }
+            return PluginPermissions.None;
+        }
+
+        public static object[] GetConstructorArgs(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedHosts = null)
         {
             var constructors = pluginType.GetConstructors();
             if ((constructors?.Length ?? 0) == 0)

@@ -31,7 +31,10 @@
         /// </summary>
         PluginState State { get; }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        PluginFinderResult PluginFinderResult { get; }
 
         /// <summary>
         /// Gets the <seealso cref="PluginEventHandlers"/> for the
@@ -46,5 +49,10 @@
         /// <param name="state">Plugin state to set.</param>
         /// <param name="ignoreEvent"></param>
         void SetState(PluginState state, bool ignoreEvent = false);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void Unload();
     }
 }

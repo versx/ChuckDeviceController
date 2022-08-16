@@ -2,39 +2,40 @@
 {
     using System.Reflection;
 
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceConfigurator.Services.Plugins.Extensions;
 
-    public class PluginFinder<TPlugin> where TPlugin : class, IPlugin
+    public class PluginFinder<TPlugin> where TPlugin : class//, IPlugin
     {
-        private const string PluginSearchPattern = "*.dll";
         private const string AssemblyContextName = "PluginFinderAssemblyContext";
 
-        private readonly string _pluginsFolder;
+        public IPluginFinderOptions Options { get; set; }
 
         #region Constructor
 
-        public PluginFinder(string pluginsFolder)
+        public PluginFinder(IPluginFinderOptions? options = null)
         {
-            _pluginsFolder = pluginsFolder;
+            Options = options ?? new PluginFinderOptions
+            {
+                PluginType = typeof(TPlugin),
+                RootPluginsDirectory = Strings.PluginsFolder,
+                ValidFileTypes = new List<string>
+                {
+                    PluginFinderOptions.DefaultPluginFileType,
+                },
+            };
         }
 
         #endregion
 
         #region Public Methods
 
-        public IReadOnlyCollection<string> FindAssemliesWithPlugins()
+        public IReadOnlyList<PluginFinderResult> FindAssemliesWithPlugins()
         {
-            var options = new EnumerationOptions
-            {
-                MaxRecursionDepth = 2,
-                RecurseSubdirectories = true,
-                ReturnSpecialDirectories = false,
-            };
-            var assemblies = Directory.GetFiles(_pluginsFolder, PluginSearchPattern, options);
+            var assemblies = Options.RootPluginsDirectory.GetFiles(Options.ValidFileTypes);
             return FindPluginsInAssemblies(assemblies);
         }
 
-        public static IReadOnlyCollection<Type> GetPluginTypes(Assembly assembly)
+        public static IReadOnlyList<Type> GetPluginTypes(Assembly assembly)
         {
             var types = assembly.GetTypes()
                                 .Where(type => typeof(TPlugin).IsAssignableFrom(type))
@@ -47,21 +48,27 @@
 
         #region Private Methods
 
-        private static IReadOnlyCollection<string> FindPluginsInAssemblies(string[] assemblyPaths)
+        private static IReadOnlyList<PluginFinderResult> FindPluginsInAssemblies(IEnumerable<string> assemblyPaths)
         {
-            var pluginPaths = new List<string>();
+            var pluginFinderResults = new List<PluginFinderResult>();
             var pluginFinderAssemblyContext = new PluginAssemblyLoadContext(AssemblyContextName);
             foreach (var assemblyPath in assemblyPaths)
             {
                 var assemblyFullPath = Path.GetFullPath(assemblyPath);
                 var assembly = pluginFinderAssemblyContext.LoadFromAssemblyPath(assemblyFullPath);
-                if (GetPluginTypes(assembly).Any())
-                {
-                    pluginPaths.Add(assembly.Location);
-                }
+                if (!GetPluginTypes(assembly).Any())
+                    continue;
+
+                var loaderContext = new PluginFinderResult(
+                    typeof(TPlugin),
+                    assembly.Location,
+                    assembly,
+                    pluginFinderAssemblyContext
+                );
+                pluginFinderResults.Add(loaderContext);
             }
-            pluginFinderAssemblyContext.Unload();
-            return pluginPaths;
+            //pluginFinderAssemblyContext.Unload();
+            return pluginFinderResults;
         }
 
         #endregion

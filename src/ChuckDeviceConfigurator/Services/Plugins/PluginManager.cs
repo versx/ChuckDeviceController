@@ -1,79 +1,117 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
-    using Microsoft.EntityFrameworkCore;
-
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Plugins;
 
     // TODO: Add FileSystemWatcher for plugins added manually or changed
 
-    public class PluginManager : IPluginManager
+    public class PluginManager : IPluginManager // TODO: <TPlugin>
     {
         #region Variables
 
-        private readonly ILogger<IPluginManager> _logger;
-        private readonly IDbContextFactory<ControllerContext> _factory;
-
-        private readonly static Dictionary<string, IPluginHost> _plugins = new();
+        private static readonly ILogger<IPluginManager> _logger =
+            new Logger<IPluginManager>(LoggerFactory.Create(x => x.AddConsole()));
+        private static IPluginManager _instance;
+        private static readonly Dictionary<string, IPluginHost> _plugins = new();
 
         #endregion
 
         #region Properties
 
+        public static IPluginManager Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new PluginManager(new PluginManagerOptions
+                    {
+                        RootPluginDirectory = Strings.PluginsFolder,
+                    });
+                }
+                return _instance;
+            }
+        }
+
+        //public static IPluginManager InstanceWithOptions(IPluginManagerOptions options, IConfiguration? configuration = null, IServiceCollection? sharedServiceHosts = null)
+        public static IPluginManager InstanceWithOptions(IPluginManagerOptions options, IConfiguration? configuration = null, IReadOnlyDictionary<Type, object>? sharedServiceHosts = null)
+        {
+            if (_instance == null)
+            {
+                _instance = new PluginManager(options ?? new PluginManagerOptions
+                {
+                    RootPluginDirectory = Strings.PluginsFolder,
+                    SharedServiceHosts = sharedServiceHosts,
+                    Configuration = configuration,
+                });
+            }
+            return _instance;
+        }
+
         public IReadOnlyDictionary<string, IPluginHost> Plugins => _plugins;
 
-        public string PluginsFolder { get; set; }
+        public IPluginManagerOptions Options { get; }
+
+        public IPluginHost this[string key] => _plugins.ContainsKey(key)
+            ? _plugins[key]
+            : null;
 
         #endregion
 
         #region Constructors
 
-        public PluginManager(
-            ILogger<IPluginManager> logger,
-            IDbContextFactory<ControllerContext> factory)
+        public PluginManager(IPluginManagerOptions options)
         {
-            _logger = logger;
-            _factory = factory;
-
-            PluginsFolder = Strings.PluginsFolder;
+            Options = options;
         }
 
         #endregion
 
         #region Public Methods
 
-        public async Task LoadPluginsAsync(IReadOnlyDictionary<Type, object> sharedHosts)
+        public async Task RegisterPluginAsync(PluginHost pluginHost)
         {
-            if (!Directory.Exists(PluginsFolder))
+            var plugin = pluginHost.Plugin;
+            if (_plugins.ContainsKey(plugin.Name))
             {
-                throw new DirectoryNotFoundException($"Plugins folder '{PluginsFolder}' does not exist!");
-            }
-
-            var pluginFinder = new PluginFinder<IPlugin>(PluginsFolder);
-            var pluginFiles = pluginFinder.FindAssemliesWithPlugins();
-
-            foreach (var pluginFile in pluginFiles)
-            {
-                await LoadPluginAsync(pluginFile, sharedHosts);
-            }
-        }
-
-        public async Task LoadPluginsAsync(IEnumerable<string> pluginFilePaths, IReadOnlyDictionary<Type, object> sharedHosts)
-        {
-            foreach (var pluginFile in pluginFilePaths)
-            {
-                if (!File.Exists(pluginFile))
+                // Check if version is higher than current, if so replace existing
+                var oldVersion = _plugins[pluginHost.Plugin.Name].Plugin.Version;
+                var newVersion = plugin.Version;
+                if (oldVersion > newVersion)
                 {
-                    _logger.LogWarning($"Plugin does not exist at '{pluginFile}' unable to load, skipping...");
-                    continue;
+                    // Existing is newer
+                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is newer than incoming plugin version, skipping registration...");
+                    return;
                 }
+                else if (oldVersion < newVersion)
+                {
+                    // Incoming is newer
+                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is newer than incoming plugin version, removing old version and adding new version...");
 
-                await LoadPluginAsync(pluginFile, sharedHosts);
+                    // Remove existing plugin so we can add newer version of plugin
+                    await RemoveAsync(plugin.Name);
+                }
+                else
+                {
+                    // Plugin versions are the same
+                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is the same version as incoming plugin version, skipping registration...");
+                    return;
+                }
             }
-        }
 
+            // Cache plugin host state in database
+            var state = await CachePluginHostStateAsync(pluginHost);
+            if (state.State != PluginState.Running)
+            {
+                _logger.LogWarning($"Plugin '{state.Name}' state was previously set to '{state.State}'.");
+            }
+
+            _plugins.Add(plugin.Name, pluginHost);
+            _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");
+        }
 
         public async Task StopAsync(string pluginName)
         {
@@ -136,6 +174,7 @@
             }
 
             var pluginHost = _plugins[pluginName];
+            pluginHost.Unload();
             pluginHost.Plugin.OnRemove();
             pluginHost.SetState(PluginState.Removed);
             _plugins.Remove(pluginName);
@@ -183,77 +222,11 @@
 
         #region Private Methods
 
-        private async Task LoadPluginAsync(string pluginFilePath, IReadOnlyDictionary<Type, object> sharedHosts)
+        private static async Task<Plugin> CachePluginHostStateAsync(PluginHost pluginHost)//, PluginState state = PluginState.Unset)
         {
-            var loader = new PluginLoader<IPlugin>(pluginFilePath, sharedHosts);
-            var loadedPlugins = loader.LoadedPlugins;
-            if (!loadedPlugins.Any())
-            {
-                _logger.LogWarning($"No plugins loaded from plugin file '{pluginFilePath}'");
-                return;
-            }
-
-            // Loop all valid plugins found within assembly
-            foreach (var plugin in loadedPlugins)
-            {
-                await RegisterPluginAsync(plugin);
-
-                // TODO: Add requested plugin permissions to cache and show list in dashboard
-                // to accept plugin permissions request or just allow it regardless? or add
-                // config option to set which permissions plugins are allowed? idk
-
-                // Only call plugin 'OnLoad' event if the plugin in the enabled/running state.
-                if (plugin.State == PluginState.Running)
-                {
-                    plugin.Plugin.OnLoad();
-                }
-            }
-        }
-
-        private async Task RegisterPluginAsync(PluginHost pluginHost)
-        {
-            var plugin = pluginHost.Plugin;
-            if (_plugins.ContainsKey(plugin.Name))
-            {
-                // Check if version is higher than current, if so replace existing
-                var oldVersion = _plugins[pluginHost.Plugin.Name].Plugin.Version;
-                var newVersion = plugin.Version;
-                if (oldVersion > newVersion)
-                {
-                    // Existing is newer
-                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is newer than incoming plugin version, skipping registration...");
-                    return;
-                }
-                else if (oldVersion < newVersion)
-                {
-                    // Incoming is newer
-                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is newer than incoming plugin version, removing old version and adding new version...");
-
-                    // Remove existing plugin so we can add newer version of plugin
-                    await RemoveAsync(plugin.Name);
-                }
-                else
-                {
-                    // Plugin versions are the same
-                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is the same version as incoming plugin version, skipping registration...");
-                    return;
-                }
-            }
-
-            // Cache plugin host state in database
-            var state = await CachePluginHostStateAsync(pluginHost);
-            if (state.State != PluginState.Running)
-            {
-                _logger.LogWarning($"Plugin '{state.Name}' state was previously set to '{state.State}'.");
-            }
-
-            _plugins.Add(plugin.Name, pluginHost);
-            _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");
-        }
-
-        private async Task<Plugin> CachePluginHostStateAsync(PluginHost pluginHost)//, PluginState state = PluginState.Unset)
-        {
-            using (var context = _factory.CreateDbContext())
+            // TODO: Get IConfiguration
+            var connectionString = Instance.Options.Configuration.GetConnectionString("DefaultConnection");
+            using (var context = DbContextFactory.CreateControllerContext(connectionString))
             {
                 // Get cached plugin state from database
                 var dbPlugin = await context.Plugins.FindAsync(pluginHost.Plugin.Name);
@@ -295,7 +268,8 @@
 
         private async Task SaveStateAsync(string pluginName, PluginState state)
         {
-            using (var context = _factory.CreateDbContext())
+            var connectionString = Options.Configuration.GetConnectionString("DefaultConnection");
+            using (var context = DbContextFactory.CreateControllerContext(connectionString))
             {
                 // Get cached plugin state from database
                 var plugin = await context.Plugins.FindAsync(pluginName);

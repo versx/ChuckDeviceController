@@ -4,7 +4,8 @@
 
     /// <summary>
     /// Registers plugin service classes that are marked with the
-    /// 'PluginService' attribute with the host application.
+    /// 'PluginService' attribute with the host application in 
+    /// order to be used with dependency injection.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class PluginServiceAttribute : Attribute, IPluginServiceAttribute
@@ -22,7 +23,7 @@
         /// <summary>
         /// Gets or sets who provided the service.
         /// </summary>
-        public PluginServiceProvider ProvidedBy { get; set; }
+        public PluginServiceProvider Provider { get; set; }
 
         /// <summary>
         /// Gets or sets the service lifetime for the plugin service.
@@ -32,15 +33,30 @@
         /// <summary>
         /// 
         /// </summary>
+        public PluginServiceAttribute()
+        {
+            ServiceType = typeof(Type);
+            ProxyType = typeof(Type);
+            Provider = PluginServiceProvider.Plugin;
+            Lifetime = ServiceLifetime.Singleton;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="serviceType"></param>
         /// <param name="proxyType"></param>
-        /// <param name="providedBy"></param>
+        /// <param name="provider"></param>
         /// <param name="lifetime"></param>
-        public PluginServiceAttribute(Type serviceType, Type proxyType, PluginServiceProvider providedBy = PluginServiceProvider.Plugin, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        public PluginServiceAttribute(
+            Type serviceType,
+            Type proxyType,
+            PluginServiceProvider provider = PluginServiceProvider.Plugin,
+            ServiceLifetime lifetime = ServiceLifetime.Singleton)
         {
             ServiceType = serviceType;
             ProxyType = proxyType;
-            ProvidedBy = providedBy;
+            Provider = provider;
             Lifetime = lifetime;
         }
     }

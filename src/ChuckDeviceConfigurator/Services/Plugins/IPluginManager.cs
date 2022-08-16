@@ -8,15 +8,15 @@
 
         IReadOnlyDictionary<string, IPluginHost> Plugins { get; }
 
-        string PluginsFolder { get; }
+        IPluginHost this[string key] { get; }
+
+        IPluginManagerOptions Options { get; }
 
         #endregion
 
         #region Methods
 
-        Task LoadPluginsAsync(IReadOnlyDictionary<Type, object> sharedHosts);
-
-        Task LoadPluginsAsync(IEnumerable<string> pluginFilePaths, IReadOnlyDictionary<Type, object> sharedHosts);
+        Task RegisterPluginAsync(PluginHost pluginHost);
 
         Task StopAsync(string pluginName);
 

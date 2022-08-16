@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
-    using System;
     using System.Reflection;
     using System.Runtime.Loader;
 

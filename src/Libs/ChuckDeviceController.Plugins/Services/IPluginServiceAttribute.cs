@@ -4,7 +4,8 @@
 
     /// <summary>
     /// Contract for registering plugin service classes marked with
-    /// 'PluginServiceAttribute' with the host application.
+    /// 'PluginServiceAttribute' with the host application in order
+    /// to be used with dependency injection.
     /// </summary>
     public interface IPluginServiceAttribute
     {
@@ -21,7 +22,7 @@
         /// <summary>
         /// Gets or sets who provided the service.
         /// </summary>
-        PluginServiceProvider ProvidedBy { get; }
+        PluginServiceProvider Provider { get; }
 
         /// <summary>
         /// Gets or sets the service lifetime for the plugin service.

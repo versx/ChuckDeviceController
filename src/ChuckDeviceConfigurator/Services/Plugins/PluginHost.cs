@@ -19,25 +19,27 @@
 
         public PluginState State { get; private set; }
 
+        public PluginFinderResult PluginFinderResult { get; }
+
         public PluginEventHandlers EventHandlers { get; } = new();
 
         public IReadOnlyDictionary<string, IJobController> JobControllers => _jobControllers;
-
-        // TODO: Cache plugin file path for reloading
 
         #endregion
 
         #region Constructors
 
-        public PluginHost(IPlugin plugin, PluginPermissions permissions)
-            : this(plugin, permissions, new())
+        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginFinderResult result)
+            : this(plugin, permissions, result, new())
         {
         }
 
-        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginEventHandlers eventHandlers, PluginState state = PluginState.Unset)
+        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginFinderResult result, PluginEventHandlers eventHandlers, PluginState state = PluginState.Unset)
         {
             Plugin = plugin;
+            PluginType = plugin.GetType();
             Permissions = permissions;
+            PluginFinderResult = result;
             EventHandlers = eventHandlers;
             State = state;
         }
@@ -45,6 +47,11 @@
         #endregion
 
         #region Public Methods
+
+        public void Unload()
+        {
+            PluginFinderResult.AssemblyLoadContext.Unload();
+        }
 
         public void AddJobController(string name, IJobController jobController)
         {
