@@ -1,4 +1,5 @@
-﻿namespace ChuckDeviceConfigurator.Services.Plugins.Extensions
+﻿/*
+namespace ChuckDeviceConfigurator.Services.Plugins.Extensions
 {
     using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
@@ -74,3 +75,4 @@
         }
     }
 }
+*/

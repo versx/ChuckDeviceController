@@ -1,4 +1,5 @@
-﻿namespace ChuckDeviceConfigurator.Services.Plugins
+﻿/*
+namespace ChuckDeviceConfigurator.Services.Plugins
 {
     using System.Reflection;
 
@@ -179,3 +180,4 @@
         #endregion
     }
 }
+*/

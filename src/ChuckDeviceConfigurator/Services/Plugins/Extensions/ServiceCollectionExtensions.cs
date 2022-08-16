@@ -8,12 +8,6 @@
     using ChuckDeviceController.Plugins;
     using ChuckDeviceController.Plugins.Services;
 
-    public class PluginOptions
-    {
-    }
-
-    // TODO: Keep track of plugins in PluginManager
-
     public static class ServiceCollectionExtensions
     {
         public static List<Type> GetAssignableTypes<T>(this IEnumerable<Type> assemblyTypes)
@@ -163,7 +157,7 @@
             return instance;
         }
 
-        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager, Action<PluginOptions>? configure = null)
+        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager)
         {
             var finderOptions = new PluginFinderOptions
             {
@@ -240,6 +234,7 @@
                     var pluginHost = new PluginHost(
                         plugin,
                         permissions,
+                        pluginResult,
                         new PluginEventHandlers(),
                         PluginState.Running
                     );
@@ -256,10 +251,12 @@
 
                     // Call plugin's ConfigureServices method to register any services
                     plugin.ConfigureServices(services);
+
                     // Call plugin's load method
                     plugin.OnLoad();
 
-                    await PluginManager.Instance.RegisterPluginAsync(pluginHost);
+                    // Register plugin with plugin manager
+                    await pluginManager.RegisterPluginAsync(pluginHost);
                 }
             }
             return services;
