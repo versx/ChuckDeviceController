@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -16,6 +17,7 @@ using ChuckDeviceConfigurator.Services.Net.Mail;
 using ChuckDeviceConfigurator.Services.Plugins;
 using ChuckDeviceConfigurator.Services.Plugins.Extensions;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts;
+using ChuckDeviceConfigurator.Services.Plugins.Mvc.Razor;
 using ChuckDeviceConfigurator.Services.Routing;
 using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
@@ -25,12 +27,10 @@ using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Plugins;
 
-using System.Reflection;
-
 // TODO: Show top navbar on mobile when sidebar is closed?
 // TODO: Create separate gRPC server service for all gRPC calls
 
-var hostFramework = Assembly.GetEntryAssembly().GetCustomAttribute<System.Runtime.Versioning.TargetFrameworkAttribute>()?.FrameworkName;
+//var hostFramework = Assembly.GetEntryAssembly().GetCustomAttribute<System.Runtime.Versioning.TargetFrameworkAttribute>()?.FrameworkName;
 
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -215,6 +215,14 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 });
 
 await builder.Services.LoadPluginsAsync(pluginManager);
+
+// Configure custom 'Views' location paths to search in plugin sub directories
+builder.Services.Configure<RazorViewEngineOptions>(options =>
+{
+    var pluginFolderNames = pluginManager.GetPluginFolderNames();
+    var viewLocationExpander = new PluginViewLocationExpander(pluginManager.Options.RootPluginDirectory, pluginFolderNames ?? new List<string>());
+    options.ViewLocationExpanders.Add(viewLocationExpander);
+});
 
 builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
 builder.Services.AddSingleton<IPluginManager>(pluginManager);
