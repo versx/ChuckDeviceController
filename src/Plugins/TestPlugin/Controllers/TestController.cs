@@ -2,8 +2,8 @@
 {
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceController.Plugins;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Plugins;
 
     /// <summary>
     /// Set the [ApiController] attribute when the controller is used as a backend

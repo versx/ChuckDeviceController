@@ -189,7 +189,7 @@
             var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
             var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
 
-            var mvcBuilder = services.AddControllersWithViews();
+            var mvcBuilder = services.AddControllersWithViews().AddRazorRuntimeCompilation();
             foreach (var pluginResult in pluginFinderResults)
             {
                 // TODO: New service collection for each plugin?
