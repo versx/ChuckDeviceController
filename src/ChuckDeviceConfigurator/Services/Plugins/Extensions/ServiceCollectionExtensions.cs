@@ -2,8 +2,7 @@
 {
     using System.Reflection;
 
-    using Microsoft.AspNetCore.Mvc.ApplicationParts;
-
+    using ChuckDeviceConfigurator.Services.Plugins.Mvc.Extensions;
     using ChuckDeviceController.Plugins;
     using ChuckDeviceController.Plugins.Services;
 
@@ -16,6 +15,19 @@
                                      .Where(type => type.IsClass && !type.IsAbstract)
                                      .ToList();
             return types;
+        }
+
+        public static void AddServices(this IMvcBuilder mvcBuilder, IServiceCollection services)
+        {
+            // Register all available host services with plugin
+            var servicesBuilder = new List<ServiceDescriptor>(services);
+            foreach (var service in servicesBuilder)
+            {
+                if (!mvcBuilder.Services.Contains(service))
+                {
+                    mvcBuilder.Services.Add(service);
+                }
+            }
         }
 
         public static IEnumerable<(FieldInfo, T?)> GetFieldsOfCustomAttribute<T>(this TypeInfo type)
@@ -177,16 +189,17 @@
             var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
             var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
 
-            //services.AddControllersWithViews();
             var mvcBuilder = services.AddControllersWithViews();
             foreach (var pluginResult in pluginFinderResults)
             {
+                // TODO: New service collection for each plugin?
+                // TODO: Register sharedServiceHosts with new service collection if so
+                //var serviceCollection = new ServiceCollection();
                 if (pluginResult.Assembly == null)
                 {
                     Console.WriteLine($"Failed to load assembly for plugin '{pluginResult.FullAssemblyPath}', skipping.");
                     continue;
                 }
-
                 // Load and activate plugins found by plugin finder
                 var pluginLoader = new PluginLoader<IPlugin>(pluginResult, pluginManager.Options.SharedServiceHosts);
                 var loadedPlugins = pluginLoader.LoadedPlugins;
@@ -195,6 +208,9 @@
                     Console.WriteLine($"Failed to find any valid plugins in assembly '{pluginResult.FullAssemblyPath}'");
                     continue;
                 }
+
+                // Register all available host services with plugin
+                mvcBuilder.AddServices(services);
 
                 // Register assembly as application part with Mvc
                 mvcBuilder.AddApplicationPart(pluginResult.Assembly);
@@ -225,101 +241,6 @@
             }
             return services;
         }
-
-        /*
-        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager)
-        {
-            var finderOptions = new PluginFinderOptions
-            {
-                PluginType = typeof(IPlugin),
-                RootPluginsDirectory = pluginManager.Options.RootPluginDirectory,
-                ValidFileTypes = new[] { ".dll" },
-            };
-            var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
-            var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
-
-            var mvcBuilder = services.AddControllers();
-            foreach (var pluginResult in pluginFinderResults)
-            {
-                if (pluginResult.Assembly == null)
-                {
-                    Console.WriteLine($"Failed to load assembly for plugin '{pluginResult.FullAssemblyPath}', skipping.");
-                    continue;
-                }
-
-                // Load plugin assembly as AssemblyPart for Mvc controllers
-                var part = new AssemblyPart(pluginResult.Assembly);
-                // Add loaded plugin assembly as application part
-                mvcBuilder.PartManager.ApplicationParts.Add(part);
-
-                //services.AddControllers().PartManager.ApplicationParts.Add(part);
-                // TODO: Make single LoadPlugin(IServiceCollection services, Type type, etc) extension;
-
-                var assemblyTypes = pluginResult.Assembly.GetTypes();
-                var pluginBootstrapTypes = assemblyTypes.GetAssignableTypes<IPluginBootstrapper>();
-                var pluginTypes = assemblyTypes.GetAssignableTypes<IPlugin>();
-
-                // Register all marked service classes with 'PluginServiceAttribute'
-                foreach (var type in assemblyTypes) 
-                {
-                    // Register services with 'PluginServiceAttribute'
-                    services.RegisterPluginServiceWithAttribute(type);
-                }
-
-                // Loop all found plugin types and create/instantiate instances of them
-                foreach (var pluginType in pluginTypes)
-                {
-                    // Instantiate an instance of the plugin type
-                    var pluginInstance = pluginType.CreatePluginInstance(pluginManager.Options.SharedServiceHosts);
-                    if (pluginInstance == null)
-                    {
-                        Console.WriteLine($"Failed to instantiate plugin type instance '{pluginType.Name}'");
-                        continue;
-                    }
-
-                    if (pluginInstance is not IPlugin plugin)
-                    {
-                        Console.WriteLine($"Failed to instantiate '{nameof(IPlugin)}' instance");
-                        continue;
-                    }
-
-                    // Initialize any fields or properties marked as plugin service types
-                    var typeInfo = pluginInstance.GetType().GetTypeInfo();
-                    typeInfo.SetPluginServiceFields(pluginInstance, pluginManager.Options.SharedServiceHosts);
-                    typeInfo.SetPluginServiceProperties(pluginInstance, pluginManager.Options.SharedServiceHosts);
-
-                    var permissions = pluginType.GetPermissions();
-                    var pluginHost = new PluginHost(
-                        plugin,
-                        permissions,
-                        pluginResult,
-                        new PluginEventHandlers(),
-                        PluginState.Running
-                    );
-
-                    foreach (var type in pluginType.GetInterfaces())
-                    {
-                        if (typeof(IUiEvents) == type)
-                            pluginHost.EventHandlers.UiEvents = (IUiEvents)plugin;
-                        else if (typeof(IDatabaseEvents) == type)
-                            pluginHost.EventHandlers.DatabaseEvents = (IDatabaseEvents)plugin;
-                        else if (typeof(IJobControllerServiceHost) == type)
-                            pluginHost.EventHandlers.JobControllerEvents = (IJobControllerServiceEvents)plugin;
-                    }
-
-                    // Call plugin's ConfigureServices method to register any services
-                    plugin.ConfigureServices(services);
-
-                    // Call plugin's load method
-                    plugin.OnLoad();
-
-                    // Register plugin with plugin manager
-                    await pluginManager.RegisterPluginAsync(pluginHost);
-                }
-            }
-            return services;
-        }
-        */
 
         public static PluginPermissions GetPermissions(this Type pluginType)
         {

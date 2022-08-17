@@ -3,11 +3,10 @@
     using System.Reflection;
 
     using ChuckDeviceConfigurator.Services.Plugins.Extensions;
+    using ChuckDeviceConfigurator.Services.Plugins.Mvc.Extensions;
 
     public class PluginFinder<TPlugin> where TPlugin : class//, IPlugin
     {
-        private const string AssemblyContextName = "PluginFinderAssemblyContext";
-
         public IPluginFinderOptions Options { get; set; }
 
         #region Constructor
@@ -32,26 +31,30 @@
         public IReadOnlyList<PluginFinderResult> FindAssemliesWithPlugins()
         {
             var assemblies = Options.RootPluginsDirectory.GetFiles(Options.ValidFileTypes);
+            var hostFramework = Assembly.GetEntryAssembly()?.GetHostFramework();
             var pluginFinderResults = new List<PluginFinderResult>();
-            var pluginFinderAssemblyContext = new PluginAssemblyLoadContext(AssemblyContextName);
             foreach (var assemblyPath in assemblies)
             {
                 try
                 {
+                    var assemblyContext = new PluginAssemblyLoadContext(assemblyPath, typeof(TPlugin), hostFramework);
                     var assemblyFullPath = Path.GetFullPath(assemblyPath);
-                    var assembly = pluginFinderAssemblyContext.LoadFromAssemblyPath(assemblyFullPath);
+                    var assembly = assemblyContext.LoadFromAssemblyPath(assemblyFullPath);
                     if (!GetPluginTypes(assembly).Any())
                         continue;
+
+                    //assemblyContext.AddMvcTypes();
+                    //assemblyContext.AddMvcRazorTypes();
 
                     var loaderContext = new PluginFinderResult(
                         typeof(TPlugin),
                         assembly.Location,
                         assembly,
-                        pluginFinderAssemblyContext
+                        assemblyContext
                     );
                     pluginFinderResults.Add(loaderContext);
                 }
-                catch (Exception ex)
+                catch //(Exception ex)
                 {
                     continue;
                 }

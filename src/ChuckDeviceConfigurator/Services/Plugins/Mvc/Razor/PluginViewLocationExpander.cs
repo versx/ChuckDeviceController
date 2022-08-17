@@ -9,15 +9,22 @@
 
         private readonly string _rootPluginsDirectory;
         private readonly IEnumerable<string> _pluginFolderNames;
+        private readonly IEnumerable<string> _viewsSearchDirectories;
 
         public PluginViewLocationExpander(string rootPluginsDirectory, IEnumerable<string> pluginFolderNames)
         {
-            _rootPluginsDirectory = rootPluginsDirectory.StartsWith(".")
-                ? "~" + rootPluginsDirectory[1..]
-                : rootPluginsDirectory.StartsWith("~")
-                    ? rootPluginsDirectory
-                    : "~" + rootPluginsDirectory;
+            _rootPluginsDirectory = rootPluginsDirectory;
             _pluginFolderNames = pluginFolderNames;
+
+            var baseSearchDir = _rootPluginsDirectory[2..]; // removes ./
+            _viewsSearchDirectories = new[]
+            {
+                $"{baseSearchDir}",
+                $"/{baseSearchDir}",
+                $"~/{baseSearchDir}",
+                $"./{baseSearchDir}",
+                $"../{baseSearchDir}",
+            };
         }
 
         public IEnumerable<string> ExpandViewLocations(ViewLocationExpanderContext context, IEnumerable<string> viewLocations)
@@ -27,14 +34,15 @@
 
             foreach (var pluginFolderName in _pluginFolderNames)
             {
-                var pluginViewsFolder = Path.Join(_rootPluginsDirectory, pluginFolderName, ViewsFolderName);
-                var pluginViewsFormat = Path.Join(pluginViewsFolder, ControllerActionPathFormat);
-                // i.e. ~/bin/debug/plugins/<PluginFolderName>/Views/{1}=ControllerName/{0}=ActionName.cshtml
-                if (!locations.Contains(pluginViewsFormat))
+                foreach (var baseSearchDir in _viewsSearchDirectories)
                 {
-                    locations.Add(pluginViewsFormat);
+                    var pluginViewsFormat = BuildPluginViewsFormat(baseSearchDir, pluginFolderName);
+                    if (!locations.Contains(pluginViewsFormat))
+                    {
+                        locations.Add(pluginViewsFormat);
+                    }
+                    Console.WriteLine($"pluginViewsFormat: {pluginViewsFormat}");
                 }
-                Console.WriteLine($"pluginViewsFormat: {pluginViewsFormat}");
             }
             return locations;
         }
@@ -42,6 +50,16 @@
         public void PopulateValues(ViewLocationExpanderContext context)
         {
             Console.WriteLine($"Context: {context}");
+        }
+
+        private static string BuildPluginViewsFormat(string rootFolder, string pluginFolderName)
+        {
+            var pluginViewsFolder = Path.Join(rootFolder, pluginFolderName, ViewsFolderName);
+            var pluginViewsFormat = Path.Join(pluginViewsFolder, ControllerActionPathFormat);
+            var path = pluginViewsFormat.Replace('\\', '/');
+            // i.e. ~/bin/debug/plugins/<PluginFolderName>/Views/{1}=ControllerName/{0}=ActionName.cshtml
+            return path;
+            //return Path.GetFullPath(path);
         }
     }
 }

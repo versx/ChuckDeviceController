@@ -252,10 +252,13 @@
             services.AddSingleton<IPluginService, TestPluginService>();
             services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
 
+            services.AddMvc();
+            /*
             services.AddMvc(options =>
             {
                 options.EnableEndpointRouting = false;
             });
+            */
         }
 
         #endregion
