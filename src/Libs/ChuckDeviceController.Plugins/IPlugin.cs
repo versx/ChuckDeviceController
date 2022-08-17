@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugins
 {
+    // TODO: Include [Authorize(Roles = RoleConsts.*)] role check for controllers
+
     // NOTE: Only used for DI testing purposes
     public interface IPluginService
     {

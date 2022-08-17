@@ -143,7 +143,7 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 }
 //builder.Services.AddControllersWithViews();
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+builder.Services.AddControllersWithViews();//.AddRazorRuntimeCompilation();
 builder.Services.AddRazorPages();
 
 // API endpoint explorer/reference
@@ -179,13 +179,6 @@ builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
-// Plugin host handlers
-var uiHost = new UiHost(new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConsole())));
-
-builder.Services.AddSingleton<ILoggingHost, LoggingHost>();
-builder.Services.AddSingleton<IDatabaseHost, DatabaseHost>();
-builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
-builder.Services.AddSingleton<IUiHost>(uiHost);
 
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
 
@@ -196,30 +189,57 @@ builder.Services.AddGrpc(options =>
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });
 
+#endregion
+
+#region Plugins
+
+// Register plugin host handlers
+var uiHost = new UiHost(new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConsole())));
+var databaseHost = new DatabaseHost(new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole())), connectionString);
+var loggingHost = new LoggingHost(new Logger<ILoggingHost>(LoggerFactory.Create(x => x.AddConsole())));
+builder.Services.AddSingleton<ILoggingHost>(loggingHost);
+builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
+builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
+builder.Services.AddSingleton<IUiHost>(uiHost);
+
+// Load host applications default sidebar nav headers
 await LoadUiAsync(uiHost);
 
 // TODO: Use builder.Services registered instead of 'sharedServiceHosts'
 var sharedServiceHosts = new Dictionary<Type, object>
 {
-    { typeof(ILoggingHost), new LoggingHost(new Logger<ILoggingHost>(LoggerFactory.Create(x => x.AddConsole()))) },
-    { typeof(IJobControllerServiceHost), new JobControllerService(new Logger<IJobControllerService>(LoggerFactory.Create(x => x.AddConsole())), null, null, null, null, null, null, null, null) },
-    { typeof(IDatabaseHost), new DatabaseHost(new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole())), null, null) },
+    { typeof(ILoggingHost), loggingHost },
+    // TODO: Break out JobControllerService to fix shared service host instance injection for plugins
+    { typeof(IJobControllerServiceHost), new JobControllerService(
+        new Logger<IJobControllerService>(LoggerFactory.Create(x => x.AddConsole())),
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null) },
+    { typeof(IDatabaseHost), databaseHost },
     { typeof(ILocalizationHost), Translator.Instance },
     { typeof(IUiHost), uiHost },
 };
+// Instantiate 'IPluginManager' singleton with configurable options
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 {
     Configuration = builder.Configuration,
     RootPluginDirectory = Strings.PluginsFolder,
     SharedServiceHosts = sharedServiceHosts,
 });
-
+// Find plugins, register plugin services, load plugin assemblies, call OnLoad callback and register with 'IPluginManager'
 await builder.Services.LoadPluginsAsync(pluginManager);
 
 // Configure custom 'Views' location paths to search in plugin sub directories
 builder.Services.Configure<RazorViewEngineOptions>(options =>
 {
+    // Get a list of root plugin folder names in the "./bin/debug/plugins/*" base folder
     var pluginFolderNames = pluginManager.GetPluginFolderNames();
+    // Register new View location searcher that includes absolute plugin related 'Views' folder paths
     var viewLocationExpander = new PluginViewLocationExpander(pluginManager.Options.RootPluginDirectory, pluginFolderNames ?? new List<string>());
     options.ViewLocationExpanders.Add(viewLocationExpander);
 });

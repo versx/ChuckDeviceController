@@ -9,7 +9,7 @@
 
     public static class DbContextFactory
     {
-        public static T CreateDbContext<T>(string connectionString, string? assemblyName = null) where T : DbContext
+        public static T CreateDbContext<T>(string connectionString, string? assemblyName = null, bool autoDetectChanges = false) where T : DbContext
         {
             try
             {
@@ -23,7 +23,7 @@
                 });
 
                 var ctx = new DbContext(optionsBuilder.Options);
-                //ctx.ChangeTracker.AutoDetectChangesEnabled = false;
+                ctx.ChangeTracker.AutoDetectChangesEnabled = autoDetectChanges;
                 return (T)ctx;
             }
             catch (Exception ex)

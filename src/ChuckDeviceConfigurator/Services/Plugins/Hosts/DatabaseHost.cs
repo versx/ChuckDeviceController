@@ -3,8 +3,7 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Plugins;
 
     /// <summary>
@@ -15,8 +14,7 @@
         #region Variables
 
         private readonly ILogger<IDatabaseHost> _logger;
-        private readonly IDbContextFactory<ControllerContext> _deviceFactory;
-        private readonly IDbContextFactory<MapContext> _mapFactory;
+        private readonly string _connectionString;
         private readonly IReadOnlyList<Type> _controllerEntityTypes = new List<Type>
         {
             typeof(IAccount),
@@ -52,12 +50,10 @@
 
         public DatabaseHost(
             ILogger<IDatabaseHost> logger,
-            IDbContextFactory<ControllerContext> deviceFactory,
-            IDbContextFactory<MapContext> mapFactory)
+            string connectionString)
         {
             _logger = logger;
-            _deviceFactory = deviceFactory;
-            _mapFactory = mapFactory;
+            _connectionString = connectionString;
 
             //Accounts = new ControllerEntityRepository<IAccount, string>(deviceFactory);
             //Devices = new ControllerEntityRepository<IDevice, string>(deviceFactory);
@@ -71,7 +67,7 @@
         {
             if (_controllerEntityTypes.Contains(typeof(T)))
             {
-                using (var context = _deviceFactory.CreateDbContext())
+                using (var context = DbContextFactory.CreateControllerContext(_connectionString))
                 {
                     if (typeof(T) == typeof(IAccount))
                         return (T?)(await context.Accounts.FindAsync(id) as IAccount);
@@ -95,7 +91,7 @@
             }
             else if (_mapEntityTypes.Contains(typeof(T)))
             {
-                using (var context = _mapFactory.CreateDbContext())
+                using (var context = DbContextFactory.CreateMapDataContext(_connectionString))
                 {
                     if (typeof(T) == typeof(ICell))
                         return (T?)(await context.Cells.FindAsync(id) as ICell);
@@ -126,7 +122,7 @@
         {
             if (_controllerEntityTypes.Contains(typeof(T)))
             {
-                using (var context = _deviceFactory.CreateDbContext())
+                using (var context = DbContextFactory.CreateControllerContext(_connectionString))
                 {
                     if (typeof(T) == typeof(IAccount))
                         return (IReadOnlyList<T>)await context.Accounts.ToListAsync();
@@ -150,7 +146,7 @@
             }
             else if (_mapEntityTypes.Contains(typeof(T)))
             {
-                using (var context = _mapFactory.CreateDbContext())
+                using (var context = DbContextFactory.CreateMapDataContext(_connectionString))
                 {
                     if (typeof(T) == typeof(ICell))
                         return (IReadOnlyList<T>)await context.Cells.ToListAsync();
