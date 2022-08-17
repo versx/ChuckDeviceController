@@ -142,7 +142,8 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 }
-builder.Services.AddControllersWithViews();
+//builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddRazorPages();
 
 // API endpoint explorer/reference
@@ -277,22 +278,19 @@ app.Run();
 
 void Configure(WebApplication app, IServiceProvider serviceProvider)
 {
-    //var serviceProvider = app.ApplicationServices;
-    using (var scope = serviceProvider.CreateScope())
+    try
     {
-        try
+        foreach (var (_, plugin) in pluginManager.Plugins)
         {
-            var pluginManager = serviceProvider.GetRequiredService<IPluginManager>();
-            foreach (var (_, plugin) in pluginManager!.Plugins)
-            {
-                // Call 'Configure(IApplicationBuilder)' event handler for each plugin
-                plugin.Plugin.Configure(app);
-            }
+            // Call 'Configure(IApplicationBuilder)' event handler for each plugin
+            plugin.Plugin.Configure(app);
+
+            // TODO: Call Plugin.OnLoad() here instead of from ServiceCollectionExtensions
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "An error occurred while calling the 'Configure(IApplicationBuilder)' method in plugins.");
-        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while calling the 'Configure(IApplicationBuilder)' method in plugins.");
     }
 }
 

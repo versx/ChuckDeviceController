@@ -2,7 +2,7 @@
 {
     public interface IPluginManagerOptions
     {
-        string? RootPluginDirectory { get; }
+        string RootPluginDirectory { get; }
 
         IConfiguration Configuration { get; }
 

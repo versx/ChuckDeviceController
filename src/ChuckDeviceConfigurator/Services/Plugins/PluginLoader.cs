@@ -1,183 +1,93 @@
-﻿/*
-namespace ChuckDeviceConfigurator.Services.Plugins
+﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
     using System.Reflection;
 
+    using ChuckDeviceConfigurator.Services.Plugins.Extensions;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugins.Services;
 
     public class PluginLoader<TPlugin> : IPluginLoader<TPlugin> where TPlugin : class, IPlugin
     {
-        #region Variables
-
         private static readonly ILogger<IPluginLoader<TPlugin>> _logger =
             new Logger<IPluginLoader<TPlugin>>(LoggerFactory.Create(x => x.AddConsole()));
-        private readonly IReadOnlyDictionary<Type, object> _sharedHosts;
-
-        #endregion
-
-        #region Properties
-
-        public string PluginFilePath { get; }
 
         public IEnumerable<PluginHost> LoadedPlugins { get; }
 
-        #endregion
-
-        #region Constructor
-
-        public PluginLoader(string filePath, IReadOnlyDictionary<Type, object> sharedHosts)
+        public PluginLoader(PluginFinderResult pluginResult, IReadOnlyDictionary<Type, object> sharedServiceHosts)
         {
-            if (!File.Exists(filePath))
+            if (pluginResult.Assembly == null)
             {
-                throw new Exception($"Plugin does not exist at '{filePath}'");
+                throw new NullReferenceException($"Failed to load plugin assembly: '{pluginResult.FullAssemblyPath}'");
             }
 
-            PluginFilePath = filePath;
-            _sharedHosts = sharedHosts;
+            var assemblyTypes = pluginResult.Assembly.GetTypes();
+            var pluginBootstrapTypes = assemblyTypes.GetAssignableTypes<IPluginBootstrapper>();
+            var pluginTypes = assemblyTypes.GetAssignableTypes<IPlugin>();
 
-            var assembly = LoadAssembly(PluginFilePath);
-            if (assembly == null)
+            var pluginServiceDescriptors = new List<ServiceDescriptor>();
+            var loadedPlugins = new List<PluginHost>();
+
+            // Register all marked service classes with 'PluginServiceAttribute'
+            foreach (var type in assemblyTypes)
             {
-                throw new NullReferenceException($"Failed to load plugin assembly: '{PluginFilePath}'");
+                // TODO: Add support for HostedServices
+
+                // Find service classes with 'PluginServiceAttribute'
+                var pluginService = type.GetPluginServiceWithAttribute();
+                if (pluginService == null)
+                    continue;
+
+                pluginServiceDescriptors.Add(pluginService);
             }
 
-            LoadedPlugins = CreatePlugins(assembly);
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        public Assembly? LoadDefaultAssembly()
-        {
-            return LoadAssemblyFromPath(PluginFilePath);
-        }
-
-        /// <summary>
-        /// Load an assembly from path.
-        /// </summary>
-        /// <param name="assemblyPath">The assembly path.</param>
-        /// <returns>The loaded assembly.</returns>
-        public Assembly? LoadAssemblyFromPath(string assemblyPath)
-            => LoadAssembly(assemblyPath);
-
-        #endregion
-
-        #region Private Methods
-
-        private static Assembly? LoadAssembly(string pluginPath)
-        {
-            var loadContext = new PluginLoadContext(pluginPath);
-            var fileName = Path.GetFileNameWithoutExtension(pluginPath);
-            return loadContext.LoadFromAssemblyName(new AssemblyName(fileName));
-        }
-
-        private IEnumerable<PluginHost> CreatePlugins(Assembly assembly)
-        {
-            var count = 0;
-            var pluginTypes = PluginFinder<IPlugin>.GetPluginTypes(assembly);
+            // Loop all found plugin types and create/instantiate instances of them
             foreach (var pluginType in pluginTypes)
             {
-                var plugin = LoadPluginWithDataParameters(pluginType);
-                if (plugin != null)
+                // Instantiate an instance of the plugin type
+                var pluginInstance = pluginType.CreatePluginInstance(sharedServiceHosts);
+                if (pluginInstance == null)
                 {
-                    count++;
-                    yield return plugin;
+                    _logger.LogError($"Failed to instantiate plugin type instance '{pluginType.Name}'");
+                    continue;
                 }
-            }
 
-            if (count == 0)
-            {
-                var availableTypes = string.Join(",", assembly.GetTypes().Select(t => t.FullName));
-                var error = $"Can't find any type which implements {nameof(IPlugin)} in {assembly} from {assembly.Location}.\n" +
-                    $"Available types: {availableTypes}";
-                _logger.LogError(error);
-                throw new ApplicationException(error);
-            }
-        }
-
-        private PluginHost LoadPluginWithDataParameters(Type pluginType)
-        {
-            // Check that there is only one constructor configured
-            var constructors = pluginType.GetConstructors();
-            if ((constructors?.Length ?? 0) == 0)
-            {
-                _logger.LogError($"Plugins must only contain one constructor for each class that inherits from '{nameof(IPlugin)}', skipping registration for plugin '{pluginType.Name}'");
-                return null;
-            }
-
-            var constructorInfo = constructors![0];
-            var parameters = constructorInfo.GetParameters();
-            var list = new List<object>(parameters.Length);
-
-            // Check that we were provided shared host types
-            if ((_sharedHosts?.Count ?? 0) > 0)
-            {
-                // Loop the plugin's constructor parameters to see which host type handlers
-                // to provide it when we instantiate a new instance.
-                foreach (var param in parameters)
+                if (pluginInstance is not IPlugin plugin)
                 {
-                    if (!_sharedHosts!.ContainsKey(param.ParameterType))
-                        continue;
-
-                    var pluginHostHandler = _sharedHosts[param.ParameterType];
-                    list.Add(pluginHostHandler);
+                    _logger.LogError($"Failed to instantiate '{nameof(IPlugin)}' instance");
+                    continue;
                 }
+
+                // Initialize any fields or properties marked as plugin service types
+                var typeInfo = pluginInstance.GetType().GetTypeInfo();
+                typeInfo.SetPluginServiceFields(pluginInstance, sharedServiceHosts);
+                typeInfo.SetPluginServiceProperties(pluginInstance, sharedServiceHosts);
+
+                var permissions = pluginType.GetPermissions();
+                var pluginHost = new PluginHost(
+                    plugin,
+                    permissions,
+                    pluginResult,
+                    pluginServiceDescriptors,
+                    new PluginEventHandlers(),
+                    PluginState.Running
+                );
+
+                // Set inherited plugin event callbacks
+                foreach (var type in pluginType.GetInterfaces())
+                {
+                    if (typeof(IUiEvents) == type)
+                        pluginHost.EventHandlers.UiEvents = (IUiEvents)plugin;
+                    else if (typeof(IDatabaseEvents) == type)
+                        pluginHost.EventHandlers.DatabaseEvents = (IDatabaseEvents)plugin;
+                    else if (typeof(IJobControllerServiceHost) == type)
+                        pluginHost.EventHandlers.JobControllerEvents = (IJobControllerServiceEvents)plugin;
+                }
+
+                loadedPlugins.Add(pluginHost);
             }
 
-            IPlugin? instance;
-            try
-            {
-                var args = list.ToArray();
-                instance = (IPlugin?)Activator.CreateInstance(pluginType, args);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Failed to instantiate a new instance of Plugin '{pluginType.Name}': {ex}");
-                return null;
-            }
-
-            if (instance == null)
-            {
-                _logger.LogError($"Failed to instantiate a new instance of Plugin '{pluginType.Name}'");
-                return null;
-            }
-
-            var permissions = GetPermissions(pluginType);
-            var pluginHost = new PluginHost(instance, permissions);
-            //var objectValue = GetObjectValue(instance);
-
-            foreach (var type in pluginType.GetInterfaces())
-            {
-                if (typeof(IUiEvents) == type)
-                    pluginHost.EventHandlers.UiEvents = (IUiEvents)instance;
-                else if (typeof(IDatabaseEvents) == type)
-                    pluginHost.EventHandlers.DatabaseEvents = (IDatabaseEvents)instance;
-                else if (typeof(IJobControllerServiceHost) == type)
-                    pluginHost.EventHandlers.JobControllerEvents = (IJobControllerServiceEvents)instance;
-            }
-
-            //return (IPlugin)objectValue;
-            return pluginHost;
+            LoadedPlugins = loadedPlugins;
         }
-
-        private static PluginPermissions GetPermissions(Type pluginType)
-        {
-            var attributes = pluginType.GetCustomAttributes<PluginPermissionsAttribute>();
-            if (attributes.Any())
-            {
-                var attr = attributes.FirstOrDefault();
-                return attr?.Permissions ?? PluginPermissions.None;
-            }
-            return PluginPermissions.None;
-        }
-
-        //private static object GetObjectValue(object o)
-        //{
-        //    return System.Runtime.CompilerServices.RuntimeHelpers.GetObjectValue(o);
-        //}
-
-        #endregion
     }
 }
-*/

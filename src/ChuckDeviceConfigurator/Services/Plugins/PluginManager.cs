@@ -1,10 +1,8 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
-    using ChuckDeviceController.Plugins;
 
     // TODO: Add FileSystemWatcher for plugins added manually or changed
 
@@ -14,7 +12,7 @@
 
         private static readonly ILogger<IPluginManager> _logger =
             new Logger<IPluginManager>(LoggerFactory.Create(x => x.AddConsole()));
-        private static IPluginManager _instance;
+        private static IPluginManager? _instance;
         private static readonly Dictionary<string, IPluginHost> _plugins = new();
 
         #endregion
@@ -216,6 +214,15 @@
                 // which none of the UI elements were registered. (if it has any)
                 pluginHost.Plugin.OnLoad();
             }
+        }
+
+        public IEnumerable<string> GetPluginFolderNames()
+        {
+            var pluginFolderNames = Plugins.Values
+                                           .Select(plugin => Path.GetDirectoryName(plugin.PluginFinderResult.FullAssemblyPath))
+                                           .Select(plugin => Path.GetFileName(plugin))
+                                           .Select(plugin => plugin!);
+            return pluginFolderNames;
         }
 
         #endregion

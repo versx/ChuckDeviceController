@@ -4,7 +4,6 @@
 
     using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
-    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugins;
     using ChuckDeviceController.Plugins.Services;
 
@@ -64,18 +63,27 @@
 
         public static IServiceCollection RegisterPluginServiceWithAttribute(this IServiceCollection services, Type type)
         {
-            var attr = type.GetCustomAttribute<PluginServiceAttribute>();
-            if (attr != null)
+            var pluginService = type.GetPluginServiceWithAttribute();
+            if (pluginService != null)
             {
-                var serviceType = attr.ServiceType;
-                var implementation = attr.Provider == PluginServiceProvider.Plugin
-                    ? attr.ProxyType
-                    : type; // TODO: Get host service implementation
-                var serviceLifetime = attr.Lifetime;
-                var serviceDescriptor = new ServiceDescriptor(serviceType, implementation, serviceLifetime);
-                services.Add(serviceDescriptor);
+                services.Add(pluginService);
             }
             return services;
+        }
+
+        public static ServiceDescriptor GetPluginServiceWithAttribute(this Type type)
+        {
+            var attr = type.GetCustomAttribute<PluginServiceAttribute>();
+            if (attr == null)
+                return null;
+
+            var serviceType = attr.ServiceType;
+            var implementation = attr.Provider == PluginServiceProvider.Plugin
+                ? attr.ProxyType
+                : type; // TODO: Get host service implementation
+            var serviceLifetime = attr.Lifetime;
+            var serviceDescriptor = new ServiceDescriptor(serviceType, implementation, serviceLifetime);
+            return serviceDescriptor;
         }
 
         public static void SetPluginServiceFields(this TypeInfo typeInfo, object instance, IReadOnlyDictionary<Type, object> sharedServices)
@@ -168,6 +176,71 @@
             var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
             var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
 
+            services.AddControllers();
+            services.AddControllersWithViews();
+            var mvcBuilder = services.AddControllersWithViews();
+            foreach (var pluginResult in pluginFinderResults)
+            {
+                if (pluginResult.Assembly == null)
+                {
+                    Console.WriteLine($"Failed to load assembly for plugin '{pluginResult.FullAssemblyPath}', skipping.");
+                    continue;
+                }
+
+                var pluginLoader = new PluginLoader<IPlugin>(pluginResult, pluginManager.Options.SharedServiceHosts);
+                var loadedPlugins = pluginLoader.LoadedPlugins;
+                if (!loadedPlugins.Any())
+                {
+                    Console.WriteLine($"Failed to find any valid plugins in assembly '{pluginResult.FullAssemblyPath}'");
+                    continue;
+                }
+
+                // TODO: AddMvcPart extension
+                // Load plugin assembly as AssemblyPart for Mvc controllers
+                var part = new AssemblyPart(pluginResult.Assembly);
+
+                // Add loaded plugin assembly as application part
+                mvcBuilder.PartManager.ApplicationParts.Add(part);
+
+                // Loop through all loaded plugins and register plugin services and register plugins
+                foreach (var pluginHost in loadedPlugins)
+                {
+                    // Register any PluginServices found with IServiceCollection
+                    var pluginServices = pluginHost.PluginServices;
+                    if (pluginServices.Any())
+                    {
+                        foreach (var pluginService in pluginServices)
+                        {
+                            // Register found plugin service
+                            services.Add(pluginService);
+                        }
+                    }
+
+                    // Call plugin's ConfigureServices method to register any services
+                    pluginHost.Plugin.ConfigureServices(services);
+
+                    // Call plugin's load method
+                    pluginHost.Plugin.OnLoad();
+
+                    // Register plugin host with plugin manager
+                    await pluginManager.RegisterPluginAsync(pluginHost);
+                }
+            }
+            return services;
+        }
+
+        /*
+        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager)
+        {
+            var finderOptions = new PluginFinderOptions
+            {
+                PluginType = typeof(IPlugin),
+                RootPluginsDirectory = pluginManager.Options.RootPluginDirectory,
+                ValidFileTypes = new[] { ".dll" },
+            };
+            var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
+            var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
+
             var mvcBuilder = services.AddControllers();
             foreach (var pluginResult in pluginFinderResults)
             {
@@ -184,18 +257,6 @@
 
                 //services.AddControllers().PartManager.ApplicationParts.Add(part);
                 // TODO: Make single LoadPlugin(IServiceCollection services, Type type, etc) extension;
-
-                mvcBuilder.AddViewOptions(options =>
-                {
-                    //options.ViewEngines;
-                    //options.HtmlHelperOptions
-                });
-                /*
-                mvcBuilder.AddRazorOptions(options =>
-                {
-                    options.ViewLocationFormats
-                });
-                */
 
                 var assemblyTypes = pluginResult.Assembly.GetTypes();
                 var pluginBootstrapTypes = assemblyTypes.GetAssignableTypes<IPluginBootstrapper>();
@@ -261,6 +322,7 @@
             }
             return services;
         }
+        */
 
         public static PluginPermissions GetPermissions(this Type pluginType)
         {

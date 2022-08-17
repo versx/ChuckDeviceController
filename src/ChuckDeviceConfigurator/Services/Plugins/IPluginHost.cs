@@ -15,11 +15,6 @@
         IPlugin Plugin { get; }
 
         /// <summary>
-        /// 
-        /// </summary>
-        Type PluginType { get; }
-
-        /// <summary>
         /// Gets the requested <seealso cref="PluginPermissions"/>
         /// for the loaded plugin.
         /// </summary>
@@ -35,6 +30,11 @@
         /// 
         /// </summary>
         PluginFinderResult PluginFinderResult { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerable<ServiceDescriptor> PluginServices { get; }
 
         /// <summary>
         /// Gets the <seealso cref="PluginEventHandlers"/> for the

@@ -2,7 +2,7 @@
 {
     public class PluginManagerOptions : IPluginManagerOptions
     {
-        public string? RootPluginDirectory { get; set; }
+        public string RootPluginDirectory { get; set; }
 
         public IConfiguration Configuration { get; set; }
 

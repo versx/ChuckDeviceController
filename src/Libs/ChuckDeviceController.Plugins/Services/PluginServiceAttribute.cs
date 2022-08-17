@@ -33,12 +33,18 @@
         /// <summary>
         /// 
         /// </summary>
+        //public bool IsHostedService { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public PluginServiceAttribute()
         {
             ServiceType = typeof(Type);
             ProxyType = typeof(Type);
             Provider = PluginServiceProvider.Plugin;
             Lifetime = ServiceLifetime.Singleton;
+            //IsHostedService = false;
         }
 
         /// <summary>
@@ -53,11 +59,13 @@
             Type proxyType,
             PluginServiceProvider provider = PluginServiceProvider.Plugin,
             ServiceLifetime lifetime = ServiceLifetime.Singleton)
+            //bool isHostedService = false)
         {
             ServiceType = serviceType;
             ProxyType = proxyType;
             Provider = provider;
             Lifetime = lifetime;
+            //IsHostedService = isHostedService;
         }
     }
 }

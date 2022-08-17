@@ -32,43 +32,48 @@
         public IReadOnlyList<PluginFinderResult> FindAssemliesWithPlugins()
         {
             var assemblies = Options.RootPluginsDirectory.GetFiles(Options.ValidFileTypes);
-            return FindPluginsInAssemblies(assemblies);
+            var pluginFinderResults = new List<PluginFinderResult>();
+            var pluginFinderAssemblyContext = new PluginAssemblyLoadContext(AssemblyContextName);
+            foreach (var assemblyPath in assemblies)
+            {
+                try
+                {
+                    var assemblyFullPath = Path.GetFullPath(assemblyPath);
+                    var assembly = pluginFinderAssemblyContext.LoadFromAssemblyPath(assemblyFullPath);
+                    if (!GetPluginTypes(assembly).Any())
+                        continue;
+
+                    var loaderContext = new PluginFinderResult(
+                        typeof(TPlugin),
+                        assembly.Location,
+                        assembly,
+                        pluginFinderAssemblyContext
+                    );
+                    pluginFinderResults.Add(loaderContext);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+            }
+            //pluginFinderAssemblyContext.Unload();
+            return pluginFinderResults;
         }
 
         public static IReadOnlyList<Type> GetPluginTypes(Assembly assembly)
         {
-            var types = assembly.GetTypes()
-                                .Where(type => typeof(TPlugin).IsAssignableFrom(type))
-                                .Where(type => type.IsClass && !type.IsAbstract)
-                                .ToList();
-            return types;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private static IReadOnlyList<PluginFinderResult> FindPluginsInAssemblies(IEnumerable<string> assemblyPaths)
-        {
-            var pluginFinderResults = new List<PluginFinderResult>();
-            var pluginFinderAssemblyContext = new PluginAssemblyLoadContext(AssemblyContextName);
-            foreach (var assemblyPath in assemblyPaths)
+            try
             {
-                var assemblyFullPath = Path.GetFullPath(assemblyPath);
-                var assembly = pluginFinderAssemblyContext.LoadFromAssemblyPath(assemblyFullPath);
-                if (!GetPluginTypes(assembly).Any())
-                    continue;
-
-                var loaderContext = new PluginFinderResult(
-                    typeof(TPlugin),
-                    assembly.Location,
-                    assembly,
-                    pluginFinderAssemblyContext
-                );
-                pluginFinderResults.Add(loaderContext);
+                var types = assembly.GetTypes()
+                                    .Where(type => typeof(TPlugin).IsAssignableFrom(type))
+                                    .Where(type => type.IsClass && !type.IsAbstract)
+                                    .ToList();
+                return types;
             }
-            //pluginFinderAssemblyContext.Unload();
-            return pluginFinderResults;
+            catch
+            {
+                return default;
+            }
         }
 
         #endregion

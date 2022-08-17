@@ -12,14 +12,14 @@
 
         public IPlugin Plugin { get; }
 
-        public Type PluginType { get; }
-
         // TODO: Change 'Permissions' to 'RequestedPermissions' and add 'AllowedPermissions' property
         public PluginPermissions Permissions { get; } = PluginPermissions.None;
 
         public PluginState State { get; private set; }
 
         public PluginFinderResult PluginFinderResult { get; }
+
+        public IEnumerable<ServiceDescriptor> PluginServices { get; }
 
         public PluginEventHandlers EventHandlers { get; } = new();
 
@@ -29,17 +29,17 @@
 
         #region Constructors
 
-        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginFinderResult result)
-            : this(plugin, permissions, result, new())
+        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginFinderResult result, IEnumerable<ServiceDescriptor> pluginServices)
+            : this(plugin, permissions, result, pluginServices, new())
         {
         }
 
-        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginFinderResult result, PluginEventHandlers eventHandlers, PluginState state = PluginState.Unset)
+        public PluginHost(IPlugin plugin, PluginPermissions permissions, PluginFinderResult result, IEnumerable<ServiceDescriptor> pluginServices, PluginEventHandlers eventHandlers, PluginState state = PluginState.Unset)
         {
             Plugin = plugin;
-            PluginType = plugin.GetType();
             Permissions = permissions;
             PluginFinderResult = result;
+            PluginServices = pluginServices;
             EventHandlers = eventHandlers;
             State = state;
         }

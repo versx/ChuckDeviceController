@@ -1,5 +1,4 @@
-﻿/*
-namespace ChuckDeviceConfigurator.Services.Plugins
+﻿namespace ChuckDeviceConfigurator.Services.Plugins
 {
     using ChuckDeviceController.Plugins;
 
@@ -8,4 +7,3 @@ namespace ChuckDeviceConfigurator.Services.Plugins
         IEnumerable<PluginHost> LoadedPlugins { get; }
     }
 }
-*/
