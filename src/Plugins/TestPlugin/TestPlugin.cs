@@ -252,7 +252,10 @@
             services.AddSingleton<IPluginService, TestPluginService>();
             services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
 
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                options.EnableEndpointRouting = false;
+            });
         }
 
         #endregion
@@ -261,6 +264,7 @@
 
         /// <summary>
         ///     Called when the plugin is loaded and registered with the host application.
+        ///     Loading UI elements here is the preferred location.
         /// </summary>
         public async void OnLoad()
         {

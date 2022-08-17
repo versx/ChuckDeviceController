@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -24,6 +27,7 @@ using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
+using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Plugins;
 
@@ -142,7 +146,6 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 }
-//builder.Services.AddControllersWithViews();
 builder.Services.AddControllersWithViews();//.AddRazorRuntimeCompilation();
 builder.Services.AddRazorPages();
 
@@ -498,3 +501,34 @@ IdentityOptions GetDefaultIdentityOptions()
 }
 
 #endregion
+
+public class View : IView
+{
+    public string Path { get; set; }
+
+    public async Task RenderAsync(ViewContext context)
+    {
+        await Task.CompletedTask;
+    }
+}
+
+public class ViewEngine : IViewEngine
+{
+    public ViewEngineResult FindView(ActionContext context, string viewName, bool isMainPage)
+    {
+        Console.WriteLine($"FindView: [Context={context}, ViewName={viewName}, IsMainPage={isMainPage}]");
+        var result = true
+            ? ViewEngineResult.Found("test", new View())
+                : ViewEngineResult.NotFound("test", new List<string>());
+        return result;
+    }
+
+    public ViewEngineResult GetView(string? executingFilePath, string viewPath, bool isMainPage)
+    {
+        Console.WriteLine($"Getview: [ExecutingFilePath={executingFilePath}, ViewPath={viewPath}, IsMainPage={isMainPage}]");
+        var result = true
+            ? ViewEngineResult.Found("test", new View())
+                : ViewEngineResult.NotFound("test", new List<string>());
+        return result;
+    }
+}

@@ -11,6 +11,7 @@
     {
         public static List<Type> GetAssignableTypes<T>(this IEnumerable<Type> assemblyTypes)
         {
+            // TODO: Add type.IsSubClassOf support
             var types = assemblyTypes.Where(type => typeof(T).IsAssignableFrom(type))
                                      .Where(type => type.IsClass && !type.IsAbstract)
                                      .ToList();
@@ -171,13 +172,12 @@
             {
                 PluginType = typeof(IPlugin),
                 RootPluginsDirectory = pluginManager.Options.RootPluginDirectory,
-                ValidFileTypes = new[] { ".dll" },
+                ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
             };
             var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
             var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
 
-            services.AddControllers();
-            services.AddControllersWithViews();
+            //services.AddControllersWithViews();
             var mvcBuilder = services.AddControllersWithViews();
             foreach (var pluginResult in pluginFinderResults)
             {
@@ -187,6 +187,7 @@
                     continue;
                 }
 
+                // Load and activate plugins found by plugin finder
                 var pluginLoader = new PluginLoader<IPlugin>(pluginResult, pluginManager.Options.SharedServiceHosts);
                 var loadedPlugins = pluginLoader.LoadedPlugins;
                 if (!loadedPlugins.Any())
@@ -195,12 +196,8 @@
                     continue;
                 }
 
-                // TODO: AddMvcPart extension
-                // Load plugin assembly as AssemblyPart for Mvc controllers
-                var part = new AssemblyPart(pluginResult.Assembly);
-
-                // Add loaded plugin assembly as application part
-                mvcBuilder.PartManager.ApplicationParts.Add(part);
+                // Register assembly as application part with Mvc
+                mvcBuilder.AddApplicationPart(pluginResult.Assembly);
 
                 // Loop through all loaded plugins and register plugin services and register plugins
                 foreach (var pluginHost in loadedPlugins)
