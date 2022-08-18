@@ -2,6 +2,9 @@
 {
     using System.Reflection;
 
+    using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+    using Microsoft.Extensions.FileProviders;
+
     using ChuckDeviceConfigurator.Services.Plugins.Mvc.Extensions;
     using ChuckDeviceController.Plugins;
     using ChuckDeviceController.Plugins.Services;
@@ -189,7 +192,11 @@
             var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
             var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
 
-            var mvcBuilder = services.AddControllersWithViews().AddRazorRuntimeCompilation();
+            var mvcBuilder = services.AddControllersWithViews().AddRazorRuntimeCompilation(options =>
+            {
+                //options.AdditionalReferencePaths.Add("");
+                //options.FileProviders.Add(new PhysicalFileProvider(""));
+            });
             foreach (var pluginResult in pluginFinderResults)
             {
                 // TODO: New service collection for each plugin?
@@ -208,6 +215,11 @@
                     Console.WriteLine($"Failed to find any valid plugins in assembly '{pluginResult.FullAssemblyPath}'");
                     continue;
                 }
+
+                services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
+                {
+                    options.FileProviders.Add(new EmbeddedFileProvider(pluginResult.Assembly));
+                });
 
                 // Register all available host services with plugin
                 mvcBuilder.AddServices(services);

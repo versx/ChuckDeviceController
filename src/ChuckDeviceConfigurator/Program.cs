@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -17,6 +18,7 @@ using ChuckDeviceConfigurator.Services.Net.Mail;
 using ChuckDeviceConfigurator.Services.Plugins;
 using ChuckDeviceConfigurator.Services.Plugins.Extensions;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts;
+using ChuckDeviceConfigurator.Services.Plugins.Mvc.Extensions;
 using ChuckDeviceConfigurator.Services.Plugins.Mvc.Razor;
 using ChuckDeviceConfigurator.Services.Routing;
 using ChuckDeviceConfigurator.Services.Rpc;
@@ -191,6 +193,11 @@ builder.Services.AddGrpc(options =>
 
 #region Plugins
 
+builder.Services.AddSingleton<IPluginCacheAccessorBootstrapper, DefaultStaticPluginCacheAccessorBootstrapper>();
+builder.Services.AddSingleton<ICachedPluginAssembly, CachedPluginAssembly>();
+builder.Services.AddSingleton<IPluginCache, DefaultScopedPluginCache>();
+builder.Services.ConfigureRazorServices(Directory.GetCurrentDirectory(), Path.GetFullPath(Strings.PluginsFolder));
+
 // Register plugin host handlers
 var uiHost = new UiHost(new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConsole())));
 var databaseHost = new DatabaseHost(new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole())), connectionString);
@@ -240,6 +247,13 @@ builder.Services.Configure<RazorViewEngineOptions>(options =>
     // Register new View location searcher that includes absolute plugin related 'Views' folder paths
     var viewLocationExpander = new PluginViewLocationExpander(pluginManager.Options.RootPluginDirectory, pluginFolderNames ?? new List<string>());
     options.ViewLocationExpanders.Add(viewLocationExpander);
+});
+
+builder.Services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
+{
+    //var libraryPath = Path.GetFullPath(
+    //    Path.Combine(builder.Environment.ContentRootPath, "..", "MyClassLib"));
+    //options.FileProviders.Add(new PhysicalFileProvider(libraryPath));
 });
 
 builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
