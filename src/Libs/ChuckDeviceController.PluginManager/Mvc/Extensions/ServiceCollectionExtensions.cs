@@ -1,0 +1,169 @@
+﻿namespace ChuckDeviceController.PluginManager.Mvc.Extensions
+{
+    using System.Reflection;
+
+    using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.FileProviders;
+
+    using ChuckDeviceController.PluginManager;
+    using ChuckDeviceController.PluginManager.FileProviders;
+    using ChuckDeviceController.PluginManager.Loader;
+    using ChuckDeviceController.PluginManager.Services.Finder;
+    using ChuckDeviceController.PluginManager.Services.Loader;
+    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugins.Services;
+
+    public static class ServiceCollectionExtensions
+    {
+        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager, string contentRootPath)
+        {
+            var finderOptions = new PluginFinderOptions
+            {
+                PluginType = typeof(IPlugin),
+                RootPluginsDirectory = pluginManager.Options.RootPluginDirectory,
+                ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
+            };
+            var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
+            var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
+
+            var pluginsFolderPath = Path.GetFullPath(PluginManager.DefaultPluginsFolder);
+            services.AddChuckRazorPlugins(contentRootPath, pluginsFolderPath);
+
+            var mvcBuilder = services.AddControllersWithViews().AddRazorRuntimeCompilation(options =>
+            {
+                //options.AdditionalReferencePaths.Add("");
+                //options.FileProviders.Add(new PhysicalFileProvider(""));
+            });
+            foreach (var pluginResult in pluginFinderResults)
+            {
+                // TODO: New service collection for each plugin?
+                // TODO: Register sharedServiceHosts with new service collection if so
+                //var serviceCollection = new ServiceCollection();
+                if (pluginResult.Assembly == null)
+                {
+                    Console.WriteLine($"Failed to load assembly for plugin '{pluginResult.FullAssemblyPath}', skipping.");
+                    continue;
+                }
+                // Load and activate plugins found by plugin finder
+                var pluginLoader = new PluginLoader<IPlugin>(pluginResult, pluginManager.Options.SharedServiceHosts);
+                var loadedPlugins = pluginLoader.LoadedPlugins;
+                if (!loadedPlugins.Any())
+                {
+                    Console.WriteLine($"Failed to find any valid plugins in assembly '{pluginResult.FullAssemblyPath}'");
+                    continue;
+                }
+
+                services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
+                {
+                    options.FileProviders.Add(new EmbeddedFileProvider(pluginResult.Assembly));
+                });
+
+                // Register assembly as application part with Mvc
+                mvcBuilder.AddApplicationPart(pluginResult.Assembly);
+
+                // Configure compiled views support
+                mvcBuilder.ConfigureCompiledViews(pluginManager);
+
+                // Register all available host services with plugin
+                mvcBuilder.AddServices(services);
+
+                // Loop through all loaded plugins and register plugin services and register plugins
+                foreach (var pluginHost in loadedPlugins)
+                {
+                    // Register any PluginServices found with IServiceCollection
+                    var pluginServices = pluginHost.PluginServices;
+                    if (pluginServices.Any())
+                    {
+                        foreach (var pluginService in pluginServices)
+                        {
+                            // Register found plugin service
+                            services.Add(pluginService);
+                        }
+                    }
+
+                    // Call plugin's ConfigureServices method to register any services
+                    pluginHost.Plugin.ConfigureServices(services);
+
+                    // Call plugin's load method
+                    pluginHost.Plugin.OnLoad();
+
+                    // Register plugin host with plugin manager
+                    await pluginManager.RegisterPluginAsync(pluginHost);
+                }
+            }
+            return services;
+        }
+
+        public static object? CreatePluginInstance(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
+        {
+            object? instance;
+            if (!(sharedServices?.Any() ?? false))
+            {
+                instance = Activator.CreateInstance(pluginType);
+            }
+            else
+            {
+                var args = pluginType.GetConstructorArgs(sharedServices);
+                instance = Activator.CreateInstance(pluginType, args);
+            }
+            return instance;
+        }
+
+        public static ServiceDescriptor? GetPluginServiceWithAttribute(this Type type)
+        {
+            var attr = type.GetCustomAttribute<PluginServiceAttribute>();
+            if (attr == null)
+                return null;
+
+            var serviceType = attr.ServiceType;
+            var implementation = attr.Provider == PluginServiceProvider.Plugin
+                ? attr.ProxyType
+                : type; // TODO: Get host service implementation
+            var serviceLifetime = attr.Lifetime;
+            var serviceDescriptor = new ServiceDescriptor(serviceType, implementation, serviceLifetime);
+            return serviceDescriptor;
+        }
+
+        public static PluginPermissions GetPermissions(this Type pluginType)
+        {
+            var attributes = pluginType.GetCustomAttributes<PluginPermissionsAttribute>();
+            if (attributes.Any())
+            {
+                var attr = attributes.FirstOrDefault();
+                return attr?.Permissions ?? PluginPermissions.None;
+            }
+            return PluginPermissions.None;
+        }
+
+        public static object[]? GetConstructorArgs(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
+        {
+            var constructors = pluginType.GetConstructors();
+            if ((constructors?.Length ?? 0) == 0)
+            {
+                Console.WriteLine($"Plugins must only contain one constructor for each class that inherits from '{nameof(IPlugin)}', skipping registration for plugin '{pluginType.Name}'");
+                return null;
+            }
+
+            var constructorInfo = constructors![0];
+            var parameters = constructorInfo.GetParameters();
+            var list = new List<object>(parameters.Length);
+
+            // Check that we were provided shared host types
+            if ((sharedServices?.Count ?? 0) > 0)
+            {
+                // Loop the plugin's constructor parameters to see which host type handlers
+                // to provide it when we instantiate a new instance.
+                foreach (var param in parameters)
+                {
+                    if (!sharedServices!.ContainsKey(param.ParameterType))
+                        continue;
+
+                    var pluginHostHandler = sharedServices[param.ParameterType];
+                    list.Add(pluginHostHandler);
+                }
+            }
+            return list.ToArray();
+        }
+    }
+}

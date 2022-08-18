@@ -3,9 +3,9 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Services.Plugins;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.PluginManager;
     using ChuckDeviceController.Plugins;
 
     [Authorize(Roles = RoleConsts.PluginsRole)]

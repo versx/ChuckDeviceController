@@ -15,11 +15,7 @@ using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.Net.Mail;
-using ChuckDeviceConfigurator.Services.Plugins;
-using ChuckDeviceConfigurator.Services.Plugins.Extensions;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts;
-using ChuckDeviceConfigurator.Services.Plugins.Mvc.Extensions;
-using ChuckDeviceConfigurator.Services.Plugins.Mvc.Razor;
 using ChuckDeviceConfigurator.Services.Routing;
 using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
@@ -27,8 +23,14 @@ using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
+using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.PluginManager;
+using ChuckDeviceController.PluginManager.FileProviders;
+using ChuckDeviceController.PluginManager.Mvc.Extensions;
+using ChuckDeviceController.PluginManager.Mvc.Razor;
 using ChuckDeviceController.Plugins;
+
 
 // TODO: Show top navbar on mobile when sidebar is closed?
 // TODO: Create separate gRPC server service for all gRPC calls
@@ -143,7 +145,7 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 }
-//builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+var mvcBuilder = builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddRazorPages();
 
 // API endpoint explorer/reference
@@ -196,7 +198,6 @@ builder.Services.AddGrpc(options =>
 builder.Services.AddSingleton<IPluginCacheAccessorBootstrapper, DefaultStaticPluginCacheAccessorBootstrapper>();
 builder.Services.AddSingleton<ICachedPluginAssembly, CachedPluginAssembly>();
 builder.Services.AddSingleton<IPluginCache, DefaultScopedPluginCache>();
-builder.Services.ConfigureRazorServices(Directory.GetCurrentDirectory(), Path.GetFullPath(Strings.PluginsFolder));
 
 // Register plugin host handlers
 var uiHost = new UiHost(new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConsole())));
@@ -237,7 +238,7 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
     SharedServiceHosts = sharedServiceHosts,
 });
 // Find plugins, register plugin services, load plugin assemblies, call OnLoad callback and register with 'IPluginManager'
-await builder.Services.LoadPluginsAsync(pluginManager);
+await builder.Services.LoadPluginsAsync(pluginManager, builder.Environment.ContentRootPath);
 
 // Configure custom 'Views' location paths to search in plugin sub directories
 builder.Services.Configure<RazorViewEngineOptions>(options =>
@@ -264,6 +265,10 @@ builder.Services.AddSingleton<IPluginManager>(pluginManager);
 #region App Builder
 
 var app = builder.Build();
+
+//pluginManager.PluginHostAdded += OnPluginHostAdded;
+//pluginManager.PluginHostRemoved += OnPluginHostRemoved;
+//pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
 
 // Seed default user and roles
 await SeedDefaultDataAsync(app.Services);
@@ -371,6 +376,61 @@ async Task LoadUiAsync(IUiHost host)
         }),
     };
     await uiHost.AddNavbarHeadersAsync(navbarHeaders);
+}
+
+void OnPluginHostAdded(object? sender, PluginHostAddedEventArgs e)
+{
+    logger.LogInformation($"Plugin added successfully: {e.PluginHost.Plugin.Name}");
+}
+
+void OnPluginHostRemoved(object? sender, PluginHostRemovedEventArgs e)
+{
+    logger.LogInformation($"Plugin removed successfully: {e.PluginHost.Plugin.Name}");
+}
+
+async void OnPluginHostStateChanged(object? sender, PluginHostStateChangedEventArgs e)
+{
+    var serviceProvider = app.Services;
+    using (var scope = serviceProvider.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var context = services.GetRequiredService<ControllerContext>();
+        {
+            // Get cached plugin state from database
+            var dbPlugin = await context.Plugins.FindAsync(e.PluginHost.Plugin.Name);
+            if (dbPlugin != null)
+            {
+                // Plugin host is cached in database, set previous plugin state,
+                // otherwise set state from param
+                //var isStateSet = state != dbPlugin.State && state != PluginState.Unset;
+                //pluginHost.SetState(isStateSet ? state : dbPlugin.State);
+                e.PluginHost.SetState(dbPlugin.State);
+            }
+            else
+            {
+                // Plugin host is not cached in database. Set current state to plugin
+                // host and add insert into database
+                e.PluginHost.SetState(e.PluginHost.State);
+                dbPlugin = new Plugin
+                {
+                    Name = e.PluginHost.Plugin.Name,
+                    State = e.PluginHost.State,
+                };
+            }
+
+            // Save plugin host to database
+            if (context.Plugins.Any(x => x.Name == e.PluginHost.Plugin.Name))
+            {
+                context.Plugins.Update(dbPlugin);
+            }
+            else
+            {
+                await context.Plugins.AddAsync(dbPlugin);
+            }
+            await context.SaveChangesAsync();
+        }
+
+    }
 }
 
 #endregion
