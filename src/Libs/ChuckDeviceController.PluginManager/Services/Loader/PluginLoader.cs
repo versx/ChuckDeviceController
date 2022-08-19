@@ -46,11 +46,11 @@
                 // TODO: Add support for HostedServices
 
                 // Find service classes with 'PluginServiceAttribute'
-                var pluginService = type.GetPluginServiceWithAttribute();
-                if (pluginService == null)
+                var pluginServices = type.GetPluginServicesWithAttribute();
+                if (pluginServices == null)
                     continue;
 
-                pluginServiceDescriptors.Add(pluginService);
+                pluginServiceDescriptors.AddRange(pluginServices);
             }
 
             // Loop all found plugin types and create/instantiate instances of them
@@ -77,7 +77,7 @@
                 typeInfo.SetPluginServiceFields(pluginInstance, sharedServiceHosts);
                 typeInfo.SetPluginServiceProperties(pluginInstance, sharedServiceHosts);
 
-                var permissions = pluginType.GetPermissions();
+                var permissions = pluginType.GetPluginPermissions();
                 var pluginHost = new PluginHost(
                     plugin,
                     permissions,

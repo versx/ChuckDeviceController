@@ -107,22 +107,28 @@
             return instance;
         }
 
-        public static ServiceDescriptor? GetPluginServiceWithAttribute(this Type type)
+        public static IEnumerable<ServiceDescriptor> GetPluginServicesWithAttribute(this Type type)
         {
-            var attr = type.GetCustomAttribute<PluginServiceAttribute>();
-            if (attr == null)
-                return null;
-
-            var serviceType = attr.ServiceType;
-            var implementation = attr.Provider == PluginServiceProvider.Plugin
-                ? attr.ProxyType
-                : type; // TODO: Get host service implementation
-            var serviceLifetime = attr.Lifetime;
-            var serviceDescriptor = new ServiceDescriptor(serviceType, implementation, serviceLifetime);
-            return serviceDescriptor;
+            var services = new List<ServiceDescriptor>();
+            var attributes = type.GetCustomAttributes<PluginServiceAttribute>();
+            if (!(attributes?.Any() ?? false))
+            {
+                return services;
+            }
+            foreach (var attr in attributes)
+            {
+                var serviceType = attr.ServiceType;
+                var implementation = attr.Provider == PluginServiceProvider.Plugin
+                    ? attr.ProxyType
+                    : type; // TODO: Get host service implementation
+                var serviceLifetime = attr.Lifetime;
+                var serviceDescriptor = new ServiceDescriptor(serviceType, implementation, serviceLifetime);
+                services.Add(serviceDescriptor);
+            }
+            return services;
         }
 
-        public static PluginPermissions GetPermissions(this Type pluginType)
+        public static PluginPermissions GetPluginPermissions(this Type pluginType)
         {
             var attributes = pluginType.GetCustomAttributes<PluginPermissionsAttribute>();
             if (attributes.Any())
