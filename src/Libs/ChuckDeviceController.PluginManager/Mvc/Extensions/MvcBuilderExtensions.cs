@@ -36,6 +36,7 @@
         /// <param name="mvcBuilder"></param>
         /// <param name="assembly"></param>
         /// <returns></returns>
+        /*
         public static IMvcBuilder AddApplicationPart(this IMvcBuilder mvcBuilder, Assembly assembly)
         {
             // Load assembly as PluginAssemblyPart for Mvc controllers
@@ -45,5 +46,6 @@
             mvcBuilder.PartManager.ApplicationParts.Add(part);
             return mvcBuilder;
         }
+        */
     }
 }

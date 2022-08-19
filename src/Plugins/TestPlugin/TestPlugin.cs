@@ -254,9 +254,9 @@
             services.AddSingleton<IPluginService, TestPluginService>();
             services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
 
-            services
-                .AddMvc()
-                .AddApplicationPart(typeof(TestPlugin).GetTypeInfo().Assembly); // <- Very important for Mvc Views
+            //services
+                //.AddMvc();
+                //.AddApplicationPart(typeof(TestPlugin).GetTypeInfo().Assembly); // <- Very important for Mvc Views
         }
 
         #endregion

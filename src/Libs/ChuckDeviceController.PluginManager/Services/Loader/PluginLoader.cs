@@ -30,7 +30,7 @@
         {
             if (pluginResult.Assembly == null)
             {
-                throw new NullReferenceException($"Failed to load plugin assembly: '{pluginResult.FullAssemblyPath}'");
+                throw new NullReferenceException($"Failed to load plugin assembly '{pluginResult.FullAssemblyPath}'");
             }
 
             var assemblyTypes = pluginResult.Assembly.GetTypes();
