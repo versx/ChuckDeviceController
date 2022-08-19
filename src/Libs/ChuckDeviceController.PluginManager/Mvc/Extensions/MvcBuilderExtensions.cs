@@ -1,10 +1,6 @@
 ﻿namespace ChuckDeviceController.PluginManager.Mvc.Extensions
 {
-    using System.Reflection;
-
     using Microsoft.Extensions.DependencyInjection;
-
-    using ChuckDeviceController.PluginManager.Mvc.ApplicationParts;
 
     public static class MvcBuilderExtensions
     {
@@ -29,23 +25,5 @@
             }
             return mvcBuilder;
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mvcBuilder"></param>
-        /// <param name="assembly"></param>
-        /// <returns></returns>
-        /*
-        public static IMvcBuilder AddApplicationPart(this IMvcBuilder mvcBuilder, Assembly assembly)
-        {
-            // Load assembly as PluginAssemblyPart for Mvc controllers
-            var part = new PluginAssemblyPart(assembly);
-
-            // Add loaded assembly as application part
-            mvcBuilder.PartManager.ApplicationParts.Add(part);
-            return mvcBuilder;
-        }
-        */
     }
 }

@@ -301,10 +301,10 @@
                 .FirstOrDefault();
             if (sd == null)
             {
-                return null;
+                return default;
             }
 
-            T result = default;
+            T? result = default;
 
             if (sd.ImplementationInstance != null)
             {

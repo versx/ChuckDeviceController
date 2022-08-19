@@ -37,15 +37,17 @@
                 return loadContext; // short circuit
 
             var hostTypes = new List<Type>();
-            var priseServices = hostServices.Where(s => IsChuckService(s.ServiceType));
+            var chuckServices = hostServices.Where(s => IsChuckService(s.ServiceType));
             var includeServices = hostServices.Where(s => Includes(s.ServiceType, includeTypes));
             var excludeServices = hostServices.Where(s => Excludes(s.ServiceType, excludeTypes));
 
             foreach (var hostService in hostServices
-                                        .Except(priseServices)
+                                        .Except(chuckServices)
                                         .Union(includeServices)
                                         .Except(excludeServices))
+            {
                 loadContext.AddHostService(hostService);
+            }
 
             return loadContext;
         }
