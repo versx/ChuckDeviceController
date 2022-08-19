@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.PluginManager
 {
+    using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
 
@@ -20,7 +21,7 @@
 
         #endregion
 
-        #region Properties
+        #region Singleton
 
         public static IPluginManager Instance
         {
@@ -51,6 +52,10 @@
             }
             return _instance;
         }
+
+        #endregion
+
+        #region Properties
 
         public IReadOnlyDictionary<string, IPluginHost> Plugins => _plugins;
 
@@ -94,6 +99,24 @@
         #endregion
 
         #region Public Methods
+
+        public void Configure(WebApplication app)
+        {
+            try
+            {
+                foreach (var (_, plugin) in Plugins)
+                {
+                    // Call 'Configure(IApplicationBuilder)' event handler for each plugin
+                    plugin.Plugin.Configure(app);
+
+                    // TODO: Call Plugin.OnLoad() here instead of from ServiceCollectionExtensions
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while calling the 'Configure(IApplicationBuilder)' method in plugins.");
+            }
+        }
 
         public async Task RegisterPluginAsync(PluginHost pluginHost)
         {

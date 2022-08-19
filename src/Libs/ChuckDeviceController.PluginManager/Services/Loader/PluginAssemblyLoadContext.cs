@@ -40,10 +40,10 @@
 
         public static PluginAssemblyLoadContext DefaultPluginLoadContext
         (
-            string fullPathToPluginAssembly,
+            string fullAssemblyPath,
             Type pluginType,
             string hostFramework
-        ) => new(fullPathToPluginAssembly, pluginType, hostFramework);
+        ) => new(fullAssemblyPath, pluginType, hostFramework);
 
         #endregion
 
@@ -80,6 +80,16 @@
         }
 
         #endregion
+
+        public static PluginAssemblyLoadContext Load<TPlugin>(string pluginPath, string hostFramework)
+        {
+            var loadContext = new PluginAssemblyLoadContext(
+                pluginPath,
+                typeof(TPlugin),
+                hostFramework
+            );
+            return loadContext;
+        }
 
         #region Overrides
 

@@ -1,5 +1,4 @@
-﻿@*@inject TestPlugin.TestPlugin testPlugin*@
-@using TestPlugin.Data.Entities
+﻿@using TestPlugin.Data.Entities
 @model List<Todo>
 @{
     ViewData["Title"] = "Todos";
@@ -9,7 +8,7 @@
 <br />
 
 <p>
-    <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
+    <a class="btn btn-success btn-sm" asp-controller="TodoController" asp-action="Create">Create New</a>
 </p>
 
 <table id="table-todos" class="table table-striped table-bordered nowrap">
@@ -32,7 +31,7 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </th>
                 <td>
-                    @Html.DisplayFor(modelItem => item.IsComplete);
+                    @(item.IsComplete ? "Yes" : "No")
                 </td>
                 <td>
                     <div class="dropdown">
@@ -40,9 +39,9 @@
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
-                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
-                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
+                            <li><a class="dropdown-item" asp-controller="TodoController" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
+                            <li><a class="dropdown-item" asp-controller="TodoController" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
+                            <li><a class="dropdown-item" asp-controller="TodoController" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
                         </ul>
                     </div>
                 </td>
@@ -50,3 +49,28 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#table-todos').DataTable({
+                columnDefs: [
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 2, targets: 1 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
+                ],
+                order: [[0, 'asc']],
+                stateSave: true,
+                searching: true,
+                paging: true,
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, 'All']],
+                colReorder: true,
+                fixedHeader: {
+                    header: true,
+                },
+                responsive: true,
+                info: true,
+            });
+        });
+    </script>
+}

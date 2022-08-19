@@ -1,5 +1,7 @@
 ﻿namespace TestPlugin
 {
+    using System.Reflection;
+
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
@@ -118,7 +120,7 @@
             IJobControllerServiceHost jobControllerHost,
             IDatabaseHost databaseHost,
             ILocalizationHost localeHost)
-            //IUiHost uiHost)
+        //IUiHost uiHost)
         {
             _loggingHost = loggingHost;
             _jobControllerHost = jobControllerHost;
@@ -252,13 +254,9 @@
             services.AddSingleton<IPluginService, TestPluginService>();
             services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
 
-            services.AddMvc();
-            /*
-            services.AddMvc(options =>
-            {
-                options.EnableEndpointRouting = false;
-            });
-            */
+            services
+                .AddMvc()
+                .AddApplicationPart(typeof(TestPlugin).GetTypeInfo().Assembly); // <- Very important for Mvc Views
         }
 
         #endregion

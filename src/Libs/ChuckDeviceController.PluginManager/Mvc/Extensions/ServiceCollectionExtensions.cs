@@ -2,13 +2,11 @@
 {
     using System.Reflection;
 
-    using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
+    using Microsoft.AspNetCore.Mvc.Razor.Compilation;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.FileProviders;
 
     using ChuckDeviceController.PluginManager;
-    using ChuckDeviceController.PluginManager.FileProviders;
-    using ChuckDeviceController.PluginManager.Loader;
+    using ChuckDeviceController.PluginManager.Mvc.Razor;
     using ChuckDeviceController.PluginManager.Services.Finder;
     using ChuckDeviceController.PluginManager.Services.Loader;
     using ChuckDeviceController.Plugins;
@@ -27,14 +25,20 @@
             var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
             var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
 
-            var pluginsFolderPath = Path.GetFullPath(PluginManager.DefaultPluginsFolder);
-            services.AddChuckRazorPlugins(contentRootPath, pluginsFolderPath);
-
-            var mvcBuilder = services.AddControllersWithViews().AddRazorRuntimeCompilation(options =>
+            if (!(pluginFinderResults?.Any() ?? false))
             {
-                //options.AdditionalReferencePaths.Add("");
-                //options.FileProviders.Add(new PhysicalFileProvider(""));
-            });
+                // Failed to find any eligible plugins to load
+                return services;
+            }
+
+            // Replace Razor view compiler, faster than using
+            // 'services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders)'
+            services.Replace<IViewCompilerProvider, PluginViewCompilerProvider>();
+
+            var mvcBuilder = services
+                .AddControllersWithViews()
+                .AddRazorRuntimeCompilation();
+
             foreach (var pluginResult in pluginFinderResults)
             {
                 // TODO: New service collection for each plugin?
@@ -45,6 +49,7 @@
                     Console.WriteLine($"Failed to load assembly for plugin '{pluginResult.FullAssemblyPath}', skipping.");
                     continue;
                 }
+
                 // Load and activate plugins found by plugin finder
                 var pluginLoader = new PluginLoader<IPlugin>(pluginResult, pluginManager.Options.SharedServiceHosts);
                 var loadedPlugins = pluginLoader.LoadedPlugins;
@@ -54,16 +59,8 @@
                     continue;
                 }
 
-                services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
-                {
-                    options.FileProviders.Add(new EmbeddedFileProvider(pluginResult.Assembly));
-                });
-
                 // Register assembly as application part with Mvc
                 mvcBuilder.AddApplicationPart(pluginResult.Assembly);
-
-                // Configure compiled views support
-                mvcBuilder.ConfigureCompiledViews(pluginManager);
 
                 // Register all available host services with plugin
                 mvcBuilder.AddServices(services);
@@ -164,6 +161,206 @@
                 }
             }
             return list.ToArray();
+        }
+
+        #region Replace Services
+
+        public static IServiceCollection Replace<TService, TImplementation>(this IServiceCollection services)
+            where TImplementation : TService
+        {
+            return services.Replace<TService>(typeof(TImplementation));
+        }
+
+        public static IServiceCollection Replace<TService>(this IServiceCollection services, Type implementationType)
+        {
+            return services.Replace(typeof(TService), implementationType);
+        }
+
+        public static IServiceCollection Replace(this IServiceCollection services, Type serviceType, Type implementationType)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            if (implementationType == null)
+            {
+                throw new ArgumentNullException(nameof(implementationType));
+            }
+
+            if (!services.TryGetDescriptors(serviceType, out var descriptors))
+            {
+                throw new ArgumentException($"No services found for {serviceType.FullName}.", nameof(serviceType));
+            }
+
+            foreach (var descriptor in descriptors)
+            {
+                var index = services.IndexOf(descriptor);
+                services.Insert(index, descriptor.WithImplementationType(implementationType));
+                services.Remove(descriptor);
+            }
+
+            return services;
+        }
+
+        private static bool TryGetDescriptors(this IServiceCollection services, Type serviceType, out ICollection<ServiceDescriptor> descriptors)
+        {
+            return (descriptors = services.Where(service => service.ServiceType == serviceType).ToArray()).Any();
+        }
+
+        private static ServiceDescriptor WithImplementationType(this ServiceDescriptor descriptor, Type implementationType)
+        {
+            return new ServiceDescriptor(descriptor.ServiceType, implementationType, descriptor.Lifetime);
+        }
+
+        #endregion
+
+        public static object[] GetParameterInstances(this IServiceCollection services, Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (services != null)
+            {
+                return GetInstancesConstructorParameters(services, type);
+            }
+
+            var result = new List<object>();
+            var constructors = type.GetPluginConstructors();
+            foreach (var constructor in constructors)
+            {
+                foreach (var param in constructor.GetParameters())
+                {
+                    var paramClass = services?.FirstOrDefault(service => service.ServiceType == param.ParameterType);
+                    if (paramClass == null)
+                        continue;
+
+                    // If we did not find a specific param type for this constructor, try the next constructor
+                    if (paramClass == null)
+                    {
+                        result.Clear();
+                        break;
+                    }
+
+                    result.Add(paramClass);
+                }
+
+                if (result.Count > 0)
+                {
+                    return result.ToArray();
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        public static IEnumerable<ConstructorInfo> GetPluginConstructors(this Type type)
+        {
+            // Grab a list of all constructors in the class, start with the one with most parameters
+            var constructors = type
+                .GetConstructors()
+                .Where(c => c.IsPublic && !c.IsStatic && c.GetParameters().Length > 0)
+                .OrderByDescending(c => c.GetParameters().Length)
+                .ToList();
+            return constructors;
+        }
+
+        /// <summary>
+        /// Retrieves an instance of a class from within an IServiceCollection
+        /// </summary>
+        /// <typeparam name="T">Type of class instance being sought</typeparam>
+        /// <param name="services"></param>
+        /// <returns>Instance of type T if found within the service collection, otherwise null</returns>
+        public static T? GetServiceInstance<T>(this IServiceCollection services) where T : class
+        {
+            if (services == null)
+            {
+                return null;
+            }
+
+            return GetClassImplementation<T>(services, typeof(T));
+        }
+
+        private static T? GetClassImplementation<T>(IServiceCollection services, Type classType) where T : class
+        {
+            var sd = services
+                .Where(sd => GetNameWithoutGenericArity(sd.ServiceType).Equals(GetNameWithoutGenericArity(classType)))
+                .FirstOrDefault();
+            if (sd == null)
+            {
+                return null;
+            }
+
+            T result = default;
+
+            if (sd.ImplementationInstance != null)
+            {
+                result = (T)sd.ImplementationInstance;
+            }
+            else if (sd.ImplementationType != null)
+            {
+                var args = GetInstancesConstructorParameters(services, sd.ImplementationType);
+                result = (T)Activator.CreateInstance(sd.ImplementationType, args);
+
+                if (sd.Lifetime == ServiceLifetime.Singleton)
+                {
+                    var replacementServiceDescriptor = new ServiceDescriptor(sd.ServiceType, result);
+
+                    services.Remove(sd);
+                    services.Add(replacementServiceDescriptor);
+                }
+            }
+            else if (sd.ImplementationFactory != null)
+            {
+                result = sd.ImplementationFactory.Invoke(null) as T;
+            }
+
+            return result;
+        }
+
+        private static string GetNameWithoutGenericArity(Type type)
+        {
+            var name = type.FullName;
+            var index = name?.IndexOf('`') ?? -1;
+            return index == -1
+                ? name!
+                : name![..index];
+        }
+
+        private static object[] GetInstancesConstructorParameters(IServiceCollection services, Type type)
+        {
+            var result = new List<object>();
+            var constructors = type.GetPluginConstructors();
+            foreach (var constructor in constructors)
+            {
+                foreach (var param in constructor.GetParameters())
+                {
+                    var paramClass = GetClassImplementation<object>(services, param.ParameterType);
+
+                    // If we did not find a specific param type for this constructor, try the next constructor
+                    if (paramClass == null)
+                    {
+                        result.Clear();
+                        break;
+                    }
+
+                    result.Add(paramClass);
+                }
+
+                if (result.Count > 0)
+                {
+                    return result.ToArray();
+                }
+            }
+
+            return result.ToArray();
         }
     }
 }

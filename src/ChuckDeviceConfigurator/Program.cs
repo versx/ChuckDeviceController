@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -26,7 +24,6 @@ using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.PluginManager;
-using ChuckDeviceController.PluginManager.FileProviders;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
 using ChuckDeviceController.PluginManager.Mvc.Razor;
 using ChuckDeviceController.Plugins;
@@ -145,8 +142,6 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 }
-var mvcBuilder = builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
-builder.Services.AddRazorPages();
 
 // API endpoint explorer/reference
 builder.Services.AddEndpointsApiExplorer();
@@ -195,10 +190,6 @@ builder.Services.AddGrpc(options =>
 
 #region Plugins
 
-builder.Services.AddSingleton<IPluginCacheAccessorBootstrapper, DefaultStaticPluginCacheAccessorBootstrapper>();
-builder.Services.AddSingleton<ICachedPluginAssembly, CachedPluginAssembly>();
-builder.Services.AddSingleton<IPluginCache, DefaultScopedPluginCache>();
-
 // Register plugin host handlers
 var uiHost = new UiHost(new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConsole())));
 var databaseHost = new DatabaseHost(new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole())), connectionString);
@@ -209,7 +200,7 @@ builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
 builder.Services.AddSingleton<IUiHost>(uiHost);
 
 // Load host applications default sidebar nav headers
-await LoadUiAsync(uiHost);
+await uiHost.LoadDefaultUiAsync();
 
 // TODO: Use builder.Services registered instead of 'sharedServiceHosts'
 var sharedServiceHosts = new Dictionary<Type, object>
@@ -241,21 +232,18 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 await builder.Services.LoadPluginsAsync(pluginManager, builder.Environment.ContentRootPath);
 
 // Configure custom 'Views' location paths to search in plugin sub directories
+/*
 builder.Services.Configure<RazorViewEngineOptions>(options =>
 {
     // Get a list of root plugin folder names in the "./bin/debug/plugins/*" base folder
     var pluginFolderNames = pluginManager.GetPluginFolderNames();
+    //var pluginViewsFolder = "/Views/Shared/Plugins/";
+    var pluginViewsFolder = pluginManager.Options.RootPluginDirectory;
     // Register new View location searcher that includes absolute plugin related 'Views' folder paths
-    var viewLocationExpander = new PluginViewLocationExpander(pluginManager.Options.RootPluginDirectory, pluginFolderNames ?? new List<string>());
+    var viewLocationExpander = new PluginViewLocationExpander(pluginViewsFolder, pluginFolderNames ?? new List<string>());
     options.ViewLocationExpanders.Add(viewLocationExpander);
 });
-
-builder.Services.Configure<MvcRazorRuntimeCompilationOptions>(options =>
-{
-    //var libraryPath = Path.GetFullPath(
-    //    Path.Combine(builder.Environment.ContentRootPath, "..", "MyClassLib"));
-    //options.FileProviders.Add(new PhysicalFileProvider(libraryPath));
-});
+*/
 
 builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
 builder.Services.AddSingleton<IPluginManager>(pluginManager);
@@ -313,70 +301,13 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 // Call 'Configure' method in plugins
-Configure(app, app.Services);
+pluginManager.Configure(app);
 
 app.Run();
 
 #endregion
 
 #region Plugin Callback/Event Handlers
-
-void Configure(WebApplication app, IServiceProvider serviceProvider)
-{
-    try
-    {
-        foreach (var (_, plugin) in pluginManager.Plugins)
-        {
-            // Call 'Configure(IApplicationBuilder)' event handler for each plugin
-            plugin.Plugin.Configure(app);
-
-            // TODO: Call Plugin.OnLoad() here instead of from ServiceCollectionExtensions
-        }
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "An error occurred while calling the 'Configure(IApplicationBuilder)' method in plugins.");
-    }
-}
-
-async Task LoadUiAsync(IUiHost host)
-{
-    var navbarHeaders = new List<NavbarHeader>
-    {
-        new("Home", "Home", displayIndex: 0, icon: "fa-solid fa-fw fa-house"),
-        new("Accounts", "Account", displayIndex: 1, icon: "fa-solid fa-fw fa-user"),
-        new("Devices", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<NavbarHeader>
-        {
-            new("Devices", "Device", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-layer-group"),
-            new("Device Groups", "DeviceGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-mobile-alt"),
-        }),
-        new("Instances", displayIndex: 3, icon: "fa-solid fa-fw fa-cubes-stacked", isDropdown: true, dropdownItems: new List<NavbarHeader>
-        {
-            new("Geofences", "Geofence", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-map-marked"),
-            new("Instances", "Instance", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-cubes-stacked"),
-            new("IV Lists", "IvList", "Index", displayIndex: 2, icon: "fa-solid fa-fw fa-list"),
-        }),
-        new("Plugins", "Plugin", displayIndex: 4, icon: "fa-solid fa-fw fa-puzzle-piece"),
-        new("Schedules", displayIndex: 5, icon: "fa-solid fa-fw fa-calendar-days", isDropdown: true, dropdownItems: new List<NavbarHeader>
-        {
-            new("Assignments", "Assignment", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-cog"),
-            new("Assignment Groups", "AssignmentGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-cogs"),
-        }),
-        new("Webhooks", "Webhook", displayIndex: 6, icon: "fa-solid fa-fw fa-circle-nodes"),
-        new("Users", "User", displayIndex: 7, icon: "fa-solid fa-fw fa-users"),
-        new("Utilities", displayIndex: 8, icon: "fa-solid fa-fw fa-toolbox", isDropdown: true, dropdownItems: new List<NavbarHeader>
-        {
-            new("Clear Quests", "Utilities", "ClearQuests", displayIndex: 0, icon: "fa-solid fa-fw fa-broom"),
-            new("Convert Forts", "Utilities", "ConvertForts", displayIndex: 1, icon: "fa-solid fa-fw fa-arrows-up-down"),
-            new("Clear Stale Pokestops", "Utilities", "ClearStalePokestops", displayIndex: 2, icon: "fa-solid fa-fw fa-clock"),
-            new("Reload Instance", "Utilities", "ReloadInstance", displayIndex: 3, icon: "fa-solid fa-fw fa-rotate"),
-            new("Truncate Data", "Utilities", "TruncateData", displayIndex: 4, icon: "fa-solid fa-fw fa-trash-can"),
-            new("Re-Quest", "Utilities", "ReQuest", displayIndex: 5, icon: "fa-solid fa-fw fa-clock-rotate-left"),
-            new("Route Generator", "Utilities", "RouteGenerator", displayIndex: 6, icon: "fa-solid fa-fw fa-route"),
-        }),
-    };
-    await uiHost.AddNavbarHeadersAsync(navbarHeaders);
-}
 
 void OnPluginHostAdded(object? sender, PluginHostAddedEventArgs e)
 {

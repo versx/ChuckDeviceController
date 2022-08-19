@@ -19,11 +19,13 @@
 
         public static PluginAssemblyLoadContext AddMvcRazorTypes(this PluginAssemblyLoadContext loadContext)
         {
-            return loadContext.AddHostTypes(new[]
-            {
-                typeof(ControllerBase),
-                typeof(ITempDataDictionaryFactory),
-            });
+            return loadContext
+                .AddMvcTypes()
+                .AddHostTypes(new[]
+                {
+                    typeof(ControllerBase),
+                    typeof(ITempDataDictionaryFactory),
+                });
         }
 
         public static PluginAssemblyLoadContext AddHostServices(this PluginAssemblyLoadContext loadContext,

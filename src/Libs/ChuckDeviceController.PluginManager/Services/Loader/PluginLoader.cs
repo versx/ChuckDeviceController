@@ -26,7 +26,7 @@
             PluginLoaded?.Invoke(this, new PluginLoadedEventArgs(pluginHost));
         }
 
-        public PluginLoader(PluginFinderResult<IPlugin> pluginResult, IReadOnlyDictionary<Type, object> sharedServiceHosts)
+        public PluginLoader(PluginFinderResult<IPlugin> pluginResult, IReadOnlyDictionary<Type, object> sharedServiceHosts)//, IServiceCollection services)
         {
             if (pluginResult.Assembly == null)
             {
@@ -56,6 +56,8 @@
             // Loop all found plugin types and create/instantiate instances of them
             foreach (var pluginType in pluginTypes)
             {
+                // TODO: var test = services.GetParameterInstances(pluginType);
+
                 // Instantiate an instance of the plugin type
                 var pluginInstance = pluginType.CreatePluginInstance(sharedServiceHosts);
                 if (pluginInstance == null)

@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.PluginManager
 {
+    using Microsoft.AspNetCore.Builder;
+
     using ChuckDeviceController.Common.Data;
 
     public interface IPluginManager
@@ -25,6 +27,8 @@
         #endregion
 
         #region Methods
+
+        void Configure(WebApplication appBuilder);
 
         Task RegisterPluginAsync(PluginHost pluginHost);
 
