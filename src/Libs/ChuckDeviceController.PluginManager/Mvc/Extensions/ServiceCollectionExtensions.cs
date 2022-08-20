@@ -14,7 +14,7 @@
 
     public static class ServiceCollectionExtensions
     {
-        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager, string contentRootPath)
+        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager)
         {
             var finderOptions = new PluginFinderOptions
             {

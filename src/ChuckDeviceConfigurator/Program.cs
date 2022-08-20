@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
+using ChuckDeviceConfigurator.Extensions;
 using ChuckDeviceConfigurator.Localization;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Services.Geofences;
@@ -90,7 +90,6 @@ builder.Services.AddDbContext<UserIdentityContext>(options =>
 {
     options.UseMySql(connectionString, serverVersion, opt =>
     {
-
         //opt.MigrationsHistoryTable("migrations");
         opt.MigrationsAssembly(Strings.AssemblyName);
     });
@@ -111,7 +110,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     // Cookie settings
     options.Cookie.HttpOnly = true;
     //options.Cookie.Expiration 
-
     options.ExpireTimeSpan = TimeSpan.FromHours(1);
     options.LoginPath = "/Identity/Account/Login";
     options.LogoutPath = "/Identity/Account/Logout";
@@ -120,7 +118,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     //options.ReturnUrlParameter=""
 });
 
-/*
 // Set policy that users need to be authenticated to access
 builder.Services.AddAuthorization(options =>
 {
@@ -128,11 +125,11 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 });
-*/
 
 // Register external 3rd party authentication providers if configured
-var auth = builder.Services.AddAuthentication();
-RegisterAuthProviders(auth);
+builder.Services
+    .AddAuthentication()
+    .AddOpenAuthProviders(builder.Configuration);
 
 #endregion
 
@@ -162,7 +159,7 @@ builder.Services.AddDbContext<MapContext>(options =>
 
 #endregion
 
-#region Services
+#region Custom Services
 
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
@@ -220,6 +217,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(ILocalizationHost), Translator.Instance },
     { typeof(IUiHost), uiHost },
 };
+
 // Instantiate 'IPluginManager' singleton with configurable options
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 {
@@ -227,22 +225,10 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
     RootPluginDirectory = Strings.PluginsFolder,
     SharedServiceHosts = sharedServiceHosts,
 });
-// Find plugins, register plugin services, load plugin assemblies, call OnLoad callback and register with 'IPluginManager'
-await builder.Services.LoadPluginsAsync(pluginManager, builder.Environment.ContentRootPath);
 
-// Configure custom 'Views' location paths to search in plugin sub directories
-/*
-builder.Services.Configure<RazorViewEngineOptions>(options =>
-{
-    // Get a list of root plugin folder names in the "./bin/debug/plugins/*" base folder
-    var pluginFolderNames = pluginManager.GetPluginFolderNames();
-    //var pluginViewsFolder = "/Views/Shared/Plugins/";
-    var pluginViewsFolder = pluginManager.Options.RootPluginDirectory;
-    // Register new View location searcher that includes absolute plugin related 'Views' folder paths
-    var viewLocationExpander = new PluginViewLocationExpander(pluginViewsFolder, pluginFolderNames ?? new List<string>());
-    options.ViewLocationExpanders.Add(viewLocationExpander);
-});
-*/
+// Find plugins, register plugin services, load plugin assemblies,
+// call OnLoad callback and register with 'IPluginManager'
+await builder.Services.LoadPluginsAsync(pluginManager);
 
 builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
 builder.Services.AddSingleton<IPluginManager>(pluginManager);
@@ -365,63 +351,6 @@ async void OnPluginHostStateChanged(object? sender, PluginHostStateChangedEventA
 #endregion
 
 #region Helpers
-
-void RegisterAuthProviders(AuthenticationBuilder auth)
-{
-    var authConfig = config.GetSection("Authentication");
-
-    // Check if GitHub auth is enabled, if so register it
-    if (bool.TryParse(authConfig["GitHub:Enabled"], out var githubEnabled) && githubEnabled)
-    {
-        auth.AddGitHub(options =>
-        {
-            var github = authConfig.GetSection("GitHub");
-            // Ensure GitHub auth is set
-            if (github != null)
-            {
-                options.ClientId = github["ClientId"];
-                options.ClientSecret = github["ClientSecret"];
-                //options.Scope("");
-            }
-        });
-    }
-
-    // Check if Google auth is enabled, if so register it
-    if (bool.TryParse(authConfig["Google:Enabled"], out var googleEnabled) && googleEnabled)
-    {
-        auth.AddGoogle(options =>
-        {
-            var google = authConfig.GetSection("Google");
-            // Ensure Google auth is set
-            if (google != null)
-            {
-                options.ClientId = google["ClientId"];
-                options.ClientSecret = google["ClientSecret"];
-                options.Scope.Add("email");
-                options.Scope.Add("profile");
-                options.Scope.Add("openid");
-            }
-        });
-    }
-
-    // Check if Discord auth is enabled, if so register it
-    if (bool.TryParse(authConfig["Discord:Enabled"], out var discordEnabled) && discordEnabled)
-    {
-        auth.AddDiscord(options =>
-        {
-            var discord = authConfig.GetSection("Discord");
-            // Ensure Discord auth is set
-            if (discord != null)
-            {
-                options.ClientId = discord["ClientId"];
-                options.ClientSecret = discord["ClientSecret"];
-                options.Scope.Add("email");
-                options.Scope.Add("guilds");
-                options.SaveTokens = true;
-            }
-        });
-    }
-}
 
 async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
 {
