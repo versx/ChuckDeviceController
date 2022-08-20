@@ -4,13 +4,17 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Factories;
 
     public class ClearFortsService : IClearFortsService
     {
         #region Variables
 
         private readonly ILogger<IClearFortsService> _logger;
-        private readonly IDbContextFactory<MapContext> _factory;
+        private readonly IConfiguration _configuration;
+        //private readonly IDbContextFactory<MapContext> _factory;
+        private MapContext _context;
+        private readonly string _connectionString;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
@@ -22,10 +26,14 @@
 
         public ClearFortsService(
             ILogger<IClearFortsService> logger,
-            IDbContextFactory<MapContext> factory)
+            IConfiguration configuration)
+            //IDbContextFactory<MapContext> factory)
         {
             _logger = logger;
-            _factory = factory;
+            _configuration = configuration;
+            //_factory = factory;
+            _connectionString = _configuration.GetConnectionString("DefaultConnection");
+            _context = DbContextFactory.CreateMapDataContext(_connectionString);
         }
 
         public void AddCell(ulong cellId)
@@ -76,13 +84,15 @@
             var gymsToDelete = new List<Gym>();
             var stopsToDelete = new List<Pokestop>();
 
-            using (var context = _factory.CreateDbContext())
+            _context = CreateDbContextIfNull();
+
+            //using (var context = _factory.CreateDbContext())
             {
                 foreach (var (cellId, pokestopIds) in _stopIdsPerCell)
                 {
                     // Get pokestops within S2 cell and not marked deleted
-                    var pokestops = context.Pokestops.Where(stop => stop.CellId == cellId && !stop.IsDeleted)
-                                                     .ToList();
+                    var pokestops = _context.Pokestops.Where(stop => stop.CellId == cellId && !stop.IsDeleted)
+                                                      .ToList();
                     if (pokestopIds.Count > 0)
                     {
                         // Filter pokestops that have not been seen within S2 cell by devices
@@ -100,8 +110,8 @@
                 foreach (var (cellId, gymIds) in _gymIdsPerCell)
                 {
                     // Get gyms within S2 cell and not marked deleted
-                    var gyms = context.Gyms.Where(gym => gym.CellId == cellId && !gym.IsDeleted)
-                                           .ToList();
+                    var gyms = _context.Gyms.Where(gym => gym.CellId == cellId && !gym.IsDeleted)
+                                            .ToList();
                     if (gymIds.Count > 0)
                     {
                         // Filter gyms that have not been seen within S2 cell by devices
@@ -119,14 +129,23 @@
                 if (stopsToDelete.Count > 0)
                 {
                     _logger.LogInformation($"Marking {stopsToDelete.Count:N0} Pokestops as deleted since they seem to no longer exist.");
-                    await context.Pokestops.BulkMergeAsync(stopsToDelete);
+                    await _context.Pokestops.BulkMergeAsync(stopsToDelete);
                 }
                 if (gymsToDelete.Count > 0)
                 {
                     _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they seem to no longer exist.");
-                    await context.Gyms.BulkMergeAsync(gymsToDelete);
+                    await _context.Gyms.BulkMergeAsync(gymsToDelete);
                 }
             }
+        }
+
+        private MapContext CreateDbContextIfNull()
+        {
+            if (_context == null)
+            {
+                _context = DbContextFactory.CreateMapDataContext(_connectionString);
+            }
+            return _context;
         }
     }
 }
