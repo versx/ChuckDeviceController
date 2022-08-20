@@ -254,9 +254,9 @@ builder.Services.AddSingleton<IPluginManager>(pluginManager);
 
 var app = builder.Build();
 
-//pluginManager.PluginHostAdded += OnPluginHostAdded;
-//pluginManager.PluginHostRemoved += OnPluginHostRemoved;
-//pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
+pluginManager.PluginHostAdded += OnPluginHostAdded;
+pluginManager.PluginHostRemoved += OnPluginHostRemoved;
+pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
 
 // Seed default user and roles
 await SeedDefaultDataAsync(app.Services);
@@ -360,7 +360,6 @@ async void OnPluginHostStateChanged(object? sender, PluginHostStateChangedEventA
             }
             await context.SaveChangesAsync();
         }
-
     }
 }
 

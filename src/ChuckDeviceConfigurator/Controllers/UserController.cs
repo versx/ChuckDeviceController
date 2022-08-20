@@ -149,8 +149,8 @@
                         foreach (var error in errors)
                         {
                             ModelState.AddModelError("User", error);
-                            return View(model);
                         }
+                        return View(model);
                     }
 
                     // REVIEW: Make assigning default 'Registered' role configurable

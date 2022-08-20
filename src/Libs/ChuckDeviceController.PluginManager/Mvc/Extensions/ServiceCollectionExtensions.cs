@@ -142,9 +142,9 @@
         public static object[]? GetConstructorArgs(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
         {
             var constructors = pluginType.GetConstructors();
-            if ((constructors?.Length ?? 0) == 0)
+            if (!(constructors?.Any() ?? false))
             {
-                Console.WriteLine($"Plugins must only contain one constructor for each class that inherits from '{nameof(IPlugin)}', skipping registration for plugin '{pluginType.Name}'");
+                Console.WriteLine($"Plugins must contain one constructor for each class that inherits from '{nameof(IPlugin)}', skipping registration for plugin type '{pluginType.Name}'");
                 return null;
             }
 
@@ -313,7 +313,7 @@
             else if (sd.ImplementationType != null)
             {
                 var args = GetInstancesConstructorParameters(services, sd.ImplementationType);
-                result = (T)Activator.CreateInstance(sd.ImplementationType, args);
+                result = (T?)Activator.CreateInstance(sd.ImplementationType, args);
 
                 if (sd.Lifetime == ServiceLifetime.Singleton)
                 {
