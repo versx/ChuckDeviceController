@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugins
+﻿namespace ChuckDeviceController.Plugin
 {
     /// <summary>
     /// Provides delegates of database related events from

@@ -2,7 +2,7 @@
 {
     using System.Reflection;
 
-    using ChuckDeviceController.Plugins.Services;
+    using ChuckDeviceController.Plugin.Services;
 
     public static class TypeInfoExtensions
     {

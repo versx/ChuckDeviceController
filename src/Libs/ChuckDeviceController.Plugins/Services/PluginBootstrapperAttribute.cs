@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugins.Services
+﻿namespace ChuckDeviceController.Plugin.Services
 {
     /// <summary>
     /// Register services from a separate class, aka 'ConfigureServices'

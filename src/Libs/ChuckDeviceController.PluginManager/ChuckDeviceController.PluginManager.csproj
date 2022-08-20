@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
-    <ProjectReference Include="..\ChuckDeviceController.Plugins\ChuckDeviceController.Plugins.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Plugins\ChuckDeviceController.Plugin.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugins
+﻿namespace ChuckDeviceController.Plugin
 {
     /// <summary>
     /// Enumeration of possible database connection states.

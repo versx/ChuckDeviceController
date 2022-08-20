@@ -12,7 +12,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Net.Utilities;
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     public class Translator : Language<string, string, Dictionary<string, string>>, ILocalizationHost
     {

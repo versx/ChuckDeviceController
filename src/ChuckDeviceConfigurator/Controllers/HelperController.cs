@@ -4,7 +4,7 @@
 
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     [ApiController]
     [Produces(MediaTypeNames.Application.Json)]

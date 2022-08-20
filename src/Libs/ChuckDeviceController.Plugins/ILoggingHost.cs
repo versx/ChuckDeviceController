@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugins
+﻿namespace ChuckDeviceController.Plugin
 {
     /// <summary>
     /// Plugin host handler for logging messages from plugins.

@@ -6,7 +6,7 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.PluginManager;
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     [Authorize(Roles = RoleConsts.PluginsRole)]
     public class PluginController : Controller

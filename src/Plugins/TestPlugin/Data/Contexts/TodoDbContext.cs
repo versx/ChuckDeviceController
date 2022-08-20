@@ -4,7 +4,7 @@
     using Microsoft.Extensions.DependencyInjection;
 
     using Entities;
-    using ChuckDeviceController.Plugins.Services;
+    using ChuckDeviceController.Plugin.Services;
 
     [
         PluginService(

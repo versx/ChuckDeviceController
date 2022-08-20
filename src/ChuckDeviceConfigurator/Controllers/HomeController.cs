@@ -12,7 +12,7 @@
     using ChuckDeviceController.Data.Contexts;
     using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     [Authorize(Roles = RoleConsts.DefaultRole)]
     public class HomeController : Controller

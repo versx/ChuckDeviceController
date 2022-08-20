@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugins
+﻿namespace ChuckDeviceController.Plugin
 {
     using ChuckDeviceController.Common.Data;
 

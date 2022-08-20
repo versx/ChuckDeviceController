@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugins
+﻿namespace ChuckDeviceController.Plugin
 {
     /// <summary>
     /// Plugin host handler contract used to interact with the database entities.

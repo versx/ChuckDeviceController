@@ -5,7 +5,7 @@
     using ChuckDeviceConfigurator.Services.Rpc.Models;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     /// <summary>
     /// Service to manage all <see cref="IJobController"/> instances.

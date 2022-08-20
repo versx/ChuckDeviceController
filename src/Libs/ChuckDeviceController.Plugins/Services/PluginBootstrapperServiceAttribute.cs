@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugins.Services
+﻿namespace ChuckDeviceController.Plugin.Services
 {
     /// <summary>
     /// Assigns fields and properties in a plugin assembly with registered

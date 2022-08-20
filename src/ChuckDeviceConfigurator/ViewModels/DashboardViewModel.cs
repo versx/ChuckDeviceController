@@ -3,7 +3,7 @@
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
 
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     public class DashboardViewModel
     {

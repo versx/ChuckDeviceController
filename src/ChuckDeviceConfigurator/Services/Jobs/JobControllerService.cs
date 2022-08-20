@@ -20,7 +20,7 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     // TODO: Refactor class into separate smaller classes
     // TODO: Refactor to accommodate instances/job controllers from plugins

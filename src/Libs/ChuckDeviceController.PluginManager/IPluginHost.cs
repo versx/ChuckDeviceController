@@ -3,7 +3,7 @@
     using Microsoft.Extensions.DependencyInjection;
 
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Services.Finder;
 
     /// <summary>

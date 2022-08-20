@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins.Hosts
 {
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     public class PluginUiCache<T> : Dictionary<string, Dictionary<string, T>>
     {

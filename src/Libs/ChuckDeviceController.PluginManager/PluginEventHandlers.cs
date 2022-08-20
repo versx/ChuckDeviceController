@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.PluginManager
 {
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     public sealed class PluginEventHandlers
     {

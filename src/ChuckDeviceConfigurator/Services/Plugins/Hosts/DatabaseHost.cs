@@ -4,7 +4,7 @@
 
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Factories;
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     /// <summary>
     /// Plugin host handler class used to interact with the database entities.

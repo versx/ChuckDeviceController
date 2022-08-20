@@ -5,7 +5,7 @@
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.PluginManager.Services.Finder;
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     public sealed class PluginHost : IPluginHost
     {

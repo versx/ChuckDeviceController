@@ -6,8 +6,8 @@
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Extensions.Json;
-    using ChuckDeviceController.Plugins;
-    using ChuckDeviceController.Plugins.Services;
+    using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Plugin.Services;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;

@@ -6,7 +6,7 @@
     using Microsoft.Extensions.DependencyInjection;
 
     using ChuckDeviceController.PluginManager.Services.Loader.Runtime;
-    using ChuckDeviceController.Plugins;
+    using ChuckDeviceController.Plugin;
 
     public class PluginAssemblyLoadContext : AssemblyLoadContext
     {

@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugins.Services
+﻿namespace ChuckDeviceController.Plugin.Services
 {
     using Microsoft.Extensions.DependencyInjection;
 

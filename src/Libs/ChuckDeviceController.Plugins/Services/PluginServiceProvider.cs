@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugins.Services
+﻿namespace ChuckDeviceController.Plugin.Services
 {
     /// <summary>
     /// Determines who provided the plugin service to register with

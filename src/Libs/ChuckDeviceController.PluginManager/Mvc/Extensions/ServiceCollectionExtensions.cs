@@ -5,12 +5,12 @@
     using Microsoft.AspNetCore.Mvc.Razor.Compilation;
     using Microsoft.Extensions.DependencyInjection;
 
+    using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Plugin.Services;
     using ChuckDeviceController.PluginManager;
     using ChuckDeviceController.PluginManager.Mvc.Razor;
     using ChuckDeviceController.PluginManager.Services.Finder;
     using ChuckDeviceController.PluginManager.Services.Loader;
-    using ChuckDeviceController.Plugins;
-    using ChuckDeviceController.Plugins.Services;
 
     public static class ServiceCollectionExtensions
     {
@@ -141,31 +141,32 @@
 
         public static object[]? GetConstructorArgs(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
         {
-            var constructors = pluginType.GetConstructors();
+            var constructors = pluginType.GetPluginConstructors();
             if (!(constructors?.Any() ?? false))
             {
                 Console.WriteLine($"Plugins must contain one constructor for each class that inherits from '{nameof(IPlugin)}', skipping registration for plugin type '{pluginType.Name}'");
                 return null;
             }
 
-            var constructorInfo = constructors![0];
+            var constructorInfo = constructors.First();
             var parameters = constructorInfo.GetParameters();
             var list = new List<object>(parameters.Length);
 
             // Check that we were provided shared host types
-            if ((sharedServices?.Count ?? 0) > 0)
-            {
-                // Loop the plugin's constructor parameters to see which host type handlers
-                // to provide it when we instantiate a new instance.
-                foreach (var param in parameters)
-                {
-                    if (!sharedServices!.ContainsKey(param.ParameterType))
-                        continue;
+            if (!(sharedServices?.Any() ?? false))
+                return list.ToArray();
 
-                    var pluginHostHandler = sharedServices[param.ParameterType];
-                    list.Add(pluginHostHandler);
-                }
+            // Loop the plugin's constructor parameters to see which host type handlers
+            // to provide it when we instantiate a new instance.
+            foreach (var param in parameters)
+            {
+                if (!sharedServices!.ContainsKey(param.ParameterType))
+                    continue;
+
+                var pluginHostHandler = sharedServices[param.ParameterType];
+                list.Add(pluginHostHandler);
             }
+
             return list.ToArray();
         }
 
