@@ -8,7 +8,7 @@
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Converters;
@@ -18,13 +18,13 @@
     public class GeofenceController : Controller
     {
         private readonly ILogger<GeofenceController> _logger;
-        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
+        private readonly ControllerContext _context;
         private readonly IGeofenceControllerService _geofenceService;
         private readonly IJobControllerService _jobControllerService;
 
         public GeofenceController(
             ILogger<GeofenceController> logger,
-            ChuckDeviceController.Data.Contexts.ControllerContext context,
+            ControllerContext context,
             IGeofenceControllerService geofenceService,
             IJobControllerService jobControllerService)
         {

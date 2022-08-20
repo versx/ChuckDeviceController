@@ -49,7 +49,7 @@
                 _logger.LogInformation($"Coord: {coord}");
             }
 
-            // Should return '[{ "lat": 1.1, "lon": 1.1 }, { "lat": 2.2, "lon": 2.2 }, etc]'
+            // Should return: '[{ "lat": 1.1, "lon": 1.1 }, { "lat": 2.2, "lon": 2.2 }, etc]'
             return new JsonResult(_coords);
         }
 
@@ -63,7 +63,7 @@
             // Add coordinates from response body to existing cached list
             _coords.AddRange(_coords);
 
-            // Should return '{ "status": "OK" }'
+            // Should return: '{ "status": "OK" }'
             return new JsonResult(new
             {
                 status = "OK",

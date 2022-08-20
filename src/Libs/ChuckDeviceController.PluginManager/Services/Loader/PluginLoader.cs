@@ -6,12 +6,12 @@
     using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Plugin.Services;
     using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Loader;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
     using ChuckDeviceController.PluginManager.Services.Finder;
-    using ChuckDeviceController.Plugin;
-    using ChuckDeviceController.Plugin.Services;
 
     public class PluginLoader<TPlugin> : IPluginLoader
     {

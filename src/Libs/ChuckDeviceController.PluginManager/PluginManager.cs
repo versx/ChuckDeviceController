@@ -275,8 +275,7 @@
         {
             var pluginFolderNames = Plugins.Values
                                            .Select(plugin => Path.GetDirectoryName(plugin.PluginFinderResult.FullAssemblyPath))
-                                           .Select(plugin => Path.GetFileName(plugin))
-                                           .Select(plugin => plugin!);
+                                           .Select(plugin => Path.GetFileName(plugin));
             return pluginFolderNames;
         }
 

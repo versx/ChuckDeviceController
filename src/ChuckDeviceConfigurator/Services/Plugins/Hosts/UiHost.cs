@@ -142,6 +142,7 @@
             }
 
             _dashboardStats[stats.Name] = stats;
+            // TODO: Update Dashboard stat in realtime without page refresh
             await Task.CompletedTask;
         }
 

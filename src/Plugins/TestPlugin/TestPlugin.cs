@@ -1,7 +1,5 @@
 ﻿namespace TestPlugin
 {
-    using System.Reflection;
-
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
@@ -25,17 +23,6 @@
     //http://127.0.0.1:8881/Test
 
     // TODO: Include user roles with plugins
-
-    [PluginBootstrapper(typeof(TestPlugin))]
-    public class TestPluginBootstrapper : IPluginBootstrapper
-    {
-        public IServiceCollection Bootstrap(IServiceCollection services)
-        {
-            return services
-                .AddSingleton<IPluginService, TestPluginService>()
-                .AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
-        }
-    }
 
     /// <summary>
     ///     Example plugin demonstrating the capabilities

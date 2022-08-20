@@ -31,6 +31,7 @@
 
         public IReadOnlyList<PluginFinderResult<TPlugin>> FindAssemliesWithPlugins()
         {
+            // TODO: Get list of list of files to separate each plugins references
             var assemblies = Options.RootPluginsDirectory.GetFiles(Options.ValidFileTypes);
             var hostFramework = Assembly.GetEntryAssembly()?.GetHostFramework();
             var pluginFinderResults = new List<PluginFinderResult<TPlugin>>();

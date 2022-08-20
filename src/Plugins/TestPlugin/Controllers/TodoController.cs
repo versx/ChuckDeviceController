@@ -1,5 +1,6 @@
 ﻿namespace TestPlugin.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@
     ///   - https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-6.0&tabs=visual-studio
     /// </remarks>
     [Controller]
+    //[Authorize(Roles = "ShouldFail")]
     public class TodoController : Controller
     {
         private readonly ILogger<TodoController> _logger;

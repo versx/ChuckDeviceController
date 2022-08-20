@@ -5,8 +5,9 @@
 
     using Microsoft.Extensions.DependencyInjection;
 
-    using ChuckDeviceController.PluginManager.Services.Loader.Runtime;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.PluginManager.Extensions;
+    using ChuckDeviceController.PluginManager.Services.Loader.Runtime;
 
     public class PluginAssemblyLoadContext : AssemblyLoadContext
     {
@@ -76,7 +77,9 @@
             PluginPlatformVersion = PluginPlatformVersion.Create("1.0", RuntimeType.AspNetCoreAll);
             HostServices = new ServiceCollection();
 
-            _resolver = new AssemblyDependencyResolver(pluginPath);
+            var parentDirectory = pluginPath.GetDirectoryName();
+            _resolver = new AssemblyDependencyResolver(parentDirectory!);
+            //_resolver = new AssemblyDependencyResolver(pluginPath);
         }
 
         #endregion
@@ -96,21 +99,19 @@
         protected override Assembly? Load(AssemblyName assemblyName)
         {
             var assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
-            if (assemblyPath != null)
-            {
-                return LoadFromAssemblyPath(assemblyPath);
-            }
-            return null;
+            if (string.IsNullOrEmpty(assemblyPath))
+                return null;
+
+            return LoadFromAssemblyPath(assemblyPath);
         }
 
         protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
         {
             var libraryPath = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
-            if (libraryPath != null)
-            {
-                return LoadUnmanagedDllFromPath(libraryPath);
-            }
-            return IntPtr.Zero;
+            if (string.IsNullOrEmpty(libraryPath))
+                return IntPtr.Zero;
+
+            return LoadUnmanagedDllFromPath(libraryPath);
         }
 
         #endregion

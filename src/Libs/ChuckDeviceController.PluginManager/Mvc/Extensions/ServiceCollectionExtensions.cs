@@ -4,6 +4,7 @@
 
     using Microsoft.AspNetCore.Mvc.Razor.Compilation;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.FileProviders;
 
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Plugin.Services;
@@ -14,7 +15,9 @@
 
     public static class ServiceCollectionExtensions
     {
-        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager)
+        private const string DefaultWebRoot = "wwwroot";
+
+        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env) //IFileProvider webRootFileProvider)
         {
             var finderOptions = new PluginFinderOptions
             {
@@ -64,6 +67,34 @@
 
                 // Register all available host services with plugin
                 mvcBuilder.AddServices(services);
+
+                // Check if plugin assembly has any embedded resources, if so
+                // add the resource files i.e. 'wwwwroot' folder
+                var resourceNames = pluginResult.Assembly.GetManifestResourceNames();
+                var resourceInfo = pluginResult.Assembly.GetManifestResourceInfo("TestPlugin.Views.Todo.Index.cshtml");
+                if (resourceNames.Any())
+                {
+                    var hasEmbeddedViews = resourceNames.Contains(".Views.");
+                    if (hasEmbeddedViews)
+                    {
+                    }
+
+                    // Create a 'wwwroot' file provider for the embedded static files
+                    // found in the wwwroot folder
+                    //var fileProvider = new ManifestEmbeddedFileProvider(pluginResult.Assembly, DefaultWebRoot);
+                    var pluginFolderPath = Path.Combine(
+                        pluginManager.Options.RootPluginDirectory,
+                        pluginResult.Assembly.GetName().Name!,
+                        DefaultWebRoot
+                    );
+                    var pluginFolderFullPath = Path.GetFullPath(pluginFolderPath);
+                    var fileProvider = new PhysicalFileProvider(pluginFolderFullPath);
+
+                    // Register a new composite file provider containing the old 'wwwroot' file provider
+                    // and our new one. Adding another web root file provider needs to be done before
+                    // the call to 'app.UseStaticFiles'
+                    env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, fileProvider);
+                }
 
                 // Loop through all loaded plugins and register plugin services and register plugins
                 foreach (var pluginHost in loadedPlugins)
@@ -227,6 +258,9 @@
 
         #endregion
 
+        #region Service Type Discovery/Instantiation
+        // Credits: https://github.com/k3ldar/.NetCorePluginManager/blob/master/PluginManager/src/Helpers/ServiceCollectionHelper.cs
+
         public static object[] GetParameterInstances(this IServiceCollection services, Type type)
         {
             if (type == null)
@@ -369,5 +403,7 @@
 
             return result.ToArray();
         }
+
+        #endregion
     }
 }

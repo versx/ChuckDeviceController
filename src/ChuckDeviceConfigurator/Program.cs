@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -118,14 +117,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     //options.ReturnUrlParameter=""
 });
 
-// Set policy that users need to be authenticated to access
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-});
-
 // Register external 3rd party authentication providers if configured
 builder.Services
     .AddAuthentication()
@@ -228,7 +219,7 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 
 // Find plugins, register plugin services, load plugin assemblies,
 // call OnLoad callback and register with 'IPluginManager'
-await builder.Services.LoadPluginsAsync(pluginManager);
+await builder.Services.LoadPluginsAsync(pluginManager, builder.Environment);
 
 builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
 builder.Services.AddSingleton<IPluginManager>(pluginManager);
