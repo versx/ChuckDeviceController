@@ -31,8 +31,8 @@
                 return services;
             }
 
-            // Replace Razor view compiler, faster than using
-            // 'services.Configure<RazorViewEngineOptions>(options => options.ViewLocationExpanders)'
+            // Replace default Razor view compiler with custom one to help locate Mvc Views in
+            // plugins folder. Faster than using RazorViewEngineOptions.ViewLocationExpanders
             services.Replace<IViewCompilerProvider, PluginViewCompilerProvider>();
 
             var mvcBuilder = services

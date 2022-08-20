@@ -4,21 +4,18 @@
 
     using Microsoft.Extensions.FileProviders;
 
+    using ChuckDeviceController.PluginManager.Extensions;
+
     public class PluginAssemblyFileProvider : PhysicalFileProvider
     {
         public PluginAssemblyFileProvider(string pluginAssemblyPath)
-            : base(GetDirectoryName(pluginAssemblyPath))
+            : base(pluginAssemblyPath.GetDirectoryName())
         {
         }
 
         public PluginAssemblyFileProvider(Assembly assembly)
-            : base(GetDirectoryName(assembly.Location))
+            : base(assembly.Location.GetDirectoryName())
         {
-        }
-
-        private static string? GetDirectoryName(string filePath)
-        {
-            return Path.GetDirectoryName(filePath);
         }
     }
 }

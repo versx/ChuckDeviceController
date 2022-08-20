@@ -4,7 +4,7 @@
 
     public static class RoleConsts
     {
-        public const string DefaultRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Registered)}";
+        public const string DefaultRole = nameof(Roles.Registered);
 
         public const string AccountsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Accounts)}";
 

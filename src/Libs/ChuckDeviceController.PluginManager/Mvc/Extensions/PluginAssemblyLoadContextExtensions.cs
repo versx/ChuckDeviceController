@@ -33,7 +33,7 @@
                IEnumerable<Type>? includeTypes = null,
                IEnumerable<Type>? excludeTypes = null)
         {
-            if (includeTypes == null || !includeTypes.Any())
+            if (!(includeTypes?.Any() ?? false))
                 return loadContext; // short circuit
 
             var hostTypes = new List<Type>();
@@ -154,20 +154,12 @@
 
         private static bool Includes(Type type, IEnumerable<Type> includeTypes)
         {
-            if (includeTypes == null)
-            {
-                return true;
-            }
-            return includeTypes.Contains(type);
+            return includeTypes == null || includeTypes.Contains(type);
         }
 
         private static bool Excludes(Type type, IEnumerable<Type> excludeTypes)
         {
-            if (excludeTypes == null)
-            {
-                return false;
-            }
-            return excludeTypes.Contains(type);
+            return excludeTypes != null && excludeTypes.Contains(type);
         }
     }
 }

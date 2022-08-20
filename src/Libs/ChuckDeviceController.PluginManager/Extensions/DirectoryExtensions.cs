@@ -14,5 +14,10 @@
                                       .Where(file => searchPattern.Contains(Path.GetExtension(file)));
             return assemblies;
         }
+
+        public static string? GetDirectoryName(this string filePath)
+        {
+            return Path.GetDirectoryName(filePath);
+        }
     }
 }
