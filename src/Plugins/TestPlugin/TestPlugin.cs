@@ -10,7 +10,6 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -23,17 +22,6 @@
     //http://127.0.0.1:8881/Test
 
     // TODO: Include user roles with plugins
-
-    [PluginBootstrapper(typeof(TestPlugin))]
-    public class TestPluginBootstrapper : IPluginBootstrapper
-    {
-        public IServiceCollection Bootstrap(IServiceCollection services)
-        {
-            return services
-                .AddSingleton<IPluginService, TestPluginService>()
-                .AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
-        }
-    }
 
     /// <summary>
     ///     Example plugin demonstrating the capabilities
@@ -174,7 +162,7 @@
         {
             _loggingHost.LogMessage($"Configure called");
 
-            var testService = appBuilder.Services.GetService<IPluginService>();
+            //var testService = appBuilder.Services.GetService<IPluginService>();
 
             // We can configure routing here using 'Minimal APIs' or using Mvc Controller classes
             // Minimal API's Reference: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0
@@ -279,12 +267,7 @@
         {
             _loggingHost.LogMessage($"ConfigureServices called");
 
-            services.AddSingleton<IPluginService, TestPluginService>();
             services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
-
-            //services
-                //.AddMvc();
-                //.AddApplicationPart(typeof(TestPlugin).GetTypeInfo().Assembly); // <- Very important for Mvc Views
         }
 
         #endregion
@@ -523,16 +506,5 @@
         {
             return $"{Latitude},{Longitude}";
         }
-    }
-
-    /// <summary>
-    ///     TODO: Test service class for dependency injection. **DO NOT USE**:
-    ///     There is no implementation. Need to add support for host application
-    ///     referencing plugin shared assemblies between host and plugin for 
-    ///     service registration to work properly.
-    /// </summary>
-    public class TestPluginService : IPluginService
-    {
-        public string Test => $"Testing";
     }
 }

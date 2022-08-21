@@ -1,4 +1,5 @@
-﻿namespace ChuckDeviceController.Plugin.Services
+﻿/*
+namespace ChuckDeviceController.Plugin.Services
 {
     using Microsoft.Extensions.DependencyInjection;
 
@@ -15,3 +16,4 @@
         IServiceCollection Bootstrap(IServiceCollection services);
     }
 }
+*/

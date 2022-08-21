@@ -25,15 +25,12 @@
     // to the '[controller]' placeholder, in this case 'Test'.
     public class TestController : Controller // ControllerBase, Controller
     {
-        private readonly IPluginService _testService;
         private readonly IDatabaseHost _databaseHost;
 
-        public TestController(IPluginService testService, IDatabaseHost databaseHost)
+        public TestController(IDatabaseHost databaseHost)
         {
-            _testService = testService;
             _databaseHost = databaseHost;
 
-            Console.WriteLine($"TestService: {_testService.Test}");
             var device = _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE").ConfigureAwait(false).GetAwaiter().GetResult();
             Console.WriteLine($"Device: {device}");
         }

@@ -33,7 +33,7 @@
             }
 
             var assemblyTypes = pluginResult.Assembly.GetTypes();
-            var pluginBootstrapTypes = assemblyTypes.GetAssignableTypes<IPluginBootstrapper>();
+            //var pluginBootstrapTypes = assemblyTypes.GetAssignableTypes<IPluginBootstrapper>();
             var pluginTypes = assemblyTypes.GetAssignableTypes<IPlugin>();
 
             var pluginServiceDescriptors = new List<ServiceDescriptor>();
@@ -70,29 +70,6 @@
                     _logger.LogError($"Failed to instantiate '{nameof(IPlugin)}' instance");
                     continue;
                 }
-
-                /*
-                foreach (var pluginBootstrapper in pluginBootstrapTypes)
-                {
-                    var bootstrapAttributes = pluginBootstrapper.GetCustomAttributes<PluginBootstrapperAttribute>(sharedServiceHosts);
-                    if (bootstrapAttributes != null)
-                    {
-                        foreach (var attr in bootstrapAttributes)
-                        {
-                            //attr.PluginType
-                            if (attr.PluginType == pluginType)
-                            {
-                                var bootstrapMethod = pluginBootstrapper.GetMethod(nameof(IPluginBootstrapper.Bootstrap));
-                                if (bootstrapMethod != null)
-                                {
-                                    var instance = bootstrapMethod.Invoke(pluginType, new[] { services });
-                                    Console.WriteLine($"Method: {instance}");
-                                }
-                            }
-                        }
-                    }
-                }
-                */
 
                 // Initialize any fields or properties marked as plugin service types
                 pluginInstance.SetPluginServiceFields(sharedServiceHosts);
