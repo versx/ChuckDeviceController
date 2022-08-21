@@ -39,11 +39,13 @@
     ///     Example plugin demonstrating the capabilities
     ///     of the plugin system and how it works.
     /// </summary>
+    // Provides the permissions the plugin will require to the host application
     [PluginPermissions(PluginPermissions.ReadDatabase |
                        PluginPermissions.WriteDatabase |
                        PluginPermissions.DeleteDatabase |
                        PluginPermissions.AddControllers |
                        PluginPermissions.AddJobControllers)]
+    // Determines where the 'wwwroot' folder will be (embedded resources or local/external)
     [StaticFilesLocation(StaticFilesLocation.External)]
     public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents
     {
@@ -51,20 +53,35 @@
 
         // Plugin host variables are interface contracts that are used
         // to interact with services the host application has registered
-        // and is running.
+        // and is running. They can be initialized by the constructor
+        // using dependency injection or by decorating the field with
+        // the 'PluginBootstrapperService' attribute. The host application
+        // will look for any fields or properties decorated with the
+        // 'PluginBootstrapperService' and initialize them with the
+        // related service class.
 
         // Used for logging messages to the host application from the plugin
         private readonly ILoggingHost _loggingHost;
+
         // Interacts with the job controller instance service to add new job
         // controllers.
         //private readonly IJobControllerServiceHost _jobControllerHost;
+
         // Retrieve data from the database, READONLY.
+        // 
+        // When decorated with the 'PluginBootstrapperService' attribute, the
+        // property will be initalized by the host's service implementation.
         [PluginBootstrapperService(typeof(IDatabaseHost))]
         private readonly IDatabaseHost _databaseHost;
+
         // Translate text based on the set locale in the host application.
         private readonly ILocalizationHost _localeHost;
+
         // Expand your plugin implementation by adding user interface elements
         // and pages to the dashboard.
+        // 
+        // When decorated with the 'PluginBootstrapperService' attribute, the
+        // property will be initalized by the host's service implementation.
         [PluginBootstrapperService(typeof(IUiHost))]
         private readonly IUiHost _uiHost;
 
@@ -93,7 +110,19 @@
         /// </summary>
         public Version Version => new("1.0.0.0");
 
-        //[PluginBootstrapperService(typeof(IUiHost))]
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        ///     Gets or sets the UiHost host service implementation. This is
+        ///     initialized separately from the '_uiHost' field that is decorated.
+        /// </summary>
+        /// <remarks>
+        ///     When decorated with the 'PluginBootstrapperService' attribute, the
+        ///     property will be initalized by the host's service implementation.
+        /// </remarks>
+        [PluginBootstrapperService(typeof(IUiHost))]
         public IUiHost UiHost { get; set; }
 
         #endregion
@@ -118,13 +147,13 @@
         public TestPlugin(
             ILoggingHost loggingHost,
             //IJobControllerServiceHost jobControllerHost,
-            IDatabaseHost databaseHost,
+            //IDatabaseHost databaseHost,
             ILocalizationHost localeHost)
-        //IUiHost uiHost)
+            //IUiHost uiHost)
         {
             _loggingHost = loggingHost;
             //_jobControllerHost = jobControllerHost;
-            _databaseHost = databaseHost;
+            //_databaseHost = databaseHost;
             _localeHost = localeHost;
             //_uiHost = uiHost;
 

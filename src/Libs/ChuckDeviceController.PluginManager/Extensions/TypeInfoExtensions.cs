@@ -59,6 +59,13 @@
             return false;
         }
 
+        public static void SetPluginServiceFields(this object instance, IReadOnlyDictionary<Type, object> sharedServices)
+        {
+            instance.GetType()
+                    .GetTypeInfo()
+                    .SetPluginServiceFields(instance, sharedServices);
+        }
+
         public static void SetPluginServiceFields(this TypeInfo typeInfo, object instance, IReadOnlyDictionary<Type, object> sharedServices)
         {
             var fields = typeInfo.GetFieldsOfCustomAttribute<PluginBootstrapperServiceAttribute>();
@@ -89,6 +96,13 @@
                 var serviceHost = sharedServices[attr.ServiceType];
                 instance.TrySetField(fieldInfo, serviceHost);
             }
+        }
+
+        public static void SetPluginServiceProperties(this object instance, IReadOnlyDictionary<Type, object> sharedServices)
+        {
+            instance.GetType()
+                    .GetTypeInfo()
+                    .SetPluginServiceProperties(instance, sharedServices);
         }
 
         public static void SetPluginServiceProperties(this TypeInfo typeInfo, object instance, IReadOnlyDictionary<Type, object> sharedServices)

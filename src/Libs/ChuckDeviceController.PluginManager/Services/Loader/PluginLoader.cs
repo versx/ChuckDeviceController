@@ -95,9 +95,8 @@
                 */
 
                 // Initialize any fields or properties marked as plugin service types
-                var typeInfo = pluginInstance.GetType().GetTypeInfo();
-                typeInfo.SetPluginServiceFields(pluginInstance, sharedServiceHosts);
-                typeInfo.SetPluginServiceProperties(pluginInstance, sharedServiceHosts);
+                pluginInstance.SetPluginServiceFields(sharedServiceHosts);
+                pluginInstance.SetPluginServiceProperties(sharedServiceHosts);
 
                 var permissions = pluginType.GetPluginPermissions();
                 var pluginHost = new PluginHost(
