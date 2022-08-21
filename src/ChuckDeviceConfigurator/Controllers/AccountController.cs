@@ -6,7 +6,8 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.ViewModels;
-    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Common;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
 
@@ -15,11 +16,11 @@
     public class AccountController : Controller
     {
         private readonly ILogger<AccountController> _logger;
-        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
+        private readonly ControllerContext _context;
 
         public AccountController(
             ILogger<AccountController> logger,
-            ChuckDeviceController.Data.Contexts.ControllerContext context)
+            ControllerContext context)
         {
             _logger = logger;
             _context = context;

@@ -6,20 +6,21 @@
 
     using ChuckDeviceConfigurator.Services.Webhooks;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
 
     [Authorize(Roles = RoleConsts.WebhooksRole)]
     public class WebhookController : Controller
     {
         private readonly ILogger<WebhookController> _logger;
-        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
+        private readonly ControllerContext _context;
         private readonly IWebhookControllerService _webhookService;
 
         public WebhookController(
             ILogger<WebhookController> logger,
-            ChuckDeviceController.Data.Contexts.ControllerContext context,
+            ControllerContext context,
             IWebhookControllerService webhookService)
         {
             _logger = logger;

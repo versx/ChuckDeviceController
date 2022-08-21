@@ -4,9 +4,8 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.ViewModels;
-    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Entities;
 
     [Controller]

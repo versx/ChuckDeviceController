@@ -1,7 +1,5 @@
-﻿namespace ChuckDeviceConfigurator
+﻿namespace ChuckDeviceController.Common
 {
-    using ChuckDeviceConfigurator.Data;
-
     public static class RoleConsts
     {
         public const string DefaultRole = nameof(Roles.Registered);

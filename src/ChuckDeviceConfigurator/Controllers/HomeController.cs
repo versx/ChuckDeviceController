@@ -9,6 +9,7 @@
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceConfigurator.Utilities;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Contexts;
     using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Extensions;

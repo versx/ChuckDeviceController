@@ -6,7 +6,9 @@
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Entities;
@@ -16,13 +18,13 @@
     public class UtilitiesController : Controller
     {
         private readonly ILogger<UtilitiesController> _logger;
-        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _deviceContext;
+        private readonly ControllerContext _deviceContext;
         private readonly MapContext _mapContext;
         private readonly IJobControllerService _jobControllerService;
 
         public UtilitiesController(
             ILogger<UtilitiesController> logger,
-            ChuckDeviceController.Data.Contexts.ControllerContext deviceContext,
+            ControllerContext deviceContext,
             MapContext mapContext,
             IJobControllerService jobControllerService)
         {

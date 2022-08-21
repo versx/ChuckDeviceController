@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Data
+﻿namespace ChuckDeviceController.Common
 {
     public enum Roles
     {

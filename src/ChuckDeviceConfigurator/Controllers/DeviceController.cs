@@ -7,6 +7,7 @@
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Common;
     using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
 
