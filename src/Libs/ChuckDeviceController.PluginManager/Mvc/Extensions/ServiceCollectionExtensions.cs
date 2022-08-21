@@ -10,6 +10,7 @@
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Plugin.Services;
     using ChuckDeviceController.PluginManager;
+    using ChuckDeviceController.PluginManager.FileProviders;
     using ChuckDeviceController.PluginManager.Mvc.Razor;
     using ChuckDeviceController.PluginManager.Services.Finder;
     using ChuckDeviceController.PluginManager.Services.Loader;
@@ -44,29 +45,30 @@
                 .AddControllersWithViews()
                 .AddRazorRuntimeCompilation();
 
-            var pluginLoadContexts = pluginFinder.LoadPluginAssemblies(pluginFinderResults);
-            foreach (var pluginResult in pluginLoadContexts)
+            // Load all valid plugin assemblies found in their own AssemblyLoadContext 
+            var pluginAssemblies = pluginFinder.LoadPluginAssemblies(pluginFinderResults);
+            foreach (var result in pluginAssemblies)
             {
                 // TODO: New service collection for each plugin?
                 // TODO: Register sharedServiceHosts with new service collection if so
                 //var serviceCollection = new ServiceCollection();
-                if (pluginResult.Assembly == null)
+                if (result.Assembly == null)
                 {
-                    Console.WriteLine($"Failed to load assembly for plugin '{pluginResult.AssemblyPath}', skipping.");
+                    Console.WriteLine($"Failed to load assembly for plugin '{result.AssemblyPath}', skipping.");
                     continue;
                 }
 
                 // Load and activate plugins found by plugin finder
-                var pluginLoader = new PluginLoader<IPlugin>(pluginResult, pluginManager.Options.SharedServiceHosts, services);
+                var pluginLoader = new PluginLoader<IPlugin>(result, pluginManager.Options.SharedServiceHosts, services);
                 var loadedPlugins = pluginLoader.LoadedPlugins;
                 if (!loadedPlugins.Any())
                 {
-                    Console.WriteLine($"Failed to find any valid plugins in assembly '{pluginResult.AssemblyPath}'");
+                    Console.WriteLine($"Failed to find any valid plugins in assembly '{result.AssemblyPath}'");
                     continue;
                 }
 
                 // Register assembly as application part with Mvc
-                mvcBuilder.AddApplicationPart(pluginResult.Assembly);
+                mvcBuilder.AddApplicationPart(result.Assembly);
 
                 // Register all available host services with plugin
                 mvcBuilder.AddServices(services);
@@ -74,10 +76,9 @@
                 // Loop through all loaded plugins and register plugin services and register plugins
                 foreach (var pluginHost in loadedPlugins)
                 {
-                    // Check if plugin assembly has static files attribute assigned, if so
-                    // add any embedded resource or external files to web root provider
-                    // i.e. 'wwwwroot' folder and contents
-                    var staticFilesFileProvider = pluginHost.Plugin.GetType().GetStaticFilesProvider(pluginResult.Assembly, rootPluginsDirectory);
+                    var pluginType = pluginHost.Plugin.GetType();
+                    // Check if plugin is marked with 'StaticFilesLocation' attribute
+                    var staticFilesFileProvider = pluginType.GetStaticFilesProvider(result.Assembly);
                     if (staticFilesFileProvider != null)
                     {
                         // Register a new composite file provider containing the old 'wwwroot' file provider
@@ -110,11 +111,10 @@
             return services;
         }
 
-        public static IFileProvider? GetStaticFilesProvider(this Type pluginType, Assembly assembly, string rootPluginsFolder)
+        public static IFileProvider? GetStaticFilesProvider(this Type pluginType, Assembly assembly, string? webRoot = null)
         {
-            // Check if plugin assembly has static files attribute assigned, if so
-            // add any embedded resource or external files to web root provider
-            // i.e. 'wwwwroot' folder and contents
+            // Check if plugin assembly has static files attribute assigned, if so add any embedded resource
+            // or external files to web root provider i.e. 'wwwwroot' folder and contents
             var staticFilesAttr = pluginType.GetCustomAttribute<StaticFilesLocationAttribute>();
             if (staticFilesAttr == null)
                 return null;
@@ -131,17 +131,12 @@
                     if (!(resourceNames?.Any() ?? false))
                         return null;
 
-                    // Static files are embedded in the plugin's resources file
-                    fileProvider = new ManifestEmbeddedFileProvider(assembly, DefaultWebRoot);
+                    // Static files are within the plugin's embedded resources file
+                    fileProvider = new ManifestEmbeddedFileProvider(assembly, webRoot ?? DefaultWebRoot);
                     break;
                 case StaticFilesLocation.External:
                     // Static files are external and on local disk in the plugin's folder
-                    var pluginFolderPath = Path.Combine(
-                        rootPluginsFolder,
-                        assembly.GetName().Name!, // TODO: Use plugin name instead?
-                        DefaultWebRoot
-                    );
-                    fileProvider = new PhysicalFileProvider(Path.GetFullPath(pluginFolderPath));
+                    fileProvider = new PluginPhysicalFileProvider(assembly, webRoot ?? DefaultWebRoot);
                     break;
             }
 

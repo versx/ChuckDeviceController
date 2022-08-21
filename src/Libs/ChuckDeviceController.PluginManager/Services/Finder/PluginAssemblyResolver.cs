@@ -6,9 +6,13 @@
 
     using ChuckDeviceController.PluginManager.Extensions;
 
+    /// <summary>
+    /// Resolves and loads dependant framework/platform assemblies after determining
+    /// whether they are local to the host application or the plugin
+    /// </summary>
     public class PluginAssemblyResolver : MetadataAssemblyResolver
     {
-        private readonly string _assemblyPath;
+        private readonly string _assemblyFullPath;
         private readonly string[] _platformAssemblies = new[]
         {
             "mscorlib",
@@ -17,7 +21,7 @@
             "System.Runtime",
         };
 
-        protected IEnumerable<Assembly> GetLoadedAssemblies() => AssemblyLoadContext.Default.Assemblies;
+        protected static IEnumerable<Assembly> GetLoadedAssemblies() => AssemblyLoadContext.Default.Assemblies;
 
         public PluginAssemblyResolver(string assemblyFullPath)
         {
@@ -25,7 +29,7 @@
             {
                 throw new ArgumentNullException(nameof(assemblyFullPath));
             }
-            _assemblyPath = assemblyFullPath.GetDirectoryName()!;
+            _assemblyFullPath = assemblyFullPath.GetDirectoryName()!;
         }
 
         public override Assembly Resolve(MetadataLoadContext context, AssemblyName assemblyName)
@@ -38,7 +42,7 @@
             }
 
             // Check if the file is found in the plugin location
-            var candidateFile = Path.Combine(_assemblyPath, $"{assemblyName.Name}.dll");
+            var candidateFile = Path.Combine(_assemblyFullPath, $"{assemblyName.Name}.dll");
             if (File.Exists(candidateFile))
             {
                 return context.LoadFromAssemblyPath(candidateFile);
