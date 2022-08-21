@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Exten
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Collections", "Libs\ChuckDeviceController.Collections\ChuckDeviceController.Collections.csproj", "{F2DE7FDF-86AE-4B4C-9BDA-A11478073E02}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Plugin", "Libs\ChuckDeviceController.Plugins\ChuckDeviceController.Plugin.csproj", "{538CD587-906D-49E0-A9D0-B3BBE9147FD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Plugin", "Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj", "{538CD587-906D-49E0-A9D0-B3BBE9147FD7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{12D874BB-7F7B-4D2E-AB42-2630710A8577}"
 EndProject

@@ -15,7 +15,6 @@
     using ChuckDeviceController.PluginManager.Services.Finder;
     using ChuckDeviceController.PluginManager.Services.Loader;
 
-
     // TODO: Add FileSystemWatcher for plugins added manually or changed
 
     public class PluginManager : IPluginManager
