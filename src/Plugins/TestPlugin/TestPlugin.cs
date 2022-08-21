@@ -44,6 +44,7 @@
                        PluginPermissions.DeleteDatabase |
                        PluginPermissions.AddControllers |
                        PluginPermissions.AddJobControllers)]
+    [StaticFilesLocation(StaticFilesLocation.External)]
     public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents
     {
         #region Plugin Host Variables

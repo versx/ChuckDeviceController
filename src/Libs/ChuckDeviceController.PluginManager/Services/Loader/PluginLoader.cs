@@ -75,7 +75,7 @@
                 /*
                 foreach (var pluginBootstrapper in pluginBootstrapTypes)
                 {
-                    var bootstrapAttributes = pluginBootstrapper.GetPluginBootstrappersWithAttribute(sharedServiceHosts);
+                    var bootstrapAttributes = pluginBootstrapper.GetCustomAttributes<PluginBootstrapperAttribute>(sharedServiceHosts);
                     if (bootstrapAttributes != null)
                     {
                         foreach (var attr in bootstrapAttributes)

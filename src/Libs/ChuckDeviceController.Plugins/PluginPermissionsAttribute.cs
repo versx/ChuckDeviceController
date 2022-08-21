@@ -4,7 +4,7 @@
     /// Defines which permissions the plugin is going to request
     /// in order to operate correctly.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public sealed class PluginPermissionsAttribute : Attribute
     {
         /// <summary>

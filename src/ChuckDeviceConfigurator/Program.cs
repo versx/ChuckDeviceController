@@ -213,7 +213,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 {
     Configuration = builder.Configuration,
-    RootPluginDirectory = Strings.PluginsFolder,
+    RootPluginsDirectory = Strings.PluginsFolder,
     SharedServiceHosts = sharedServiceHosts,
 });
 

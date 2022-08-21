@@ -4,7 +4,7 @@
 
     public class PluginManagerOptions : IPluginManagerOptions
     {
-        public string RootPluginDirectory { get; set; }
+        public string RootPluginsDirectory { get; set; }
 
         public IConfiguration Configuration { get; set; }
 
@@ -21,7 +21,7 @@
             IReadOnlyDictionary<Type, object> sharedServiceHosts)
             //IServiceCollection sharedServiceHosts)
         {
-            RootPluginDirectory = rootPluginsDirectory;
+            RootPluginsDirectory = rootPluginsDirectory;
             Configuration = configuration;
             SharedServiceHosts = sharedServiceHosts;
          }

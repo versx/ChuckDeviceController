@@ -2,6 +2,7 @@
 {
     using System.Reflection;
 
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Razor.Compilation;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
@@ -17,12 +18,12 @@
     {
         private const string DefaultWebRoot = "wwwroot";
 
-        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env) //IFileProvider webRootFileProvider)
+        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager, IWebHostEnvironment env)
         {
             var finderOptions = new PluginFinderOptions
             {
                 PluginType = typeof(IPlugin),
-                RootPluginsDirectory = pluginManager.Options.RootPluginDirectory,
+                RootPluginsDirectory = pluginManager.Options.RootPluginsDirectory,
                 ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
             };
             var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
@@ -68,32 +69,16 @@
                 // Register all available host services with plugin
                 mvcBuilder.AddServices(services);
 
-                // Check if plugin assembly has any embedded resources, if so
-                // add the resource files i.e. 'wwwwroot' folder
-                var resourceNames = pluginResult.Assembly.GetManifestResourceNames();
-                var resourceInfo = pluginResult.Assembly.GetManifestResourceInfo("TestPlugin.Views.Todo.Index.cshtml");
-                if (resourceNames.Any())
+                // Check if plugin assembly has static files attribute assigned, if so
+                // add any embedded resource or external files to web root provider
+                // i.e. 'wwwwroot' folder and contents
+                var staticFilesFileProvider = pluginResult.PluginType.GetStaticFilesProvider(pluginResult.Assembly, pluginManager.Options.RootPluginsDirectory);
+                if (staticFilesFileProvider != null)
                 {
-                    var hasEmbeddedViews = resourceNames.Any(res => res.Contains(".Views."));
-                    if (hasEmbeddedViews)
-                    {
-                    }
-
-                    // Create a 'wwwroot' file provider for the embedded static files
-                    // found in the wwwroot folder
-                    //var fileProvider = new ManifestEmbeddedFileProvider(pluginResult.Assembly, DefaultWebRoot);
-                    var pluginFolderPath = Path.Combine(
-                        pluginManager.Options.RootPluginDirectory,
-                        pluginResult.Assembly.GetName().Name!,
-                        DefaultWebRoot
-                    );
-                    var pluginFolderFullPath = Path.GetFullPath(pluginFolderPath);
-                    var fileProvider = new PhysicalFileProvider(pluginFolderFullPath);
-
                     // Register a new composite file provider containing the old 'wwwroot' file provider
                     // and our new one. Adding another web root file provider needs to be done before
                     // the call to 'app.UseStaticFiles'
-                    env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, fileProvider);
+                    env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesFileProvider);
                 }
 
                 // Loop through all loaded plugins and register plugin services and register plugins
@@ -123,6 +108,44 @@
             return services;
         }
 
+        public static IFileProvider? GetStaticFilesProvider(this Type pluginType, Assembly assembly, string rootPluginsFolder)
+        {
+            // Check if plugin assembly has static files attribute assigned, if so
+            // add any embedded resource or external files to web root provider
+            // i.e. 'wwwwroot' folder and contents
+            var staticFilesAttr = pluginType.GetCustomAttribute<StaticFilesLocationAttribute>();
+            if (staticFilesAttr == null)
+                return null;
+
+            IFileProvider? fileProvider = null;
+            switch (staticFilesAttr.Location)
+            {
+                case StaticFilesLocation.None:
+                    // No static files to map/worry about
+                    return null;
+                case StaticFilesLocation.Resources:
+                    // Check that we have any embedded resources in the plugin
+                    var resourceNames = assembly.GetManifestResourceNames();
+                    if (!(resourceNames?.Any() ?? false))
+                        return null;
+
+                    // Static files are embedded in the plugin's resources file
+                    fileProvider = new ManifestEmbeddedFileProvider(assembly, DefaultWebRoot);
+                    break;
+                case StaticFilesLocation.External:
+                    // Static files are external and on local disk in the plugin's folder
+                    var pluginFolderPath = Path.Combine(
+                        rootPluginsFolder,
+                        assembly.GetName().Name!, // TODO: Use plugin name instead?
+                        DefaultWebRoot
+                    );
+                    fileProvider = new PhysicalFileProvider(Path.GetFullPath(pluginFolderPath));
+                    break;
+            }
+
+            return fileProvider;
+        }
+
         public static object? CreatePluginInstance(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
         {
             object? instance;
@@ -138,12 +161,6 @@
             return instance;
         }
 
-        public static IEnumerable<PluginBootstrapperAttribute> GetPluginBootstrappersWithAttribute(this Type type)
-        {
-            var attributes = type.GetCustomAttributes<PluginBootstrapperAttribute>();
-            return attributes;
-        }
-
         public static IEnumerable<ServiceDescriptor> GetPluginServicesWithAttribute(this Type type, IReadOnlyDictionary<Type, object> sharedServices)
         {
             var services = new List<ServiceDescriptor>();
@@ -152,6 +169,7 @@
             {
                 return services;
             }
+
             foreach (var attr in attributes)
             {
                 var serviceType = attr.ServiceType;
@@ -178,13 +196,8 @@
 
         public static PluginPermissions GetPluginPermissions(this Type pluginType)
         {
-            var attributes = pluginType.GetCustomAttributes<PluginPermissionsAttribute>();
-            if (attributes.Any())
-            {
-                var attr = attributes.FirstOrDefault();
-                return attr?.Permissions ?? PluginPermissions.None;
-            }
-            return PluginPermissions.None;
+            var attr = pluginType.GetCustomAttribute<PluginPermissionsAttribute>();
+            return attr?.Permissions ?? PluginPermissions.None;
         }
 
         public static object[]? GetConstructorArgs(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
