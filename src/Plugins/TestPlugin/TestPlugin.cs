@@ -1,5 +1,7 @@
 ﻿namespace TestPlugin
 {
+    using System.Collections.Generic;
+
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
@@ -27,14 +29,17 @@
     ///     Example plugin demonstrating the capabilities
     ///     of the plugin system and how it works.
     /// </summary>
-    // Provides the permissions the plugin will require to the host application
-    [PluginPermissions(PluginPermissions.ReadDatabase |
-                       PluginPermissions.WriteDatabase |
-                       PluginPermissions.DeleteDatabase |
-                       PluginPermissions.AddControllers |
-                       PluginPermissions.AddJobControllers)]
-    // Determines where the 'wwwroot' folder will be (embedded resources or local/external)
-    [StaticFilesLocation(StaticFilesLocation.External)]
+    [
+        // Specifies the permissions the plugin will require to the host application
+        PluginPermissions(PluginPermissions.ReadDatabase |
+                          PluginPermissions.WriteDatabase |
+                          PluginPermissions.DeleteDatabase |
+                          PluginPermissions.AddControllers |
+                          PluginPermissions.AddJobControllers),
+        // Specifies where the 'wwwroot' folder will be if any are used or needed.
+        // Possible options: embedded resources, local/external, or none.
+        StaticFilesLocation(StaticFilesLocation.External),
+    ]
     public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents
     {
         #region Plugin Host Variables
@@ -72,6 +77,14 @@
         // property will be initalized by the host's service implementation.
         [PluginBootstrapperService(typeof(IUiHost))]
         private readonly IUiHost _uiHost;
+
+        // Manage files local to your plugin's folder using saving and loading
+        // implementations.
+        // 
+        // When decorated with the 'PluginBootstrapperService' attribute, the
+        // property will be initalized by the host's service implementation.
+        [PluginBootstrapperService(typeof(IFileStorageHost))]
+        private readonly IFileStorageHost _fileStorageHost;
 
         #endregion
 
@@ -128,22 +141,13 @@
         ///     parameter, essentially dependency injection.
         /// </summary>
         /// <param name="loggingHost">Logging host handler.</param>
-        /// <param name="jobControllerHost">Job controller host handler.</param>
-        /// <param name="databaseHost">Database host handler.</param>
         /// <param name="localeHost">Localization host handler.</param>
-        /// <param name="uiHost">User interface host handler.</param>
         public TestPlugin(
             ILoggingHost loggingHost,
-            //IJobControllerServiceHost jobControllerHost,
-            //IDatabaseHost databaseHost,
             ILocalizationHost localeHost)
-            //IUiHost uiHost)
         {
             _loggingHost = loggingHost;
-            //_jobControllerHost = jobControllerHost;
-            //_databaseHost = databaseHost;
             _localeHost = localeHost;
-            //_uiHost = uiHost;
 
             //_appHost.Restart();
         }
@@ -280,6 +284,9 @@
         public async void OnLoad()
         {
             _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
+
+            // Execute IFileStorageHost method tests
+            TestFileStorageHost();
 
             // Add dashboard stats
             var stats = new List<IDashboardStatsItem>
@@ -473,6 +480,19 @@
         }
 
         #endregion
+
+        private void TestFileStorageHost()
+        {
+            var fileName = Name + ".deps.json";
+
+            // Load dependencies config for plugin
+            var fileData = _fileStorageHost.Load<DependenciesConfig>("", fileName);
+            _loggingHost.LogMessage($"Loaded file data from '{fileName}': {fileData}");
+
+            // Save dependencies config to new folder 'configs' in this plugins folder
+            var fileSaveResult = _fileStorageHost.Save(fileData, "configs", fileName);
+            _loggingHost.LogMessage($"Saved file data for '{fileName}': {fileSaveResult}");
+        }
     }
 
     /// <summary>
@@ -505,5 +525,33 @@
         {
             return $"{Latitude},{Longitude}";
         }
+    }
+
+    // Mock {file}.deps.json configuration file model classes.
+    // 
+    // Since we are passing generic <T> type from host application to
+    // plugin (and vice versx) we do not need to register classes
+    // with host using 'PluginServiceAttribute' attribute decoration.
+    public class DependenciesConfig
+    {
+        public RuntimeTarget RuntimeTarget { get; set; } = new();
+
+        public Dictionary<string, object> CompilationOptions { get; set; } = new();
+
+        public Dictionary<string, Dictionary<string, Dictionary<string, TargetDependencies>>> Targets { get; set; } = new();
+
+        public Dictionary<string, Dictionary<string, object>> Libraries { get; set; } = new();
+    }
+
+    public class RuntimeTarget
+    {
+        public string? Name { get; set; }
+
+        public string? Signature { get; set; }
+    }
+
+    public class TargetDependencies
+    {
+        public Dictionary<string, object> Dependencies { get; set; } = new();
     }
 }

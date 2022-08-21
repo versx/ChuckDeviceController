@@ -8,7 +8,11 @@
 
     public class PluginFinder<TPlugin> where TPlugin : class
     {
-        public IPluginFinderOptions Options { get; set; }
+        #region Properties
+
+        public IPluginFinderOptions Options { get; }
+
+        #endregion
 
         #region Constructor
 

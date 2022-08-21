@@ -32,23 +32,18 @@
 
         #region Singleton
 
-        public static IPluginManager Instance
-        {
-            get
+        public static IPluginManager Instance => _instance ??= new PluginManager
+        (
+            new PluginManagerOptions
             {
-                if (_instance == null)
-                {
-                    _instance = new PluginManager(new PluginManagerOptions
-                    {
-                        RootPluginsDirectory = DefaultPluginsFolder,
-                    });
-                }
-                return _instance;
+                RootPluginsDirectory = DefaultPluginsFolder,
             }
-        }
+        );
 
-        //public static IPluginManager InstanceWithOptions(IPluginManagerOptions options, IConfiguration? configuration = null, IServiceCollection? sharedServiceHosts = null)
-        public static IPluginManager InstanceWithOptions(IPluginManagerOptions options, IConfiguration? configuration = null, IReadOnlyDictionary<Type, object>? sharedServiceHosts = null)
+        public static IPluginManager InstanceWithOptions(
+            IPluginManagerOptions options,
+            IConfiguration? configuration = null,
+            IReadOnlyDictionary<Type, object>? sharedServiceHosts = null)
         {
             if (_instance == null)
             {
@@ -162,7 +157,7 @@
                 //var serviceCollection = new ServiceCollection();
                 if (result.Assembly == null)
                 {
-                    Console.WriteLine($"Failed to load assembly for plugin '{result.AssemblyPath}', skipping.");
+                    _logger.LogError($"Failed to load assembly for plugin '{result.AssemblyPath}', skipping.");
                     continue;
                 }
 
@@ -171,7 +166,7 @@
                 var loadedPlugins = pluginLoader.LoadedPlugins;
                 if (!loadedPlugins.Any())
                 {
-                    Console.WriteLine($"Failed to find any valid plugins in assembly '{result.AssemblyPath}'");
+                    _logger.LogError($"Failed to find any valid plugins in assembly '{result.AssemblyPath}'");
                     continue;
                 }
 
