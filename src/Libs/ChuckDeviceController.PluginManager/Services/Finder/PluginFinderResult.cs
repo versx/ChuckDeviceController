@@ -8,20 +8,23 @@
     {
         public Type PluginType { get; }
 
-        public string FullAssemblyPath { get; }
+        public Type PluginTypeImplementation { get; }
 
         public Assembly Assembly { get; }
+
+        public string? AssemblyPath => Assembly?.Location;
 
         public PluginAssemblyLoadContext AssemblyLoadContext { get; }
 
         public PluginFinderResult(
             Assembly assembly,
-            PluginAssemblyLoadContext assemblyLoadContext)
+            PluginAssemblyLoadContext assemblyLoadContext,
+            Type pluginImplementation)
         {
-            PluginType = typeof(TPlugin);
-            FullAssemblyPath = assembly.Location;
             Assembly = assembly;
             AssemblyLoadContext = assemblyLoadContext;
+            PluginType = typeof(TPlugin);
+            PluginTypeImplementation = pluginImplementation;
         }
     }
 }

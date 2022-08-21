@@ -29,30 +29,30 @@
 
         #region Public Methods
 
-        public IReadOnlyList<PluginFinderResult<TPlugin>> FindAssemliesWithPlugins()
+        public IEnumerable<PluginAssemblyDetails> FindAssemliesWithPlugins()
         {
             // TODO: Get list of list of files to separate each plugins references
             var assemblies = Options.RootPluginsDirectory.GetFiles(Options.ValidFileTypes);
-            var hostFramework = Assembly.GetEntryAssembly()?.GetHostFramework();
-            var pluginFinderResults = new List<PluginFinderResult<TPlugin>>();
+            var pluginFinderResults = new List<PluginAssemblyDetails>();
+
+            // Loop list of found assemblies and filter plugin assembly dependencies
             foreach (var assemblyPath in assemblies)
             {
                 try
                 {
-                    var assemblyContext = PluginAssemblyLoadContext.Load<TPlugin>(assemblyPath, hostFramework);
+                    // Get list of plugin types in assembly
                     var assemblyFullPath = Path.GetFullPath(assemblyPath);
-                    var assembly = assemblyContext.LoadFromAssemblyPath(assemblyFullPath);
-                    if (!GetPluginTypes(assembly).Any())
+                    var pluginTypesFromAssembly = GetPluginTypesFromAssembly(assemblyFullPath);
+
+                    // Ensure assembly is a plugin assembly, otherwise skip
+                    if (!pluginTypesFromAssembly.Any())
                         continue;
 
-                    // TODO: Add references to plugin ALC
-                    // TODO: Determine references/dependencies - managed as well as native
-
-                    // Add default Mvc and Mvc.Razor types
-                    assemblyContext.AddMvcRazorTypes();
-
-                    var loaderContext = CreateResult(assembly, assemblyContext);
-                    pluginFinderResults.Add(loaderContext);
+                    foreach (var pluginImplementation in pluginTypesFromAssembly)
+                    {
+                        var result = new PluginAssemblyDetails(assemblyFullPath, pluginImplementation);
+                        pluginFinderResults.Add(result);
+                    }
                 }
                 catch //(Exception ex)
                 {
@@ -62,31 +62,60 @@
             return pluginFinderResults;
         }
 
-        public static IReadOnlyList<Type> GetPluginTypes(Assembly assembly)
+        public IEnumerable<PluginFinderResult<TPlugin>> LoadPluginAssemblies(IEnumerable<PluginAssemblyDetails> pluginAssemblyDetails)
         {
-            try
+            var hostFramework = Assembly.GetEntryAssembly()?.GetHostFramework();
+            var result = new List<PluginFinderResult<TPlugin>>();
+            foreach (var pluginAssembly in pluginAssemblyDetails)
             {
-                var types = assembly.GetTypes()
-                                    .Where(type => typeof(TPlugin).IsAssignableFrom(type))
-                                    .Where(type => type.IsClass && !type.IsAbstract)
-                                    .ToList();
-                return types;
+                // Load plugin assembly in ALC
+                var assemblyContext = PluginAssemblyLoadContext.Create<TPlugin>(pluginAssembly.AssemblyFullPath, hostFramework)
+                    // Add default Mvc and Mvc.Razor types
+                    .AddMvcRazorTypes();
+                var assembly = assemblyContext.LoadFromAssemblyPath(pluginAssembly.AssemblyFullPath);
+
+                // TODO: Add references to plugin ALC
+                // TODO: Determine references/dependencies - managed as well as native
+
+                result.Add(new PluginFinderResult<TPlugin>(
+                    assembly,
+                    assemblyContext,
+                    pluginAssembly.PluginTypeImplementation
+                ));
             }
-            catch
-            {
-                return default;
-            }
+            return result;
         }
 
         #endregion
 
-        private static PluginFinderResult<TPlugin> CreateResult(Assembly assembly, PluginAssemblyLoadContext loadContext)
+        #region Private Methods
+
+        private static IEnumerable<Type> GetPluginTypesFromAssembly(string assemblyFullPath)
         {
-            var loaderContext = new PluginFinderResult<TPlugin>(
-                assembly,
-                loadContext
-            );
-            return loaderContext;
+            IEnumerable<Type>? types;
+            using (var context = new PluginMetadataLoadContext(assemblyFullPath))
+            {
+                var assemblyShim = context.LoadFromAssemblyPath(assemblyFullPath);
+                types = GetPluginTypesFromAssembly(assemblyShim);
+            }
+            return types;
         }
+
+        private static IEnumerable<Type> GetPluginTypesFromAssembly(IAssemblyShim assemblyShim)
+        {
+            var types = GetPluginTypes(assemblyShim.Types);
+            return types;
+        }
+
+        private static IEnumerable<Type> GetPluginTypes(IEnumerable<Type> assemblyTypes)
+        {
+            var pluginType = typeof(TPlugin);
+            var types = assemblyTypes.Where(t => t.IsClass && !t.IsAbstract)
+                                     .Where(t => t.GetInterfaces().Any(it => it.Name == pluginType.Name))
+                                     .ToList();
+            return types;
+        }
+
+        #endregion
     }
 }

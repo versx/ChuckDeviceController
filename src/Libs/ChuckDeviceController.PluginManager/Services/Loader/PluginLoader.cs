@@ -9,7 +9,6 @@
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Plugin.Services;
     using ChuckDeviceController.PluginManager.Extensions;
-    using ChuckDeviceController.PluginManager.Loader;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
     using ChuckDeviceController.PluginManager.Services.Finder;
 
@@ -30,7 +29,7 @@
         {
             if (pluginResult.Assembly == null)
             {
-                throw new NullReferenceException($"Failed to load plugin assembly '{pluginResult.FullAssemblyPath}'");
+                throw new NullReferenceException($"Failed to load plugin assembly '{pluginResult.AssemblyPath}'");
             }
 
             var assemblyTypes = pluginResult.Assembly.GetTypes();

@@ -6,10 +6,9 @@
     using Microsoft.Extensions.DependencyInjection;
 
     using ChuckDeviceController.Plugin;
-    using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Services.Loader.Runtime;
 
-    public class PluginAssemblyLoadContext : AssemblyLoadContext
+    public class PluginAssemblyLoadContext : AssemblyLoadContext, IPluginAssemblyLoadContext
     {
         private readonly AssemblyDependencyResolver _resolver;
 
@@ -82,7 +81,7 @@
 
         #endregion
 
-        public static PluginAssemblyLoadContext Load<TPlugin>(string pluginPath, string hostFramework)
+        public static PluginAssemblyLoadContext Create<TPlugin>(string pluginPath, string hostFramework)
         {
             var loadContext = new PluginAssemblyLoadContext(
                 pluginPath,

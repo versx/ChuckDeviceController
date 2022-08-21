@@ -1,7 +1,5 @@
-﻿namespace ChuckDeviceController.PluginManager.Loader
+﻿namespace ChuckDeviceController.PluginManager.Services.Loader
 {
-    using ChuckDeviceController.PluginManager.Services.Loader;
-
     /// <summary>
     /// 
     /// </summary>

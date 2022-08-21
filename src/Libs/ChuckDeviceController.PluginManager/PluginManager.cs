@@ -31,7 +31,7 @@
                 {
                     _instance = new PluginManager(new PluginManagerOptions
                     {
-                        RootPluginDirectory = DefaultPluginsFolder,
+                        RootPluginsDirectory = DefaultPluginsFolder,
                     });
                 }
                 return _instance;
@@ -45,7 +45,7 @@
             {
                 _instance = new PluginManager(options ?? new PluginManagerOptions
                 {
-                    RootPluginDirectory = DefaultPluginsFolder,
+                    RootPluginsDirectory = DefaultPluginsFolder,
                     SharedServiceHosts = sharedServiceHosts,
                     Configuration = configuration,
                 });
@@ -274,7 +274,7 @@
         public IEnumerable<string> GetPluginFolderNames()
         {
             var pluginFolderNames = Plugins.Values
-                                           .Select(plugin => Path.GetDirectoryName(plugin.PluginFinderResult.FullAssemblyPath))
+                                           .Select(plugin => Path.GetDirectoryName(plugin.PluginFinderResult.AssemblyPath))
                                            .Select(plugin => Path.GetFileName(plugin));
             return pluginFolderNames;
         }

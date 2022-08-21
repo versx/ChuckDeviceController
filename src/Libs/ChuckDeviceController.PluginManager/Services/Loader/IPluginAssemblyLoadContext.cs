@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.PluginManager.Loader
+﻿namespace ChuckDeviceController.PluginManager.Services.Loader
 {
     using Microsoft.Extensions.DependencyInjection;
 
