@@ -121,6 +121,9 @@
                 }
 
                 loadedPlugins.Add(pluginHost);
+
+                // Call PluginLoaded event
+                OnPluginLoaded(pluginHost);
             }
 
             LoadedPlugins = loadedPlugins;
