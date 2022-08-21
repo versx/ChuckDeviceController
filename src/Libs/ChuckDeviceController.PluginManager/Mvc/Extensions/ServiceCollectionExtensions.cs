@@ -2,114 +2,16 @@
 {
     using System.Reflection;
 
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Mvc.Razor.Compilation;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
 
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Plugin.Services;
-    using ChuckDeviceController.PluginManager;
     using ChuckDeviceController.PluginManager.FileProviders;
-    using ChuckDeviceController.PluginManager.Mvc.Razor;
-    using ChuckDeviceController.PluginManager.Services.Finder;
-    using ChuckDeviceController.PluginManager.Services.Loader;
 
     public static class ServiceCollectionExtensions
     {
         private const string DefaultWebRoot = "wwwroot";
-
-        public static async Task<IServiceCollection> LoadPluginsAsync(this IServiceCollection services, IPluginManager pluginManager, IWebHostEnvironment env)
-        {
-            var rootPluginsDirectory = pluginManager.Options.RootPluginsDirectory;
-            var finderOptions = new PluginFinderOptions
-            {
-                PluginType = typeof(IPlugin),
-                RootPluginsDirectory = rootPluginsDirectory,
-                ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
-            };
-            var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
-            var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
-
-            if (!(pluginFinderResults?.Any() ?? false))
-            {
-                // Failed to find any eligible plugins to load
-                return services;
-            }
-
-            // Replace default Razor view compiler with custom one to help locate Mvc Views in
-            // plugins folder. Faster than using RazorViewEngineOptions.ViewLocationExpanders
-            services.Replace<IViewCompilerProvider, PluginViewCompilerProvider>();
-
-            var mvcBuilder = services
-                .AddControllersWithViews()
-                .AddRazorRuntimeCompilation();
-
-            // Load all valid plugin assemblies found in their own AssemblyLoadContext 
-            var pluginAssemblies = pluginFinder.LoadPluginAssemblies(pluginFinderResults);
-            foreach (var result in pluginAssemblies)
-            {
-                // TODO: New service collection for each plugin?
-                // TODO: Register sharedServiceHosts with new service collection if so
-                //var serviceCollection = new ServiceCollection();
-                if (result.Assembly == null)
-                {
-                    Console.WriteLine($"Failed to load assembly for plugin '{result.AssemblyPath}', skipping.");
-                    continue;
-                }
-
-                // Load and activate plugins found by plugin finder
-                var pluginLoader = new PluginLoader<IPlugin>(result, pluginManager.Options.SharedServiceHosts, services);
-                var loadedPlugins = pluginLoader.LoadedPlugins;
-                if (!loadedPlugins.Any())
-                {
-                    Console.WriteLine($"Failed to find any valid plugins in assembly '{result.AssemblyPath}'");
-                    continue;
-                }
-
-                // Register assembly as application part with Mvc
-                mvcBuilder.AddApplicationPart(result.Assembly);
-
-                // Register all available host services with plugin
-                mvcBuilder.AddServices(services);
-
-                // Loop through all loaded plugins and register plugin services and register plugins
-                foreach (var pluginHost in loadedPlugins)
-                {
-                    var pluginType = pluginHost.Plugin.GetType();
-                    // Check if plugin is marked with 'StaticFilesLocation' attribute
-                    var staticFilesFileProvider = pluginType.GetStaticFilesProvider(result.Assembly);
-                    if (staticFilesFileProvider != null)
-                    {
-                        // Register a new composite file provider containing the old 'wwwroot' file provider
-                        // and our new one. Adding another web root file provider needs to be done before
-                        // the call to 'app.UseStaticFiles'
-                        env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesFileProvider);
-                    }
-
-                    // Register any PluginServices found with IServiceCollection
-                    var pluginServices = pluginHost.PluginServices;
-                    if (pluginServices.Any())
-                    {
-                        foreach (var pluginService in pluginServices)
-                        {
-                            // Register found plugin service
-                            services.Add(pluginService);
-                        }
-                    }                    
-
-                    // Call plugin's ConfigureServices method to register any services
-                    pluginHost.Plugin.ConfigureServices(services);
-
-                    // Call plugin's load method
-                    pluginHost.Plugin.OnLoad();
-
-                    // Register plugin host with plugin manager
-                    await pluginManager.RegisterPluginAsync(pluginHost);
-                }
-            }
-            return services;
-        }
 
         public static IFileProvider? GetStaticFilesProvider(this Type pluginType, Assembly assembly, string? webRoot = null)
         {

@@ -1,6 +1,8 @@
 ﻿namespace ChuckDeviceController.PluginManager
 {
     using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.DependencyInjection;
 
     using ChuckDeviceController.Common.Data;
 
@@ -29,6 +31,8 @@
         #region Methods
 
         void Configure(WebApplication appBuilder);
+
+        Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env);
 
         Task RegisterPluginAsync(PluginHost pluginHost);
 

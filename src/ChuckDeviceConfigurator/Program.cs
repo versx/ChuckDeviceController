@@ -178,6 +178,17 @@ builder.Services.AddGrpc(options =>
 #region Plugins
 
 // Register plugin host handlers
+var jobControllerService = new JobControllerService(
+    new Logger<IJobControllerService>(LoggerFactory.Create(x => x.AddConsole())),
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+);
 var uiHost = new UiHost(new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConsole())));
 var databaseHost = new DatabaseHost(new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole())), connectionString);
 var loggingHost = new LoggingHost(new Logger<ILoggingHost>(LoggerFactory.Create(x => x.AddConsole())));
@@ -194,16 +205,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
 {
     { typeof(ILoggingHost), loggingHost },
     // TODO: Break out JobControllerService to fix shared service host instance injection for plugins
-    { typeof(IJobControllerServiceHost), new JobControllerService(
-        new Logger<IJobControllerService>(LoggerFactory.Create(x => x.AddConsole())),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null) },
+    { typeof(IJobControllerServiceHost), jobControllerService },
     { typeof(IDatabaseHost), databaseHost },
     { typeof(ILocalizationHost), Translator.Instance },
     { typeof(IUiHost), uiHost },
@@ -218,8 +220,8 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 });
 
 // Find plugins, register plugin services, load plugin assemblies,
-// call OnLoad callback and register with 'IPluginManager'
-await builder.Services.LoadPluginsAsync(pluginManager, builder.Environment);
+// call OnLoad callback and register with 'IPluginManager' cache
+await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment);
 
 builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
 builder.Services.AddSingleton<IPluginManager>(pluginManager);

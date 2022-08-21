@@ -39,10 +39,6 @@
 
             // Check plugin assembly target framework against host target framework
             var dependencyContext = GetDependencyContext(loadContext.AssemblyFullPath);
-            if (dependencyContext == null)
-            {
-            }
-
             var pluginFramework = dependencyContext?.Target.Framework;
             CheckFrameworkCompatibility(loadContext.HostFramework, pluginFramework, loadContext.IgnorePlatformInconsistencies);
 
