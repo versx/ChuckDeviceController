@@ -24,7 +24,6 @@ using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager;
-using ChuckDeviceController.PluginManager.Mvc.Extensions;
 
 
 // TODO: Show top navbar on mobile when sidebar is closed?
