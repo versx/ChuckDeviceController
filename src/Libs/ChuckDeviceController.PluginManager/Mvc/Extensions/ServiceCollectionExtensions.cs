@@ -96,7 +96,7 @@
                             // Register found plugin service
                             services.Add(pluginService);
                         }
-                    }
+                    }                    
 
                     // Call plugin's ConfigureServices method to register any services
                     pluginHost.Plugin.ConfigureServices(services);

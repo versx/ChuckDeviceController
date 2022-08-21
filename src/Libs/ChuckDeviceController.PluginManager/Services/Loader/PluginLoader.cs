@@ -1,31 +1,36 @@
 ﻿namespace ChuckDeviceController.PluginManager.Services.Loader
 {
-    using System.Reflection;
-
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
-    using ChuckDeviceController.Plugin.Services;
     using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
     using ChuckDeviceController.PluginManager.Services.Finder;
 
     public class PluginLoader<TPlugin> : IPluginLoader
     {
+        // Variables
         private static readonly ILogger<IPluginLoader> _logger =
             new Logger<IPluginLoader>(LoggerFactory.Create(x => x.AddConsole()));
 
+
+        // Properties
         public IEnumerable<PluginHost> LoadedPlugins { get; }
 
+        // Events
         public event EventHandler<PluginLoadedEventArgs>? PluginLoaded;
         private void OnPluginLoaded(IPluginHost pluginHost)
         {
             PluginLoaded?.Invoke(this, new PluginLoadedEventArgs(pluginHost));
         }
 
-        public PluginLoader(PluginFinderResult<IPlugin> pluginResult, IReadOnlyDictionary<Type, object> sharedServiceHosts, IServiceCollection services)
+        // Constructors
+        public PluginLoader(
+            PluginFinderResult<IPlugin> pluginResult,
+            IReadOnlyDictionary<Type, object> sharedServiceHosts,
+            IServiceCollection services)
         {
             if (pluginResult.Assembly == null)
             {
@@ -79,7 +84,8 @@
                 var pluginHost = new PluginHost(
                     plugin,
                     permissions,
-                    pluginResult,
+                    new PluginAssembly(pluginResult.Assembly),
+                    pluginResult.LoadContext,
                     pluginServiceDescriptors,
                     new PluginEventHandlers(),
                     PluginState.Running

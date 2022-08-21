@@ -4,8 +4,9 @@
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
-    using ChuckDeviceController.PluginManager.Services.Finder;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.PluginManager.Services.Finder;
+    using ChuckDeviceController.PluginManager.Services.Loader;
 
     public sealed class PluginHost : IPluginHost
     {
@@ -20,7 +21,9 @@
 
         public PluginState State { get; private set; }
 
-        public PluginFinderResult<IPlugin> PluginFinderResult { get; }
+        public IAssemblyShim Assembly { get; }
+
+        public IPluginAssemblyLoadContext LoadContext { get; }
 
         public IEnumerable<ServiceDescriptor> PluginServices { get; }
 
@@ -35,22 +38,25 @@
         public PluginHost(
             IPlugin plugin,
             PluginPermissions permissions,
-            PluginFinderResult<IPlugin> result,
+            IAssemblyShim assembly,
+            IPluginAssemblyLoadContext loadContext,
             IEnumerable<ServiceDescriptor> pluginServices)
-            : this(plugin, permissions, result, pluginServices, new())
+            : this(plugin, permissions, assembly, loadContext, pluginServices, new())
         {
         }
 
         public PluginHost(IPlugin plugin,
             PluginPermissions permissions,
-            PluginFinderResult<IPlugin> result,
+            IAssemblyShim assembly,
+            IPluginAssemblyLoadContext loadContext,
             IEnumerable<ServiceDescriptor> pluginServices,
             PluginEventHandlers eventHandlers,
             PluginState state = PluginState.Unset)
         {
             Plugin = plugin;
             Permissions = permissions;
-            PluginFinderResult = result;
+            LoadContext = loadContext;
+            Assembly = assembly;
             PluginServices = pluginServices;
             EventHandlers = eventHandlers;
             State = state;
@@ -62,7 +68,7 @@
 
         public void Unload()
         {
-            PluginFinderResult.AssemblyLoadContext.Unload();
+            LoadContext.Unload();
         }
 
         public void AddJobController(string name, IJobController jobController)

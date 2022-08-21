@@ -100,7 +100,7 @@
 
         #endregion
 
-        #region Properties
+        #region Plugin Host Properties
 
         /// <summary>
         ///     Gets or sets the UiHost host service implementation. This is
@@ -228,7 +228,6 @@
 
             // NOTE: Uncommenting the below routing map will overwrite the default '/' routing path to the dashboard
             //appBuilder.MapGet("", async (httpContext) => await httpContext.Response.WriteAsync("Hello, World!"));
-
 
 
             // Register custom middlewares

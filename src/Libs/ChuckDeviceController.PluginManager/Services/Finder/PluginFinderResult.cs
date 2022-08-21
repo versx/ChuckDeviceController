@@ -14,15 +14,15 @@
 
         public string? AssemblyPath => Assembly?.Location;
 
-        public PluginAssemblyLoadContext AssemblyLoadContext { get; }
+        public PluginAssemblyLoadContext LoadContext { get; }
 
         public PluginFinderResult(
             Assembly assembly,
-            PluginAssemblyLoadContext assemblyLoadContext,
+            PluginAssemblyLoadContext loadContext,
             Type pluginImplementation)
         {
             Assembly = assembly;
-            AssemblyLoadContext = assemblyLoadContext;
+            LoadContext = loadContext;
             PluginType = typeof(TPlugin);
             PluginTypeImplementation = pluginImplementation;
         }

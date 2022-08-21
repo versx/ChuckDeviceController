@@ -5,6 +5,7 @@
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Services.Finder;
+    using ChuckDeviceController.PluginManager.Services.Loader;
 
     /// <summary>
     /// Wrapper for loaded plugins
@@ -12,8 +13,8 @@
     public interface IPluginHost
     {
         /// <summary>
-        /// Gets the instantiated <seealso cref="IPlugin"/> type
-        /// for the loaded plugin.
+        /// Gets the instantiated <seealso cref="IPlugin"/> type for the
+        /// loaded plugin.
         /// </summary>
         IPlugin Plugin { get; }
 
@@ -30,12 +31,23 @@
         PluginState State { get; }
 
         /// <summary>
-        /// 
+        /// Gets the <seealso cref="IAssemblyShim"/> of the loaded plugin
+        /// assembly.
         /// </summary>
-        PluginFinderResult<IPlugin> PluginFinderResult { get; }
+        IAssemblyShim Assembly { get; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the plugin assembly's loading context (ALC) which
+        /// will contain the assembly and any dependants or references that
+        /// have been loaded in the context.
+        /// </summary>
+        IPluginAssemblyLoadContext LoadContext { get; }
+
+        /// <summary>
+        /// Gets a list of service descriptors for the plugin that have been
+        /// decorated in the plugin with the 'PluginService' attribute. These
+        /// plugin services will be registered with dependency injection service
+        /// in the host application.
         /// </summary>
         IEnumerable<ServiceDescriptor> PluginServices { get; }
 
@@ -46,15 +58,17 @@
         /// </summary>
         PluginEventHandlers EventHandlers { get; }
 
+
         /// <summary>
-        /// Sets the state of the plugin.
+        /// Sets the current state of the plugin.
         /// </summary>
         /// <param name="state">Plugin state to set.</param>
         /// <param name="ignoreEvent"></param>
         void SetState(PluginState state, bool ignoreEvent = false);
 
         /// <summary>
-        /// 
+        /// Unloads the plugin assembly from the <seealso cref="IPluginAssemblyLoadContext"/>
+        /// which effectively stops the plugin and is no longer running or loaded.
         /// </summary>
         void Unload();
     }

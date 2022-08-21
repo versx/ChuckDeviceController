@@ -274,7 +274,7 @@
         public IEnumerable<string> GetPluginFolderNames()
         {
             var pluginFolderNames = Plugins.Values
-                                           .Select(plugin => Path.GetDirectoryName(plugin.PluginFinderResult.AssemblyPath))
+                                           .Select(plugin => Path.GetDirectoryName(plugin.Assembly.AssemblyFullPath))
                                            .Select(plugin => Path.GetFileName(plugin));
             return pluginFolderNames;
         }

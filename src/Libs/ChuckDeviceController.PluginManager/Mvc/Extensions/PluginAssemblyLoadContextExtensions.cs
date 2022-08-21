@@ -139,12 +139,6 @@
             return loadContext;
         }
 
-        public static PluginAssemblyLoadContext SetRuntimePlatformContext(this PluginAssemblyLoadContext loadContext, IRuntimePlatformContext runtimePlatformContext)
-        {
-            loadContext.RuntimePlatformContext = runtimePlatformContext;
-            return loadContext;
-        }
-
         private static bool IsChuckService(Type type) =>
         (
             (type?.Namespace?.StartsWith("ChuckDeviceController.") ?? false) ||
