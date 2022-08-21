@@ -77,9 +77,7 @@
             PluginPlatformVersion = PluginPlatformVersion.Create("1.0", RuntimeType.AspNetCoreAll);
             HostServices = new ServiceCollection();
 
-            var parentDirectory = pluginPath.GetDirectoryName();
-            _resolver = new AssemblyDependencyResolver(parentDirectory!);
-            //_resolver = new AssemblyDependencyResolver(pluginPath);
+            _resolver = new AssemblyDependencyResolver(pluginPath);
         }
 
         #endregion

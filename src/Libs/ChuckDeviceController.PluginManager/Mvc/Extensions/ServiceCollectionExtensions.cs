@@ -54,7 +54,7 @@
                 }
 
                 // Load and activate plugins found by plugin finder
-                var pluginLoader = new PluginLoader<IPlugin>(pluginResult, pluginManager.Options.SharedServiceHosts);
+                var pluginLoader = new PluginLoader<IPlugin>(pluginResult, pluginManager.Options.SharedServiceHosts, services);
                 var loadedPlugins = pluginLoader.LoadedPlugins;
                 if (!loadedPlugins.Any())
                 {
@@ -74,7 +74,7 @@
                 var resourceInfo = pluginResult.Assembly.GetManifestResourceInfo("TestPlugin.Views.Todo.Index.cshtml");
                 if (resourceNames.Any())
                 {
-                    var hasEmbeddedViews = resourceNames.Contains(".Views.");
+                    var hasEmbeddedViews = resourceNames.Any(res => res.Contains(".Views."));
                     if (hasEmbeddedViews)
                     {
                     }
@@ -138,7 +138,13 @@
             return instance;
         }
 
-        public static IEnumerable<ServiceDescriptor> GetPluginServicesWithAttribute(this Type type)
+        public static IEnumerable<PluginBootstrapperAttribute> GetPluginBootstrappersWithAttribute(this Type type)
+        {
+            var attributes = type.GetCustomAttributes<PluginBootstrapperAttribute>();
+            return attributes;
+        }
+
+        public static IEnumerable<ServiceDescriptor> GetPluginServicesWithAttribute(this Type type, IReadOnlyDictionary<Type, object> sharedServices)
         {
             var services = new List<ServiceDescriptor>();
             var attributes = type.GetCustomAttributes<PluginServiceAttribute>();
@@ -149,9 +155,20 @@
             foreach (var attr in attributes)
             {
                 var serviceType = attr.ServiceType;
-                var implementation = attr.Provider == PluginServiceProvider.Plugin
-                    ? attr.ProxyType
-                    : type; // TODO: Get host service implementation
+                Type? implementation = null;
+                switch (attr.Provider)
+                {
+                    case PluginServiceProvider.Host:
+                        if (sharedServices.ContainsKey(serviceType))
+                        {
+                            implementation = sharedServices[serviceType].GetType();
+                        }
+                        break;
+                    case PluginServiceProvider.Plugin:
+                    default:
+                        implementation = attr.ProxyType;
+                        break;
+                }
                 var serviceLifetime = attr.Lifetime;
                 var serviceDescriptor = new ServiceDescriptor(serviceType, implementation, serviceLifetime);
                 services.Add(serviceDescriptor);

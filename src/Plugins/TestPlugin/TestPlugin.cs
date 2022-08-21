@@ -24,6 +24,17 @@
 
     // TODO: Include user roles with plugins
 
+    [PluginBootstrapper(typeof(TestPlugin))]
+    public class TestPluginBootstrapper : IPluginBootstrapper
+    {
+        public IServiceCollection Bootstrap(IServiceCollection services)
+        {
+            return services
+                .AddSingleton<IPluginService, TestPluginService>()
+                .AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
+        }
+    }
+
     /// <summary>
     ///     Example plugin demonstrating the capabilities
     ///     of the plugin system and how it works.
@@ -45,8 +56,9 @@
         private readonly ILoggingHost _loggingHost;
         // Interacts with the job controller instance service to add new job
         // controllers.
-        private readonly IJobControllerServiceHost _jobControllerHost;
+        //private readonly IJobControllerServiceHost _jobControllerHost;
         // Retrieve data from the database, READONLY.
+        [PluginBootstrapperService(typeof(IDatabaseHost))]
         private readonly IDatabaseHost _databaseHost;
         // Translate text based on the set locale in the host application.
         private readonly ILocalizationHost _localeHost;
@@ -80,7 +92,7 @@
         /// </summary>
         public Version Version => new("1.0.0.0");
 
-        [PluginBootstrapperService(typeof(IUiHost))]
+        //[PluginBootstrapperService(typeof(IUiHost))]
         public IUiHost UiHost { get; set; }
 
         #endregion
@@ -104,13 +116,13 @@
         /// <param name="uiHost">User interface host handler.</param>
         public TestPlugin(
             ILoggingHost loggingHost,
-            IJobControllerServiceHost jobControllerHost,
+            //IJobControllerServiceHost jobControllerHost,
             IDatabaseHost databaseHost,
             ILocalizationHost localeHost)
         //IUiHost uiHost)
         {
             _loggingHost = loggingHost;
-            _jobControllerHost = jobControllerHost;
+            //_jobControllerHost = jobControllerHost;
             _databaseHost = databaseHost;
             _localeHost = localeHost;
             //_uiHost = uiHost;
@@ -132,7 +144,6 @@
         {
             _loggingHost.LogMessage($"Configure called");
 
-            //var testService = appBuilder.ApplicationServices.GetService<IPluginService>();
             var testService = appBuilder.Services.GetService<IPluginService>();
 
             // We can configure routing here using 'Minimal APIs' or using Mvc Controller classes
@@ -373,6 +384,7 @@
             {
                 _loggingHost.LogException(ex);
             }
+            */
 
             try
             {
@@ -395,7 +407,6 @@
             {
                 _loggingHost.LogException(ex);
             }
-            */
         }
 
         /// <summary>
@@ -410,29 +421,20 @@
         /// <summary>
         ///     Called when the plugin has been stopped by the host application.
         /// </summary>
-        public void OnStop()
-        {
-            _loggingHost.LogMessage($"[{Name}] OnStop called");
-            // TODO: Unregister all UI items (or leave that up to the host app)?
-        }
+        public void OnStop() => _loggingHost.LogMessage($"[{Name}] OnStop called");
 
         /// <summary>
         ///     Called when the plugin has been removed by the host application.
         /// </summary>
-        public void OnRemove()
-        {
-            _loggingHost.LogMessage($"[{Name}] Onremove called");
-        }
+        public void OnRemove() => _loggingHost.LogMessage($"[{Name}] Onremove called");
 
         /// <summary>
         ///     Called when the plugin's state has been
         ///     changed by the host application.
         /// </summary>
         /// <param name="state">Plugin's current state</param>
-        public void OnStateChanged(PluginState state)
-        {
+        public void OnStateChanged(PluginState state) =>
             _loggingHost.LogMessage($"[{Name}] Plugin state has changed to '{state}'");
-        }
 
         #endregion
 

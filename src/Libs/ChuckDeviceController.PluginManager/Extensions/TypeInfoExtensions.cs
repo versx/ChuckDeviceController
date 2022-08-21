@@ -79,7 +79,7 @@
                     continue;
                 }
 
-                // Instantiate/set field to service
+                // Instantiate/set field to service instance
                 if (!sharedServices.ContainsKey(attr.ServiceType))
                 {
                     Console.WriteLine($"Unable to find registered service '{attr.ServiceType.Name}' for plugin field '{fieldInfo.Name}' with attribute '{nameof(PluginBootstrapperServiceAttribute)}'");

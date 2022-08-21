@@ -26,7 +26,7 @@
             PluginLoaded?.Invoke(this, new PluginLoadedEventArgs(pluginHost));
         }
 
-        public PluginLoader(PluginFinderResult<IPlugin> pluginResult, IReadOnlyDictionary<Type, object> sharedServiceHosts)//, IServiceCollection services)
+        public PluginLoader(PluginFinderResult<IPlugin> pluginResult, IReadOnlyDictionary<Type, object> sharedServiceHosts, IServiceCollection services)
         {
             if (pluginResult.Assembly == null)
             {
@@ -46,7 +46,7 @@
                 // TODO: Add support for HostedServices
 
                 // Find service classes with 'PluginServiceAttribute'
-                var pluginServices = type.GetPluginServicesWithAttribute();
+                var pluginServices = type.GetPluginServicesWithAttribute(sharedServiceHosts);
                 if (pluginServices == null)
                     continue;
 
@@ -71,6 +71,29 @@
                     _logger.LogError($"Failed to instantiate '{nameof(IPlugin)}' instance");
                     continue;
                 }
+
+                /*
+                foreach (var pluginBootstrapper in pluginBootstrapTypes)
+                {
+                    var bootstrapAttributes = pluginBootstrapper.GetPluginBootstrappersWithAttribute(sharedServiceHosts);
+                    if (bootstrapAttributes != null)
+                    {
+                        foreach (var attr in bootstrapAttributes)
+                        {
+                            //attr.PluginType
+                            if (attr.PluginType == pluginType)
+                            {
+                                var bootstrapMethod = pluginBootstrapper.GetMethod(nameof(IPluginBootstrapper.Bootstrap));
+                                if (bootstrapMethod != null)
+                                {
+                                    var instance = bootstrapMethod.Invoke(pluginType, new[] { services });
+                                    Console.WriteLine($"Method: {instance}");
+                                }
+                            }
+                        }
+                    }
+                }
+                */
 
                 // Initialize any fields or properties marked as plugin service types
                 var typeInfo = pluginInstance.GetType().GetTypeInfo();
