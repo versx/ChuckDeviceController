@@ -71,21 +71,21 @@
                 // Register all available host services with plugin
                 mvcBuilder.AddServices(services);
 
-                // Check if plugin assembly has static files attribute assigned, if so
-                // add any embedded resource or external files to web root provider
-                // i.e. 'wwwwroot' folder and contents
-                var staticFilesFileProvider = pluginResult.PluginTypeImplementation.GetType().GetStaticFilesProvider(pluginResult.Assembly, rootPluginsDirectory);
-                if (staticFilesFileProvider != null)
-                {
-                    // Register a new composite file provider containing the old 'wwwroot' file provider
-                    // and our new one. Adding another web root file provider needs to be done before
-                    // the call to 'app.UseStaticFiles'
-                    env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesFileProvider);
-                }
-
                 // Loop through all loaded plugins and register plugin services and register plugins
                 foreach (var pluginHost in loadedPlugins)
                 {
+                    // Check if plugin assembly has static files attribute assigned, if so
+                    // add any embedded resource or external files to web root provider
+                    // i.e. 'wwwwroot' folder and contents
+                    var staticFilesFileProvider = pluginHost.Plugin.GetType().GetStaticFilesProvider(pluginResult.Assembly, rootPluginsDirectory);
+                    if (staticFilesFileProvider != null)
+                    {
+                        // Register a new composite file provider containing the old 'wwwroot' file provider
+                        // and our new one. Adding another web root file provider needs to be done before
+                        // the call to 'app.UseStaticFiles'
+                        env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesFileProvider);
+                    }
+
                     // Register any PluginServices found with IServiceCollection
                     var pluginServices = pluginHost.PluginServices;
                     if (pluginServices.Any())
