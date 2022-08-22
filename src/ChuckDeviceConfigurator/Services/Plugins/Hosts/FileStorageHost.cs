@@ -54,10 +54,10 @@
 
         #region Public Methods
 
-        public T Load<T>(string location, string name)
+        public T Load<T>(string folderName, string name)
         {
             var callingAssembly = Assembly.GetCallingAssembly();
-            var basePath = GetPluginRootFolder(callingAssembly, location);
+            var basePath = GetPluginRootFolder(callingAssembly, folderName);
             CreateDirectory(basePath);
 
             var dataFile = Path.Combine(basePath, AppendGenericExt(name));
@@ -95,10 +95,10 @@
             return default;
         }
 
-        public bool Save<T>(T data, string location, string name)
+        public bool Save<T>(T data, string folderName, string name)
         {
             var callingAssembly = Assembly.GetCallingAssembly();
-            var basePath = GetPluginRootFolder(callingAssembly, location);
+            var basePath = GetPluginRootFolder(callingAssembly, folderName);
             CreateDirectory(basePath);
 
             var dataFile = Path.Combine(basePath, AppendGenericExt(name));
@@ -159,10 +159,10 @@
             }
         }
 
-        private string GetPluginRootFolder(Assembly caller, string location)
+        private string GetPluginRootFolder(Assembly caller, string folderName)
         {
             var pluginFolder = Path.GetDirectoryName(caller.Location);
-            var basePath = Path.Combine(RootPath, pluginFolder!, location);
+            var basePath = Path.Combine(RootPath, pluginFolder!, folderName);
             return basePath;
         }
 

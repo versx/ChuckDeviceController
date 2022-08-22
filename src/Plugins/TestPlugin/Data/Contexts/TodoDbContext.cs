@@ -11,7 +11,8 @@
             ServiceType = typeof(DbContext),
             ProxyType = typeof(TodoDbContext),
             Provider = PluginServiceProvider.Plugin,
-            Lifetime = ServiceLifetime.Scoped)
+            Lifetime = ServiceLifetime.Scoped
+        )
     ]
     public class TodoDbContext : DbContext
     {

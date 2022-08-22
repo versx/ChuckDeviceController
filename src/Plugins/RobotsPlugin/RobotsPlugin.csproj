@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\$(TargetFileName)&quot;&#xD;&#xA;xcopy /S /E /Y /I &quot;$(TargetDir)\Views\*&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\Views\&quot;&#xD;&#xA;xcopy /S /E /Y /I &quot;$(TargetDir)\wwwroot\*&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\wwwroot\&quot;" />
+  </Target>
+
+</Project>

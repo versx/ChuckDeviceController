@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugin.Data
+﻿namespace ChuckDeviceController.Plugin
 {
     /// <summary>
     /// Repository contract for specific database entity types.

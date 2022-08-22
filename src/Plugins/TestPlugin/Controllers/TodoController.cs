@@ -20,7 +20,7 @@
     /// </remarks>
     [Controller]
     //[Authorize(Roles = "ShouldFail")]
-    [Authorize(Roles = RoleConsts.AdminRole)]
+    [Authorize(Roles = RoleConsts.SuperAdminRole)]
     public class TodoController : Controller
     {
         private readonly ILogger<TodoController> _logger;
