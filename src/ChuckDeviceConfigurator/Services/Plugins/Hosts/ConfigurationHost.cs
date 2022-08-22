@@ -7,6 +7,8 @@
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Extensions;
 
+    // TODO: Add setting/saving config support
+
     public class ConfigurationHost : IConfigurationHost
     {
         private const string DefaultConfigurationFileName = "appsettings.json";

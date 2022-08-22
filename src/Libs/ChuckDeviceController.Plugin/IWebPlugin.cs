@@ -9,7 +9,7 @@
     public interface IWebPlugin
     {
         /// <summary>
-        /// Configures the application to set up middlewares, routing rules, etc.
+        /// Configures the application to set up middlewares, map routing rules, etc.
         /// </summary>
         /// <param name="appBuilder">
         /// Provides the mechanisms to configure an application's request pipeline.
@@ -21,5 +21,11 @@
         /// </summary>
         /// <param name="services">Specifies the contract for a collection of service descriptors.</param>
         void ConfigureServices(IServiceCollection services);
+
+        /// <summary>
+        /// Provides an opportunity for plugins to configure Mvc Builder.
+        /// </summary>
+        /// <param name="mvcBuilder">IMvcBuilder instance that can be configured.</param>
+        void ConfigureMvcBuilder(IMvcBuilder mvcBuilder);
     }
 }

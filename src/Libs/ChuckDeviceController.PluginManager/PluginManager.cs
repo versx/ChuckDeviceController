@@ -204,6 +204,9 @@
                     // Call plugin's ConfigureServices method to register any services
                     pluginHost.Plugin.ConfigureServices(services);
 
+                    // Call plugin's 'ConfigureMvcBuilder' method to allow configuring Mvc
+                    pluginHost.Plugin.ConfigureMvcBuilder(mvcBuilder);
+
                     // Call plugin's load method
                     pluginHost.Plugin.OnLoad();
 

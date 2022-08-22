@@ -12,6 +12,7 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc.Razor;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -276,6 +277,22 @@
             services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
         }
 
+        /// <summary>
+        ///     Provides an opportunity for plugins to configure Mvc Builder.
+        /// </summary>
+        /// <param name="mvcBuilder">
+        ///     IMvcBuilder instance that can be configured.
+        /// </param>
+        public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)
+        {
+            // Configure localization for Views
+            mvcBuilder
+                .AddViewLocalization(
+                    LanguageViewLocationExpanderFormat.Suffix, options => 
+                        options.ResourcesPath = "Resources")
+                .AddDataAnnotationsLocalization();
+        }
+
         #endregion
 
         #region Plugin Event Handlers
@@ -508,6 +525,9 @@
             var config = _configurationHost.GetConfiguration();
             var value = _configurationHost.GetValue<bool>("Enabled", sectionName: "Authentication:GitHub");
             _loggingHost.LogMessage($"Configuration: {config}, Value: {value}");
+
+            var locale = _configurationHost.GetValue<string>("Locale");
+            _loggingHost.LogMessage($"Configuration Locale: {locale}");
         }
 
         #endregion

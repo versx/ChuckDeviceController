@@ -8,12 +8,11 @@
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
-    using ChuckDeviceController.Plugin.Services;
 
     /// <summary>
-    /// Basic plugin example to demostrate adding and updating
-    /// the current time on the dashboard page of the host
-    /// application under the statistics section.
+    ///     Basic plugin example to demostrate adding and updating
+    ///     the current time on the dashboard page of the host
+    ///     application under the statistics section.
     /// </summary>
     public class ClockPlugin : IPlugin
     {
@@ -42,7 +41,7 @@
             UiHost = uiHost;
         }
 
-        #region Implementation Methods
+        #region ASP.NET Core Configuration Callback Methods
 
         public void Configure(WebApplication appBuilder)
         {
@@ -53,6 +52,15 @@
         {
             // Unused with .NET Core plugins, only used with ASP.NET Core plugins
         }
+
+        public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)
+        {
+            // Unused with .NET Core plugins, only used with ASP.NET Core plugins
+        }
+
+        #endregion
+
+        #region Implementation Methods
 
         public void OnLoad()
         {
