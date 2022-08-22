@@ -27,5 +27,9 @@
         public const string UsersRole = nameof(Roles.SuperAdmin);
 
         public const string UtilitiesRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Utilities)}";
+
+        public const string AdminRole = nameof(Roles.Admin);
+
+        public const string SuperAdminRole = nameof(Roles.SuperAdmin);
     }
 }

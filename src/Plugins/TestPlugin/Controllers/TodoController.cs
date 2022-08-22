@@ -8,8 +8,10 @@
     using Data.Contexts;
     using Data.Entities;
 
+    using ChuckDeviceController.Common;
+
     /// <summary>
-    /// Example controller for todo list.
+    ///     Example controller for todo list.
     /// </summary>
     /// <remarks>
     /// Credits:
@@ -18,6 +20,7 @@
     /// </remarks>
     [Controller]
     //[Authorize(Roles = "ShouldFail")]
+    [Authorize(Roles = RoleConsts.AdminRole)]
     public class TodoController : Controller
     {
         private readonly ILogger<TodoController> _logger;
