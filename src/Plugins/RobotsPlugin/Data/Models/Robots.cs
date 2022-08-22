@@ -22,7 +22,7 @@
         #region Constants
 
         private const string DefaultRobotsFileName = "robots.txt";
-        private const string DefaultRobotsFolderName = "";
+        private const string DefaultRobotsFolderName = "wwwroot";
 
         #endregion
 
