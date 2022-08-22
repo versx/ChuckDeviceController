@@ -1,7 +1,9 @@
 ﻿namespace TestPlugin.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Plugin;
 
@@ -23,6 +25,7 @@
     // [Route("[controller]")]
     // Sets the default base route for all methods in the class
     // to the '[controller]' placeholder, in this case 'Test'.
+    [Authorize(Roles = RoleConsts.DefaultRole)]
     public class TestController : Controller // ControllerBase, Controller
     {
         private readonly IDatabaseHost _databaseHost;
