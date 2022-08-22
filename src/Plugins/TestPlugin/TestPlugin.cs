@@ -86,6 +86,9 @@
         [PluginBootstrapperService(typeof(IFileStorageHost))]
         private readonly IFileStorageHost _fileStorageHost;
 
+        [PluginBootstrapperService(typeof(IConfigurationHost))]
+        private readonly IConfigurationHost _configurationHost;
+
         #endregion
 
         #region Plugin Metadata Properties
@@ -288,6 +291,9 @@
             // Execute IFileStorageHost method tests
             TestFileStorageHost();
 
+            // Execute IConfigurationHost method tests
+            TestConfigurationHost();
+
             // Add dashboard stats
             var stats = new List<IDashboardStatsItem>
             {
@@ -481,6 +487,8 @@
 
         #endregion
 
+        #region Private Methods
+
         private void TestFileStorageHost()
         {
             var fileName = Name + ".deps.json";
@@ -493,6 +501,16 @@
             var fileSaveResult = _fileStorageHost.Save(fileData, "configs", fileName);
             _loggingHost.LogMessage($"Saved file data for '{fileName}': {fileSaveResult}");
         }
+
+        private void TestConfigurationHost()
+        {
+            //var config = _configurationProviderHost.GetConfiguration<Dictionary<string, string>>(sectionName: "ConnectionStrings");
+            var config = _configurationHost.GetConfiguration();
+            var value = _configurationHost.GetValue<bool>("Enabled", sectionName: "Authentication:GitHub");
+            _loggingHost.LogMessage($"Configuration: {config}, Value: {value}");
+        }
+
+        #endregion
     }
 
     /// <summary>

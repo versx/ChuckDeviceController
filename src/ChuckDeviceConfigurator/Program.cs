@@ -192,11 +192,13 @@ var uiHost = new UiHost(new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConso
 var databaseHost = new DatabaseHost(new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole())), connectionString);
 var loggingHost = new LoggingHost(new Logger<ILoggingHost>(LoggerFactory.Create(x => x.AddConsole())));
 var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
+var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
 builder.Services.AddSingleton<ILoggingHost>(loggingHost);
 builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
 builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
 builder.Services.AddSingleton<IUiHost>(uiHost);
 builder.Services.AddSingleton<IFileStorageHost>(fileStorageHost);
+builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
 
 // Load host applications default sidebar nav headers
 await uiHost.LoadDefaultUiAsync();
@@ -211,6 +213,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(ILocalizationHost), Translator.Instance },
     { typeof(IUiHost), uiHost },
     { typeof(IFileStorageHost), fileStorageHost },
+    { typeof(IConfigurationHost), configurationProviderHost },
 };
 
 // Instantiate 'IPluginManager' singleton with configurable options

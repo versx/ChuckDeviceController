@@ -2,10 +2,15 @@
 {
     using System.Reflection;
 
+    using Microsoft.Extensions.Logging;
+
     using ChuckDeviceController.Plugin.Services;
 
     public static class TypeInfoExtensions
     {
+        private static readonly ILogger _logger =
+            LoggerFactory.Create(x => x.AddConsole()).CreateLogger(nameof(TypeInfoExtensions));
+
         public static IEnumerable<Type> GetAssignableTypes<T>(this IEnumerable<Type> assemblyTypes)
         {
             // TODO: Add type.IsSubClassOf support
@@ -31,30 +36,30 @@
                        .Select(p => (p, p.GetCustomAttribute<T>()));
         }
 
-        public static bool TrySetField<T>(this object remoteInstance, FieldInfo field, T fieldInstance)
+        public static bool TrySetField<T>(this object instance, FieldInfo field, T fieldInstance)
         {
             try
             {
-                field.SetValue(remoteInstance, fieldInstance);
+                field.SetValue(instance, fieldInstance);
                 return true;
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine($"Error: {ex}");
+                _logger.LogError(ex, nameof(TrySetField));
             }
             return false;
         }
 
-        public static bool TrySetProperty<T>(this object remoteInstance, PropertyInfo property, T propertyInstance)
+        public static bool TrySetProperty<T>(this object instance, PropertyInfo property, T propertyInstance)
         {
             try
             {
-                property.SetValue(remoteInstance, propertyInstance);
+                property.SetValue(instance, propertyInstance);
                 return true;
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine($"Error: {ex}");
+                _logger.LogError(ex, nameof(TrySetProperty));
             }
             return false;
         }
@@ -76,20 +81,20 @@
             {
                 if (attr == null)
                 {
-                    Console.WriteLine($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for field '{fieldInfo.Name}' was null, skipping.");
+                    _logger.LogError($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for field '{fieldInfo.Name}' was null, skipping.");
                     continue;
                 }
 
                 if (sharedServices == null)
                 {
-                    Console.WriteLine($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for field '{fieldInfo.Name}' was found, but shared host services is null, skipping.");
+                    _logger.LogError($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for field '{fieldInfo.Name}' was found, but shared host services is null, skipping.");
                     continue;
                 }
 
                 // Instantiate/set field to service instance
                 if (!sharedServices.ContainsKey(attr.ServiceType))
                 {
-                    Console.WriteLine($"Unable to find registered service '{attr.ServiceType.Name}' for plugin field '{fieldInfo.Name}' with attribute '{nameof(PluginBootstrapperServiceAttribute)}'");
+                    _logger.LogError($"Unable to find registered service '{attr.ServiceType.Name}' for plugin field '{fieldInfo.Name}' with attribute '{nameof(PluginBootstrapperServiceAttribute)}'");
                     continue;
                 }
 
@@ -115,20 +120,20 @@
             {
                 if (attr == null)
                 {
-                    Console.WriteLine($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for property '{propertyInfo.Name}' was null, skipping.");
+                    _logger.LogError($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for property '{propertyInfo.Name}' was null, skipping.");
                     continue;
                 }
 
                 if (sharedServices == null)
                 {
-                    Console.WriteLine($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for property '{propertyInfo.Name}' was found, but shared host services is null, skipping.");
+                    _logger.LogError($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for property '{propertyInfo.Name}' was found, but shared host services is null, skipping.");
                     continue;
                 }
 
                 // Instantiate/set property to service
                 if (!sharedServices.ContainsKey(attr.ServiceType))
                 {
-                    Console.WriteLine($"Unable to find registered service '{attr.ServiceType.Name}' for plugin property '{propertyInfo.Name}' with attribute '{nameof(PluginBootstrapperServiceAttribute)}'");
+                    _logger.LogError($"Unable to find registered service '{attr.ServiceType.Name}' for plugin property '{propertyInfo.Name}' with attribute '{nameof(PluginBootstrapperServiceAttribute)}'");
                     continue;
                 }
 
