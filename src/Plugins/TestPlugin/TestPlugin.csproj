@@ -20,9 +20,11 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.7" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\$(TargetFileName)&quot;&#xD;&#xA;xcopy /S /E /Y /I &quot;$(TargetDir)\Views\*&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\Views\&quot;&#xD;&#xA;xcopy /S /E /Y /I &quot;$(TargetDir)\wwwroot\*&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\wwwroot\&quot;" />
-  </Target>
+  <ItemGroup>
+    <Content Update="wwwroot\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <Content Update="Views\**\*">
@@ -30,13 +32,7 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Views\**\*.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="wwwroot\**\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\$(TargetFileName)&quot;&#xD;&#xA;xcopy /S /E /Y /I &quot;$(TargetDir)\Views\*&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\Views\&quot;&#xD;&#xA;xcopy /S /E /Y /I &quot;$(TargetDir)\wwwroot\*&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\wwwroot\&quot;" />
+  </Target>
 </Project>
