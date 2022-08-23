@@ -18,7 +18,7 @@
             ServiceType = typeof(IRouteDataService),
             ProxyType = typeof(RouteDataService),
             Provider = PluginServiceProvider.Plugin,
-            Lifetime = ServiceLifetime.Scoped
+            Lifetime = ServiceLifetime.Singleton
         )
     ]
     public class RouteDataService : IRouteDataService

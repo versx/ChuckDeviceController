@@ -14,7 +14,7 @@
             ServiceType = typeof(IRobots),
             ProxyType = typeof(Robots),
             Provider = PluginServiceProvider.Plugin,
-            Lifetime = ServiceLifetime.Scoped
+            Lifetime = ServiceLifetime.Singleton
         )
     ]
     public class Robots : IRobots
@@ -31,7 +31,7 @@
         private readonly Dictionary<string, List<IRobotRouteData>> _userAgents;
         private readonly List<DeniedRoute> _deniedRobotRoutes;
         private readonly IFileStorageHost _storageHost;
-        private List<RobotRouteData> _customRoutes;
+        private readonly List<RobotRouteData> _customRoutes;
 
         #endregion
 
@@ -244,7 +244,8 @@
             );
             if (customRobots != null)
             {
-                _customRoutes = customRobots;
+                _customRoutes.Clear();
+                _customRoutes.AddRange(customRobots);
             }
             AddCustomRoutesToKnownAgents();
         }

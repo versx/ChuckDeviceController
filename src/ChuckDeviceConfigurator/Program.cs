@@ -29,7 +29,6 @@ using ChuckDeviceController.PluginManager;
 // TODO: Show top navbar on mobile when sidebar is closed?
 // TODO: Create separate gRPC server service for all gRPC calls
 
-
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
 if (config.Providers.Count() == 2)
@@ -200,6 +199,8 @@ builder.Services.AddSingleton<IUiHost>(uiHost);
 builder.Services.AddSingleton<IFileStorageHost>(fileStorageHost);
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
 
+builder.Services.AddHttpContextAccessor();
+
 // Load host applications default sidebar nav headers
 await uiHost.LoadDefaultUiAsync();
 
@@ -266,6 +267,9 @@ app.UseCookiePolicy(new CookiePolicyOptions()
     MinimumSameSitePolicy = SameSiteMode.Lax
 });
 
+// Call 'Configure' method in plugins
+pluginManager.Configure(app);
+
 //app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
@@ -278,13 +282,11 @@ app.UseAuthorization();
 app.MapGrpcService<ProtoPayloadServerService>();
 app.MapGrpcService<TrainerInfoServerService>();
 app.MapGrpcService<WebhookEndpointServerService>();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
-
-// Call 'Configure' method in plugins
-pluginManager.Configure(app);
 
 app.Run();
 

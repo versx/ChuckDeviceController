@@ -3,9 +3,7 @@ namespace RobotsPlugin
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
 
-    using Data.Contracts;
-    using Data.Models;
-    using Services;
+    using Extensions;
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
@@ -47,12 +45,13 @@ namespace RobotsPlugin
 
         public void Configure(WebApplication appBuilder)
         {
+            appBuilder.UseRobots();
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IRobots, Robots>();
-            services.AddScoped<IRouteDataService, RouteDataService>();
+            //services.AddScoped<IRobots, Robots>();
+            //services.AddScoped<IRouteDataService, RouteDataService>();
         }
 
         public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)

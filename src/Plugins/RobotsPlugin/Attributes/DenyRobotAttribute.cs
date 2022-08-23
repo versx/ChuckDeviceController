@@ -10,21 +10,19 @@
         #region Properties
 
         /// <summary>
-        /// The user agent that is to be denied access to the route.
+        /// Gets the user agent that is to be denied access to the route.
         /// </summary>
-        /// <value>string</value>
-        public string UserAgent { get; private set; }
+        public string UserAgent { get; }
 
         /// <summary>
-        /// Optional comment that will appear in the robots.txt file.
+        /// Gets the route associated with the Deny attribute.
         /// </summary>
-        /// <value>string</value>
-        public string Comment { get; private set; }
+        public string Route { get; internal set; }
 
         /// <summary>
-        /// Route associated with the Deny attribute
+        /// Gets the optional comment that will appear in the robots.txt file.
         /// </summary>
-        public string Route { get; set; }
+        public string Comment { get; }
 
         #endregion
 
@@ -39,7 +37,7 @@
         }
 
         /// <summary>
-        /// Constructor
+        /// 
         /// </summary>
         /// <param name="userAgent">Specify the specific user agent that is to be denied access to the route.</param>
         public DenyRobotAttribute(string userAgent)
@@ -48,18 +46,22 @@
         }
 
         /// <summary>
-        /// Constructor
+        /// 
         /// </summary>
         /// <param name="userAgent">Specify the specific user agent that is to be denied access to the route.</param>
+        /// <param name="route"></param>
         /// <param name="comment">Comment to be included in the automatically generated robots.txt file.</param>
         /// <exception cref="ArgumentNullException">Raised if userAgent is null or empty.</exception>
-        public DenyRobotAttribute(string userAgent, string comment)
+        public DenyRobotAttribute(string userAgent, string route, string? comment = null)
         {
             if (string.IsNullOrEmpty(userAgent))
+            {
                 throw new ArgumentNullException(nameof(userAgent));
+            }
 
             UserAgent = userAgent;
-            Comment = comment;
+            Route = route;
+            Comment = comment ?? string.Empty;
         }
 
         #endregion

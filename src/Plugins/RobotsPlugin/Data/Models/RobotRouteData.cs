@@ -2,16 +2,6 @@
 {
     using Contracts;
 
-    using ChuckDeviceController.Plugin.Services;
-
-    [
-        PluginService(
-            ServiceType = typeof(IRobotRouteData),
-            ProxyType = typeof(RobotRouteData),
-            Provider = PluginServiceProvider.Plugin,
-            Lifetime = ServiceLifetime.Scoped
-        )
-    ]
     public class RobotRouteData : IRobotRouteData
     {
         #region Properties
@@ -29,10 +19,6 @@
         #endregion
 
         #region Constructors
-
-        public RobotRouteData()
-        {
-        }
 
         public RobotRouteData(string userAgent, string route, string? comment = null, bool isAllowed = false, bool isCustom = false)
         {
