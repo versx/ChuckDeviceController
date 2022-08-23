@@ -173,9 +173,6 @@
                 // Register assembly as application part with Mvc
                 mvcBuilder.AddApplicationPart(result.Assembly);
 
-                // Register all available host services with plugin
-                mvcBuilder.AddServices(services);
-
                 // Loop through all loaded plugins and register plugin services and register plugins
                 foreach (var pluginHost in loadedPlugins)
                 {
