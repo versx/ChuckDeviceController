@@ -95,7 +95,7 @@
             return default;
         }
 
-        public bool Save<T>(T data, string folderName, string name)
+        public bool Save<T>(T data, string folderName, string name, bool prettyPrint = false)
         {
             var callingAssembly = Assembly.GetCallingAssembly();
             var basePath = GetPluginRootFolder(callingAssembly, folderName);
@@ -111,7 +111,7 @@
                     File.Move(dataFile, tempCopy, true);
                 }
 
-                var json = data.ToJson();
+                var json = data.ToJson(prettyPrint);
                 File.WriteAllText(dataFile, json);
 
                 if (File.Exists(tempCopy))

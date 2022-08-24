@@ -22,9 +22,11 @@
         ///     File name of storage file to save, including extension
         ///     otherwise generic '.dat' extension will be appended.
         /// </param>
+        /// <param name="prettyPrint">
+        /// </param>
         /// <returns>
         ///     Returns <code>true</code> if successful, otherwise <code>false</code>.
         /// </returns>
-        bool Save<T>(T data, string folderName, string name);
+        bool Save<T>(T data, string folderName, string name, bool prettyPrint = false);
     }
 }
