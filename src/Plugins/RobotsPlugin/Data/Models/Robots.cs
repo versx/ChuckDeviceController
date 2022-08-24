@@ -39,20 +39,15 @@
 
         public Robots(
             IActionDescriptorCollectionProvider routeProvider,
-            IRouteDataService routeDataService,
             IFileStorageHost storageHost)
         {
             if (routeProvider == null)
             {
                 throw new ArgumentNullException(nameof(routeProvider));
             }
-            if (routeDataService == null)
-            {
-                throw new ArgumentNullException(nameof(routeDataService));
-            }
 
             _deniedRobotRoutes = new List<DeniedRoute>();
-            _userAgents = LoadRobotData(routeProvider, routeDataService);
+            _userAgents = LoadRobotData(routeProvider);
             _customRoutes = new List<RobotRouteData>();
             _storageHost = storageHost ?? throw new ArgumentNullException(nameof(storageHost));
 
@@ -282,12 +277,11 @@
         }
 
         private Dictionary<string, List<IRobotRouteData>> LoadRobotData(
-            IActionDescriptorCollectionProvider routeProvider,
-            IRouteDataService routeDataService)
+            IActionDescriptorCollectionProvider routeProvider)
         {
             // TODO: Get all 'DenyRobotAttributes' from all plugins for denied routes
             var robotAttributes = new List<Type>();
-            var result = SortAndFilterDenyRoutesByUserAgent(routeProvider, routeDataService, robotAttributes);
+            var result = SortAndFilterDenyRoutesByUserAgent(routeProvider, robotAttributes);
             var lastUserAgent = string.Empty;
             foreach (var (userAgent, routeData) in result)
             {
@@ -306,7 +300,6 @@
 
         private static Dictionary<string, List<IRobotRouteData>> SortAndFilterDenyRoutesByUserAgent(
             IActionDescriptorCollectionProvider routeProvider,
-            IRouteDataService routeDataService,
             IEnumerable<Type> robotAttributes)
         {
             // Loop through all classes and methods decorated with the robot attribute
@@ -316,7 +309,7 @@
                 var attributes = type.GetRobotAttributes<DenyRobotAttribute>();
                 foreach (var attr in attributes)
                 {
-                    attr.Route = routeDataService.GetRouteFromClass(type, routeProvider);
+                    attr.Route = routeProvider.GetRouteFromClass(type);
                     if (string.IsNullOrEmpty(attr.Route))
                         continue;
 
@@ -329,7 +322,7 @@
                     attributes = method.GetType().GetRobotAttributes<DenyRobotAttribute>();
                     foreach (var attr in attributes)
                     {
-                        attr.Route = routeDataService.GetRouteFromMethod(method, routeProvider);
+                        attr.Route = routeProvider.GetRouteFromMethod(method);
                         if (string.IsNullOrEmpty(attr.Route))
                             continue;
 

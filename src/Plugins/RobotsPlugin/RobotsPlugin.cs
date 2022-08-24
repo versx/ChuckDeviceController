@@ -3,6 +3,7 @@ namespace RobotsPlugin
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
 
+    using Configuration;
     using Extensions;
 
     using ChuckDeviceController.Common.Data;
@@ -17,14 +18,16 @@ namespace RobotsPlugin
         #region Variables
 
         private readonly IUiHost _uiHost;
+        private readonly IConfiguration _config;
 
         #endregion
 
         #region Constructor
 
-        public RobotsPlugin(IUiHost uiHost)
+        public RobotsPlugin(IUiHost uiHost, IConfigurationHost configHost)
         {
             _uiHost = uiHost;
+            _config = configHost.GetConfiguration();
         }
 
         #endregion
@@ -52,6 +55,7 @@ namespace RobotsPlugin
         {
             //services.AddScoped<IRobots, Robots>();
             //services.AddScoped<IRouteDataService, RouteDataService>();
+            services.Configure<WebCrawlerConfig>(_config.GetSection("WebCrawler"));
         }
 
         public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)

@@ -12,7 +12,7 @@
         /// </summary>
         /// <param name="context">Valid HttpContext for the request.</param>
         /// <returns></returns>
-        public static string? GetRouteFileExtension(this HttpContext context)
+        public static string GetRouteFileExtension(this HttpContext context)
         {
             if (context == null)
             {
@@ -21,7 +21,7 @@
 
             if (context.Items.ContainsKey(ExtensionLowered))
             {
-                return Convert.ToString(context.Items[ExtensionLowered]);
+                return context.Items[ExtensionLowered]?.ToString() ?? string.Empty;
             }
 
             var loweredExtension = Path.GetExtension(GetRouteLowered(context));
@@ -34,7 +34,7 @@
         /// </summary>
         /// <param name="context">Valid HttpContext for the request.</param>
         /// <returns></returns>
-        public static string? GetRouteLowered(this HttpContext context)
+        public static string GetRouteLowered(this HttpContext context)
         {
             if (context == null)
             {
@@ -43,15 +43,12 @@
 
             if (context.Items.ContainsKey(LoweredRoute))
             {
-                return Convert.ToString(context.Items[LoweredRoute]);
+                return context.Items[LoweredRoute]?.ToString() ?? string.Empty;
             }
 
-            var routeLowered = context.GetRoute()?.ToLowerInvariant();
-            if (routeLowered != null)
-            {
-                context.Items.Add(LoweredRoute, routeLowered);
-            }
-            return routeLowered;
+            var routeLowered = context.GetRoute().ToLowerInvariant();
+            context.Items.Add(LoweredRoute, routeLowered);
+            return routeLowered ?? string.Empty;
         }
 
         /// <summary>
@@ -59,7 +56,7 @@
         /// </summary>
         /// <param name="context">Valid HttpContext for the request.</param>
         /// <returns></returns>
-        public static string? GetRoute(this HttpContext context)
+        public static string GetRoute(this HttpContext context)
         {
             if (context == null)
             {
@@ -68,7 +65,7 @@
 
             if (context.Items.ContainsKey(RouteNormal))
             {
-                return Convert.ToString(context.Items[RouteNormal]);
+                return context.Items[RouteNormal]?.ToString() ?? string.Empty;
             }
 
             var route = context.Request.Path.ToString();

@@ -7,6 +7,8 @@
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public sealed class DenyRobotAttribute : Attribute
     {
+        private const string DenyAllUserAgents = "*";
+
         #region Properties
 
         /// <summary>
@@ -32,7 +34,7 @@
         /// Default constructor, indicates that all user agents are denied.
         /// </summary>
         public DenyRobotAttribute()
-            : this("*")
+            : this(DenyAllUserAgents)
         {
         }
 
