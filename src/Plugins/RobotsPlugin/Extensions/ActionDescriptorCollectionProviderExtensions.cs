@@ -7,6 +7,8 @@
     using Microsoft.AspNetCore.Mvc.Controllers;
     using Microsoft.AspNetCore.Mvc.Infrastructure;
 
+    using ChuckDeviceController.Plugin.Helpers.Extensions;
+
     public static class ActionDescriptorCollectionProviderExtensions
     {
         public static ActionDescriptor? GetRouteActionDescriptor(this IActionDescriptorCollectionProvider routeProvider, string routeName)
@@ -26,7 +28,7 @@
         public static string GetRouteFromMethod(this IActionDescriptorCollectionProvider routeProvider, MethodInfo method)
         {
             // does the class have a route attribute
-            var classRouteAttribute = method.GetType().GetRobotAttribute<RouteAttribute>();
+            var classRouteAttribute = method.GetType().GetAttribute<RouteAttribute>();
             if (classRouteAttribute != null && !string.IsNullOrEmpty(classRouteAttribute.Template))
             {
                 var template = classRouteAttribute.Template;
@@ -74,7 +76,7 @@
         /// <returns></returns>
         public static string GetRouteFromClass(this IActionDescriptorCollectionProvider routeProvider, Type type)
         {
-            var classRouteAttribute = type.GetRobotAttribute<RouteAttribute>();
+            var classRouteAttribute = type.GetAttribute<RouteAttribute>();
             if (classRouteAttribute != null && !string.IsNullOrEmpty(classRouteAttribute.Template))
             {
                 return classRouteAttribute.Template;

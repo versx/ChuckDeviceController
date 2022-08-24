@@ -6,8 +6,9 @@
 
     using Configuration;
     using Data.Contracts;
-    using Extensions;
     using Services;
+
+    using ChuckDeviceController.Plugin.Helpers.Extensions;
 
     /// <summary>
     /// Web crawler robot middleware, serves robots.txt on request and denies access to

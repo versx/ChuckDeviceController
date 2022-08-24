@@ -3,7 +3,8 @@
     using Microsoft.Extensions.Options;
 
     using Configuration;
-    using Extensions;
+
+    using ChuckDeviceController.Plugin.Helpers.Extensions;
 
     public sealed class IpAddressAuthMiddleware
     {

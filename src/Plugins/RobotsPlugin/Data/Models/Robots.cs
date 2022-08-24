@@ -2,12 +2,13 @@
 {
     using Microsoft.AspNetCore.Mvc.Infrastructure;
 
-    using Attributes;
     using Contracts;
     using Extensions;
 
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Plugin.Helpers.Attributes;
     using ChuckDeviceController.Plugin.Services;
+    using ChuckDeviceController.Plugin.Helpers.Extensions;
 
     [
         PluginService(
@@ -35,6 +36,16 @@
 
         #endregion
 
+        #region Properties
+
+        public IEnumerable<string> UserAgents => _userAgents.Keys.ToList();
+
+        public IEnumerable<DeniedRoute> DeniedRoutes => _deniedRobotRoutes;
+
+        public IEnumerable<IRobotRouteData> CustomRoutes => _customRoutes;
+
+        #endregion
+
         #region Constructors
 
         public Robots(
@@ -53,16 +64,6 @@
 
             LoadData();
         }
-
-        #endregion
-
-        #region Properties
-
-        public IEnumerable<string> UserAgents => _userAgents.Keys.ToList();
-
-        public IEnumerable<DeniedRoute> DeniedRoutes => _deniedRobotRoutes;
-
-        public IEnumerable<IRobotRouteData> CustomRoutes => _customRoutes;
 
         #endregion
 
@@ -306,7 +307,7 @@
             var result = new Dictionary<string, List<IRobotRouteData>>();
             foreach (var type in robotAttributes)
             {
-                var attributes = type.GetRobotAttributes<DenyRobotAttribute>();
+                var attributes = type.GetAttributes<DenyRobotAttribute>();
                 foreach (var attr in attributes)
                 {
                     attr.Route = routeProvider.GetRouteFromClass(type);
@@ -319,7 +320,7 @@
                 // Look for any methods decorated with Disallow attribute
                 foreach (var method in type.GetMethods())
                 {
-                    attributes = method.GetType().GetRobotAttributes<DenyRobotAttribute>();
+                    attributes = method.GetType().GetAttributes<DenyRobotAttribute>();
                     foreach (var attr in attributes)
                     {
                         attr.Route = routeProvider.GetRouteFromMethod(method);

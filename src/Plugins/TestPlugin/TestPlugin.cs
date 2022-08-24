@@ -18,8 +18,9 @@
     using Microsoft.Extensions.Logging;
 
     using Data.Contexts;
-    using Extensions;
     using JobControllers;
+
+    using ChuckDeviceController.Plugin.Helpers.Extensions;
 
     //http://127.0.0.1:8881/plugin/v1
     //http://127.0.0.1:8881/Test

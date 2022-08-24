@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobotsPlugin", "Plugins\Rob
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceAuthPlugin", "Plugins\DeviceAuthPlugin\DeviceAuthPlugin.csproj", "{C9B7D6E4-0257-440F-A0CA-27077ED6A563}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Plugin.Helpers", "Libs\ChuckDeviceController.Plugin.Helpers\ChuckDeviceController.Plugin.Helpers.csproj", "{107200F7-F181-4C1B-8291-A4957FDF80E6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,10 @@ Global
 		{C9B7D6E4-0257-440F-A0CA-27077ED6A563}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9B7D6E4-0257-440F-A0CA-27077ED6A563}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9B7D6E4-0257-440F-A0CA-27077ED6A563}.Release|Any CPU.Build.0 = Release|Any CPU
+		{107200F7-F181-4C1B-8291-A4957FDF80E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{107200F7-F181-4C1B-8291-A4957FDF80E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{107200F7-F181-4C1B-8291-A4957FDF80E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{107200F7-F181-4C1B-8291-A4957FDF80E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -157,6 +163,7 @@ Global
 		{532CA014-13EB-4B5D-A297-17E367FBEAB2} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
 		{8C1469EB-3A0E-4348-A9AC-D0FA2756DF2A} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
 		{C9B7D6E4-0257-440F-A0CA-27077ED6A563} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
+		{107200F7-F181-4C1B-8291-A4957FDF80E6} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {826A78C7-B0DA-4D44-AF8E-BDDBFCE8F569}

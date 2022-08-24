@@ -1,4 +1,4 @@
-﻿namespace RobotsPlugin.Attributes
+﻿namespace ChuckDeviceController.Plugin.Helpers.Attributes
 {
     /// <summary>
     /// The deny robot attribute is used on Controller Action methods to indicate that
@@ -17,9 +17,9 @@
         public string UserAgent { get; }
 
         /// <summary>
-        /// Gets the route associated with the Deny attribute.
+        /// Gets or sets the route associated with the Deny attribute.
         /// </summary>
-        public string Route { get; internal set; }
+        public string Route { get; set; }
 
         /// <summary>
         /// Gets the optional comment that will appear in the robots.txt file.

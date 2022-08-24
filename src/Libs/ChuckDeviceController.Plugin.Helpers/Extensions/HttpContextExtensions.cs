@@ -1,6 +1,6 @@
-﻿namespace RobotsPlugin.Extensions
+﻿namespace ChuckDeviceController.Plugin.Helpers.Extensions
 {
-    // TODO: Move to PluginHelper library that can be referenced for plugin writers
+    using Microsoft.AspNetCore.Http;
 
     public static class HttpContextExtensions
     {

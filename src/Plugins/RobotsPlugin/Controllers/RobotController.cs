@@ -1,6 +1,4 @@
-﻿using RobotsPlugin.Attributes;
-
-namespace RobotsPlugin.Controllers
+﻿namespace RobotsPlugin.Controllers
 {
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
@@ -9,6 +7,7 @@ namespace RobotsPlugin.Controllers
     using ViewModels;
 
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Plugin.Helpers.Attributes;
 
     [Authorize(Roles = RoleConsts.SuperAdminRole)]
     [DenyRobot]
