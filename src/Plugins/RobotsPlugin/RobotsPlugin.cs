@@ -9,8 +9,6 @@ namespace RobotsPlugin
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
-    // TODO: Implement web crawlers allow/deny on host application side
-
     [PluginPermissions(PluginPermissions.None)]
     [StaticFilesLocation(StaticFilesLocation.External)]
     public class RobotsPlugin : IPlugin
@@ -36,7 +34,8 @@ namespace RobotsPlugin
 
         public string Name => "RobotsPlugin";
 
-        public string Description => "";
+        public string Description => "Robot web crawlers management plugin allowing configuration" +
+            " of routes and user agents that are allowed or disallowed.";
 
         public string Author => "versx";
 

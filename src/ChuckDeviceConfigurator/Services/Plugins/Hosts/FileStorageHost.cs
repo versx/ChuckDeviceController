@@ -69,7 +69,7 @@
             try
             {
                 var data = File.ReadAllText(dataFile);
-                if (data == null)
+                if (string.IsNullOrEmpty(data))
                 {
                     // File is empty
                     return default;

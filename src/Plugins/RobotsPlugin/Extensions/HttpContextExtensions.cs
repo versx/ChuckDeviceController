@@ -1,6 +1,7 @@
 ﻿namespace RobotsPlugin.Extensions
 {
     // TODO: Move to PluginHelper library that can be referenced for plugin writers
+
     public static class HttpContextExtensions
     {
         private const string LoweredRoute = "RouteLowered";
@@ -24,52 +25,37 @@
                 return context.Items[ExtensionLowered]?.ToString() ?? string.Empty;
             }
 
-            var loweredExtension = Path.GetExtension(GetRouteLowered(context));
+            var route = context.GetRoute(toLower: true);
+            var loweredExtension = Path.GetExtension(route);
             context.Items.Add(ExtensionLowered, loweredExtension);
             return loweredExtension;
-        }
-
-        /// <summary>
-        /// Retrieves the current route being requested through the pipeline in lowercase.
-        /// </summary>
-        /// <param name="context">Valid HttpContext for the request.</param>
-        /// <returns></returns>
-        public static string GetRouteLowered(this HttpContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context.Items.ContainsKey(LoweredRoute))
-            {
-                return context.Items[LoweredRoute]?.ToString() ?? string.Empty;
-            }
-
-            var routeLowered = context.GetRoute().ToLowerInvariant();
-            context.Items.Add(LoweredRoute, routeLowered);
-            return routeLowered ?? string.Empty;
         }
 
         /// <summary>
         /// Retrieves the current route being requested through the pipeline.
         /// </summary>
         /// <param name="context">Valid HttpContext for the request.</param>
+        /// <param name="toLower">Determines whether to provide the route as lowercase.</param>
         /// <returns></returns>
-        public static string GetRoute(this HttpContext context)
+        public static string GetRoute(this HttpContext context, bool toLower = false)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Items.ContainsKey(RouteNormal))
+            var cacheKey = toLower ? LoweredRoute : RouteNormal;
+            if (context.Items.ContainsKey(cacheKey))
             {
-                return context.Items[RouteNormal]?.ToString() ?? string.Empty;
+                return context.Items[cacheKey]?.ToString() ?? string.Empty;
             }
 
             var route = context.Request.Path.ToString();
-            context.Items.Add(RouteNormal, route);
+            if (toLower)
+            {
+                route = route.ToLower();
+            }
+            context.Items.Add(cacheKey, route);
             return route;
         }
     }

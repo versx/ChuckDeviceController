@@ -93,7 +93,7 @@
                 return;
             }
 
-            var route = context.GetRouteLowered();
+            var route = context.GetRoute(toLower: true);
             if (Options.UseHoneyPotService &&
                 !string.IsNullOrEmpty(Options.HoneyPotRoute)
                 && route.StartsWith(Options.HoneyPotRoute))

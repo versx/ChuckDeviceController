@@ -4,7 +4,7 @@
     using ChuckDeviceController.Plugin.Services;
 
     /// <summary>
-    /// Honeypot the robot web crawler
+    /// Honeypot logger service for web crawler bots
     /// </summary>
     [
         PluginService(
@@ -17,7 +17,7 @@
     public class HoneyPotService : IHoneyPotService
     {
         private const string DefaultLogFileName = "honeypot.txt";
-        private const string DefaultLogFolderName = "";
+        private const string DefaultLogFolderName = "logs";
 
         private readonly IFileStorageHost _fileStorageHost;
         private readonly ILoggingHost _loggingHost;
@@ -33,7 +33,7 @@
         public void OnTriggered(string ipAddress, string userAgent)
         {
             // Log to honeypot.txt file in root of plugin's folder
-            _loggingHost.LogMessage($"Honey pot triggered by bot web crawler: {ipAddress} - {userAgent}");
+            _loggingHost.LogMessage($"Honey pot triggered by web crawler bot: {ipAddress} - {userAgent}");
 
             // Check if throws error when not found
             var log = _fileStorageHost.Load<List<HoneyPotEvent>>(DefaultLogFolderName, DefaultLogFileName);
