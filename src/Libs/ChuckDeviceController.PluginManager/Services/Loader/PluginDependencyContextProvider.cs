@@ -12,6 +12,8 @@
 
     public class PluginDependencyContextProvider : IPluginDependencyContextProvider
     {
+        private const string DependenciesExtension = ".deps.json";
+
         #region Variables
 
         private static readonly ILogger<IPluginDependencyContextProvider> _logger =
@@ -24,22 +26,31 @@
         public IPluginDependencyContext LoadFromPluginLoadContext(IPluginAssemblyLoadContext loadContext)
         {
             var hostDependencies = new List<HostDependency>();
-
             foreach (var type in loadContext.HostTypes)
             {
                 // Load host types from current app domain
-                LoadAssemblyAndReferencesFromCurrentAppDomain(type.Assembly.GetName(), hostDependencies, loadContext.DowngradableHostTypes, loadContext.DowngradableHostAssemblies);
+                LoadAssemblyAndReferencesFromCurrentAppDomain(
+                    type.Assembly.GetName(),
+                    hostDependencies,
+                    loadContext.DowngradableHostTypes,
+                    loadContext.DowngradableHostAssemblies
+                );
             }
 
             foreach (var assemblyFileName in loadContext.HostAssemblies)
             {
                 // Load host types from current app domain
-                LoadAssemblyAndReferencesFromCurrentAppDomain(assemblyFileName, hostDependencies, loadContext.DowngradableHostTypes, loadContext.DowngradableHostAssemblies);
+                LoadAssemblyAndReferencesFromCurrentAppDomain(
+                    assemblyFileName,
+                    hostDependencies,
+                    loadContext.DowngradableHostTypes,
+                    loadContext.DowngradableHostAssemblies
+                );
             }
 
             // Check plugin assembly target framework against host target framework
             var dependencyContext = GetDependencyContext(loadContext.AssemblyFullPath);
-            var pluginFramework = dependencyContext?.Target.Framework;
+            var pluginFramework = dependencyContext?.Target?.Framework ?? string.Empty;
             CheckFrameworkCompatibility(loadContext.HostFramework, pluginFramework, loadContext.IgnorePlatformInconsistencies);
 
             var pluginDependencies = GetPluginDependencies(dependencyContext);
@@ -67,8 +78,8 @@
         private static DependencyContext? GetDependencyContext(string assemblyFullPath)
         {
             var depFolder = Path.GetDirectoryName(assemblyFullPath);
-            var depFileName = Path.GetFileNameWithoutExtension(assemblyFullPath) + ".deps.json";
-            var depFilePath = Path.Combine(depFolder, depFileName );
+            var depFileName = Path.GetFileNameWithoutExtension(assemblyFullPath) + DependenciesExtension;
+            var depFilePath = Path.Combine(depFolder!, depFileName);
             if (!File.Exists(depFilePath))
             {
                 _logger.LogWarning($"Plugin assembly dependencies file '{depFileName}' does not exist, unable to determine or load all possible dependencies.");
@@ -94,6 +105,11 @@
 
             var pluginFrameworkSplit = pluginFramework.Split(new[] { ",Version=v" }, StringSplitOptions.RemoveEmptyEntries);
             var hostFrameworkSplit = hostFramework.Split(new[] { ",Version=v" }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (pluginFrameworkSplit.Length != hostFrameworkSplit.Length)
+            {
+                throw new Exception($"Framework target parts for plugin and host do not match. Likely unable to find 'plugin.deps.json' file to load dependencies.");
+            }
 
             var pluginFrameworkType = pluginFrameworkSplit[0];
             var hostFrameworkType = hostFrameworkSplit[0];

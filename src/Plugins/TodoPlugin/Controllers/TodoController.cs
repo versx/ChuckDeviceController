@@ -1,4 +1,4 @@
-﻿namespace TestPlugin.Controllers
+﻿namespace TodoPlugin.Controllers
 {
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;

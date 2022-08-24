@@ -41,11 +41,11 @@
         /// </summary>
         bool IsDisabled { get; }
 
-        /// <summary>
-        /// Gets or sets a value determining whether to 
-        /// create the navbar header in its own section
-        /// or add it to the default.
-        /// </summary>
+        //// <summary>
+        //// Gets or sets a value determining whether to 
+        //// create the navbar header in its own section
+        //// or add it to the default.
+        //// </summary>
         //bool IsSeparateSection { get; }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace TestPlugin.Data.Entities
+﻿namespace TodoPlugin.Data.Entities
 {
     using System.ComponentModel;
 

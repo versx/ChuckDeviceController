@@ -26,6 +26,7 @@ using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager;
 
 
+// TODO: Create 'CopyPlugin.sh' script for plugins to execute post build event (.dlls other than CDC libs, Views, wwwroot, .deps.json file, etc)
 // TODO: Show top navbar on mobile when sidebar is closed?
 // TODO: Create separate gRPC server service for all gRPC calls
 

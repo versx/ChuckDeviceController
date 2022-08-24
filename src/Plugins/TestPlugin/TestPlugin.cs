@@ -13,11 +13,9 @@
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc.Razor;
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
 
-    using Data.Contexts;
     using JobControllers;
 
     using ChuckDeviceController.Plugin.Helpers.Extensions;
@@ -275,7 +273,7 @@
         {
             _loggingHost.LogMessage($"ConfigureServices called");
 
-            services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
+            //services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
         }
 
         /// <summary>
@@ -381,14 +379,6 @@
                     Text = "Sep",
                     DisplayIndex = 998,
                     IsSeparator = true,
-                },
-                new NavbarHeader
-                {
-                    Text = "Todos",
-                    ControllerName = "Todo",
-                    ActionName = "Index",
-                    DisplayIndex = 999,
-                    Icon = "fa-solid fa-fw fa-list",
                 },
             };
             await _uiHost.AddNavbarHeadersAsync(pluginNavbarHeaders);

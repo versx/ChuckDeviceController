@@ -7,6 +7,8 @@
 
     using ChuckDeviceController.Common;
 
+    // TODO: Add to separate TestApiPlugin
+
     [ApiController] // Web API only, no Mvc Views used
     [Produces(MediaTypeNames.Application.Json)] // Only produces json responses (can put per method vs class if desired)
     public class TestApiController : ControllerBase
