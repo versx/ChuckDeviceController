@@ -81,7 +81,7 @@
         [HttpPost]
         public async Task<ActionResult> Create(Todo todo)
         {
-            if (_context.Todos.Any(x => x.Name == todo.Name))
+            if (_context..Todos.Any(x => x.Name == todo.Name))
             {
                 _logger.LogError($"Todo already exists with name '{todo.Name}'");
                 ModelState.AddModelError("Todo", $"Todo already exists with name '{todo.Name}'");

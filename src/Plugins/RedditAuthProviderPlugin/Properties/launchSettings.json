@@ -3,15 +3,15 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:28550",
-      "sslPort": 44342
+      "applicationUrl": "http://localhost:18373",
+      "sslPort": 0
     }
   },
   "profiles": {
-    "ChuckDeviceConfigurator": {
+    "RedditAuthProviderPlugin": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:49894",
+      "applicationUrl": "http://localhost:31575",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

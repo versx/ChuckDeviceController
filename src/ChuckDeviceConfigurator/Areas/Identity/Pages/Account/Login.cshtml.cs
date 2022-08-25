@@ -171,7 +171,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
             return Page();
         }
 
-        public bool IsValidEmail(string emailaddress)
+        public static bool IsValidEmail(string emailaddress)
         {
             try
             {

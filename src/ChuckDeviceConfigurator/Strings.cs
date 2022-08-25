@@ -3,6 +3,7 @@
     using System.Reflection;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Extensions.Json;
 
     public static partial class Strings
     {
@@ -22,6 +23,7 @@
         public static readonly string DataFolder = Path.Combine(WebRoot, "data");
         public static readonly string LocaleFolder = Path.Combine(WebRootFolder, "locales");
         public static readonly string PluginsFolder = Path.Combine(BasePath, "plugins");
+        public static readonly string AuthProviderFileName = "auth_providers.json";
 
         // Default user properties
         public const string DefaultUserName = "root";
@@ -52,14 +54,22 @@
         public const string DefaultResetPasswordEmailSubject = "Reset Password";
         public const string DefaultResetPasswordMessageHtmlFormat = "Please reset your password by <a href='{0}'>clicking here</a>.";
 
-        public const ushort DeviceOnlineThresholdS = 15 * 60; // 15 minutes (900)
-
         public const string DefaultDateTimeFormat = "MM/dd/yyyy hh:mm:ss tt";
-
         public const string DefaultTableRefreshRateS = "10";
 
+        // Device icons
+        public const ushort DeviceOnlineThresholdS = 15 * 60; // 15 minutes (900)
         public const string DeviceOnlineIcon = "🟢"; // green dot
         public const string DeviceOfflineIcon = "🔴"; // red dot
+
+        public static readonly IReadOnlyDictionary<string, AuthProviderConfig> DefaultAuthProviderIcons = new Dictionary<string, AuthProviderConfig>
+        {
+            { "Discord", new("fa-brands fa-discord fa-align-left social-icon", style: "background: #5865F2; color: #fff;") },
+            { "GitHub", new("fa-brands fa-github fa-align-left social-icon", style: "background: #000000; color: #fff;") },
+            { "Google", new("fa-brands fa-google fa-align-left social-icon", style: "background: #d24228; color: #fff;") },
+        };
+
+        public static readonly IReadOnlyDictionary<string, AuthProviderConfig> AuthProviderIcons = LoadAuthProviderIcons();
 
         #region Default Instance Property Values
 
@@ -107,5 +117,41 @@
         public const bool DefaultIsEvent = false;
 
         #endregion
+
+        private static IReadOnlyDictionary<string, AuthProviderConfig> LoadAuthProviderIcons()
+        {
+            var path = Path.Combine(DataFolder, AuthProviderFileName);
+            if (!File.Exists(path))
+            {
+                return DefaultAuthProviderIcons;
+            }
+            var data = File.ReadAllText(path);
+            if (string.IsNullOrEmpty(data))
+            {
+                return DefaultAuthProviderIcons;
+            }
+            var obj = data?.FromJson<Dictionary<string, AuthProviderConfig>>();
+            return obj ?? DefaultAuthProviderIcons;
+        }
+    }
+
+    public class AuthProviderConfig
+    {
+        public string Icon { get; set; }
+
+        public string Class { get; set; }
+
+        public string Style { get; set; }
+
+        public AuthProviderConfig()
+        {
+        }
+
+        public AuthProviderConfig(string icon, string? className = null, string? style = null)
+        {
+            Icon = icon;
+            Class = className ?? string.Empty;
+            Style = style ?? string.Empty;
+        }
     }
 }

@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Plugi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoPlugin", "Plugins\TodoPlugin\TodoPlugin.csproj", "{126F2FF7-E1F3-4227-A011-76D93A61A739}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedditAuthProviderPlugin", "Plugins\RedditAuthProviderPlugin\RedditAuthProviderPlugin.csproj", "{3D033823-7360-4A1F-AE24-C814815CB8BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -147,6 +149,10 @@ Global
 		{126F2FF7-E1F3-4227-A011-76D93A61A739}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{126F2FF7-E1F3-4227-A011-76D93A61A739}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{126F2FF7-E1F3-4227-A011-76D93A61A739}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D033823-7360-4A1F-AE24-C814815CB8BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D033823-7360-4A1F-AE24-C814815CB8BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D033823-7360-4A1F-AE24-C814815CB8BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D033823-7360-4A1F-AE24-C814815CB8BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -171,6 +177,7 @@ Global
 		{C9B7D6E4-0257-440F-A0CA-27077ED6A563} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
 		{107200F7-F181-4C1B-8291-A4957FDF80E6} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 		{126F2FF7-E1F3-4227-A011-76D93A61A739} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
+		{3D033823-7360-4A1F-AE24-C814815CB8BC} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {826A78C7-B0DA-4D44-AF8E-BDDBFCE8F569}

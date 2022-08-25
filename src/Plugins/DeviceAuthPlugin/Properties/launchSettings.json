@@ -1,4 +1,4 @@
-﻿{
+{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
@@ -10,9 +10,8 @@
   "profiles": {
     "DeviceAuthPlugin": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:5091",
+      "applicationUrl": "http://localhost:18091",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

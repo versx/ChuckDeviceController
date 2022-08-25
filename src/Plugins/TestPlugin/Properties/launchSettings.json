@@ -3,10 +3,10 @@
     "TestPlugin": {
       "commandName": "Project",
       "launchBrowser": true,
+      "applicationUrl": "http://localhost:12761",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:58134;http://localhost:58135"
+      }
     }
   }
 }

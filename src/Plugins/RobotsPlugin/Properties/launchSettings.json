@@ -1,4 +1,4 @@
-﻿{
+{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
@@ -10,9 +10,8 @@
   "profiles": {
     "RobotsPlugin": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:5206",
+      "applicationUrl": "http://localhost:28734",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

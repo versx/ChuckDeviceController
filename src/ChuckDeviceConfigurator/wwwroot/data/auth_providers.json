@@ -1,0 +1,22 @@
+{
+  "Discord": {
+    "Icon": "fa-brands fa-discord fa-align-left social-icon",
+    "Class": "",
+    "Style": "background: #5865F2; color: #fff;"
+  },
+  "GitHub": {
+    "Icon": "fa-brands fa-github fa-align-left social-icon",
+    "Class": "",
+    "Style": "background: #000000; color: #fff;"
+  },
+  "Google": {
+    "Icon": "fa-brands fa-google fa-align-left social-icon",
+    "Class": "",
+    "Style": "background: #d24228; color: #fff;"
+  },
+  "Reddit": {
+    "Icon": "fa-brands fa-reddit fa-align-left social-icon",
+    "Class": "",
+    "Style": "background: #FF4500; color: #fff;"
+  }
+}
