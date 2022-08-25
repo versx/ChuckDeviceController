@@ -11,18 +11,27 @@
 
     public static class ServiceCollectionExtensions
     {
+        private const string DefaultViews = "Views";
         private const string DefaultWebRoot = "wwwroot";
 
-        public static IFileProvider? GetStaticFilesProvider(this Type pluginType, Assembly assembly, string? webRoot = null)
+        public static (IFileProvider? Views, IFileProvider? WebRoot) GetStaticFilesProvider(this Type pluginType, Assembly assembly)
         {
             // Check if plugin assembly has static files attribute assigned, if so add any embedded resource
             // or external files to web root provider i.e. 'wwwwroot' folder and contents
             var staticFilesAttr = pluginType.GetCustomAttribute<StaticFilesLocationAttribute>();
             if (staticFilesAttr == null)
-                return null;
+                return default;
 
+            var viewsFileProvider = staticFilesAttr.Views.GetFileProviderTypeFromStaticFileProvider(assembly, DefaultViews);
+            var webRootFileProvider = staticFilesAttr.WebRoot.GetFileProviderTypeFromStaticFileProvider(assembly, DefaultWebRoot);
+            var result = (viewsFileProvider, webRootFileProvider);
+            return result;
+        }
+
+        public static IFileProvider? GetFileProviderTypeFromStaticFileProvider(this StaticFilesLocation location, Assembly assembly, string path)
+        {
             IFileProvider? fileProvider = null;
-            switch (staticFilesAttr.Location)
+            switch (location)
             {
                 case StaticFilesLocation.None:
                     // No static files to map/worry about
@@ -34,14 +43,13 @@
                         return null;
 
                     // Static files are within the plugin's embedded resources file
-                    fileProvider = new ManifestEmbeddedFileProvider(assembly, webRoot ?? DefaultWebRoot);
+                    fileProvider = new ManifestEmbeddedFileProvider(assembly, path);
                     break;
                 case StaticFilesLocation.External:
                     // Static files are external and on local disk in the plugin's folder
-                    fileProvider = new PluginPhysicalFileProvider(assembly, webRoot ?? DefaultWebRoot);
+                    fileProvider = new PluginPhysicalFileProvider(assembly, path);
                     break;
             }
-
             return fileProvider;
         }
 

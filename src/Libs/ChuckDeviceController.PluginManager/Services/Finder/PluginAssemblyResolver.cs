@@ -52,7 +52,7 @@
             return LoadAssemblyForRuntime(context, assemblyName);
         }
 
-        protected Assembly LoadAssemblyForRuntime(MetadataLoadContext context, AssemblyName assemblyName)
+        protected static Assembly LoadAssemblyForRuntime(MetadataLoadContext context, AssemblyName assemblyName)
         {
             try
             {

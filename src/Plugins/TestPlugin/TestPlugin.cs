@@ -23,7 +23,7 @@
     //http://127.0.0.1:8881/plugin/v1
     //http://127.0.0.1:8881/Test
 
-    // TODO: Include user roles with plugins
+    // TODO: Allow creation of new user roles for plugins?
 
     /// <summary>
     ///     Example plugin demonstrating the capabilities
@@ -38,7 +38,7 @@
                           PluginPermissions.AddJobControllers),
         // Specifies where the 'wwwroot' folder will be if any are used or needed.
         // Possible options: embedded resources, local/external, or none.
-        StaticFilesLocation(StaticFilesLocation.External),
+        StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External),
     ]
     public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents
     {

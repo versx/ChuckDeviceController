@@ -10,7 +10,7 @@ namespace RobotsPlugin
     using ChuckDeviceController.Plugin;
 
     [PluginPermissions(PluginPermissions.None)]
-    [StaticFilesLocation(StaticFilesLocation.External)]
+    [StaticFilesLocation(StaticFilesLocation.External, StaticFilesLocation.External)]
     public class RobotsPlugin : IPlugin
     {
         #region Variables

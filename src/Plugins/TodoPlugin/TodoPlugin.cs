@@ -9,7 +9,7 @@ namespace TodoPlugin
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
-    [StaticFilesLocation(StaticFilesLocation.External)]
+    [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class TodoPlugin : IPlugin
     {
         private readonly IUiHost _uiHost;
@@ -26,10 +26,14 @@ namespace TodoPlugin
 
         #endregion
 
+        #region Constructor
+
         public TodoPlugin(IUiHost uiHost)
         {
             _uiHost = uiHost;
         }
+
+        #endregion
 
         #region ASP.NET Methods
 
