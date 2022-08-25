@@ -12,7 +12,11 @@ namespace TodoPlugin
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class TodoPlugin : IPlugin
     {
+        #region Variables
+
         private readonly IUiHost _uiHost;
+
+        #endregion
 
         #region Metadata Properties
 

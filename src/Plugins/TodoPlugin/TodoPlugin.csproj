@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\$(TargetFileName)&quot;&#xD;&#xA;xcopy /S /E /Y /I &quot;$(TargetDir)\Views\*&quot; &quot;$(SolutionDir)ChuckDeviceConfigurator\bin\Debug\plugins\$(ProjectName)\Views\&quot;" />
+    <Exec Command="&quot;../../../scripts/copy.bat&quot; &quot;$(TargetPath)&quot; &quot;$(ProjectName)&quot; &quot;$(TargetFileName)&quot; &quot;$(TargetDir)&quot; &quot;$(SolutionDir)&quot;" />
   </Target>
 	
 </Project>

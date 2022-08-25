@@ -8,7 +8,11 @@
 
     public class RedditAuthProviderPlugin : IPlugin
     {
+        #region Variables
+
         private readonly IConfiguration _config;
+
+        #endregion
 
         #region Metadata Properties
 
@@ -22,10 +26,14 @@
 
         #endregion
 
+        #region Constructor
+
         public RedditAuthProviderPlugin(IConfigurationHost configHost)
         {
             _config = configHost.GetConfiguration();
         }
+
+        #endregion
 
         #region ASP.NET Methods
 
