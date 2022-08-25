@@ -103,22 +103,22 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.Configure<IdentityOptions>(options => GetDefaultIdentityOptions());
 
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    // Cookie settings
-    options.Cookie.HttpOnly = true;
-    //options.Cookie.Expiration 
-    options.ExpireTimeSpan = TimeSpan.FromHours(1);
-    options.LoginPath = "/Identity/Account/Login";
-    options.LogoutPath = "/Identity/Account/Logout";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-    options.SlidingExpiration = true;
-    //options.ReturnUrlParameter=""
-});
-
 // Register external 3rd party authentication providers if configured
 builder.Services
     .AddAuthentication()
+    .AddCookie(options =>
+    {
+        // Cookie settings
+        options.Cookie.HttpOnly = true;
+        //options.Cookie.Expiration 
+        options.ExpireTimeSpan = TimeSpan.FromHours(1);
+        options.LoginPath = "/Identity/Account/Login";
+        options.LogoutPath = "/Identity/Account/Logout";
+        options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+        options.SlidingExpiration = true;
+        //options.ReturnUrlParameter = "";
+
+    })
     .AddOpenAuthProviders(builder.Configuration);
 
 #endregion
