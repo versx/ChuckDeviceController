@@ -46,6 +46,11 @@
                     fileProvider = new ManifestEmbeddedFileProvider(assembly, path);
                     break;
                 case StaticFilesLocation.External:
+                    if (!File.Exists(path))
+                    {
+                        // TODO: Log warning
+                        return null;
+                    }
                     // Static files are external and on local disk in the plugin's folder
                     fileProvider = new PluginPhysicalFileProvider(assembly, path);
                     break;

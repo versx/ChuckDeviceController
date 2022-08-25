@@ -19,7 +19,7 @@ SET depsFileExt=.deps.json
 
 :: Copy plugin library and dependencies config file
 copy "%targetPath%" "%pluginFolder%/%targetFileName%"
-copy "%targetPath%" "%pluginFolder%/%projectName%%depsFileExt%"
+copy "%targetDir%/%projectName%%depsFileExt%" "%pluginFolder%/%projectName%%depsFileExt%"
 
 :: TODO: Copy all dependency files other than ChuckDeviceController.* libraries
 
@@ -28,13 +28,13 @@ if exist "%targetDir%/appsettings.json" (
 )
 
 :: Copy all directories from plugin build output folder
-xcopy /S /E /Y /I "%targetDir%/*" "%pluginFolder%/."
+::xcopy /S /E /Y /I "%targetDir%/" "%pluginFolder%/"
 
-::if exist "%targetDir%/Views/" (
-::  xcopy /S /E /Y /I "%targetDir%/Views" "%pluginFolder%/Views"
-::)
-::if exist "%targetDir%/wwwroot/" (
-::  xcopy /S /E /Y /I "%targetDir%/wwwroot" "%pluginFolder%/wwwroot"
-::)
+if exist "%targetDir%/Views/" (
+  xcopy /S /E /Y /I "%targetDir%/Views" "%pluginFolder%/Views"
+)
+if exist "%targetDir%/wwwroot/" (
+  xcopy /S /E /Y /I "%targetDir%/wwwroot" "%pluginFolder%/wwwroot"
+)
 
 ::"../../../scripts/copy.bat" "$(TargetPath)" "$(ProjectName)" "$(TargetFileName)" "$(TargetDir)" "$(SolutionDir)"
