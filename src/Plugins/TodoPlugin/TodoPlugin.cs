@@ -60,7 +60,7 @@ namespace TodoPlugin
 
         public async void OnLoad()
         {
-            var navbarHeader = new NavbarHeader
+            var navbarHeader = new SidebarItem
             {
                 Text = "Todos",
                 ControllerName = "Todo",
@@ -68,7 +68,7 @@ namespace TodoPlugin
                 DisplayIndex = 999,
                 Icon = "fa-solid fa-fw fa-list",
             };
-            await _uiHost.AddNavbarHeaderAsync(navbarHeader);
+            await _uiHost.AddSidebarItemAsync(navbarHeader);
         }
 
         public void OnReload()

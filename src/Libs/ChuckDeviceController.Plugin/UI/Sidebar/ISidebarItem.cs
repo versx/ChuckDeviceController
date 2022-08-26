@@ -1,13 +1,13 @@
 ﻿namespace ChuckDeviceController.Plugin
 {
     /// <summary>
-    /// Navigation bar header plugin contract.
+    /// Side navigation bar plugin contract.
     /// </summary>
-    public interface INavbarHeader  // TODO: Rename to 'ISidebarItem' or something
+    public interface ISidebarItem
     {
         /// <summary>
-        /// Gets or sets the text to display for this navbar
-        /// header.
+        /// Gets or sets the text to display for this sidebar
+        /// item.
         /// </summary>
         string Text { get; }
 
@@ -19,25 +19,25 @@
 
         /// <summary>
         /// Gets or sets the controller action name to execute
-        /// when the navbar header is clicked.
+        /// when the sidebar item is clicked.
         /// </summary>
         string ActionName { get; }
 
         /// <summary>
         /// Gets or sets the FontAwesome v6 icon key to use for 
-        /// the navbar header. https://fontawesome.com/icons
+        /// the sidebar item. https://fontawesome.com/icons
         /// </summary>
         string Icon { get; }
 
         /// <summary>
         /// Gets or sets the numeric display index order of
-        /// the navbar header in the list of navbar headers.
+        /// the sidebar item in the list of sidebar items.
         /// </summary>
         uint DisplayIndex { get; }
 
         /// <summary>
         /// Gets or sets a value determining whether the
-        /// navbar header is disabled or not.
+        /// sidebar item is disabled or not.
         /// </summary>
         bool IsDisabled { get; }
 

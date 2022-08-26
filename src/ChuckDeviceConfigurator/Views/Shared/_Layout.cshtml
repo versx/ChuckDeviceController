@@ -8,12 +8,12 @@
 @{
     const string DarkTheme = "dark";
     var data = Html.RenderAction("GetNavbarHeaders", "Helper");
-    var navbarHeaders = Convert.ToString(data)?.FromJson<List<NavbarHeader>>();
+    var navbarHeaders = Convert.ToString(data)?.FromJson<List<SidebarItem>>();
 
     var themeData = Html.RenderAction("GetTheme", "Helper");
     var theme = Convert.ToString(themeData)?.FromJson<string>() ?? DarkTheme;
 
-    async Task AddSidebarItem(NavbarHeader header)
+    async Task AddSidebarItem(SidebarItem header)
     {
         if (header.IsDropdown && (header?.DropdownItems?.Any() ?? false))
         {

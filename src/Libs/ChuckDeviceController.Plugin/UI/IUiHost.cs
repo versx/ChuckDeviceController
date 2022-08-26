@@ -8,9 +8,9 @@
         #region Properties
 
         /// <summary>
-        /// Gets a list of navbar headers registered by plugins.
+        /// Gets a list of sidebar items registered by plugins.
         /// </summary>
-        IReadOnlyList<NavbarHeader> NavbarHeaders { get; }
+        IReadOnlyList<SidebarItem> SidebarItems { get; }
 
         /// <summary>
         /// Gets a list of dashboard statistics registered by plugins.
@@ -37,18 +37,18 @@
         #region Methods
 
         /// <summary>
-        /// Adds a <seealso cref="NavbarHeader"/> item to the main
-        /// application's Mvc navbar header.
+        /// Adds a <seealso cref="SidebarItem"/> item to the main
+        /// application's Mvc sidebar.
         /// </summary>
-        /// <param name="header">Navbar to add.</param>
-        Task AddNavbarHeaderAsync(NavbarHeader header);
+        /// <param name="header">Sidebar item to add.</param>
+        Task AddSidebarItemAsync(SidebarItem header);
 
         /// <summary>
-        /// Adds a list of <seealso cref="NavbarHeader"/> items to the
-        /// main application's Mvc navbar header.
+        /// Adds a list of <seealso cref="SidebarItem"/> items to the
+        /// main application's Mvc sidebar.
         /// </summary>
-        /// <param name="headers">List of navbars to add.</param>
-        Task AddNavbarHeadersAsync(IEnumerable<NavbarHeader> headers);
+        /// <param name="headers">List of sidebar items to add.</param>
+        Task AddSidebarItemsAsync(IEnumerable<SidebarItem> headers);
 
         /// <summary>
         /// Adds a custom <seealso cref="IDashboardStatsItem"/> to the

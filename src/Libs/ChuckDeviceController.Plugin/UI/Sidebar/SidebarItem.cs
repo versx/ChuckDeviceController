@@ -3,7 +3,7 @@
     /// <summary>
     /// Navigation bar header plugin contract implementation.
     /// </summary>
-    public class NavbarHeader : INavbarHeader
+    public class SidebarItem : ISidebarItem
     {
         /// <summary>
         /// Gets or sets the text to display for this navbar
@@ -44,7 +44,7 @@
         /// <summary>
         /// Gets or sets a list of navbar header dropdown items.
         /// </summary>
-        public IEnumerable<NavbarHeader>? DropdownItems { get; set; }
+        public IEnumerable<SidebarItem>? DropdownItems { get; set; }
 
         /// <summary>
         /// Gets or sets a value determining whether the
@@ -62,7 +62,7 @@
         /// Instantiates a new navbar header instance using default 
         /// property values.
         /// </summary>
-        public NavbarHeader()
+        public SidebarItem()
         {
             Text = string.Empty;
             ControllerName = string.Empty;
@@ -83,7 +83,7 @@
         /// <param name="dropdownItems"></param>
         /// <param name="isDisabled"></param>
         /// <param name="isSeparator"></param>
-        public NavbarHeader(string text, string controllerName = "", string actionName = "Index", string icon = "", uint displayIndex = 999, bool isDropdown = false, IEnumerable<NavbarHeader>? dropdownItems = null, bool isDisabled = false, bool isSeparator = false)
+        public SidebarItem(string text, string controllerName = "", string actionName = "Index", string icon = "", uint displayIndex = 999, bool isDropdown = false, IEnumerable<SidebarItem>? dropdownItems = null, bool isDisabled = false, bool isSeparator = false)
         {
             Text = text;
             ControllerName = controllerName;

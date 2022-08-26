@@ -319,8 +319,8 @@
             };
             await _uiHost.AddDashboardStatisticsAsync(stats);
 
-            // Register new navbar headers
-            var pluginNavbarHeaders = new List<NavbarHeader>
+            // Register new sidebar headers
+            var pluginSidebarItems = new List<SidebarItem>
             {
                 new(
                     // Dropdown header text that is displayed in the sidebar
@@ -333,12 +333,12 @@
                     // a single sidebar entry
                     isDropdown: true,
                     // List of children sidebar item
-                    dropdownItems: new List<NavbarHeader>
+                    dropdownItems: new List<SidebarItem>
                     {
                         // Sidebar item #1
-                        new("DropTest", displayIndex: 2, icon: "fa-solid fa-fw fa-hammer", isDropdown: true, dropdownItems: new List<NavbarHeader>
+                        new("DropTest", displayIndex: 2, icon: "fa-solid fa-fw fa-hammer", isDropdown: true, dropdownItems: new List<SidebarItem>
                         {
-                            new("Tester", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<NavbarHeader>
+                            new("Tester", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<SidebarItem>
                             {
                                 new("Ok", "Geofence", displayIndex: 1, icon: "fa-solid fa-fw fa-microscope"),
                             }),
@@ -361,27 +361,27 @@
                         ),
                     }
                 ),
-                new NavbarHeader
+                new SidebarItem
                 {
                     Text = "Devices", //"TestNavDropdown",
                     DisplayIndex = 4,
                     Icon = "fa-solid fa-fw fa-microscope",
                     IsDropdown = true,
-                    DropdownItems = new List<NavbarHeader>
+                    DropdownItems = new List<SidebarItem>
                     {
                         new("Item1", "Device", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt"),
                         //new("Hmm", isSeparator: true, displayIndex: 3),
                         new("Item2", "Instance", isDisabled: true, displayIndex: 999, icon: "fa-solid fa-fw fa-cubes-stacked"),
                     },
                 },
-                new NavbarHeader
+                new SidebarItem
                 {
                     Text = "Sep",
                     DisplayIndex = 998,
                     IsSeparator = true,
                 },
             };
-            await _uiHost.AddNavbarHeadersAsync(pluginNavbarHeaders);
+            await _uiHost.AddSidebarItemsAsync(pluginSidebarItems);
 
             // Add/register dashboard tiles
             var pluginTile = new DashboardTile

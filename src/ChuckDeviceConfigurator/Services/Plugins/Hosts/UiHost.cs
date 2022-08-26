@@ -15,7 +15,7 @@
         //private static readonly PluginUiCache<NavbarHeader> _navbarHeaders = new();
         //private static readonly PluginUiCache<IDashboardStatsItem> _dashboardStats = new();
         //private static readonly PluginUiCache<IDashboardTile> _dashboardTiles = new();
-        private static readonly Dictionary<string, NavbarHeader> _navbarHeaders = new();
+        private static readonly Dictionary<string, SidebarItem> _sidebarItems = new();
         private static readonly Dictionary<string, IDashboardStatsItem> _dashboardStats = new();
         private static readonly Dictionary<string, IDashboardTile> _dashboardTiles = new();
         private static readonly Dictionary<string, SettingsTab> _settingsTabs = new();
@@ -25,7 +25,7 @@
 
         #region Properties
 
-        public IReadOnlyList<NavbarHeader> NavbarHeaders => _navbarHeaders?.Values.ToList();
+        public IReadOnlyList<SidebarItem> SidebarItems => _sidebarItems?.Values.ToList();
 
         public IReadOnlyList<IDashboardStatsItem> DashboardStatsItems => _dashboardStats?.Values.ToList();
 
@@ -48,40 +48,40 @@
 
         #region Public Methods
 
-        public async Task AddNavbarHeadersAsync(IEnumerable<NavbarHeader> headers)
+        public async Task AddSidebarItemsAsync(IEnumerable<SidebarItem> items)
         {
-            foreach (var header in headers)
+            foreach (var item in items)
             {
-                await AddNavbarHeaderAsync(header);
+                await AddSidebarItemAsync(item);
             }
         }
 
-        public async Task AddNavbarHeaderAsync(NavbarHeader header)
+        public async Task AddSidebarItemAsync(SidebarItem item)
         {
-            if (_navbarHeaders.ContainsKey(header.Text))
+            if (_sidebarItems.ContainsKey(item.Text))
             {
-                if (!header.IsDropdown)
+                if (!item.IsDropdown)
                 {
-                    _logger.LogWarning($"Navbar header '{header.Text}' already registered");
+                    _logger.LogWarning($"Sidebar item '{item.Text}' already registered");
                     return;
                 }
 
-                // Add dropdown items to existing headers
-                var existingHeader = _navbarHeaders[header.Text];
-                var newDropdownItems = new List<NavbarHeader>();
+                // Add dropdown items to existing items
+                var existingHeader = _sidebarItems[item.Text];
+                var newDropdownItems = new List<SidebarItem>();
                 if (existingHeader.DropdownItems != null)
                 {
                     newDropdownItems.AddRange(existingHeader.DropdownItems);
                 }
-                if (header.DropdownItems != null)
+                if (item.DropdownItems != null)
                 {
-                    newDropdownItems.AddRange(header.DropdownItems);
+                    newDropdownItems.AddRange(item.DropdownItems);
                 }
-                _navbarHeaders[header.Text].DropdownItems = newDropdownItems;
+                _sidebarItems[item.Text].DropdownItems = newDropdownItems;
             }
             else
             {
-                _navbarHeaders.Add(header.Text, header);
+                _sidebarItems.Add(item.Text, item);
             }
             await Task.CompletedTask;
         }
@@ -185,30 +185,30 @@
 
         internal async Task LoadDefaultUiAsync()
         {
-            var navbarHeaders = new List<NavbarHeader>
+            var sidebarItems = new List<SidebarItem>
             {
                 new("Home", "Home", displayIndex: 0, icon: "fa-solid fa-fw fa-house"),
                 new("Accounts", "Account", displayIndex: 1, icon: "fa-solid fa-fw fa-user"),
-                new("Devices", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<NavbarHeader>
+                new("Devices", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<SidebarItem>
                 {
                     new("Devices", "Device", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-layer-group"),
                     new("Device Groups", "DeviceGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-mobile-alt"),
                 }),
-                new("Instances", displayIndex: 3, icon: "fa-solid fa-fw fa-cubes-stacked", isDropdown: true, dropdownItems: new List<NavbarHeader>
+                new("Instances", displayIndex: 3, icon: "fa-solid fa-fw fa-cubes-stacked", isDropdown: true, dropdownItems: new List<SidebarItem>
                 {
                     new("Geofences", "Geofence", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-map-marked"),
                     new("Instances", "Instance", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-cubes-stacked"),
                     new("IV Lists", "IvList", "Index", displayIndex: 2, icon: "fa-solid fa-fw fa-list"),
                 }),
                 new("Plugins", "Plugin", displayIndex: 4, icon: "fa-solid fa-fw fa-puzzle-piece"),
-                new("Schedules", displayIndex: 5, icon: "fa-solid fa-fw fa-calendar-days", isDropdown: true, dropdownItems: new List<NavbarHeader>
+                new("Schedules", displayIndex: 5, icon: "fa-solid fa-fw fa-calendar-days", isDropdown: true, dropdownItems: new List<SidebarItem>
                 {
                     new("Assignments", "Assignment", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-cog"),
                     new("Assignment Groups", "AssignmentGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-cogs"),
                 }),
                 new("Webhooks", "Webhook", displayIndex: 6, icon: "fa-solid fa-fw fa-circle-nodes"),
                 new("Users", "User", displayIndex: 7, icon: "fa-solid fa-fw fa-users"),
-                new("Utilities", displayIndex: 8, icon: "fa-solid fa-fw fa-toolbox", isDropdown: true, dropdownItems: new List<NavbarHeader>
+                new("Utilities", displayIndex: 8, icon: "fa-solid fa-fw fa-toolbox", isDropdown: true, dropdownItems: new List<SidebarItem>
                 {
                     new("Clear Quests", "Utilities", "ClearQuests", displayIndex: 0, icon: "fa-solid fa-fw fa-broom"),
                     new("Convert Forts", "Utilities", "ConvertForts", displayIndex: 1, icon: "fa-solid fa-fw fa-arrows-up-down"),
@@ -219,7 +219,7 @@
                     new("Route Generator", "Utilities", "RouteGenerator", displayIndex: 6, icon: "fa-solid fa-fw fa-route"),
                 }),
             };
-            await AddNavbarHeadersAsync(navbarHeaders);
+            await AddSidebarItemsAsync(sidebarItems);
 
             var settingsTab = new SettingsTab(
                 id: "general",

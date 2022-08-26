@@ -67,7 +67,7 @@ namespace RobotsPlugin
 
         public void OnLoad()
         {
-            _uiHost.AddNavbarHeaderAsync(new NavbarHeader
+            _uiHost.AddSidebarItemAsync(new SidebarItem
             {
                 Text = "Robots",
                 ActionName = "Index",
