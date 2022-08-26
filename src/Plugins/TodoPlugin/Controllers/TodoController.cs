@@ -37,15 +37,6 @@
         // GET: TodoController
         public async Task<ActionResult> Index()
         {
-            for (var i = 0; i < 3; i++)
-            {
-                await _context.Todos.AddAsync(new Todo
-                {
-                    Name = "Test" + i,
-                });
-                await _context.SaveChangesAsync();
-            }
-
             var todos = _context.Todos.ToList();
             return View(todos);
         }

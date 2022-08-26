@@ -11,6 +11,7 @@
         public TodoDbContext(DbContextOptions<TodoDbContext> options)
             : base(options)
         {
+            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
     }
 }
