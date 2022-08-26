@@ -98,8 +98,10 @@
                         pluginHost.EventHandlers.UiEvents = (IUiEvents)plugin;
                     else if (typeof(IDatabaseEvents) == type)
                         pluginHost.EventHandlers.DatabaseEvents = (IDatabaseEvents)plugin;
-                    else if (typeof(IJobControllerServiceHost) == type)
+                    else if (typeof(IJobControllerServiceEvents) == type)
                         pluginHost.EventHandlers.JobControllerEvents = (IJobControllerServiceEvents)plugin;
+                    else if (typeof(ISettingsPropertyEvents) == type)
+                        pluginHost.EventHandlers.SettingsEvents = (ISettingsPropertyEvents)plugin;
                 }
 
                 loadedPlugins.Add(pluginHost);

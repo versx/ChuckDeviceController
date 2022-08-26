@@ -41,6 +41,12 @@
         /// </summary>
         bool IsDisabled { get; }
 
+        /// <summary>
+        /// Gets or sets a value determining whether to insert a
+        /// separator instead of a dropdown item.
+        /// </summary>
+        bool IsSeparator { get; }
+
         //// <summary>
         //// Gets or sets a value determining whether to 
         //// create the navbar header in its own section

@@ -10,6 +10,8 @@
 
         public IJobControllerServiceEvents? JobControllerEvents { get; set; }
 
+        public ISettingsPropertyEvents SettingsEvents { get; set; }
+
         public PluginEventHandlers()
         {
         }
@@ -17,11 +19,13 @@
         public PluginEventHandlers(
             IDatabaseEvents databaseEvents,
             IUiEvents uiEvents,
-            IJobControllerServiceEvents jobControllerEvents)
+            IJobControllerServiceEvents jobControllerEvents,
+            ISettingsPropertyEvents settingsEvents)
         {
             DatabaseEvents = databaseEvents;
             UiEvents = uiEvents;
             JobControllerEvents = jobControllerEvents;
+            SettingsEvents = settingsEvents;
         }
     }
 }

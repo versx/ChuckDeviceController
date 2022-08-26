@@ -1,0 +1,128 @@
+﻿@using System.Text.Json
+@using ChuckDeviceConfigurator.Controllers
+@using ChuckDeviceConfigurator.Extensions
+@using ChuckDeviceController.Extensions.Json
+@using ChuckDeviceController.Plugin
+
+@* TODO: Create ViewComponents for HTML elements *@
+
+@model SettingsManager
+@{
+    ViewData["Title"] = "Settings";
+
+    var tabsJson = Html.RenderAction("GetSettingsTabs", "Helper");
+    var tabs = Convert.ToString(tabsJson)?.FromJson<List<SettingsTab>>();
+    var propertiesJson = Html.RenderAction("GetSettingsProperties", "Helper");
+    var properties = Convert.ToString(propertiesJson)?.FromJson<Dictionary<string, List<SettingsProperty>>>();
+
+    async Task AddProperty(SettingsProperty property)
+    {
+        switch (property.Type)
+        {
+            case SettingsPropertyType.Text:
+                <div class="form-group">
+                    <label class="control-label">@property.Text</label>
+                    <input type="text" id="@property.Name" name="@property.Name" value="@(Model.Get<string>(property.Name, property.DefaultValue))" class="@property.Class" style="@property.Style" />
+                </div>
+                break;
+            case SettingsPropertyType.TextArea:
+                <div class="form-group">
+                    <label class="control-label">@property.Text</label>
+                    <textarea id="@property.Name" name="@property.Name" class="@property.Class" style="@property.Style">@(Model.Get<string>(property.Name, property.DefaultValue))</textarea>
+                </div>
+                break;
+            case SettingsPropertyType.Number:
+                <div class="form-group">
+                    <label class="control-label">@property.Text</label>
+                    <input type="number" id="@property.Name" name="@property.Name" value="@(Model.Get<string>(property.Name, property.DefaultValue))" class="@property.Class" style="@property.Style" />
+                </div>
+                break;
+            case SettingsPropertyType.CheckBox:
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label class="control-label">
+                            <input type="checkbox" id="@property.Name" name="@property.Name" @(Model.Get<string>(property.Name, property.DefaultValue)) class="@property.Class" style="@property.Style" />
+                            @property.Text
+                        </label>
+                    </div>
+                </div>
+                break;
+            case SettingsPropertyType.Select:
+                var jsonElement = (JsonElement)property?.Value!;
+                var items = jsonElement.EnumerateArray();
+                if (items.Any())
+                {
+                    <div class="form-group">
+                        <label class="control-label">@property.Text</label>
+                        <select id="@property.Name" name="@property.Name" class="@property.Class" style="@property.Style">
+                            <option value="">Please select one</option>
+                            @foreach (var item in items)
+                            {
+                                var settingsValue = Model.Get<string>(property.Name, property.DefaultValue);
+                                if (Convert.ToString(item) == settingsValue)
+                                {
+                                    <option value="@item" selected="selected">@item</option>
+                                }
+                                else
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+                break;
+        }
+        @if (property.Validate)
+        {
+            <span asp-validation-for="@property.Name" class="text-danger"></span>
+        }
+    }
+}
+
+<h1>Settings</h1>
+<br />
+
+<form asp-action="Index">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <ul class="nav nav-pills left-tabs">
+        @if (tabs?.Any() ?? false)
+        {
+            tabs.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+            foreach (var tab in tabs)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @tab.Class" aria-current="page" id="tabs-@tab.Id" data-bs-toggle="tab" data-bs-target="#@tab.Anchor" href="#@tab.Anchor" style="@tab.Style">@tab.Text</a>
+                </li>
+            }
+        }
+    </ul>
+
+    <div class="tab-content">
+        @if (tabs?.Any() ?? false)
+        {
+            foreach (var tab in tabs)
+            {
+                if (!(properties?.ContainsKey(tab.Id) ?? false))
+                    continue;
+
+                var tabProperties = properties[tab.Id];
+                 tabProperties.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+                <div class="tab-pane @tab.Class" id="@tab.Id" role="tabpanel" aria-labelledby="tabs-@tab.Id" style="@tab.Style">
+                    @if (tabProperties?.Any() ?? false)
+                    {
+                        tabProperties.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+                        foreach (var property in tabProperties)
+                        {
+                            await AddProperty(property);
+                        }
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    <div class="form-group">
+        <input type="submit" value="Save" class="btn btn-primary" />
+    </div>
+</form>

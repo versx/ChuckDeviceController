@@ -40,7 +40,7 @@
         // Possible options: embedded resources, local/external, or none.
         StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External),
     ]
-    public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents
+    public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents, ISettingsPropertyEvents
     {
         #region Plugin Host Variables
 
@@ -394,6 +394,39 @@
             );
             await _uiHost.AddDashboardTileAsync(pluginTile);
 
+            var settingsTab = new SettingsTab
+            {
+                Id = "test",
+                Text = "TestPlugin",
+                Anchor = "test",
+                DisplayIndex = 0,
+            };
+            await _uiHost.AddSettingsTabAsync(settingsTab);
+
+            var settingsProperties = new List<SettingsProperty>
+            {
+                new("Enabled", "test-enabled", SettingsPropertyType.CheckBox, true),
+                new("First Name", "FirstName", SettingsPropertyType.Text, "Jeremy", displayIndex: 1),
+                new("TextAreaTest", "TextAreaTest", SettingsPropertyType.TextArea, "Testing", displayIndex: 2),
+                new()
+                {
+                    Text = "Year",
+                    Name = "Year",
+                    Value = 2022,
+                    Type = SettingsPropertyType.Number,
+                    DisplayIndex = 3,
+                },
+                new()
+                {
+                    Text = "Geofences",
+                    Name = "Geofences",
+                    Value = new List<string> { "Paris", "London", "Sydney" },
+                    Type = SettingsPropertyType.Select,
+                    DisplayIndex = 0,
+                },
+            };
+            await _uiHost.AddSettingsPropertiesAsync(settingsTab.Id, settingsProperties);
+
             // Translate 1 to Bulbasaur
             var translated = _localeHost.GetPokemonName(1);
             _loggingHost.LogMessage($"Pokemon: {translated}");
@@ -491,6 +524,25 @@
         public void OnEntityDeleted<T>(T entity)
         {
             _loggingHost.LogMessage($"[{Name}] Plugin database entity has been deleted: {entity}");
+        }
+
+        #endregion
+
+        #region ISettingsProperty Event Handlers
+
+        public void OnClick(ISettingsProperty property)
+        {
+            _loggingHost.LogMessage($"[{Name}] Plugin setting clicked");
+        }
+
+        public void OnToggle(ISettingsProperty property)
+        {
+            _loggingHost.LogMessage($"[{Name}] Plugin setting toggled");
+        }
+
+        public void OnSave(ISettingsProperty property)
+        {
+            _loggingHost.LogMessage($"[{Name}] Plugin setting saved");
         }
 
         #endregion

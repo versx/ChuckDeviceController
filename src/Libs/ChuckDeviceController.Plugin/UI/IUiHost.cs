@@ -5,6 +5,8 @@
     /// </summary>
     public interface IUiHost
     {
+        #region Properties
+
         /// <summary>
         /// Gets a list of navbar headers registered by plugins.
         /// </summary>
@@ -20,6 +22,19 @@
         /// </summary>
         IReadOnlyList<IDashboardTile> DashboardTiles { get; }
 
+        /// <summary>
+        /// Gets a list of settings tabs registered by plugins.
+        /// </summary>
+        IReadOnlyList<SettingsTab> SettingsTabs { get; }
+
+        /// <summary>
+        /// Gets a dictionary of settings properties for tabs registered by plugins.
+        /// </summary>
+        IReadOnlyDictionary<string, List<SettingsProperty>> SettingsProperties { get; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Adds a <seealso cref="NavbarHeader"/> item to the main
@@ -76,5 +91,30 @@
         Task AddDashboardTilesAsync(IEnumerable<IDashboardTile> tiles);
 
         // TODO: UpdateDashboardTileAsync?
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tab"></param>
+        /// <returns></returns>
+        Task AddSettingsTabAsync(SettingsTab tab);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tabId"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        Task AddSettingsPropertyAsync(string tabId, SettingsProperty property);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tabId"></param>
+        /// <param name="properties"></param>
+        /// <returns></returns>
+        Task AddSettingsPropertiesAsync(string tabId, IEnumerable<SettingsProperty> properties);
+
+        #endregion
     }
 }
