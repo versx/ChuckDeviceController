@@ -35,7 +35,7 @@
         }
 
         // GET: TodoController
-        public async Task<ActionResult> Index()
+        public ActionResult Index()
         {
             var todos = _context.Todos.ToList();
             return View(todos);
@@ -47,19 +47,6 @@
             var todosComplete = _context.Todos.Where(x => x.IsComplete)
                                               .ToList();
             return View(todosComplete);
-        }
-
-        // GET: TodoController/Details/123
-        public async Task<ActionResult> Details(uint id)
-        {
-            var todo = await _context.Todos.FindAsync(id);
-            if (todo == null)
-            {
-                _logger.LogError($"Failed to find todo with id '{id}'");
-                ModelState.AddModelError("Todo", $"Failed to find todo with id '{id}'");
-                return View();
-            }
-            return View(todo);
         }
 
         // GET: TodoController/Create
