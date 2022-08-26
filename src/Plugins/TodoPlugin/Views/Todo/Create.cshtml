@@ -1,0 +1,42 @@
+﻿@model Todo
+@{
+    ViewData["Title"] = "Create Todo";
+}
+
+<h1>Create Todo</h1>
+
+<p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
+
+<br />
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Todo" asp-action="Index">Todos</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Create Todo</li>
+    </ol>
+</nav>
+
+<h4>Todo</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" asp-for="IsComplete"> Is Complete</label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
