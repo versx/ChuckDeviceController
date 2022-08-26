@@ -7,43 +7,43 @@
 
 @{
     const string DarkTheme = "dark";
-    var data = Html.RenderAction("GetNavbarHeaders", "Helper");
-    var navbarHeaders = Convert.ToString(data)?.FromJson<List<SidebarItem>>();
+    var data = Html.RenderAction("GetSidebarItems", "Helper");
+    var sidebarItems = Convert.ToString(data)?.FromJson<List<SidebarItem>>();
 
     var themeData = Html.RenderAction("GetTheme", "Helper");
     var theme = Convert.ToString(themeData)?.FromJson<string>() ?? DarkTheme;
 
-    async Task AddSidebarItem(SidebarItem header)
+    async Task AddSidebarItem(SidebarItem item)
     {
-        if (header.IsDropdown && (header?.DropdownItems?.Any() ?? false))
+        if (item.IsDropdown && (item?.DropdownItems?.Any() ?? false))
         {
-            var sortedDropdownItems = header.DropdownItems.ToList();
+            var sortedDropdownItems = item.DropdownItems.ToList();
             sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
             <li class="nav-item">
-                <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(header.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
-                    @Html.Raw(string.IsNullOrEmpty(header.Icon) ? "" : $"<i class='{header.Icon}'></i>")
-                    @header.Text
+                <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(item.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
+                    @Html.Raw(string.IsNullOrEmpty(item.Icon) ? "" : $"<i class='{item.Icon}'></i>")
+                    @item.Text
                 </a>
-                <ul class="collapse list-unstyled" id="@(header.Text)Submenu">
-                    @foreach (var dropdownHeader in sortedDropdownItems)
+                <ul class="collapse list-unstyled" id="@(item.Text)Submenu">
+                    @foreach (var dropdownItem in sortedDropdownItems)
                     {
-                        var hasMore = dropdownHeader.IsDropdown && dropdownHeader.DropdownItems?.Count() > 0;
+                        var hasMore = dropdownItem.IsDropdown && dropdownItem.DropdownItems?.Count() > 0;
                         if (hasMore)
                         {
-                            await AddSidebarItem(dropdownHeader);
+                            await AddSidebarItem(dropdownItem);
                         }
                         else
                         {
-                            if (dropdownHeader.IsSeparator)
+                            if (dropdownItem.IsSeparator)
                             {
                                 <li><hr class="dropdown-divider"></li>
                             }
                             else
                             {
                                 <li class="nav-item">
-                                    <a class="dropdown-item @(dropdownHeader.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownHeader.ControllerName" asp-action="@dropdownHeader.ActionName">
-                                        @Html.Raw(string.IsNullOrEmpty(dropdownHeader.Icon) ? "" : $"<i class='{dropdownHeader.Icon}'></i>")
-                                        @dropdownHeader.Text
+                                    <a class="dropdown-item @(dropdownItem.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownItem.ControllerName" asp-action="@dropdownItem.ActionName">
+                                        @Html.Raw(string.IsNullOrEmpty(dropdownItem.Icon) ? "" : $"<i class='{dropdownItem.Icon}'></i>")
+                                        @dropdownItem.Text
                                     </a>
                                 </li>
                             }
@@ -54,16 +54,16 @@
         }
         else
         {
-            if (header.IsSeparator)
+            if (item.IsSeparator)
             {
                 <li><hr class="dropdown-divider"></li>
             }
             else
             {
                 <li class="nav-item">
-                    <a class="@(header.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@header.ControllerName" asp-action="@header.ActionName">
-                        @Html.Raw(string.IsNullOrEmpty(header?.Icon) ? "" : $"<i class='{header.Icon}'></i>")
-                        @header?.Text
+                    <a class="@(item.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@item.ControllerName" asp-action="@item.ActionName">
+                        @Html.Raw(string.IsNullOrEmpty(item?.Icon) ? "" : $"<i class='{item.Icon}'></i>")
+                        @item?.Text
                     </a>
                 </li>
             }
@@ -105,11 +105,11 @@
             </div>
             @if (SignInManager.IsSignedIn(User))
             {
-                if (navbarHeaders != null)
+                if (sidebarItems != null)
                 {
-                    navbarHeaders.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+                    sidebarItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
                     <ul class="list-unstyled components">
-                    @foreach (var header in navbarHeaders)
+                    @foreach (var header in sidebarItems)
                     {
                         await AddSidebarItem(header);
                     }

@@ -26,10 +26,10 @@
             _uiHost = uiHost;
         }
 
-        [HttpGet("GetNavbarHeaders")]
-        public IActionResult GetNavbarHeaders()
+        [HttpGet("GetSidebarItems")]
+        public IActionResult GetSidebarItems()
         {
-            return new JsonResult(_uiHost.NavbarHeaders);
+            return new JsonResult(_uiHost.SidebarItems);
         }
 
         [HttpGet("GetTheme")]
