@@ -294,7 +294,6 @@
         {
             try
             {
-                throw new Exception();
                 _context.Assignments.RemoveRange(_context.Assignments);
                 await _context.SaveChangesAsync();
 
@@ -306,7 +305,7 @@
             catch
             {
                 ModelState.AddModelError("Assignment", $"Unknown error occurred while deleting all assignments.");
-                return View();
+                return RedirectToAction(nameof(Index));
             }
         }
 
