@@ -23,52 +23,27 @@
         #region Properties
 
         /// <summary>
-        /// Total number of requests made.
+        /// Gets the total number of requests made.
         /// </summary>
         public uint Requests { get; private set; }
 
         /// <summary>
-        /// Indicates the total number of milliseconds used for the request that was slowest.
+        /// Gets the total number of milliseconds used for the request that was slowest.
         /// </summary>
-        public decimal Slowest
-        {
-            get
-            {
-                if (_slowest == decimal.MinValue)
-                    return 0;
-
-                return Math.Round(_slowest / TimeSpan.TicksPerMillisecond, DecimalPlaces, MidpointRounding.AwayFromZero);
-            }
-        }
+        public decimal Slowest => _slowest == decimal.MinValue ? 0 : CalculateTiming(_slowest, DecimalPlaces);
 
         /// <summary>
-        /// Indicates the total number of milliseconds used for the request that was quickest.
+        /// Gets the total number of milliseconds used for the request that was quickest.
         /// </summary>
-        public decimal Fastest
-        {
-            get
-            {
-                if (_fastest == decimal.MaxValue)
-                    return 0;
-
-                return Math.Round(_fastest / TimeSpan.TicksPerMillisecond, DecimalPlaces, MidpointRounding.AwayFromZero);
-            }
-        }
+        public decimal Fastest => _fastest == decimal.MaxValue ? 0 : CalculateTiming(_fastest, DecimalPlaces);
 
         /// <summary>
-        /// Returns the average number of milliseconds per request.
+        /// Gets the average number of milliseconds per request.
         /// </summary>
-        /// <value>decimal</value>
-        public decimal Average
-        {
-            get
-            {
-                return Math.Round(_average / TimeSpan.TicksPerMillisecond, DecimalPlaces, MidpointRounding.AwayFromZero);
-            }
-        }
+        public decimal Average => CalculateTiming(_average, DecimalPlaces);
 
         /// <summary>
-        /// Calculates the trimmed average, by removing the highest and lowest scores before averaging
+        /// Gets the calculated trimmed average by removing the highest and lowest scores before averaging
         /// </summary>
         public decimal TrimmedAverage
         {
@@ -77,33 +52,29 @@
                 if (_total == 0 || Requests < 3)
                     return 0;
 
-                return Math.Round((_total - (_fastest + _slowest)) / (Requests - 2) / TimeSpan.TicksPerMillisecond, DecimalPlaces, MidpointRounding.AwayFromZero);
+                return CalculateTiming((_total - (_fastest + _slowest)) / (Requests - 2), DecimalPlaces);
             }
         }
 
         /// <summary>
-        /// Returns the total number of requests.
+        /// Gets the total number of requests.
         /// </summary>
-        /// <value>long</value>
-        public decimal Total
-        {
-            get
-            {
-                return Math.Round(_total / TimeSpan.TicksPerMillisecond, DecimalPlaces, MidpointRounding.AwayFromZero);
-            }
-        }
+        public decimal Total => CalculateTiming(_total, DecimalPlaces);
 
         /// <summary>
-        /// Number of decimal places the results should be rounded to, default is 5
+        /// Gets the number of decimal places the results should be rounded to, default is 5
         /// </summary>
-        /// <value>byte</value>
         public byte DecimalPlaces { get; set; }
 
         /// <summary>
-        /// Indicates whether the Timings have been cloned or not
+        /// Gets a value determining whether the timings have been cloned or not.
         /// </summary>
-        /// <value>bool</value>
         public bool IsCloned { get; }
+
+        /// <summary>
+        /// Gets a value determining whether to log request times or not.
+        /// </summary>
+        public bool LogTimings { get; }
 
         #endregion
 
@@ -112,25 +83,29 @@
         /// <summary>
         /// 
         /// </summary>
-        public RequestTimings()
+        public RequestTimings(bool logTimings = false)
         {
             _fastest = decimal.MaxValue;
             _slowest = decimal.MinValue;
             _average = 0;
             _total = 0;
+
             DecimalPlaces = 4;
             IsCloned = false;
+            LogTimings = logTimings;
         }
 
-        private RequestTimings(decimal fastest, decimal slowest, decimal average, decimal total, uint requests, byte decimalPlaces)
+        private RequestTimings(decimal fastest, decimal slowest, decimal average, decimal total, uint requests, byte decimalPlaces, bool logTimings = false)
         {
             _fastest = fastest;
             _slowest = slowest;
             _average = average;
             _total = total;
+
             Requests = requests;
             DecimalPlaces = decimalPlaces;
             IsCloned = true;
+            LogTimings = logTimings;
         }
 
         #endregion
@@ -173,6 +148,28 @@
                     _average = _total / Requests;
             }
 
+            if (LogTimings)
+            {
+                LogRequestTime();
+            }
+        }
+
+        /// <summary>
+        /// Clones an instance of a Timings class
+        /// </summary>
+        /// <returns>Timings</returns>
+        public RequestTimings Clone()
+        {
+            lock (_lock)
+            {
+                return new RequestTimings(_fastest, _slowest, _average, _total, Requests, DecimalPlaces, LogTimings);
+            }
+        }
+
+        #endregion
+
+        private void LogRequestTime()
+        {
             var sb = new System.Text.StringBuilder();
             sb.Append($"Requests: {Requests}, ");
             sb.Append($"Slowest: {Slowest}ms, ");
@@ -185,18 +182,10 @@
             Console.WriteLine(sb.ToString());
         }
 
-        /// <summary>
-        /// Clones an instance of a Timings class
-        /// </summary>
-        /// <returns>Timings</returns>
-        public RequestTimings Clone()
+        private static decimal CalculateTiming(decimal value, ushort decimalPlaces = 5)
         {
-            lock (_lock)
-            {
-                return new RequestTimings(_fastest, _slowest, _average, _total, Requests, DecimalPlaces);
-            }
+            var result = Math.Round(value / TimeSpan.TicksPerMillisecond, decimalPlaces, MidpointRounding.AwayFromZero);
+            return result;
         }
-
-        #endregion
     }
 }
