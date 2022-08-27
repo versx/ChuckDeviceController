@@ -180,6 +180,14 @@
             }
         }
 
+        public T? GetSettingsPropertyValue<T>(string name)
+        {
+            var properties = _settingsProperties.Values.SelectMany(x => x);
+            var property = properties.FirstOrDefault(x => x.Name == name);
+            var value = property?.Value ?? property?.DefaultValue;
+            return (T?)value;
+        }
+
         #endregion
 
         internal async Task LoadDefaultUiAsync()

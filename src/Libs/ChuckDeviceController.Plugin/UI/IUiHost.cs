@@ -96,7 +96,6 @@
         /// 
         /// </summary>
         /// <param name="tab"></param>
-        /// <returns></returns>
         Task AddSettingsTabAsync(SettingsTab tab);
 
         /// <summary>
@@ -104,7 +103,6 @@
         /// </summary>
         /// <param name="tabId"></param>
         /// <param name="property"></param>
-        /// <returns></returns>
         Task AddSettingsPropertyAsync(string tabId, SettingsProperty property);
 
         /// <summary>
@@ -112,8 +110,14 @@
         /// </summary>
         /// <param name="tabId"></param>
         /// <param name="properties"></param>
-        /// <returns></returns>
         Task AddSettingsPropertiesAsync(string tabId, IEnumerable<SettingsProperty> properties);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        T? GetSettingsPropertyValue<T>(string name);
 
         #endregion
     }
