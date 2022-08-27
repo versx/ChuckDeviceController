@@ -81,8 +81,10 @@
 }
 
 <h1>Settings</h1>
-<br />
 
+<p>@Html.ValidationMessage("Settings", new { @class = "text-danger" })</p>
+
+<br />
 <form asp-action="Index">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <ul class="nav nav-pills left-tabs">

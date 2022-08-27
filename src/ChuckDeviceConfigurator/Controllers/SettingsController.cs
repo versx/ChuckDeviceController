@@ -65,11 +65,12 @@
                 await Task.CompletedTask;
                 return View(nameof(Index), new SettingsManager(settings));
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
-                Console.WriteLine(ex);
+                ModelState.AddModelError("Settings", $"Unknown error occurred while saving settings.");
+                return View();
             }
-            return RedirectToAction(nameof(Index));
+            //return RedirectToAction(nameof(Index));
         }
 
         private void SaveSettingsConfig(Dictionary<string, object> settings)

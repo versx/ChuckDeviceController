@@ -288,6 +288,28 @@
             }
         }
 
+        // GET: AssignmentController/DeleteAll
+        [HttpGet]
+        public async Task<ActionResult> DeleteAll()
+        {
+            try
+            {
+                throw new Exception();
+                _context.Assignments.RemoveRange(_context.Assignments);
+                await _context.SaveChangesAsync();
+
+                // Reload assignments in the assignment service to reflect the changes.
+                _assignmentService.Reload();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                ModelState.AddModelError("Assignment", $"Unknown error occurred while deleting all assignments.");
+                return View();
+            }
+        }
+
         // GET: AssignmentController/Start/5
         public async Task<ActionResult> Start(uint id)
         {

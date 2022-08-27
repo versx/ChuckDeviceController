@@ -58,31 +58,30 @@
 
         public async Task AddSidebarItemAsync(SidebarItem item)
         {
-            if (_sidebarItems.ContainsKey(item.Text))
-            {
-                if (!item.IsDropdown)
-                {
-                    _logger.LogWarning($"Sidebar item '{item.Text}' already registered");
-                    return;
-                }
-
-                // Add dropdown items to existing items
-                var existingHeader = _sidebarItems[item.Text];
-                var newDropdownItems = new List<SidebarItem>();
-                if (existingHeader.DropdownItems != null)
-                {
-                    newDropdownItems.AddRange(existingHeader.DropdownItems);
-                }
-                if (item.DropdownItems != null)
-                {
-                    newDropdownItems.AddRange(item.DropdownItems);
-                }
-                _sidebarItems[item.Text].DropdownItems = newDropdownItems;
-            }
-            else
+            if (!_sidebarItems.ContainsKey(item.Text))
             {
                 _sidebarItems.Add(item.Text, item);
+                return;
             }
+
+            if (!item.IsDropdown)
+            {
+                _logger.LogWarning($"Sidebar item '{item.Text}' already registered");
+                return;
+            }
+
+            // Add dropdown items to existing items
+            var existingItem = _sidebarItems[item.Text];
+            var newDropdownItems = new List<SidebarItem>();
+            if (existingItem.DropdownItems != null)
+            {
+                newDropdownItems.AddRange(existingItem.DropdownItems);
+            }
+            if (item.DropdownItems != null)
+            {
+                newDropdownItems.AddRange(item.DropdownItems);
+            }
+            _sidebarItems[item.Text].DropdownItems = newDropdownItems;
             await Task.CompletedTask;
         }
 
@@ -215,8 +214,8 @@
                     new("Clear Stale Pokestops", "Utilities", "ClearStalePokestops", displayIndex: 2, icon: "fa-solid fa-fw fa-clock"),
                     new("Reload Instance", "Utilities", "ReloadInstance", displayIndex: 3, icon: "fa-solid fa-fw fa-rotate"),
                     new("Truncate Data", "Utilities", "TruncateData", displayIndex: 4, icon: "fa-solid fa-fw fa-trash-can"),
-                    new("Re-Quest", "Utilities", "ReQuest", displayIndex: 5, icon: "fa-solid fa-fw fa-clock-rotate-left"),
-                    new("Route Generator", "Utilities", "RouteGenerator", displayIndex: 6, icon: "fa-solid fa-fw fa-route"),
+                    new("Re-Quest", "Utilities", "ReQuest", displayIndex: 5, icon: "fa-solid fa-fw fa-clock-rotate-left", isDisabled: true),
+                    new("Route Generator", "Utilities", "RouteGenerator", displayIndex: 6, icon: "fa-solid fa-fw fa-route", isDisabled: true),
                 }),
             };
             await AddSidebarItemsAsync(sidebarItems);
