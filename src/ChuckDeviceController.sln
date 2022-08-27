@@ -45,15 +45,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Plugi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example.DotNetCorePlugin", "Plugins\Example.DotNetCorePlugin\Example.DotNetCorePlugin.csproj", "{532CA014-13EB-4B5D-A297-17E367FBEAB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobotsPlugin", "Plugins\RobotsPlugin\RobotsPlugin.csproj", "{8C1469EB-3A0E-4348-A9AC-D0FA2756DF2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RobotsPlugin", "Plugins\RobotsPlugin\RobotsPlugin.csproj", "{8C1469EB-3A0E-4348-A9AC-D0FA2756DF2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceAuthPlugin", "Plugins\DeviceAuthPlugin\DeviceAuthPlugin.csproj", "{C9B7D6E4-0257-440F-A0CA-27077ED6A563}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceAuthPlugin", "Plugins\DeviceAuthPlugin\DeviceAuthPlugin.csproj", "{C9B7D6E4-0257-440F-A0CA-27077ED6A563}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Plugin.Helpers", "Libs\ChuckDeviceController.Plugin.Helpers\ChuckDeviceController.Plugin.Helpers.csproj", "{107200F7-F181-4C1B-8291-A4957FDF80E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Plugin.Helpers", "Libs\ChuckDeviceController.Plugin.Helpers\ChuckDeviceController.Plugin.Helpers.csproj", "{107200F7-F181-4C1B-8291-A4957FDF80E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoPlugin", "Plugins\TodoPlugin\TodoPlugin.csproj", "{126F2FF7-E1F3-4227-A011-76D93A61A739}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoPlugin", "Plugins\TodoPlugin\TodoPlugin.csproj", "{126F2FF7-E1F3-4227-A011-76D93A61A739}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedditAuthProviderPlugin", "Plugins\RedditAuthProviderPlugin\RedditAuthProviderPlugin.csproj", "{3D033823-7360-4A1F-AE24-C814815CB8BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditAuthProviderPlugin", "Plugins\RedditAuthProviderPlugin\RedditAuthProviderPlugin.csproj", "{3D033823-7360-4A1F-AE24-C814815CB8BC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{1F67100D-811A-4A1D-B6F1-3A557F2A8C2B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckPluginMvc1", "Templates\ChuckPluginMvc1\ChuckPluginMvc1.csproj", "{A12F8E4A-E8A2-4449-9D8A-4E554DFA656B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckPlugin", "Templates\ChuckPlugin\ChuckPlugin.csproj", "{1357315E-1FDD-4305-A533-EEC65A57C5B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,6 +159,14 @@ Global
 		{3D033823-7360-4A1F-AE24-C814815CB8BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D033823-7360-4A1F-AE24-C814815CB8BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D033823-7360-4A1F-AE24-C814815CB8BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A12F8E4A-E8A2-4449-9D8A-4E554DFA656B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A12F8E4A-E8A2-4449-9D8A-4E554DFA656B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A12F8E4A-E8A2-4449-9D8A-4E554DFA656B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A12F8E4A-E8A2-4449-9D8A-4E554DFA656B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1357315E-1FDD-4305-A533-EEC65A57C5B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1357315E-1FDD-4305-A533-EEC65A57C5B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1357315E-1FDD-4305-A533-EEC65A57C5B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1357315E-1FDD-4305-A533-EEC65A57C5B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,6 +192,8 @@ Global
 		{107200F7-F181-4C1B-8291-A4957FDF80E6} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 		{126F2FF7-E1F3-4227-A011-76D93A61A739} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
 		{3D033823-7360-4A1F-AE24-C814815CB8BC} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
+		{A12F8E4A-E8A2-4449-9D8A-4E554DFA656B} = {1F67100D-811A-4A1D-B6F1-3A557F2A8C2B}
+		{1357315E-1FDD-4305-A533-EEC65A57C5B6} = {1F67100D-811A-4A1D-B6F1-3A557F2A8C2B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {826A78C7-B0DA-4D44-AF8E-BDDBFCE8F569}
