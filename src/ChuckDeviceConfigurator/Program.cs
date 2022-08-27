@@ -274,14 +274,6 @@ else
     app.UseHsts();
 }
 
-// https://stackoverflow.com/a/64874175
-/*
-app.UseCookiePolicy(new CookiePolicyOptions
-{
-    MinimumSameSitePolicy = SameSiteMode.Lax
-});
-*/
-
 // Call 'Configure' method in plugins
 pluginManager.Configure(app);
 
@@ -293,10 +285,10 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseCookiePolicy(new CookiePolicyOptions
 {
-    // This lambda determines whether user consent for non-essential 
-    // cookies is needed for a given request.
-    CheckConsentNeeded = context => true,
-    // Requires using Microsoft.AspNetCore.Http
+    // Determine whether user consent for non-essential 
+    // cookies is needed for a given request
+    CheckConsentNeeded = context => true, // TODO: Make configurable
+    // https://stackoverflow.com/a/64874175
     MinimumSameSitePolicy = SameSiteMode.Lax,
 });
 app.UseAuthorization();

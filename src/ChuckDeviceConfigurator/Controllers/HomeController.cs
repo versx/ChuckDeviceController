@@ -3,6 +3,7 @@
     using System.Diagnostics;
 
     using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Mvc;
 
@@ -81,6 +82,14 @@
 
         public IActionResult Privacy()
         {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Privacy(string? handler = null)
+        {
+            var trackingConsentFeature = HttpContext.Features.Get<ITrackingConsentFeature>();
+            trackingConsentFeature?.WithdrawConsent();
             return View();
         }
 

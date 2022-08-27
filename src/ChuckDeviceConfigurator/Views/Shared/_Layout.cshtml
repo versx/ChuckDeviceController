@@ -87,6 +87,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/datatables/datatables.css" />
     <link rel="stylesheet" href="~/lib/fontawesome-free-6.1.2-web/css/all.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-cookie-alert/css/cookiealert.css" />
     <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @if (theme == DarkTheme)
@@ -145,10 +146,10 @@
                 <span></span>
             </button>
             <div class="container">
-                <partial name="_CookieConsentPartial" />
                 <main role="main" class="pb-3">
                     @RenderBody()
                 </main>
+                <partial name="_CookieConsentPartial" />
                 <partial name="_Footer" />
             </div>
         </div>
@@ -158,6 +159,7 @@
     <script src="~/lib/datatables/datatables.min.js"></script>
     <script src="~/lib/datatables-plugins/ellipsis.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap-cookie-alert/js/cookiealert.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

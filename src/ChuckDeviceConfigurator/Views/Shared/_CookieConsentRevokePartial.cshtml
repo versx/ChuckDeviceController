@@ -5,9 +5,10 @@
         ? consentFeature.CanTrack
         : false;
 }
+
 @if (showRevoke)
 {
-    <form style="display:inline" asp-controller="Home" asp-action="Privacy" asp-page-handler="Withdraw" method="post">
-         <button type="submit" class="btn btn-link">Revoke Cookie Consent</button>
+    <form asp-controller="Home" asp-action="Privacy" method="post">
+         <button type="submit" class="btn btn-primary btn-sm">Revoke Cookie Consent</button>
     </form>
 }
