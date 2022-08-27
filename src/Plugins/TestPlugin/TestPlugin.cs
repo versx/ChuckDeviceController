@@ -169,6 +169,8 @@
         {
             _loggingHost.LogMessage($"Configure called");
 
+            appBuilder.UseMiddleware<TimingMiddleware>();
+
             //var testService = appBuilder.Services.GetService<IPluginService>();
 
             // We can configure routing here using 'Minimal APIs' or using Mvc Controller classes

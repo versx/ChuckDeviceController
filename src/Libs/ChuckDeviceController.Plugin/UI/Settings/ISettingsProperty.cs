@@ -60,9 +60,5 @@
         /// Gets or sets the raw CSS styling to use.
         /// </summary>
         string? Style { get; }
-
-        // TODO: OnClick
-        // TODO: OnChange
-        // TODO: OnSave
     }
 }

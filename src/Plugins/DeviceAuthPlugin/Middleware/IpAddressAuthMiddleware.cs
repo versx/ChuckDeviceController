@@ -1,8 +1,11 @@
 ﻿namespace DeviceAuthPlugin.Middleware
 {
+    using System.Net;
+
     using Microsoft.Extensions.Options;
 
     using Configuration;
+    using Extensions;
 
     using ChuckDeviceController.Plugin.Helpers.Extensions;
 
@@ -42,12 +45,58 @@
             }
 
             var ipAddress = context.Request.GetIPAddress();
-            if (!Options.IpAddresses.Contains(ipAddress))
+            if (!IsValid(ipAddress, Options.IpAddresses))
             {
                 return;
             }
 
             await _next(context);
+        }
+
+        private static bool IsValid(string ipAddress, IEnumerable<string> ipAddresses)
+        {
+            var result = false;
+            var ipAddr = IPAddress.Parse(ipAddress);
+            foreach (var entry in ipAddresses)
+            {
+                if (entry.Contains('-'))
+                {
+                    // Check if within IP range
+                    var split = entry.Split('-');
+                    if (split.Length != 2)
+                        continue;
+
+                    var rangeStart = IPAddress.Parse(split[0]);
+                    var rangeEnd = IPAddress.Parse(split[1]);
+                    var isInRange = ipAddr.IsInRange(rangeStart, rangeEnd);
+                    if (isInRange)
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+                else if (entry.Contains('/'))
+                {
+                    // Check if IP in subnet
+                    var isInSubnet = ipAddr.IsInSubnet(entry);
+                    if (isInSubnet)
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    // Check if explicit match
+                    if (ipAddress == entry)
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
