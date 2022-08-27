@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
@@ -120,6 +121,17 @@ builder.Services
 
     })
     .AddOpenAuthProviders(builder.Configuration);
+
+/*
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    // This lambda determines whether user consent for non-essential 
+    // cookies is needed for a given request.
+    options.CheckConsentNeeded = context => true;
+    // Requires using Microsoft.AspNetCore.Http
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+});
+*/
 
 #endregion
 
@@ -263,10 +275,12 @@ else
 }
 
 // https://stackoverflow.com/a/64874175
-app.UseCookiePolicy(new CookiePolicyOptions()
+/*
+app.UseCookiePolicy(new CookiePolicyOptions
 {
     MinimumSameSitePolicy = SameSiteMode.Lax
 });
+*/
 
 // Call 'Configure' method in plugins
 pluginManager.Configure(app);
@@ -277,6 +291,14 @@ app.UseRouting();
 
 // User authentication
 app.UseAuthentication();
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    // This lambda determines whether user consent for non-essential 
+    // cookies is needed for a given request.
+    CheckConsentNeeded = context => true,
+    // Requires using Microsoft.AspNetCore.Http
+    MinimumSameSitePolicy = SameSiteMode.Lax,
+});
 app.UseAuthorization();
 
 // gRPC listener server services
