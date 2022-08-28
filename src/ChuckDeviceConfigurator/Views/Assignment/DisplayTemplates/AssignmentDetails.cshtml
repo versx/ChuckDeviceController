@@ -1,0 +1,52 @@
+﻿@model Assignment
+
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.SourceInstanceName)
+    </dt>
+    <dd class="col-sm-10">
+        @(string.IsNullOrEmpty(Model?.SourceInstanceName) ? "Any" : Model.SourceInstanceName)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.InstanceName)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.InstanceName)
+    </dd>
+    @if (!string.IsNullOrEmpty(Model?.DeviceUuid))
+    {
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.DeviceUuid)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DeviceUuid)
+        </dd>
+    }
+    @if (!string.IsNullOrEmpty(Model?.DeviceGroupName))
+    {
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.DeviceGroupName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DeviceGroupName)
+        </dd>
+    }
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Date)
+    </dt>
+    <dd class="col-sm-10">
+        @(Model?.Date == null ? "Any" : Model?.Date)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Time)
+    </dt>
+    <dd class="col-sm-10">
+        @Utils.FormatAssignmentTime(Model?.Time ?? 0)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Enabled)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(Utils.FormatBoolean(Model?.Enabled ?? false, html: true))
+    </dd>
+</dl>

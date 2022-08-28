@@ -23,47 +23,4 @@
 </div>
 
 <hr />
-<dl class="row">
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.SourceInstanceName)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.SourceInstanceName)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.InstanceName)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.InstanceName)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.DeviceUuid)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.DeviceUuid)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.DeviceGroupName)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.DeviceGroupName)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Date)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Date)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Time)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Time)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Enabled)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Enabled)
-    </dd>
-</dl>
+@Html.DisplayForModel("AssignmentDetails")

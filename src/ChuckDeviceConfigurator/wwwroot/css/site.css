@@ -125,3 +125,8 @@ footer > div > a {
 .webhook-disabled {
     color: red;
 }
+
+/* Breadcrumbs */
+nav > ol > li > a {
+    text-decoration: none;
+}

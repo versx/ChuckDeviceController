@@ -1,0 +1,29 @@
+﻿@model DeviceGroup
+
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Name)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.DeviceUuids)
+    </dt>
+    <dd class="col-sm-10">
+        @if ((ViewBag.Devices?.Count ?? 0) > 0)
+        {
+            <ul class="list-group">
+                @foreach (var device in ViewBag.Devices)
+                {
+                    var status = Utils.GetDeviceStatus(device.LastSeen);
+                    <li class="list-group-item">@Html.Raw($"{status} {device.Uuid}")</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>None</p>
+        }
+    </dd>
+</dl>
