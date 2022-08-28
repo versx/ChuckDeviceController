@@ -30,92 +30,35 @@
 
 <div id="map" style="height: 600px;"></div>
 
-<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-    <div class="modal-dialog model-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="importModalLabel">Import Geofence</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <label class="form-label" for="format-group">
-                    Format
-                </label>
-                <div class="input-group" id="format-group" name="format-group">
-                    <div class="form-check form-check-inline float-start">
-                        <input class="form-check-input" type="radio" id="import-format" name="import-format" value="json" onchange="importFormatChanged(this);" checked>
-                        <label class="form-check-label" for="import-format">
-                            GeoJSON
-                        </label>
-                    </div>
-                    <div class="form-check form-check-inline float-end">
-                        <input class="form-check-input" type="radio" id="import-format" name="import-format" value="ini" onchange="importFormatChanged(this);">
-                        <label class="form-check-label" for="import-format">
-                            INI
-                        </label>
-                    </div>
-                </div>
-                <br />
-                <label class="form-label" for="import-geofence">
-                    Geofence
-                </label>
-                <textarea id="import-geofence" name="import-geofence" class="form-control" rows="15"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="importGeofence();">Import</button>
-            </div>
-        </div>
-    </div>
-</div>
+@await Html.PartialAsync("_ImportGeofenceRouteModalPartial", new GeofenceRouteViewModal
+{
+    Format = "json",
+    Title = "Import Geofence",
+    Geofence = "",
+    FormatChangedMethod = "importFormatChanged(this);",
+    SubmitButtonText = "Import",
+    SubmitButtonMethod = "importGeofence();",
+});
 
-<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
-    <div class="modal-dialog model-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exportModalLabel">Export Geofence</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <label class="form-label" for="format-group">
-                    Format
-                </label>
-                <div class="input-group" id="format-group" name="format-group">
-                    <div class="form-check form-check-inline float-start">
-                        <input class="form-check-input" type="radio" id="export-format" name="export-format" value="json" onchange="exportFormatChanged(this);" checked>
-                        <label class="form-check-label" for="export-format">
-                            GeoJSON
-                        </label>
-                    </div>
-                    <div class="form-check form-check-inline float-end">
-                        <input class="form-check-input" type="radio" id="export-format" name="export-format" value="ini" onchange="exportFormatChanged(this);">
-                        <label class="form-check-label" for="export-format">
-                            INI
-                        </label>
-                    </div>
-                </div>
-                <br />
-                <label class="form-label" for="export-geofence">
-                    Geofence
-                </label>
-                <textarea id="export-geofence" name="export-geofence" class="form-control" rows="15" readonly></textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="exportGeofence();">Copy to Clipboard</button>
-            </div>
-        </div>
-    </div>
-</div>
+@await Html.PartialAsync("_ExportGeofenceRouteModalPartial", new GeofenceRouteViewModal
+{
+    Title = "Export Geofence",
+    Format = "json",
+    Geofence = "",
+    FormatChangedMethod = "exportFormatChanged(this);",
+    SubmitButtonText = "Copy to Clipboard",
+    SubmitButtonMethod = "exportGeofence();",
+});
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 <script src="~/lib/leaflet/leaflet.js"></script>
 <script src="~/lib/leaflet-draw/leaflet.draw.js"></script>
 <script src="~/lib/easy-button/easy-button.js"></script>
+<script src="~/js/clipboard.js"></script>
 <script src="~/js/geofence-converters.js"></script>
 <script>
-    let format = 'json';
+    let importFormat = 'json';
     const map = L.map('map').setView([34.01, -117.01], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -192,25 +135,25 @@
     $('#exportModal').on('shown.bs.modal', () => {
         const geofence = drawnItems.toGeoJSON();
         const json = JSON.stringify(geofence, null, 2);
-        $('#export-geofence').val(json);
+        $('#exportModal #Geofence').val(json);
     });
 
-    const importFormatChanged = (e) => format = e.value;
+    const importFormatChanged = (e) => importFormat = e.value;
 
     const importGeofence = () => {
-        const geofenceData = $('#import-geofence').val();
+        const geofenceData = $('#importModal #Geofence').val();
         if (!geofenceData) {
             return;
         }
-        const geofence = formatGeofenceToGeoJson(format, geofenceData);
-        loadGeofence(geofence);
 
+        const geofence = formatGeofenceToGeoJson(importFormat, geofenceData);
+        loadGeofence(geofence);
         $('#importModal').modal('hide');
     };
 
     const exportFormatChanged = (e) => {
         const exportFormat = e.value;
-        const geofence = $('#export-geofence').val();
+        const geofence = $('#exportModal #Geofence').val();
 
         switch (exportFormat) {
             case 'json':
@@ -218,7 +161,7 @@
                 const geojson = iniToGeoJson(geofence);
                 const json = JSON.stringify(geojson, null, 2);
                 //console.log('json:', json);
-                $('#export-geofence').val(json);
+                $('#exportModal #Geofence').val(json);
                 break;
             case 'txt':
             case 'ini':
@@ -231,13 +174,13 @@
                 });
                 const ini = iniData.join('');
                 //console.log('ini:', ini);
-                $('#export-geofence').val(ini);
+                $('#exportModal #Geofence').val(ini);
                 break;
         }
     };
 
     const exportGeofence = () => {
-        const geofence = $('#export-geofence').val();
+        const geofence = $('#exportModal #Geofence').val();
         if (geofence) {
             copyToClipboard(geofence);
         }
