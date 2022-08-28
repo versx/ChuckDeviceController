@@ -4,6 +4,7 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugin;
 
     public static class Utils
     {
@@ -244,6 +245,25 @@
             // Create an array of pages that can be looped over
             var result = Enumerable.Range(startPage, (endPage + 1) - startPage).ToList();
             return result;
+        }
+
+        public static async Task<Dictionary<SettingsPropertyGroup, List<SettingsProperty>>> GroupPropertiesAsync(List<SettingsProperty> properties)
+        {
+            var dict = new Dictionary<SettingsPropertyGroup, List<SettingsProperty>>();
+            foreach (var property in properties)
+            {
+                var group = property.Group ?? new();
+                if (!dict.ContainsKey(group))
+                {
+                    dict.Add(group, new() { property });
+                }
+                else
+                {
+                    dict[group].Add(property);
+                    dict[group].Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+                }
+            }
+            return await Task.FromResult(dict);
         }
     }
 }

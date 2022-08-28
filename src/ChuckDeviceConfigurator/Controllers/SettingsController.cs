@@ -9,12 +9,20 @@
 
     public class SettingsController : Controller
     {
+        #region Constants
+
         private const string DefaultSettingsFileName = "settings.json";
         private const string DefaultSettingsFolderName = "";
         private const string DefaultCheckboxCheckedString = "checked";
 
+        #endregion
+
+        #region Variables
+
         private readonly IFileStorageHost _fileStorageHost;
         private readonly IUiHost _uiHost;
+
+        #endregion
 
         public SettingsController(IFileStorageHost fileStorageHost, IUiHost uiHost)
         {
@@ -45,7 +53,7 @@
                     if (!collection.ContainsKey(key))
                     {
                         var defaultValue = setting.Type == SettingsPropertyType.CheckBox
-                            ? false//string.Empty
+                            ? false
                             : setting.Value ?? setting.DefaultValue;
                         settings.Add(key, defaultValue);
                         continue;
@@ -65,12 +73,11 @@
                 await Task.CompletedTask;
                 return View(nameof(Index), new SettingsManager(settings));
             }
-            catch //(Exception ex)
+            catch
             {
                 ModelState.AddModelError("Settings", $"Unknown error occurred while saving settings.");
                 return View();
             }
-            //return RedirectToAction(nameof(Index));
         }
 
         private void SaveSettingsConfig(Dictionary<string, object> settings)
@@ -115,7 +122,7 @@
         }
     }
 
-    public class SettingsManager //: Dictionary<string, object>
+    public class SettingsManager
     {
         private readonly Dictionary<string, object> _settings = new();
 

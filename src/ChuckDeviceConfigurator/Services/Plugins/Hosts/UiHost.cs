@@ -237,9 +237,11 @@
             );
             await AddSettingsTabAsync(settingsTab);
 
+            var settingsGroup = new SettingsPropertyGroup("general", "General", 0);
             var settingsTabProperties = new List<SettingsProperty>
             {
-                new("Enabled", "general-enabled", SettingsPropertyType.CheckBox, true),
+                new("Enabled", "general-enabled", SettingsPropertyType.CheckBox, value: true, group: settingsGroup),
+                new("Url", "general-url", SettingsPropertyType.Text, group: settingsGroup),
             };
             await AddSettingsPropertiesAsync(settingsTab.Id, settingsTabProperties);
         }

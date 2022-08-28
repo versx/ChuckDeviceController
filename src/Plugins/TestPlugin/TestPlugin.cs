@@ -223,8 +223,6 @@
                 //var formValues = httpContext.Request.Form;
                 var routeValues = httpContext.Request.RouteValues;
                 var body = httpContext.Request.Body;
-                //using var readStream = new StreamReader(body);
-                //var bodyData = readStream.ReadToEnd();
                 var userClaims = httpContext.User;
                 await httpContext.Response.WriteAsync($"Hello, {routeValues["name"]}!");
             });
@@ -248,8 +246,7 @@
             //    // Action after called middleware
             //});
 
-
-            // Use built in logger
+            // Use built in logger from dependency injection
             appBuilder.Logger.LogInformation($"Logging from the plugin '{Name}'");
         }
 

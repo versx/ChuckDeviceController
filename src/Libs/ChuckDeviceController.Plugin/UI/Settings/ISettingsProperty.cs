@@ -60,5 +60,11 @@
         /// Gets or sets the raw CSS styling to use.
         /// </summary>
         string? Style { get; }
+
+        /// <summary>
+        /// Gets or sets the group the settings property
+        /// will be in.
+        /// </summary>
+        SettingsPropertyGroup? Group { get; }
     }
 }

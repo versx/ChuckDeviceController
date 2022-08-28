@@ -54,6 +54,16 @@
         [HttpGet("GetSettingsProperties")]
         public IActionResult GetSettingsProperties()
         {
+            foreach (var (key, value) in _uiHost.SettingsProperties)
+            {
+                var properties = _uiHost.SettingsProperties[key];
+                var grouped = properties.GroupBy(g => g.Group, g => g, (group, settings) => new
+                {
+                    Group = group,
+                    Settings = settings,
+                });
+            }
+
             return new JsonResult(_uiHost.SettingsProperties);
         }
     }

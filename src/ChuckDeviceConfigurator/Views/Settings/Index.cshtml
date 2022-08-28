@@ -1,6 +1,7 @@
 ﻿@using System.Text.Json
 @using ChuckDeviceConfigurator.Controllers
 @using ChuckDeviceConfigurator.Extensions
+@using ChuckDeviceConfigurator.Utilities
 @using ChuckDeviceController.Extensions.Json
 @using ChuckDeviceController.Plugin
 
@@ -73,7 +74,7 @@
                 }
                 break;
         }
-        @if (property.Validate)
+        if (property.Validate)
         {
             <span asp-validation-for="@property.Name" class="text-danger"></span>
         }
@@ -109,17 +110,26 @@
                     continue;
 
                 var tabProperties = properties[tab.Id];
-                 tabProperties.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                <div class="tab-pane @tab.Class" id="@tab.Id" role="tabpanel" aria-labelledby="tabs-@tab.Id" style="@tab.Style">
-                    @if (tabProperties?.Any() ?? false)
+                if (tabProperties?.Any() ?? false)
+                {
+                    tabProperties.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+                    var groupedProperties = await Utils.GroupPropertiesAsync(tabProperties);
+                    <div class="tab-pane @tab.Class" id="@tab.Id" role="tabpanel" aria-labelledby="tabs-@tab.Id" style="@tab.Style">
+                    @foreach (var (group, settings) in groupedProperties)
                     {
-                        tabProperties.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                        foreach (var property in tabProperties)
-                        {
-                            await AddProperty(property);
-                        }
+                        <div class="card">
+                            <div class="card-body">
+                            <h5 class="card-title">@group?.Text</h5>
+                                @foreach (var setting in settings)
+                                {
+                                    await AddProperty(setting);
+                                }
+                            </div>
+                        </div>
+                        <br />
                     }
-                </div>
+                    </div>
+                }
             }
         }
     </div>

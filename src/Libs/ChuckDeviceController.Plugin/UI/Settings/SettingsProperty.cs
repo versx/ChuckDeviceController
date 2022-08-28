@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Plugin
 {
-    // TODO: Add support for adding properties to group box
-
     /// <summary>
     /// Settings property interface contract used by plugins to
     /// create UI setting elements in the dashboard.
@@ -67,6 +65,12 @@
         /// </summary>
         public string? Style { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group the settings property
+        /// will be in.
+        /// </summary>
+        public SettingsPropertyGroup? Group { get; set; }
+
         #endregion
 
         #region Constructors
@@ -92,6 +96,7 @@
         /// <param name="validate"></param>
         /// <param name="className"></param>
         /// <param name="style"></param>
+        /// <param name="group"></param>
         public SettingsProperty(
             string text,
             string name,
@@ -102,7 +107,8 @@
             bool isRequired = false,
             bool validate = false,
             string? className = null,
-            string? style = null)
+            string? style = null,
+            SettingsPropertyGroup? group = null)
             : this()
         {
             Text = text;
@@ -119,6 +125,7 @@
                     : DefaultClassName
             );
             Style = style;
+            Group = group;
         }
 
         #endregion
