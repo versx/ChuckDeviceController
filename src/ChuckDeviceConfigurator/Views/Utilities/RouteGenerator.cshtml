@@ -28,12 +28,102 @@
 
 <hr />
 
+<button type="button" class="btn btn-primary btn-sm float-start" data-bs-toggle="modal" data-bs-target="#importModal">
+    Import Geofence
+</button>
+<button type="button" class="btn btn-primary btn-sm float-end" data-bs-toggle="modal" data-bs-target="#exportModal">
+    Export Geofence
+</button>
+<br />
+<br />
+
 <div id="map" style="height: 600px;"></div>
 
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog model-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import Geofence</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" for="format-group">
+                    Format
+                </label>
+                <div class="input-group" id="format-group" name="format-group">
+                    <div class="form-check form-check-inline float-start">
+                        <input class="form-check-input" type="radio" id="import-format" name="import-format" value="json" onchange="importFormatChanged(this);" checked>
+                        <label class="form-check-label" for="import-format">
+                            GeoJSON
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline float-end">
+                        <input class="form-check-input" type="radio" id="import-format" name="import-format" value="ini" onchange="importFormatChanged(this);">
+                        <label class="form-check-label" for="import-format">
+                            INI
+                        </label>
+                    </div>
+                </div>
+                <br />
+                <label class="form-label" for="import-geofence">
+                    Geofence
+                </label>
+                <textarea id="import-geofence" name="import-geofence" class="form-control" rows="15"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="importGeofence();">Import</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog model-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">Export Geofence</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" for="format-group">
+                    Format
+                </label>
+                <div class="input-group" id="format-group" name="format-group">
+                    <div class="form-check form-check-inline float-start">
+                        <input class="form-check-input" type="radio" id="export-format" name="export-format" value="json" onchange="exportFormatChanged(this);" checked>
+                        <label class="form-check-label" for="export-format">
+                            GeoJSON
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline float-end">
+                        <input class="form-check-input" type="radio" id="export-format" name="export-format" value="ini" onchange="exportFormatChanged(this);">
+                        <label class="form-check-label" for="export-format">
+                            INI
+                        </label>
+                    </div>
+                </div>
+                <br />
+                <label class="form-label" for="export-geofence">
+                    Geofence
+                </label>
+                <textarea id="export-geofence" name="export-geofence" class="form-control" rows="15" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="exportGeofence();">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 <script src="~/lib/leaflet/leaflet.js"></script>
 <script src="~/lib/leaflet-draw/leaflet.draw.js"></script>
 <script src="~/lib/easy-button/easy-button.js"></script>
 <script>
+    let format = 'json';
     const map = L.map('map').setView([34.01, -117.01], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -50,9 +140,9 @@
         fillOpacity: 0.2,
     };
 
-    var drawnItems = new L.FeatureGroup();
+    const drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
-    var drawControl = new L.Control.Draw({
+    const drawControl = new L.Control.Draw({
         edit: {
             featureGroup: drawnItems,
         },
@@ -79,12 +169,11 @@
     });
     map.addControl(drawControl);
 
-    const importGeofence = L.easyButton("<img src='https://cdn-icons-png.flaticon.com/512/151/151901.png' width='16' height='16' />", function(button, map) {
+    L.easyButton("<img src='https://cdn-icons-png.flaticon.com/512/151/151901.png' width='16' height='16' />", function(button, map) {
         console.log('import geofence');
         // TODO: Open modal
     }).addTo(map);
-    const deleteAllLayers = L.easyButton("<img src='https://www.iconpacks.net/icons/1/free-trash-icon-347-thumb.png' width='16' height='16' />", function(button, map) {
-        console.log('delete all layers');
+    L.easyButton("<img src='https://www.iconpacks.net/icons/1/free-trash-icon-347-thumb.png' width='16' height='16' />", function(button, map) {
         const result = window.confirm('Are you sure you want to delete all shapes?');
         if (!result) {
             return;
@@ -97,7 +186,7 @@
         const layer = e.layer;
         if (drawnItems) {
             drawnItems.addLayer(layer);
-            const json = drawnItems.toGeoJSON();
+            //const json = drawnItems.toGeoJSON();
             //console.log('json:', json);
         }
     });
@@ -105,4 +194,142 @@
     });
     map.on('draw:deleted', function(e) {
     });
+
+    $('#exportModal').on('shown.bs.modal', function() {
+        const geofence = drawnItems.toGeoJSON();
+        const json = JSON.stringify(geofence, null, 2);
+        $('#export-geofence').val(json);
+    });
+
+    const importFormatChanged = (e) => {
+        format = e.value;
+    };
+
+    const importGeofence = () => {
+        const geofenceData = $('#import-geofence').val();
+        if (!geofenceData) {
+            return;
+        }
+        // TODO: Convert based on format and add to map
+        const geofence = formatGeofenceToGeoJson(format, geofenceData);
+        loadGeofence(geofence);
+
+        $('#importModal').hide();
+    };
+
+    const exportFormatChanged = (e) => {
+        const exportFormat = e.value;
+        const geofence = $('#export-geofence').val();
+
+        switch (exportFormat) {
+            case 'json':
+                // Convert ini to json geofence
+                const geojson = iniToGeoJson(geofence);
+                const json = JSON.stringify(geojson, null, 2);
+                console.log('json:', json);
+                $('#export-geofence').val(json);
+                break;
+            case 'txt':
+            case 'ini':
+                // Convert json to ini geofence
+                const iniData = [];
+                drawnItems.eachLayer(layer => {
+                    const geojson = layer.toGeoJSON();
+                    if (geojson) {
+                        const ini = geoJsonToIni(geojson);
+                        iniData.push(ini);
+                    }
+                    const ini = iniData.join('');
+                    console.log('ini:', ini);
+                    $('#export-geofence').val(ini);
+                });
+                break;
+        }
+    };
+
+    const exportGeofence = () => {
+        const geofence = $('#export-geofence').val();
+        if (geofence) {
+            copyToClipboard(geofence);
+        }
+    };
+
+    const formatGeofenceToGeoJson = (format, data) => {
+        //console.log('format:', format, 'data:', data);
+        if (data.length === 0) {
+            return null;
+        }
+        if (typeof data === 'object') {
+            return data;
+        }
+        switch (format) {
+            case 'json':
+                return JSON.parse(data);
+            case 'txt':
+            case 'ini':
+                return iniToGeoJson(data);
+            default:
+                throw Error('Unsupported geofence format');
+        }
+    };
+
+    const loadGeofence = (data) => {
+        if (!drawnItems) {
+            return;
+        }
+        const leafletGeoJSON = new L.GeoJSON(data);
+        leafletGeoJSON.eachLayer(layer => {
+            const html = `
+            <b>Name:</b> ${layer.feature.properties.name}<br>
+            <b>Area:</b> ${0} km2
+`;
+            layer.bindTooltip(html);
+            drawnItems.addLayer(layer);
+        });
+    };
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+    };
+
+    const iniToGeoJson = (data) => {
+        const geoJson = {
+            type: 'FeatureCollection',
+            features: [],
+        };
+        const fences = data.match(/\[([^\]]+)\]([^[]*)/g);
+        for (const fence of fences) {
+            const geofence = {
+                type: 'Feature',
+                properties: {
+                    name: fence.match(/\[([^\]]+)\]/)[1],
+                },
+                geometry: {
+                    type: 'Polygon',
+                    coordinates: [[]],
+                },
+            };
+            const coordinates = fence.match(/[0-9\-.]+,\s*[0-9\-.]+/g).map((point) => [parseFloat(point.split(',')[1]), parseFloat(point.split(',')[0])]);
+            geofence.geometry.coordinates[0] = coordinates;
+            // Ensure first coordinate is also the last coordinate
+            geofence.geometry.coordinates[0].push(geofence.geometry.coordinates[0][0]);
+            geoJson.features.push(geofence);
+        }
+        return geoJson;
+    };
+
+    const geoJsonToIni = (feature) => {
+        let geofence = [];
+        if (feature.geometry.type === 'Polygon') {
+            geofence.push(`[${feature.properties.name}]\n`);
+            for (const coord of feature.geometry.coordinates) {
+                coord.pop();
+                for (const point of coord) {
+                    geofence.push(`${point[1]},${point[0]}\n`);
+                }
+            }
+        }
+        return geofence.join('');
+    };
 </script>
+}

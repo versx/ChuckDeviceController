@@ -17,11 +17,28 @@
 .theme-dark li.paginate_button.disabled a,
 /* Html elements */
 .theme-dark select,
-.theme-dark textarea {
+.theme-dark textarea,
+.theme-dark textarea:focus,
+.theme-dark textarea:read-only,
+.theme-dark .modal-dialog,
+.theme-dark .modal-content,
+.theme-dark .modal-header,
+.theme-dark .modal-title,
+.theme-dark .modal-body,
+.theme-dark .modal-footer {
     background-color: rgb(33, 37, 31);
     color: white;
 }
 
+.theme-dark .modal-header > .btn-close {
+    background-color: white;
+    color: rgb(33, 37, 31);
+}
+
 .theme-dark .list-group-item {
     border-color: white;
+}
+
+.modal-backdrop {
+    z-index: -1;
 }
