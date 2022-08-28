@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
-@using ChuckDeviceController.Common.Data
-@model ManageInstanceViewModel
+﻿@model ManageInstanceViewModel
 @{
     ViewData["Title"] = "Create Instance";
 }
@@ -10,13 +8,7 @@
 <p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Instance" asp-action="Index">Instances</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Create Instance</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = "Instances", CurrentPage = "Create Instance" })
 
 <h4>Instance</h4>
 <hr />

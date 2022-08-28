@@ -7,13 +7,7 @@
 <h1>Delete User Account</h1>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="User" asp-action="Index">Users</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Delete User</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "User", ControllerText = "Users", CurrentPage = "Delete User" })
 
 <p>@Html.ValidationMessage("User", new { @class = "text-danger" })</p>
 

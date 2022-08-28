@@ -1,7 +1,4 @@
-﻿@using ChuckDeviceController.Data
-@using ChuckDeviceController.Data.Entities
-@using ChuckDeviceConfigurator.ViewModels
-@model IvList
+﻿@model IvList
 @{
     ViewData["Title"] = "Edit IV List " + Model?.Name;
     var pokemonIds = string.Join(Environment.NewLine, Model?.PokemonIds ?? new());
@@ -12,13 +9,7 @@
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="IvList" asp-action="Index">IV Lists</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Edit IV List</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "IvList", ControllerText = "IV Lists", CurrentPage = "Edit IV List" })
 
 <h4>IV List '@(Model?.Name)'</h4>
 <hr />

@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceController.Common.Data
-@using ChuckDeviceController.Data.Entities
-@model Geofence
+﻿@model Geofence
 @{
     ViewData["Title"] = "Create Geofence";
 }
@@ -10,13 +8,7 @@
 <p>@Html.ValidationMessage("Geofence", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Geofence" asp-action="Index">Geofences</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Create Geofence</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Geofence", ControllerText = "Geofences", CurrentPage = "Create Geofence" })
 
 <h4>Geofence</h4>
 <hr />

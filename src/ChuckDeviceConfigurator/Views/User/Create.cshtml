@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceConfigurator.ViewModels;
-@model CreateUserViewModel
+﻿@model CreateUserViewModel
 @{
     ViewData["Title"] = "Create User";
 }
@@ -9,13 +8,7 @@
 <p>@Html.ValidationSummary("", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="User" asp-action="Index">Users</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Create User</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "User", ControllerText = "Users", CurrentPage = "Create User" })
 
 <h4>User</h4>
 <hr />

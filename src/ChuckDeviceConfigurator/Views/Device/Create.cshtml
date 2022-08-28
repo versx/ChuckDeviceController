@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceController.Data.Entities
-@model Device
+﻿@model Device
 @{
     ViewData["Title"] = "Create Device";
 }
@@ -9,13 +8,7 @@
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Device" asp-action="Index">Devices</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Create Device</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Device", ControllerText = "Devices", CurrentPage = "Create Device" })
 
 <h4>Device</h4>
 <hr />

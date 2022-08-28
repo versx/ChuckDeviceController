@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceConfigurator.ViewModels
-@model InstanceDetailsViewModel
+﻿@model InstanceDetailsViewModel
 @{
     ViewData["Title"] = "Instance Details " + Model?.Name;
 }
@@ -10,13 +8,7 @@
 <p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Instance" asp-action="Index">Instances</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Instance Details</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = "Instances", CurrentPage = "Instance Details" })
 
 <div>
     <h4>Instance '@Model?.Name'</h4>

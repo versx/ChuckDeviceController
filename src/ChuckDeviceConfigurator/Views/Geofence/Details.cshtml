@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceController.Data.Entities;
-@model Geofence
+﻿@model Geofence
 @{
     ViewData["Title"] = "Geofence Details " + Model?.Name;
 }
@@ -9,13 +8,7 @@
 <p>@Html.ValidationMessage("Geofence", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Geofence" asp-action="Index">Geofences</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Geofence Details</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Geofence", ControllerText = "Geofences", CurrentPage = "Geofence Details" })
 
 <div>
     <h4>Geofence '@Model?.Name'</h4>

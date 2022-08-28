@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceController.Data.Entities;
-@model Assignment
+﻿@model Assignment
 @{
     ViewData["Title"] = "Delete Assignment " + Model?.Id;
 }
@@ -9,13 +8,7 @@
 <p>@Html.ValidationMessage("Assignment", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Assignment" asp-action="Index">Assignments</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Delete Assignment</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Assignment", ControllerText = "Assignments", CurrentPage = "Delete Assignment" })
 
 <h3>Are you sure you want to delete this assignment?</h3>
 <div>

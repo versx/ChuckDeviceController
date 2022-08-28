@@ -1,6 +1,4 @@
 ﻿@using ChuckDeviceConfigurator.Localization
-@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceController.Data.Entities
 @model IvList
 @{
     ViewData["Title"] = "IV List Details " + Model?.Name;
@@ -11,13 +9,7 @@
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="IvList" asp-action="Index">IV Lists</a></li>
-        <li class="breadcrumb-item active" aria-current="page">IV List Details</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "IvList", ControllerText = "IV Lists", CurrentPage = "IV List Details" })
 
 <div>
     <h4>IV List '@Model?.Name'</h4>

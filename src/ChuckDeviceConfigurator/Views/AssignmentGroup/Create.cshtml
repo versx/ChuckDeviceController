@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceController.Data.Entities
-@model AssignmentGroup
+﻿@model AssignmentGroup
 @{
     ViewData["Title"] = "Create Assignment Group";
 }
@@ -9,13 +8,7 @@
 <p>@Html.ValidationMessage("AssignmentGroup", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="AssignmentGroup" asp-action="Index">Assignment Groups</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Create Assignment Group</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "AssignmentGroup", ControllerText = "Assignment Groups", CurrentPage = "Create Assignment Group" })
 
 <h4>Assignment Group</h4>
 <hr />

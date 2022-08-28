@@ -1,6 +1,4 @@
 ﻿@using ChuckDeviceConfigurator.Localization
-@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceController.Data.Entities
 @model IvList
 @{
     ViewData["Title"] = "Delete IV List " + Model?.Name;
@@ -11,13 +9,7 @@
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="IvList" asp-action="Index">IV Lists</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Delete IV List</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "IvList", ControllerText = "IV Lists", CurrentPage = "Delete IV List" })
 
 <h3>Are you sure you want to delete this IV list?</h3>
 <div>

@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceController.Data.Entities
-@model List<Pokestop>
+﻿@model List<Pokestop>
 @{
     ViewData["Title"] = "Utilities - Clear Stale Pokestops";
 }
@@ -16,13 +14,7 @@
 </p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Utilities" asp-action="Index">Utilities</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Clear Stale Pokestops</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Clear Stale Pokestops" })
 
 <hr />
 <div class="row">

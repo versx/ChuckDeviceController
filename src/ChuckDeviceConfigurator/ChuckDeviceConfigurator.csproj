@@ -89,6 +89,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\Geofences\" />
+    <Folder Include="Views\Device\EditorTemplates\" />
+    <Folder Include="Views\Shared\EditorTemplates\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="appsettings.json">

@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceController.Data
-@using ChuckDeviceController.Data.Entities;
-@model IvList
+﻿@model IvList
 @{
     ViewData["Title"] = "Create IV List";
 }
@@ -10,13 +8,7 @@
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="IvList" asp-action="Index">IV Lists</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Create IV List</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "IvList", ControllerText = "IV Lists", CurrentPage = "Create IV List" })
 
 <h4>IV List</h4>
 <hr />

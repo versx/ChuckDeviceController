@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceConfigurator.ViewModels
-@model DeviceGroupDetailsViewModel
+﻿@model DeviceGroupDetailsViewModel
 @{
     ViewData["Title"] = "Device Group Details " + Model?.Name;
 }
@@ -10,13 +8,7 @@
 <p>@Html.ValidationMessage("DeviceGroup", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="DeviceGroup" asp-action="Index">Device Groups</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Device Group Details</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "DeviceGroup", ControllerText = "Device Groups", CurrentPage = "Device Group Details" })
 
 <div>
     <h4>Device Group '@Model?.Name'</h4>
