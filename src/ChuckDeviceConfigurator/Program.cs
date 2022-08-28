@@ -122,17 +122,6 @@ builder.Services
     })
     .AddOpenAuthProviders(builder.Configuration);
 
-/*
-builder.Services.Configure<CookiePolicyOptions>(options =>
-{
-    // This lambda determines whether user consent for non-essential 
-    // cookies is needed for a given request.
-    options.CheckConsentNeeded = context => true;
-    // Requires using Microsoft.AspNetCore.Http
-    options.MinimumSameSitePolicy = SameSiteMode.None;
-});
-*/
-
 #endregion
 
 // Add services to the container.

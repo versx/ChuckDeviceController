@@ -517,6 +517,16 @@
 
         #endregion
 
+        #region Route Generator
+
+        // GET: UtilitiesController/RouteGenerator
+        public ActionResult RouteGenerator()
+        {
+            return View();
+        }
+
+        #endregion
+
         #region Private Methods
 
         private async Task<bool> ConvertPokestopToGymAsync(Pokestop pokestop)

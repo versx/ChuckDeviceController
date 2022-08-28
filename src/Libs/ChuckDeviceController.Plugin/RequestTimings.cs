@@ -74,7 +74,7 @@
         /// <summary>
         /// Gets a value determining whether to log request times or not.
         /// </summary>
-        public bool LogTimings { get; }
+        public bool LogTimings { get; set; }
 
         #endregion
 
@@ -83,7 +83,7 @@
         /// <summary>
         /// 
         /// </summary>
-        public RequestTimings(bool logTimings = false)
+        public RequestTimings()
         {
             _fastest = decimal.MaxValue;
             _slowest = decimal.MinValue;
@@ -92,7 +92,6 @@
 
             DecimalPlaces = 4;
             IsCloned = false;
-            LogTimings = logTimings;
         }
 
         private RequestTimings(decimal fastest, decimal slowest, decimal average, decimal total, uint requests, byte decimalPlaces, bool logTimings = false)
@@ -168,6 +167,8 @@
 
         #endregion
 
+        #region Private Methods
+
         private void LogRequestTime()
         {
             var sb = new System.Text.StringBuilder();
@@ -187,5 +188,7 @@
             var result = Math.Round(value / TimeSpan.TicksPerMillisecond, decimalPlaces, MidpointRounding.AwayFromZero);
             return result;
         }
+
+        #endregion
     }
 }

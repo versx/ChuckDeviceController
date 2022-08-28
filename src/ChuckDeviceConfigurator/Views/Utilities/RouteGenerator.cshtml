@@ -1,0 +1,108 @@
+﻿@model RouteGeneratorViewModel
+@{
+    ViewData["Title"] = "Utilities - Route Generator";
+}
+
+<link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+<link rel="stylesheet" href="~/lib/leaflet-draw/leaflet.draw.css" />
+<link rel="stylesheet" href="~/lib/easy-button/easy-button.css" />
+
+<h1>Utilities</h1>
+
+<p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
+
+<h4>Route Generator</h4>
+
+<p>
+    Leaflet based map to manually create, automatically generator, or optimize coordinate routes as well as boundary geofences.
+</p>
+
+<br />
+<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Utilities" asp-action="Index">Utilities</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Route Generator</li>
+    </ol>
+</nav>
+
+<hr />
+
+<div id="map" style="height: 600px;"></div>
+
+<script src="~/lib/leaflet/leaflet.js"></script>
+<script src="~/lib/leaflet-draw/leaflet.draw.js"></script>
+<script src="~/lib/easy-button/easy-button.js"></script>
+<script>
+    const map = L.map('map').setView([34.01, -117.01], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    const shapeOptions = {
+        stroke: true,
+        color: '#3388ff',
+        weight: 3,
+        opacity: 1,
+        fill: true,
+        fillColor: null,
+        fillOpacity: 0.2,
+    };
+
+    var drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+    var drawControl = new L.Control.Draw({
+        edit: {
+            featureGroup: drawnItems,
+        },
+        draw: {
+            polyline: false,
+            polygon: {
+                allowIntersection: true,
+                showArea: true,
+                metric: 'km',
+                precision: {
+                    km: 2,
+                },
+                shapeOptions,
+            },
+            rectangle: {
+                showRadius: true,
+                metric: true,
+                shapeOptions,
+            },
+            circle: false,
+            marker: false,
+            circlemarker: false,
+        },
+    });
+    map.addControl(drawControl);
+
+    const importGeofence = L.easyButton("<img src='https://cdn-icons-png.flaticon.com/512/151/151901.png' width='16' height='16' />", function(button, map) {
+        console.log('import geofence');
+        // TODO: Open modal
+    }).addTo(map);
+    const deleteAllLayers = L.easyButton("<img src='https://www.iconpacks.net/icons/1/free-trash-icon-347-thumb.png' width='16' height='16' />", function(button, map) {
+        console.log('delete all layers');
+        const result = window.confirm('Are you sure you want to delete all shapes?');
+        if (!result) {
+            return;
+        }
+        drawnItems.clearLayers();
+    }).addTo(map);
+
+    map.on('draw:created', function(e) {
+        console.log('onCreated:', e);
+        const layer = e.layer;
+        if (drawnItems) {
+            drawnItems.addLayer(layer);
+            const json = drawnItems.toGeoJSON();
+            //console.log('json:', json);
+        }
+    });
+    map.on('draw:edited', function(e) {
+    });
+    map.on('draw:deleted', function(e) {
+    });
+</script>

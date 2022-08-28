@@ -4,7 +4,6 @@
 @using ChuckDeviceController.Extensions.Json
 @using ChuckDeviceController.Plugin
 @inject SignInManager<ApplicationUser> SignInManager
-
 @{
     const string DarkTheme = "dark";
     var data = Html.RenderAction("GetSidebarItems", "Helper");
@@ -54,7 +53,7 @@
         }
         else
         {
-            if (item.IsSeparator)
+            if (item?.IsSeparator ?? false)
             {
                 <li><hr class="dropdown-divider"></li>
             }
@@ -63,7 +62,7 @@
                 <li class="nav-item">
                     <a class="@(item.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@item.ControllerName" asp-action="@item.ActionName">
                         @Html.Raw(string.IsNullOrEmpty(item?.Icon) ? "" : $"<i class='{item.Icon}'></i>")
-                        @item?.Text
+                        @item.Text
                     </a>
                 </li>
             }
