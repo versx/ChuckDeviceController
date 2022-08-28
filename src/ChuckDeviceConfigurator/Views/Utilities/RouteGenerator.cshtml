@@ -22,9 +22,6 @@
 
 <hr />
 
-<button type="button" class="btn btn-primary btn-sm float-start" data-bs-toggle="modal" data-bs-target="#importModal">
-    Import Geofence
-</button>
 <button type="button" class="btn btn-primary btn-sm float-end" data-bs-toggle="modal" data-bs-target="#exportModal">
     Export Geofence
 </button>
@@ -116,6 +113,7 @@
 <script src="~/lib/leaflet/leaflet.js"></script>
 <script src="~/lib/leaflet-draw/leaflet.draw.js"></script>
 <script src="~/lib/easy-button/easy-button.js"></script>
+<script src="~/js/geofence-converters.js"></script>
 <script>
     let format = 'json';
     const map = L.map('map').setView([34.01, -117.01], 13);
@@ -163,52 +161,51 @@
     });
     map.addControl(drawControl);
 
-    L.easyButton("<img src='https://cdn-icons-png.flaticon.com/512/151/151901.png' width='16' height='16' />", function(button, map) {
-        console.log('import geofence');
-        // TODO: Open modal
-    }).addTo(map);
-    L.easyButton("<img src='https://www.iconpacks.net/icons/1/free-trash-icon-347-thumb.png' width='16' height='16' />", function(button, map) {
-        const result = window.confirm('Are you sure you want to delete all shapes?');
-        if (!result) {
-            return;
-        }
-        drawnItems.clearLayers();
+    L.easyButton({
+        states: [{
+            icon: 'fa-solid fa-file-import',
+            title: 'Import geofence',
+            onClick: (button, map) => $('#importModal').modal('show'),
+        }]
     }).addTo(map);
 
-    map.on('draw:created', function(e) {
-        console.log('onCreated:', e);
+    L.easyButton({
+        states: [{
+            icon: 'fa-solid fa-trash-can',
+            title: 'Delete all layers',
+            onClick: (button, map) => {
+                if (window.confirm('Are you sure you want to delete all shapes?')) {
+                    drawnItems.clearLayers();
+                }
+            },
+        }]
+    }).addTo(map);
+
+    map.on('draw:created', (e) => {
+        //console.log('onCreated:', e);
         const layer = e.layer;
         if (drawnItems) {
             drawnItems.addLayer(layer);
-            //const json = drawnItems.toGeoJSON();
-            //console.log('json:', json);
         }
     });
-    map.on('draw:edited', function(e) {
-    });
-    map.on('draw:deleted', function(e) {
-    });
 
-    $('#exportModal').on('shown.bs.modal', function() {
+    $('#exportModal').on('shown.bs.modal', () => {
         const geofence = drawnItems.toGeoJSON();
         const json = JSON.stringify(geofence, null, 2);
         $('#export-geofence').val(json);
     });
 
-    const importFormatChanged = (e) => {
-        format = e.value;
-    };
+    const importFormatChanged = (e) => format = e.value;
 
     const importGeofence = () => {
         const geofenceData = $('#import-geofence').val();
         if (!geofenceData) {
             return;
         }
-        // TODO: Convert based on format and add to map
         const geofence = formatGeofenceToGeoJson(format, geofenceData);
         loadGeofence(geofence);
 
-        $('#importModal').hide();
+        $('#importModal').modal('hide');
     };
 
     const exportFormatChanged = (e) => {
@@ -220,7 +217,7 @@
                 // Convert ini to json geofence
                 const geojson = iniToGeoJson(geofence);
                 const json = JSON.stringify(geojson, null, 2);
-                console.log('json:', json);
+                //console.log('json:', json);
                 $('#export-geofence').val(json);
                 break;
             case 'txt':
@@ -229,14 +226,12 @@
                 const iniData = [];
                 drawnItems.eachLayer(layer => {
                     const geojson = layer.toGeoJSON();
-                    if (geojson) {
-                        const ini = geoJsonToIni(geojson);
-                        iniData.push(ini);
-                    }
-                    const ini = iniData.join('');
-                    console.log('ini:', ini);
-                    $('#export-geofence').val(ini);
+                    const data = geoJsonToIni(geojson);
+                    iniData.push(data);
                 });
+                const ini = iniData.join('');
+                //console.log('ini:', ini);
+                $('#export-geofence').val(ini);
                 break;
         }
     };
@@ -273,6 +268,7 @@
         }
         const leafletGeoJSON = new L.GeoJSON(data);
         leafletGeoJSON.eachLayer(layer => {
+            // TODO: Get area size of geofence
             const html = `
             <b>Name:</b> ${layer.feature.properties.name}<br>
             <b>Area:</b> ${0} km2
@@ -280,50 +276,6 @@
             layer.bindTooltip(html);
             drawnItems.addLayer(layer);
         });
-    };
-
-    const copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text);
-    };
-
-    const iniToGeoJson = (data) => {
-        const geoJson = {
-            type: 'FeatureCollection',
-            features: [],
-        };
-        const fences = data.match(/\[([^\]]+)\]([^[]*)/g);
-        for (const fence of fences) {
-            const geofence = {
-                type: 'Feature',
-                properties: {
-                    name: fence.match(/\[([^\]]+)\]/)[1],
-                },
-                geometry: {
-                    type: 'Polygon',
-                    coordinates: [[]],
-                },
-            };
-            const coordinates = fence.match(/[0-9\-.]+,\s*[0-9\-.]+/g).map((point) => [parseFloat(point.split(',')[1]), parseFloat(point.split(',')[0])]);
-            geofence.geometry.coordinates[0] = coordinates;
-            // Ensure first coordinate is also the last coordinate
-            geofence.geometry.coordinates[0].push(geofence.geometry.coordinates[0][0]);
-            geoJson.features.push(geofence);
-        }
-        return geoJson;
-    };
-
-    const geoJsonToIni = (feature) => {
-        let geofence = [];
-        if (feature.geometry.type === 'Polygon') {
-            geofence.push(`[${feature.properties.name}]\n`);
-            for (const coord of feature.geometry.coordinates) {
-                coord.pop();
-                for (const point of coord) {
-                    geofence.push(`${point[1]},${point[0]}\n`);
-                }
-            }
-        }
-        return geofence.join('');
     };
 </script>
 }

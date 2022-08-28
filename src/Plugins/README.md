@@ -1,6 +1,6 @@
 # Plugins  
 
-- Each plugin's project file i.e. `TestPlugin.csproj` needs the following properties set:  
+- Each plugin's project file i.e. `TestPlugin.csproj` needs the following properties set ([details](https://docs.microsoft.com/en-us/dotnet/core/tutorials/creating-app-with-plugin-support)):  
 ```diff
 <Project Sdk="Microsoft.NET.Sdk">
 
