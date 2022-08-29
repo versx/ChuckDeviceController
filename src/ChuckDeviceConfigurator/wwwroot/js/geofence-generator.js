@@ -142,6 +142,10 @@ const getGeofence = () => {
     return value;
 };
 
+const setReturnGeofenceType = (onlyIni) => {
+    onlyUseIni = onlyIni;
+};
+
 /*
 map.on('click', '.deleteLayer', function (e) {
     console.log('delete layer click');
@@ -260,15 +264,13 @@ const formatGeofenceToGeoJson = (format, data) => {
     }
 };
 
-function loadGeofence(data, convertToJson, onlyIni = false) {
+function loadGeofence(data, convertToJson) {
     if (!drawnItems) {
         return;
     }
     if (convertToJson) {
         data = iniToGeoJson(data);
     }
-    onlyUseIni = onlyIni;
-
     const leafletGeoJSON = new L.GeoJSON(data);
     leafletGeoJSON.eachLayer(layer => {
         // TODO: Get area size of geofence

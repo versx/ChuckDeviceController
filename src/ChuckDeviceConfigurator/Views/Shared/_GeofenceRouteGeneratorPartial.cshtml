@@ -2,9 +2,25 @@
 <link rel="stylesheet" href="~/lib/leaflet-draw/leaflet.draw.css" />
 <link rel="stylesheet" href="~/lib/easy-button/easy-button.css" />
 
-<button type="button" class="btn btn-primary btn-sm float-end" data-bs-toggle="modal" data-bs-target="#exportModal">
-    Export Geofence
-</button>
+<div>
+    <div class="form-group float-start">
+        <div class="input-group">
+            <select id="geofences" class="form-select form-select-sm">
+                <option>Blah</option>
+                <option>Blah2</option>
+            </select>
+            <button type="button" class="btn btn-primary btn-sm">
+                @* TODO: Use html action to get selected geofences data *@
+                Import Existing
+            </button>
+        </div>
+    </div>
+    <div class="form-group float-end">
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exportModal">
+            Export Geofence
+        </button>
+    </div>
+</div>
 <br />
 <br />
 
