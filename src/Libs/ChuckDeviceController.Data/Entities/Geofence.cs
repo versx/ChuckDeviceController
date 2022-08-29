@@ -20,7 +20,7 @@
         public string Name { get; set; }
 
         [
-            DisplayName("Geofence Type"),
+            DisplayName("Type"),
             Column("type"),
             Required,
         ]

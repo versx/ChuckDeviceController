@@ -59,7 +59,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckPluginMvc1", "Templates\ChuckPluginMvc1\ChuckPluginMvc1.csproj", "{A12F8E4A-E8A2-4449-9D8A-4E554DFA656B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckPlugin", "Templates\ChuckPlugin\ChuckPlugin.csproj", "{1357315E-1FDD-4305-A533-EEC65A57C5B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckPlugin", "Templates\ChuckPlugin\ChuckPlugin.csproj", "{1357315E-1FDD-4305-A533-EEC65A57C5B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

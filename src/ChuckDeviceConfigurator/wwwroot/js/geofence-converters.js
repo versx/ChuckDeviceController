@@ -22,9 +22,13 @@
             },
         };
         const coordinates = fence.match(/[0-9\-.]+,\s*[0-9\-.]+/g).map((point) => [parseFloat(point.split(',')[1]), parseFloat(point.split(',')[0])]);
-        geofence.geometry.coordinates[0] = coordinates;
+        const first = coordinates[0];
+        const last = coordinates[coordinates.length - 1];
         // Ensure first coordinate is also the last coordinate
-        geofence.geometry.coordinates[0].push(geofence.geometry.coordinates[0][0]);
+        if (first !== last) {
+            coordinates.push(first);
+        }
+        geofence.geometry.coordinates[0] = coordinates;
         geoJson.features.push(geofence);
     }
     return geoJson;
