@@ -12,6 +12,7 @@
     <IsMacOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsMacOS>
     <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
     <BaseOutputPath>bin</BaseOutputPath>
+    <ProjectGuid>{3FFEE2BD-2869-4EF1-82A5-503683D161B5}</ProjectGuid>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsWindows)'=='true'">

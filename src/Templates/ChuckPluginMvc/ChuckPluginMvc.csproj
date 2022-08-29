@@ -8,6 +8,7 @@
 		<OutputType>Library</OutputType>
 	</PropertyGroup>
 
+	<PropertyGroup Condition=" '$(RunConfiguration)' == 'ChuckDeviceControllerPluginMvc1' " />
 	<ItemGroup>
 		<ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj">
 			<Private>false</Private>

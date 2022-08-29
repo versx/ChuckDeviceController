@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "Kt7EtMF+Do4LRhaOzqyjSrYLOeTvKhz3GOvHDAJXZG8=",
+  "Source": "GitLabAuthProviderPlugin",
+  "BasePath": "_content/GitLabAuthProviderPlugin",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

@@ -1,0 +1,261 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/versx/Desktop/ChuckDeviceController/src/Plugins/GitLabAuthProviderPlugin/GitLabAuthProviderPlugin.csproj": {}
+  },
+  "projects": {
+    "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Common/ChuckDeviceController.Common.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Common/ChuckDeviceController.Common.csproj",
+        "projectName": "ChuckDeviceController.Common",
+        "projectPath": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Common/ChuckDeviceController.Common.csproj",
+        "packagesPath": "/Users/versx/.nuget/packages/",
+        "outputPath": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Common/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/versx/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.400/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin.Helpers/ChuckDeviceController.Plugin.Helpers.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin.Helpers/ChuckDeviceController.Plugin.Helpers.csproj",
+        "projectName": "ChuckDeviceController.Plugin.Helpers",
+        "projectPath": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin.Helpers/ChuckDeviceController.Plugin.Helpers.csproj",
+        "packagesPath": "/Users/versx/.nuget/packages/",
+        "outputPath": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin.Helpers/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/versx/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.Http.Abstractions": {
+              "target": "Package",
+              "version": "[2.2.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.400/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin/ChuckDeviceController.Plugin.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin/ChuckDeviceController.Plugin.csproj",
+        "projectName": "ChuckDeviceController.Plugin",
+        "projectPath": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin/ChuckDeviceController.Plugin.csproj",
+        "packagesPath": "/Users/versx/.nuget/packages/",
+        "outputPath": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/versx/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {
+              "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Common/ChuckDeviceController.Common.csproj": {
+                "projectPath": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Common/ChuckDeviceController.Common.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.Mvc": {
+              "target": "Package",
+              "version": "[2.2.0, )"
+            },
+            "Microsoft.AspNetCore.Mvc.NewtonsoftJson": {
+              "target": "Package",
+              "version": "[6.0.7, )"
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.400/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/versx/Desktop/ChuckDeviceController/src/Plugins/GitLabAuthProviderPlugin/GitLabAuthProviderPlugin.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/versx/Desktop/ChuckDeviceController/src/Plugins/GitLabAuthProviderPlugin/GitLabAuthProviderPlugin.csproj",
+        "projectName": "GitLabAuthProviderPlugin",
+        "projectPath": "/Users/versx/Desktop/ChuckDeviceController/src/Plugins/GitLabAuthProviderPlugin/GitLabAuthProviderPlugin.csproj",
+        "packagesPath": "/Users/versx/.nuget/packages/",
+        "outputPath": "/Users/versx/Desktop/ChuckDeviceController/src/Plugins/GitLabAuthProviderPlugin/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/versx/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {
+              "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin.Helpers/ChuckDeviceController.Plugin.Helpers.csproj": {
+                "projectPath": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin.Helpers/ChuckDeviceController.Plugin.Helpers.csproj"
+              },
+              "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin/ChuckDeviceController.Plugin.csproj": {
+                "projectPath": "/Users/versx/Desktop/ChuckDeviceController/src/Libs/ChuckDeviceController.Plugin/ChuckDeviceController.Plugin.csproj",
+                "excludeAssets": "runtime"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "AspNet.Security.OAuth.GitLab": {
+              "target": "Package",
+              "version": "[6.0.9, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.400/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
