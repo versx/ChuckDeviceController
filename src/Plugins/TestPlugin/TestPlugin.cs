@@ -307,7 +307,7 @@
             TestFileStorageHost();
 
             // Execute IConfigurationHost method tests
-            TestConfigurationHost();
+            //TestConfigurationHost();
 
             // Add dashboard stats
             var stats = new List<IDashboardStatsItem>

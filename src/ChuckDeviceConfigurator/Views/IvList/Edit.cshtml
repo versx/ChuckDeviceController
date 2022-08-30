@@ -1,7 +1,7 @@
 ﻿@model IvList
 @{
     ViewData["Title"] = "Edit IV List " + Model?.Name;
-    var pokemonIds = string.Join(Environment.NewLine, Model?.PokemonIds ?? new());
+    var pokemonIds = string.Join(",", (Model?.PokemonIds ?? new()));
 }
 
 <h1>Edit IV List</h1>
@@ -14,7 +14,7 @@
 <h4>IV List '@(Model?.Name)'</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -22,11 +22,14 @@
                 <input asp-for="Name" class="form-control" readonly />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="PokemonIds" class="control-label"></label> (Specify <code>*</code> for all Pokemon)
-                <textarea id="PokemonIds" name="PokemonIds" class="form-control" rows="30">@pokemonIds</textarea>
+            <br />
+            <div class="form-group" hidden>
+                <label asp-for="PokemonIds" class="control-label"></label>
+                <textarea id="PokemonIds" name="PokemonIds" class="form-control" rows="2">@pokemonIds</textarea>
                 <span asp-validation-for="PokemonIds" class="text-danger"></span>
             </div>
+            @await Html.PartialAsync("_PokemonSelectorPartial", ViewData["Pokemon"])
+            <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

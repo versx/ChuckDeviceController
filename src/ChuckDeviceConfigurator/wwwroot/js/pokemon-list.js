@@ -1,92 +1,62 @@
-let pokemonRarity = {};
+const PokemonGenerations = {
+    gen1: { start: 1, end: 151 },
+    gen2: { start: 152, end: 251 },
+    gen3: { start: 252, end: 386 },
+    gen4: { start: 387, end: 494 },
+    gen5: { start: 495, end: 649 },
+    gen6: { start: 650, end: 721 },
+    gen7: { start: 722, end: 809 },
+    gen8: { start: 810, end: 898 },
+};
 
 /*
-$('form').submit(function(e) {
-    const pokemon = $('#PokemonIds').val();
-    if (pokemon == '') {
-        // Show error message about pokemon selection
-        $('#error-div').prop('hidden', false);
-        $('#error-div').html('<div><strong>Error!</strong> Please select one or more pokemon.</div>');
-        e.preventDefault();
-    }
-});
-
+let pokemonRarity = {};
 $.getJSON('/data/rarity.json', function(data) {
     pokemonRarity = data;
 });
 */
 
+function selectAllPokemon(select) {
+    const pokemon = document.getElementsByClassName('item');
+    const selectedPokemon = getSelectedPokemon().split(',');
+    for (const pkmn of pokemon) {
+        const isSelected = selectedPokemon.includes(pkmn.id);
+        if (select && !isSelected) {
+            selectItem(pkmn);
+        } else {
+            unselectItem(pkmn);
+        }
+    }
+    if (!select) {
+        setSelectedPokemon('');
+    }
+}
+
+function selectByGen(genNum) {
+    const pokemon = document.getElementsByClassName('item');
+    const generation = PokemonGenerations['gen' + genNum];
+    for (const pkmn of pokemon) {
+        if (pkmn.id >= generation.start && pkmn.id <= generation.end) {
+            selectItem(pkmn);
+        }
+    }
+}
+
+function invertSelection() {
+    const value = getSelectedPokemon() || '';
+    const oldPokemon = value.split(',');
+    const pokemon = document.getElementsByClassName('item');
+    for (const pkmn of pokemon) {
+        const isSelected = pkmn.classList.value.includes('active');
+        if (!isSelected && !oldPokemon.includes(pkmn.id)) {
+            selectItem(pkmn);
+        } else {
+            unselectItem(pkmn);
+        }
+    }
+}
+
 function initButtons() {
-    document.body.addEventListener('click', '.pokemon-button', function (e) {
-        console.log('button clicked');
-    });
-    $('#select_all').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            selectItem(item);
-        });
-    });
-    $('#select_none').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            unselectItem(item);
-            $('#PokemonIds').val('');
-        });
-    });
-    $('#select_gen1').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (item.id < 152) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_gen2').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (item.id > 151 && item.id < 252) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_gen3').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (item.id > 251 && item.id < 387) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_gen4').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (item.id > 386 && item.id < 495) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_gen5').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (item.id > 494 && item.id < 650) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_gen6').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (item.id > 649 && item.id < 722) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_gen7').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (item.id > 721 && item.id < 810) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_gen8').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (item.id > 809 && item.id < 899) {
-                selectItem(item);
-            }
-        });
-    });
     $('#select_rare').on('click', function() {
         $.each($('.item'), function(index, item) {
             if (!pokemonRarity.common.includes(parseInt(item.id))) {
@@ -115,32 +85,16 @@ function initButtons() {
             }
         });
     });
-    $('#select_invert').on('click', function() {
-        const value = $('#PokemonIds').val() || '';
-        const oldPokemon = value.split(',')
-                                .map(Number);
-        $.each($('.item'), function(index, item) {
-            const isPokemonSelected = item.classList.value.includes('active');
-            if (!isPokemonSelected && !oldPokemon.includes(item.id)) {
-                selectItem(item);
-            } else {
-                unselectItem(item);
-            }
-        });
-    });
 }
 
 function onPokemonClicked(element) {
-    if (element.disabled)
+    if (element.disabled) {
         return;
+    }
     if (element.classList.value.includes('active')) {
-        element.classList.value = element.classList.value.replace(' active', '');
-        element.style.background = $('.pokemon-list').css('background-color');
-        removeId(element.id);
+        unselectItem(element);
     } else {
-        element.classList.value = element.classList.value += ' active';
-        element.style.background = 'dodgerblue';
-        appendId(element.id);
+        selectItem(element);
     }
 }
 
@@ -168,6 +122,10 @@ function toggleAllPokemon(disable) {
 }
 
 function selectItem(element) {
+    const selectedPokemon = getSelectedPokemon().split(',');
+    if (selectedPokemon.includes(element.id)) {
+        return;
+    }
     if (!element.classList.value.includes('active')) {
         element.classList.value = element.classList.value += ' active';
     }
@@ -176,6 +134,10 @@ function selectItem(element) {
 }
 
 function unselectItem(element) {
+    const selectedPokemon = getSelectedPokemon().split(',');
+    if (!selectedPokemon.includes(element.id)) {
+        return;
+    }
     if (element.classList.value.includes('active')) {
         element.classList.value = element.classList.value.replace(' active', '');
     }
@@ -184,7 +146,7 @@ function unselectItem(element) {
 }
 
 function appendId(id) {
-    const value = $('#PokemonIds').val();
+    const value = getSelectedPokemon();
     let newValue = value;
     if (!value || value === '') {
         newValue = id;
@@ -195,13 +157,24 @@ function appendId(id) {
             newValue = value + ',' + id;
         }
     }
-    $('#PokemonIds').val(newValue);
+    setSelectedPokemon(newValue);
 }
 
 function removeId(id) {
-    const value = $('#PokemonIds').val();
-    const list = (value || '').split(',').map(Number);
-    const newList = list.filter(x => x !== parseInt(id));
+    const value = getSelectedPokemon();
+    const list = (value || '').split(',')
+    const newList = list.filter(x => x !== id);
     const newValue = newList.join(',');
-    $('#PokemonIds').val(newValue);
+    setSelectedPokemon(newValue);
+}
+
+function getSelectedPokemon() {
+    const pokemonIds = document.getElementById('PokemonIds');
+    const value = pokemonIds.value;
+    return value || '';
+}
+
+function setSelectedPokemon(pokemon) {
+    const pokemonIds = document.getElementById('PokemonIds');
+    pokemonIds.value = pokemon;
 }

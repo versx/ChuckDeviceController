@@ -56,18 +56,7 @@
         // GET: IvListController/Create
         public ActionResult Create()
         {
-            var pokemon = new List<dynamic>();
-            for (var i = 1; i < 900; i++)
-            {
-                var name = Translator.Instance.GetPokemonName((uint)i);
-                pokemon.Add(new
-                {
-                    id = i,
-                    name,
-                    image = Utils.GetPokemonIcon((uint)i),
-                });
-            }
-            ViewData["Pokemon"] = pokemon;
+            ViewData["Pokemon"] = GeneratePokemonList();
             return View();
         }
 
@@ -79,14 +68,9 @@
             try
             {
                 var name = Convert.ToString(collection["Name"]);
-                var pokemonIds = Convert.ToString(collection["PokemonIds"]);
-                var list = pokemonIds == "*"
-                    ? GeneratePokemonList()
-                    : pokemonIds.Replace("<br>", "\r\n")
-                                .Replace("\r\n", "\n")
-                                .Split('\n')
-                                //.Select(uint.Parse)
-                                .ToList();
+                var pokemonIds = Convert.ToString(collection["PokemonIds"])
+                                        .Split(',')
+                                        .ToList();
 
                 if (_context.IvLists.Any(iv => iv.Name == name))
                 {
@@ -98,7 +82,7 @@
                 var ivList = new IvList
                 {
                     Name = name,
-                    PokemonIds = list,
+                    PokemonIds = pokemonIds,
                 };
 
                 await _context.IvLists.AddAsync(ivList);
@@ -125,6 +109,7 @@
                 ModelState.AddModelError("IvList", $"IV list does not exist with id '{id}'.");
                 return View();
             }
+            ViewData["Pokemon"] = GeneratePokemonList(selectedPokemon: ivList.PokemonIds);
             return View(ivList);
         }
 
@@ -156,20 +141,15 @@
                     ivList.Name = name;
                 }
 
-                var pokemonIds = Convert.ToString(collection["PokemonIds"]);
-                var list = pokemonIds == "*"
-                    ? GeneratePokemonList()
-                    : pokemonIds.Replace("<br>", "\n")
-                                .Replace("<br />", "\n")
-                                .Replace("\r\n", "\n")
-                                .Split('\n')
-                                .ToList();
+                var pokemonIds = Convert.ToString(collection["PokemonIds"])
+                                        .Split(',')
+                                        .ToList();
 
                 // Compare list counts or if any elements are different
-                if (ivList.PokemonIds.Count != list.Count ||
-                    ivList.PokemonIds.IsEqual(list, ignoreOrder: true))
+                if (ivList.PokemonIds.Count != pokemonIds.Count ||
+                    ivList.PokemonIds.IsEqual(pokemonIds, ignoreOrder: true))
                 {
-                    ivList.PokemonIds = list;
+                    ivList.PokemonIds = pokemonIds;
                 }
 
                 _context.Update(ivList);
@@ -229,12 +209,19 @@
             }
         }
 
-        private static List<string> GeneratePokemonList(int start = 1, int end = 999)
+        private static List<dynamic> GeneratePokemonList(uint maxPokemonId = Strings.MaxPokemonId, List<string>? selectedPokemon = null)
         {
-            var pokemonIds = Enumerable.Range(start, end)
-                                       .Select(x => Convert.ToString(x))
-                                       .ToList();
-            return pokemonIds;
+            // TODO: Include forms and costumes
+            var pokemon = new List<dynamic>();
+            for (var i = 1; i <= maxPokemonId; i++)
+            {
+                var id = Convert.ToUInt32(i);
+                var name = Translator.Instance.GetPokemonName(id);
+                var image = Utils.GetPokemonIcon(id);
+                var selected = selectedPokemon?.Contains(i.ToString()) ?? false;
+                pokemon.Add(new { id, name, image, selected });
+            }
+            return pokemon;
         }
     }
 }

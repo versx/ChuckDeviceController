@@ -23,8 +23,8 @@ copy "%targetDir%/%projectName%%depsFileExt%" "%pluginFolder%/%projectName%%deps
 
 :: TODO: Copy all dependency files other than ChuckDeviceController.* libraries
 
-if exist "%targetDir%/appsettings.json" (
-  xcopy /S /E /Y /I "%targetDir%/appsettings.json" "%pluginFolder%/appsettings.json"
+if not exist "%pluginFolder%/appsettings.json" (
+  xcopy /Y "%targetDir%/appsettings.json" "%pluginFolder%/appsettings.json"
 )
 
 :: Copy all directories from plugin build output folder

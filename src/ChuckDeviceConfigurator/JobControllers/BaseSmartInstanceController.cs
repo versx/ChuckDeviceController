@@ -398,7 +398,7 @@
         private Dictionary<string, DeviceIndex> GetDevicesSortedByIndex()
         {
             var devices = _currentUuid.ToList();
-            devices.Sort((pair1, pair2) => pair1.Value.LastRouteIndex.CompareTo(pair2.Value.LastRouteIndex));
+            devices.Sort((pair1, pair2) => pair1.Value?.LastRouteIndex.CompareTo(pair2.Value.LastRouteIndex) ?? -1);
 
             var indexes = devices.ToDictionary(key => key.Key, value => value.Value);
             return indexes;

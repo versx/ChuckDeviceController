@@ -62,6 +62,9 @@
         public const string DeviceOnlineIcon = "🟢"; // green dot
         public const string DeviceOfflineIcon = "🔴"; // red dot
 
+        public const uint MaxPokemonId = 898;
+
+
         public static readonly IReadOnlyDictionary<string, AuthProviderConfig> DefaultAuthProviderIcons = new Dictionary<string, AuthProviderConfig>
         {
             { "Discord", new("fa-brands fa-discord fa-align-left social-icon", style: "background: #5865F2; color: #fff;") },
