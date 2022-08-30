@@ -16,9 +16,21 @@
     [Authorize(Roles = RoleConsts.IvListsRole)]
     public class IvListController : Controller
     {
+        #region Variables
+
+        private static readonly IReadOnlyList<string> _ignoreForms = new List<string>
+        {
+            "Normal",
+            "Shadow",
+            "Purified",
+        };
         private readonly ILogger<IvListController> _logger;
         private readonly ControllerContext _context;
         private readonly IIvListControllerService _ivListService;
+
+        #endregion
+
+        #region Constructor
 
         public IvListController(
             ILogger<IvListController> logger,
@@ -30,13 +42,34 @@
             _ivListService = ivListService;
         }
 
+        #endregion
+
         // GET: IvListController
         public ActionResult Index()
         {
             var ivLists = _context.IvLists.ToList();
-            return View(new ViewModelsModel<IvList>
+            var model = new List<IvListViewModel>();
+            foreach (var ivList in ivLists)
             {
-                Items = ivLists,
+                var images = new List<string>();
+                ivList.PokemonIds.Sort();
+                foreach (var pokemonId in ivList.PokemonIds)
+                {
+                    var split = pokemonId.Split(new[] { "_f" }, StringSplitOptions.RemoveEmptyEntries);
+                    var id = Convert.ToUInt32(split[0]);
+                    var formId = split.Length > 1 ? Convert.ToUInt32(split[1]) : 0;
+                    var image = Utils.GetPokemonIcon(id, formId, html: true);
+                    images.Add(image);
+                }
+                model.Add(new IvListViewModel
+                {
+                    Name = ivList.Name,
+                    Pokemon = images,
+                });
+            };
+            return View(new ViewModelsModel<IvListViewModel>
+            {
+                Items = model,
             });
         }
 
@@ -211,15 +244,36 @@
 
         private static List<dynamic> GeneratePokemonList(uint maxPokemonId = Strings.MaxPokemonId, List<string>? selectedPokemon = null)
         {
-            // TODO: Include forms and costumes
             var pokemon = new List<dynamic>();
-            for (var i = 1; i <= maxPokemonId; i++)
+
+            void AddPokemon(uint pokemonId, uint formId = 0)
             {
-                var id = Convert.ToUInt32(i);
-                var name = Translator.Instance.GetPokemonName(id);
-                var image = Utils.GetPokemonIcon(id);
-                var selected = selectedPokemon?.Contains(i.ToString()) ?? false;
-                pokemon.Add(new { id, name, image, selected });
+                var id = formId > 0
+                    ? $"{pokemonId}_f{formId}"
+                    : $"{pokemonId}";
+                var pkmnName = Translator.Instance.GetPokemonName(pokemonId);
+                var formName = formId > 0 ? Translator.Instance.GetFormName(formId) : "";
+                var name = string.IsNullOrEmpty(formName)
+                    ? pkmnName
+                    : $"{pkmnName} - {formName}";
+                var image = Utils.GetPokemonIcon(pokemonId, formId);
+                var selected = selectedPokemon?.Contains(id) ?? false;
+                pokemon.Add(new { id, pokemonId, name, image, selected });
+            }
+
+            foreach (var (pokemonId, pkmn) in GameMaster.Instance.Pokedex)
+            {
+                if (pokemonId > maxPokemonId)
+                    continue;
+
+                AddPokemon(pokemonId);
+                foreach (var (formId, pkmnForm) in pkmn.Forms)
+                {
+                    if (_ignoreForms.Contains(pkmnForm.Name))
+                        continue;
+
+                    AddPokemon(pokemonId, formId);
+                }
             }
             return pokemon;
         }

@@ -161,9 +161,9 @@
             return html;
         }
 
-        public static string GetPokemonIcon(uint pokemonId, string width = "32", string height = "32", bool html = false)
+        public static string GetPokemonIcon(uint pokemonId, uint formId = 0, string width = "32", string height = "32", bool html = false)
         {
-            var url = $"{Strings.PokemonImageUrl}/{pokemonId}.png";
+            var url = $"{Strings.PokemonImageUrl}/{pokemonId}" + (formId > 0 ? $"_f{formId}" : "") + ".png";
             return html
                 ? $"<img src='{url}' width='{width}' height='{height}' />"
                 : url;

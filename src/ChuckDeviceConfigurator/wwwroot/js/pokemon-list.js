@@ -16,6 +16,37 @@ $.getJSON('/data/rarity.json', function(data) {
 });
 */
 
+function initButtons() {
+    $('#select_rare').on('click', function () {
+        $.each($('.item'), function (index, item) {
+            if (!pokemonRarity.common.includes(parseInt(item.id))) {
+                selectItem(item);
+            }
+        });
+    });
+    $('#select_ultra').on('click', function () {
+        $.each($('.item'), function (index, item) {
+            if (pokemonRarity.ultra.includes(parseInt(item.id))) {
+                selectItem(item);
+            }
+        });
+    });
+    $('#select_raid5star').on('click', function () {
+        $.each($('.item'), function (index, item) {
+            if (pokemonRarity.raid5star.includes(parseInt(item.id))) {
+                selectItem(item);
+            }
+        });
+    });
+    $('#select_raid6star').on('click', function () {
+        $.each($('.item'), function (index, item) {
+            if ((pokemonRarity.raid6star || []).includes(parseInt(item.id))) {
+                selectItem(item);
+            }
+        });
+    });
+}
+
 function selectAllPokemon(select) {
     const pokemon = document.getElementsByClassName('item');
     const selectedPokemon = getSelectedPokemon().split(',');
@@ -54,37 +85,6 @@ function invertSelection() {
             unselectItem(pkmn);
         }
     }
-}
-
-function initButtons() {
-    $('#select_rare').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (!pokemonRarity.common.includes(parseInt(item.id))) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_ultra').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (pokemonRarity.ultra.includes(parseInt(item.id))) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_raid5star').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if (pokemonRarity.raid5star.includes(parseInt(item.id))) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_raid6star').on('click', function() {
-        $.each($('.item'), function(index, item) {
-            if ((pokemonRarity.raid6star || []).includes(parseInt(item.id))) {
-                selectItem(item);
-            }
-        });
-    });
 }
 
 function onPokemonClicked(element) {

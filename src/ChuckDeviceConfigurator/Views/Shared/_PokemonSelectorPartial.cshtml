@@ -15,7 +15,7 @@
         {
             <div class="pokemon-icon-sprite item @(pkmn.selected ? "active" : "")" style="@(pkmn.selected ? "background-color: dodgerblue;" : "")" id="@pkmn.id" name="@pkmn.name" data-value="@pkmn.id" onclick="onPokemonClicked(this)">
                 <img src="@pkmn.image" width="48" height="48" />
-                <span class="caption">#@pkmn.id</span>
+                <span class="caption">#@pkmn.pokemonId</span>
             </div>
         }
     </div>
