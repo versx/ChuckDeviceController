@@ -1,0 +1,49 @@
+﻿@{
+    var pokemon = ((IEnumerable<dynamic>)ViewData["Pokemon"]);
+}
+
+<link rel="stylesheet" href="~/css/pokemon-list.css" />
+
+<div class="form-group">
+    <div class="form-group">
+        Search
+        <input type="text" class="form-control" id="search" placeholder="i.e Pikachu or 25" onkeyup="onPokemonSearch()" data-toggle="tooltip" data-html="true" title="Search by pokemon name and pokedex id.">
+    </div>
+    Pokemon
+    <div id="pokemon-list" name="pokemon-list" class="pokemon-list">
+        @foreach (var pkmn in pokemon)
+        {
+            <div class="pokemon-icon-sprite item" id="@pkmn.id" name="@pkmn.name" data-value="@pkmn.id" onclick="onPokemonClicked(this)">
+                <img src="@pkmn.image" width="48" height="48" />
+                <span class="caption">#@pkmn.id</span>
+            </div>
+        }
+    </div>
+    <br>
+    <button id="select_all" type="button" class="btn btn-primary btn-sm pokemon-button">Select All</button>
+    <button id="select_none" type="button" class="btn btn-primary btn-sm pokemon-button">Select None</button>
+    <button id="select_invert" type="button" class="btn btn-primary btn-sm pokemon-button">Invert Selection</button>
+    <div class="btn-group">
+        <button class="btn btn-warning btn-sm dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Select Generation
+        </button>
+        <div class="dropdown-menu">
+            <button id="select_gen1" type="button" class="bg-dark dropdown-item pokemon-button">Select Gen1</button>
+            <button id="select_gen2" type="button" class="bg-dark dropdown-item pokemon-button">Select Gen2</button>
+            <button id="select_gen3" type="button" class="bg-dark dropdown-item pokemon-button">Select Gen3</button>
+            <button id="select_gen4" type="button" class="bg-dark dropdown-item pokemon-button">Select Gen4</button>
+            <button id="select_gen5" type="button" class="bg-dark dropdown-item pokemon-button">Select Gen5</button>
+            <button id="select_gen6" type="button" class="bg-dark dropdown-item pokemon-button">Select Gen6</button>
+            <button id="select_gen7" type="button" class="bg-dark dropdown-item pokemon-button">Select Gen7</button>
+            <button id="select_gen8" type="button" class="bg-dark dropdown-item pokemon-button">Select Gen8</button>
+        </div>
+    </div>
+    <button id="select_rare" type="button" class="btn btn-success btn-sm pokemon-button">Select Rare</button>
+    <button id="select_ultra" type="button" class="btn btn-danger btn-sm pokemon-button">Select Ultra Rare</button>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/js/pokemon-list.js"></script>
+<script>
+    initButtons();
+</script>

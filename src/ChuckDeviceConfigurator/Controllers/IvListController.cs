@@ -4,7 +4,9 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceConfigurator.Localization;
     using ChuckDeviceConfigurator.Services.IvLists;
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
@@ -54,6 +56,18 @@
         // GET: IvListController/Create
         public ActionResult Create()
         {
+            var pokemon = new List<dynamic>();
+            for (var i = 1; i < 900; i++)
+            {
+                var name = Translator.Instance.GetPokemonName((uint)i);
+                pokemon.Add(new
+                {
+                    id = i,
+                    name,
+                    image = Utils.GetPokemonIcon((uint)i),
+                });
+            }
+            ViewData["Pokemon"] = pokemon;
             return View();
         }
 
