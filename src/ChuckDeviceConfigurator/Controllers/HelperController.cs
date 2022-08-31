@@ -105,7 +105,12 @@
                     break;
             }
             var text = sb.ToString();
-            return new JsonResult(text);
+            var obj = new
+            {
+                type = Convert.ToInt32(geofence.Type),
+                geofence = text,
+            };
+            return new JsonResult(obj);
         }
     }
 }

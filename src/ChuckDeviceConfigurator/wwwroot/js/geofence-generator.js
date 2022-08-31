@@ -142,6 +142,25 @@ const getGeofence = () => {
     return value;
 };
 
+const getGeofenceData = () => {
+    const name = $('#geofences').val();
+    if (!name) {
+        return;
+    }
+    $.ajax({
+        url: '/GetGeofenceData',
+        method: 'GET',
+        data: { name },
+    }).done(function (data) {
+        const { type, geofence } = data;
+        if (type === 0) {
+            loadCircles(geofence);
+        } else {
+            loadGeofence(geofence, true);
+        }
+    });
+}
+
 const setReturnGeofenceType = (onlyIni) => {
     onlyUseIni = onlyIni;
 };
@@ -264,7 +283,7 @@ const formatGeofenceToGeoJson = (format, data) => {
     }
 };
 
-function loadGeofence(data, convertToJson) {
+const loadGeofence = (data, convertToJson) => {
     if (!drawnItems) {
         return;
     }
@@ -273,42 +292,28 @@ function loadGeofence(data, convertToJson) {
     }
     const leafletGeoJSON = new L.GeoJSON(data);
     leafletGeoJSON.eachLayer(layer => {
-        // Get area size of geofence
-        const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()); //[0]
-        console.log('area:', area);
+        const areaSizeKm = getAreaSize(layer);
         const html = `
             <b>Name:</b> ${layer.feature.properties.name}<br>
-            <b>Area:</b> ${area} km2
+            <b>Area:</b> ${areaSizeKm} km2
 `;
         layer.bindTooltip(html);
         drawnItems.addLayer(layer);
     });
 
     setGeofence();
-}
+};
 
 const loadCircles = (data) => {
     const circles = data.split('\n');
     for (const circle of circles) {
         const split = circle.split(',');
-        createCircle(split[0], split[1]);
+        if (split.length === 2) {
+            createCircle(split[0], split[1]);
+        }
     }
+    setGeofence();
 };
-
-const getGeofenceData = () => {
-    const name = $('#geofences').val();
-    if (!name) {
-        return;
-    }
-    $.ajax({
-        url: '/GetGeofenceData',
-        method: 'GET',
-        data: { name },
-    }).done(function (data) {
-        // TODO: Check if circles or geofence
-        loadGeofence(data, true);
-    });
-}
 
 const createCircle = (lat, lng) => {
     L.circle([lat, lng], circleOptions).bindPopup((layer) => {
@@ -358,3 +363,13 @@ const generateRoute = () => {
         route(layer);
     });
 }
+
+const getAreaSize = (layer, decimals = 2) => {
+    // Get area size of geofence
+    const geojson = layer.toGeoJSON();
+    const meters = turf.area(geojson);
+    const kilometers = metersToKilometers(meters);
+    return kilometers.toFixed(decimals);
+};
+
+const metersToKilometers = (meters) => meters > 0 ? meters / 1000000 : 0;
