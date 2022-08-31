@@ -6,7 +6,7 @@
         type: 'FeatureCollection',
         features: [],
     };
-    const fences = data.match(/\[([^\]]+)\]([^[]*)/g);// || data.match(/\]([^[]*)/g);
+    const fences = data.match(/\[([^\]]+)\]([^[]*)/g);
     if (!fences) {
         return undefined;
     }

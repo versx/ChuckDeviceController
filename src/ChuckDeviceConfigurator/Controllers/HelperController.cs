@@ -82,35 +82,13 @@
                 return null;
             }
 
-            var sb = new System.Text.StringBuilder();
-            switch (geofence.Type)
+            var type = Convert.ToInt32(geofence.Type);
+            var geofenceData = geofence.ConvertToIni();
+            return new JsonResult(new
             {
-                case GeofenceType.Circle:
-                    var coordinates = geofence.ConvertToCoordinates();
-                    if (coordinates != null)
-                    {
-                        sb.AppendLine(string.Join("\n", coordinates.Select(x => $"{x.Latitude},{x.Longitude}")));
-                    }
-                    break;
-                case GeofenceType.Geofence:
-                    var (_, coords) = geofence.ConvertToMultiPolygons();
-                    if (coords != null)
-                    {
-                        foreach (var coord in coords)
-                        {
-                            sb.AppendLine($"[{geofence.Name}]");
-                            sb.AppendLine(string.Join("\n", coord.Select(x => $"{x.Latitude},{x.Longitude}")));
-                        }
-                    }
-                    break;
-            }
-            var text = sb.ToString();
-            var obj = new
-            {
-                type = Convert.ToInt32(geofence.Type),
-                geofence = text,
-            };
-            return new JsonResult(obj);
+                type,
+                geofence = geofenceData,
+            });
         }
     }
 }

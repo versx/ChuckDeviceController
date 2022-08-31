@@ -522,6 +522,8 @@
         // GET: UtilitiesController/RouteGenerator
         public ActionResult RouteGenerator()
         {
+            var geofenceNames = _deviceContext.Geofences.ToList().Select(x => x.Name);
+            ViewData["GeofenceNames"] = geofenceNames;
             return View();
         }
 
