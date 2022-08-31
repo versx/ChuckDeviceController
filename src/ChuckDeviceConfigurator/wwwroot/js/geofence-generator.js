@@ -54,6 +54,13 @@ const initMap = (viewOnly) => {
     L.tileLayer(tileserverUrl, tileserverOptions).addTo(map);
     map.setView(startLocation, startZoom);
 
+    L.control.locate({
+        icon: 'fa-solid fa-crosshairs',
+        setView: 'untilPan',
+        keepCurrentZoomLevel: true,
+    }).addTo(map);
+
+    let buttonManualCircle;
     if (!viewOnlyMode) {
         map.on('click', function (e) {
             if (!manualCircle) {
@@ -108,12 +115,6 @@ const initMap = (viewOnly) => {
         map.addControl(drawControl);
     }
 
-    L.control.locate({
-        icon: 'fa-solid fa-crosshairs',
-        setView: 'untilPan',
-        keepCurrentZoomLevel: true,
-    }).addTo(map);
-
     if (!viewOnlyMode) {
         const buttonImportGeofence = L.easyButton({
             states: [{
@@ -123,7 +124,7 @@ const initMap = (viewOnly) => {
             }]
         });
 
-        const buttonManualCircle = L.easyButton({
+        buttonManualCircle = L.easyButton({
             states: [{
                 stateName: 'enableManualCircle',
                 icon: 'far fa-circle',
@@ -355,15 +356,15 @@ const loadGeofence = (data, convertToJson) => {
 
     if (!viewOnlyMode) {
         setGeofence();
-    } else {
-        // Set map center to first coord
-        const features = data.features;
-        if (features.length > 0) {
-            const feature = features[0];
-            const coord = feature.geometry.coordinates[0][1];
-            if (coord) {
-                map.setView([coord[1], coord[0]]);
-            }
+    }
+
+    // Set map center to first coord
+    const features = data.features;
+    if (features.length > 0) {
+        const feature = features[0];
+        const coord = feature.geometry.coordinates[0][1];
+        if (coord) {
+            map.setView([coord[1], coord[0]]);
         }
     }
 };
@@ -448,7 +449,8 @@ const getAreaSize = (layer, decimals = 2) => {
 const setCircleSize = () => {
     const result = prompt('Enter the circle size to use when generating a route:', circleSize);
     if (!result) {
-        console.log('user cancelled');
+        // Pressed cancel
+        return;
     }
     const value = parseInt(result);
     if (value >= minCircleSize && value <= maxCircleSize) {

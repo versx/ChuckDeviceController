@@ -49,8 +49,7 @@
     <script>
         $('#Type').on('change', setGeofence);
         let type = $('#Type').val();
-        let area = "@Model?.Data?.Area";
-        console.log('area:', area);
+        let area = ("@Model?.Data?.Area" || '');//.replace(/&#xD;&#xA;/g, '\n');;
         if (type === 0) {
             // Circles
             loadCircles(area);
