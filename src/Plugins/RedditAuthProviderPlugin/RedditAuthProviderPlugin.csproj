@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.8" />
-    <PackageReference Include="AspNet.Security.OAuth.Reddit" Version="6.0.9" />
+    <PackageReference Include="AspNet.Security.OAuth.Reddit" Version="6.0.10" />
   </ItemGroup>
 
   <ItemGroup>
