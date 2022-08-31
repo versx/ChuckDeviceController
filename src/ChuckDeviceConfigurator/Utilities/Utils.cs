@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Utilities
 {
+    using ChuckDeviceConfigurator.Services.Icons;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
@@ -163,7 +164,7 @@
 
         public static string GetPokemonIcon(uint pokemonId, uint formId = 0, string width = "32", string height = "32", bool html = false)
         {
-            var url = $"{Strings.PokemonImageUrl}/{pokemonId}" + (formId > 0 ? $"_f{formId}" : "") + ".png";
+            var url = UIconsService.Instance.GetPokemonIcon(pokemonId, formId);
             return html
                 ? $"<img src='{url}' width='{width}' height='{height}' />"
                 : url;
