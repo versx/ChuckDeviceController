@@ -1,12 +1,18 @@
 ﻿let importFormat = 'json';
 let manualCircle = false;
 let onlyUseIni = false;
+let circleSize = 70;
+const minCircleSize = 1;
+const maxCircleSize = 1000;
 
+// TODO: Get map properties from config/settings
 const startLocation = [34.01, -117.01];
-const startView = 13;
-const tileserver = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const startZoom = 13;
+const minZoom = 4;
+const maxZoom = 18;
+const tileserverUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-const circleSize = 70;
+const scale = L.Browser.retina ? '@2x' : '';
 const circleOptions = {
     color: 'red',
     fillColor: '#f03',
@@ -24,90 +30,137 @@ const shapeOptions = {
     fillOpacity: 0.2,
 };
 
-// TODO: Get map properties from config/settings
-const map = L.map('map').setView(startLocation, startView);
-L.tileLayer(tileserver, { attribution }).addTo(map);
-
 const drawnItems = new L.FeatureGroup();
-map.addLayer(drawnItems);
 const circleLayer = new L.FeatureGroup();
-map.addLayer(circleLayer);
+const mapOptions = {
+    attribution,
+    preferCanvas: true,
+    updateWhenIdle: true,
+    updateWhenZooming: false,
+    layers: [drawnItems, circleLayer],
+};
+const map = L.map('map', mapOptions);
 
-const drawControl = new L.Control.Draw({
-    edit: {
-        featureGroup: drawnItems,
-    },
-    draw: {
-        polyline: false,
-        polygon: {
-            allowIntersection: true,
-            showArea: true,
-            metric: 'km',
-            precision: {
-                km: 2,
+const initMap = () => {
+    const tileserverOptions = {
+        minZoom,
+        maxZoom,
+        attribution,
+        scale,
+        hq: L.Browser.retina,
+    };
+    L.tileLayer(tileserverUrl, tileserverOptions).addTo(map);
+    map.setView(startLocation, startZoom);
+
+    map.on('click', function (e) {
+        if (!manualCircle) {
+            return;
+        }
+        createCircle(e.latlng.lat, e.latlng.lng);
+        setGeofence();
+    });
+
+    map.on('draw:created', (e) => {
+        if (drawnItems) {
+            const layer = e.layer;
+            drawnItems.addLayer(layer);
+            const layerName = manualCircle ? 'circleLayer' : 'drawnItems';
+            const htmlDeleteButton = getDeleteButton(layer._leaflet_id, 'deleteLayer', layerName);
+            layer.bindPopup(htmlDeleteButton);
+        }
+        setGeofence();
+    });
+    map.on('draw:edited', (e) => setGeofence());
+    map.on('draw:deleted', (e) => setGeofence());
+    map.on('draw:drawstart', (e) => {
+        manualCircle = false;
+        buttonManualCircle.state('enableManualCircle');
+    });
+
+    const drawControl = new L.Control.Draw({
+        edit: {
+            featureGroup: drawnItems,
+        },
+        draw: {
+            polyline: false,
+            polygon: {
+                allowIntersection: true,
+                showArea: true,
+                metric: 'km',
+                precision: {
+                    km: 2,
+                },
+                shapeOptions,
             },
-            shapeOptions,
+            rectangle: {
+                showRadius: true,
+                metric: true,
+                shapeOptions,
+            },
+            circle: false,
+            marker: false,
+            circlemarker: false,
         },
-        rectangle: {
-            showRadius: true,
-            metric: true,
-            shapeOptions,
-        },
-        circle: false,
-        marker: false,
-        circlemarker: false,
-    },
-});
-map.addControl(drawControl);
+    });
+    map.addControl(drawControl);
 
-const buttonImportGeofence = L.easyButton({
-    states: [{
-        icon: 'fa-solid fa-file-import',
-        title: 'Import geofence',
-        onClick: (button, map) => $('#importModal').modal('show'),
-    }]
-}).addTo(map);
+    /*const buttonImportGeofence =*/ L.easyButton({
+        states: [{
+            icon: 'fa-solid fa-file-import',
+            title: 'Import geofence',
+            onClick: (button, map) => $('#importModal').modal('show'),
+        }]
+    }).addTo(map);
 
-const buttonManualCircle = L.easyButton({
-    states: [{
-        stateName: 'enableManualCircle',
-        icon: 'far fa-circle',
-        title: 'Enable manual circle mode',
-        onClick: (button, map) => {
-            manualCircle = true;
-            button.state('disableManualCircle');
-        },
-    }, {
-        stateName: 'disableManualCircle',
-        icon: 'fas fa-circle',
-        title: 'Disable manual circle mode',
-        onClick: (button, map) => {
-            manualCircle = false;
-            button.state('enableManualCircle');
-        },
-    }]
-}).addTo(map);
+    const buttonManualCircle = L.easyButton({
+        states: [{
+            stateName: 'enableManualCircle',
+            icon: 'far fa-circle',
+            title: 'Enable manual circle mode',
+            onClick: (button, map) => {
+                manualCircle = true;
+                button.state('disableManualCircle');
+            },
+        }, {
+            stateName: 'disableManualCircle',
+            icon: 'fas fa-circle',
+            title: 'Disable manual circle mode',
+            onClick: (button, map) => {
+                manualCircle = false;
+                button.state('enableManualCircle');
+            },
+        }]
+    }).addTo(map);
 
-const buttonGenerateRoute = L.easyButton({
-    states: [{
-        icon: 'fa-solid fa-file-import',
-        title: 'Generate route',
-        onClick: (button, map) => generateRoute(),
-    }]
-}).addTo(map);
+    /*const buttonGenerateRoute =*/ L.easyButton({
+        states: [{
+            icon: 'fa-solid fa-shapes',
+            title: 'Generate route',
+            onClick: (button, map) => generateRoute(),
+        }]
+    }).addTo(map);
 
-const buttonDeleteAllLayers = L.easyButton({
-    states: [{
-        icon: 'fa-solid fa-trash-can',
-        title: 'Delete all layers',
-        onClick: (button, map) => {
-            if (window.confirm('Are you sure you want to delete all shapes?')) {
-                drawnItems.clearLayers();
-                circleLayer.clearLayers();
-            }
-        },
-    }]
-}).addTo(map);
+    /*const buttonDeleteAllLayers =*/ L.easyButton({
+        states: [{
+            icon: 'fa-solid fa-eraser',
+            title: 'Delete all layers',
+            onClick: (button, map) => {
+                if (window.confirm('Are you sure you want to delete all shapes?')) {
+                    drawnItems.clearLayers();
+                    circleLayer.clearLayers();
+                }
+            },
+        }]
+    }).addTo(map);
+
+    L.easyButton({
+        states: [{
+            icon: 'fa-solid fa-pen-to-square',
+            title: 'Set circle size',
+            onClick: (button, map) => setCircleSize(),
+        }]
+    }).addTo(map);
+};
 
 const setGeofence = () => {
     const value = getGeofence();
@@ -161,9 +214,7 @@ const getGeofenceData = () => {
     });
 }
 
-const setReturnGeofenceType = (onlyIni) => {
-    onlyUseIni = onlyIni;
-};
+const setReturnGeofenceType = (onlyIni) => onlyUseIni = onlyIni;
 
 /*
 map.on('click', '.deleteLayer', function (e) {
@@ -186,31 +237,6 @@ const deleteLayer = (id, container) => {
     }
 };
 
-map.on('click', function (e) {
-    if (!manualCircle) {
-        return;
-    }
-    createCircle(e.latlng.lat, e.latlng.lng);
-    setGeofence();
-});
-
-map.on('draw:created', (e) => {
-    if (drawnItems) {
-        const layer = e.layer;
-        drawnItems.addLayer(layer);
-        const layerName = manualCircle ? 'circleLayer' : 'drawnItems';
-        const htmlDeleteButton = getDeleteButton(layer._leaflet_id, 'deleteLayer', layerName);
-        layer.bindPopup(htmlDeleteButton);
-    }
-    setGeofence();
-});
-map.on('draw:edited', (e) => setGeofence());
-map.on('draw:deleted', (e) => setGeofence());
-map.on('draw:drawstart', (e) => {
-    manualCircle = false;
-    buttonManualCircle.state('enableManualCircle');
-});
-
 const getDeleteButton = (id, className = 'deleteLayer', layerName = 'circleLayer', text = 'Delete') => {
     //const html = `<button class="btn btn-secondary btn-sm ${className}" data-layer-container="${layerName}" data-layer-id=${id} type="button">${text}</button></div>`;
     const html = `<button class="btn btn-secondary btn-sm ${className}" type="button" onclick="deleteLayer(${id}, '${layerName}');">${text}</button></div>`;
@@ -222,6 +248,11 @@ const importFormatChanged = (e) => importFormat = e.value;
 const importGeofence = () => {
     const geofenceData = $('#importModal #Geofence').val();
     if (!geofenceData) {
+        return;
+    }
+    const importType = $('#importModal #Type').val();
+    if (!importType) {
+        // TODO: Set error in modal
         return;
     }
     const geofence = formatGeofenceToGeoJson(importFormat, geofenceData);
@@ -295,7 +326,7 @@ const loadGeofence = (data, convertToJson) => {
         const areaSizeKm = getAreaSize(layer);
         const html = `
             <b>Name:</b> ${layer.feature.properties.name}<br>
-            <b>Area:</b> ${areaSizeKm} km2
+            <b>Area:</b> ${areaSizeKm} km²
 `;
         layer.bindTooltip(html);
         drawnItems.addLayer(layer);
@@ -316,6 +347,7 @@ const loadCircles = (data) => {
 };
 
 const createCircle = (lat, lng) => {
+    circleOptions.radius = circleSize;
     L.circle([lat, lng], circleOptions).bindPopup((layer) => {
         return getDeleteButton(layer._leaflet_id);
     }).addTo(circleLayer);
@@ -343,9 +375,7 @@ const generateRoute = () => {
                 const point = turf.point([currentLatLng.lng, currentLatLng.lat]);
                 const distance = turf.pointToLineDistance(point, line, { units: 'meters' });
                 if (distance <= circleSize || distance == 0 || turf.inside(point, poly)) {
-                    newCircle = L.circle(currentLatLng, circleOptions).bindPopup((layer) => {
-                        return getDeleteButton(layer._leaflet_id);
-                    }).addTo(circleLayer);
+                    newCircle = createCircle(currentLatLng.lat, currentLatLng.lng);
                 }
                 currentLatLng = L.GeometryUtil.destination(currentLatLng, heading, (xMod * circleSize * 2));
             } while ((heading == 270 && currentLatLng.lng > endLatLng.lng) || (heading == 90 && currentLatLng.lng < startLatLng.lng));
@@ -366,10 +396,21 @@ const generateRoute = () => {
 
 const getAreaSize = (layer, decimals = 2) => {
     // Get area size of geofence
-    const geojson = layer.toGeoJSON();
-    const meters = turf.area(geojson);
-    const kilometers = metersToKilometers(meters);
-    return kilometers.toFixed(decimals);
+    const latlng = layer.getLatLngs()[0];
+    const area = L.GeometryUtil.geodesicArea(latlng);
+    const readableArea = L.GeometryUtil.formattedNumber(area * 0.000001, decimals);
+    return readableArea;
 };
 
-const metersToKilometers = (meters) => meters > 0 ? meters / 1000000 : 0;
+const setCircleSize = () => {
+    const result = prompt('Enter the circle size to use when generating a route:', circleSize);
+    if (!result) {
+        console.log('user cancelled');
+    }
+    const value = parseInt(result);
+    if (value >= minCircleSize && value <= maxCircleSize) {
+        circleSize = value;
+    }
+}
+
+initMap();
