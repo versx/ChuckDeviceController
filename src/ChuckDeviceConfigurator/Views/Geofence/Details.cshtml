@@ -29,9 +29,12 @@
 
 <script>
     const type = "@Model?.Type";
-    const area = (`@ViewData["GeofenceData"]` || '');//.replace(/&#xD;&#xA;/g, '\n');
-    if (type === "Circle" && area) {
+    let area = ("@ViewData["GeofenceData"]" || '').replace(/&#xD;/g, '').replace(/&#xA;/g, '\n'); // <- TODO: Fix
+    if (type === 'Circle' && area) {
         // Circles
+        if (!(area.includes('[') && area.includes(']'))) {
+            area = `[{@Model?.Name}]\n${area}`;
+        }
         loadCircles(area);
     } else {
         // Geofences

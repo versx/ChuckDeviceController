@@ -371,12 +371,10 @@ const loadGeofence = (data, convertToJson) => {
 
 const loadCircles = (data) => {
     const circles = data.split('\n');
-    if (viewOnlyMode) {
-        // Set map center to first coord
-        const split = circles[1].split(',');
-        if (split.length === 2) {
-            map.setView([split[0], split[1]]);
-        }
+    // Set map center to first coord
+    const split = circles[1].split(',');
+    if (split.length === 2) {
+        map.setView([split[0], split[1]]);
     }
     for (const circle of circles) {
         const split = circle.split(',');

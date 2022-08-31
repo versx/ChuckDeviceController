@@ -48,10 +48,13 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $('#Type').on('change', setGeofence);
-        let type = $('#Type').val();
-        let area = ("@Model?.Data?.Area" || '');//.replace(/&#xD;&#xA;/g, '\n');;
-        if (type === 0) {
+        let type = "@Model?.Type";
+        let area = ("@Model?.Data?.Area" || '').replace(/&#xD;/g, '').replace(/&#xA;/g, '\n'); // <- TODO: Fix
+        if (type === 'Circle') {
             // Circles
+            if (!(area.includes('[') && area.includes(']'))) {
+                area = `[@Model?.Name]\n${area}`;
+            }
             loadCircles(area);
         } else {
             // Geofences
