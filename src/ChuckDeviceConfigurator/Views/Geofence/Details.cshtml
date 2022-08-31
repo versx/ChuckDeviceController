@@ -24,3 +24,18 @@
 
 <hr />
 @Html.DisplayForModel("GeofenceDetails")
+
+@await Html.PartialAsync("_ViewOnlyGeofenceRoutePartial")
+
+<script>
+    const type = "@Model?.Type";
+    const area = (`@ViewData["GeofenceData"]` || '').replace(/&#xD;&#xA;/g, '\n');
+    if (type === "Circle" && area) {
+        // Circles
+        loadCircles(area);
+    } else {
+        // Geofences
+        setReturnGeofenceType(true);
+        loadGeofence(area, true);
+    }
+</script>

@@ -11,10 +11,10 @@
     using ChuckDeviceController.Common.Data;
     using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Converters;
     using ChuckDeviceController.Geometry.Models;
-    using ChuckDeviceController.Common.Data.Contracts;
 
     [Authorize(Roles = RoleConsts.GeofencesRole)]
     public class GeofenceController : Controller
@@ -65,6 +65,7 @@
                 return View();
             }
 
+            ViewData["GeofenceData"] = geofence.ConvertToIni();
             return View(geofence);
         }
 

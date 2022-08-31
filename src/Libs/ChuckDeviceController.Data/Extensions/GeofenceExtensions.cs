@@ -1,11 +1,44 @@
 ﻿namespace ChuckDeviceController.Data.Extensions
 {
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Models;
 
     public static class GeofenceExtensions
     {
+        public static string ConvertToIni(this Geofence geofence)
+        {
+            var sb = new System.Text.StringBuilder();
+            switch (geofence.Type)
+            {
+                case GeofenceType.Circle:
+                    {
+                        var coords = geofence.ConvertToCoordinates();
+                        sb.AppendLine($"[{geofence.Name}]");
+                        foreach (var coord in coords)
+                        {
+                            sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
+                        }
+                        break;
+                    }
+                case GeofenceType.Geofence:
+                    {
+                        var (_, coordinates) = geofence.ConvertToMultiPolygons();
+                        foreach (var coords in coordinates)
+                        {
+                            sb.AppendLine($"[{geofence.Name}]");
+                            foreach (var coord in coords)
+                            {
+                                sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
+                            }
+                        }
+                        break;
+                    }
+            }
+            return sb.ToString();
+        }
+
         public static List<Coordinate> ConvertToCoordinates(this IReadOnlyList<Geofence> geofences)
         {
             var coords = new List<Coordinate>();

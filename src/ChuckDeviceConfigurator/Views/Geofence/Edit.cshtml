@@ -47,16 +47,17 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-    $('#Type').on('change', setGeofence);
-    let type = $('#Type').val();
-    let area = "@Model?.Data?.Area";
-    if (type === 0) {
-        // Circles
-        loadCircles(area);
-    } else {
-        // Geofences
-        setReturnGeofenceType(true);
-        loadGeofence(area, true);
-    }
+        $('#Type').on('change', setGeofence);
+        let type = $('#Type').val();
+        let area = "@Model?.Data?.Area";
+        console.log('area:', area);
+        if (type === 0) {
+            // Circles
+            loadCircles(area);
+        } else {
+            // Geofences
+            setReturnGeofenceType(true);
+            loadGeofence(area, true);
+        }
     </script>
 }

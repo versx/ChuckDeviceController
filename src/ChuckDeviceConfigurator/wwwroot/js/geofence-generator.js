@@ -2,6 +2,7 @@
 let manualCircle = false;
 let onlyUseIni = false;
 let circleSize = 70;
+let viewOnlyMode = false;
 const minCircleSize = 1;
 const maxCircleSize = 1000;
 
@@ -41,7 +42,8 @@ const mapOptions = {
 };
 const map = L.map('map', mapOptions);
 
-const initMap = () => {
+const initMap = (viewOnly) => {
+    viewOnlyMode = viewOnly;
     const tileserverOptions = {
         minZoom,
         maxZoom,
@@ -52,57 +54,59 @@ const initMap = () => {
     L.tileLayer(tileserverUrl, tileserverOptions).addTo(map);
     map.setView(startLocation, startZoom);
 
-    map.on('click', function (e) {
-        if (!manualCircle) {
-            return;
-        }
-        createCircle(e.latlng.lat, e.latlng.lng);
-        setGeofence();
-    });
+    if (!viewOnlyMode) {
+        map.on('click', function (e) {
+            if (!manualCircle) {
+                return;
+            }
+            createCircle(e.latlng.lat, e.latlng.lng);
+            setGeofence();
+        });
 
-    map.on('draw:created', (e) => {
-        if (drawnItems) {
-            const layer = e.layer;
-            drawnItems.addLayer(layer);
-            const layerName = manualCircle ? 'circleLayer' : 'drawnItems';
-            const htmlDeleteButton = getDeleteButton(layer._leaflet_id, 'deleteLayer', layerName);
-            layer.bindPopup(htmlDeleteButton);
-        }
-        setGeofence();
-    });
-    map.on('draw:edited', (e) => setGeofence());
-    map.on('draw:deleted', (e) => setGeofence());
-    map.on('draw:drawstart', (e) => {
-        manualCircle = false;
-        buttonManualCircle.state('enableManualCircle');
-    });
+        map.on('draw:created', (e) => {
+            if (drawnItems) {
+                const layer = e.layer;
+                drawnItems.addLayer(layer);
+                const layerName = manualCircle ? 'circleLayer' : 'drawnItems';
+                const htmlDeleteButton = getDeleteButton(layer._leaflet_id, 'deleteLayer', layerName);
+                layer.bindPopup(htmlDeleteButton);
+            }
+            setGeofence();
+        });
+        map.on('draw:edited', (e) => setGeofence());
+        map.on('draw:deleted', (e) => setGeofence());
+        map.on('draw:drawstart', (e) => {
+            manualCircle = false;
+            buttonManualCircle.state('enableManualCircle');
+        });
 
-    const drawControl = new L.Control.Draw({
-        edit: {
-            featureGroup: drawnItems,
-        },
-        draw: {
-            polyline: false,
-            polygon: {
-                allowIntersection: true,
-                showArea: true,
-                metric: 'km',
-                precision: {
-                    km: 2,
+        const drawControl = new L.Control.Draw({
+            edit: {
+                featureGroup: drawnItems,
+            },
+            draw: {
+                polyline: false,
+                polygon: {
+                    allowIntersection: true,
+                    showArea: true,
+                    metric: 'km',
+                    precision: {
+                        km: 2,
+                    },
+                    shapeOptions,
                 },
-                shapeOptions,
+                rectangle: {
+                    showRadius: true,
+                    metric: true,
+                    shapeOptions,
+                },
+                circle: false,
+                marker: false,
+                circlemarker: false,
             },
-            rectangle: {
-                showRadius: true,
-                metric: true,
-                shapeOptions,
-            },
-            circle: false,
-            marker: false,
-            circlemarker: false,
-        },
-    });
-    map.addControl(drawControl);
+        });
+        map.addControl(drawControl);
+    }
 
     L.control.locate({
         icon: 'fa-solid fa-crosshairs',
@@ -110,71 +114,73 @@ const initMap = () => {
         keepCurrentZoomLevel: true,
     }).addTo(map);
 
-    const buttonImportGeofence = L.easyButton({
-        states: [{
-            icon: 'fa-solid fa-file-import',
-            title: 'Import geofence',
-            onClick: (button, map) => $('#importModal').modal('show'),
-        }]
-    }).addTo(map);
+    if (!viewOnlyMode) {
+        const buttonImportGeofence = L.easyButton({
+            states: [{
+                icon: 'fa-solid fa-file-import',
+                title: 'Import geofence',
+                onClick: (button, map) => $('#importModal').modal('show'),
+            }]
+        });
 
-    const buttonManualCircle = L.easyButton({
-        states: [{
-            stateName: 'enableManualCircle',
-            icon: 'far fa-circle',
-            title: 'Enable manual circle mode',
-            onClick: (button, map) => {
-                manualCircle = true;
-                button.state('disableManualCircle');
-            },
-        }, {
-            stateName: 'disableManualCircle',
-            icon: 'fas fa-circle',
-            title: 'Disable manual circle mode',
-            onClick: (button, map) => {
-                manualCircle = false;
-                button.state('enableManualCircle');
-            },
-        }]
-    });//.addTo(map);
+        const buttonManualCircle = L.easyButton({
+            states: [{
+                stateName: 'enableManualCircle',
+                icon: 'far fa-circle',
+                title: 'Enable manual circle mode',
+                onClick: (button, map) => {
+                    manualCircle = true;
+                    button.state('disableManualCircle');
+                },
+            }, {
+                stateName: 'disableManualCircle',
+                icon: 'fas fa-circle',
+                title: 'Disable manual circle mode',
+                onClick: (button, map) => {
+                    manualCircle = false;
+                    button.state('enableManualCircle');
+                },
+            }]
+        });
 
-    const buttonGenerateRoute = L.easyButton({
-        states: [{
-            icon: 'fa-solid fa-shapes',
-            title: 'Generate route',
-            onClick: (button, map) => generateRoute(),
-        }]
-    });//.addTo(map);
+        const buttonGenerateRoute = L.easyButton({
+            states: [{
+                icon: 'fa-solid fa-shapes',
+                title: 'Generate route',
+                onClick: (button, map) => generateRoute(),
+            }]
+        });
 
-    const buttonDeleteAllLayers = L.easyButton({
-        states: [{
-            icon: 'fa-solid fa-eraser',
-            title: 'Delete all layers',
-            onClick: (button, map) => {
-                if (window.confirm('Are you sure you want to delete all shapes?')) {
-                    drawnItems.clearLayers();
-                    circleLayer.clearLayers();
-                }
-            },
-        }]
-    });//.addTo(map);
+        const buttonDeleteAllLayers = L.easyButton({
+            states: [{
+                icon: 'fa-solid fa-eraser',
+                title: 'Delete all layers',
+                onClick: (button, map) => {
+                    if (window.confirm('Are you sure you want to delete all shapes?')) {
+                        drawnItems.clearLayers();
+                        circleLayer.clearLayers();
+                    }
+                },
+            }]
+        });
 
-    const buttonSetCircleSize = L.easyButton({
-        states: [{
-            icon: 'fa-solid fa-pen-to-square',
-            title: 'Set circle size',
-            onClick: (button, map) => setCircleSize(),
-        }]
-    });//.addTo(map);
+        const buttonSetCircleSize = L.easyButton({
+            states: [{
+                icon: 'fa-solid fa-pen-to-square',
+                title: 'Set circle size',
+                onClick: (button, map) => setCircleSize(),
+            }]
+        });
 
-    const barRoute = L.easyBar([
-        buttonImportGeofence,
-        buttonManualCircle,
-        buttonSetCircleSize,
-        buttonDeleteAllLayers,
-    ], { position: 'topleft' }).addTo(map);
+        const barRoute = L.easyBar([
+            buttonImportGeofence,
+            buttonManualCircle,
+            buttonSetCircleSize,
+            buttonDeleteAllLayers,
+        ], { position: 'topleft' }).addTo(map);
 
-    buttonGenerateRoute.addTo(map);
+        buttonGenerateRoute.addTo(map);
+    }
 };
 
 const setGeofence = () => {
@@ -347,18 +353,40 @@ const loadGeofence = (data, convertToJson) => {
         drawnItems.addLayer(layer);
     });
 
-    setGeofence();
+    if (!viewOnlyMode) {
+        setGeofence();
+    } else {
+        // Set map center to first coord
+        const features = data.features;
+        if (features.length > 0) {
+            const feature = features[0];
+            const coord = feature.geometry.coordinates[0][1];
+            if (coord) {
+                map.setView([coord[1], coord[0]]);
+            }
+        }
+    }
 };
 
 const loadCircles = (data) => {
     const circles = data.split('\n');
+    if (viewOnlyMode) {
+        // Set map center to first coord
+        const split = circles[1].split(',');
+        if (split.length === 2) {
+            map.setView([split[0], split[1]]);
+        }
+    }
     for (const circle of circles) {
         const split = circle.split(',');
         if (split.length === 2) {
             createCircle(split[0], split[1]);
         }
     }
-    setGeofence();
+
+    if (!viewOnlyMode) {
+        setGeofence();
+    }
 };
 
 const createCircle = (lat, lng) => {
@@ -427,5 +455,3 @@ const setCircleSize = () => {
         circleSize = value;
     }
 }
-
-initMap();
