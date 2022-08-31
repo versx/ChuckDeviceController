@@ -4,6 +4,9 @@
 
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceController.Common.Data;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Plugin;
 
     [ApiController]
@@ -13,6 +16,7 @@
         private const string DefaultTheme = "light";
 
         //private readonly ILogger<HelperController> _logger;
+        private readonly ControllerContext _context;
         private readonly IConfiguration _configuration;
         private readonly IUiHost _uiHost;
 
@@ -65,6 +69,33 @@
             }
 
             return new JsonResult(_uiHost.SettingsProperties);
+        }
+
+        [HttpGet("GetGeofenceData")]
+        public async Task<IActionResult> GetGeofenceData(string name)
+        {
+            var geofence = await _context.Geofences.FindAsync(name);
+            if (geofence == null)
+            {
+                return null;
+            }
+
+            var data = geofence.Data?.Area;
+            if (data == null)
+            {
+                return null;
+            }
+
+            switch (geofence.Type)
+            {
+                case GeofenceType.Circle:
+                    var coordinates = geofence.ConvertToCoordinates();
+                    break;
+                case GeofenceType.Geofence:
+                    var (multiPolygons, _) = geofence.ConvertToMultiPolygons();
+                    break;
+            }
+            return null;
         }
     }
 }
