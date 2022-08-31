@@ -22,10 +22,12 @@
 
         public HelperController(
             //ILogger<HelperController> logger,
+            ControllerContext context,
             IConfiguration configuration,
             IUiHost uiHost)
         {
             //_logger = logger;
+            _context = context;
             _configuration = configuration;
             _uiHost = uiHost;
         }
@@ -80,22 +82,30 @@
                 return null;
             }
 
-            var data = geofence.Data?.Area;
-            if (data == null)
-            {
-                return null;
-            }
-
+            var sb = new System.Text.StringBuilder();
             switch (geofence.Type)
             {
                 case GeofenceType.Circle:
                     var coordinates = geofence.ConvertToCoordinates();
+                    if (coordinates != null)
+                    {
+                        sb.AppendLine(string.Join("\n", coordinates.Select(x => $"{x.Latitude},{x.Longitude}")));
+                    }
                     break;
                 case GeofenceType.Geofence:
-                    var (multiPolygons, _) = geofence.ConvertToMultiPolygons();
+                    var (_, coords) = geofence.ConvertToMultiPolygons();
+                    if (coords != null)
+                    {
+                        foreach (var coord in coords)
+                        {
+                            sb.AppendLine($"[{geofence.Name}]");
+                            sb.AppendLine(string.Join("\n", coord.Select(x => $"{x.Latitude},{x.Longitude}")));
+                        }
+                    }
                     break;
             }
-            return null;
+            var text = sb.ToString();
+            return new JsonResult(text);
         }
     }
 }

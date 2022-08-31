@@ -42,11 +42,11 @@
 </form>
 <br />
 
-@await Html.PartialAsync("_GeofenceRouteGeneratorPartial")
+@await Html.PartialAsync("_GeofenceRouteGeneratorPartial", ViewData["GeofenceNames"])
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-<script>
+    <script>
     $('#Type').on('change', setGeofence);
     let type = $('#Type').val();
     let area = "@Model?.Data?.Area";
@@ -58,5 +58,5 @@
         setReturnGeofenceType(true);
         loadGeofence(area, true);
     }
-</script>
+    </script>
 }

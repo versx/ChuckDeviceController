@@ -273,14 +273,18 @@ function loadGeofence(data, convertToJson) {
     }
     const leafletGeoJSON = new L.GeoJSON(data);
     leafletGeoJSON.eachLayer(layer => {
-        // TODO: Get area size of geofence
+        // Get area size of geofence
+        const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()); //[0]
+        console.log('area:', area);
         const html = `
             <b>Name:</b> ${layer.feature.properties.name}<br>
-            <b>Area:</b> ${0} km2
+            <b>Area:</b> ${area} km2
 `;
         layer.bindTooltip(html);
         drawnItems.addLayer(layer);
     });
+
+    setGeofence();
 }
 
 const loadCircles = (data) => {
@@ -290,6 +294,21 @@ const loadCircles = (data) => {
         createCircle(split[0], split[1]);
     }
 };
+
+const getGeofenceData = () => {
+    const name = $('#geofences').val();
+    if (!name) {
+        return;
+    }
+    $.ajax({
+        url: '/GetGeofenceData',
+        method: 'GET',
+        data: { name },
+    }).done(function (data) {
+        // TODO: Check if circles or geofence
+        loadGeofence(data, true);
+    });
+}
 
 const createCircle = (lat, lng) => {
     L.circle([lat, lng], circleOptions).bindPopup((layer) => {

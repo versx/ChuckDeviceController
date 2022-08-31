@@ -42,7 +42,7 @@
 </form>
 <br />
 
-@await Html.PartialAsync("_GeofenceRouteGeneratorPartial")
+@await Html.PartialAsync("_GeofenceRouteGeneratorPartial", ViewData["GeofenceNames"])
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

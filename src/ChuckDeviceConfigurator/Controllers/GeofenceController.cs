@@ -14,6 +14,7 @@
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Converters;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Common.Data.Contracts;
 
     [Authorize(Roles = RoleConsts.GeofencesRole)]
     public class GeofenceController : Controller
@@ -70,6 +71,8 @@
         // GET: GeofenceController/Create
         public ActionResult Create()
         {
+            var geofenceNames = _context.Geofences.ToList().Select(x => x.Name);
+            ViewData["GeofenceNames"] = geofenceNames;
             return View();
         }
 
@@ -123,6 +126,7 @@
         // GET: GeofenceController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
+            var geofenceNames = _context.Geofences.ToList().Select(x => x.Name);
             var geofence = await _context.Geofences.FindAsync(id);
             if (geofence == null)
             {
@@ -137,7 +141,7 @@
                 ? AreaConverters.CoordinatesToAreaString(data)
                 : AreaConverters.MultiPolygonToAreaString(data);
             geofence.Data.Area = area;
-
+            ViewData["GeofenceNames"] = geofenceNames;
             return View(geofence);
         }
 
