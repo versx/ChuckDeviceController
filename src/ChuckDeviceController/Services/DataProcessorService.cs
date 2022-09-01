@@ -424,6 +424,21 @@
                         }
                     }
 
+                    if (spawnpointsToUpsert.Count > 0)
+                    {
+                        await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
+                        {
+                            options.UseTableLock = true;
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                p.Id,
+                                p.LastSeen,
+                                p.Updated,
+                                p.DespawnSecond,
+                            };
+                        });
+                    }
+
                     if (pokemonToUpsert.Count > 0)
                     {
                         await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
@@ -448,21 +463,6 @@
                         });
 
                         await SendPokemonAsync(pokemonToUpsert);
-                    }
-
-                    if (spawnpointsToUpsert.Count > 0)
-                    {
-                        await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
-                        {
-                            options.UseTableLock = true;
-                            options.OnMergeUpdateInputExpression = p => new
-                            {
-                                p.Id,
-                                p.LastSeen,
-                                p.Updated,
-                                p.DespawnSecond,
-                            };
-                        });
                     }
 
                     //var inserted = await context.SaveChangesAsync();
@@ -1018,7 +1018,6 @@
 
             using (var context = _dbFactory.CreateDbContext())
             {
-                // TODO: Insert s2 cells from pokemon if not exists
                 try
                 {
                     var pokemonToUpsert = new List<Pokemon>();
