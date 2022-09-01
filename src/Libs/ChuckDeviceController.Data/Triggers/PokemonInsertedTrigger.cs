@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Triggers
 {
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -130,44 +128,5 @@ END
             }
             await Task.CompletedTask;
         }
-    }
-
-    [Table("pokemon_stats")]
-    public class PokemonStats : BasePokemonStats
-    {
-    }
-
-    [Table("pokemon_iv_stats")]
-    public class PokemonIvStats : BasePokemonStats
-    {
-    }
-
-    [Table("pokemon_hundo_stats")]
-    public class PokemonHundoStats : BasePokemonStats
-    {
-    }
-
-    [Table("pokemon_shiny_stats")]
-    public class PokemonShinyStats : BasePokemonStats
-    {
-    }
-
-    public class BasePokemonStats
-    {
-        [
-            Column("date"),
-            DataType(DataType.Date),
-            DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true),
-        ]
-        public DateTime Date { get; set; }
-
-        [Column("pokemon_id")]
-        public uint PokemonId { get; set; }
-
-        [Column("form_id")]
-        public uint FormId { get; set; }
-
-        [Column("count")]
-        public ulong Count { get; set; }
     }
 }
