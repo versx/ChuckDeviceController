@@ -429,6 +429,7 @@
                         await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
                         {
                             options.UseTableLock = true;
+                            options.ForceTriggerResolution = true;
                             options.OnMergeUpdateInputExpression = p => new
                             {
                                 p.Id,
@@ -461,6 +462,22 @@
                                 p.PvpRankings,
                             };
                         });
+
+                        /*
+                        foreach (var pokemon in pokemonToUpsert)
+                        {
+                            if (context.Pokemon.Any(pkmn => pkmn.Id == pokemon.Id))
+                            {
+                                context.Update(pokemon);
+                            }
+                            else
+                            {
+                                await context.AddAsync(pokemon);
+                            }
+                        }
+
+                        await context.SaveChangesAsync();
+                        */
 
                         await SendPokemonAsync(pokemonToUpsert);
                     }
@@ -502,7 +519,7 @@
                     {
                         await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
                         {
-                        // Do not update IV specific columns
+                            // Do not update IV specific columns
                             options.UseTableLock = true;
                             options.IgnoreOnMergeUpdateExpression = p => new
                             {

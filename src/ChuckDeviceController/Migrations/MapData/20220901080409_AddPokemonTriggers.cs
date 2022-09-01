@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -44,9 +43,10 @@ namespace ChuckDeviceController.Migrations.MapData
                 name: "pokemon_hundo_stats",
                 columns: table => new
                 {
-                    date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    date = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     pokemon_id = table.Column<uint>(type: "int unsigned", nullable: false),
-                    form_id = table.Column<uint>(type: "int unsigned", nullable: false),
+                    form_id = table.Column<ushort>(type: "smallint unsigned", nullable: false),
                     count = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                 },
                 constraints: table =>
@@ -59,14 +59,16 @@ namespace ChuckDeviceController.Migrations.MapData
                 name: "pokemon_iv_stats",
                 columns: table => new
                 {
-                    date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    date = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     pokemon_id = table.Column<uint>(type: "int unsigned", nullable: false),
-                    form_id = table.Column<uint>(type: "int unsigned", nullable: false),
+                    form_id = table.Column<ushort>(type: "smallint unsigned", nullable: false),
+                    iv = table.Column<double>(type: "double", precision: 2, nullable: false),
                     count = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_pokemon_iv_stats", x => new { x.date, x.pokemon_id, x.form_id });
+                    table.PrimaryKey("PK_pokemon_iv_stats", x => new { x.date, x.pokemon_id, x.form_id, x.iv });
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -74,9 +76,10 @@ namespace ChuckDeviceController.Migrations.MapData
                 name: "pokemon_shiny_stats",
                 columns: table => new
                 {
-                    date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    date = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     pokemon_id = table.Column<uint>(type: "int unsigned", nullable: false),
-                    form_id = table.Column<uint>(type: "int unsigned", nullable: false),
+                    form_id = table.Column<ushort>(type: "smallint unsigned", nullable: false),
                     count = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                 },
                 constraints: table =>
@@ -89,9 +92,10 @@ namespace ChuckDeviceController.Migrations.MapData
                 name: "pokemon_stats",
                 columns: table => new
                 {
-                    date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    date = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     pokemon_id = table.Column<uint>(type: "int unsigned", nullable: false),
-                    form_id = table.Column<uint>(type: "int unsigned", nullable: false),
+                    form_id = table.Column<ushort>(type: "smallint unsigned", nullable: false),
                     count = table.Column<ulong>(type: "bigint unsigned", nullable: false)
                 },
                 constraints: table =>
@@ -180,14 +184,6 @@ namespace ChuckDeviceController.Migrations.MapData
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_pokemon_spawnpoint_spawn_id",
-                table: "pokemon",
-                column: "spawn_id",
-                principalTable: "spawnpoint",
-                principalColumn: "id",
-                onDelete: ReferentialAction.SetNull);
-
-            migrationBuilder.AddForeignKey(
                 name: "FK_pokestop_s2cell_cell_id",
                 table: "pokestop",
                 column: "cell_id",
@@ -216,10 +212,6 @@ namespace ChuckDeviceController.Migrations.MapData
 
             migrationBuilder.DropForeignKey(
                 name: "FK_pokemon_s2cell_cell_id",
-                table: "pokemon");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_pokemon_spawnpoint_spawn_id",
                 table: "pokemon");
 
             migrationBuilder.DropForeignKey(

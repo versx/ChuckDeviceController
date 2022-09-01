@@ -10,22 +10,7 @@
 
     public class MapContext : DbContext
     {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public MapContext(DbContextOptions<MapContext> options)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-            : base(options)
-        {
-            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseTriggers(triggerOptions =>
-            {
-                triggerOptions.AddTrigger<PokemonInsertedTrigger>();
-            });
-            base.OnConfiguring(optionsBuilder);
-        }
+        #region Properties
 
         // Map entities
         public DbSet<Gym> Gyms { get; set; }
@@ -57,6 +42,29 @@
         public DbSet<PokemonShinyStats> PokemonShinyStats { get; set; }
 
         #endregion
+
+        #endregion
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        public MapContext(DbContextOptions<MapContext> options)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+            : base(options)
+        {
+            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseTriggers(triggerOptions =>
+            {
+                triggerOptions.AddTrigger<PokemonInsertOrUpdateTrigger>();
+                // TODO: RaidInsertOrUpdateTrigger
+                // TODO: LureInsertOrUpdateTrigger?
+                // TODO: IncidentInsertOrUpdateTrigger
+                // TODO: QuestInsertOrUpdateTrigger
+            });
+            base.OnConfiguring(optionsBuilder);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -238,7 +246,7 @@
 
             modelBuilder.Entity<PokemonIvStats>(entity =>
             {
-                entity.HasKey(p => new { p.Date, p.PokemonId, p.FormId });
+                entity.HasKey(p => new { p.Date, p.PokemonId, p.FormId, p.IV });
             });
 
             modelBuilder.Entity<PokemonHundoStats>(entity =>

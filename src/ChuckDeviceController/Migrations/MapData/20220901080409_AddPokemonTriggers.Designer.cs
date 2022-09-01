@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChuckDeviceController.Migrations.MapData
 {
     [DbContext(typeof(MapContext))]
-    [Migration("20220901050809_AddPokemonTriggers")]
+    [Migration("20220901080409_AddPokemonTriggers")]
     partial class AddPokemonTriggers
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -642,16 +642,16 @@ namespace ChuckDeviceController.Migrations.MapData
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonHundoStats", b =>
                 {
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime(6)")
+                    b.Property<string>("Date")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("date");
 
                     b.Property<uint>("PokemonId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("pokemon_id");
 
-                    b.Property<uint>("FormId")
-                        .HasColumnType("int unsigned")
+                    b.Property<ushort>("FormId")
+                        .HasColumnType("smallint unsigned")
                         .HasColumnName("form_id");
 
                     b.Property<ulong>("Count")
@@ -665,39 +665,44 @@ namespace ChuckDeviceController.Migrations.MapData
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonIvStats", b =>
                 {
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime(6)")
+                    b.Property<string>("Date")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("date");
 
                     b.Property<uint>("PokemonId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("pokemon_id");
 
-                    b.Property<uint>("FormId")
-                        .HasColumnType("int unsigned")
+                    b.Property<ushort>("FormId")
+                        .HasColumnType("smallint unsigned")
                         .HasColumnName("form_id");
+
+                    b.Property<double>("IV")
+                        .HasPrecision(2)
+                        .HasColumnType("double")
+                        .HasColumnName("iv");
 
                     b.Property<ulong>("Count")
                         .HasColumnType("bigint unsigned")
                         .HasColumnName("count");
 
-                    b.HasKey("Date", "PokemonId", "FormId");
+                    b.HasKey("Date", "PokemonId", "FormId", "IV");
 
                     b.ToTable("pokemon_iv_stats");
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonShinyStats", b =>
                 {
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime(6)")
+                    b.Property<string>("Date")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("date");
 
                     b.Property<uint>("PokemonId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("pokemon_id");
 
-                    b.Property<uint>("FormId")
-                        .HasColumnType("int unsigned")
+                    b.Property<ushort>("FormId")
+                        .HasColumnType("smallint unsigned")
                         .HasColumnName("form_id");
 
                     b.Property<ulong>("Count")
@@ -711,16 +716,16 @@ namespace ChuckDeviceController.Migrations.MapData
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonStats", b =>
                 {
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime(6)")
+                    b.Property<string>("Date")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("date");
 
                     b.Property<uint>("PokemonId")
                         .HasColumnType("int unsigned")
                         .HasColumnName("pokemon_id");
 
-                    b.Property<uint>("FormId")
-                        .HasColumnType("int unsigned")
+                    b.Property<ushort>("FormId")
+                        .HasColumnType("smallint unsigned")
                         .HasColumnName("form_id");
 
                     b.Property<ulong>("Count")
@@ -1018,7 +1023,7 @@ namespace ChuckDeviceController.Migrations.MapData
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Gym", b =>
                 {
                     b.HasOne("ChuckDeviceController.Data.Entities.Cell", "Cell")
-                        .WithMany("Gyms")
+                        .WithMany()
                         .HasForeignKey("CellId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1056,7 +1061,7 @@ namespace ChuckDeviceController.Migrations.MapData
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Pokemon", b =>
                 {
                     b.HasOne("ChuckDeviceController.Data.Entities.Cell", "Cell")
-                        .WithMany("Pokemon")
+                        .WithMany()
                         .HasForeignKey("CellId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1066,36 +1071,20 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasForeignKey("PokestopId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("ChuckDeviceController.Data.Entities.Spawnpoint", "Spawnpoint")
-                        .WithMany("Pokemon")
-                        .HasForeignKey("SpawnId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("Cell");
 
                     b.Navigation("Pokestop");
-
-                    b.Navigation("Spawnpoint");
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Pokestop", b =>
                 {
                     b.HasOne("ChuckDeviceController.Data.Entities.Cell", "Cell")
-                        .WithMany("Pokestops")
+                        .WithMany()
                         .HasForeignKey("CellId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Cell");
-                });
-
-            modelBuilder.Entity("ChuckDeviceController.Data.Entities.Cell", b =>
-                {
-                    b.Navigation("Gyms");
-
-                    b.Navigation("Pokemon");
-
-                    b.Navigation("Pokestops");
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Gym", b =>
@@ -1112,11 +1101,6 @@ namespace ChuckDeviceController.Migrations.MapData
                 {
                     b.Navigation("Incidents");
 
-                    b.Navigation("Pokemon");
-                });
-
-            modelBuilder.Entity("ChuckDeviceController.Data.Entities.Spawnpoint", b =>
-                {
                     b.Navigation("Pokemon");
                 });
 #pragma warning restore 612, 618

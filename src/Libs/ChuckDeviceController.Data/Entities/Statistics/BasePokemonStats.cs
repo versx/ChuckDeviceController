@@ -8,10 +8,8 @@
         [
             Key,
             Column("date"),
-            DataType(DataType.Date),
-            DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true),
         ]
-        public DateTime Date { get; set; }
+        public string Date { get; set; }
 
         [
             Key,
@@ -23,7 +21,7 @@
             Key,
             Column("form_id"),
         ]
-        public uint FormId { get; set; }
+        public ushort FormId { get; set; }
 
         [Column("count")]
         public ulong Count { get; set; }

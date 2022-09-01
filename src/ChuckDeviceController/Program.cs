@@ -65,21 +65,13 @@ builder.Services.Configure<ProcessorOptions>(builder.Configuration.GetSection("O
 
 #region Database Contexts
 
-// TODO: Make triggers configurable
-
 // Register data contexts and factories
 builder.Services.AddDbContextFactory<MapContext>(options =>
     options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
-builder.Services.AddDbContext<MapContext>(options => options
-    .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName))
-    .UseTriggers(triggerOptions => triggerOptions.AddTrigger<PokemonInsertedTrigger>())
-    , ServiceLifetime.Scoped
-);
-builder.Services.AddDbContext<ControllerContext>(options => options
-    .UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName))
-    .UseTriggers(triggerOptions => triggerOptions.AddTrigger<PokemonInsertedTrigger>())
-    , ServiceLifetime.Scoped
-);
+builder.Services.AddDbContext<MapContext>(options =>
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+builder.Services.AddDbContext<ControllerContext>(options =>
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
 
 #endregion
 

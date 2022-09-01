@@ -264,7 +264,9 @@
             Latitude = lat;
             Longitude = lon;
             PokemonId = Convert.ToUInt16(nearbyPokemon.PokedexNumber);
-            PokestopId = nearbyPokemon.FortId;
+            PokestopId = string.IsNullOrEmpty(nearbyPokemon.FortId)
+                ? null
+                : nearbyPokemon.FortId;
             if (nearbyPokemon.PokemonDisplay != null)
             {
                 Form = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Form);
