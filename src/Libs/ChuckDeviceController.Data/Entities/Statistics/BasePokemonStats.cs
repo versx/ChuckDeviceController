@@ -6,16 +6,23 @@
     public class BasePokemonStats
     {
         [
+            Key,
             Column("date"),
             DataType(DataType.Date),
             DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true),
         ]
         public DateTime Date { get; set; }
 
-        [Column("pokemon_id")]
+        [
+            Key,
+            Column("pokemon_id"),
+        ]
         public uint PokemonId { get; set; }
 
-        [Column("form_id")]
+        [
+            Key,
+            Column("form_id"),
+        ]
         public uint FormId { get; set; }
 
         [Column("count")]

@@ -14,7 +14,7 @@
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {
-            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            //base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         // Map entities
@@ -35,6 +35,18 @@
         public DbSet<Spawnpoint> Spawnpoints { get; set; }
 
         public DbSet<Weather> Weather { get; set; }
+
+        #region Pokemon Statistics
+
+        public DbSet<PokemonStats> PokemonStats { get; set; }
+
+        public DbSet<PokemonIvStats> PokemonIvStats { get; set; }
+
+        public DbSet<PokemonHundoStats> PokemonHundoStats { get; set; }
+
+        public DbSet<PokemonShinyStats> PokemonShinyStats { get; set; }
+
+        #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -197,6 +209,26 @@
                       .WithOne(p => p.Spawnpoint)
                       .HasForeignKey(p => p.SpawnId)
                       .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<PokemonStats>(entity =>
+            {
+                entity.HasKey(p => new { p.Date, p.PokemonId, p.FormId });
+            });
+
+            modelBuilder.Entity<PokemonIvStats>(entity =>
+            {
+                entity.HasKey(p => new { p.Date, p.PokemonId, p.FormId });
+            });
+
+            modelBuilder.Entity<PokemonHundoStats>(entity =>
+            {
+                entity.HasKey(p => new { p.Date, p.PokemonId, p.FormId });
+            });
+
+            modelBuilder.Entity<PokemonShinyStats>(entity =>
+            {
+                entity.HasKey(p => new { p.Date, p.PokemonId, p.FormId });
             });
 
             base.OnModelCreating(modelBuilder);
