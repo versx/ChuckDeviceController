@@ -5,6 +5,7 @@ using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Triggers;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
@@ -64,13 +65,21 @@ builder.Services.Configure<ProcessorOptions>(builder.Configuration.GetSection("O
 
 #region Database Contexts
 
+// TODO: Make triggers configurable
+
 // Register data contexts and factories
 builder.Services.AddDbContextFactory<MapContext>(options =>
     options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+{
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName));
+    options.UseTriggers(triggerOptions => triggerOptions.AddTrigger<PokemonInsertedTrigger>());
+}, ServiceLifetime.Scoped);
 builder.Services.AddDbContext<ControllerContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+{
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName));
+    options.UseTriggers(triggerOptions => triggerOptions.AddTrigger<PokemonInsertedTrigger>());
+}, ServiceLifetime.Scoped);
 
 #endregion
 

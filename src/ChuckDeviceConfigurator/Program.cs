@@ -23,6 +23,7 @@ using ChuckDeviceController.Data.Contexts;
 using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Triggers;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager;
 
@@ -140,13 +141,13 @@ builder.Services.AddSwaggerGen(options =>
 #region Database Contexts
 
 builder.Services.AddDbContextFactory<ControllerContext>(options =>
-         options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<MapContext>(options =>
-         options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<ControllerContext>(options =>
-         options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
 builder.Services.AddDbContext<MapContext>(options =>
-         options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
 
 #endregion
 

@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.Data.Triggers
 {
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -8,7 +10,42 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
-    public class PokemonInsertedTrigger : IAfterSaveTrigger<Pokemon>
+    // TODO: Update first_seen, updated, changed, last_modified etc properties
+    /*
+BEGIN
+    INSERT INTO pokemon_stats (pokemon_id, count, date)
+    VALUES
+        (NEW.pokemon_id, 1, DATE(FROM_UNIXTIME(NEW.expire_timestamp)))
+    ON DUPLICATE KEY UPDATE
+        count = count + 1;
+    IF (NEW.iv IS NOT NULL) THEN BEGIN
+        INSERT INTO pokemon_iv_stats (pokemon_id, count, date)
+        VALUES
+            (NEW.pokemon_id, 1, DATE(FROM_UNIXTIME(NEW.expire_timestamp)))
+        ON DUPLICATE KEY UPDATE
+            count = count + 1;
+        END;
+    END IF;
+    IF (NEW.shiny = 1) THEN BEGIN
+        INSERT INTO pokemon_shiny_stats (pokemon_id, count, date)
+        VALUES
+            (NEW.pokemon_id, 1, DATE(FROM_UNIXTIME(NEW.expire_timestamp)))
+        ON DUPLICATE KEY UPDATE
+            count = count + 1;
+        END;
+    END IF;
+    IF (NEW.iv = 100) THEN BEGIN
+        INSERT INTO pokemon_hundo_stats (pokemon_id, count, date)
+        VALUES
+            (NEW.pokemon_id, 1, DATE(FROM_UNIXTIME(NEW.expire_timestamp)))
+        ON DUPLICATE KEY UPDATE
+            count = count + 1;
+        END;
+    END IF;
+END
+     */
+
+    public class PokemonInsertedTrigger : IBeforeSaveTrigger<Pokemon>
     {
         private readonly MapContext _context;
 
@@ -17,8 +54,60 @@
             _context = context;
         }
 
-        public async Task AfterSave(ITriggerContext<Pokemon> context, CancellationToken cancellationToken)
+        public async Task BeforeSave(ITriggerContext<Pokemon> context, CancellationToken cancellationToken)
         {
+            if (context.ChangeType == ChangeType.Added)
+            {
+                var pokemonStat = new PokemonStats
+                {
+                    Date = DateTime.UtcNow,
+                    PokemonId = context.Entity.PokemonId,
+                    FormId = context.Entity.Form ?? 0,
+                    Count = 1,
+                };
+                await _context.AddAsync(pokemonStat, cancellationToken);
+
+                if (context.Entity.IV != null)
+                {
+                    var pokemonIvStat = new PokemonIvStats
+                    {
+                        Date = DateTime.UtcNow,
+                        PokemonId = context.Entity.PokemonId,
+                        FormId = context.Entity.Form ?? 0,
+                        Count = 1,
+                    };
+                    await _context.AddAsync(pokemonIvStat, cancellationToken);
+
+                    //if (context.Entity.IV == 100)
+                    if (context.Entity.AttackIV == 15 &&
+                        context.Entity.DefenseIV == 15 &&
+                        context.Entity.StaminaIV == 15)
+                    {
+                        var pokemonHundoStat = new PokemonHundoStats
+                        {
+                            Date = DateTime.UtcNow,
+                            PokemonId = context.Entity.PokemonId,
+                            FormId = context.Entity.Form ?? 0,
+                            Count = 1,
+                        };
+                        await _context.AddAsync(pokemonHundoStat, cancellationToken);
+                    }
+                }
+
+                if (context.Entity.IsShiny ?? false)
+                {
+                    var pokemonShinyStat = new PokemonShinyStats
+                    {
+                        Date = DateTime.UtcNow,
+                        PokemonId = context.Entity.PokemonId,
+                        FormId = context.Entity.Form ?? 0,
+                        Count = 1,
+                    };
+                    await _context.AddAsync(pokemonShinyStat, cancellationToken);
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+            }
             // INSERT new pokemon
             // ON DUP increment count
             // If IV NOT NULL
@@ -30,5 +119,55 @@
 
             await Task.CompletedTask;
         }
+    }
+
+    public class PokemonUpdatedTrigger : IBeforeSaveTrigger<Pokemon>
+    {
+        public async Task BeforeSave(ITriggerContext<Pokemon> context, CancellationToken cancellationToken)
+        {
+            if (context.ChangeType == ChangeType.Modified)
+            {
+            }
+            await Task.CompletedTask;
+        }
+    }
+
+    [Table("pokemon_stats")]
+    public class PokemonStats : BasePokemonStats
+    {
+    }
+
+    [Table("pokemon_iv_stats")]
+    public class PokemonIvStats : BasePokemonStats
+    {
+    }
+
+    [Table("pokemon_hundo_stats")]
+    public class PokemonHundoStats : BasePokemonStats
+    {
+    }
+
+    [Table("pokemon_shiny_stats")]
+    public class PokemonShinyStats : BasePokemonStats
+    {
+    }
+
+    public class BasePokemonStats
+    {
+        [
+            Column("date"),
+            DataType(DataType.Date),
+            DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true),
+        ]
+        public DateTime Date { get; set; }
+
+        [Column("pokemon_id")]
+        public uint PokemonId { get; set; }
+
+        [Column("form_id")]
+        public uint FormId { get; set; }
+
+        [Column("count")]
+        public ulong Count { get; set; }
     }
 }

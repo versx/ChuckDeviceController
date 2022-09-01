@@ -100,7 +100,7 @@ Apple Silicon: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-
 1. Change directories `cd bin/debug` and fill out `appsettings.json` configuration file  
 1. Run ChuckDeviceController `dotnet ChuckDeviceController.dll`   
 
-## ChuckDeviceCommunicator (optional)  
+### ChuckDeviceCommunicator (optional)  
 1. Copy ChuckDeviceCommunicator config `cp ChuckDeviceCommunicator/appsettings.json bin/debug/appsettings.json`  
 1. Change directories `cd bin/debug` and fill out `appsettings.json` configuration file  
 1. Run ChuckDeviceCommunicator `dotnet ChuckDeviceCommunicator.dll`  
