@@ -1023,6 +1023,7 @@
                 {
                     var pokemonToUpsert = new List<Pokemon>();
                     var spawnpointsToUpsert = new List<Spawnpoint>();
+                    var s2cellsToUpsert = new List<Cell>();
                     foreach (var encounter in encounters)
                     {
                         var data = (EncounterOutProto)encounter.data;
@@ -1034,6 +1035,10 @@
                         {
                             // New Pokemon
                             var cellId = S2CellExtensions.S2CellIdFromLatLng(data.Pokemon.Latitude, data.Pokemon.Longitude);
+                            if (!context.Cells.Any(cell => cell.Id == cellId.Id))
+                            {
+                                s2cellsToUpsert.Add(new Cell(cellId.Id));
+                            }
                             pokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
                         }
                         await pokemon.AddEncounterAsync(data, username);
@@ -1056,12 +1061,37 @@
                         }
                     }
 
+                    if (spawnpointsToUpsert.Count > 0)
+                    {
+                        await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
+                        {
+                            options.UseTableLock = true;
+                            options.OnMergeUpdateInputExpression = p => new
+                            {
+                                p.Id,
+                                p.LastSeen,
+                                p.Updated,
+                                p.DespawnSecond,
+                            };
+                        });
+                    }
+
+                    if (s2cellsToUpsert.Count > 0)
+                    {
+                        await context.Cells.BulkMergeAsync(s2cellsToUpsert, options => options.UseTableLock = true);
+
+                        foreach (var cell in s2cellsToUpsert)
+                        {
+                            _clearFortsService.AddCell(cell.Id);
+                        }
+                    }
+
                     if (pokemonToUpsert.Count > 0)
                     {
                         await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
                         {
                             options.UseTableLock = true;
-                        // Only update IV specific columns
+                            // Only update IV specific columns
                             options.OnMergeUpdateInputExpression = p => new
                             {
                                 p.Id,
@@ -1084,21 +1114,6 @@
                         });
 
                         await SendPokemonAsync(pokemonToUpsert);
-                    }
-
-                    if (spawnpointsToUpsert.Count > 0)
-                    {
-                        await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
-                        {
-                            options.UseTableLock = true;
-                            options.OnMergeUpdateInputExpression = p => new
-                            {
-                                p.Id,
-                                p.LastSeen,
-                                p.Updated,
-                                p.DespawnSecond,
-                            };
-                        });
                     }
 
                     //var inserted = await context.SaveChangesAsync();
