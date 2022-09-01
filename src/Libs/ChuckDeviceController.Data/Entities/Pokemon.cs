@@ -57,7 +57,7 @@
         ]
         public ulong? SpawnId { get; set; }
 
-        public virtual Spawnpoint? Spawnpoint { get; set; }
+        //public virtual Spawnpoint? Spawnpoint { get; set; }
 
         [Column("expire_timestamp")]
         public ulong ExpireTimestamp { get; set; }

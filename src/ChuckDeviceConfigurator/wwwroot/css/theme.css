@@ -17,6 +17,7 @@
 .theme-dark li.paginate_button.disabled a,
 /* Html elements */
 .theme-dark select,
+.theme-dark select:focus,
 .theme-dark textarea,
 .theme-dark textarea:focus,
 .theme-dark textarea:read-only,

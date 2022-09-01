@@ -21,7 +21,7 @@
                     var split = pokemonId.Split(new[] { "_f" }, StringSplitOptions.RemoveEmptyEntries);
                     var pokeId = Convert.ToUInt32(split[0]);
                     var formId = split.Length > 1 ? Convert.ToUInt32(split[1]) : 0;
-                    var icon = Utils.GetPokemonIcon(pokeId, formId, "32", "32", html: true);
+                    var icon = Utils.GetPokemonIcon(pokeId, formId, 0, 0, "32", "32", html: true);
                     var pkmnName = Translator.Instance.GetPokemonName(pokeId);
                     var pkmnForm = Translator.Instance.GetFormName(formId);
                     var name = string.IsNullOrEmpty(pkmnForm)

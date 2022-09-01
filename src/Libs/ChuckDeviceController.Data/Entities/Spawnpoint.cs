@@ -39,7 +39,7 @@
         [NotMapped]
         public bool HasChanges { get; set; }
 
-        public virtual ICollection<Pokemon>? Pokemon { get; set; }
+        //public virtual ICollection<Pokemon>? Pokemon { get; set; }
 
         #endregion
 

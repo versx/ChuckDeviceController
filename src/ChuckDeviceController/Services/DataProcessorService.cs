@@ -1018,6 +1018,7 @@
 
             using (var context = _dbFactory.CreateDbContext())
             {
+                // TODO: Insert s2 cells from pokemon if not exists
                 try
                 {
                     var pokemonToUpsert = new List<Pokemon>();

@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using static POGOProtos.Rpc.PokemonDisplayProto.Types;
 
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Localization;
@@ -324,12 +325,14 @@
                     var costume = Translator.Instance.GetCostumeName(item.Costume ?? 0);
                     return new IvQueueItemViewModel
                     {
-                        // TODO: Make image url configurable
                         EncounterId = item.Id,
                         PokemonId = item.PokemonId,
                         PokemonName = name,
                         PokemonForm = form,
+                        PokemonFormId = item.Form ?? 0,
                         PokemonCostume = costume,
+                        PokemonCostumeId = item.Costume ?? 0,
+                        PokemonGender = (Gender)item.Gender,
                         Latitude = lat,
                         Longitude = lon,
                     };

@@ -6,6 +6,7 @@
 
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
+    using ChuckDeviceController.Data.Triggers;
 
     public class MapContext : DbContext
     {
@@ -14,7 +15,16 @@
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {
-            //base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseTriggers(triggerOptions =>
+            {
+                triggerOptions.AddTrigger<PokemonInsertedTrigger>();
+            });
+            base.OnConfiguring(optionsBuilder);
         }
 
         // Map entities
@@ -50,6 +60,7 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            /*
             modelBuilder.Entity<Cell>(entity =>
             {
                 entity.HasMany(c => c.Gyms)
@@ -67,12 +78,15 @@
                       .HasForeignKey(p => p.CellId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+            */
 
             modelBuilder.Entity<Gym>(entity =>
             {
+                /*
                 entity.HasOne(g => g.Cell)
                       .WithMany(c => c.Gyms)
                       .HasForeignKey(g => g.CellId);
+                */
 
                 entity.HasMany(g => g.Defenders)
                       .WithOne(d => d.Fort)
@@ -185,24 +199,29 @@
                            DbContextFactory.CreateValueComparer<string, dynamic>()
                        );
 
+                /*
                 entity.HasOne(p => p.Cell)
                       .WithMany(c => c.Pokemon)
                       .HasForeignKey(p => p.CellId);
+                */
 
                 entity.HasOne(p => p.Pokestop)
                       .WithMany(p => p.Pokemon)
                       //.HasConstraintName("pokestop_id")
                       .HasForeignKey(p => p.PokestopId);
 
+                /*
                 entity.HasOne(p => p.Spawnpoint)
                       .WithMany(p => p.Pokemon)
                       .HasForeignKey(p => p.SpawnId);
+                */
 
                 entity.HasIndex(p => p.CellId);
                 entity.HasIndex(p => p.PokestopId);
                 entity.HasIndex(p => p.SpawnId);
             });
 
+            /*
             modelBuilder.Entity<Spawnpoint>(entity =>
             {
                 entity.HasMany(p => p.Pokemon)
@@ -210,6 +229,7 @@
                       .HasForeignKey(p => p.SpawnId)
                       .OnDelete(DeleteBehavior.SetNull);
             });
+            */
 
             modelBuilder.Entity<PokemonStats>(entity =>
             {

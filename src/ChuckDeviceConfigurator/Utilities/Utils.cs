@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Utilities
 {
+    using static POGOProtos.Rpc.PokemonDisplayProto.Types;
+
     using ChuckDeviceConfigurator.Services.Icons;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
@@ -162,9 +164,9 @@
             return html;
         }
 
-        public static string GetPokemonIcon(uint pokemonId, uint formId = 0, string width = "32", string height = "32", bool html = false)
+        public static string GetPokemonIcon(uint pokemonId, uint formId = 0, Gender gender = Gender.Unset, uint costumeId = 0, string width = "32", string height = "32", bool html = false)
         {
-            var url = UIconsService.Instance.GetPokemonIcon(pokemonId, formId);
+            var url = UIconsService.Instance.GetPokemonIcon(pokemonId, formId, 0, gender, costumeId);
             return html
                 ? $"<img src='{url}' width='{width}' height='{height}' />"
                 : url;
