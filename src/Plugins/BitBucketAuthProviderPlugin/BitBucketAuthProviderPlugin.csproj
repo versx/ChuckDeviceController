@@ -9,11 +9,6 @@
     <RootNamespace>BitbucketAuthProviderPlugin</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug</OutputPath>
-    <WarningLevel>4</WarningLevel>
-    <AssemblyName>BitbucketAuthProviderPlugin</AssemblyName>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj">
       <Private>false</Private>

@@ -274,8 +274,24 @@
             // Get devices assigned to instance
             var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
                                                   .ToList();
+            var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
+            var devicesOffline = devicesAssigned.Count - devicesOnline;
+            var status = await _jobControllerService.GetStatusAsync(instance);
+            var model = new InstanceDetailsViewModel
+            {
+                Name = instance.Name,
+                Type = instance.Type,
+                MinimumLevel = instance.MinimumLevel,
+                MaximumLevel = instance.MaximumLevel,
+                Geofences = instance.Geofences,
+                Data = instance.Data,
+                DeviceCount = $"{devicesOnline}/{devicesAssigned.Count}|{devicesOffline}",
+                Devices = devicesAssigned,
+                Status = status,
+            };
+
             ViewBag.Devices = devicesAssigned;
-            return View(instance);
+            return View(model);
         }
 
         // POST: InstanceController/Delete/5

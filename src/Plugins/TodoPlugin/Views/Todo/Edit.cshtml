@@ -8,13 +8,7 @@
 <p>@Html.ValidationMessage("Todo", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Todo" asp-action="Index">Todos</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Edit Todo</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Todo", ControllerText = "Todos", CurrentPage = "Edit Todo" })
 
 <h4>Todo '@(Model?.Name)'</h4>
 <hr />
