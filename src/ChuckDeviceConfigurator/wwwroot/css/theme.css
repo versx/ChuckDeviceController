@@ -33,8 +33,7 @@
 }
 
 .theme-dark .card-header,
-.theme-dark thead > tr > th,
-.theme-dark thead {
+.theme-dark thead > tr > th {
     background-color: rgb(21, 21, 21);
     color: white;
 }
@@ -47,7 +46,7 @@
 
 .theme-dark .modal-header > .btn-close {
     background-color: white;
-    color: rgb(41, 41, 41);
+    color: rgb(21, 21, 21);
 }
 
 .theme-dark .list-group-item {
