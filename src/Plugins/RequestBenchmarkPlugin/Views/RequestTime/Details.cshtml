@@ -1,0 +1,60 @@
+﻿@model RequestTime
+@{
+    ViewData["Title"] = "Request Benchmark Details " + Model?.Route;
+}
+
+<h1>Request Benchmark Details</h1>
+
+<p>@Html.ValidationMessage("RequestBenchmark", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "RequestTime", ControllerText = "Request Benchmarks", CurrentPage = "Request Time Details" })
+
+<div>
+    <h4>Request Benchmark '@Model?.Route'</h4>
+    <div>
+        <a asp-action="Delete" asp-route-route="@Model?.Route" class="btn btn-danger">
+            <i class="fa-solid fa-trash"></i>&nbsp;Delete
+        </a>
+    </div>
+</div>
+
+<hr />
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Route)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Route)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Requests)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Requests)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Fastest)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(Utils.FormatTime(Model?.Fastest ?? 0, isHtml: true))
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Slowest)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(Utils.FormatTime(Model?.Slowest ?? 0, isHtml: true))
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Average)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(Utils.FormatTime(Model?.Average ?? 0, isHtml: true))
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Total)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(Utils.FormatTime(Model?.Total ?? 0, isHtml: true))
+    </dd>
+</dl>

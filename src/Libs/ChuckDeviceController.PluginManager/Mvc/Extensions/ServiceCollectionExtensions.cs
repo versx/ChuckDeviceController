@@ -249,7 +249,7 @@
             // Grab a list of all constructors in the class, start with the one with most parameters
             var constructors = type
                 .GetConstructors()
-                .Where(c => c.IsPublic && !c.IsStatic && c.GetParameters().Length > 0)
+                .Where(c => c.IsPublic && !c.IsStatic)// && c.GetParameters().Length > 0)
                 .OrderByDescending(c => c.GetParameters().Length)
                 .ToList();
             return constructors;

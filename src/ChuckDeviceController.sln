@@ -61,11 +61,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckPluginMvc", "Templates
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckPlugin", "Templates\ChuckPlugin\ChuckPlugin.csproj", "{1357315E-1FDD-4305-A533-EEC65A57C5B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitLabAuthProviderPlugin", "Plugins\GitLabAuthProviderPlugin\GitLabAuthProviderPlugin.csproj", "{27EAA9E8-FED3-4957-9282-F438224184C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitLabAuthProviderPlugin", "Plugins\GitLabAuthProviderPlugin\GitLabAuthProviderPlugin.csproj", "{27EAA9E8-FED3-4957-9282-F438224184C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitbucketAuthProviderPlugin", "Plugins\BitBucketAuthProviderPlugin\BitBucketAuthProviderPlugin.csproj", "{1D4E7DBC-F4E0-4979-A8A4-A393D8A746A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitBucketAuthProviderPlugin", "Plugins\BitBucketAuthProviderPlugin\BitBucketAuthProviderPlugin.csproj", "{1D4E7DBC-F4E0-4979-A8A4-A393D8A746A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualStudioAuthProviderPlugin", "Plugins\VisualStudioAuthProviderPlugin\VisualStudioAuthProviderPlugin.csproj", "{1E59CE03-59F6-425C-9BBB-4B8C0B6DED29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VisualStudioAuthProviderPlugin", "Plugins\VisualStudioAuthProviderPlugin\VisualStudioAuthProviderPlugin.csproj", "{1E59CE03-59F6-425C-9BBB-4B8C0B6DED29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RequestBenchmarkPlugin", "Plugins\RequestBenchmarkPlugin\RequestBenchmarkPlugin.csproj", "{820042BE-6FB9-469A-95C7-4E0B034EE4B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -185,6 +187,10 @@ Global
 		{1E59CE03-59F6-425C-9BBB-4B8C0B6DED29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E59CE03-59F6-425C-9BBB-4B8C0B6DED29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E59CE03-59F6-425C-9BBB-4B8C0B6DED29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{820042BE-6FB9-469A-95C7-4E0B034EE4B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{820042BE-6FB9-469A-95C7-4E0B034EE4B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{820042BE-6FB9-469A-95C7-4E0B034EE4B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{820042BE-6FB9-469A-95C7-4E0B034EE4B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -215,6 +221,7 @@ Global
 		{27EAA9E8-FED3-4957-9282-F438224184C0} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
 		{1D4E7DBC-F4E0-4979-A8A4-A393D8A746A2} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
 		{1E59CE03-59F6-425C-9BBB-4B8C0B6DED29} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
+		{820042BE-6FB9-469A-95C7-4E0B034EE4B6} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {826A78C7-B0DA-4D44-AF8E-BDDBFCE8F569}
