@@ -16,39 +16,38 @@
     <div class="col-md-6">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" readonly />
+            <div class="form-floating mb-3">
+                <input asp-for="Name" class="form-control" placeholder="Webhook name" readonly />
+                <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Url" class="control-label"></label>
-                <input asp-for="Url" class="form-control" />
+            <div class="form-floating mb-3">
+                <input asp-for="Url" class="form-control" placeholder="Webhook url endpoint" />
+                <label asp-for="Url"></label>
                 <span asp-validation-for="Url" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Delay" class="control-label"></label> (in seconds)
-                <input asp-for="Delay" class="form-control" min="0" max="3600" />
+            <div class="form-floating mb-3">
+                <input asp-for="Delay" class="form-control" min="0" max="3600" placeholder="Webhook delay" />
+                <label asp-for="Delay"></label> <small class="text-muted"><i>(in seconds)</i></small>
                 <span asp-validation-for="Delay" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Types" class="control-label"></label>
-                <select asp-for="Types" class="form-control" asp-items="Html.GetEnumSelectList<WebhookType>()">
+            <div class="form-floating mb-3">
+                <select asp-for="Types" class="form-control" asp-items="Html.GetEnumSelectList<WebhookType>()" placeholder="Webhook type">
                     <option value="">Please select one</option>
                 </select>
+                <label asp-for="Types"></label>
                 <span asp-validation-for="Types" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Geofences" class="control-label"></label>
-                <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))">
+            <div class="form-floating mb-3">
+                <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))" placeholder="Webhook geofences">
                     <option value="">Please select one</option>
                 </select>
+                <label asp-for="Geofences"></label>
                 <span asp-validation-for="Geofences" class="text-danger"></span>
             </div>
             <div class="checkbox">
                 <label><input type="checkbox" asp-for="Enabled"> Enable Webhook Endpoint</label>
             </div>
-            <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

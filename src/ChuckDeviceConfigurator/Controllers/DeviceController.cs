@@ -123,8 +123,8 @@
             var accounts = _context.Accounts.Where(account => !accountsInUse.Contains(account.Username) || device.AccountUsername == account.Username)
                                             .ToList();
             var instances = _context.Instances.ToList();
-            ViewBag.Instances = new SelectList(instances, "Name", "Name");
-            ViewBag.Accounts = new SelectList(accounts, "Username", "Username");
+            ViewBag.Instances = instances;
+            ViewBag.Accounts = accounts;
             return View(device);
         }
 

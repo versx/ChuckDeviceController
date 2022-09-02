@@ -16,17 +16,17 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
         <div class="col col-5">
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" readonly />
+            <div class="form-floating mb-3">
+                <input asp-for="Name" class="form-control" placeholder="Geofence name" readonly />
+                <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
         </div>
         <div class="col col-5">
-            <div class="form-group">
-                <label asp-for="Type" class="control-label"></label>
-                <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<GeofenceType>()">
+            <div class="form-floating mb-3">
+                <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<GeofenceType>()" placeholder="Geofence type">
                 </select>
+                <label asp-for="Type"></label>
                 <span asp-validation-for="Type" class="text-danger"></span>
             </div>
         </div>
@@ -35,7 +35,7 @@
         </div>
     </div>
     <div class="form-group" hidden>
-        <label asp-for="Data.Area" class="control-label"></label>
+        <label asp-for="Data.Area"></label>
         <textarea asp-for="Data.Area" class="form-control" rows="30"></textarea>
         <span asp-validation-for="Data.Area" class="text-danger"></span>
     </div>

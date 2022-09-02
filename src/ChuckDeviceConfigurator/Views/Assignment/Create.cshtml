@@ -16,35 +16,35 @@
     <div class="col-md-6">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="DeviceUuid" class="control-label"></label>
-                <select asp-for="DeviceUuid" class="form-control" asp-items="@(ViewBag.Devices)">
+            <div class="form-floating mb-3">
+                <select asp-for="DeviceUuid" class="form-control" asp-items="@(ViewBag.Devices)" placeholder="Assignment device UUID">
                     <option value="">Please select one</option>
                 </select>
+                <label asp-for="DeviceUuid"></label>
                 <span asp-validation-for="DeviceUuid" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="SourceInstanceName" class="control-label"></label>
-                <select asp-for="SourceInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))">
+            <div class="form-floating mb-3">
+                <select asp-for="SourceInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Assignment source instance">
                     <option value="">Please select one</option>
                 </select>
+                <label asp-for="SourceInstanceName"></label>
                 <span asp-validation-for="SourceInstanceName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="InstanceName" class="control-label"></label>
-                <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))">
+            <div class="form-floating mb-3">
+                <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Assignment instance">
                     <option value="">Please select one</option>
                 </select>
+                <label asp-for="InstanceName"></label>
                 <span asp-validation-for="InstanceName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Time" class="control-label"></label> <small class="text-muted"><i>(Set to 12am to create "On-Complete" assignment)</i></small>
-                <input asp-for="Time" class="form-control" type="time" />
+            <div class="form-floating mb-3">
+                <input asp-for="Time" class="form-control" type="time" placeholder="Assignment time" />
+                <label asp-for="Time"></label> <small class="text-muted"><i>(Set to 12am to create "On-Complete" assignment)</i></small>
                 <span asp-validation-for="Time" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Date" class="control-label"></label> <small class="text-muted"><i>(Leave empty for any date)</i></small>
-                <input asp-for="Date" class="form-control" type="date" />
+            <div class="form-floating mb-3">
+                <input asp-for="Date" class="form-control" type="date" placeholder="Assignment date" />
+                <label asp-for="Date"></label> <small class="text-muted"><i>(Leave empty for any date)</i></small>
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
             <div class="checkbox">
@@ -53,7 +53,6 @@
             <div class="checkbox">
                 <label><input type="checkbox" asp-for="Enabled" value="true" checked> Is Enabled</label>
             </div>
-            <br />
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
