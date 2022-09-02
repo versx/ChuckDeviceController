@@ -11,40 +11,49 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "User", ControllerText = "Users", CurrentPage = "Manage User" })
 
-<h4>Manage User Account '@(Model?.UserName)'</h4>
+<h4>User Account '@(Model?.UserName)'</h4>
 <hr />
 
-<form method="post">
+<form asp-action="Manage">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <div class="form-group">
-        <label asp-for="UserName" class="control-label"></label>
-        <input asp-for="UserName" class="form-control" maxlength="255" readonly />
-        <span asp-validation-for="UserName" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Email" class="control-label"></label>
-        <input asp-for="Email" class="form-control" maxlength="255" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Password" class="control-label"></label>
-        <input asp-for="Password" type="password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="ConfirmPassword" class="control-label"></label>
-        <input asp-for="ConfirmPassword" type="password" class="form-control" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-    </div>
-    <br />
-    <div class="card">
-        <div class="card-header">
-            <b>User Permissions</b>
+    <div class="row">
+        <div class="col-sm col-lg-6">
+            <div class="form-floating mb-3">
+                <input asp-for="UserName" class="form-control" maxlength="255" placeholder="User account name" />
+                <label asp-for="UserName"></label>
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
         </div>
+        <div class="col-sm col-lg-6">
+            <div class="form-floating mb-3">
+                <input asp-for="Email" class="form-control" maxlength="255" placeholder="User account email address" />
+                <label asp-for="Email"></label>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm col-lg-6">
+            <div class="form-floating mb-3">
+                <input asp-for="Password" type="password" class="form-control" placeholder="User account password" />
+                <label asp-for="Password"></label>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-sm col-lg-6">
+            <div class="form-floating mb-3">
+                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder=Confirmed user account password"" />
+                <label asp-for="ConfirmPassword"></label>
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header"><b>User Permissions</b></div>
         <div class="card-body">
             @foreach (var role in Model!.Roles)
             {
-                <div class="form-check m-1">
+                <div class="form-check">
                     <input type="hidden" asp-for="@role.RoleId" />
                     <input type="hidden" asp-for="@role.RoleName" />
                     <input asp-for="@role.Selected" class="form-check-input" />
@@ -54,9 +63,14 @@
                 </div>
             }
         </div>
-        <div class="card-footer">
-            <input type="submit" value="Update" class="btn btn-primary" style="width:auto" />
-            <a asp-action="Index" asp-route-id="@ViewBag.UserId" class="btn btn-secondary" style="width:auto">Cancel</a>
-        </div>
+    </div>
+    <br />
+    <div class="form-group">
+        <input type="submit" value="Update" class="btn btn-primary" style="width:auto" />
+        <a asp-action="Index" asp-route-id="@ViewBag.UserId" class="btn btn-secondary" style="width:auto">Cancel</a>
     </div>
 </form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
