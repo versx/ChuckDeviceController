@@ -9,17 +9,23 @@
     var dashboardTiles = Convert.ToString(data)?.FromJson<List<DashboardTile>>();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Dashboard</h1>
-</div>
-
+<h1 class="display-4 text-center">Dashboard</h1>
 <div class="w-75" style="float: none; margin: 0 auto;">
     <div class="card text-center">
         <div class="card-header bg-dark text-light text-center"><b>General</b></div>
         <div class="card-body">
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-md-4 p-1">
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="Plugin" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-puzzle-piece"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Plugins)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Plugins)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Device" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-mobile-alt"></i></h3>
@@ -28,7 +34,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-4 p-1">
+                    <div class="col-md-3 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="DeviceGroup" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-mobile-alt"></i></h3>
@@ -37,7 +43,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-4 p-1">
+                    <div class="col-md-3 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Instance" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-cubes-stacked"></i></h3>

@@ -57,6 +57,12 @@
         public ulong IvLists { get; set; }
 
         [
+            DisplayName("Plugins"),
+            DisplayFormat(DataFormatString = "{0:N0}"),
+        ]
+        public ulong Plugins { get; set; }
+
+        [
             DisplayName("Users"),
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]

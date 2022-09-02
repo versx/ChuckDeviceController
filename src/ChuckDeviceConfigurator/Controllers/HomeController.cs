@@ -15,6 +15,7 @@
     using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.PluginManager;
 
     [Authorize(Roles = RoleConsts.DefaultRole)]
     public class HomeController : Controller
@@ -24,18 +25,21 @@
         private readonly MapContext _mapContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUiHost _uiHost;
+        private readonly IPluginManager _pluginManager;
 
         public HomeController(
             ILogger<HomeController> logger,
             ControllerContext deviceContext,
             MapContext mapContext,
             UserManager<ApplicationUser> userManager,
+            IPluginManager pluginManager,
             IUiHost uiHost)
         {
             _logger = logger;
             _deviceContext = deviceContext;
             _mapContext = mapContext;
             _userManager = userManager;
+            _pluginManager = pluginManager;
             _uiHost = uiHost;
         }
 
@@ -52,6 +56,7 @@
                 Geofences = (ulong)_deviceContext.Geofences.LongCount(),
                 Instances = (ulong)_deviceContext.Instances.LongCount(),
                 IvLists = (ulong)_deviceContext.IvLists.LongCount(),
+                Plugins = (ulong)_pluginManager.Plugins.LongCount(),
                 Webhooks = (ulong)_deviceContext.Webhooks.LongCount(),
                 Users = (ulong)_userManager.Users.LongCount(),
 
