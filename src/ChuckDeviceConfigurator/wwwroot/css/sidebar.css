@@ -76,6 +76,7 @@ table > tbody > tr > td > a {
 
 #sidebar .sidebar-header {
     padding: 20px;
+    border-bottom: 1px solid black;
     background: #6d7fcc; /*#2a2d38;*/
 }
 

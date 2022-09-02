@@ -166,10 +166,11 @@
 
 <script>
     // Get current URL path and toggle 'active' class for sidebar and sidebar collapse/expand button
-    const pathname = window.location.pathname;
+    const pathname = '/' + window.location.pathname.split('/')[1];
     // Get navbar header based on current path name comparing against anchor reference
     // NOTE: This will highlight multiple navbar headers if multiple have the same href path
     const navItem = $('#sidebar > ul li.nav-item > a[href="' + pathname + '"]');
+    //const navItem = $('#sidebar > ul li.nav-item > a:contains("' + pathname + '")');
     if (navItem) {
         // Top level navbar header with no dropdowns
         navItem.addClass('active');
