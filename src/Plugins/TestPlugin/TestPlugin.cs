@@ -319,6 +319,7 @@
             // Register new sidebar headers
             var pluginSidebarItems = new List<SidebarItem>
             {
+                /*
                 new(
                     // Dropdown header text that is displayed in the sidebar
                     text: "Test",
@@ -371,6 +372,7 @@
                         new("Item2", "Instance", isDisabled: true, displayIndex: 999, icon: "fa-solid fa-fw fa-cubes-stacked"),
                     },
                 },
+                */
                 new SidebarItem
                 {
                     Text = "Sep",

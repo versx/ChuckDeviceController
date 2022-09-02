@@ -13,7 +13,7 @@
 <h4>Instance '@(Model?.Name)'</h4>
 <hr />
 <div class="row">
-    <div class="col">
+    <div class="col-md-6">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -164,6 +164,7 @@
             <div class="checkbox">
                 <label><input type="checkbox" asp-for="Data.IsEvent"> Is Unique Event</label>
             </div>
+            <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

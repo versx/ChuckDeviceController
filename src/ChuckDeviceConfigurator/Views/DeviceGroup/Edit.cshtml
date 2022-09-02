@@ -13,7 +13,7 @@
 <h4>Device Group '@(Model?.Name)'</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -27,6 +27,7 @@
                 </select>
                 <span asp-validation-for="DeviceUuids" class="text-danger"></span>
             </div>
+            <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
