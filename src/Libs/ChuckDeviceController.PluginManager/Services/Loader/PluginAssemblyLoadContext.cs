@@ -85,7 +85,7 @@
             {
                 pluginType,
             };
-            PluginPlatformVersion = PluginPlatformVersion.Create("6.0.8", RuntimeType.AspNetCoreApp); //Empty();
+            PluginPlatformVersion = PluginPlatformVersion.Empty();// Create("6.0.8", RuntimeType.AspNetCoreApp);
             AdditionalProbingPaths = new List<string>();
             IgnorePlatformInconsistencies = ignorePlatformInconsistencies;
 
@@ -131,7 +131,6 @@
             {
                 Unload();
             }
-
             Load();
         }
 
@@ -161,6 +160,8 @@
 
         #endregion
 
+        #region Private Methods
+
         private void OnUnloading(AssemblyLoadContext obj)
         {
             _loaded = false;
@@ -168,5 +169,7 @@
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
+
+        #endregion
     }
 }

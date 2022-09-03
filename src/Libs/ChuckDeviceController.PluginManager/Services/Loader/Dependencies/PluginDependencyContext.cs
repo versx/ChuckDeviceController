@@ -14,6 +14,8 @@
 
         public IEnumerable<PluginResourceDependency> PluginResourceDependencies { get; set; }
 
+        public IEnumerable<PluginDependency> PluginReferenceDependencies { get; set; }
+
         public IEnumerable<PlatformDependency> PlatformDependencies { get; set; }
 
         public IEnumerable<string> AdditionalProbingPaths { get; set; }
@@ -28,6 +30,7 @@
             IEnumerable<RemoteDependency> remoteDependencies,
             IEnumerable<PluginDependency> pluginDependencies,
             IEnumerable<PluginResourceDependency> pluginResourceDependencies,
+            IEnumerable<PluginDependency> pluginReferenceDependencies,
             IEnumerable<PlatformDependency> platformDependencies,
             IEnumerable<string> additionalProbingPaths)
         {
@@ -36,6 +39,7 @@
             RemoteDependencies = remoteDependencies;
             PluginDependencies = pluginDependencies;
             PluginResourceDependencies = pluginResourceDependencies;
+            PluginReferenceDependencies = pluginReferenceDependencies;
             PlatformDependencies = platformDependencies;
             AdditionalProbingPaths = additionalProbingPaths ?? Enumerable.Empty<string>();
         }
@@ -54,6 +58,7 @@
                 RemoteDependencies = null;
                 PluginDependencies = null;
                 PluginResourceDependencies = null;
+                PluginReferenceDependencies = null;
                 PlatformDependencies = null;
                 AdditionalProbingPaths = null;
             }

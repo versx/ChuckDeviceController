@@ -15,7 +15,7 @@
             _loadContext = new MetadataLoadContext(new PluginAssemblyResolver(assemblyFullPath));
         }
 
-        public IAssemblyShim LoadFromAssemblyName(string assemblyName)
+        public IAssemblyShim LoadFromAssemblyName(AssemblyName assemblyName)
         {
             return new PluginAssembly(_loadContext.LoadFromAssemblyName(assemblyName));
         }
@@ -28,6 +28,8 @@
         public void Dispose()
         {
             _loadContext?.Dispose();
+
+            GC.SuppressFinalize(this);
         }
     }
 }

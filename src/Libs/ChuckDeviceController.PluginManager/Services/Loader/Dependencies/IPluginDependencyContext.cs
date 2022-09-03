@@ -31,6 +31,11 @@
         IEnumerable<PluginResourceDependency> PluginResourceDependencies { get; }
 
         /// <summary>
+        /// Plugin reference dependency collection.
+        /// </summary>
+        IEnumerable<PluginDependency> PluginReferenceDependencies { get; }
+
+        /// <summary>
         /// Plugin platform dependency collection.
         /// </summary>
         IEnumerable<PlatformDependency> PlatformDependencies { get; }

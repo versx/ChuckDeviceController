@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.PluginManager.Services.Loader
 {
+    using System.Diagnostics;
     using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Runtime.Loader;
@@ -8,6 +9,7 @@
     using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.PluginManager.Services.Loader.Dependencies;
+    using ChuckDeviceController.PluginManager.Services.Loader.Runtime;
     using ChuckDeviceController.PluginManager.Services.Loader.Runtime.Platform;
 
     public class PluginDependencyContextProvider : IPluginDependencyContextProvider
@@ -55,8 +57,9 @@
 
             var pluginDependencies = GetPluginDependencies(dependencyContext);
             var resourceDependencies = GetResourceDependencies(dependencyContext);
-            var platformDependencies = GetPlatformDependencies(dependencyContext);
+            var platformDependencies = GetPlatformDependencies(dependencyContext, loadContext.PluginPlatformVersion);
             var remoteDependencies = GetRemoteDependencies(loadContext);
+            var pluginReferenceDependencies = GetPluginReferenceDependencies(dependencyContext);
 
             var pluginDependencyContext = new PluginDependencyContext
             (
@@ -65,6 +68,7 @@
                 remoteDependencies,
                 pluginDependencies,
                 resourceDependencies,
+                pluginReferenceDependencies,
                 platformDependencies,
                 loadContext.AdditionalProbingPaths
             );
@@ -132,9 +136,9 @@
             var hostFrameworkVersionMajor = int.Parse(hostSplit[0]);
             var hostFrameworkVersionMinor = int.Parse(hostSplit[1]);
 
-            // If the major version of the plugin is higher
+            // Check if the major version of the plugin is higher
             if (pluginFrameworkVersionMajor > hostFrameworkVersionMajor ||
-                // Or the major version is the same but the minor version is higher
+                // Or if the major version is the same but the minor version is higher
                 (pluginFrameworkVersionMajor == hostFrameworkVersionMajor && pluginFrameworkVersionMinor > hostFrameworkVersionMinor))
             {
                 throw new Exception($"Plugin framework version {pluginFramework} is newer than the Host {hostFramework}. Please upgrade the Host to load this Plugin.");
@@ -172,30 +176,7 @@
         private static void LoadAssemblyAndReferencesFromCurrentAppDomain(string assemblyFileName, List<HostDependency> hostDependencies, IEnumerable<Type> downgradableHostTypes, IEnumerable<string> downgradableAssemblies)
         {
             var assemblyName = new AssemblyName(assemblyFileName);
-            if (assemblyFileName == null || hostDependencies.Any(h => h.DependencyName.Name == assemblyName.Name))
-                return;
-
-            var allowDowngrade = downgradableHostTypes.Any(type => type.Assembly.GetName().Name == assemblyName.Name) ||
-                                downgradableAssemblies.Any(asm => asm == assemblyName.Name);
-            hostDependencies.Add(new HostDependency
-            {
-                DependencyName = assemblyName,
-                AllowDowngrade = allowDowngrade,
-            });
-
-            try
-            {
-                var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(assemblyName);
-                foreach (var reference in assembly.GetReferencedAssemblies())
-                {
-                    LoadAssemblyAndReferencesFromCurrentAppDomain(reference, hostDependencies, downgradableHostTypes, downgradableAssemblies);
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                // Should only occur when the assembly is a platform assembly
-                _logger.LogWarning($"Failed to load assembly '{assemblyName.Name}', likely a platform assembly.");
-            }
+            LoadAssemblyAndReferencesFromCurrentAppDomain(assemblyName, hostDependencies, downgradableHostTypes, downgradableAssemblies);
         }
 
         #region GetDependencies
@@ -247,7 +228,6 @@
             return dependencies;
         }
 
-        // Not currently used
         private static IEnumerable<PluginDependency> GetPluginReferenceDependencies(DependencyContext? pluginDependencyContext)
         {
             var dependencies = new List<PluginDependency>();
@@ -272,7 +252,7 @@
             return dependencies;
         }
 
-        private static IEnumerable<PlatformDependency> GetPlatformDependencies(DependencyContext? pluginDependencyContext)
+        private static IEnumerable<PlatformDependency> GetPlatformDependencies(DependencyContext? pluginDependencyContext, PluginPlatformVersion pluginPlatformVersion)
         {
             var dependencies = new List<PlatformDependency>();
             if (pluginDependencyContext == null)
@@ -289,7 +269,8 @@
                 runtimes.AddRange(dependencyGraph.Fallbacks);
             }
 
-            var platformExtensions = GetPlatformDependencyFileExtensions();
+            var runtimePlatformContext = new RuntimePlatformContext();
+            var platformExtensions = runtimePlatformContext.GetPlatformExtensions();
             foreach (var runtimeLibrary in pluginDependencyContext.RuntimeLibraries)
             {
                 var assets = runtimeLibrary.NativeLibraryGroups.GetDefaultAssets();
@@ -307,11 +288,12 @@
                 var validAssets = assets.Where(asset => platformExtensions.Contains(Path.GetExtension(asset)));
                 foreach (var asset in validAssets)
                 {
+                    var platformDependencyPath = ResolvePlatformDependencyPathToRuntime(pluginPlatformVersion, asset);
                     dependencies.Add(new PlatformDependency
                     {
-                        DependencyNameWithoutExtension = Path.GetFileNameWithoutExtension(asset),
+                        DependencyNameWithoutExtension = Path.GetFileNameWithoutExtension(platformDependencyPath),
                         Version = new Version(runtimeLibrary.Version),
-                        DependencyPath = asset,
+                        DependencyPath = platformDependencyPath,
                     });
                 }
             }
@@ -326,8 +308,7 @@
                 return dependencies;
             }
 
-            var runtimeLibraries = pluginDependencyContext.RuntimeLibraries
-                .Where(lib => lib.ResourceAssemblies != null && lib.ResourceAssemblies.Any());
+            var runtimeLibraries = pluginDependencyContext.RuntimeLibraries.Where(lib => lib.ResourceAssemblies?.Any() ?? false);
             foreach (var runtimeLibrary in runtimeLibraries)
             {
                 dependencies.AddRange(runtimeLibrary.ResourceAssemblies
@@ -369,16 +350,44 @@
             return $"linux-{RuntimeInformation.ProcessArchitecture.ToString().ToLower()}";
         }
 
-        private static string[] GetPlatformDependencyFileExtensions()
+        private static string ResolvePlatformDependencyPathToRuntime(PluginPlatformVersion pluginPlatformVersion, string platformDependencyPath)
         {
-            if (PlatformAbstraction.IsWindows())
-                return new[] { ".dll" };
-            if (PlatformAbstraction.IsMacOS())
-                return new[] { ".dylib" };
-            if (PlatformAbstraction.IsLinux())
-                return new[] { ".so", ".so.1" };
+            var runtimePlatformContext = new RuntimePlatformContext();
+            var runtimeInformation = runtimePlatformContext.GetRuntimeInfo();
+            var runtimes = runtimeInformation.Runtimes;
+            if (pluginPlatformVersion.IsSpecified)
+            {
+                // First filter on specific version
+                runtimes = runtimes.Where(r => r.Version == pluginPlatformVersion.Version);
+                // Then, filter on target runtime, this is not always provided
+                if (pluginPlatformVersion.Runtime != RuntimeType.None)
+                {
+                    runtimes = runtimes.Where(r => r.RuntimeType == pluginPlatformVersion.Runtime);
+                }
 
-            throw new Exception($"Platform {RuntimeInformation.OSDescription} is not supported");
+                if (!runtimes.Any())
+                {
+                    throw new Exception($"Requested runtime platform is not installed {pluginPlatformVersion.Runtime} {pluginPlatformVersion.Version}");
+                }
+            }
+
+            foreach (var runtime in runtimes.OrderByDescending(r => r.Version))
+            {
+                var platformDependencyName = Path.GetFileName(platformDependencyPath);
+                var platformDependencyFileVersion = FileVersionInfo.GetVersionInfo(platformDependencyName);
+                var platformFiles = Directory.GetFiles(runtime.Location);
+                var candidateFilePath = platformFiles.FirstOrDefault(f => string.Compare(Path.GetFileName(f), platformDependencyName) == 0);
+                if (!string.IsNullOrEmpty(candidateFilePath))
+                {
+                    var candidateFileVersion = FileVersionInfo.GetVersionInfo(candidateFilePath);
+                    if (string.Compare(platformDependencyFileVersion.FileVersion, candidateFileVersion.FileVersion) == 0)
+                    {
+                        return candidateFilePath;
+                    }
+                }
+            }
+
+            return string.Empty;
         }
 
         #endregion
