@@ -2,12 +2,17 @@
 {
     using System.Reflection;
 
+    using Microsoft.Extensions.Logging;
+
     using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
     using ChuckDeviceController.PluginManager.Services.Loader;
 
     public class PluginFinder<TPlugin> where TPlugin : class
     {
+        private readonly ILogger<PluginFinder<TPlugin>> _logger =
+            new Logger<PluginFinder<TPlugin>>(LoggerFactory.Create(x => x.AddConsole()));
+
         #region Properties
 
         public IPluginFinderOptions Options { get; }
@@ -35,58 +40,86 @@
 
         public IEnumerable<PluginAssemblyDetails> FindAssemliesWithPlugins()
         {
-            // TODO: Get list of list of files to separate each plugins references
+            // Get list of list of files to separate each plugins references
             var assemblies = Options.RootPluginsDirectory.GetFiles(Options.ValidFileTypes);
             var pluginFinderResults = new List<PluginAssemblyDetails>();
 
             // Loop list of found assemblies and filter plugin assembly dependencies
             foreach (var assemblyPath in assemblies)
             {
-                try
+                var pluginAssemblies = FindPluginInAssembly(assemblyPath);
+                if (pluginAssemblies.Any())
                 {
-                    // Get list of plugin types in assembly
-                    var assemblyFullPath = Path.GetFullPath(assemblyPath);
-                    var pluginTypesFromAssembly = GetPluginTypesFromAssembly(assemblyFullPath);
-
-                    // Ensure assembly is a plugin assembly, otherwise skip
-                    if (!pluginTypesFromAssembly.Any())
-                        continue;
-
-                    foreach (var pluginImplementation in pluginTypesFromAssembly)
-                    {
-                        var result = new PluginAssemblyDetails(assemblyFullPath, pluginImplementation);
-                        pluginFinderResults.Add(result);
-                    }
-                }
-                catch //(Exception ex)
-                {
-                    continue;
+                    pluginFinderResults.AddRange(pluginAssemblies);
                 }
             }
             return pluginFinderResults;
         }
 
+        public IEnumerable<PluginAssemblyDetails> FindPluginInAssembly(string assemblyPath)
+        {
+            var pluginFinderResults = new List<PluginAssemblyDetails>();
+            var assemblyFullPath = Path.GetFullPath(assemblyPath);
+
+            try
+            {
+                // Get list of plugin types in assembly
+                var pluginTypesFromAssembly = GetPluginTypesFromAssembly(assemblyFullPath);
+
+                // Ensure assembly is a plugin assembly, otherwise skip
+                if (!pluginTypesFromAssembly.Any())
+                {
+                    return pluginFinderResults;
+                }
+
+                foreach (var pluginImplementation in pluginTypesFromAssembly)
+                {
+                    var result = new PluginAssemblyDetails(assemblyFullPath, pluginImplementation);
+                    pluginFinderResults.Add(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(exception: ex, $"Error occurred discovering plugins in assembly: '{assemblyFullPath}'");
+            }
+
+            return pluginFinderResults;
+        }
+
         public IEnumerable<PluginFinderResult<TPlugin>> LoadPluginAssemblies(IEnumerable<PluginAssemblyDetails> pluginAssemblyDetails)
         {
-            var hostFramework = Assembly.GetEntryAssembly()?.GetHostFramework();
-            var result = new List<PluginFinderResult<TPlugin>>();
+            var entryAssembly = Assembly.GetEntryAssembly();
+            var hostFramework = entryAssembly?.GetHostFramework();
+            var results = new List<PluginFinderResult<TPlugin>>();
             foreach (var pluginAssembly in pluginAssemblyDetails)
             {
-                // Load plugin assembly in ALC
-                var assemblyContext = PluginAssemblyLoadContext.Create<TPlugin>(pluginAssembly.AssemblyFullPath, hostFramework)
-                    // Add default Mvc and Mvc.Razor types
-                    .AddMvcRazorTypes();
-                var assembly = assemblyContext.LoadFromAssemblyPath(pluginAssembly.AssemblyFullPath);
+                var result = LoadPluginAssembly(pluginAssembly, hostFramework);
+                if (result == null)
+                {
+                    _logger.LogWarning($"Failed to load plugin assembly '{pluginAssembly.AssemblyFullPath}'");
+                    continue;
+                }
 
-                // TODO: Add references to plugin ALC
-                // TODO: Determine references/dependencies - managed as well as native
-
-                result.Add(new PluginFinderResult<TPlugin>(
-                    assembly,
-                    assemblyContext,
-                    pluginAssembly.PluginTypeImplementation
-                ));
+                results.Add(result);
             }
+            return results;
+        }
+
+        public PluginFinderResult<TPlugin> LoadPluginAssembly(PluginAssemblyDetails pluginAssemblyDetails, string hostFramework)
+        {
+            // Load plugin assembly in ALC
+            var assemblyContext = PluginAssemblyLoadContext.Create<TPlugin>(pluginAssemblyDetails.AssemblyFullPath, hostFramework)
+                // Add default Mvc and Mvc.Razor types
+                .AddMvcRazorTypes();
+            var assembly = assemblyContext.LoadFromAssemblyPath(pluginAssemblyDetails.AssemblyFullPath);
+
+            // TODO: Determine references/dependencies - managed as well as native
+
+            var result = new PluginFinderResult<TPlugin>(
+                assembly,
+                assemblyContext,
+                pluginAssemblyDetails.PluginTypeImplementation
+            );
             return result;
         }
 

@@ -82,41 +82,8 @@
             }
             await _pluginManager.SetStateAsync(id, state);
 
-            _logger.LogInformation($"Plugin '{id}' has been '{(pluginHost.State == PluginState.Running ? "enabled" : "disabled")}'");
+            _logger.LogInformation($"[{id}] Plugin has been {(pluginHost.State == PluginState.Running ? "enabled" : "disabled")}");
             return RedirectToAction(nameof(Index));
-        }
-
-        // GET: PluginController/Upload
-        public ActionResult Upload()
-        {
-            return View();
-        }
-
-        // POST: PluginController/Upload
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Upload(IFormCollection collection)
-        {
-            try
-            {
-                var name = Convert.ToString(collection["Name"]);
-                if (_pluginManager.Plugins.ContainsKey(name))
-                {
-                    // Plugin already exists and is registered in plugin manager cache
-                    ModelState.AddModelError("Plugin", $"Plugin already exists and is registered in plugin manager cache with name '{name}'.");
-                    return View();
-                }
-
-                // TODO: Handle plugin upload, add to bin/plugins, move Views, etc
-
-                await Task.CompletedTask;
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                ModelState.AddModelError("Plugin", $"Unknown error occurred while uploading plugin.");
-                return View();
-            }
         }
     }
 }

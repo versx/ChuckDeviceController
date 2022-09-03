@@ -12,6 +12,8 @@
     /// </summary>
     public interface IPluginHost
     {
+        #region Properties
+
         /// <summary>
         /// Gets the instantiated <seealso cref="IPlugin"/> type for the
         /// loaded plugin.
@@ -58,6 +60,9 @@
         /// </summary>
         PluginEventHandlers EventHandlers { get; }
 
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Sets the current state of the plugin.
@@ -68,8 +73,16 @@
 
         /// <summary>
         /// Unloads the plugin assembly from the <seealso cref="IPluginAssemblyLoadContext"/>
+        /// then loads it again.
+        /// </summary>
+        void Reload();
+
+        /// <summary>
+        /// Unloads the plugin assembly from the <seealso cref="IPluginAssemblyLoadContext"/>
         /// which effectively stops the plugin and is no longer running or loaded.
         /// </summary>
         void Unload();
+
+        #endregion
     }
 }

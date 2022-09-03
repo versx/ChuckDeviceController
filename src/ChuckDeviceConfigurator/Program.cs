@@ -311,38 +311,40 @@ async void OnPluginHostStateChanged(object? sender, PluginHostStateChangedEventA
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ControllerContext>();
-        {
-            // Get cached plugin state from database
-            var dbPlugin = await context.Plugins.FindAsync(e.PluginHost.Plugin.Name);
-            if (dbPlugin != null)
-            {
-                // Plugin host is cached in database, set previous plugin state,
-                // otherwise set state from param
-                //var isStateSet = state != dbPlugin.State && state != PluginState.Unset;
-                //pluginHost.SetState(isStateSet ? state : dbPlugin.State);
-                e.PluginHost.SetState(dbPlugin.State);
-            }
-            else
-            {
-                // Plugin host is not cached in database. Set current state to plugin
-                // host and add insert into database
-                e.PluginHost.SetState(e.PluginHost.State);
-                dbPlugin = new Plugin
-                {
-                    Name = e.PluginHost.Plugin.Name,
-                    State = e.PluginHost.State,
-                };
-            }
+        var canUpdate = false;
 
-            // Save plugin host to database
-            if (context.Plugins.Any(x => x.Name == e.PluginHost.Plugin.Name))
+        // Get cached plugin state from database
+        var dbPlugin = await context.Plugins.FindAsync(e.PluginHost.Plugin.Name);
+        if (dbPlugin != null)
+        {
+            // Plugin host is cached in database, set previous plugin state,
+            // otherwise set state from param
+            if (dbPlugin.State != e.PluginHost.State)
             {
+                //e.PluginHost.SetState(dbPlugin.State);
+                dbPlugin.State = e.PluginHost.State;
                 context.Plugins.Update(dbPlugin);
+
+                canUpdate = true;
             }
-            else
+        }
+        else
+        {
+            // Plugin host is not cached in database. Set current state to plugin
+            // host and add insert into database
+            dbPlugin = new Plugin
             {
-                await context.Plugins.AddAsync(dbPlugin);
-            }
+                Name = e.PluginHost.Plugin.Name,
+                State = e.PluginHost.State,
+            };
+            await context.Plugins.AddAsync(dbPlugin);
+
+            canUpdate = true;
+        }
+
+        if (canUpdate)
+        {
+            // Save plugin host state to database
             await context.SaveChangesAsync();
         }
     }

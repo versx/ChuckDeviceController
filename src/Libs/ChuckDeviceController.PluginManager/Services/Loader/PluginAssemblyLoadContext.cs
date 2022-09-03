@@ -15,6 +15,7 @@
 
         private readonly AssemblyDependencyResolver _resolver;
         private readonly IPluginDependencyContextProvider _pluginDependencyContextProvider;
+        private bool _loaded = true;
 
         #endregion
 
@@ -24,27 +25,29 @@
 
         public Type PluginType { get; }
 
-        public IEnumerable<Type> HostTypes { get; set; }
+        public IEnumerable<Type> HostTypes { get; internal set; }
 
-        public IEnumerable<string> HostAssemblies { get; set; }
+        public IEnumerable<string> HostAssemblies { get; internal set; }
 
         public IServiceCollection HostServices { get; }
 
         public string HostFramework { get; }
 
-        public IEnumerable<Type> DowngradableHostTypes { get; set; }
+        public IEnumerable<Type> DowngradableHostTypes { get; internal set; }
 
-        public IEnumerable<string> DowngradableHostAssemblies { get; set; }
+        public IEnumerable<string> DowngradableHostAssemblies { get; internal set; }
 
-        public IEnumerable<Type> RemoteTypes { get; set; }
+        public IEnumerable<Type> RemoteTypes { get; internal set; }
 
-        public PluginPlatformVersion PluginPlatformVersion { get; set; }
+        public PluginPlatformVersion PluginPlatformVersion { get; internal set; }
 
-        public IEnumerable<string> AdditionalProbingPaths { get; set; }
+        public IEnumerable<string> AdditionalProbingPaths { get; internal set; }
 
-        public bool IgnorePlatformInconsistencies { get; set; }
+        public bool IgnorePlatformInconsistencies { get; internal set; }
 
         public IPluginDependencyContext DependencyContext { get; }
+
+        public bool IsLoaded => _loaded;
 
         public static PluginAssemblyLoadContext DefaultPluginLoadContext
         (
@@ -82,18 +85,20 @@
             {
                 pluginType,
             };
-            PluginPlatformVersion = PluginPlatformVersion.Create("1.0", RuntimeType.AspNetCoreAll);
+            PluginPlatformVersion = PluginPlatformVersion.Create("6.0.8", RuntimeType.AspNetCoreApp); //Empty();
             AdditionalProbingPaths = new List<string>();
             IgnorePlatformInconsistencies = ignorePlatformInconsistencies;
 
             _resolver = new AssemblyDependencyResolver(pluginPath);
             _pluginDependencyContextProvider = new PluginDependencyContextProvider();
             DependencyContext = _pluginDependencyContextProvider.LoadFromPluginLoadContext(this);
+
+            Unloading += OnUnloading;
         }
 
         #endregion
 
-        #region Public Static Methods
+        #region Public Methods
 
         public static PluginAssemblyLoadContext Create<TPlugin>(string pluginPath, string hostFramework)
         {
@@ -105,6 +110,31 @@
             return loadContext;
         }
 
+        public void Load()
+        {
+            if (!File.Exists(AssemblyFullPath))
+                return;
+
+            if (_loaded)
+                return;
+
+            foreach (var assembly in Assemblies)
+            {
+                var assemblyName = assembly.GetName();
+                Load(assemblyName);
+            }
+        }
+
+        public void Reload()
+        {
+            if (_loaded)
+            {
+                Unload();
+            }
+
+            Load();
+        }
+
         #endregion
 
         #region Protected Overrides
@@ -114,6 +144,8 @@
             var assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
             if (string.IsNullOrEmpty(assemblyPath))
                 return null;
+
+            _loaded = true;
 
             return LoadFromAssemblyPath(assemblyPath);
         }
@@ -128,5 +160,13 @@
         }
 
         #endregion
+
+        private void OnUnloading(AssemblyLoadContext obj)
+        {
+            _loaded = false;
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
     }
 }

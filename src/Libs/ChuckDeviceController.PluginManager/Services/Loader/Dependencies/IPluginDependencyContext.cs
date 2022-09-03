@@ -2,38 +2,41 @@
 {
     public interface IPluginDependencyContext : IDisposable
     {
+        /// <summary>
+        /// Gets or sets the full file path of the assembly.
+        /// </summary>
         string AssemblyFullPath { get; }
 
         /// <summary>
-        /// Host dependencies are detected automatically by reading out the deps.json file
+        /// Host dependencies are detected automatically by reading
+        /// out the deps.json file.
         /// </summary>
-        /// <value></value>
         IEnumerable<HostDependency> HostDependencies { get; }
 
         /// <summary>
-        /// Remote dependencies are specified manually via the AddRemoteType builder
+        /// Remote dependencies are specified manually via the
+        /// AddRemoteType builder.
         /// </summary>
-        /// <value></value>
         IEnumerable<RemoteDependency> RemoteDependencies { get; }
 
         /// <summary>
-        /// Plugin dependencies are detected automatically by reading out the deps.json file
+        /// Plugin dependencies are detected automatically by reading
+        /// out the deps.json file.
         /// </summary>
-        /// <value></value>
         IEnumerable<PluginDependency> PluginDependencies { get; }
 
         /// <summary>
-        /// 
+        /// Plugin resource dependency collection.
         /// </summary>
         IEnumerable<PluginResourceDependency> PluginResourceDependencies { get; }
 
         /// <summary>
-        /// 
+        /// Plugin platform dependency collection.
         /// </summary>
         IEnumerable<PlatformDependency> PlatformDependencies { get; }
 
         /// <summary>
-        /// 
+        /// Additional paths used when discovering dependencies.
         /// </summary>
         IEnumerable<string> AdditionalProbingPaths { get; }
     }

@@ -16,6 +16,10 @@
 
         IPluginManagerOptions Options { get; }
 
+        IServiceCollection Services { get; }
+
+        IWebHostEnvironment WebHostEnv { get; }
+
         #endregion
 
         #region Events
@@ -34,6 +38,8 @@
 
         Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env);
 
+        Task LoadPluginAsync(string filePath);
+
         Task RegisterPluginAsync(PluginHost pluginHost);
 
         Task StopAsync(string pluginName);
@@ -44,7 +50,7 @@
 
         Task ReloadAllAsync();
 
-        Task RemoveAsync(string pluginName);
+        Task RemoveAsync(string pluginName, bool unload = true);
 
         Task RemoveAllAsync();
 

@@ -5,6 +5,7 @@
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Services.Finder;
     using ChuckDeviceController.PluginManager.Services.Loader;
 
@@ -23,7 +24,7 @@
 
         public IAssemblyShim Assembly { get; }
 
-        public IPluginAssemblyLoadContext LoadContext { get; }
+        public IPluginAssemblyLoadContext LoadContext { get; private set; }
 
         public IEnumerable<ServiceDescriptor> PluginServices { get; }
 
@@ -65,6 +66,15 @@
         #endregion
 
         #region Public Methods
+
+        public void Reload()
+        {
+            LoadContext.Unload();
+
+            var entryAssembly = System.Reflection.Assembly.GetEntryAssembly();
+            var hostFramework = entryAssembly?.GetHostFramework();
+            LoadContext = PluginAssemblyLoadContext.Create<IPlugin>(Assembly.AssemblyFullPath, hostFramework);
+        }
 
         public void Unload()
         {

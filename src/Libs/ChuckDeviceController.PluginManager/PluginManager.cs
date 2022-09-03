@@ -27,6 +27,8 @@
             new Logger<IPluginManager>(LoggerFactory.Create(x => x.AddConsole()));
         private static IPluginManager? _instance;
         private static readonly Dictionary<string, IPluginHost> _plugins = new();
+        private IServiceCollection _services;
+        private IWebHostEnvironment _webHostEnv;
 
         #endregion
 
@@ -68,6 +70,10 @@
         public IPluginHost? this[string key] => _plugins?.ContainsKey(key) ?? false
             ? _plugins[key]
             : null;
+
+        public IServiceCollection Services => _services;
+
+        public IWebHostEnvironment WebHostEnv => _webHostEnv;
 
         #endregion
 
@@ -124,6 +130,9 @@
 
         public async Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env)
         {
+            _services = services;
+            _webHostEnv = env;
+
             var rootPluginsDirectory = Options.RootPluginsDirectory;
             var finderOptions = new PluginFinderOptions
             {
@@ -222,6 +231,92 @@
             return services;
         }
 
+        public async Task LoadPluginAsync(string filePath)
+        {
+            var rootPluginsDirectory = Options.RootPluginsDirectory;
+            var finderOptions = new PluginFinderOptions
+            {
+                PluginType = typeof(IPlugin),
+                RootPluginsDirectory = rootPluginsDirectory,
+                ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
+            };
+            var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
+            var pluginFinderResults = pluginFinder.FindPluginInAssembly(filePath);
+
+            var mvcBuilder = _services
+                .AddControllersWithViews()
+                .AddRazorRuntimeCompilation();
+
+            // Load all valid plugin assemblies found in their own AssemblyLoadContext 
+            var pluginAssemblies = pluginFinder.LoadPluginAssemblies(pluginFinderResults);
+            foreach (var result in pluginAssemblies)
+            {
+                if (result.Assembly == null)
+                {
+                    _logger.LogError($"Failed to load assembly for plugin '{result.AssemblyPath}', skipping.");
+                    continue;
+                }
+
+                // Load and activate plugins found by plugin finder
+                var pluginLoader = new PluginLoader<IPlugin>(result, Options.SharedServiceHosts, _services);
+                var loadedPlugins = pluginLoader.LoadedPlugins;
+                if (!loadedPlugins.Any())
+                {
+                    _logger.LogError($"Failed to find any valid plugins in assembly '{result.AssemblyPath}'");
+                    continue;
+                }
+
+                // Register assembly as application part with Mvc
+                //mvcBuilder.AddApplicationPart(result.Assembly);
+
+                // Loop through all loaded plugins and register plugin services and register plugins
+                foreach (var pluginHost in loadedPlugins)
+                {
+                    var pluginType = pluginHost.Plugin.GetType();
+
+                    // Check if plugin is marked with 'StaticFilesLocation' attribute
+                    var staticFilesProvider = pluginType.GetStaticFilesProvider(result.Assembly);
+                    if (staticFilesProvider != default)
+                    {
+                        if (staticFilesProvider.Views != null)
+                        {
+                            _webHostEnv.WebRootFileProvider = new CompositeFileProvider(_webHostEnv.WebRootFileProvider, staticFilesProvider.Views);
+                        }
+                        // Register a new composite file provider containing the old 'wwwroot' file provider
+                        // and our new one. Adding another web root file provider needs to be done before
+                        // the call to 'app.UseStaticFiles'
+                        if (staticFilesProvider.WebRoot != null)
+                        {
+                            _webHostEnv.WebRootFileProvider = new CompositeFileProvider(_webHostEnv.WebRootFileProvider, staticFilesProvider.WebRoot);
+                        }
+                    }
+
+                    // Register any PluginServices found with IServiceCollection
+                    var pluginServices = pluginHost.PluginServices;
+                    if (pluginServices.Any())
+                    {
+                        foreach (var pluginService in pluginServices)
+                        {
+                            // Register found plugin service
+                            _services.Add(pluginService);
+                        }
+                    }
+
+                    // Call plugin's ConfigureServices method to register any services
+                    pluginHost.Plugin.ConfigureServices(_services);
+
+                    // Call plugin's 'ConfigureMvcBuilder' method to allow configuring Mvc
+                    pluginHost.Plugin.ConfigureMvcBuilder(mvcBuilder);
+
+                    // Call plugin's load method
+                    pluginHost.Plugin.OnLoad();
+
+                    // Register plugin host with plugin manager
+                    await RegisterPluginAsync(pluginHost);
+                }
+            }
+        }
+
         public async Task RegisterPluginAsync(PluginHost pluginHost)
         {
             var plugin = pluginHost.Plugin;
@@ -233,13 +328,13 @@
                 if (oldVersion > newVersion)
                 {
                     // Existing is newer
-                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is newer than incoming plugin version, skipping registration...");
+                    _logger.LogWarning($"[{plugin.Name}] Existing plugin version is newer than incoming plugin version, skipping registration...");
                     return;
                 }
                 else if (oldVersion < newVersion)
                 {
                     // Incoming is newer
-                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is newer than incoming plugin version, removing old version and adding new version...");
+                    _logger.LogWarning($"[{plugin.Name}] Existing plugin version is newer than incoming plugin version, removing old version and adding new version...");
 
                     // Remove existing plugin so we can add newer version of plugin
                     await RemoveAsync(plugin.Name);
@@ -247,7 +342,7 @@
                 else
                 {
                     // Plugin versions are the same
-                    _logger.LogWarning($"Existing plugin version with name '{plugin.Name}' is the same version as incoming plugin version, skipping registration...");
+                    _logger.LogWarning($"[{plugin.Name}] Existing plugin version is the same version as incoming plugin version, skipping registration...");
                     return;
                 }
             }
@@ -262,7 +357,7 @@
         {
             if (!_plugins.ContainsKey(pluginName))
             {
-                _logger.LogWarning($"Unable to stop plugin '{pluginName}', no plugin with that name is currently loaded or registered");
+                _logger.LogWarning($"[{pluginName}] Unable to stop plugin, no plugin with that name is currently loaded or registered");
                 return;
             }
 
@@ -290,19 +385,37 @@
         {
             if (!_plugins.ContainsKey(pluginName))
             {
-                _logger.LogWarning($"Unable to reload plugin '{pluginName}', no plugin with that name is currently loaded or registered");
+                _logger.LogWarning($"[{pluginName}] Unable to reload plugin, no plugin with that name is currently loaded or registered");
                 return;
             }
 
-            // TODO: Reload - Remove and add plugin
-
             var pluginHost = _plugins[pluginName];
             var previousState = pluginHost.State;
+
+            // Remove plugin from cache
+            await RemoveAsync(pluginName, unload: false);
+
+            // Reload plugin context by unloading and loading it again
+            pluginHost.Reload();
+
+            // Call plugin 'OnReload' callback handler
             pluginHost.Plugin.OnReload();
+
+            // Set plugin state to running
             pluginHost.SetState(PluginState.Running);
 
+            // Inform host application that the plugin state has changed by
+            // invoking the 'StateChanged' event
             OnPluginHostStateChanged(pluginHost, previousState);
             //await SaveStateAsync(pluginName, PluginState.Running);
+
+            _plugins[pluginName] = pluginHost;
+
+            // Call plugin's load method
+            pluginHost.Plugin.OnLoad();
+
+            // Register plugin host with plugin manager
+            await RegisterPluginAsync((PluginHost)pluginHost);
 
             _logger.LogInformation($"[{pluginName}] Plugin has been reloaded");
             await Task.CompletedTask;
@@ -316,17 +429,21 @@
             }
         }
 
-        public async Task RemoveAsync(string pluginName)
+        public async Task RemoveAsync(string pluginName, bool unload = true)
         {
             if (!_plugins.ContainsKey(pluginName))
             {
-                _logger.LogWarning($"Unable to remove plugin '{pluginName}', no plugin with that name is currently loaded or registered");
+                _logger.LogWarning($"[{pluginName}] Unable to remove plugin, no plugin with that name is currently loaded or registered");
                 return;
             }
 
             var pluginHost = _plugins[pluginName];
             var previousState = pluginHost.State;
-            pluginHost.Unload();
+            if (unload)
+            {
+                pluginHost.Unload();
+            }
+
             pluginHost.Plugin.OnRemove();
             pluginHost.SetState(PluginState.Removed);
             _plugins.Remove(pluginName);
@@ -351,7 +468,7 @@
         {
             if (!_plugins.ContainsKey(pluginName))
             {
-                _logger.LogError($"Failed to set plugin state, plugin with name '{pluginName}' does not exist in cache");
+                _logger.LogError($"[{pluginName}] Failed to set plugin state, plugin does not exist in cache");
                 return;
             }
 
