@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
@@ -30,6 +30,11 @@ using ChuckDeviceController.PluginManager;
 // TODO: Create 'CopyPlugin.sh' script for plugins to execute post build event (.dlls other than CDC libs, Views, wwwroot, .deps.json file, etc)
 // TODO: Show top navbar on mobile when sidebar is closed?
 // TODO: Create separate gRPC server service for all gRPC calls
+
+// TODO: Make 'MaxDatabaseRetry' configurable
+// TODO: Make 'DatabaseRetryIntervalS' configurable
+const int MaxDatabaseRetry = 10;
+const int DatabaseRetryIntervalS = 15;
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
@@ -140,15 +145,23 @@ builder.Services.AddSwaggerGen(options =>
 #region Database Contexts
 
 builder.Services.AddDbContextFactory<ControllerContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<ControllerContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Scoped);
 builder.Services.AddDbContext<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Scoped);
 
 #endregion
+
+MySqlDbContextOptionsBuilder GetMySqlOptions(DbContextOptionsBuilder dbOptions)
+{
+    var options = new MySqlDbContextOptionsBuilder(dbOptions);
+    options.MigrationsAssembly(Strings.AssemblyName);
+    options.EnableRetryOnFailure(MaxDatabaseRetry, TimeSpan.FromSeconds(DatabaseRetryIntervalS), null);
+    return options;
+}
 
 #region Custom Services
 

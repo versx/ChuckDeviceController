@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 using ChuckDeviceController;
 using ChuckDeviceController.Collections.Queues;
@@ -8,6 +9,10 @@ using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
+// TODO: Make 'MaxDatabaseRetry' configurable
+// TODO: Make 'DatabaseRetryIntervalS' configurable
+const int MaxDatabaseRetry = 10;
+const int DatabaseRetryIntervalS = 15;
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
@@ -66,11 +71,11 @@ builder.Services.Configure<ProcessorOptions>(builder.Configuration.GetSection("O
 
 // Register data contexts and factories
 builder.Services.AddDbContextFactory<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<ControllerContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => opt.MigrationsAssembly(Strings.AssemblyName)), ServiceLifetime.Scoped);
+    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Scoped);
 
 #endregion
 
@@ -114,3 +119,11 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+MySqlDbContextOptionsBuilder GetMySqlOptions(DbContextOptionsBuilder dbOptions)
+{
+    var options = new MySqlDbContextOptionsBuilder(dbOptions);
+    options.MigrationsAssembly(Strings.AssemblyName);
+    options.EnableRetryOnFailure(MaxDatabaseRetry, TimeSpan.FromSeconds(DatabaseRetryIntervalS), null);
+    return options;
+}

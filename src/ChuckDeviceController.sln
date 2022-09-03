@@ -67,7 +67,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitBucketAuthProviderPlugin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VisualStudioAuthProviderPlugin", "Plugins\VisualStudioAuthProviderPlugin\VisualStudioAuthProviderPlugin.csproj", "{1E59CE03-59F6-425C-9BBB-4B8C0B6DED29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RequestBenchmarkPlugin", "Plugins\RequestBenchmarkPlugin\RequestBenchmarkPlugin.csproj", "{820042BE-6FB9-469A-95C7-4E0B034EE4B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RequestBenchmarkPlugin", "Plugins\RequestBenchmarkPlugin\RequestBenchmarkPlugin.csproj", "{820042BE-6FB9-469A-95C7-4E0B034EE4B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
