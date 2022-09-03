@@ -18,53 +18,53 @@
         {
             var sortedDropdownItems = item.DropdownItems.ToList();
             sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-            <li class="nav-item">
-                <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(item.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
-                    @Html.Raw(string.IsNullOrEmpty(item.Icon) ? "" : $"<i class='{item.Icon}'></i>")
-                    @item.Text
-                </a>
-                <ul class="collapse list-unstyled" id="@(item.Text)Submenu">
-                    @foreach (var dropdownItem in sortedDropdownItems)
+    <li class="nav-item">
+                            <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(item.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
+                                @Html.Raw(string.IsNullOrEmpty(item.Icon) ? "" : $"<i class='{item.Icon}'></i>")
+                                @item.Text
+                            </a>
+                            <ul class="collapse list-unstyled" id="@(item.Text)Submenu">
+                            @foreach (var dropdownItem in sortedDropdownItems)
+                {
+                    var hasMore = dropdownItem.IsDropdown && dropdownItem.DropdownItems?.Count() > 0;
+                    if (hasMore)
                     {
-                        var hasMore = dropdownItem.IsDropdown && dropdownItem.DropdownItems?.Count() > 0;
-                        if (hasMore)
+                        await AddSidebarItem(dropdownItem);
+                    }
+                    else
+                    {
+                        if (dropdownItem.IsSeparator)
                         {
-                            await AddSidebarItem(dropdownItem);
+                                        <li><hr class="dropdown-divider"></li>
                         }
                         else
                         {
-                            if (dropdownItem.IsSeparator)
-                            {
-                                <li><hr class="dropdown-divider"></li>
-                            }
-                            else
-                            {
-                                <li class="nav-item">
-                                    <a class="dropdown-item @(dropdownItem.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownItem.ControllerName" asp-action="@dropdownItem.ActionName">
-                                        @Html.Raw(string.IsNullOrEmpty(dropdownItem.Icon) ? "" : $"<i class='{dropdownItem.Icon}'></i>")
-                                        @dropdownItem.Text
-                                    </a>
-                                </li>
-                            }
+                                        <li class="nav-item">
+                                            <a class="dropdown-item @(dropdownItem.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownItem.ControllerName" asp-action="@dropdownItem.ActionName">
+                                                @Html.Raw(string.IsNullOrEmpty(dropdownItem.Icon) ? "" : $"<i class='{dropdownItem.Icon}'></i>")
+                                                @dropdownItem.Text
+                                            </a>
+                                        </li>
                         }
                     }
-                </ul>
-            </li>
+                }
+                            </ul>
+    </li>
         }
         else
         {
             if (item?.IsSeparator ?? false)
             {
-                <li><hr class="dropdown-divider"></li>
+    <li><hr class="dropdown-divider"></li>
             }
             else
             {
-                <li class="nav-item">
-                    <a class="@(item.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@item.ControllerName" asp-action="@item.ActionName">
-                        @Html.Raw(string.IsNullOrEmpty(item?.Icon) ? "" : $"<i class='{item.Icon}'></i>")
-                        @item.Text
-                    </a>
-                </li>
+    <li class="nav-item">
+                                <a class="@(item.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@item.ControllerName" asp-action="@item.ActionName">
+                                    @Html.Raw(string.IsNullOrEmpty(item?.Icon) ? "" : $"<i class='{item.Icon}'></i>")
+                                    @item.Text
+                                </a>
+    </li>
             }
         }
     }
@@ -166,15 +166,43 @@
 
 <script>
     // Get current URL path and toggle 'active' class for sidebar and sidebar collapse/expand button
-    const pathname = '/' + window.location.pathname.split('/')[1];
+    const pathname = window.location.pathname;
+    /*
+     * href* - Contains
+     * href^ - Beginning
+     * href$ - Ending
+     * css=button:contains('')
+     */
+
     // Get navbar header based on current path name comparing against anchor reference
     // NOTE: This will highlight multiple navbar headers if multiple have the same href path
-    const navItem = $('#sidebar > ul li.nav-item > a[href="' + pathname + '"]');
-    //const navItem = $('#sidebar > ul li.nav-item > a:contains("' + pathname + '")');
-    if (navItem) {
+    //const navItems = document.querySelectorAll('#sidebar > ul li > a');
+    const navItems = $('#sidebar > ul li > a');
+    for (const item of navItems) {
+        const path = item.pathname;
+        if (item.className.includes('dropdown-toggle')) {
+            continue;
+        }
+        if (pathname.split('/').length >= 3 && pathname.includes(path) && path !== '/') {
+            selectSidebarItem(item);
+        } else {
+            if (pathname === path && path !== '#') {
+                selectSidebarItem(item);
+            }
+        }
+    }
+
+    $('#sidebarCollapse').on('click', function () {
+        // Show/hide sidebar depending on sidebar button state
+        $('#sidebar').toggleClass('active');
+        // Toggle sidebar toggle button icon, i.e. X or menu/sandwich icon
+        $(this).toggleClass('active');
+    });
+
+    function selectSidebarItem(item) {
+        const navItem = $(item);
         // Top level navbar header with no dropdowns
         navItem.addClass('active');
-
         // Get top level navbar 'li' element
         const parent = navItem.parent().parent();
         // Get child anchor 'a' element from top level element
@@ -186,11 +214,4 @@
         // Expand the actual navbar section
         parent.addClass('show');
     }
-
-    $('#sidebarCollapse').on('click', function () {
-        // Show/hide sidebar depending on sidebar button state
-        $('#sidebar').toggleClass('active');
-        // Toggle sidebar toggle button icon, i.e. X or menu/sandwich icon
-        $(this).toggleClass('active');
-    });
 </script>

@@ -27,6 +27,7 @@
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), DefaultMimeType);
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.ContentType.ToString(), DefaultMimeType);
+                client.Timeout = TimeSpan.FromSeconds(30);
                 return await client.GetStringAsync(url);
             }
             catch (Exception ex)

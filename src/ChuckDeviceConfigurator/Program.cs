@@ -23,7 +23,6 @@ using ChuckDeviceController.Data.Contexts;
 using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
-using ChuckDeviceController.Data.Triggers;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager;
 
