@@ -120,7 +120,7 @@ app.MapControllers();
 
 app.Run();
 
-MySqlDbContextOptionsBuilder GetMySqlOptions(DbContextOptionsBuilder dbOptions)
+static MySqlDbContextOptionsBuilder GetMySqlOptions(DbContextOptionsBuilder dbOptions)
 {
     var options = new MySqlDbContextOptionsBuilder(dbOptions);
     options.MigrationsAssembly(Strings.AssemblyName);

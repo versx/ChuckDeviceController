@@ -29,7 +29,6 @@ using ChuckDeviceController.PluginManager;
 
 // TODO: Create 'CopyPlugin.sh' script for plugins to execute post build event (.dlls other than CDC libs, Views, wwwroot, .deps.json file, etc)
 // TODO: Show top navbar on mobile when sidebar is closed?
-// TODO: Create separate gRPC server service for all gRPC calls
 
 // TODO: Make 'MaxDatabaseRetry' configurable
 // TODO: Make 'DatabaseRetryIntervalS' configurable
@@ -91,23 +90,15 @@ builder.WebHost.ConfigureLogging(configure =>
 
 // https://codewithmukesh.com/blog/user-management-in-aspnet-core-mvc/
 builder.Services.AddDbContext<UserIdentityContext>(options =>
-{
-    options.UseMySql(connectionString, serverVersion, opt =>
-    {
-        //opt.MigrationsHistoryTable("migrations");
-        opt.MigrationsAssembly(Strings.AssemblyName);
-    });
-}, ServiceLifetime.Transient);
+    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Transient);
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-{
-    options.SignIn.RequireConfirmedAccount = true;
-})
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole>(options => GetDefaultIdentityOptions())
     .AddEntityFrameworkStores<UserIdentityContext>()
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
-builder.Services.Configure<IdentityOptions>(options => GetDefaultIdentityOptions());
+//builder.Services.AddDistributedMemoryCache();
 
 // Register external 3rd party authentication providers if configured
 builder.Services
@@ -154,14 +145,6 @@ builder.Services.AddDbContext<MapContext>(options =>
     options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Scoped);
 
 #endregion
-
-MySqlDbContextOptionsBuilder GetMySqlOptions(DbContextOptionsBuilder dbOptions)
-{
-    var options = new MySqlDbContextOptionsBuilder(dbOptions);
-    options.MigrationsAssembly(Strings.AssemblyName);
-    options.EnableRetryOnFailure(MaxDatabaseRetry, TimeSpan.FromSeconds(DatabaseRetryIntervalS), null);
-    return options;
-}
 
 #region Custom Services
 
@@ -433,7 +416,7 @@ IdentityOptions GetDefaultIdentityOptions()
         },
         SignIn = new SignInOptions
         {
-            //RequireConfirmedAccount = true,
+            RequireConfirmedAccount = true,
             RequireConfirmedEmail = true,
             //RequireConfirmedPhoneNumber = true,
         },
@@ -441,6 +424,14 @@ IdentityOptions GetDefaultIdentityOptions()
         //options.Stores.ProtectPersonalData = true;
         //options.ClaimsIdentity.EmailClaimType
     };
+    return options;
+}
+
+static MySqlDbContextOptionsBuilder GetMySqlOptions(DbContextOptionsBuilder dbOptions)
+{
+    var options = new MySqlDbContextOptionsBuilder(dbOptions);
+    options.MigrationsAssembly(Strings.AssemblyName);
+    options.EnableRetryOnFailure(MaxDatabaseRetry, TimeSpan.FromSeconds(DatabaseRetryIntervalS), null);
     return options;
 }
 
