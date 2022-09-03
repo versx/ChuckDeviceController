@@ -90,7 +90,7 @@ builder.WebHost.ConfigureLogging(configure =>
 
 // https://codewithmukesh.com/blog/user-management-in-aspnet-core-mvc/
 builder.Services.AddDbContext<UserIdentityContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Transient);
+    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Transient);
 
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options => GetDefaultIdentityOptions())
@@ -136,13 +136,13 @@ builder.Services.AddSwaggerGen(options =>
 #region Database Contexts
 
 builder.Services.AddDbContextFactory<ControllerContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Singleton);
+    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Singleton);
+    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<ControllerContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Scoped);
+    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Scoped);
 builder.Services.AddDbContext<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => GetMySqlOptions(options)), ServiceLifetime.Scoped);
+    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Scoped);
 
 #endregion
 
@@ -424,14 +424,6 @@ IdentityOptions GetDefaultIdentityOptions()
         //options.Stores.ProtectPersonalData = true;
         //options.ClaimsIdentity.EmailClaimType
     };
-    return options;
-}
-
-static MySqlDbContextOptionsBuilder GetMySqlOptions(DbContextOptionsBuilder dbOptions)
-{
-    var options = new MySqlDbContextOptionsBuilder(dbOptions);
-    options.MigrationsAssembly(Strings.AssemblyName);
-    options.EnableRetryOnFailure(MaxDatabaseRetry, TimeSpan.FromSeconds(DatabaseRetryIntervalS), null);
     return options;
 }
 
