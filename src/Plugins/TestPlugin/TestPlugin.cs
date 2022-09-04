@@ -58,7 +58,7 @@
 
         // Interacts with the job controller instance service to add new job
         // controllers.
-        //private readonly IJobControllerServiceHost _jobControllerHost;
+        private readonly IJobControllerServiceHost _jobControllerHost;
 
         // Retrieve data from the database, READONLY.
         // 
@@ -321,7 +321,6 @@
             // Register new sidebar headers
             var pluginSidebarItems = new List<SidebarItem>
             {
-                /*
                 new(
                     // Dropdown header text that is displayed in the sidebar
                     text: "Test",
@@ -336,13 +335,6 @@
                     dropdownItems: new List<SidebarItem>
                     {
                         // Sidebar item #1
-                        new("DropTest", displayIndex: 2, icon: "fa-solid fa-fw fa-hammer", isDropdown: true, dropdownItems: new List<SidebarItem>
-                        {
-                            new("Tester", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<SidebarItem>
-                            {
-                                new("Ok", "Geofence", displayIndex: 1, icon: "fa-solid fa-fw fa-microscope"),
-                            }),
-                        }),
                         new("Page", "Test", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
                         // Sidebar item #2
                         new(
@@ -361,20 +353,6 @@
                         ),
                     }
                 ),
-                new SidebarItem
-                {
-                    Text = "Devices", //"TestNavDropdown",
-                    DisplayIndex = 4,
-                    Icon = "fa-solid fa-fw fa-microscope",
-                    IsDropdown = true,
-                    DropdownItems = new List<SidebarItem>
-                    {
-                        new("Item1", "Device", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt"),
-                        //new("Hmm", isSeparator: true, displayIndex: 3),
-                        new("Item2", "Instance", isDisabled: true, displayIndex: 999, icon: "fa-solid fa-fw fa-cubes-stacked"),
-                    },
-                },
-                */
                 new SidebarItem
                 {
                     Text = "Sep",
@@ -428,52 +406,11 @@
             };
             await _uiHost.AddSettingsPropertiesAsync(settingsTab.Id, settingsProperties);
 
-            // Translate 1 to Bulbasaur
-            var translated = _localeHost.GetPokemonName(1);
-            _loggingHost.LogInformation($"Pokemon: {translated}");
+            TestLocaleHost();
 
-            /*
-            try
-            {
-                // Add/register TestInstanceController
-                var coords = new List<ICoordinate>
-                {
-                    new Coordinate(34.01, -117.01),
-                    new Coordinate(34.02, -117.02),
-                    new Coordinate(34.03, -117.03),
-                };
-                var testController = new TestInstanceController("TestName", 30, 39, coords);
-                await _jobControllerHost.AddJobControllerAsync(testController.Name, testController);
+            TestJobControllerServiceHost();
 
-                // TODO: Show in Instances create/edit page
-            }
-            catch (Exception ex)
-            {
-                _loggingHost.LogException(ex);
-            }
-            */
-
-            try
-            {
-                // Retrieve database entities 
-                var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
-                _loggingHost.LogInformation($"Device: {device?.Uuid}");
-                //var devices = await _databaseHost.GetListAsync<IDevice>();
-                //_loggingHost.LogMessage($"Devices: {devices.Count}");
-
-                //var device = await _databaseHost.Devices.GetByIdAsync("SGV7SE");
-                //_loggingHost.LogMessage($"Device: {device}");
-
-                //var accounts = await _databaseHost.Accounts.GetListAsync();
-                //var accounts = await _databaseHost.GetListAsync<IAccount>();
-                //_loggingHost.LogMessage($"Accounts: {accounts.Count}");
-                //var pokestop = await _databaseHost.GetByIdAsync<IPokestop, string>("0192086043834f1c9c577a54a7890b32.16");
-                //_loggingHost.LogMessage($"Pokestop: {pokestop.Name}");
-            }
-            catch (Exception ex)
-            {
-                _loggingHost.LogError(ex);
-            }
+            TestDatabaseHost();
         }
 
         /// <summary>
@@ -572,6 +509,62 @@
 
             var locale = _configurationHost.GetValue<string>("Locale");
             _loggingHost.LogInformation($"Configuration Locale: {locale}");
+        }
+
+        private async void TestDatabaseHost()
+        {
+            try
+            {
+                // Retrieve database entities 
+                var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
+                _loggingHost.LogInformation($"Device: {device?.Uuid}");
+                //var devices = await _databaseHost.GetListAsync<IDevice>();
+                //_loggingHost.LogMessage($"Devices: {devices.Count}");
+
+                //var device = await _databaseHost.Devices.GetByIdAsync("SGV7SE");
+                //_loggingHost.LogMessage($"Device: {device}");
+
+                //var accounts = await _databaseHost.Accounts.GetListAsync();
+                //var accounts = await _databaseHost.GetListAsync<IAccount>();
+                //_loggingHost.LogMessage($"Accounts: {accounts.Count}");
+                //var pokestop = await _databaseHost.GetByIdAsync<IPokestop, string>("0192086043834f1c9c577a54a7890b32.16");
+                //_loggingHost.LogMessage($"Pokestop: {pokestop.Name}");
+            }
+            catch (Exception ex)
+            {
+                _loggingHost.LogError(ex);
+            }
+        }
+
+        private void TestLocaleHost()
+        {
+            // Translate 1 to Bulbasaur
+            var translated = _localeHost.GetPokemonName(1);
+            _loggingHost.LogInformation($"Pokemon: {translated}");
+        }
+
+        private async void TestJobControllerServiceHost()
+        {
+            try
+            {
+                // Add/register TestInstanceController
+                var coords = new List<ICoordinate>
+                {
+                    new Coordinate(34.01, -117.01),
+                    new Coordinate(34.02, -117.02),
+                    new Coordinate(34.03, -117.03),
+                };
+                var testController = new TestInstanceController("TestName", 30, 39, coords);
+                await _jobControllerHost.AddJobControllerAsync(testController.Name, testController);
+
+                var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
+                await _jobControllerHost.AssignDeviceToJobControllerAsync(device, testController.Name);
+                // TODO: Show in Instances create/edit page
+            }
+            catch (Exception ex)
+            {
+                _loggingHost.LogError(ex);
+            }
         }
 
         #endregion

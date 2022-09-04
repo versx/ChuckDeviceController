@@ -158,7 +158,8 @@
 
             var mvcBuilder = services
                 .AddControllersWithViews()
-                .AddRazorRuntimeCompilation();
+                .AddRazorRuntimeCompilation()
+                .AddSessionStateTempDataProvider();
 
             // Load all valid plugin assemblies found in their own AssemblyLoadContext 
             var pluginAssemblies = pluginFinder.LoadPluginAssemblies(pluginFinderResults);
