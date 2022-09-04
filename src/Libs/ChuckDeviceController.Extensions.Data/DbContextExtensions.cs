@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Data.Extensions
+﻿namespace ChuckDeviceController.Extensions.Data
 {
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;

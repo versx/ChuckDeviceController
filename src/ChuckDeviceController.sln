@@ -69,7 +69,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VisualStudioAuthProviderPlu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RequestBenchmarkPlugin", "Plugins\RequestBenchmarkPlugin\RequestBenchmarkPlugin.csproj", "{820042BE-6FB9-469A-95C7-4E0B034EE4B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Data.Extensions", "Libs\ChuckDeviceController.Data.Extensions\ChuckDeviceController.Data.Extensions.csproj", "{C590B900-2D6D-471A-A131-9FBDE7673525}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Extensions.Data", "Libs\ChuckDeviceController.Extensions.Data\ChuckDeviceController.Extensions.Data.csproj", "{C590B900-2D6D-471A-A131-9FBDE7673525}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

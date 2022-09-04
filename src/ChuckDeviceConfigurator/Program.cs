@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
@@ -22,18 +21,13 @@ using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
 using ChuckDeviceController.Data.Entities;
-using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager;
 
 
 // TODO: Create 'CopyPlugin.sh' script for plugins to execute post build event (.dlls other than CDC libs, Views, wwwroot, .deps.json file, etc)
 // TODO: Show top navbar on mobile when sidebar is closed?
-
-// TODO: Make 'MaxDatabaseRetry' configurable
-// TODO: Make 'DatabaseRetryIntervalS' configurable
-const int MaxDatabaseRetry = 10;
-const int DatabaseRetryIntervalS = 15;
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);

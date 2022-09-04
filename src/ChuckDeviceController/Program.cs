@@ -4,7 +4,7 @@ using ChuckDeviceController;
 using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
-using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
