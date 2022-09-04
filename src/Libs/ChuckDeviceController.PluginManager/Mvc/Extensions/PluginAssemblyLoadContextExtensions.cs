@@ -34,7 +34,9 @@
                IEnumerable<Type>? excludeTypes = null)
         {
             if (!(includeTypes?.Any() ?? false))
-                return loadContext; // short circuit
+            {
+                return loadContext;
+            }
 
             var hostTypes = new List<Type>();
             var chuckServices = hostServices.Where(s => IsChuckService(s.ServiceType));
@@ -82,7 +84,9 @@
         public static PluginAssemblyLoadContext AddHostTypes(this PluginAssemblyLoadContext loadContext, IEnumerable<Type> hostTypes)
         {
             if (!(hostTypes?.Any() ?? false))
-                return loadContext; // short circuit
+            {
+                return loadContext;
+            }
 
             loadContext.HostTypes = new List<Type>(loadContext.HostTypes.Union(hostTypes));
             return loadContext;
@@ -91,7 +95,9 @@
         public static PluginAssemblyLoadContext AddHostAssemblies(this PluginAssemblyLoadContext loadContext, IEnumerable<string> assemblies)
         {
             if (!(assemblies?.Any() ?? false))
-                return loadContext; // short circuit
+            {
+                return loadContext;
+            }
 
             loadContext.HostAssemblies = new List<string>(loadContext.HostAssemblies.Union(assemblies));
             return loadContext;
@@ -100,7 +106,9 @@
         public static PluginAssemblyLoadContext AddRemoteTypes(this PluginAssemblyLoadContext loadContext, IEnumerable<Type> remoteTypes)
         {
             if (!(remoteTypes?.Any() ?? false))
-                return loadContext; // short circuit
+            {
+                return loadContext;
+            }
 
             loadContext.RemoteTypes = new List<Type>(loadContext.RemoteTypes.Union(remoteTypes));
             return loadContext;
@@ -109,7 +117,9 @@
         public static PluginAssemblyLoadContext AddDowngradableHostTypes(this PluginAssemblyLoadContext loadContext, IEnumerable<Type> downgradableHostTypes)
         {
             if (!(downgradableHostTypes?.Any() ?? false))
-                return loadContext; // short circuit
+            {
+                return loadContext;
+            }
 
             loadContext.DowngradableHostTypes = new List<Type>(loadContext.DowngradableHostTypes.Union(downgradableHostTypes));
             return loadContext;
@@ -118,7 +128,9 @@
         public static PluginAssemblyLoadContext AddDowngradableHostAssemblies(this PluginAssemblyLoadContext loadContext, IEnumerable<string> assemblies)
         {
             if (!(assemblies?.Any() ?? false))
-                return loadContext; // short circuit
+            {
+                return loadContext;
+            }
 
             loadContext.DowngradableHostAssemblies = new List<string>(loadContext.DowngradableHostAssemblies.Union(assemblies));
             return loadContext;
@@ -127,7 +139,9 @@
         public static PluginAssemblyLoadContext AddAdditionalProbingPaths(this PluginAssemblyLoadContext loadContext, IEnumerable<string> additionalProbingPaths)
         {
             if (!(additionalProbingPaths?.Any() ?? false))
-                return loadContext; // short circuit
+            {
+                return loadContext;
+            }
 
             loadContext.AdditionalProbingPaths = new List<string>(loadContext.AdditionalProbingPaths.Union(additionalProbingPaths));
             return loadContext;

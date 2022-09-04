@@ -56,8 +56,6 @@
 
         Task SetStateAsync(string pluginName, PluginState state);
 
-        IEnumerable<string> GetPluginFolderNames();
-
         #endregion
     }
 }

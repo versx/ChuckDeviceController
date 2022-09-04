@@ -2,6 +2,7 @@
 {
     using System.Reflection;
 
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.FileProviders;
 
@@ -13,6 +14,20 @@
     {
         private const string DefaultViews = "Views";
         private const string DefaultWebRoot = "wwwroot";
+
+        public static IServiceCollection RegisterPluginServices(this IServiceCollection services, IEnumerable<ServiceDescriptor> pluginServices)
+        {
+            // Register any PluginServices found with IServiceCollection
+            if (!pluginServices.Any())
+                return services;
+
+            foreach (var pluginService in pluginServices)
+            {
+                // Register service found in plugin assembly
+                services.Add(pluginService);
+            }
+            return services;
+        }
 
         public static (IFileProvider? Views, IFileProvider? WebRoot) GetStaticFilesProvider(this Type pluginType, Assembly assembly)
         {
@@ -26,6 +41,26 @@
             var webRootFileProvider = staticFilesAttr.WebRoot.GetFileProviderTypeFromStaticFileProvider(assembly, DefaultWebRoot);
             var result = (viewsFileProvider, webRootFileProvider);
             return result;
+        }
+
+        public static void RegisterStaticFiles(this Type pluginType, IWebHostEnvironment env, Assembly assembly)
+        {
+            var staticFilesProvider = pluginType.GetStaticFilesProvider(assembly);
+            if (staticFilesProvider == default)
+                return;
+
+            if (staticFilesProvider.Views != null)
+            {
+                env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesProvider.Views);
+            }
+
+            // Register a new composite file provider containing the old 'wwwroot' file provider
+            // and our new one. Adding another web root file provider needs to be done before
+            // the call to 'app.UseStaticFiles'
+            if (staticFilesProvider.WebRoot != null)
+            {
+                env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesProvider.WebRoot);
+            }
         }
 
         public static IFileProvider? GetFileProviderTypeFromStaticFileProvider(this StaticFilesLocation location, Assembly assembly, string path)

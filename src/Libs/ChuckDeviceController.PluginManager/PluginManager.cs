@@ -1,11 +1,12 @@
 ﻿namespace ChuckDeviceController.PluginManager
 {
+    using System.Reflection;
+
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc.Razor.Compilation;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.FileProviders;
     using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Common.Data;
@@ -185,50 +186,7 @@
                 mvcBuilder.AddApplicationPart(result.Assembly);
 
                 // Loop through all loaded plugins and register plugin services and register plugins
-                foreach (var pluginHost in loadedPlugins)
-                {
-                    var pluginType = pluginHost.Plugin.GetType();
-
-                    // Check if plugin is marked with 'StaticFilesLocation' attribute
-                    var staticFilesProvider = pluginType.GetStaticFilesProvider(result.Assembly);
-                    if (staticFilesProvider != default)
-                    {
-                        if (staticFilesProvider.Views != null)
-                        {
-                            env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesProvider.Views);
-                        }
-                        // Register a new composite file provider containing the old 'wwwroot' file provider
-                        // and our new one. Adding another web root file provider needs to be done before
-                        // the call to 'app.UseStaticFiles'
-                        if (staticFilesProvider.WebRoot != null)
-                        {
-                            env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesProvider.WebRoot);
-                        }
-                    }
-
-                    // Register any PluginServices found with IServiceCollection
-                    var pluginServices = pluginHost.PluginServices;
-                    if (pluginServices.Any())
-                    {
-                        foreach (var pluginService in pluginServices)
-                        {
-                            // Register found plugin service
-                            services.Add(pluginService);
-                        }
-                    }
-
-                    // Call plugin's ConfigureServices method to register any services
-                    pluginHost.Plugin.ConfigureServices(services);
-
-                    // Call plugin's 'ConfigureMvcBuilder' method to allow configuring Mvc
-                    pluginHost.Plugin.ConfigureMvcBuilder(mvcBuilder);
-
-                    // Call plugin's load method
-                    pluginHost.Plugin.OnLoad();
-
-                    // Register plugin host with plugin manager
-                    await RegisterPluginAsync(pluginHost);
-                }
+                await InitLoadedPluginsAsync(loadedPlugins, result.Assembly, mvcBuilder);
             }
             return services;
         }
@@ -268,54 +226,7 @@
                     continue;
                 }
 
-                // Register assembly as application part with Mvc
-                //mvcBuilder.AddApplicationPart(result.Assembly);
-
-                // Loop through all loaded plugins and register plugin services and register plugins
-                foreach (var pluginHost in loadedPlugins)
-                {
-                    var pluginType = pluginHost.Plugin.GetType();
-
-                    // Check if plugin is marked with 'StaticFilesLocation' attribute
-                    var staticFilesProvider = pluginType.GetStaticFilesProvider(result.Assembly);
-                    if (staticFilesProvider != default)
-                    {
-                        if (staticFilesProvider.Views != null)
-                        {
-                            _webHostEnv.WebRootFileProvider = new CompositeFileProvider(_webHostEnv.WebRootFileProvider, staticFilesProvider.Views);
-                        }
-                        // Register a new composite file provider containing the old 'wwwroot' file provider
-                        // and our new one. Adding another web root file provider needs to be done before
-                        // the call to 'app.UseStaticFiles'
-                        if (staticFilesProvider.WebRoot != null)
-                        {
-                            _webHostEnv.WebRootFileProvider = new CompositeFileProvider(_webHostEnv.WebRootFileProvider, staticFilesProvider.WebRoot);
-                        }
-                    }
-
-                    // Register any PluginServices found with IServiceCollection
-                    var pluginServices = pluginHost.PluginServices;
-                    if (pluginServices.Any())
-                    {
-                        foreach (var pluginService in pluginServices)
-                        {
-                            // Register found plugin service
-                            _services.Add(pluginService);
-                        }
-                    }
-
-                    // Call plugin's ConfigureServices method to register any services
-                    pluginHost.Plugin.ConfigureServices(_services);
-
-                    // Call plugin's 'ConfigureMvcBuilder' method to allow configuring Mvc
-                    pluginHost.Plugin.ConfigureMvcBuilder(mvcBuilder);
-
-                    // Call plugin's load method
-                    pluginHost.Plugin.OnLoad();
-
-                    // Register plugin host with plugin manager
-                    await RegisterPluginAsync(pluginHost);
-                }
+                await InitLoadedPluginsAsync(loadedPlugins, result.Assembly, mvcBuilder);
             }
         }
 
@@ -494,12 +405,35 @@
             await Task.CompletedTask;
         }
 
-        public IEnumerable<string> GetPluginFolderNames()
+        #endregion
+
+        #region Private Methods
+
+        private async Task InitLoadedPluginsAsync(IEnumerable<PluginHost> pluginHosts, Assembly assembly, IMvcBuilder mvcBuilder)
         {
-            var pluginFolderNames = Plugins.Values
-                                           .Select(plugin => Path.GetDirectoryName(plugin.Assembly.AssemblyFullPath))
-                                           .Select(plugin => Path.GetFileName(plugin));
-            return pluginFolderNames;
+            // Loop through all loaded plugins and register plugin services and register plugins
+            foreach (var pluginHost in pluginHosts)
+            {
+                var pluginType = pluginHost.Plugin.GetType();
+
+                // Check if plugin is marked with 'StaticFilesLocation' attribute
+                pluginType.RegisterStaticFiles(_webHostEnv, assembly);
+
+                // Register any PluginServices found with IServiceCollection
+                _services.RegisterPluginServices(pluginHost.PluginServices);
+
+                // Call plugin's ConfigureServices method to register any services
+                pluginHost.Plugin.ConfigureServices(_services);
+
+                // Call plugin's 'ConfigureMvcBuilder' method to allow configuring Mvc
+                pluginHost.Plugin.ConfigureMvcBuilder(mvcBuilder);
+
+                // Call plugin's load method
+                pluginHost.Plugin.OnLoad();
+
+                // Register plugin host with plugin manager
+                await RegisterPluginAsync(pluginHost);
+            }
         }
 
         #endregion
