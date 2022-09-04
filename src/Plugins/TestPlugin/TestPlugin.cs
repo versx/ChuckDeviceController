@@ -112,7 +112,7 @@
         /// <summary>
         /// Gets the current version of the plugin.
         /// </summary>
-        public Version Version => new("1.0.0.0");
+        public Version Version => new(1, 0, 0);
 
         #endregion
 
@@ -167,7 +167,7 @@
         /// </param>
         public void Configure(WebApplication appBuilder)
         {
-            _loggingHost.LogMessage($"Configure called");
+            _loggingHost.LogInformation($"Configure called");
 
             //var testService = appBuilder.Services.GetService<IPluginService>();
 
@@ -177,7 +177,7 @@
             {
                 app.Run(async (httpContext) =>
                 {
-                    _loggingHost.LogMessage($"Plugin route called");
+                    _loggingHost.LogInformation($"Plugin route called");
                     await httpContext.Response.WriteAsync($"Hello from plugin {Name}");
                 });
             });
@@ -203,10 +203,10 @@
             appBuilder.MapPost("example", async (httpContext) =>
             {
                 var body = await httpContext.Request.ReadBodyAsStringAsync();
-                _loggingHost.LogMessage($"Body: {body}");
+                _loggingHost.LogDebug($"Body: {body}");
                 var coords = body?.FromJson<List<Coordinate>>();
                 var response = string.Join(", ", coords ?? new());
-                _loggingHost.LogMessage($"Coords: {response}");
+                _loggingHost.LogDebug($"Coords: {response}");
                 await httpContext.Response.WriteAsync(response);
             });
             //appBuilder.MapPut("example", async (httpContext) => { });
@@ -268,7 +268,7 @@
         /// </param>
         public void ConfigureServices(IServiceCollection services)
         {
-            _loggingHost.LogMessage($"ConfigureServices called");
+            _loggingHost.LogInformation($"ConfigureServices called");
 
             //services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
         }
@@ -281,6 +281,8 @@
         /// </param>
         public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)
         {
+            _loggingHost.LogInformation($"ConfigureMvcBuilder called");
+
             // Configure localization for Views
             mvcBuilder
                 .AddViewLocalization(
@@ -299,7 +301,7 @@
         /// </summary>
         public async void OnLoad()
         {
-            _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
+            _loggingHost.LogInformation($"{Name} v{Version} by {Author} initialized!");
 
             // Execute IFileStorageHost method tests
             TestFileStorageHost();
@@ -428,7 +430,7 @@
 
             // Translate 1 to Bulbasaur
             var translated = _localeHost.GetPokemonName(1);
-            _loggingHost.LogMessage($"Pokemon: {translated}");
+            _loggingHost.LogInformation($"Pokemon: {translated}");
 
             /*
             try
@@ -455,7 +457,7 @@
             {
                 // Retrieve database entities 
                 var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
-                _loggingHost.LogMessage($"Device: {device?.Uuid}");
+                _loggingHost.LogInformation($"Device: {device?.Uuid}");
                 //var devices = await _databaseHost.GetListAsync<IDevice>();
                 //_loggingHost.LogMessage($"Devices: {devices.Count}");
 
@@ -470,7 +472,7 @@
             }
             catch (Exception ex)
             {
-                _loggingHost.LogException(ex);
+                _loggingHost.LogError(ex);
             }
         }
 
@@ -479,19 +481,19 @@
         /// </summary>
         public void OnReload()
         {
-            _loggingHost.LogMessage($"[{Name}] OnReload called");
+            _loggingHost.LogInformation($"[{Name}] OnReload called");
             // TODO: Reload/re-register UI elements that might have been removed
         }
 
         /// <summary>
         ///     Called when the plugin has been stopped by the host application.
         /// </summary>
-        public void OnStop() => _loggingHost.LogMessage($"[{Name}] OnStop called");
+        public void OnStop() => _loggingHost.LogInformation($"[{Name}] OnStop called");
 
         /// <summary>
         ///     Called when the plugin has been removed by the host application.
         /// </summary>
-        public void OnRemove() => _loggingHost.LogMessage($"[{Name}] Onremove called");
+        public void OnRemove() => _loggingHost.LogInformation($"[{Name}] Onremove called");
 
         /// <summary>
         ///     Called when the plugin's state has been
@@ -499,7 +501,7 @@
         /// </summary>
         /// <param name="state">Plugin's current state</param>
         public void OnStateChanged(PluginState state) =>
-            _loggingHost.LogMessage($"[{Name}] Plugin state has changed to '{state}'");
+            _loggingHost.LogInformation($"[{Name}] Plugin state has changed to '{state}'");
 
         #endregion
 
@@ -507,22 +509,22 @@
 
         public void OnStateChanged(DatabaseConnectionState state)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin database connection state has changed: {state}");
+            _loggingHost.LogInformation($"[{Name}] Plugin database connection state has changed: {state}");
         }
 
         public void OnEntityAdded<T>(T entity)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin database entity has been added: {entity}");
+            _loggingHost.LogInformation($"[{Name}] Plugin database entity has been added: {entity}");
         }
 
         public void OnEntityModified<T>(T oldEntity, T newEntity)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin database entity has been modified: {oldEntity}->{newEntity}");
+            _loggingHost.LogInformation($"[{Name}] Plugin database entity has been modified: {oldEntity}->{newEntity}");
         }
 
         public void OnEntityDeleted<T>(T entity)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin database entity has been deleted: {entity}");
+            _loggingHost.LogInformation($"[{Name}] Plugin database entity has been deleted: {entity}");
         }
 
         #endregion
@@ -531,17 +533,17 @@
 
         public void OnClick(ISettingsProperty property)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin setting clicked");
+            _loggingHost.LogInformation($"[{Name}] Plugin setting clicked");
         }
 
         public void OnToggle(ISettingsProperty property)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin setting toggled");
+            _loggingHost.LogInformation($"[{Name}] Plugin setting toggled");
         }
 
         public void OnSave(ISettingsProperty property)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin setting saved");
+            _loggingHost.LogInformation($"[{Name}] Plugin setting saved");
         }
 
         #endregion
@@ -554,11 +556,11 @@
 
             // Load dependencies config for plugin
             var fileData = _fileStorageHost.Load<DependenciesConfig>("", fileName);
-            _loggingHost.LogMessage($"Loaded file data from '{fileName}': {fileData}");
+            _loggingHost.LogInformation($"Loaded file data from '{fileName}': {fileData}");
 
             // Save dependencies config to new folder 'configs' in this plugins folder
             var fileSaveResult = _fileStorageHost.Save(fileData, "configs", fileName);
-            _loggingHost.LogMessage($"Saved file data for '{fileName}': {fileSaveResult}");
+            _loggingHost.LogInformation($"Saved file data for '{fileName}': {fileSaveResult}");
         }
 
         private void TestConfigurationHost()
@@ -566,10 +568,10 @@
             //var config = _configurationProviderHost.GetConfiguration<Dictionary<string, string>>(sectionName: "ConnectionStrings");
             var config = _configurationHost.GetConfiguration();
             var value = _configurationHost.GetValue<bool>("Enabled", sectionName: "Authentication:GitHub");
-            _loggingHost.LogMessage($"Configuration: {config}, Value: {value}");
+            _loggingHost.LogInformation($"Configuration: {config}, Value: {value}");
 
             var locale = _configurationHost.GetValue<string>("Locale");
-            _loggingHost.LogMessage($"Configuration Locale: {locale}");
+            _loggingHost.LogInformation($"Configuration Locale: {locale}");
         }
 
         #endregion

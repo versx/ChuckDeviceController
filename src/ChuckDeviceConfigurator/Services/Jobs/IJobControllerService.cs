@@ -26,6 +26,8 @@
 
         #endregion
 
+        #region Public
+
         /// <summary>
         /// Starts the <see cref="IJobControllerService"/>.
         /// </summary>
@@ -35,6 +37,8 @@
         /// Stops the <see cref="IJobControllerService"/>.
         /// </summary>
         void Stop();
+
+        #endregion
 
         #region Instances
 
@@ -126,7 +130,7 @@
         /// Instance name to retrieve assigned devices from.
         /// </param>
         /// <returns>Returns a list of device UUIDs assigned to instance.</returns>
-        List<string> GetDeviceUuidsInInstance(string instanceName);
+        IEnumerable<string> GetDeviceUuidsInInstance(string instanceName);
 
         #endregion
 

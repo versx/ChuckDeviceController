@@ -88,8 +88,8 @@ builder.Services.AddDbContext<UserIdentityContext>(options =>
 
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options => GetDefaultIdentityOptions())
-    .AddEntityFrameworkStores<UserIdentityContext>()
     .AddDefaultUI()
+    .AddEntityFrameworkStores<UserIdentityContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddMemoryCache(options =>
@@ -184,7 +184,7 @@ var jobControllerService = new JobControllerService(
 );
 var uiHost = new UiHost();
 var databaseHost = new DatabaseHost(new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole())), connectionString);
-var loggingHost = new LoggingHost(new Logger<ILoggingHost>(LoggerFactory.Create(x => x.AddConsole())));
+var loggingHost = new LoggingHost();
 var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
 var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);

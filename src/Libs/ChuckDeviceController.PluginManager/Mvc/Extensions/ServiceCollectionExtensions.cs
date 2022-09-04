@@ -279,9 +279,14 @@
             return result.ToArray();
         }
 
+        /// <summary>
+        /// Grab a list of all public constructors in the class, starting with the constructor
+        /// with most parameters.
+        /// </summary>
+        /// <param name="type">Generic type to retrieve constructors from.</param>
+        /// <returns>Returns a list of constructors found in the generic type.</returns>
         public static IEnumerable<ConstructorInfo> GetPluginConstructors(this Type type)
         {
-            // Grab a list of all constructors in the class, start with the one with most parameters
             var constructors = type
                 .GetConstructors()
                 .Where(c => c.IsPublic && !c.IsStatic)// && c.GetParameters().Length > 0)
@@ -296,7 +301,8 @@
         /// <typeparam name="T">Type of class instance being sought</typeparam>
         /// <param name="services"></param>
         /// <returns>Instance of type T if found within the service collection, otherwise null</returns>
-        public static T? GetServiceInstance<T>(this IServiceCollection services) where T : class
+        public static T? GetServiceInstance<T>(this IServiceCollection services)
+            where T : class
         {
             if (services == null)
             {
@@ -306,7 +312,8 @@
             return GetClassImplementation<T>(services, typeof(T));
         }
 
-        private static T? GetClassImplementation<T>(IServiceCollection services, Type classType) where T : class
+        private static T? GetClassImplementation<T>(IServiceCollection services, Type classType)
+            where T : class
         {
             var sd = services
                 .Where(sd => GetNameWithoutGenericArity(sd.ServiceType).Equals(GetNameWithoutGenericArity(classType)))
@@ -358,13 +365,16 @@
             var constructors = type.GetPluginConstructors();
             foreach (var constructor in constructors)
             {
-                foreach (var param in constructor.GetParameters())
+                var parameters = constructor.GetParameters();
+                foreach (var param in parameters)
                 {
-                    var paramClass = GetClassImplementation<object>(services, param.ParameterType);
+                    //if (param.ParameterType == typeof(IServiceProvider))
+                    //    continue;
 
-                    // If we did not find a specific param type for this constructor, try the next constructor
+                    var paramClass = GetClassImplementation<object>(services, param.ParameterType);
                     if (paramClass == null)
                     {
+                        // If we did not find a specific param type for this constructor, try the next constructor
                         result.Clear();
                         break;
                     }

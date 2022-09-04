@@ -26,7 +26,7 @@ namespace RequestBenchmarkPlugin
 
         public string Author => "versx";
 
-        public Version Version => new("1.0.0.0");
+        public Version Version => new(1, 0, 0);
 
         #endregion
 

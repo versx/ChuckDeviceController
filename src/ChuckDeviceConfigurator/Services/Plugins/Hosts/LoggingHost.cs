@@ -6,28 +6,49 @@
     {
         private readonly ILogger<ILoggingHost> _logger;
 
-        public LoggingHost(ILogger<ILoggingHost> logger)
+        public LoggingHost()
         {
-            _logger = logger;
+            _logger = new Logger<ILoggingHost>(LoggerFactory.Create(x => x.AddConsole()));
         }
 
-        public void LogException(Exception ex)
+        public void LogTrace(string message, params object?[] args)
         {
-            if (_logger == null)
-                return;
-
-            _logger.LogError($"----------------------- Exception occurred from plugin: {ex}");
+            _logger.LogTrace(message, args);
         }
 
-        public void LogMessage(string text, params object[] args)
+        public void LogInformation(string message, params object?[] args)
         {
-            if (_logger == null)
-                return;
+            _logger.LogInformation(message, args);
+        }
 
-            var message = args.Length > 0
-                ? string.Format(text, args)
-                : text;
-            _logger.LogInformation($"----------------------- Message from plugin: {message}");
+        public void LogDebug(string message, params object?[] args)
+        {
+            _logger.LogDebug(message, args);
+        }
+
+        public void LogWarning(string message, params object?[] args)
+        {
+            _logger.LogWarning(message, args);
+        }
+
+        public void LogError(string message, params object?[] args)
+        {
+            _logger.LogError(message, args);
+        }
+
+        public void LogError(Exception error, string? message = null, params object?[] args)
+        {
+            _logger.LogError(error, message, args);
+        }
+
+        public void LogCritical(string message, params object?[] args)
+        {
+            _logger.LogError(message, args);
+        }
+
+        public void LogCritical(Exception error, string? message = null, params object?[] args)
+        {
+            _logger.LogError(error, message, args);
         }
     }
 }

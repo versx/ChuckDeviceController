@@ -466,6 +466,9 @@
             lock (_instancesLock)
             {
                 var jobController = GetInstanceControllerByName(instanceName);
+                if (jobController == null)
+                    return queue;
+
                 if (jobController is IvInstanceController ivController)
                 {
                     queue = (List<T>)ivController.GetQueue();
@@ -483,6 +486,9 @@
             lock (_instancesLock)
             {
                 var jobController = GetInstanceControllerByName(instanceName);
+                if (jobController == null)
+                    return;
+
                 if (jobController is IvInstanceController ivController)
                 {
                     ivController.RemoveFromQueue(id);
@@ -499,6 +505,9 @@
             lock (_instancesLock)
             {
                 var jobController = GetInstanceControllerByName(instanceName);
+                if (jobController == null)
+                    return;
+
                 if (jobController is IvInstanceController ivController)
                 {
                     ivController.ClearQueue();
@@ -602,7 +611,7 @@
             _assignmentService.Reload();
         }
 
-        public List<string> GetDeviceUuidsInInstance(string instanceName)
+        public IEnumerable<string> GetDeviceUuidsInInstance(string instanceName)
         {
             var uuids = new List<string>();
             lock (_devicesLock)

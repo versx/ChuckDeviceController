@@ -5,18 +5,20 @@
     /// </summary>
     public interface ILoggingHost
     {
-        /// <summary>
-        /// Log a message to the host application.
-        /// </summary>
-        /// <param name="text">Formatted log message string.</param>
-        /// <param name="args">Arguments to parse with log message.</param>
-        void LogMessage(string text, params object[] args);
+        void LogTrace(string message, params object?[] args);
 
-        /// <summary>
-        /// Log an exception that has been thrown to the
-        /// host application.
-        /// </summary>
-        /// <param name="ex">Exception that was thrown.</param>
-        void LogException(Exception ex);
+        void LogInformation(string message, params object?[] args);
+
+        void LogDebug(string message, params object?[] args);
+
+        void LogWarning(string message, params object?[] args);
+
+        void LogError(string message, params object?[] args);
+
+        void LogError(Exception error, string? message = null, params object?[] args);
+
+        void LogCritical(string message, params object?[] args);
+
+        void LogCritical(Exception error, string? message = null, params object?[] args);
     }
 }

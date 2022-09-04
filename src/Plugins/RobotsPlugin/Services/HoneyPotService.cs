@@ -33,7 +33,7 @@
         public void OnTriggered(string ipAddress, string userAgent)
         {
             // Log to honeypot.txt file in root of plugin's folder
-            _loggingHost.LogMessage($"Honey pot triggered by web crawler bot: {ipAddress} - {userAgent}");
+            _loggingHost.LogInformation($"Honey pot triggered by web crawler bot: {ipAddress} - {userAgent}");
 
             // Check if throws error when not found
             var log = _fileStorageHost.Load<List<HoneyPotEvent>>(DefaultLogFolderName, DefaultLogFileName);

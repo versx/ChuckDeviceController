@@ -67,7 +67,7 @@
             }
 
             var devices = _jobControllerService.GetDeviceUuidsInInstance(jobController.Name);
-            if ((devices?.Count ?? 0) == 0)
+            if (!(devices?.Any() ?? false))
             {
                 _logger.LogWarning($"[{jobController.Name}] Job controller instance does not have any devices assigned to it, unable to complete ScanNext API request");
                 return new JsonResult(new BadRequestResult());
