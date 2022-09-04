@@ -98,6 +98,10 @@ builder.Services
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = long.MaxValue;
+});
 //builder.Services.AddDistributedMemoryCache();
 
 // Register external 3rd party authentication providers if configured

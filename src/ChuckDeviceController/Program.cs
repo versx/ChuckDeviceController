@@ -81,6 +81,7 @@ builder.Services.AddMemoryCache(options =>
     // TODO: Make 'CacheSizeLimit' configurable
     options.SizeLimit = 100;
 });
+//builder.Services.AddDistributedMemoryCache();
 
 #region Hosted Services
 
