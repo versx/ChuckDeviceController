@@ -45,6 +45,7 @@
         public static IPluginManager InstanceWithOptions(
             IPluginManagerOptions options,
             IConfiguration? configuration = null,
+            IServiceCollection? services = null,
             IReadOnlyDictionary<Type, object>? sharedServiceHosts = null)
         {
             if (_instance == null)
@@ -52,8 +53,9 @@
                 _instance = new PluginManager(options ?? new PluginManagerOptions
                 {
                     RootPluginsDirectory = DefaultPluginsFolder,
-                    SharedServiceHosts = sharedServiceHosts,
                     Configuration = configuration,
+                    Services = services,
+                    SharedServiceHosts = sharedServiceHosts,
                 });
             }
             return _instance;
@@ -112,19 +114,19 @@
 
         public void Configure(WebApplication app)
         {
-            try
+            foreach (var (pluginName, plugin) in Plugins)
             {
-                foreach (var (_, plugin) in Plugins)
+                try
                 {
                     // Call 'Configure(IApplicationBuilder)' event handler for each plugin
                     plugin.Plugin.Configure(app);
 
                     // TODO: Call Plugin.OnLoad() here instead of from ServiceCollectionExtensions
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while calling the 'Configure(IApplicationBuilder)' method in plugins.");
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"An error occurred while calling the 'Configure(IApplicationBuilder)' method for plugin '{pluginName}'.");
+                }
             }
         }
 

@@ -10,9 +10,10 @@
     {
         #region Variables
 
-        private readonly ILogger<IUiHost> _logger;
-        // TODO: Index dictionaries by plugin name i.e. Dictionary<string, Dictionary<string, Interface>>
-        //private static readonly PluginUiCache<NavbarHeader> _navbarHeaders = new();
+        private static readonly ILogger<IUiHost> _logger =
+            new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConsole()));
+        // TODO: Index dictionaries by plugin name using PluginUiCache
+        //private static readonly PluginUiCache<SidebarItem> _sidebarItems = new();
         //private static readonly PluginUiCache<IDashboardStatsItem> _dashboardStats = new();
         //private static readonly PluginUiCache<IDashboardTile> _dashboardTiles = new();
         private static readonly Dictionary<string, SidebarItem> _sidebarItems = new();
@@ -39,14 +40,17 @@
 
         #region Constructor
 
-        public UiHost(ILogger<IUiHost> logger)
+        public UiHost()
         {
-            _logger = logger;
+            // Load host applications default sidebar nav headers
+            Task.Run(async () => await LoadDefaultUiAsync());
         }
 
         #endregion
 
         #region Public Methods
+
+        #region Sidebar
 
         public async Task AddSidebarItemsAsync(IEnumerable<SidebarItem> items)
         {
@@ -84,6 +88,10 @@
             _sidebarItems[item.Text].DropdownItems = newDropdownItems;
             await Task.CompletedTask;
         }
+
+        #endregion
+
+        #region Dashboard Statistics
 
         public async Task AddDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats)
         {
@@ -126,6 +134,10 @@
             await Task.CompletedTask;
         }
 
+        #endregion
+
+        #region Dashboard Tiles
+
         public async Task AddDashboardTileAsync(IDashboardTile tile)
         {
             if (_dashboardTiles.ContainsKey(tile.Text))
@@ -145,6 +157,10 @@
                 await AddDashboardTileAsync(tile);
             }
         }
+
+        #endregion
+
+        #region Settings
 
         public async Task AddSettingsTabAsync(SettingsTab tab)
         {
@@ -190,7 +206,11 @@
 
         #endregion
 
-        internal async Task LoadDefaultUiAsync()
+        #endregion
+
+        #region Private Methods
+
+        private async Task LoadDefaultUiAsync()
         {
             var sidebarItems = new List<SidebarItem>
             {
@@ -245,5 +265,7 @@
             };
             await AddSettingsPropertiesAsync(settingsTab.Id, settingsTabProperties);
         }
+
+        #endregion
     }
 }

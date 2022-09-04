@@ -90,7 +90,7 @@ builder.WebHost.ConfigureLogging(configure =>
 
 // https://codewithmukesh.com/blog/user-management-in-aspnet-core-mvc/
 builder.Services.AddDbContext<UserIdentityContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Transient);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Transient);
 
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options => GetDefaultIdentityOptions())
@@ -136,13 +136,13 @@ builder.Services.AddSwaggerGen(options =>
 #region Database Contexts
 
 builder.Services.AddDbContextFactory<ControllerContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<ControllerContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Scoped);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
 builder.Services.AddDbContext<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Scoped);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
 
 #endregion
 
@@ -175,32 +175,28 @@ builder.Services.AddGrpc(options =>
 
 // Register plugin host handlers
 var jobControllerService = new JobControllerService(
-    new Logger<IJobControllerService>(LoggerFactory.Create(x => x.AddConsole())),
     null,
     null,
-    null,
+    TimeZoneService.Instance,
     null,
     null,
     null,
     null,
     null
 );
-var uiHost = new UiHost(new Logger<IUiHost>(LoggerFactory.Create(x => x.AddConsole())));
+var uiHost = new UiHost();
 var databaseHost = new DatabaseHost(new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole())), connectionString);
 var loggingHost = new LoggingHost(new Logger<ILoggingHost>(LoggerFactory.Create(x => x.AddConsole())));
 var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
 var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
-builder.Services.AddSingleton<ILoggingHost>(loggingHost);
-builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
-builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
-builder.Services.AddSingleton<IUiHost>(uiHost);
-builder.Services.AddSingleton<IFileStorageHost>(fileStorageHost);
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
+builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
+builder.Services.AddSingleton<IFileStorageHost>(fileStorageHost);
+builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
+builder.Services.AddSingleton<ILoggingHost>(loggingHost);
+builder.Services.AddSingleton<IUiHost>(uiHost);
 
 builder.Services.AddHttpContextAccessor();
-
-// Load host applications default sidebar nav headers
-await uiHost.LoadDefaultUiAsync();
 
 // TODO: Use builder.Services registered instead of 'sharedServiceHosts'
 var sharedServiceHosts = new Dictionary<Type, object>
@@ -220,6 +216,7 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 {
     Configuration = builder.Configuration,
     RootPluginsDirectory = Strings.PluginsFolder,
+    Services = builder.Services,
     SharedServiceHosts = sharedServiceHosts,
 });
 

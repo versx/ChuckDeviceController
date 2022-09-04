@@ -32,5 +32,11 @@
                 logger.LogError(ex, $"An error occurred while migrating the database context: {typeof(TDbContext).Name}");
             }
         }
+
+        public static DbContextOptionsBuilder GetDbContextOptions(this DbContextOptionsBuilder options, string connectionString, ServerVersion serverVersion, string assemblyName)
+        {
+            options.UseMySql(connectionString, serverVersion, opt => opt.GetMySqlOptions(assemblyName));
+            return options;
+        }
     }
 }

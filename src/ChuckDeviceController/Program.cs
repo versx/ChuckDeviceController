@@ -68,11 +68,11 @@ builder.Services.Configure<ProcessorOptions>(builder.Configuration.GetSection("O
 
 // Register data contexts and factories
 builder.Services.AddDbContextFactory<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<MapContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Singleton);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<ControllerContext>(options =>
-    options.UseMySql(connectionString, serverVersion, opt => options.GetMySqlOptions(Strings.AssemblyName)), ServiceLifetime.Scoped);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
 
 #endregion
 

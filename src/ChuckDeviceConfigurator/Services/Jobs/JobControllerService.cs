@@ -29,7 +29,8 @@
     {
         #region Variables
 
-        private readonly ILogger<IJobControllerService> _logger;
+        private static readonly ILogger<IJobControllerService> _logger =
+            new Logger<IJobControllerService>(LoggerFactory.Create(x => x.AddConsole()));
         private readonly IDbContextFactory<ControllerContext> _deviceFactory;
         private readonly IDbContextFactory<MapContext> _mapFactory;
         private readonly ITimeZoneService _timeZoneService;
@@ -66,7 +67,6 @@
         #region Constructor
 
         public JobControllerService(
-            ILogger<IJobControllerService> logger,
             IDbContextFactory<ControllerContext> deviceFactory,
             IDbContextFactory<MapContext> mapFactory,
             ITimeZoneService timeZoneService,
@@ -76,7 +76,6 @@
             IRouteCalculator routeCalculator,
             IAssignmentControllerService assignmentService)
         {
-            _logger = logger;
             _deviceFactory = deviceFactory;
             _mapFactory = mapFactory;
             _timeZoneService = timeZoneService;
