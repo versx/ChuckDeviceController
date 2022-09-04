@@ -79,6 +79,8 @@
         // All
         public const ushort DefaultMinimumLevel = 0;
         public const ushort DefaultMaximumLevel = 29;
+        public const string DefaultAccountGroup = null;
+        public const bool DefaultIsEvent = false;
 
         // Circle/Dynamic/Bootstrap
         public const CircleInstanceRouteType DefaultCircleRouteType = CircleInstanceRouteType.Smart;
@@ -115,9 +117,8 @@
         public const bool DefaultStoreLevelingData = false;
         public const string DefaultStartingCoordinate = null;
 
-        // All
-        public const string DefaultAccountGroup = null;
-        public const bool DefaultIsEvent = false;
+        // Custom
+        public const string DefaultCustomInstanceType = null;
 
         #endregion
 

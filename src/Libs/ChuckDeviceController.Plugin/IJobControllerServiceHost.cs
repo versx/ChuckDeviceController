@@ -14,18 +14,27 @@
         //IReadOnlyDictionary<string, IJobController> Instances { get; }
 
         /// <summary>
+        /// Gets a list of all registered custom job controller instance types.
+        /// </summary>
+        IReadOnlyList<string> CustomInstanceTypes { get; }
+
+
+        /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="customInstanceType"></param>
-        /// <param name="controller"></param>
-        Task AddJobControllerAsync(string customInstanceType, IJobController controller); // TODO: Rename to RegisterJobControllerAsync
+        /// <param name="factory"></param>
+        /// <returns></returns>
+        Task RegisterJobControllerAsync<T>(string customInstanceType, Func<IInstance, T> factory)
+            where T : IJobController;
 
         /// <summary>
         /// Assigns the specified device to a specific job controller
         /// instance by name.
         /// </summary>
         /// <param name="device">Device entity.</param>
-        /// <param name="jobControllerName">Job controller instance name.</param>
-        Task AssignDeviceToJobControllerAsync(IDevice device, string jobControllerName);
+        /// <param name="instanceName">Job controller instance name.</param>
+        Task AssignDeviceToJobControllerAsync(IDevice device, string instanceName);
     }
 }

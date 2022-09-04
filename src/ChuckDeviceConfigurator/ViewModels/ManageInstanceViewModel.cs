@@ -3,7 +3,6 @@
     using System.ComponentModel;
 
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Entities;
 
     public class ManageInstanceViewModel
     {
@@ -118,5 +117,10 @@
 
         [DisplayName("Is Unique Event")]
         public bool IsEvent { get; set; } = Strings.DefaultIsEvent;
+
+
+        // Custom
+        [DisplayName("Custom Instance Type")]
+        public string? CustomInstanceType { get; set; } = "custom";
     }
 }

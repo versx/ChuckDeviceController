@@ -60,11 +60,13 @@
         public string? DeviceCount { get; set; }
 
         [
-
             DisplayName("Status"),
             NotMapped,
         ]
         public string? Status { get; set; }
+
+        [NotMapped]
+        IInstanceData IInstance.Data => Data;
 
         #endregion
 

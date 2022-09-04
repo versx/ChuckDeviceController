@@ -12,12 +12,16 @@
 
         List<string> Geofences { get; }
 
-        // TODO: IInstanceData Data { get; }
+        IInstanceData Data { get; }
     }
 
     public interface IInstanceData
     {
         // TODO: IInstanceData properties
         string? CustomInstanceType { get; }
+
+        string? AccountGroup { get; }
+
+        bool? IsEvent { get; }
     }
 }

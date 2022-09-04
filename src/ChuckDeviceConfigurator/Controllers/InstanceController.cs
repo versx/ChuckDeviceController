@@ -113,6 +113,7 @@
             };
 
             var geofences = _context.Geofences.ToList();
+            ViewBag.CustomInstanceTypes = _jobControllerService.CustomInstanceTypes;
             ViewBag.Devices = _context.Devices.ToList();
             ViewBag.Geofences = geofences;
             ViewBag.GeofencesJson = geofences.ToJson();
@@ -194,6 +195,7 @@
             };
 
             var geofences = _context.Geofences.ToList();
+            ViewBag.CustomInstanceTypes = _jobControllerService.CustomInstanceTypes;
             ViewBag.Devices = _context.Devices.ToList();
             ViewBag.Geofences = geofences;
             ViewBag.GeofencesJson = geofences.ToJson();
@@ -558,6 +560,8 @@
                 LevelingRadius = model?.LevelingRadius ?? Strings.DefaultLevelingRadius,
                 StoreLevelingData = model?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
                 StartingCoordinate = model?.StartingCoordinate ?? Strings.DefaultStartingCoordinate,
+
+                CustomInstanceType = model?.CustomInstanceType ?? Strings.DefaultCustomInstanceType,
             };
             return instanceData;
         }
@@ -605,6 +609,9 @@
                 LevelingRadius = data?.LevelingRadius ?? Strings.DefaultLevelingRadius,
                 StoreLevelingData = data?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
                 StartingCoordinate = data?.StartingCoordinate ?? Strings.DefaultStartingCoordinate,
+
+                // Custom
+                CustomInstanceType = data?.CustomInstanceType ?? Strings.DefaultCustomInstanceType,
             };
             return instanceDataModel;
         }

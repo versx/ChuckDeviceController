@@ -20,7 +20,6 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
-    using ChuckDeviceController.Plugin;
 
     // TODO: Refactor class into separate smaller classes
     // TODO: Refactor to accommodate instances/job controllers from plugins
@@ -42,7 +41,7 @@
 
         private static readonly Dictionary<string, Device> _devices = new();
         private static readonly Dictionary<string, IJobController> _instances = new();
-        private static readonly Dictionary<string, IJobController> _pluginInstances = new();
+        private static readonly Dictionary<string, Func<IInstance, IJobController>> _pluginInstances = new();
 
         private readonly object _devicesLock = new();
         private readonly object _instancesLock = new();
@@ -61,6 +60,11 @@
         /// Gets a dictionary of all loaded job controller instances.
         /// </summary>
         public IReadOnlyDictionary<string, IJobController> Instances => _instances;
+
+        /// <summary>
+        /// Gets a list of all registered custom job controller instance types.
+        /// </summary>
+        public IReadOnlyList<string> CustomInstanceTypes => _pluginInstances.Keys.ToList();
 
         #endregion
 
@@ -139,34 +143,27 @@
 
         #region Plugin Host
 
-        // Set InstanceData.custom_instance_type to plugin instance/job controller type name
-
-        public async Task CreateInstanceTypeAsync(IInstanceCreationOptions options)
+        public async Task CreateInstanceTypeAsync(IInstance options)
         {
-            // TODO: Allow plugins to create instances to link with job controllers, that way they are easily used via the UI
+            // Allow plugins to create instances to link with job controllers, that way they are easily used via the UI
             var instance = new Instance
             {
                 Name = options.Name,
-                // TODO: When InstanceType.Custom selected via UI - maybe show a separate select listing available job controllers from plugins (add InstanceData property for 'custom_instance_name' or something)
                 Type = InstanceType.Custom,
                 MinimumLevel = options.MinimumLevel,
                 MaximumLevel = options.MaximumLevel,
                 Geofences = options.Geofences,
                 Data = new InstanceData
                 {
-                    AccountGroup = options.GroupName,
-                    IsEvent = options.IsEvent,
+                    AccountGroup = options.Data.AccountGroup,
+                    IsEvent = options.Data.IsEvent,
                     CustomInstanceType = options.Data.CustomInstanceType,
                     // TODO: Allow for custom instance data properties
                 },
             };
 
-            // TODO: Add to database?
-            // TODO: Allow geofence creation/assignment?
-
             using (var context = _deviceFactory.CreateDbContext())
             {
-                // TODO: Check if InstanceType.Custom and custom_instance_type
                 if (context.Instances.Any(i => i.Name == instance.Name))
                 {
                     context.Instances.Update(instance);
@@ -181,18 +178,18 @@
             await AddInstanceAsync(instance);
         }
 
-        public async Task AddJobControllerAsync(string customInstanceType, IJobController jobController)
+        public async Task RegisterJobControllerAsync<T>(string customInstanceType, Func<IInstance, T> factory)
+            where T : IJobController
         {
-            // Instance of name use InstanceData.custom_instance_type
             if (string.IsNullOrEmpty(customInstanceType))
             {
                 _logger.LogError($"Job controller type cannot be null, skipping job controller registration...");
                 return;
             }
 
-            if (jobController == null)
+            if (factory == null)
             {
-                _logger.LogError($"[{customInstanceType}] Unable to instantiate job controller instance.");
+                _logger.LogError($"Job controller instance factory must be provided, unable to register job controller type '{customInstanceType}'");
                 return;
             }
 
@@ -200,7 +197,13 @@
             {
                 if (!_pluginInstances.ContainsKey(customInstanceType))
                 {
-                    _pluginInstances.Add(customInstanceType, jobController);
+                    if (factory is not Func<IInstance, IJobController> jobControllerFactory)
+                    {
+                        _logger.LogError($"Job controller instance factory must be provided for type '{customInstanceType}'");
+                        return;
+                    }
+
+                    _pluginInstances.Add(customInstanceType, jobControllerFactory);
                     _logger.LogInformation($"Successfully added job controller '{customInstanceType}' to plugin job controllers cache from plugin");
                 }
             }
@@ -208,14 +211,13 @@
             await Task.CompletedTask;
         }
 
-        public async Task AssignDeviceToJobControllerAsync(IDevice device, string jobControllerName) // string instanceName
+        public async Task AssignDeviceToJobControllerAsync(IDevice device, string instanceName)
         {
             lock (_pluginInstancesLock)
             {
-                //if (!_pluginInstances.ContainsKey(jobControllerName))
-                if (!_instances.ContainsKey(jobControllerName))
+                if (!_instances.ContainsKey(instanceName))
                 {
-                    _logger.LogError($"Job controller instance with name '{jobControllerName}' does not exist, unable to assign device '{device.Uuid}'. Make sure you add the job controller first before assigning devices to it.");
+                    _logger.LogError($"Job controller instance with name '{instanceName}' does not exist, unable to assign device '{device.Uuid}'. Make sure you add the job controller first before assigning devices to it.");
                     return;
                 }
 
@@ -227,7 +229,7 @@
             }
 
             // Assign device to plugin job controller instance name
-            await AssignDevice((Device)device, jobControllerName);
+            await AssignDevice((Device)device, instanceName);
 
             // Reload device to take new job controller instance assignment in effect
             ReloadDevice((Device)device, device.Uuid);
@@ -236,8 +238,6 @@
         #endregion
 
         #region Instances
-
-        public async Task AddInstanceAsync(IInstance instance) => await AddInstanceAsync((Instance)instance);
 
         public async Task AddInstanceAsync(Instance instance)
         {
@@ -327,7 +327,9 @@
                             return;
                         }
 
-                        jobController = _pluginInstances[customInstanceType];
+                        // TODO: Get targetted job controller geofence type via GeofenceTypeAttribute from type
+                        var factory = _pluginInstances[customInstanceType];
+                        jobController = factory(instance);
                     }
                     break;
             }

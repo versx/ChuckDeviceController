@@ -581,14 +581,29 @@
                 };
                 await _geofenceServiceHost.CreateGeofenceAsync(geofence);
 
+                // Create job controller instance factory creation
+                var factory = new Func<IInstance, TestInstanceController>(options =>
+                {
+                    // TODO: Get geofences
+                    var coords = new List<Coordinate>();
+                    var jobController = new TestInstanceController
+                    (
+                        options.Name,
+                        options.MinimumLevel,
+                        options.MaximumLevel,
+                        coords,
+                        options.Data.AccountGroup,
+                        options.Data.IsEvent ?? false
+                    );
+                    return jobController;
+                });
                 // Register custom job controller type TestInstanceController
-                var testController = new TestInstanceController("TestInstance", minLevel, maxLevel, coords);
-                await _jobControllerHost.AddJobControllerAsync(customInstanceType, testController);
+                await _jobControllerHost.RegisterJobControllerAsync<TestInstanceController>(customInstanceType, factory);
 
                 // Create instance
                 var instance = new Instance
                 {
-                    Name = testController.Name,
+                    Name = "TestInstance",
                     MinimumLevel = minLevel,
                     MaximumLevel = maxLevel,
                     Geofences = new() { geofence.Name },
@@ -597,7 +612,7 @@
                         CustomInstanceType = customInstanceType,
                     },
                 };
-                await _instanceServiceHost.CreateInstanceTypeAsync(instance);
+                await _instanceServiceHost.CreateInstanceTypeAsync((IInstance)instance);
 
                 // Assign device to new instance using custom job controller
                 var uuid = "RH2SE"; //"SGV7SE";
@@ -608,9 +623,9 @@
                     return;
                 }
 
-                if (device.InstanceName != testController.Name)
+                if (device.InstanceName != instance.Name)
                 {
-                    await _jobControllerHost.AssignDeviceToJobControllerAsync(device, testController.Name);
+                    await _jobControllerHost.AssignDeviceToJobControllerAsync(device, instance.Name);
                 }
             }
             catch (Exception ex)
@@ -684,7 +699,7 @@
         public Dictionary<string, object> Dependencies { get; set; } = new();
     }
 
-    public class Instance : IInstanceCreationOptions
+    public class Instance : IInstance
     {
         public string Name { get; set; }
 
@@ -696,10 +711,6 @@
 
         public List<string> Geofences { get; set; }
 
-        public string GroupName { get; set; }
-
-        public bool IsEvent { get; set; }
-
         public IInstanceData Data { get; set; }
 
         public Instance()
@@ -710,8 +721,11 @@
 
     public class InstanceData : Dictionary<string, object>, IInstanceData
     {
-        [JsonPropertyName("custom_instance_type")]
         public string? CustomInstanceType { get; set; }
+
+        public string? AccountGroup { get; set; }
+
+        public bool? IsEvent { get; set; }
     }
 
     public class Geofence : IGeofenceCreationOptions
