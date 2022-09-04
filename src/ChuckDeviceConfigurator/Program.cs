@@ -144,7 +144,7 @@ builder.Services.AddDbContext<MapContext>(options =>
 
 #endregion
 
-#region Custom Services
+#region Host Services
 
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
@@ -152,7 +152,6 @@ builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 // TODO: Remove extra service registration of 'JobControllerService' or confirm there are no issues and two instances are not created
-builder.Services.AddSingleton<IJobControllerServiceHost, JobControllerService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
@@ -172,6 +171,7 @@ builder.Services.AddGrpc(options =>
 #region Plugins
 
 // Register plugin host handlers
+/*
 var jobControllerService = new JobControllerService(
     null,
     null,
@@ -182,19 +182,37 @@ var jobControllerService = new JobControllerService(
     null,
     null
 );
+*/
 var uiHost = new UiHost();
-var databaseHost = new DatabaseHost(new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole())), connectionString);
+var databaseHost = new DatabaseHost(connectionString);
 var loggingHost = new LoggingHost();
 var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
 var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
+//var instanceServiceHost = new InstanceServiceHost(connectionString);
+var geofenceServiceHost = new GeofenceServiceHost(connectionString);
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
 builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
 builder.Services.AddSingleton<IFileStorageHost>(fileStorageHost);
 builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
 builder.Services.AddSingleton<ILoggingHost>(loggingHost);
 builder.Services.AddSingleton<IUiHost>(uiHost);
+builder.Services.AddSingleton<IGeofenceServiceHost>(geofenceServiceHost);
 
 builder.Services.AddHttpContextAccessor();
+
+IJobControllerService? jobControllerService = null;
+var scopeFactory = builder.Services
+                            .BuildServiceProvider()
+                            .GetRequiredService<IServiceScopeFactory>();
+
+using var scope = scopeFactory.CreateScope();
+var provider = scope.ServiceProvider;
+jobControllerService = provider.GetRequiredService<IJobControllerService>();
+jobControllerService.Start();
+
+builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
+//builder.Services.AddSingleton<IJobControllerService>(jobControllerService);
+builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
 
 // TODO: Use builder.Services registered instead of 'sharedServiceHosts'
 var sharedServiceHosts = new Dictionary<Type, object>
@@ -207,6 +225,8 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IUiHost), uiHost },
     { typeof(IFileStorageHost), fileStorageHost },
     { typeof(IConfigurationHost), configurationProviderHost },
+    { typeof(IGeofenceServiceHost), geofenceServiceHost },
+    { typeof(IInstanceServiceHost), jobControllerService },
 };
 
 // Instantiate 'IPluginManager' singleton with configurable options
@@ -222,8 +242,8 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 // call OnLoad callback and register with 'IPluginManager' cache
 await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment);
 
-builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
-builder.Services.AddSingleton<IPluginManager>(pluginManager);
+//builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
+//builder.Services.AddSingleton<IPluginManager>(pluginManager);
 
 #endregion
 

@@ -7,13 +7,11 @@
     /// Plugin host handler contract used to interact with and manage the
     /// job controller service.
     /// </summary>
-    public interface IJobControllerServiceHost
+    public interface IJobControllerServiceHost : IInstanceServiceHost
     {
         //IReadOnlyDictionary<string, IDevice> Devices { get; }
 
         //IReadOnlyDictionary<string, IJobController> Instances { get; }
-
-        Task CreateInstanceTypeAsync(IInstanceCreationOptions options);
 
         /// <summary>
         /// 

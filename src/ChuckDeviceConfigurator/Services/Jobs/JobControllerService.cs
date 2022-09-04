@@ -139,16 +139,20 @@
 
         #region Plugin Host
 
+        // Set plugin instances/job controller type as Custom.
+        // Set InstanceData.custom_instance_type to plugin instance/job controller type name
+
+
         public async Task CreateInstanceTypeAsync(IInstanceCreationOptions options)
         {
             // TODO: Allow plugins to create instances to link with job controllers, that way they are easily used via the UI
             var instance = new Instance
             {
                 Name = options.Name,
-                MinimumLevel = options.MinimumLevel,
-                MaximumLevel = options.MaximumLevel,
                 // TODO: When InstanceType.Custom selected via UI - maybe show a separate select listing available job controllers from plugins (add InstanceData property for 'custom_instance_name' or something)
                 Type = InstanceType.Custom,
+                MinimumLevel = options.MinimumLevel,
+                MaximumLevel = options.MaximumLevel,
                 Geofences = options.Geofences,
                 Data = new InstanceData
                 {
@@ -161,11 +165,26 @@
             // TODO: Add to database?
             // TODO: Allow geofence creation/assignment?
 
+            using (var context = _deviceFactory.CreateDbContext())
+            {
+                // TODO: Check if InstanceType.Custom and custom_instance_type
+                if (context.Instances.Any(i => i.Name == instance.Name))
+                {
+                    context.Instances.Update(instance);
+                }
+                else
+                {
+                    await context.Instances.AddAsync(instance);
+                }
+                await context.SaveChangesAsync();
+            }
+
             await AddInstanceAsync(instance);
         }
 
         public async Task AddJobControllerAsync(string name, IJobController jobController)
         {
+            // TODO: Instance of name use InstanceData.custom_instance_type
             if (string.IsNullOrEmpty(name))
             {
                 _logger.LogError($"Job controller name cannot be null, skipping...");
@@ -209,7 +228,6 @@
                     return;
                 }
             }
-            //var jobController = _pluginInstances[jobControllerName];
 
             // Assign device to plugin job controller instance name
             await AssignDevice((Device)device, jobControllerName);
@@ -221,6 +239,8 @@
         #endregion
 
         #region Instances
+
+        public async Task AddInstanceAsync(IInstance instance) => await AddInstanceAsync((Instance)instance);
 
         public async Task AddInstanceAsync(Instance instance)
         {
@@ -311,14 +331,7 @@
                 return;
             }
 
-            if (instance.Type == InstanceType.Custom)
-            {
-                lock (_pluginInstancesLock)
-                {
-                    _pluginInstances[instance.Name] = jobController;
-                }
-            }
-            else
+            if (instance.Type != InstanceType.Custom)
             {
                 lock (_instancesLock)
                 {

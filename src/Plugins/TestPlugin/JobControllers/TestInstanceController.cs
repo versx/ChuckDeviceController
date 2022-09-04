@@ -45,7 +45,7 @@
         #region Constructor
 
         public TestInstanceController(string name, ushort minLevel, ushort maxLevel,
-            List<ICoordinate> coords, string? groupName = null, bool isEvent = false)
+            List<Coordinate> coords, string? groupName = null, bool isEvent = false)
         {
             Name = name;
             MinimumLevel = minLevel;

@@ -20,26 +20,25 @@
     [Authorize(Roles = RoleConsts.DefaultRole)]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<HomeController> _logger =
+            new Logger<HomeController>(LoggerFactory.Create(x => x.AddConsole()));
         private readonly ControllerContext _deviceContext;
         private readonly MapContext _mapContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUiHost _uiHost;
-        private readonly IPluginManager _pluginManager;
+        //private readonly IPluginManager _pluginManager;
 
         public HomeController(
-            ILogger<HomeController> logger,
             ControllerContext deviceContext,
             MapContext mapContext,
             UserManager<ApplicationUser> userManager,
-            IPluginManager pluginManager,
+            //IPluginManager pluginManager,
             IUiHost uiHost)
         {
-            _logger = logger;
             _deviceContext = deviceContext;
             _mapContext = mapContext;
             _userManager = userManager;
-            _pluginManager = pluginManager;
+            //_pluginManager = pluginManager;
             _uiHost = uiHost;
         }
 
@@ -56,7 +55,7 @@
                 Geofences = (ulong)_deviceContext.Geofences.LongCount(),
                 Instances = (ulong)_deviceContext.Instances.LongCount(),
                 IvLists = (ulong)_deviceContext.IvLists.LongCount(),
-                Plugins = (ulong)_pluginManager.Plugins.LongCount(),
+                Plugins = (ulong)PluginManager.Instance.Plugins.LongCount(),
                 Webhooks = (ulong)_deviceContext.Webhooks.LongCount(),
                 Users = (ulong)_userManager.Users.LongCount(),
 

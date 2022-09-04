@@ -89,6 +89,10 @@
         [PluginBootstrapperService(typeof(IConfigurationHost))]
         private readonly IConfigurationHost _configurationHost;
 
+        private readonly IGeofenceServiceHost _geofenceServiceHost;
+
+        private readonly IInstanceServiceHost _instanceServiceHost;
+
         #endregion
 
         #region Plugin Metadata Properties
@@ -147,10 +151,16 @@
         /// <param name="localeHost">Localization host handler.</param>
         public TestPlugin(
             ILoggingHost loggingHost,
-            ILocalizationHost localeHost)
+            ILocalizationHost localeHost,
+            IJobControllerServiceHost jobControllerServiceHost,
+            IInstanceServiceHost instanceServiceHost,
+            IGeofenceServiceHost geofenceServiceHost)
         {
             _loggingHost = loggingHost;
             _localeHost = localeHost;
+            _jobControllerHost = jobControllerServiceHost;
+            _instanceServiceHost = instanceServiceHost;
+            _geofenceServiceHost = geofenceServiceHost;
 
             //_appHost.Restart();
         }
@@ -547,17 +557,46 @@
         {
             try
             {
-                // Add/register TestInstanceController
-                var coords = new List<ICoordinate>
+                var coords = new List<Coordinate>
                 {
                     new Coordinate(34.01, -117.01),
                     new Coordinate(34.02, -117.02),
                     new Coordinate(34.03, -117.03),
+                    new Coordinate(34.04, -117.04),
                 };
-                var testController = new TestInstanceController("TestName", 30, 39, coords);
+
+                var geofence = new Geofence
+                {
+                    Name = "TestGeofence",
+                    Type = GeofenceType.Circle,
+                    Data = new GeofenceData
+                    {
+                        Area = coords,
+                    },
+                };
+                await _geofenceServiceHost.CreateGeofenceAsync(geofence);
+
+                // Add/register TestInstanceController
+                var testController = new TestInstanceController("TestInstance", 30, 39, coords);
                 await _jobControllerHost.AddJobControllerAsync(testController.Name, testController);
 
-                var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
+                var instance = new Instance
+                {
+                    Name = testController.Name,
+                    MinimumLevel = 30,
+                    MaximumLevel = 39,
+                    Geofences = new() { geofence.Name },
+                };
+                await _instanceServiceHost.CreateInstanceTypeAsync(instance);
+
+                var uuid = "SGV7SE";
+                var device = await _databaseHost.GetByIdAsync<IDevice, string>(uuid);
+                if (device == null)
+                {
+                    _loggingHost.LogError($"Failed to get device from database with UUID '{uuid}'");
+                    return;
+                }
+
                 await _jobControllerHost.AssignDeviceToJobControllerAsync(device, testController.Name);
                 // TODO: Show in Instances create/edit page
             }
@@ -628,5 +667,36 @@
     public class TargetDependencies
     {
         public Dictionary<string, object> Dependencies { get; set; } = new();
+    }
+
+    public class Instance : IInstanceCreationOptions
+    {
+        public string Name { get; set; }
+
+        public InstanceType Type => InstanceType.Custom;
+
+        public ushort MinimumLevel { get; set; }
+
+        public ushort MaximumLevel { get; set; }
+
+        public List<string> Geofences { get; set; }
+
+        public string GroupName { get; set; }
+
+        public bool IsEvent { get; set; }
+    }
+
+    public class Geofence : IGeofenceCreationOptions
+    {
+        public string Name { get; set; }
+
+        public GeofenceType Type { get; set; }
+
+        public IGeofenceData? Data { get; set; }
+    }
+
+    public class GeofenceData : IGeofenceData
+    {
+        public dynamic Area { get; set; }
     }
 }

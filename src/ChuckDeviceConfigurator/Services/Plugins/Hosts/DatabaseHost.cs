@@ -13,9 +13,9 @@
     {
         #region Variables
 
-        private readonly ILogger<IDatabaseHost> _logger;
-        private readonly string _connectionString;
-        private readonly IReadOnlyList<Type> _controllerEntityTypes = new List<Type>
+        private static readonly ILogger<IDatabaseHost> _logger =
+            new Logger<IDatabaseHost>(LoggerFactory.Create(x => x.AddConsole()));
+        private static readonly IReadOnlyList<Type> _controllerEntityTypes = new List<Type>
         {
             typeof(IAccount),
             typeof(IAssignment),
@@ -27,7 +27,7 @@
             typeof(IIvList),
             typeof(IWebhook),
         };
-        private readonly IReadOnlyList<Type> _mapEntityTypes = new List<Type>
+        private static readonly IReadOnlyList<Type> _mapEntityTypes = new List<Type>
         {
             typeof(ICell),
             typeof(IGym),
@@ -39,6 +39,7 @@
             typeof(ISpawnpoint),
             typeof(IWeather),
         };
+        private readonly string _connectionString;
 
         #endregion
 
@@ -48,11 +49,8 @@
 
         #region Constructor
 
-        public DatabaseHost(
-            ILogger<IDatabaseHost> logger,
-            string connectionString)
+        public DatabaseHost(string connectionString)
         {
-            _logger = logger;
             _connectionString = connectionString;
 
             //Accounts = new ControllerEntityRepository<IAccount, string>(deviceFactory);
