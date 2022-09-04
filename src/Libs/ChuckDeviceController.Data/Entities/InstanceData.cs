@@ -183,5 +183,11 @@
             JsonPropertyName("is_event"),
         ]
         public bool? IsEvent { get; set; }
+
+        [
+            DisplayName("Custom Instance Type"),
+            JsonPropertyName("custom_instance_type"),
+        ]
+        public string? CustomInstanceType { get; set; }
     }
 }

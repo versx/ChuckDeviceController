@@ -83,6 +83,7 @@
                 InstanceType.Bootstrap => "bootstrap",
                 InstanceType.FindTth => "find_tth",
                 InstanceType.Leveling => "leveling",
+                InstanceType.Custom => "custom",
                 _ => type.ToString(),
             };
         }
@@ -100,6 +101,7 @@
                 "bootstrap" => InstanceType.Bootstrap,
                 "find_tth" => InstanceType.FindTth,
                 "leveling" => InstanceType.Leveling,
+                "custom" => InstanceType.Custom,
                 _ => InstanceType.CirclePokemon,
             };
         }

@@ -71,8 +71,7 @@
             }
 
             var currentIndex = _lastIndex;
-
-            if ((Coordinates?.Count ?? 0) == 0)
+            if (!(Coordinates?.Any() ?? false))
             {
                 Console.WriteLine($"[{Name}] [{options.Uuid}] Instance requires at least one coordinate, returning empty task for device");
                 return new TestTask();
@@ -83,10 +82,10 @@
             // Check if current index is last in coordinates list,
             // if so we've completed the route. Reset route to first
             // coordinate for next device.
-            if (_lastIndex == Coordinates.Count)
+            if (_lastIndex == Coordinates.Count - 1)
             {
                 _lastLastCompletedTime = _lastCompletedTime;
-                _lastCompletedTime = Convert.ToUInt64(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
+                _lastCompletedTime = GetUnixTimestamp();
                 _lastIndex = 0;
             }
             else
@@ -149,6 +148,14 @@
                 MinimumLevel = MinimumLevel,
                 MaximumLevel = MaximumLevel,
             };
+        }
+
+        private static ulong GetUnixTimestamp()
+        {
+            var epoch = new DateTime(1970, 1, 1);
+            var time = DateTime.UtcNow.Subtract(epoch);
+            var timestamp = Convert.ToUInt64(time.TotalSeconds);
+            return timestamp;
         }
     }
 

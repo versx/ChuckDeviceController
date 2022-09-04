@@ -1,6 +1,7 @@
 ﻿namespace TestPlugin
 {
     using System.Collections.Generic;
+    using System.Text.Json.Serialization;
 
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
@@ -557,6 +558,9 @@
         {
             try
             {
+                ushort minLevel = 30;
+                ushort maxLevel = 39;
+                var customInstanceType = "test_controller";
                 var coords = new List<Coordinate>
                 {
                     new Coordinate(34.01, -117.01),
@@ -565,6 +569,7 @@
                     new Coordinate(34.04, -117.04),
                 };
 
+                // Create geofence entity
                 var geofence = new Geofence
                 {
                     Name = "TestGeofence",
@@ -576,20 +581,26 @@
                 };
                 await _geofenceServiceHost.CreateGeofenceAsync(geofence);
 
-                // Add/register TestInstanceController
-                var testController = new TestInstanceController("TestInstance", 30, 39, coords);
-                await _jobControllerHost.AddJobControllerAsync(testController.Name, testController);
+                // Register custom job controller type TestInstanceController
+                var testController = new TestInstanceController("TestInstance", minLevel, maxLevel, coords);
+                await _jobControllerHost.AddJobControllerAsync(customInstanceType, testController);
 
+                // Create instance
                 var instance = new Instance
                 {
                     Name = testController.Name,
-                    MinimumLevel = 30,
-                    MaximumLevel = 39,
+                    MinimumLevel = minLevel,
+                    MaximumLevel = maxLevel,
                     Geofences = new() { geofence.Name },
+                    Data = new InstanceData
+                    {
+                        CustomInstanceType = customInstanceType,
+                    },
                 };
                 await _instanceServiceHost.CreateInstanceTypeAsync(instance);
 
-                var uuid = "SGV7SE";
+                // Assign device to new instance using custom job controller
+                var uuid = "RH2SE"; //"SGV7SE";
                 var device = await _databaseHost.GetByIdAsync<IDevice, string>(uuid);
                 if (device == null)
                 {
@@ -597,8 +608,10 @@
                     return;
                 }
 
-                await _jobControllerHost.AssignDeviceToJobControllerAsync(device, testController.Name);
-                // TODO: Show in Instances create/edit page
+                if (device.InstanceName != testController.Name)
+                {
+                    await _jobControllerHost.AssignDeviceToJobControllerAsync(device, testController.Name);
+                }
             }
             catch (Exception ex)
             {
@@ -617,11 +630,13 @@
         /// <summary>
         ///     Gets or sets the geocoordinate latitude.
         /// </summary>
+        [JsonPropertyName("lat")]
         public double Latitude { get; set; }
 
         /// <summary>
         ///     Gets or sets the geocoordinate longitude.
         /// </summary>
+        [JsonPropertyName("lon")]
         public double Longitude { get; set; }
 
         /// <summary>
@@ -684,6 +699,19 @@
         public string GroupName { get; set; }
 
         public bool IsEvent { get; set; }
+
+        public IInstanceData Data { get; set; }
+
+        public Instance()
+        {
+            Data = new InstanceData();
+        }
+    }
+
+    public class InstanceData : Dictionary<string, object>, IInstanceData
+    {
+        [JsonPropertyName("custom_instance_type")]
+        public string? CustomInstanceType { get; set; }
     }
 
     public class Geofence : IGeofenceCreationOptions
@@ -697,6 +725,6 @@
 
     public class GeofenceData : IGeofenceData
     {
-        public dynamic Area { get; set; }
+        public dynamic? Area { get; set; }
     }
 }

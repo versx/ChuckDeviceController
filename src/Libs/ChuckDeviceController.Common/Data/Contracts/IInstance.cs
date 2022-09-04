@@ -18,5 +18,6 @@
     public interface IInstanceData
     {
         // TODO: IInstanceData properties
+        string? CustomInstanceType { get; }
     }
 }

@@ -139,9 +139,7 @@
 
         #region Plugin Host
 
-        // Set plugin instances/job controller type as Custom.
         // Set InstanceData.custom_instance_type to plugin instance/job controller type name
-
 
         public async Task CreateInstanceTypeAsync(IInstanceCreationOptions options)
         {
@@ -158,6 +156,7 @@
                 {
                     AccountGroup = options.GroupName,
                     IsEvent = options.IsEvent,
+                    CustomInstanceType = options.Data.CustomInstanceType,
                     // TODO: Allow for custom instance data properties
                 },
             };
@@ -182,41 +181,39 @@
             await AddInstanceAsync(instance);
         }
 
-        public async Task AddJobControllerAsync(string name, IJobController jobController)
+        public async Task AddJobControllerAsync(string customInstanceType, IJobController jobController)
         {
-            // TODO: Instance of name use InstanceData.custom_instance_type
-            if (string.IsNullOrEmpty(name))
+            // Instance of name use InstanceData.custom_instance_type
+            if (string.IsNullOrEmpty(customInstanceType))
             {
-                _logger.LogError($"Job controller name cannot be null, skipping...");
+                _logger.LogError($"Job controller type cannot be null, skipping job controller registration...");
                 return;
             }
 
             if (jobController == null)
             {
-                _logger.LogError($"[{name}] Unable to instantiate job instance controller with instance name '{name}'");
+                _logger.LogError($"[{customInstanceType}] Unable to instantiate job controller instance.");
                 return;
             }
 
             lock (_pluginInstancesLock)
             {
-                if (_pluginInstances.ContainsKey(name))
+                if (!_pluginInstances.ContainsKey(customInstanceType))
                 {
-                    _logger.LogError($"[{name}] Job controller instance with name '{name}' already exists, unable to add job controller");
-                    return;
+                    _pluginInstances.Add(customInstanceType, jobController);
+                    _logger.LogInformation($"Successfully added job controller '{customInstanceType}' to plugin job controllers cache from plugin");
                 }
-                _pluginInstances.Add(name, jobController);
-
-                _logger.LogInformation($"Successfully added job controller '{name}' to plugin job controllers cache from plugin");
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AssignDeviceToJobControllerAsync(IDevice device, string jobControllerName)
+        public async Task AssignDeviceToJobControllerAsync(IDevice device, string jobControllerName) // string instanceName
         {
             lock (_pluginInstancesLock)
             {
-                if (!_pluginInstances.ContainsKey(jobControllerName))
+                //if (!_pluginInstances.ContainsKey(jobControllerName))
+                if (!_instances.ContainsKey(jobControllerName))
                 {
                     _logger.LogError($"Job controller instance with name '{jobControllerName}' does not exist, unable to assign device '{device.Uuid}'. Make sure you add the job controller first before assigning devices to it.");
                     return;
@@ -315,13 +312,23 @@
                     }
                     break;
                 case InstanceType.Custom:
-                    // TODO: Use for job controllers created by plugins
-                    if (!_pluginInstances.ContainsKey(instance.Name))
+                    var customInstanceType = instance.Data?.CustomInstanceType;
+                    if (string.IsNullOrEmpty(customInstanceType))
                     {
-                        _logger.LogError($"[{instance.Name}] Plugin job controller has not been registered, unable to initialize job controller instance");
+                        _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
                         return;
                     }
-                    jobController = _pluginInstances[instance.Name];
+
+                    lock (_pluginInstancesLock)
+                    {
+                        if (!_pluginInstances.ContainsKey(customInstanceType))
+                        {
+                            _logger.LogError($"[{instance.Name}] Plugin job controller has not been registered, unable to initialize job controller instance");
+                            return;
+                        }
+
+                        jobController = _pluginInstances[customInstanceType];
+                    }
                     break;
             }
 
@@ -331,12 +338,9 @@
                 return;
             }
 
-            if (instance.Type != InstanceType.Custom)
+            lock (_instancesLock)
             {
-                lock (_instancesLock)
-                {
-                    _instances[instance.Name] = jobController;
-                }
+                _instances[instance.Name] = jobController;
             }
 
             await Task.CompletedTask;

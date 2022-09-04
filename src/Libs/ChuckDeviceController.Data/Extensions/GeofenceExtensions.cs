@@ -56,7 +56,7 @@
         public static List<Coordinate>? ConvertToCoordinates(this Geofence geofence)
         {
             var coords = new List<Coordinate>();
-            var area = geofence.Data?.Area;
+            var area = geofence?.Data?.Area;
             var coordsArray = ParseGeofenceArea<List<Coordinate>>(geofence.Name, area);
             if (coordsArray == null)
             {
@@ -90,7 +90,7 @@
             var multiPolygons = new List<MultiPolygon>();
             var coordinates = new List<List<Coordinate>>();
 
-            var area = geofence.Data?.Area;
+            var area = geofence?.Data?.Area;
             var coordsArray = ParseGeofenceArea<List<List<Coordinate>>>(geofence.Name, area);
             if (coordsArray == null)
             {

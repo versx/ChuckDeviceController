@@ -16,9 +16,9 @@
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="customInstanceType"></param>
         /// <param name="controller"></param>
-        Task AddJobControllerAsync(string name, IJobController controller);
+        Task AddJobControllerAsync(string customInstanceType, IJobController controller); // TODO: Rename to RegisterJobControllerAsync
 
         /// <summary>
         /// Assigns the specified device to a specific job controller

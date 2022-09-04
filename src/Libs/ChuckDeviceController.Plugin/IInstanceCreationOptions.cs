@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugin
 {
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
 
     /// <summary>
     /// 
@@ -41,5 +42,10 @@
         /// 
         /// </summary>
         bool IsEvent { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IInstanceData Data { get; }
     }
 }

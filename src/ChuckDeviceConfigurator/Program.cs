@@ -202,13 +202,12 @@ builder.Services.AddHttpContextAccessor();
 
 IJobControllerService? jobControllerService = null;
 var scopeFactory = builder.Services
-                            .BuildServiceProvider()
-                            .GetRequiredService<IServiceScopeFactory>();
+                          .BuildServiceProvider()
+                          .GetRequiredService<IServiceScopeFactory>();
 
 using var scope = scopeFactory.CreateScope();
 var provider = scope.ServiceProvider;
 jobControllerService = provider.GetRequiredService<IJobControllerService>();
-jobControllerService.Start();
 
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
 //builder.Services.AddSingleton<IJobControllerService>(jobControllerService);
@@ -244,6 +243,8 @@ await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment);
 
 //builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
 //builder.Services.AddSingleton<IPluginManager>(pluginManager);
+
+jobControllerService.Start();
 
 #endregion
 
