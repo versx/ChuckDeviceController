@@ -484,9 +484,14 @@
         {
             using (var context = _controllerFactory.CreateDbContext())
             {
-                context.UpdateRange(devices);
-                await context.SaveChangesAsync();
-                // TODO: await context.Devices.BulkMergeAsync(devices);
+                await context.Devices.BulkMergeAsync(devices, options =>
+                {
+                    options.UseTableLock = true;
+                    options.OnMergeUpdateInputExpression = p => new
+                    {
+                        p.InstanceName,
+                    };
+                });
             }
         }
 
