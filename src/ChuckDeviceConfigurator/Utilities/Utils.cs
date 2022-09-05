@@ -223,8 +223,8 @@
             }
             else
             {
-                var maxPagesBeforeCurrentPage = (int)Math.Floor((decimal)maxMiddlePage / (decimal)2);
-                var maxPagesAfterCurrentPage = (int)Math.Ceiling((decimal)maxMiddlePage / (decimal)2) - 1;
+                var maxPagesBeforeCurrentPage = (int)Math.Floor((decimal)maxMiddlePage / 2);
+                var maxPagesAfterCurrentPage = (int)Math.Ceiling((decimal)maxMiddlePage / 2) - 1;
                 if (page <= maxPagesBeforeCurrentPage)
                 {
                     // Current page near the start

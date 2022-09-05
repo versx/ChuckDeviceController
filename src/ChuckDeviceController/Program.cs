@@ -4,6 +4,7 @@ using ChuckDeviceController;
 using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
+using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
@@ -112,6 +113,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Add Map-A-Droid payload conversion middleware
+// TODO: Make configurable
+app.UseMadData();
 
 app.UseAuthorization();
 app.MapControllers();

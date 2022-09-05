@@ -287,7 +287,7 @@
                             var ivList = _ivListService.GetByName(instance.Data?.IvList ?? Strings.DefaultIvList);
                             if (ivList == null)
                             {
-                                _logger.LogError($"Failed to fetch IV list for instance {instance.Name}, skipping controller instantiation...");
+                                _logger.LogError($"[{instance.Name}] Failed to fetch IV list, skipping controller instantiation...");
                                 return;
                             }
                             jobController = CreateIvJobController(_mapFactory, instance, multiPolygons, ivList);
@@ -298,13 +298,19 @@
                     }
                     break;
                 case InstanceType.Custom:
-                    jobController = CreatePluginJobController(instance, geofences);
+                    var customInstanceType = instance.Data?.CustomInstanceType;
+                    if (string.IsNullOrEmpty(customInstanceType))
+                    {
+                        _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
+                        return;
+                    }
+                    jobController = CreatePluginJobController(customInstanceType, instance, geofences);
                     break;
             }
 
             if (jobController == null)
             {
-                _logger.LogError($"[{instance.Name}] Unable to instantiate job instance controller with instance name '{instance.Name}' and type '{instance.Type}'");
+                _logger.LogError($"[{instance.Name}] Unable to instantiate job instance controller with type '{instance.Type}'");
                 return;
             }
 
@@ -818,15 +824,8 @@
             return jobController;
         }
 
-        private static IJobController CreatePluginJobController(IInstance instance, IReadOnlyList<Geofence> geofences)
+        private static IJobController CreatePluginJobController(string customInstanceType, IInstance instance, IReadOnlyList<Geofence> geofences)
         {
-            var customInstanceType = instance.Data?.CustomInstanceType;
-            if (string.IsNullOrEmpty(customInstanceType))
-            {
-                _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
-                return null;
-            }
-
             Type jobControllerType;
             lock (_pluginInstancesLock)
             {

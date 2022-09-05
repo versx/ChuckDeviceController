@@ -5,7 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
     using POGOProtos.Rpc;
 
-    using ChuckDeviceController.Data.Contexts;
+    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Net.Models.Responses;
@@ -20,7 +20,7 @@
         private static readonly Dictionary<string, ushort> _levelCache = new();
 
         private readonly ILogger<ProtoController> _logger;
-        private readonly Data.Contexts.ControllerContext _context;
+        private readonly ControllerContext _context;
         private readonly IProtoProcessorService _protoProcessor;
 
         #endregion
@@ -29,7 +29,7 @@
 
         public ProtoController(
             ILogger<ProtoController> logger,
-            Data.Contexts.ControllerContext context,
+            ControllerContext context,
             IProtoProcessorService protoProcessor)
         {
             _logger = logger;
@@ -41,45 +41,23 @@
 
         #region Routes
 
+        // Test route for debugging, TODO: remove in production
         [HttpGet("/raw")]
         public string Get() => ":D";
 
-        // Handle RDM data
+        // Handle incoming raw proto data
         [
             HttpPost("/raw"),
             Produces("application/json"),
         ]
         public async Task<ProtoResponse?> PostAsync(ProtoPayload payload)
         {
-            var response = await HandleProtoRequest(payload).ConfigureAwait(false);
-            if (response?.Data == null)
-            {
-                //_logger.LogError($"[{payload.Uuid}] null data response!");
-            }
             Response.Headers["Accept"] = "application/json";
             Response.Headers["Content-Type"] = "application/json";
-            return response;
-        }
 
-        // Handle MAD data
-        /*
-        [
-            HttpPost("/raw"),
-            Produces("application/json"),
-        ]
-        public async Task<ProtoResponse> PostAsync(List<ProtoData> payloads)
-        {
-            Response.Headers["Accept"] = "application/json";
-            Response.Headers["Content-Type"] = "application/json";
-            var response await HandleProtoRequest(new ProtoPayload
-            {
-                Username = "PogoDroid",
-                Uuid = Request.Headers["Origin"],
-                Contents = payloads,
-            });
+            var response = await HandleProtoRequest(payload).ConfigureAwait(false);
             return response;
         }
-        */
 
         #endregion
 
@@ -93,6 +71,36 @@
                 return null;
             }
 
+            // Check if received payload data is empty, if so skip
+            if (!(payload.Contents?.Any() ?? false))
+            {
+                _logger.LogWarning($"[{payload.Uuid}] Invalid or empty GMO");
+                return null;
+            }
+
+            // Set device last location and last seen time
+            var device = await SetLastDeviceLocationAsync(payload);
+
+            // Cache account level and update account if level changed
+            await SetAccountLevelAsync(payload.Uuid, payload.Username, payload.Level, payload.TrainerXp ?? 0);
+
+            // Queue proto payload for processing
+            await _protoProcessor.EnqueueAsync(new ProtoPayloadQueueItem
+            {
+                Payload = payload,
+                Device = device,
+            });
+
+            var response = BuildProtoResponse(payload);
+            return response;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private async Task<Device> SetLastDeviceLocationAsync(ProtoPayload payload)
+        {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var device = await _context.Devices.FindAsync(payload.Uuid);
             if (device != null)
@@ -102,7 +110,6 @@
                 device.LastSeen = now;
 
                 _context.Update(device);
-                await _context.SaveChangesAsync();
             }
             else
             {
@@ -115,45 +122,45 @@
                     LastSeen = now,
                 };
                 await _context.AddAsync(device);
+            }
+            await _context.SaveChangesAsync();
+
+            return device;
+        }
+
+        private async Task SetAccountLevelAsync(string uuid, string? username, ushort level, ulong trainerXp = 0)
+        {
+            if (string.IsNullOrEmpty(username) || level <= 0)
+                return;
+
+            // Check if account level has already been cached
+            if (!_levelCache.ContainsKey(username))
+            {
+                _levelCache.Add(username, level);
+                return;
+            }
+
+            // Check if cached level is same as current level
+            var oldLevel = _levelCache[username];
+            if (oldLevel == level)
+                return;
+
+            // Account level has changed, update cache
+            _levelCache[username] = level;
+
+            // Update account level if account exists
+            var account = await _context.Accounts.FindAsync(username);
+            if (account != null)
+            {
+                account.Level = level;
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"[{uuid}] Account {username} on {uuid} from {oldLevel} to {level} with {trainerXp}");
             }
+        }
 
-            if (!string.IsNullOrEmpty(payload.Username) && payload.Level > 0)
-            {
-                if (!_levelCache.ContainsKey(payload.Username))
-                {
-                    _levelCache.Add(payload.Username, payload.Level);
-                }
-                else
-                {
-                    var oldLevel = _levelCache[payload.Username];
-                    if (oldLevel != payload.Level)
-                    {
-                        var account = await _context.Accounts.FindAsync(payload.Username);
-                        if (account != null)
-                        {
-                            account.Level = payload.Level;
-                            await _context.SaveChangesAsync();
-                            _logger.LogInformation($"Account {payload.Username} on {payload.Uuid} from {oldLevel} to {payload.Level} with {payload.TrainerXp}");
-                        }
-                        _levelCache[payload.Username] = payload.Level;
-                    }
-                }
-            }
-
-            if ((payload.Contents?.Count ?? 0) == 0)
-            {
-                _logger.LogWarning($"[{payload.Uuid}] Invalid or empty GMO");
-                return null;
-            }
-
-            // Queue proto payload for processing
-            await _protoProcessor.EnqueueAsync(new ProtoPayloadQueueItem
-            {
-                Payload = payload,
-                Device = device,
-            });
-
+        private static ProtoResponse BuildProtoResponse(ProtoPayload payload)
+        {
             var hasGmo = payload.Contents?.Any(content => content.Method == (int)Method.GetMapObjects) ?? false;
             return new ProtoResponse
             {

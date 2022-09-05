@@ -59,21 +59,24 @@
                         ? remoteIp
                         : !string.IsNullOrEmpty(localIp)
                             ? localIp
-                            : string.Empty;
+                            : "0.0.0.0";
             return ipAddr;
         }
 
         public static async Task<string> ReadBodyAsStringAsync(this HttpRequest request, Encoding? encoding = null)
         {
-            // Ensure we read from the beginning of the stream
-            request.Body.Position = 0;
-
-            using var readStream = new StreamReader(request.Body, encoding ?? Encoding.UTF8);
-            var bodyString = await readStream.ReadToEndAsync().ConfigureAwait(false);
-
-            // Reset the stream position
-            request.Body.Position = 0;
-            return bodyString;
+            try
+            {
+                using var stream = new StreamReader(request.Body, encoding ?? Encoding.UTF8);
+                var data = await stream.ReadToEndAsync().ConfigureAwait(false);
+                return data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex}");
+                return string.Empty;
+            }
         }
+    }
     }
 }
