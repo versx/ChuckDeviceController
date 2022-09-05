@@ -203,19 +203,16 @@
 
         public async Task AssignDeviceToJobControllerAsync(IDevice device, string instanceName)
         {
-            lock (_pluginInstancesLock)
+            if (!_instances.ContainsKey(instanceName))
             {
-                if (!_instances.ContainsKey(instanceName))
-                {
-                    _logger.LogError($"Job controller instance with name '{instanceName}' does not exist, unable to assign device '{device.Uuid}'. Make sure you add the job controller first before assigning devices to it.");
-                    return;
-                }
+                _logger.LogError($"Job controller instance with name '{instanceName}' does not exist, unable to assign device '{device.Uuid}'. Make sure you add the job controller first before assigning devices to it.");
+                return;
+            }
 
-                if (!_devices.ContainsKey(device.Uuid))
-                {
-                    _logger.LogError($"Device with name '{device.Uuid}' does not exist, unable to assign job controller instance");
-                    return;
-                }
+            if (!_devices.ContainsKey(device.Uuid))
+            {
+                _logger.LogError($"Device with name '{device.Uuid}' does not exist, unable to assign job controller instance");
+                return;
             }
 
             // Assign device to plugin job controller instance name
