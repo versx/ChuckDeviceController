@@ -24,7 +24,6 @@
     using ChuckDeviceController.Plugin;
 
     // TODO: Refactor class into separate smaller classes
-    // TODO: Refactor to accommodate instances/job controllers from plugins
 
     public class JobControllerService : IJobControllerService
     {
@@ -823,6 +822,7 @@
                 return null;
             }
 
+            Type jobControllerType;
             lock (_pluginInstancesLock)
             {
                 if (!_pluginInstances.ContainsKey(customInstanceType))
@@ -831,53 +831,55 @@
                     return null;
                 }
 
-                object? jobControllerInstance = null;
-                object[]? args = null;
-                var jobControllerType = _pluginInstances[customInstanceType];
-                var attributes = jobControllerType.GetCustomAttributes(typeof(GeofenceTypeAttribute), false);
-                if (!attributes?.Any() ?? false)
-                {
-                    // No geofence attributes specified but is required
-                    return null;
-                }
-                var attr = attributes!.FirstOrDefault() as GeofenceTypeAttribute;
-                switch (attr?.Type)
-                {
-                    case GeofenceType.Circle:
-                        var circles = geofences.ConvertToCoordinates();
-                        args = new object[] { instance, circles };
-                        break;
-                    case GeofenceType.Geofence:
-                        var (_, polyCoords) = geofences.ConvertToMultiPolygons();
-                        args = new object[] { instance, polyCoords };
-                        break;
-                }
-
-                try
-                {
-                    if (args == null)
-                    {
-                        jobControllerInstance = Activator.CreateInstance(jobControllerType);
-                    }
-                    else
-                    {
-                        jobControllerInstance = Activator.CreateInstance(jobControllerType, args);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Error: {ex}");
-                }
-
-                if (jobControllerInstance == null)
-                {
-                    _logger.LogError($"Failed to instantiate a new custom job controller instance for '{instance.Name}'");
-                    return null;
-                }
-
-                var jobController = (IJobController)jobControllerInstance;
-                return jobController;
+                jobControllerType = _pluginInstances[customInstanceType];
             }
+            var attributes = jobControllerType.GetCustomAttributes(typeof(GeofenceTypeAttribute), false);
+            if (!attributes?.Any() ?? false)
+            {
+                // No geofence attributes specified but is required
+                return null;
+            }
+
+            object? jobControllerInstance = null;
+            object[]? args = null;
+            var attr = attributes!.FirstOrDefault() as GeofenceTypeAttribute;
+            switch (attr?.Type)
+            {
+                case GeofenceType.Circle:
+                    var circles = geofences.ConvertToCoordinates();
+                    args = new object[] { instance, circles };
+                    break;
+                case GeofenceType.Geofence:
+                    var (_, polyCoords) = geofences.ConvertToMultiPolygons();
+                    args = new object[] { instance, polyCoords };
+                    break;
+            }
+
+            try
+            {
+                // TODO: Add support for adding more arguments to pass to job controller constructor
+                if (args?.Any() ?? false)
+                {
+                    jobControllerInstance = Activator.CreateInstance(jobControllerType, args);
+                }
+                else
+                {
+                    jobControllerInstance = Activator.CreateInstance(jobControllerType);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+            }
+
+            if (jobControllerInstance == null)
+            {
+                _logger.LogError($"Failed to instantiate a new custom job controller instance for '{instance.Name}'");
+                return null;
+            }
+
+            var jobController = (IJobController)jobControllerInstance;
+            return jobController;
         }
 
         #endregion
