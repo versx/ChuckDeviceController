@@ -34,7 +34,11 @@
             DeviceReloaded?.Invoke(this, new AssignmentDeviceReloadedEventArgs(device));
         }
 
-        // TODO: InstanceReloaded event
+        public event EventHandler<ReloadInstanceEventArgs>? ReloadInstance;
+        private void OnReloadInstance(Instance instance)
+        {
+            ReloadInstance?.Invoke(this, new ReloadInstanceEventArgs(instance));
+        }
 
         #endregion
 
@@ -212,15 +216,27 @@
             using var mapContext = _mapFactory.CreateDbContext();
             foreach (var instance in instancesToClear)
             {
-                var instanceGeofences = geofences.Where(geofence => instance.Geofences.Contains(geofence.Name)).ToList();
-                foreach (var geofence in instanceGeofences)
+                var instanceGeofences = geofences.Where(geofence => instance.Geofences.Contains(geofence.Name))
+                                                 .ToList();
+                if (instanceGeofences?.Any() ?? false)
                 {
-                    _logger.LogInformation($"Clearing quests for geofence: {geofence.Name}");
-                    await mapContext.ClearQuestsAsync(geofence);
+                    var geofenceNames = instanceGeofences.Select(x => x.Name);
+                    _logger.LogInformation($"Clearing quests for geofences: {string.Join(", ", geofenceNames)}");
+                    await mapContext.ClearQuestsAsync(instanceGeofences);
                 }
-                // TODO: Reload quest instance
+
+                // Trigger event to reload quest instances
+                OnReloadInstance(instance);
             }
-            // TODO: Trigger assignments
+
+            // Trigger assignments
+            foreach (var assignment in assignments)
+            {
+                if (assignment == null)
+                    continue;
+
+                await TriggerAssignmentAsync(assignment, force: true);
+            }
         }
 
         #endregion
@@ -270,7 +286,7 @@
 
                 // TODO: Create GetInstanceGeofences method
 
-                if ((geofences?.Count ?? 0) == 0)
+                if (!(geofences?.Any() ?? false))
                 {
                     // Failed to retrieve assignment from database, does it exist?
                     _logger.LogError($"Failed to retrieve geofence(s) ('{string.Join(", ", instance.Geofences)}') for assignment instance '{instance.Name}'.");
@@ -278,11 +294,9 @@
                 }
 
                 // Clear quests for all geofences assigned to instance
-                foreach (var geofence in geofences!)
-                {
-                    _logger.LogInformation($"Clearing quests for geofence '{geofence.Name}'");
-                    await mapContext.ClearQuestsAsync(geofence);
-                }
+                var geofenceNames = geofences.Select(x => x.Name);
+                _logger.LogInformation($"Clearing quests for geofences '{string.Join(", ", geofenceNames)}'");
+                await mapContext.ClearQuestsAsync(geofences);
 
                 _logger.LogInformation($"All quests have been cleared for assignment '{assignment.Id}' (Instance: {instance.Name}, Geofences: {string.Join(", ", instance.Geofences)})");
             }

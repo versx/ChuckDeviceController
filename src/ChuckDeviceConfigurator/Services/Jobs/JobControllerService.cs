@@ -92,6 +92,7 @@
             if (_assignmentService != null)
             {
                 _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
+                _assignmentService.ReloadInstance += OnReloadInstance;
             }
         }
 
@@ -674,6 +675,11 @@
         private void OnAssignmentDeviceReloaded(object? sender, AssignmentDeviceReloadedEventArgs e)
         {
             ReloadDevice(e.Device, e.Device.Uuid);
+        }
+
+        private async void OnReloadInstance(object? sender, ReloadInstanceEventArgs e)
+        {
+            await ReloadInstanceAsync(e.Instance, e.Instance.Name);
         }
 
         private void OnAccountLevelUp(object? sender, AccountLevelUpEventArgs e)

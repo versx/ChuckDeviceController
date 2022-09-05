@@ -16,6 +16,11 @@
         event EventHandler<AssignmentDeviceReloadedEventArgs> DeviceReloaded;
 
         /// <summary>
+        /// 
+        /// </summary>
+        event EventHandler<ReloadInstanceEventArgs> ReloadInstance;
+
+        /// <summary>
         /// Starts the <see cref="IAssignmentControllerService"/>.
         /// </summary>
         void Start();
