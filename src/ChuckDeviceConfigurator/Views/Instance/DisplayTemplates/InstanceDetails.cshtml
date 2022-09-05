@@ -56,7 +56,11 @@
                 @foreach (var device in Model!.Devices)
                 {
                     var status = Utils.GetDeviceStatus(device.LastSeen ?? 0);
-                    <li class="list-group-item">@Html.Raw($"{status} {device.Uuid}")</li>
+                    <li class="list-group-item">
+                        <a asp-controller="Device" asp-action="Details" asp-route-id="@device.Uuid" style="text-decoration: none; color: inherit;">
+                            @Html.Raw($"{status} {device.Uuid}")
+                        </a>
+                    </li>
                 }
             </ul>
         }
