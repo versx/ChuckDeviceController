@@ -35,6 +35,13 @@
                 <label asp-for="Type"></label>
                 <span asp-validation-for="Type" class="text-danger"></span>
             </div>
+            <div class="form-floating mb-3 custom">
+                <select asp-for="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes))" placeholder="Custom instance type">
+                    <option value="">Please select one</option>
+                </select>
+                <label asp-for="Data.CustomInstanceType"></label>
+                <span asp-validation-for="Data.CustomInstanceType" class="text-danger"></span>
+            </div>
             <div class="form-floating mb-3 circle_route">
                 <select asp-for="Data.CircleRouteType" class="form-control" asp-items="Html.GetEnumSelectList<CircleInstanceRouteType>()" placeholder="Instance circle route type">
                     <option value="">Please select one</option>
@@ -198,6 +205,7 @@ function hideAllElements(instanceTypeId) {
     const isSpawnpoint = instanceTypeId == @((int)InstanceType.FindTth);
     const isDynamic = instanceTypeId == @((int)InstanceType.DynamicRoute);
     const isLeveling = instanceTypeId == @((int)InstanceType.Leveling);
+    const isCustom = instanceTypeId == @((int)InstanceType.Custom);
     hideElements('bootstrap', isBootstrap);
     hideElements('pokemon_iv', isPokemonIV);
     hideElements('circles', isCircle);
@@ -207,6 +215,7 @@ function hideAllElements(instanceTypeId) {
     hideElements('lure_encounters', isCircle || isDynamic || isPokemonIV);
     hideElements('circle_route', isCircle || isDynamic || isBootstrap);
     hideElements('leveling', isLeveling);
+    hideElements('custom', isCustom);
 }
 
 function hideElements(className, show) {
