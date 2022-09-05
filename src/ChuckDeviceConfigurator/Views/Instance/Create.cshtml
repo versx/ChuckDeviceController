@@ -248,11 +248,14 @@ function handleInstanceTypeChanged(instanceTypeId) {
     const availableGeofences = parseGeofencesJson();
     // Clear all existing geofences in the list
     $('#Geofences').empty();
+    $('#Geofences').append(new Option('Please select one', ''));
     // Loop all available geofences and add them back to the select element if they match
     // the selected instance type
     for (const geofence of availableGeofences) {
         // Check if selected instance type matches geofence type
-        if (isCircle && geofence.Type === 'Circle' || !isCircle && geofence.Type === 'Geofence') {
+        if (isCircle && geofence.Type === 'Circle' ||
+            !isCircle && geofence.Type === 'Geofence' ||
+            instanceTypeId == @((int)InstanceType.Custom)) {
             // Create new select option for valid geofence
             const option = new Option(geofence.Name, geofence.Name);
             // Add select option to geofences multi select element

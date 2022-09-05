@@ -346,7 +346,7 @@
                     dropdownItems: new List<SidebarItem>
                     {
                         // Sidebar item #1
-                        new("Page", "Test", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
+                        new("Page", "Test", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
                         // Sidebar item #2
                         new(
                             // Text that is displayed in the sidebar
