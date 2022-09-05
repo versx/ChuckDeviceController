@@ -725,13 +725,13 @@
         public bool? IsEvent { get; set; }
     }
 
-    public class Geofence : IGeofenceCreationOptions
+    public class Geofence : IGeofence
     {
         public string Name { get; set; }
 
         public GeofenceType Type { get; set; }
 
-        public IGeofenceData? Data { get; set; }
+        public IGeofenceData Data { get; set; }
     }
 
     public class GeofenceData : IGeofenceData

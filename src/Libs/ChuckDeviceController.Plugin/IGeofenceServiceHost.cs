@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugin
 {
+    using ChuckDeviceController.Common.Data.Contracts;
+
     /// <summary>
     /// 
     /// </summary>
@@ -10,6 +12,6 @@
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        Task CreateGeofenceAsync(IGeofenceCreationOptions options);
+        Task CreateGeofenceAsync(IGeofence options);
     }
 }

@@ -34,11 +34,13 @@
         public GeofenceData? Data { get; set; }
 
         [
-
             DisplayName("Count"),
             NotMapped,
         ]
         public uint AreasCount { get; set; }
+
+        [NotMapped]
+        IGeofenceData IGeofence.Data => Data;
 
         #endregion
 
