@@ -114,9 +114,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Add Map-A-Droid payload conversion middleware
-// TODO: Make configurable
-app.UseMadData();
+// Convert Map-A-Droid payload data if enabled
+if (config.GetValue<bool>("ConvertMadData"))
+{
+    app.UseMadData();
+}
 
 app.UseAuthorization();
 app.MapControllers();
