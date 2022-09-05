@@ -31,11 +31,6 @@
 
                 _compiledViews.Add(compiledView.RelativePath, Task.FromResult(compiledView));
             }
-
-            //if (_compiledViews.Count == 0)
-            //{
-            //    // TODO: Throw error/inform user
-            //}
         }
 
         public Task<CompiledViewDescriptor> CompileAsync(string relativePath)

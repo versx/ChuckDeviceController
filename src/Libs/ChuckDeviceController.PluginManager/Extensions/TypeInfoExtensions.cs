@@ -13,9 +13,8 @@
 
         public static IEnumerable<Type> GetAssignableTypes<T>(this IEnumerable<Type> assemblyTypes)
         {
-            // TODO: Add type.IsSubClassOf support
             var types = assemblyTypes.Where(type => typeof(T).IsAssignableFrom(type))
-                                     .Where(type => type.IsClass && !type.IsAbstract)
+                                     .Where(type => (type.IsClass && !type.IsAbstract) || type.IsSubclassOf(typeof(T)))
                                      .ToList();
             return types;
         }

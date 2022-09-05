@@ -83,7 +83,7 @@
                 case StaticFilesLocation.External:
                     if (!File.Exists(path))
                     {
-                        // TODO: Log warning
+                        Console.WriteLine($"Error: External static file '{path}' does not exist");
                         return null;
                     }
                     // Static files are external and on local disk in the plugin's folder
