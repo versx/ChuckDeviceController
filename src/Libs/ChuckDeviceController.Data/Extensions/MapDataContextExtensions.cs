@@ -144,7 +144,7 @@
         /// <param name="context"></param>
         /// <param name="geofences"></param>
         /// <returns></returns>
-        public static async Task ClearQuestsAsync(this MapContext context, List<Geofence> geofences)
+        public static async Task ClearQuestsAsync(this MapContext context, IReadOnlyList<Geofence> geofences)
         {
             var (multiPolygons, _) = geofences.ConvertToMultiPolygons();
             await ClearQuestsAsync(context, multiPolygons);

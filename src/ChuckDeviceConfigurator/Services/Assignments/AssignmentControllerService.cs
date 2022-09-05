@@ -278,19 +278,7 @@
                     return;
                 }
 
-                //var geofences = instance.Geofences.Select(async geofence => await _context.Geofences.FindAsync(geofence)).ToList();
-                var geofences = new List<Geofence>();
-                foreach (var geofenceName in instance.Geofences)
-                {
-                    var geofence = await controllerContext.Geofences.FindAsync(geofenceName);
-                    if (geofence == null)
-                        continue;
-
-                    geofences.Add(geofence);
-                }
-
-                // TODO: Create GetInstanceGeofences method
-
+                var geofences = _geofenceService.GetByNames(instance.Geofences);
                 if (!(geofences?.Any() ?? false))
                 {
                     // Failed to retrieve assignment from database, does it exist?

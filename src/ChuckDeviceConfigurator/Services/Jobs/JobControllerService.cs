@@ -3,6 +3,7 @@
     using Microsoft.EntityFrameworkCore;
     using POGOProtos.Rpc;
 
+    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Assignments;
@@ -21,7 +22,6 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
-    using ChuckDeviceController.Plugin;
 
     // TODO: Refactor class into separate smaller classes
 
@@ -839,31 +839,12 @@
 
                 jobControllerType = _pluginInstances[customInstanceType];
             }
-            var attributes = jobControllerType.GetCustomAttributes(typeof(GeofenceTypeAttribute), false);
-            if (!attributes?.Any() ?? false)
-            {
-                // No geofence attributes specified but is required
-                return null;
-            }
 
             object? jobControllerInstance = null;
-            object[]? args = null;
-            var attr = attributes!.FirstOrDefault() as GeofenceTypeAttribute;
-            switch (attr?.Type)
-            {
-                case GeofenceType.Circle:
-                    var circles = geofences.ConvertToCoordinates();
-                    args = new object[] { instance, circles };
-                    break;
-                case GeofenceType.Geofence:
-                    var (_, polyCoords) = geofences.ConvertToMultiPolygons();
-                    args = new object[] { instance, polyCoords };
-                    break;
-            }
-
             try
             {
                 // TODO: Add support for adding more arguments to pass to job controller constructor
+                var args = jobControllerType.GetJobControllerConstructorArgs(instance, geofences);
                 if (args?.Any() ?? false)
                 {
                     jobControllerInstance = Activator.CreateInstance(jobControllerType, args);
