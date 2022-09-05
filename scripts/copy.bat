@@ -30,6 +30,9 @@ if not exist "%pluginFolder%/appsettings.json" (
 :: Copy all directories from plugin build output folder
 ::xcopy /S /E /Y /I "%targetDir%/" "%pluginFolder%/"
 
+if exist "%targetDir%/Pages/" (
+  xcopy /S /E /Y /I "%targetDir%/Pages" "%pluginFolder%/Pages"
+)
 if exist "%targetDir%/Views/" (
   xcopy /S /E /Y /I "%targetDir%/Views" "%pluginFolder%/Views"
 )
