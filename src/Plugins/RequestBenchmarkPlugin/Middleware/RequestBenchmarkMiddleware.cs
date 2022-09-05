@@ -19,7 +19,8 @@
         public async Task InvokeAsync(HttpContext context, RequestTimesDbContext dbContext)
         {
             var route = context.Request.Path.ToString();
-            var benchmark = _benchmarkService.Benchmarks.ContainsKey(route)
+            var exists = _benchmarkService.Benchmarks.ContainsKey(route);
+            var benchmark = exists
                 ? _benchmarkService.Benchmarks[route]
                 : new(route);
 
@@ -29,7 +30,7 @@
             }
 
             var timing = RequestTime.FromRequestBenchmark(benchmark);
-            if (_benchmarkService.Benchmarks.ContainsKey(route))
+            if (exists)
             {
                 dbContext.Update(timing);
             }
@@ -37,8 +38,8 @@
             {
                 await dbContext.AddAsync(timing);
             }
-            await dbContext.SaveChangesAsync();
 
+            try { await dbContext.SaveChangesAsync(); } catch { }
             _benchmarkService.UpdateRouteBenchmark(route, benchmark);
         }
     }
