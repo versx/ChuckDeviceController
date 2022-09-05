@@ -148,6 +148,7 @@ builder.Services.AddDbContext<MapContext>(options =>
 
 #region Host Services
 
+builder.Services.AddRazorPages(); // <- Required for plugins to render Razor pages
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();

@@ -12,6 +12,7 @@
 
     public static class ServiceCollectionExtensions
     {
+        private const string DefaultPages = "Pages";
         private const string DefaultViews = "Views";
         private const string DefaultWebRoot = "wwwroot";
 

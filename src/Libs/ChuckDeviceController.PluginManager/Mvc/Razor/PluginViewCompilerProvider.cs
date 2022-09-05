@@ -6,17 +6,12 @@
     public class PluginViewCompilerProvider : IViewCompilerProvider
     {
         private readonly ApplicationPartManager _applicationPartManager;
-        private PluginViewCompiler _compiler;
+        private readonly PluginViewCompiler _compiler;
 
         public PluginViewCompilerProvider(ApplicationPartManager applicationPartManager)
         {
             _applicationPartManager = applicationPartManager;
 
-            Refresh();
-        }
-
-        public void Refresh()
-        {
             var feature = new ViewsFeature();
             _applicationPartManager.PopulateFeature(feature);
             _compiler = new PluginViewCompiler(feature.ViewDescriptors);
