@@ -307,7 +307,7 @@
         /// <param name="heading">Heading in degrees, clockwise from 0 degrees north.</param>
         /// <param name="distance">Distance in meters</param>
         /// <returns>The destination coordinate</returns>
-        private static Coordinate GetNextCoordinate(Coordinate coordinate, double heading, double distance)
+        private static Coordinate GetNextCoordinate(ICoordinate coordinate, double heading, double distance)
         {
             heading = (heading + 360) % 360;
             const double earthRadius = 6378137; // Approximation of Earth's radius

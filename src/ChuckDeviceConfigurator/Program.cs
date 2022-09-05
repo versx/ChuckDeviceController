@@ -190,6 +190,7 @@ var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
 var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
 //var instanceServiceHost = new InstanceServiceHost(connectionString);
 var geofenceServiceHost = new GeofenceServiceHost(connectionString);
+var routeHost = new RouteHost();
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
 builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
 builder.Services.AddSingleton<IFileStorageHost>(fileStorageHost);
@@ -197,6 +198,7 @@ builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
 builder.Services.AddSingleton<ILoggingHost>(loggingHost);
 builder.Services.AddSingleton<IUiHost>(uiHost);
 builder.Services.AddSingleton<IGeofenceServiceHost>(geofenceServiceHost);
+builder.Services.AddSingleton<IRouteHost>(routeHost);
 
 builder.Services.AddHttpContextAccessor();
 
@@ -226,13 +228,14 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IConfigurationHost), configurationProviderHost },
     { typeof(IGeofenceServiceHost), geofenceServiceHost },
     { typeof(IInstanceServiceHost), jobControllerService },
+    { typeof(IRouteHost), routeHost },
 };
 
 // Instantiate 'IPluginManager' singleton with configurable options
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 {
-    Configuration = builder.Configuration,
     RootPluginsDirectory = Strings.PluginsFolder,
+    Configuration = builder.Configuration,
     Services = builder.Services,
     SharedServiceHosts = sharedServiceHosts,
 });

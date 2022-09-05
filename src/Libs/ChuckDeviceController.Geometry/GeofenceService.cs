@@ -76,9 +76,29 @@
             return inside;
         }
 
+        public static bool IsPointInPolygon(Coordinate point, List<Coordinate> polygon)
+        {
+            return IsPointInPolygon(point, polygon);
+        }
+
+        public static bool IsPointInPolygon(Coordinate point, List<List<Coordinate>>? multiPolygons)
+        {
+            if (!(multiPolygons?.Any() ?? false))
+                return true;
+
+            foreach (var multiPolygon in multiPolygons!)
+            {
+                if (IsPointInPolygon(point, multiPolygon))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static bool IsPointInPolygon(Coordinate point, List<List<ICoordinate>>? multiPolygons)
         {
-            if ((multiPolygons?.Count ?? 0) == 0)
+            if (!(multiPolygons?.Any() ?? false))
                 return true;
 
             foreach (var multiPolygon in multiPolygons!)

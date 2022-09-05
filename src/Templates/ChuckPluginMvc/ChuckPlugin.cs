@@ -140,7 +140,7 @@
         /// </param>
         public void Configure(WebApplication appBuilder)
         {
-            _loggingHost.LogMessage($"Configure called");
+            _loggingHost.LogInformation($"Configure called");
 
             // Add additional endpoints to list on
             appBuilder.Urls.Add("http://127.0.0.1:1199");
@@ -193,7 +193,7 @@
         /// </param>
         public void ConfigureServices(IServiceCollection services)
         {
-            _loggingHost.LogMessage($"ConfigureServices called");
+            _loggingHost.LogInformation($"ConfigureServices called");
         }
 
         /// <summary>
@@ -204,7 +204,7 @@
         /// </param>
         public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)
         {
-            _loggingHost.LogMessage($"ConfigureMvcBuilder called");
+            _loggingHost.LogInformation($"ConfigureMvcBuilder called");
         }
 
         #endregion
@@ -217,7 +217,7 @@
         /// </summary>
         public void OnLoad()
         {
-            _loggingHost.LogMessage($"{Name} v{Version} by {Author} initialized!");
+            _loggingHost.LogInformation($"{Name} v{Version} by {Author} initialized!");
         }
 
         /// <summary>
@@ -225,18 +225,18 @@
         /// </summary>
         public void OnReload()
         {
-            _loggingHost.LogMessage($"[{Name}] OnReload called");
+            _loggingHost.LogInformation($"[{Name}] OnReload called");
         }
 
         /// <summary>
         ///     Called when the plugin has been stopped by the host application.
         /// </summary>
-        public void OnStop() => _loggingHost.LogMessage($"[{Name}] OnStop called");
+        public void OnStop() => _loggingHost.LogInformation($"[{Name}] OnStop called");
 
         /// <summary>
         ///     Called when the plugin has been removed by the host application.
         /// </summary>
-        public void OnRemove() => _loggingHost.LogMessage($"[{Name}] Onremove called");
+        public void OnRemove() => _loggingHost.LogInformation($"[{Name}] Onremove called");
 
         /// <summary>
         ///     Called when the plugin's state has been
@@ -244,7 +244,7 @@
         /// </summary>
         /// <param name="state">Plugin's current state</param>
         public void OnStateChanged(PluginState state) =>
-            _loggingHost.LogMessage($"[{Name}] Plugin state has changed to '{state}'");
+            _loggingHost.LogInformation($"[{Name}] Plugin state has changed to '{state}'");
 
         #endregion
 
@@ -252,22 +252,22 @@
 
         public void OnStateChanged(DatabaseConnectionState state)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin database connection state has changed: {state}");
+            _loggingHost.LogInformation($"[{Name}] Plugin database connection state has changed: {state}");
         }
 
         public void OnEntityAdded<T>(T entity)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin database entity has been added: {entity}");
+            _loggingHost.LogInformation($"[{Name}] Plugin database entity has been added: {entity}");
         }
 
         public void OnEntityModified<T>(T oldEntity, T newEntity)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin database entity has been modified: {oldEntity}->{newEntity}");
+            _loggingHost.LogInformation($"[{Name}] Plugin database entity has been modified: {oldEntity}->{newEntity}");
         }
 
         public void OnEntityDeleted<T>(T entity)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin database entity has been deleted: {entity}");
+            _loggingHost.LogInformation($"[{Name}] Plugin database entity has been deleted: {entity}");
         }
 
         #endregion
@@ -276,17 +276,17 @@
 
         public void OnClick(ISettingsProperty property)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin setting clicked");
+            _loggingHost.LogInformation($"[{Name}] Plugin setting clicked");
         }
 
         public void OnToggle(ISettingsProperty property)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin setting toggled");
+            _loggingHost.LogInformation($"[{Name}] Plugin setting toggled");
         }
 
         public void OnSave(ISettingsProperty property)
         {
-            _loggingHost.LogMessage($"[{Name}] Plugin setting saved");
+            _loggingHost.LogInformation($"[{Name}] Plugin setting saved");
         }
 
         #endregion
