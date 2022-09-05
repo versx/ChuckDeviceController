@@ -25,7 +25,7 @@
 <hr />
 @Html.DisplayForModel("GeofenceDetails")
 
-@await Html.PartialAsync("_ViewOnlyGeofenceRoutePartial")
+@await Html.PartialAsync("_ViewOnlyGeofenceRoutePartial", new { MapConfig = ViewData["MapConfig"] })
 
 <script>
     const type = "@Model?.Type";

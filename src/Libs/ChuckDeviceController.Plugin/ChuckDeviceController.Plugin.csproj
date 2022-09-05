@@ -22,6 +22,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
-    <Folder Include="Hosts\" />
   </ItemGroup>
 </Project>

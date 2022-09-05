@@ -12,7 +12,7 @@
 
 <h4>Geofence</h4>
 <hr />
-<form asp-action="Edit">
+<form asp-action="Create">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
         <div class="col col-5">
@@ -42,7 +42,7 @@
 </form>
 <br />
 
-@await Html.PartialAsync("_GeofenceRouteGeneratorPartial", ViewData["GeofenceNames"])
+@await Html.PartialAsync("_GeofenceRouteGeneratorPartial", new { MapConfig = ViewData["MapConfig"], GeofenceNames = ViewData["GeofenceNames"] })
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

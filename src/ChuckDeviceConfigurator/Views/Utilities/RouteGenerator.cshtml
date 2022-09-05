@@ -18,7 +18,7 @@
 
 <hr />
 
-@await Html.PartialAsync("_GeofenceRouteGeneratorPartial")
+@await Html.PartialAsync("_GeofenceRouteGeneratorPartial", new { MapConfig = ViewData["MapConfig"], GeofenceNames = ViewData["GeofenceNames"] })
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

@@ -1,4 +1,5 @@
-﻿let importFormat = 'json';
+﻿let config;
+let importFormat = 'json';
 let manualCircle = false;
 let onlyUseIni = false;
 let circleSize = 70;
@@ -6,14 +7,7 @@ let viewOnlyMode = false;
 const minCircleSize = 1;
 const maxCircleSize = 1000;
 
-// TODO: Get map properties from config/settings
-const startLocation = [34.01, -117.01];
-const startZoom = 13;
-const minZoom = 4;
-const maxZoom = 18;
-const tileserverUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-const scale = L.Browser.retina ? '@2x' : '';
 const circleOptions = {
     color: 'red',
     fillColor: '#f03',
@@ -42,8 +36,17 @@ const mapOptions = {
 };
 const map = L.map('map', mapOptions);
 
-const initMap = (viewOnly) => {
+const initMap = (viewOnly, options) => {
     viewOnlyMode = viewOnly;
+    config = options;
+
+    const startLocation = [config.StartLatitude, config.StartLongitude];
+    const startZoom = config.StartZoom;
+    const minZoom = config.MinimumZoom;
+    const maxZoom = config.MaximumZoom;
+    const tileserverUrl = config.TileserverUrl;
+    const scale = L.Browser.retina ? '@2x' : '';
+
     const tileserverOptions = {
         minZoom,
         maxZoom,

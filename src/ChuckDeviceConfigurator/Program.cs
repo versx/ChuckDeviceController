@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
+using ChuckDeviceConfigurator.Configuration;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Extensions;
 using ChuckDeviceConfigurator.Localization;
@@ -158,6 +159,7 @@ builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
 
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
+builder.Services.Configure<LeafletMapConfig>(builder.Configuration.GetSection("Map"));
 
 builder.Services.AddGrpc(options =>
 {
@@ -171,18 +173,6 @@ builder.Services.AddGrpc(options =>
 #region Plugins
 
 // Register plugin host handlers
-/*
-var jobControllerService = new JobControllerService(
-    null,
-    null,
-    TimeZoneService.Instance,
-    null,
-    null,
-    null,
-    null,
-    null
-);
-*/
 var uiHost = new UiHost();
 var databaseHost = new DatabaseHost(connectionString);
 var loggingHost = new LoggingHost();
@@ -191,6 +181,7 @@ var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
 //var instanceServiceHost = new InstanceServiceHost(connectionString);
 var geofenceServiceHost = new GeofenceServiceHost(connectionString);
 var routeHost = new RouteHost();
+
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
 builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
 builder.Services.AddSingleton<IFileStorageHost>(fileStorageHost);
@@ -403,6 +394,7 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
 
             // Start assignment controller service
             assignmentController.Start();
+
             // Seed default user roles
             await UserIdentityContextSeed.SeedRolesAsync(roleManager);
 

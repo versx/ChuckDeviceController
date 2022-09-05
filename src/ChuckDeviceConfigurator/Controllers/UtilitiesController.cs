@@ -2,7 +2,9 @@
 {
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Options;
 
+    using ChuckDeviceConfigurator.Configuration;
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
@@ -13,6 +15,7 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
 
     [Authorize(Roles = RoleConsts.UtilitiesRole)]
     public class UtilitiesController : Controller
@@ -21,17 +24,20 @@
         private readonly ControllerContext _deviceContext;
         private readonly MapContext _mapContext;
         private readonly IJobControllerService _jobControllerService;
+        private readonly LeafletMapConfig _mapConfig;
 
         public UtilitiesController(
             ILogger<UtilitiesController> logger,
             ControllerContext deviceContext,
             MapContext mapContext,
-            IJobControllerService jobControllerService)
+            IJobControllerService jobControllerService,
+            IOptions<LeafletMapConfig> mapConfig)
         {
             _logger = logger;
             _deviceContext = deviceContext;
             _mapContext = mapContext;
             _jobControllerService = jobControllerService;
+            _mapConfig = mapConfig.Value;
         }
 
         // GET: UtilitiesController
@@ -524,6 +530,7 @@
         {
             var geofenceNames = _deviceContext.Geofences.ToList().Select(x => x.Name);
             ViewData["GeofenceNames"] = geofenceNames;
+            ViewData["MapConfig"] = _mapConfig.ToJson();
             return View();
         }
 

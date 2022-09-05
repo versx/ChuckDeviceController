@@ -3,7 +3,9 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Options;
 
+    using ChuckDeviceConfigurator.Configuration;
     using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
@@ -23,17 +25,20 @@
         private readonly ControllerContext _context;
         private readonly IGeofenceControllerService _geofenceService;
         private readonly IJobControllerService _jobControllerService;
+        private readonly LeafletMapConfig _mapConfig;
 
         public GeofenceController(
             ILogger<GeofenceController> logger,
             ControllerContext context,
             IGeofenceControllerService geofenceService,
-            IJobControllerService jobControllerService)
+            IJobControllerService jobControllerService,
+            IOptions<LeafletMapConfig> mapConfig)
         {
             _logger = logger;
             _context = context;
             _geofenceService = geofenceService;
             _jobControllerService = jobControllerService;
+            _mapConfig = mapConfig.Value;
         }
 
         // GET: GeofenceController
@@ -66,6 +71,7 @@
             }
 
             ViewData["GeofenceData"] = geofence.ConvertToIni();
+            ViewData["MapConfig"] = _mapConfig.ToJson();
             return View(geofence);
         }
 
@@ -74,6 +80,7 @@
         {
             var geofenceNames = _context.Geofences.ToList().Select(x => x.Name);
             ViewData["GeofenceNames"] = geofenceNames;
+            ViewData["MapConfig"] = _mapConfig.ToJson();
             return View();
         }
 
@@ -143,6 +150,7 @@
                 : AreaConverters.MultiPolygonToAreaString(data);
             geofence.Data.Area = area;
             ViewData["GeofenceNames"] = geofenceNames;
+            ViewData["MapConfig"] = _mapConfig.ToJson();
             return View(geofence);
         }
 

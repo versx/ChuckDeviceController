@@ -15,5 +15,6 @@
 <script src="~/js/geofence-converters.js"></script>
 <script src="~/js/geofence-generator.js"></script>
 <script>
-    initMap(true);
+    const options = JSON.parse(`@Html.Raw(Model.MapConfig)`);
+    initMap(true, options);
 </script>

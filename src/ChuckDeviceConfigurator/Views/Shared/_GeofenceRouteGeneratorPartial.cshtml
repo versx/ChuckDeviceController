@@ -38,8 +38,8 @@
 
 @await Html.PartialAsync("_ImportGeofenceRouteModalPartial", new GeofenceRouteViewModal
 {
-    Format = "json",
     Title = "Import Geofence",
+    Format = "json",
     Geofence = "",
     FormatChangedMethod = "importFormatChanged(this);",
     SubmitButtonText = "Import",
@@ -66,5 +66,6 @@
 <script src="~/js/geofence-converters.js"></script>
 <script src="~/js/geofence-generator.js"></script>
 <script>
-    initMap(false);
+    const options = JSON.parse(`@Html.Raw(Model.MapConfig)`);
+    initMap(false, options);
 </script>
