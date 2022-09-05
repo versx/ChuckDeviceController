@@ -19,7 +19,7 @@
 
         #region Properties
 
-        public override IReadOnlyList<Coordinate> Coordinates { get; internal set; }
+        public override IReadOnlyList<ICoordinate> Coordinates { get; internal set; }
 
         public Queue<ICoordinate> ScanNextCoordinates { get; } = new();
 
@@ -29,7 +29,7 @@
 
         public CircleInstanceController(
             Instance instance,
-            List<Coordinate> coords,
+            List<ICoordinate> coords,
             CircleInstanceType circleType = CircleInstanceType.Pokemon)
             : base(instance, coords, circleType, instance.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType)
         {

@@ -558,80 +558,78 @@
         {
             try
             {
-                ushort minLevel = 30;
-                ushort maxLevel = 39;
                 var customInstanceType = "test_controller";
-                var coords = new List<Coordinate>
-                {
-                    new Coordinate(34.01, -117.01),
-                    new Coordinate(34.02, -117.02),
-                    new Coordinate(34.03, -117.03),
-                    new Coordinate(34.04, -117.04),
-                };
 
                 // Create geofence entity
-                var geofence = new Geofence
-                {
-                    Name = "TestGeofence",
-                    Type = GeofenceType.Circle,
-                    Data = new GeofenceData
-                    {
-                        Area = coords,
-                    },
-                };
-                await _geofenceServiceHost.CreateGeofenceAsync(geofence);
+                var geofence = CreateGeofence();
+                //await _geofenceServiceHost.CreateGeofenceAsync(geofence);
 
-                // Create job controller instance factory creation
-                var factory = new Func<IInstance, TestInstanceController>(options =>
-                {
-                    // TODO: Get geofences
-                    var coords = new List<Coordinate>();
-                    var jobController = new TestInstanceController
-                    (
-                        options.Name,
-                        options.MinimumLevel,
-                        options.MaximumLevel,
-                        coords,
-                        options.Data.AccountGroup,
-                        options.Data.IsEvent ?? false
-                    );
-                    return jobController;
-                });
+                var instance = CreateInstance(customInstanceType, new() { geofence.Name });
+                //await _instanceServiceHost.CreateInstanceTypeAsync(instance);
+
                 // Register custom job controller type TestInstanceController
-                await _jobControllerHost.RegisterJobControllerAsync<TestInstanceController>(customInstanceType, factory);
+                await _jobControllerHost.RegisterJobControllerAsync<TestInstanceController>(customInstanceType);
 
-                // Create instance
-                var instance = new Instance
-                {
-                    Name = "TestInstance",
-                    MinimumLevel = minLevel,
-                    MaximumLevel = maxLevel,
-                    Geofences = new() { geofence.Name },
-                    Data = new InstanceData
-                    {
-                        CustomInstanceType = customInstanceType,
-                    },
-                };
-                await _instanceServiceHost.CreateInstanceTypeAsync((IInstance)instance);
-
-                // Assign device to new instance using custom job controller
-                var uuid = "RH2SE"; //"SGV7SE";
-                var device = await _databaseHost.GetByIdAsync<IDevice, string>(uuid);
-                if (device == null)
-                {
-                    _loggingHost.LogError($"Failed to get device from database with UUID '{uuid}'");
-                    return;
-                }
-
-                if (device.InstanceName != instance.Name)
-                {
-                    await _jobControllerHost.AssignDeviceToJobControllerAsync(device, instance.Name);
-                }
+                TestAssignDevice(instance.Name);
             }
             catch (Exception ex)
             {
                 _loggingHost.LogError(ex);
             }
+        }
+
+        private async void TestAssignDevice(string instanceName)
+        {
+            // Assign device to new instance using custom job controller
+            var uuid = "RH2SE"; //"SGV7SE";
+            var device = await _databaseHost.GetByIdAsync<IDevice, string>(uuid);
+            if (device == null)
+            {
+                _loggingHost.LogError($"Failed to get device from database with UUID '{uuid}'");
+                return;
+            }
+
+            if (device.InstanceName != instanceName)
+            {
+                await _jobControllerHost.AssignDeviceToJobControllerAsync(device, instanceName);
+            }
+        }
+
+        private static Geofence CreateGeofence()
+        {
+            var geofence = new Geofence
+            {
+                Name = "TestGeofence",
+                Type = GeofenceType.Circle,
+                Data = new GeofenceData
+                {
+                    Area = new List<Coordinate>
+                        {
+                            new Coordinate(34.01, -117.01),
+                            new Coordinate(34.02, -117.02),
+                            new Coordinate(34.03, -117.03),
+                            new Coordinate(34.04, -117.04),
+                        },
+                },
+            };
+            return geofence;
+        }
+
+        private static Instance CreateInstance(string customInstanceType, List<string> geofences)
+        {
+            // Create instance
+            var instance = new Instance
+            {
+                Name = "TestInstance",
+                MinimumLevel = 30,
+                MaximumLevel = 39,
+                Geofences = geofences,
+                Data = new InstanceData
+                {
+                    CustomInstanceType = customInstanceType,
+                },
+            };
+            return instance;
         }
 
         #endregion

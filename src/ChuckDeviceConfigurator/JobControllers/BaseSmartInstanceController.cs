@@ -30,7 +30,7 @@
 
         public string Name { get; }
 
-        public abstract IReadOnlyList<Coordinate> Coordinates { get; internal set; }
+        public abstract IReadOnlyList<ICoordinate> Coordinates { get; internal set; }
 
         public CircleInstanceType CircleType { get; }
 
@@ -52,7 +52,7 @@
 
         public BaseSmartInstanceController(
             Instance instance,
-            List<Coordinate> coords,
+            List<ICoordinate> coords,
             CircleInstanceType circleType = CircleInstanceType.Pokemon,
             CircleInstanceRouteType? routeType = CircleInstanceRouteType.Smart)
         {
@@ -134,7 +134,7 @@
 
         #region Routing Logic
 
-        internal Coordinate BasicRoute()
+        internal ICoordinate BasicRoute()
         {
             var currentIndex = _lastIndex;
             var currentCoord = Coordinates[currentIndex];
@@ -154,7 +154,7 @@
             return currentCoord;
         }
 
-        internal Coordinate SplitRoute(string uuid)
+        internal ICoordinate SplitRoute(string uuid)
         {
             // TODO: Lock index
             var currentUuidIndex = _currentUuid.ContainsKey(uuid)
@@ -218,7 +218,7 @@
             return currentCoord;
         }
 
-        internal Coordinate SmartRoute(string uuid)
+        internal ICoordinate SmartRoute(string uuid)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             // TODO: ContainsKey check is probably redundant since we add the device to the current
@@ -404,9 +404,9 @@
             return indexes;
         }
 
-        internal Coordinate? GetNextScanLocation(string uuid)
+        internal ICoordinate? GetNextScanLocation(string uuid)
         {
-            Coordinate? currentCoord = null;
+            ICoordinate? currentCoord = null;
             switch (CircleType)
             {
                 case CircleInstanceType.Pokemon:

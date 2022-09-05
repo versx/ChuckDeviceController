@@ -12,6 +12,7 @@
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Rpc.Models;
     using ChuckDeviceConfigurator.Services.TimeZone;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Common.Jobs;
@@ -20,6 +21,7 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugin;
 
     // TODO: Refactor class into separate smaller classes
     // TODO: Refactor to accommodate instances/job controllers from plugins
@@ -41,11 +43,11 @@
 
         private static readonly Dictionary<string, Device> _devices = new();
         private static readonly Dictionary<string, IJobController> _instances = new();
-        private static readonly Dictionary<string, Func<IInstance, IJobController>> _pluginInstances = new();
+        private static readonly Dictionary<string, Type> _pluginInstances = new();
 
         private readonly object _devicesLock = new();
         private readonly object _instancesLock = new();
-        private readonly object _pluginInstancesLock = new();
+        private static readonly object _pluginInstancesLock = new();
 
         #endregion
 
@@ -178,7 +180,7 @@
             await AddInstanceAsync(instance);
         }
 
-        public async Task RegisterJobControllerAsync<T>(string customInstanceType, Func<IInstance, T> factory)
+        public async Task RegisterJobControllerAsync<T>(string customInstanceType)
             where T : IJobController
         {
             if (string.IsNullOrEmpty(customInstanceType))
@@ -187,23 +189,11 @@
                 return;
             }
 
-            if (factory == null)
-            {
-                _logger.LogError($"Job controller instance factory must be provided, unable to register job controller type '{customInstanceType}'");
-                return;
-            }
-
             lock (_pluginInstancesLock)
             {
                 if (!_pluginInstances.ContainsKey(customInstanceType))
                 {
-                    if (factory is not Func<IInstance, IJobController> jobControllerFactory)
-                    {
-                        _logger.LogError($"Job controller instance factory must be provided for type '{customInstanceType}'");
-                        return;
-                    }
-
-                    _pluginInstances.Add(customInstanceType, jobControllerFactory);
+                    _pluginInstances.Add(customInstanceType, typeof(T));
                     _logger.LogInformation($"Successfully added job controller '{customInstanceType}' to plugin job controllers cache from plugin");
                 }
             }
@@ -312,25 +302,7 @@
                     }
                     break;
                 case InstanceType.Custom:
-                    var customInstanceType = instance.Data?.CustomInstanceType;
-                    if (string.IsNullOrEmpty(customInstanceType))
-                    {
-                        _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
-                        return;
-                    }
-
-                    lock (_pluginInstancesLock)
-                    {
-                        if (!_pluginInstances.ContainsKey(customInstanceType))
-                        {
-                            _logger.LogError($"[{instance.Name}] Plugin job controller has not been registered, unable to initialize job controller instance");
-                            return;
-                        }
-
-                        // TODO: Get targetted job controller geofence type via GeofenceTypeAttribute from type
-                        var factory = _pluginInstances[customInstanceType];
-                        jobController = factory(instance);
-                    }
+                    jobController = CreatePluginJobController(instance, geofences);
                     break;
             }
 
@@ -759,7 +731,7 @@
 
         #region Job Controller Methods
 
-        private static IJobController CreateCircleJobController(Instance instance, CircleInstanceType circleInstanceType, List<Coordinate> coords)
+        private static IJobController CreateCircleJobController(Instance instance, CircleInstanceType circleInstanceType, List<ICoordinate> coords)
         {
             var jobController = new CircleInstanceController(
                 instance,
@@ -843,6 +815,72 @@
                 routeCalculator
             );
             return jobController;
+        }
+
+        private static IJobController CreatePluginJobController(IInstance instance, IReadOnlyList<Geofence> geofences)
+        {
+            var customInstanceType = instance.Data?.CustomInstanceType;
+            if (string.IsNullOrEmpty(customInstanceType))
+            {
+                _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
+                return null;
+            }
+
+            lock (_pluginInstancesLock)
+            {
+                if (!_pluginInstances.ContainsKey(customInstanceType))
+                {
+                    _logger.LogError($"[{instance.Name}] Plugin job controller has not been registered, unable to initialize job controller instance");
+                    return null;
+                }
+
+                object? jobControllerInstance = null;
+                object[]? args = null;
+                var jobControllerType = _pluginInstances[customInstanceType];
+                var attributes = jobControllerType.GetCustomAttributes(typeof(GeofenceTypeAttribute), false);
+                if (!attributes?.Any() ?? false)
+                {
+                    // No geofence attributes specified but is required
+                    return null;
+                }
+                var attr = (GeofenceTypeAttribute)attributes.FirstOrDefault();
+                switch (attr?.Type)
+                {
+                    case GeofenceType.Circle:
+                        var circles = geofences.ConvertToCoordinates();
+                        args = new object[] { instance, circles };
+                        break;
+                    case GeofenceType.Geofence:
+                        var (_, polyCoords) = geofences.ConvertToMultiPolygons();
+                        args = new object[] { instance, polyCoords };
+                        break;
+                }
+
+                try
+                {
+                    if (args == null)
+                    {
+                        jobControllerInstance = Activator.CreateInstance(jobControllerType);
+                    }
+                    else
+                    {
+                        jobControllerInstance = Activator.CreateInstance(jobControllerType, args);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error: {ex}");
+                }
+
+                if (jobControllerInstance == null)
+                {
+                    _logger.LogError($"Failed to instantiate a new custom job controller instance for '{instance.Name}'");
+                    return null;
+                }
+
+                var jobController = (IJobController)jobControllerInstance;
+                return jobController;
+            }
         }
 
         #endregion

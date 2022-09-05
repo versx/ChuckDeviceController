@@ -4,8 +4,11 @@
     using System.Text.Json.Serialization;
 
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
+    using ChuckDeviceController.Plugin;
 
     /* Available interfaces to extend job controller:
      * IJobControllerCoordinates - Adds coordinates list vs geofence
@@ -14,6 +17,7 @@
      * IEventInstanceController - Enables event specific Pokemon re-encountering (IJobController already inherits from this)
      */
 
+    [GeofenceType(GeofenceType.Circle)]
     public class TestInstanceController : IJobController, IJobControllerCoordinates, IScanNextInstanceController
     {
         #region Variables
@@ -44,15 +48,16 @@
 
         #region Constructor
 
-        public TestInstanceController(string name, ushort minLevel, ushort maxLevel,
-            List<Coordinate> coords, string? groupName = null, bool isEvent = false)
+        //public TestInstanceController(string name, ushort minLevel, ushort maxLevel,
+        //    List<Coordinate> coords, string? groupName = null, bool isEvent = false)
+        public TestInstanceController(IInstance instance, List<ICoordinate> coords)
         {
-            Name = name;
-            MinimumLevel = minLevel;
-            MaximumLevel = maxLevel;
+            Name = instance.Name;
+            MinimumLevel = instance.MinimumLevel;
+            MaximumLevel = instance.MaximumLevel;
             Coordinates = coords;
-            GroupName = groupName;
-            IsEvent = isEvent;
+            GroupName = instance.Data.AccountGroup;
+            IsEvent = instance.Data.IsEvent ?? false;
         }
 
         #endregion

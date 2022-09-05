@@ -30,7 +30,7 @@
 
         #region Properties
 
-        public override IReadOnlyList<Coordinate> Coordinates { get; internal set; }
+        public override IReadOnlyList<ICoordinate> Coordinates { get; internal set; }
 
         public bool FastBootstrapMode { get; }
 

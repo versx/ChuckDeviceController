@@ -24,10 +24,8 @@
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="customInstanceType"></param>
-        /// <param name="factory"></param>
         /// <returns></returns>
-        Task RegisterJobControllerAsync<T>(string customInstanceType, Func<IInstance, T> factory)
-            where T : IJobController;
+        Task RegisterJobControllerAsync<T>(string customInstanceType) where T : IJobController;
 
         /// <summary>
         /// Assigns the specified device to a specific job controller

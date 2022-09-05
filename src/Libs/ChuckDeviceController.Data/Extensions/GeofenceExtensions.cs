@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Data.Extensions
 {
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
@@ -39,9 +40,9 @@
             return sb.ToString();
         }
 
-        public static List<Coordinate> ConvertToCoordinates(this IReadOnlyList<Geofence> geofences)
+        public static List<ICoordinate> ConvertToCoordinates(this IReadOnlyList<Geofence> geofences)
         {
-            var coords = new List<Coordinate>();
+            var coords = new List<ICoordinate>();
             foreach (var geofence in geofences)
             {
                 var result = ConvertToCoordinates(geofence);
