@@ -15,6 +15,17 @@
         private const string DefaultViews = "Views";
         private const string DefaultWebRoot = "wwwroot";
 
+        public static T GetService<T>(this IServiceCollection services) where T : notnull
+        {
+            var scopeFactory = services.BuildServiceProvider()
+                                       .GetRequiredService<IServiceScopeFactory>();
+
+            using var scope = scopeFactory.CreateScope();
+            var provider = scope.ServiceProvider;
+            var service = provider.GetRequiredService<T>();
+            return service;
+        }
+
         public static IServiceCollection RegisterPluginServices(this IServiceCollection services, IEnumerable<ServiceDescriptor> pluginServices)
         {
             // Register any PluginServices found with IServiceCollection

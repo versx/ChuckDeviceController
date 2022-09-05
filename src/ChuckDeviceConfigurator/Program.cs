@@ -25,6 +25,7 @@ using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager;
+using ChuckDeviceController.PluginManager.Mvc.Extensions;
 
 
 // TODO: Create 'CopyPlugin.sh' script for plugins to execute post build event (.dlls other than CDC libs, Views, wwwroot, .deps.json file, etc)
@@ -178,7 +179,6 @@ var databaseHost = new DatabaseHost(connectionString);
 var loggingHost = new LoggingHost();
 var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
 var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
-//var instanceServiceHost = new InstanceServiceHost(connectionString);
 var geofenceServiceHost = new GeofenceServiceHost(connectionString);
 var routeHost = new RouteHost();
 
@@ -193,20 +193,12 @@ builder.Services.AddSingleton<IRouteHost>(routeHost);
 
 builder.Services.AddHttpContextAccessor();
 
-IJobControllerService? jobControllerService = null;
-var scopeFactory = builder.Services
-                          .BuildServiceProvider()
-                          .GetRequiredService<IServiceScopeFactory>();
-
-using var scope = scopeFactory.CreateScope();
-var provider = scope.ServiceProvider;
-jobControllerService = provider.GetRequiredService<IJobControllerService>();
-
+// TODO: Do not build service provider from collection manually, leave it up to DI - https://andrewlock.net/access-services-inside-options-and-startup-using-configureoptions/
+var jobControllerService = builder.Services.GetService<IJobControllerService>();
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
-//builder.Services.AddSingleton<IJobControllerService>(jobControllerService);
 builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
 
-// TODO: Use builder.Services registered instead of 'sharedServiceHosts'
+// TODO: Use builder.Services registered instead of 'sharedServiceHosts' - Fix issue with IDbContextFactory and eventually ILogger<T> parameters (just make static and use logger factory instead)
 var sharedServiceHosts = new Dictionary<Type, object>
 {
     { typeof(ILoggingHost), loggingHost },
@@ -234,9 +226,7 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 // call OnLoad callback and register with 'IPluginManager' cache
 await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment);
 
-//builder.Services.AddSingleton<IPluginManagerOptions>(pluginManager.Options);
-//builder.Services.AddSingleton<IPluginManager>(pluginManager);
-
+// Start job controller service _after_ all plugins have been loaded (TODO: Add PluginsLoadedComplete event?)
 jobControllerService.Start();
 
 #endregion
