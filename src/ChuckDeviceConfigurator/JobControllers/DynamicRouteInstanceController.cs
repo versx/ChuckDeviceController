@@ -2,8 +2,10 @@
 {
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugin;
 
     // TODO: Calculate proper status for DynamicRoute job controller instance
 
@@ -19,7 +21,7 @@
 
         #region Properties
 
-        public IReadOnlyList<MultiPolygon> MultiPolygons { get; }
+        public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 
         public bool OptimizeDynamicRoute { get; }
 
@@ -29,7 +31,7 @@
 
         public DynamicRouteInstanceController(
             Instance instance,
-            List<MultiPolygon> multiPolygons,
+            List<IMultiPolygon> multiPolygons,
             IRouteGenerator routeGenerator,
             IRouteCalculator routeCalculator)
             : base(instance, new(), CircleInstanceType.Pokemon)
@@ -47,7 +49,7 @@
 
         #region Private Methods
 
-        private List<Coordinate> GenerateDynamicRoute()
+        private List<ICoordinate> GenerateDynamicRoute()
         {
             _logger.LogInformation($"[{Name}] Generating dynamic route...");
 
@@ -58,7 +60,7 @@
             {
                 CircleSize = Strings.DefaultCircleSize,
                 RouteType = RouteGenerationType.Randomized,
-                MultiPolygons = (List<MultiPolygon>)MultiPolygons,
+                MultiPolygons = (List<IMultiPolygon>)MultiPolygons,
                 MaximumPoints = 500,
             });
 

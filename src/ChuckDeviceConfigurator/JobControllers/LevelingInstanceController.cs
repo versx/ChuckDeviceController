@@ -6,12 +6,12 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -99,7 +99,7 @@
 
         public string Name { get; }
 
-        public IReadOnlyList<MultiPolygon> MultiPolygons { get; internal set; }
+        public IReadOnlyList<IMultiPolygon> MultiPolygons { get; internal set; }
 
         public ushort MinimumLevel { get; }
 
@@ -132,7 +132,7 @@
         public LevelingInstanceController(
             IDbContextFactory<ControllerContext> deviceFactory,
             Instance instance,
-            List<MultiPolygon> multiPolygons)
+            List<IMultiPolygon> multiPolygons)
         {
             Name = instance.Name;
             MultiPolygons = multiPolygons;

@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing
 {
-    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Common.Geometry;
 
     /// <summary>
     /// Route calculator to find the shortest routing path in order
@@ -19,14 +19,14 @@
         ///     Gets or sets the list of coordinates to include when calculating
         ///     the optimized route.
         /// </summary>
-        IReadOnlyList<Coordinate> Coordinates { get; }
+        IReadOnlyList<ICoordinate> Coordinates { get; }
 
 
         /// <summary>
         ///     Adds the specified coordinate to the coordinates list.
         /// </summary>
         /// <param name="coordinate">Coordinate to add to the list.</param>
-        void AddCoordinate(Coordinate coordinate);
+        void AddCoordinate(ICoordinate coordinate);
 
         /// <summary>
         ///     Adds a list of coordinates to the coordinates list.
@@ -34,7 +34,7 @@
         /// <param name="coordinates">
         ///     List of coordinates to add to the list.
         /// </param>
-        void AddCoordinates(List<Coordinate> coordinates);
+        void AddCoordinates(List<ICoordinate> coordinates);
 
         /// <summary>
         ///     Clears all current coordinates in the coordinates list.
@@ -48,6 +48,6 @@
         ///     Returns a queue of coordinates with the shortest routing path to
         ///     prevent big jumps.
         /// </returns>
-        Queue<Coordinate> CalculateShortestRoute();
+        Queue<ICoordinate> CalculateShortestRoute();
     }
 }

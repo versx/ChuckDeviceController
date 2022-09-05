@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Services.Routing
+﻿namespace ChuckDeviceController.Plugin
 {
     /// <summary>
     /// Routing generation type

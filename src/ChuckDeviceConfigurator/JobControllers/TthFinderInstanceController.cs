@@ -4,10 +4,10 @@
 
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -46,9 +46,9 @@
 
         public string Name { get; }
 
-        public IReadOnlyList<MultiPolygon> MultiPolygons { get; }
+        public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 
-        public IReadOnlyList<Coordinate> SpawnpointCoordinates { get; private set; }
+        public IReadOnlyList<ICoordinate> SpawnpointCoordinates { get; private set; }
 
         public ushort MinimumLevel { get; }
 
@@ -69,7 +69,7 @@
         public TthFinderInstanceController(
             IDbContextFactory<MapContext> factory,
             Instance instance,
-            List<MultiPolygon> multiPolygons,
+            List<IMultiPolygon> multiPolygons,
             IRouteCalculator routeCalculator)
         {
             Name = instance.Name;
@@ -170,7 +170,7 @@
 
         #region Private Methods
 
-        private async Task<BootstrapTask> GetSpawnpointTaskAsync(Coordinate currentCoord)
+        private async Task<BootstrapTask> GetSpawnpointTaskAsync(ICoordinate currentCoord)
         {
             return await Task.FromResult(new BootstrapTask
             {
@@ -182,9 +182,9 @@
             });
         }
 
-        private IReadOnlyList<Coordinate> GenerateSpawnpointCoordinates()
+        private IReadOnlyList<ICoordinate> GenerateSpawnpointCoordinates()
         {
-            var coordinates = new List<Coordinate>();
+            var coordinates = new List<ICoordinate>();
             foreach (var multiPolygon in MultiPolygons)
             {
                 var bbox = multiPolygon.GetBoundingBox();
@@ -211,7 +211,7 @@
             return coordinates;
         }
 
-        private List<Coordinate> GetSpawnpointCoordinates(BoundingBox bbox, bool onlyUnknown)
+        private List<Coordinate> GetSpawnpointCoordinates(IBoundingBox bbox, bool onlyUnknown)
         {
             using (var context = _factory.CreateDbContext())
             {

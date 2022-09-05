@@ -1,17 +1,11 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing
 {
-    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugin;
 
     /// <summary>
     /// Route generator
     /// </summary>
-    public interface IRouteGenerator
+    public interface IRouteGenerator : IRouteHost
     {
-        /// <summary>
-        ///     Generates a route using the specified route generator options.
-        /// </summary>
-        /// <param name="options">Route generator options to use.</param>
-        /// <returns>Returns a list of coordinates of the generated route.</returns>
-        List<Coordinate> GenerateRoute(RouteGeneratorOptions options);
     }
 }

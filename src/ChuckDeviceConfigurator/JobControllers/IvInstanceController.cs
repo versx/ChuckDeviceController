@@ -52,7 +52,7 @@
 
         public string Name { get; }
 
-        public IReadOnlyList<MultiPolygon> MultiPolygons { get; }
+        public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 
         public ushort MinimumLevel { get; }
 
@@ -77,7 +77,7 @@
         public IvInstanceController(
             IDbContextFactory<MapContext> mapFactory,
             Instance instance,
-            List<MultiPolygon> multiPolygons,
+            List<IMultiPolygon> multiPolygons,
             List<string> pokemonIds)
         {
             Name = instance.Name;
@@ -241,7 +241,7 @@
             // First thing to do is ensure that the received Pokemon is within this IV job
             // controller's geofence bounds.
             var pkmnCoord = pokemon.ToCoordinate();
-            if (!GeofenceService.InMultiPolygon((List<MultiPolygon>)MultiPolygons, pkmnCoord))
+            if (!GeofenceService.InMultiPolygon((List<IMultiPolygon>)MultiPolygons, pkmnCoord))
             {
                 // Pokemon outside of geofence area for job controller, skipping...
                 return;

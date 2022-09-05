@@ -1,13 +1,13 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing
 {
     using ChuckDeviceConfigurator.Utilities;
-    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Common.Geometry;
 
     public class RouteCalculator : IRouteCalculator
     {
         private const ushort DefaultCircleSize = Strings.DefaultCircleSize;
 
-        private readonly List<Coordinate> _coordinates;
+        private readonly List<ICoordinate> _coordinates;
 
         #region Properties
 
@@ -18,20 +18,20 @@
         public bool ClearCoordinatesAfterOptimization { get; set; } = true;
 
         /// <summary>
-        /// Gets a read only list of <seealso cref="Coordinate"/>.
+        /// Gets a read only list of <seealso cref="ICoordinate"/>.
         /// </summary>
-        public IReadOnlyList<Coordinate> Coordinates => _coordinates;
+        public IReadOnlyList<ICoordinate> Coordinates => _coordinates;
 
         #endregion
 
         #region Constructors
 
         public RouteCalculator()
-            : this(new List<Coordinate>())
+            : this(new List<ICoordinate>())
         {
         }
 
-        public RouteCalculator(List<Coordinate> coordinates)
+        public RouteCalculator(List<ICoordinate> coordinates)
         {
             _coordinates = coordinates;
         }
@@ -45,7 +45,7 @@
         /// </summary>
         /// <param name="coordinate">Coordinate to add.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void AddCoordinate(Coordinate coordinate)
+        public void AddCoordinate(ICoordinate coordinate)
         {
             if (coordinate == null)
             {
@@ -59,7 +59,7 @@
         /// </summary>
         /// <param name="coordinates">List of coordinates to add.</param>
         /// <exception cref="ArgumentNullException"></exception>
-        public void AddCoordinates(List<Coordinate> coordinates)
+        public void AddCoordinates(List<ICoordinate> coordinates)
         {
             if ((coordinates?.Count ?? 0) == 0)
             {
@@ -84,7 +84,7 @@
         /// </summary>
         /// <returns>Returns a queue of the shortest route.</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public Queue<Coordinate> CalculateShortestRoute()
+        public Queue<ICoordinate> CalculateShortestRoute()
         {
             if (_coordinates.Count == 0)
             {
@@ -100,7 +100,7 @@
                 ClearCoordinates();
             }
 
-            var queue = new Queue<Coordinate>(ordered);
+            var queue = new Queue<ICoordinate>(ordered);
             return queue;
         }
 
@@ -108,7 +108,7 @@
 
         #region Private Methods
 
-        private static double GetDistance(Coordinate coord1, Coordinate coord2)
+        private static double GetDistance(ICoordinate coord1, ICoordinate coord2)
         {
             return Math.Sqrt(
                 Math.Pow(coord2.Latitude - coord1.Latitude, 2) +
@@ -116,7 +116,7 @@
             );
         }
 
-        private static double GetDistanceQuick(Coordinate coord1, Coordinate coord2)
+        private static double GetDistanceQuick(ICoordinate coord1, ICoordinate coord2)
         {
             var deltaX = Math.Abs(coord2.Latitude - coord1.Latitude);
             var deltaY = Math.Abs(coord2.Longitude - coord1.Longitude);
@@ -124,10 +124,10 @@
             return distance;
         }
 
-        private static List<Coordinate> OrderByDistance(List<Coordinate> coordinates, ushort circleSize = DefaultCircleSize)
+        private static List<ICoordinate> OrderByDistance(List<ICoordinate> coordinates, ushort circleSize = DefaultCircleSize)
         {
-            var orderedList = new List<Coordinate>();
-            var coords = new List<Coordinate>(coordinates);
+            var orderedList = new List<ICoordinate>();
+            var coords = new List<ICoordinate>(coordinates);
             var currentPoint = coords[0];
 
             while (coords.Count > 1)

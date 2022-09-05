@@ -2,6 +2,7 @@
 {
     using Google.Common.Geometry;
 
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Geometry.Models;
 
     public static class S2CellExtensions
@@ -58,7 +59,7 @@
             return list;
         }
 
-        public static List<Coordinate> GetS2CellCoordinates(this BoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = 100)
+        public static List<Coordinate> GetS2CellCoordinates(this IBoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = 100)
         {
             var cellIds = GetS2CellCoverage(bbox, minLevel, maxLevel, maxCells);
             var coordinates = cellIds.Select(cell => cell.ToLatLng())
@@ -83,7 +84,7 @@
             return coord;
         }
 
-        public static S2CellUnion GetS2CellCoverage(this BoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = int.MaxValue)
+        public static S2CellUnion GetS2CellCoverage(this IBoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = int.MaxValue)
         {
             var regionCoverer = new S2RegionCoverer
             {
@@ -96,7 +97,7 @@
             return coverage;
         }
 
-        public static S2LatLngRect GetS2Region(this BoundingBox bbox)
+        public static S2LatLngRect GetS2Region(this IBoundingBox bbox)
         {
             var min = S2LatLng.FromDegrees(bbox.MinimumLatitude, bbox.MinimumLongitude);
             var max = S2LatLng.FromDegrees(bbox.MaximumLatitude, bbox.MaximumLongitude);

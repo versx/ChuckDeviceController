@@ -1,12 +1,12 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing.Utilities
 {
-    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Common.Geometry;
 
     public static class RouteOptimizeUtil
     {
         private const double EarthRadius = 6371e3;
 
-        public static List<Coordinate> Optimize(List<Coordinate> coords)
+        public static List<ICoordinate> Optimize(List<ICoordinate> coords)
         {
             var start = coords.FirstOrDefault();
             if (start == null)
@@ -18,9 +18,9 @@
             return route;
         }
 
-        public static List<Coordinate> Optimize(List<Coordinate> coords, double lat, double lon)
+        public static List<ICoordinate> Optimize(List<ICoordinate> coords, double lat, double lon)
         {
-            var optimizedRoute = new List<Coordinate>(coords);
+            var optimizedRoute = new List<ICoordinate>(coords);
             // NN
             var nn = FindNext(optimizedRoute, lat, lon);
             optimizedRoute.Remove(nn);
@@ -43,7 +43,7 @@
             return optimizedRoute;
         }
 
-        private static List<Coordinate> Optimize2Opt(List<Coordinate> coords, out bool isOptimized)
+        private static List<ICoordinate> Optimize2Opt(List<ICoordinate> coords, out bool isOptimized)
         {
             var count = coords.Count;
             var bestGain = 0f;
@@ -82,10 +82,10 @@
 
             if (bestI != -1)
             {
-                List<Coordinate> optimizedRoute;
+                List<ICoordinate> optimizedRoute;
                 if (bestI > bestJ)
                 {
-                    optimizedRoute = new List<Coordinate> { coords[0] };
+                    optimizedRoute = new List<ICoordinate> { coords[0] };
                     optimizedRoute.AddRange(coords.Skip(bestI));
                     optimizedRoute.Reverse(1, count - bestI);
                     optimizedRoute.AddRange(coords.GetRange(bestJ + 1, bestI - bestJ - 1));
@@ -94,12 +94,12 @@
                 }
                 else if (bestI == 0)
                 {
-                    optimizedRoute = new List<Coordinate>(coords);
+                    optimizedRoute = new List<ICoordinate>(coords);
                     optimizedRoute.Reverse(bestJ + 1, count - bestJ - 1);
                 }
                 else
                 {
-                    optimizedRoute = new List<Coordinate>(coords);
+                    optimizedRoute = new List<ICoordinate>(coords);
                     optimizedRoute.Reverse(bestI, bestJ - bestI + 1);
                 }
 
@@ -111,14 +111,14 @@
         }
 
         // FindNn
-        private static Coordinate FindNext(IEnumerable<Coordinate> coords, double lat, double lon)
+        private static ICoordinate FindNext(IEnumerable<ICoordinate> coords, double lat, double lon)
         {
             var coord = coords.OrderBy(coord => GetDistance(lat, lon, coord.Latitude, coord.Longitude))
                               .FirstOrDefault();
             return coord;
         }
 
-        private static float GetDistance(Coordinate coord1, Coordinate coord2)
+        private static float GetDistance(ICoordinate coord1, ICoordinate coord2)
         {
             return GetDistance(coord1.Latitude, coord1.Longitude, coord2.Latitude, coord2.Longitude);
         }

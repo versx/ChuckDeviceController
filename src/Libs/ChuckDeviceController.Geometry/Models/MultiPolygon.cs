@@ -17,10 +17,10 @@
         /// <param name="maxLevel">Maximum S2 cell level to meet</param>
         /// <param name="maxCells">Maximum S2 cells to return</param>
         /// <returns>Returns a list of <seealso cref="S2CellId"/> objects</returns>
-        public List<S2CellId> GetS2CellIds(ushort minLevel = 15, ushort maxLevel = 15, int maxCells = ushort.MaxValue)
+        public List<ulong> GetS2CellIds(ushort minLevel = 15, ushort maxLevel = 15, int maxCells = ushort.MaxValue)
         {
             var bbox = GetBoundingBox();
-            var result = new List<S2CellId>();
+            var result = new List<ulong>();
             var coverage = bbox.GetS2CellCoverage(minLevel, maxLevel, maxCells);
             foreach (var cellId in coverage)
             {
@@ -32,7 +32,7 @@
                     if (!GeofenceService.InPolygon(this, coord))
                         continue;
 
-                    result.Add(cellId);
+                    result.Add(cellId.Id);
                 }
             }
             return result;
@@ -53,7 +53,7 @@
         /// Gets the bounding box boundaries of the multi polygon geofence
         /// </summary>
         /// <returns>Returns the bounding box of the multi polygon geofence</returns>
-        public BoundingBox GetBoundingBox()
+        public IBoundingBox GetBoundingBox()
         {
             // Add checks here, if necessary, to make sure that points is not null,
             // and that it contains at least one (or perhaps two?) elements

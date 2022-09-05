@@ -3,17 +3,17 @@
     using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
-    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugin;
 
     public class SmartRaidInstanceController : IJobController
     {
@@ -35,8 +35,8 @@
 
         //private readonly object _smartRaidLock = new();
         private readonly Dictionary<string, Gym> _smartRaidGyms;
-        private readonly Dictionary<Coordinate, List<string>> _smartRaidGymsInPoint;
-        private readonly Dictionary<Coordinate, ulong> _smartRaidPointsUpdated;
+        private readonly Dictionary<ICoordinate, List<string>> _smartRaidGymsInPoint;
+        private readonly Dictionary<ICoordinate, ulong> _smartRaidPointsUpdated;
 
         private readonly object _statsLock = new();
         private ulong _startDate;
@@ -50,7 +50,7 @@
 
         //public IReadOnlyList<Coordinate> Coordinates { get; }
 
-        public IReadOnlyList<MultiPolygon> MultiPolygons { get; }
+        public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 
         public ushort MinimumLevel { get; }
 
@@ -67,7 +67,7 @@
         public SmartRaidInstanceController(
             IDbContextFactory<MapContext> factory,
             Instance instance,
-            List<MultiPolygon> multiPolygons)
+            List<IMultiPolygon> multiPolygons)
         {
             Name = instance.Name;
             MultiPolygons = multiPolygons;
@@ -79,8 +79,8 @@
             _factory = factory;
             _logger = new Logger<SmartRaidInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _smartRaidGyms = new Dictionary<string, Gym>();
-            _smartRaidGymsInPoint = new Dictionary<Coordinate, List<string>>();
-            _smartRaidPointsUpdated = new Dictionary<Coordinate, ulong>();
+            _smartRaidGymsInPoint = new Dictionary<ICoordinate, List<string>>();
+            _smartRaidPointsUpdated = new Dictionary<ICoordinate, ulong>();
 
             // Load/build gyms list for smart raid cache
             LoadGymsAsync().ConfigureAwait(false)
@@ -205,12 +205,12 @@
             {
                 CircleSize = 500,
                 MaximumPoints = 500,
-                MultiPolygons = (List<MultiPolygon>)MultiPolygons,
+                MultiPolygons = (List<IMultiPolygon>)MultiPolygons,
                 RouteType = RouteGenerationType.Bootstrap,
             });
 
             // Optimize bootstrapped route
-            var routeCalculator = new RouteCalculator(new List<Coordinate>(route));
+            var routeCalculator = new RouteCalculator(new List<ICoordinate>(route));
             var optimizedRoute = routeCalculator.CalculateShortestRoute();
 
             foreach (var coord in route)
@@ -294,12 +294,12 @@
             };
         }
 
-        private Coordinate? GetNextScanLocation()
+        private ICoordinate? GetNextScanLocation()
         {
             // Build list of gyms to check
             var gyms = GetGymsToCheck();
 
-            Coordinate? coord = null;
+            ICoordinate? coord = null;
             var now = DateTime.UtcNow.ToTotalSeconds();
             if (gyms.NoBoss.Count > 0)
             {
@@ -409,9 +409,9 @@
 
             public ulong Updated { get; set; }
 
-            public Coordinate Coordinate { get; set; }
+            public ICoordinate Coordinate { get; set; }
 
-            public SmartRaidGym(Gym gym, ulong updated, Coordinate coordinate)
+            public SmartRaidGym(Gym gym, ulong updated, ICoordinate coordinate)
             {
                 Gym = gym;
                 Updated = updated;

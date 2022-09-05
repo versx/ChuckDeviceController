@@ -4,9 +4,9 @@
 
     using ChuckDeviceConfigurator.Services.Icons;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Plugin;
 
     public static class Utils
@@ -204,7 +204,7 @@
             return totalSeconds;
         }
 
-        public static int CompareCoordinates(Coordinate coord1, Coordinate coord2)
+        public static int CompareCoordinates(ICoordinate coord1, ICoordinate coord2)
         {
             var d1 = Math.Pow(coord1.Latitude, 2) + Math.Pow(coord1.Longitude, 2);
             var d2 = Math.Pow(coord2.Latitude, 2) + Math.Pow(coord2.Longitude, 2);

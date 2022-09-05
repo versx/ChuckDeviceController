@@ -1,6 +1,6 @@
-﻿namespace ChuckDeviceConfigurator.Services.Routing
+﻿namespace ChuckDeviceController.Plugin
 {
-    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Common.Geometry;
 
     /// <summary>
     /// Routing generation options
@@ -8,10 +8,10 @@
     public class RouteGeneratorOptions
     {
         /// <summary>
-        /// Gets or sets the list of <seealso cref="MultiPolygon"/> (geofences)
+        /// Gets or sets the list of <seealso cref="IMultiPolygon"/> (geofences)
         /// used to generate the route in.
         /// </summary>
-        public List<MultiPolygon> MultiPolygons { get; set; } = new();
+        public List<IMultiPolygon> MultiPolygons { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the route generation type to use.
@@ -28,6 +28,6 @@
         /// Gets or sets a value used to determine the size of each
         /// coordinate to space between when generating the route.
         /// </summary>
-        public double CircleSize { get; set; } = Strings.DefaultCircleSize;
+        public double CircleSize { get; set; } = 70;// Strings.DefaultCircleSize;
     }
 }

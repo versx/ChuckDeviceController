@@ -41,6 +41,8 @@ if (config.Providers.Count() == 2)
 }
 
 var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
+// Need to call at startup so time gets set now and not when first visit to dashboard
+logger.LogDebug($"Uptime: {Strings.Uptime}");
 
 // Create locale translation files
 try
@@ -56,8 +58,6 @@ catch (Exception ex)
 
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
-// Need to call at startup so time gets set now and not when first visit to dashboard
-logger.LogDebug($"Uptime: {Strings.Uptime}");
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
@@ -156,7 +156,7 @@ builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 // TODO: Remove extra service registration of 'JobControllerService' or confirm there are no issues and two instances are not created
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
-builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
+//builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
 
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
@@ -180,7 +180,6 @@ var loggingHost = new LoggingHost();
 var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
 var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
 var geofenceServiceHost = new GeofenceServiceHost(connectionString);
-var routeHost = new RouteHost();
 
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
 builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
@@ -189,7 +188,10 @@ builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
 builder.Services.AddSingleton<ILoggingHost>(loggingHost);
 builder.Services.AddSingleton<IUiHost>(uiHost);
 builder.Services.AddSingleton<IGeofenceServiceHost>(geofenceServiceHost);
-builder.Services.AddSingleton<IRouteHost>(routeHost);
+builder.Services.AddSingleton<IRouteHost, RouteGenerator>();
+
+var routeHost = builder.Services.GetService<IRouteHost>();
+builder.Services.AddSingleton((IRouteGenerator)routeHost);
 
 builder.Services.AddHttpContextAccessor();
 

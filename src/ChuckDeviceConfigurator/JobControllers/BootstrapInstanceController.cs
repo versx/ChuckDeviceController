@@ -15,6 +15,7 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugin;
 
     public class BootstrapInstanceController : BaseSmartInstanceController, IScanNextInstanceController
     {
@@ -23,7 +24,7 @@
         private readonly ILogger<BootstrapInstanceController> _logger;
         private readonly IRouteGenerator _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
-        private readonly List<MultiPolygon> _multiPolygons;
+        private readonly List<IMultiPolygon> _multiPolygons;
         //private ulong _startTime = 0;
 
         #endregion
@@ -58,7 +59,7 @@
 
         public BootstrapInstanceController(
             Instance instance,
-            List<MultiPolygon> multiPolygons,
+            List<IMultiPolygon> multiPolygons,
             IRouteGenerator routeGenerator,
             IRouteCalculator routeCalculator)
             : base(instance, new(), CircleInstanceType.Pokemon, CircleInstanceRouteType.Smart)
@@ -190,7 +191,7 @@
             };
         }
 
-        private List<Coordinate> GenerateBootstrapCoordinates()
+        private List<ICoordinate> GenerateBootstrapCoordinates()
         {
             //TestRouting();
 

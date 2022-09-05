@@ -4,6 +4,7 @@
 
     using Microsoft.EntityFrameworkCore;
 
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
@@ -123,7 +124,7 @@
 
         #region Private Methods
 
-        private async Task<List<Coordinate>> GetEntityCoordinatesAsync(BoundingBox bbox)
+        private async Task<List<Coordinate>> GetEntityCoordinatesAsync(IBoundingBox bbox)
         {
             var coordinates = new List<Coordinate>();
             using (var context = _factory.CreateDbContext())
@@ -165,7 +166,7 @@
                 }
             }
 
-            var coordsInArea = coordinates.Where(coord => GeofenceService.InMultiPolygon((List<MultiPolygon>)MultiPolygons, coord))
+            var coordsInArea = coordinates.Where(coord => GeofenceService.InMultiPolygon((List<IMultiPolygon>)MultiPolygons, coord))
                                             .ToList();
 
             return await Task.FromResult(coordsInArea);

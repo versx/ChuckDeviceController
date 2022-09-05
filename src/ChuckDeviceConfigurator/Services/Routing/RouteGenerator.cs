@@ -13,6 +13,7 @@
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugin;
 
     // TODO: Find clusters to use with dynamic route
 
@@ -43,9 +44,9 @@
         /// <param name="options">Routing generation </param>
         /// <returns>Returns a list of the generated route.</returns>
         /// <exception cref="Exception"></exception>
-        public List<Coordinate> GenerateRoute(RouteGeneratorOptions options)
+        public List<ICoordinate> GenerateRoute(RouteGeneratorOptions options)
         {
-            var coordinates = new List<Coordinate>();
+            var coordinates = new List<ICoordinate>();
             var geofences = options.MultiPolygons;
             var maxPoints = options.MaximumPoints;
             var circleSize = options.CircleSize;
@@ -79,7 +80,7 @@
 
         #region Route Generator Methods
 
-        private List<Coordinate> GenerateBootstrapRoute(List<MultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateBootstrapRoute(List<IMultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
         {
             var coordinates = new List<Coordinate>();
             foreach (var multiPolygon in multiPolygons)
@@ -90,7 +91,7 @@
             return coordinates;
         }
 
-        private List<Coordinate> GenerateBootstrapRoute(MultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateBootstrapRoute(IMultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
         {
             var xMod = Math.Sqrt(0.75);
             var yMod = Math.Sqrt(0.568);
@@ -136,7 +137,7 @@
             return points;
         }
 
-        private List<Coordinate> GenerateRandomRoute(List<MultiPolygon> multiPolygons, uint maxPoints = 500, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateRandomRoute(List<IMultiPolygon> multiPolygons, uint maxPoints = 500, double circleSize = DefaultCircleSize)
         {
             var coordinates = new List<Coordinate>();
             foreach (var multiPolygon in multiPolygons)
@@ -147,14 +148,14 @@
             return coordinates;
         }
 
-        private List<Coordinate> GenerateRandomRoute(MultiPolygon multiPolgyon, uint maxPoints = 500, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateRandomRoute(IMultiPolygon multiPolgyon, uint maxPoints = 500, double circleSize = DefaultCircleSize)
         {
             var coordinates = multiPolgyon.ConvertToCoordinates();
             var routeCoords = Calculate(coordinates, maxPoints, circleSize);
             return routeCoords;
         }
 
-        private List<Coordinate> GenerateOptimizedRoute(List<MultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateOptimizedRoute(List<IMultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
         {
             var coordinates = new List<Coordinate>();
             foreach (var multiPolygon in multiPolygons)
@@ -165,7 +166,7 @@
             return coordinates;
         }
 
-        private List<Coordinate> GenerateOptimizedRoute(MultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
+        private List<Coordinate> GenerateOptimizedRoute(IMultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
         {
             var polygon = multiPolygon.ConvertToCoordinates();
             var bbox = polygon.GetBoundingBox();

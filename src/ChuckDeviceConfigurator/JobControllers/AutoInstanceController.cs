@@ -2,6 +2,7 @@
 {
     using System.Threading.Tasks;
 
+    using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
@@ -10,6 +11,7 @@
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -49,7 +51,7 @@
 
         public string Name { get; }
 
-        public IReadOnlyList<MultiPolygon> MultiPolygons { get; }
+        public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 
         public ushort MinimumLevel { get; }
 
@@ -95,7 +97,7 @@
             IDbContextFactory<MapContext> mapFactory,
             IDbContextFactory<ControllerContext> deviceFactory,
             Instance instance,
-            List<MultiPolygon> multiPolygons,
+            List<IMultiPolygon> multiPolygons,
             short timeZoneOffset = Strings.DefaultTimeZoneOffset)
         {
             Name = instance.Name;
@@ -469,9 +471,7 @@
             foreach (var polygon in MultiPolygons)
             {
                 // Get maximum amount of S2 level 15 cells within this geofence
-                var s2Cells = polygon.GetS2CellIds(15, 15, int.MaxValue);
-                var s2CellIds = s2Cells.Select(cell => cell.Id)
-                                       .ToList();
+                var s2CellIds = polygon.GetS2CellIds(15, 15, int.MaxValue);
                 allCellIds.AddRange(s2CellIds);
             }
 

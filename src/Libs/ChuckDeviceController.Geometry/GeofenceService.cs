@@ -7,25 +7,25 @@
 
     public static class GeofenceService
     {
-        public static bool InMultiPolygon(List<MultiPolygon> multiPolygons, Coordinate point)
+        public static bool InMultiPolygon(List<IMultiPolygon> multiPolygons, Coordinate point)
         {
             var result = InMultiPolygon(multiPolygons, point.Latitude, point.Longitude);
             return result;
         }
 
-        public static bool InMultiPolygon(List<MultiPolygon> multiPolygons, double latitude, double longitude)
+        public static bool InMultiPolygon(List<IMultiPolygon> multiPolygons, double latitude, double longitude)
         {
             var result = multiPolygons.Any(multiPolygon => InPolygon(multiPolygon, latitude, longitude));
             return result;
         }
 
-        public static bool InPolygon(MultiPolygon multiPolygon, Coordinate point)
+        public static bool InPolygon(IMultiPolygon multiPolygon, Coordinate point)
         {
             var result = InPolygon(multiPolygon, point.Latitude, point.Longitude);
             return result;
         }
 
-        public static bool InPolygon(MultiPolygon multiPolygon, double latitude, double longitude)
+        public static bool InPolygon(IMultiPolygon multiPolygon, double latitude, double longitude)
         {
             var numOfPoints = multiPolygon.Count;
             var lats = multiPolygon.Select(coord => coord[0]).ToList();

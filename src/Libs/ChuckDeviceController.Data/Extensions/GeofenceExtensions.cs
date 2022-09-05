@@ -68,10 +68,10 @@
             return coords;
         }
 
-        public static (List<MultiPolygon>, List<List<Coordinate>>) ConvertToMultiPolygons(
+        public static (List<IMultiPolygon>, List<List<Coordinate>>) ConvertToMultiPolygons(
             this IReadOnlyList<Geofence> geofences)
         {
-            var multiPolygons = new List<MultiPolygon>();
+            var multiPolygons = new List<IMultiPolygon>();
             var coordinates = new List<List<Coordinate>>();
             foreach (var geofence in geofences)
             {
@@ -85,10 +85,10 @@
             return (multiPolygons, coordinates);
         }
 
-        public static (List<MultiPolygon>, List<List<Coordinate>>) ConvertToMultiPolygons(
+        public static (List<IMultiPolygon>, List<List<Coordinate>>) ConvertToMultiPolygons(
             this Geofence geofence)
         {
-            var multiPolygons = new List<MultiPolygon>();
+            var multiPolygons = new List<IMultiPolygon>();
             var coordinates = new List<List<Coordinate>>();
 
             var area = geofence?.Data?.Area;
