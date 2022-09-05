@@ -5,6 +5,7 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
+    using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -17,6 +18,7 @@
         private readonly IDbContextFactory<ControllerContext> _controllerFactory;
         private readonly IDbContextFactory<MapContext> _mapFactory;
         private readonly ILogger<IAssignmentControllerService> _logger;
+        private readonly IGeofenceControllerService _geofenceService;
 
         private readonly object _assignmentsLock = new();
         private readonly System.Timers.Timer _timer;
@@ -47,7 +49,8 @@
         public AssignmentControllerService(
             ILogger<IAssignmentControllerService> logger,
             IDbContextFactory<ControllerContext> controllerFactory,
-            IDbContextFactory<MapContext> mapFactory)
+            IDbContextFactory<MapContext> mapFactory,
+            IGeofenceControllerService geofenceService)
         {
             _logger = logger;
             _controllerFactory = controllerFactory;
@@ -58,6 +61,7 @@
             _timer = new System.Timers.Timer(5 * 1000); // 5 second interval
             _timer.Elapsed += async (sender, e) => await CheckAssignmentsAsync();
             _mapFactory = mapFactory;
+            _geofenceService = geofenceService;
         }
 
         #endregion
@@ -197,14 +201,16 @@
             var instances = context.Instances
                                    .Where(instance => instance.Type == InstanceType.AutoQuest)
                                    .ToList();
-            var geofences = context.Geofences.ToList()
-                                             .Where(geofence => instances.Any(i => i.Geofences.Contains(geofence.Name)))
-                                             .ToList();
+
+            var geofenceNames = instances.SelectMany(x => x.Geofences)
+                                         .ToList();
+            var geofences = _geofenceService.GetByNames(geofenceNames);
             var instancesToClear = new List<Instance>();
             foreach (var assignment in assignments)
             {
                 var affectedInstanceNames = ResolveAssignmentChain(assignment!);
-                var affectedInstances = instances.Where(x => affectedInstanceNames.Contains(x.Name)).ToList();
+                var affectedInstances = instances.Where(x => affectedInstanceNames.Contains(x.Name))
+                                                 .ToList();
                 var affectedInstanceNotAdded = affectedInstances.Where(x => !instancesToClear.Contains(x));
                 foreach (var instance in affectedInstanceNotAdded)
                 {
@@ -220,8 +226,7 @@
                                                  .ToList();
                 if (instanceGeofences?.Any() ?? false)
                 {
-                    var geofenceNames = instanceGeofences.Select(x => x.Name);
-                    _logger.LogInformation($"Clearing quests for geofences: {string.Join(", ", geofenceNames)}");
+                    _logger.LogInformation($"Clearing quests for geofences: {string.Join(", ", instanceGeofences.Select(x => x.Name))}");
                     await mapContext.ClearQuestsAsync(instanceGeofences);
                 }
 
