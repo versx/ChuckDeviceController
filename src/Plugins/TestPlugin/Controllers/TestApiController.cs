@@ -5,7 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 
-    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Geometry;
 
     // TODO: Add to separate TestApiPlugin
 

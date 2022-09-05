@@ -1,7 +1,7 @@
 ﻿namespace ChuckDeviceController.Data.Extensions
 {
-    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Models;

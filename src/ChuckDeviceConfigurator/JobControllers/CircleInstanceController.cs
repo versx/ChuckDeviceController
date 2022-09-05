@@ -1,13 +1,11 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
     using System.Threading.Tasks;
-
-    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Geometry.Models;
 
     public class CircleInstanceController : BaseSmartInstanceController, IScanNextInstanceController
     {

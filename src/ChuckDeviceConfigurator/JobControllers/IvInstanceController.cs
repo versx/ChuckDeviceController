@@ -4,11 +4,11 @@
 
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;

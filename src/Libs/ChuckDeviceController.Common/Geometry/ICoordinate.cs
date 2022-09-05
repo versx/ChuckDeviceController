@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Common
+﻿namespace ChuckDeviceController.Common.Geometry
 {
     public interface ICoordinate
     {

@@ -4,12 +4,12 @@
     using System.Threading.Tasks;
 
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
-    using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Routing.Utilities;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Entities;

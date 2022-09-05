@@ -5,11 +5,11 @@
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry.Models;
 
     public abstract class BaseSmartInstanceController : IJobController, ILureInstanceController
     {

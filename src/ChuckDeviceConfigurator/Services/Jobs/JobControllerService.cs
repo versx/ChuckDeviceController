@@ -12,9 +12,9 @@
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Rpc.Models;
     using ChuckDeviceConfigurator.Services.TimeZone;
-    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -843,7 +843,7 @@
                     // No geofence attributes specified but is required
                     return null;
                 }
-                var attr = (GeofenceTypeAttribute)attributes.FirstOrDefault();
+                var attr = attributes!.FirstOrDefault() as GeofenceTypeAttribute;
                 switch (attr?.Type)
                 {
                     case GeofenceType.Circle:

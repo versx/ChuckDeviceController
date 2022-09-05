@@ -3,11 +3,12 @@
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
 
-    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Plugin.Helpers.Extensions;
     using ChuckDeviceController.Plugin.Services;
 
     using Microsoft.AspNetCore.Builder;
@@ -18,8 +19,6 @@
     using Microsoft.Extensions.Logging;
 
     using JobControllers;
-
-    using ChuckDeviceController.Plugin.Helpers.Extensions;
 
     //http://127.0.0.1:8881/plugin/v1
     //http://127.0.0.1:8881/Test

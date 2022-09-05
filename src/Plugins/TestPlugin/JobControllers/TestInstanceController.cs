@@ -6,6 +6,7 @@
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Plugin;
