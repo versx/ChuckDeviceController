@@ -424,7 +424,6 @@
                     var lon = Math.Round(pokestop.Longitude, 5);
                     return new QuestQueueItemViewModel
                     {
-                        // TODO: Make image url configurable
                         Id = pokestop.Id,
                         Name = pokestop.Name,
                         Image = $"<img src='{pokestop.Url}' height='48' width='48' />",

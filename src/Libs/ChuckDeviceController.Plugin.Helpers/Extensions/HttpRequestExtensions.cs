@@ -9,7 +9,6 @@
         // Credits: https://stackoverflow.com/a/14536035
         private static readonly IReadOnlyList<string> CrawlerKeywords = new List<string>
         {
-            // TODO: Make configurable in UI
             "bot", "crawler", "spider", "80legs", "baidu", "yahoo! slurp", "ia_archiver", "mediapartners-google",
             "lwp-trivial", "nederland.zoek", "ahoy", "anthill", "appie", "arale", "araneo", "ariadne",
             "atn_worldwide", "atomz", "bjaaland", "ukonline", "calif", "combine", "cosmos", "cusco",
@@ -66,14 +65,6 @@
 
         public static async Task<string> ReadBodyAsStringAsync(this HttpRequest request, Encoding? encoding = null)
         {
-            if (!request.Body.CanSeek)
-            {
-                // We only do this if the stream isn't *already* seekable,
-                // as EnableBuffering will create a new stream instance
-                // each time it's called
-                // TODO: request.EnableBuffering();
-            }
-
             // Ensure we read from the beginning of the stream
             request.Body.Position = 0;
 

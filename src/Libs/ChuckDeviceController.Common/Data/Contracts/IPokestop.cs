@@ -93,7 +93,5 @@
         List<Dictionary<string, dynamic>>? AlternativeQuestRewards { get; }
 
         #endregion
-
-        // TODO: ICollection<IIncident> Incidents { get; }
     }
 }

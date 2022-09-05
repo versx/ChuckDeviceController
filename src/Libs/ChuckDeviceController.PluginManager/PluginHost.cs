@@ -3,7 +3,6 @@
     using Microsoft.Extensions.DependencyInjection;
 
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Services.Finder;
@@ -11,8 +10,6 @@
 
     public sealed class PluginHost : IPluginHost
     {
-        private readonly Dictionary<string, IJobController> _jobControllers = new();
-
         #region Properties
 
         public IPlugin Plugin { get; }
@@ -29,8 +26,6 @@
         public IEnumerable<ServiceDescriptor> PluginServices { get; }
 
         public PluginEventHandlers EventHandlers { get; } = new();
-
-        public IReadOnlyDictionary<string, IJobController> JobControllers => _jobControllers;
 
         #endregion
 
@@ -79,11 +74,6 @@
         public void Unload()
         {
             LoadContext.Unload();
-        }
-
-        public void AddJobController(string name, IJobController jobController)
-        {
-            // TODO: JobControllers cache created by plugin
         }
 
         public void SetState(PluginState state, bool ignoreEvent = false)

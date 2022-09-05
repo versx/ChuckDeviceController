@@ -584,8 +584,6 @@
                     LureExpireTimestamp = oldPokestop.LureExpireTimestamp;
                 }
 
-                // TODO: Check shouldUpdate
-
                 if (oldPokestop.LureExpireTimestamp < LureExpireTimestamp)
                 {
                     webhooks.Add(WebhookType.Lures, this);

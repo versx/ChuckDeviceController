@@ -336,8 +336,6 @@
                 }
             }
 
-            // TODO: Check shouldUpdate
-
             return webhooks;
         }
 

@@ -47,8 +47,6 @@
             // Register all marked service classes with 'PluginServiceAttribute'
             foreach (var type in assemblyTypes)
             {
-                // TODO: Add support for HostedServices
-
                 // Find service classes with 'PluginServiceAttribute'
                 var pluginServices = type.GetPluginServicesWithAttribute(sharedServiceHosts);
                 if (pluginServices == null)

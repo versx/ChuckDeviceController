@@ -15,9 +15,8 @@
         IInstanceData Data { get; }
     }
 
-    public interface IInstanceData
+    public interface IInstanceData //: IDictionary<string, object>
     {
-        // TODO: IInstanceData properties
         string? CustomInstanceType { get; }
 
         string? AccountGroup { get; }

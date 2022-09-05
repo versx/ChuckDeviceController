@@ -210,7 +210,6 @@ builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
 var sharedServiceHosts = new Dictionary<Type, object>
 {
     { typeof(ILoggingHost), loggingHost },
-    // TODO: Break out JobControllerService to fix shared service host instance injection for plugins
     { typeof(IJobControllerServiceHost), jobControllerService },
     { typeof(IDatabaseHost), databaseHost },
     { typeof(ILocalizationHost), Translator.Instance },
@@ -282,7 +281,7 @@ app.UseCookiePolicy(new CookiePolicyOptions
 {
     // Determine whether user consent for non-essential 
     // cookies is needed for a given request
-    CheckConsentNeeded = context => true, // TODO: Make configurable
+    CheckConsentNeeded = context => true,
     // https://stackoverflow.com/a/64874175
     MinimumSameSitePolicy = SameSiteMode.Lax,
 });

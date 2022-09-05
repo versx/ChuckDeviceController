@@ -113,8 +113,6 @@
                 .AddMvcRazorTypes();
             var assembly = assemblyContext.LoadFromAssemblyPath(pluginAssemblyDetails.AssemblyFullPath);
 
-            // TODO: Determine references/dependencies - managed as well as native
-
             var result = new PluginFinderResult<TPlugin>(
                 assembly,
                 assemblyContext,

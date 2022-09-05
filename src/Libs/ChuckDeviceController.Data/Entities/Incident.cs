@@ -97,11 +97,6 @@
                 Console.WriteLine($"Pokestop: {ex}");
             }
 
-            if (oldIncident != null)
-            {
-                // TODO: shouldUpdate
-            }
-
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 

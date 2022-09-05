@@ -699,8 +699,6 @@
                     setIvForWeather = false;
                 }
 
-                // TODO: Check shouldUpdate
-
                 if (updateIV || setIvForWeather)
                 {
                     HasIvChanges = true;
