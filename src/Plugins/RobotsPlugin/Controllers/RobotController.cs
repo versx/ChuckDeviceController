@@ -112,9 +112,6 @@
                 return RedirectToAction(nameof(Index));
             }
 
-            // TODO: List all routes for user agent
-            //var routes = _robots.GetRoutes(id);
-
             var model = new CustomUserAgentViewModel
             {
                 UserAgent = route.UserAgent,
@@ -151,7 +148,6 @@
             }
             if (!UserAgentExists(model.UserAgent))
             {
-                // TODO: Prevent user from editing user agent string
                 // UserAgent string changed, update cache
                 _robots.AddUserAgent(model.UserAgent);
             }
@@ -172,7 +168,6 @@
                 return RedirectToAction(nameof(Index));
             }
 
-            // TODO: Add delete confirmation
             var model = new CustomUserAgentViewModel
             {
                 UserAgent = route.UserAgent,

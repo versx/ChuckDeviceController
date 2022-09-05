@@ -293,8 +293,8 @@
             if (!_pokemonBaseStats.ContainsKey(pkmn))
             {
                 Console.WriteLine($"Pokemon base stats manifest does not contains Pokemon '{pkmn.Pokemon}_{pkmn.Form}_{pkmn.Gender}', skipping...");
+                return result;
                 //return null;
-                return result; // TODO: Double check
             }
             var baseStats = _pokemonBaseStats[pkmn];
             var hasNoEvolveForm = (costume ?? PokemonCostume.Unset).ToString().ToLower().Contains(Strings.NoEvolveForm);

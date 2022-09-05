@@ -51,7 +51,6 @@
         // GET: TestController/Details/test
         public ActionResult Details()
         {
-            // TODO: Add example using view models
             return View();
         }
     }
