@@ -1,9 +1,8 @@
 ﻿namespace ChuckDeviceController.Geometry
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
 
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Geometry.Models;
 
     public static class GeofenceService
@@ -51,7 +50,7 @@
         }
 
         // Credits: http://codereview.stackexchange.com/a/108903
-        public static bool IsPointInPolygon(Coordinate point, List<Coordinate> polygon)
+        public static bool IsPointInPolygon(Coordinate point, List<ICoordinate> polygon)
         {
             int polygonLength = polygon.Count, i = 0;
             var inside = false;
@@ -59,7 +58,7 @@
             double pointX = point.Longitude, pointY = point.Latitude;
             // start / end point for the current polygon segment.
             double startX, startY, endX, endY;
-            Coordinate endPoint = polygon[polygonLength - 1];
+            var endPoint = polygon[polygonLength - 1];
             endX = endPoint.Longitude;
             endY = endPoint.Latitude;
             while (i < polygonLength)
@@ -77,7 +76,7 @@
             return inside;
         }
 
-        public static bool IsPointInPolygon(Coordinate point, List<List<Coordinate>>? multiPolygons)
+        public static bool IsPointInPolygon(Coordinate point, List<List<ICoordinate>>? multiPolygons)
         {
             if ((multiPolygons?.Count ?? 0) == 0)
                 return true;

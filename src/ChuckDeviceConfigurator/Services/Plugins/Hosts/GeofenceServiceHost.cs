@@ -2,6 +2,7 @@
 {
     using System.Threading.Tasks;
 
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Plugin;
@@ -17,7 +18,7 @@
             _connectionString = connectionString;
         }
 
-        public async Task CreateGeofenceAsync(IGeofenceCreationOptions options)
+        public async Task CreateGeofenceAsync(IGeofence options)
         {
             using (var context = DbContextFactory.CreateControllerContext(_connectionString))
             {

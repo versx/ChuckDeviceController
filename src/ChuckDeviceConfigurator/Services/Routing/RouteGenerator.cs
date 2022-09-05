@@ -7,6 +7,7 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Utilities;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Geometry;
@@ -270,7 +271,7 @@
         /// <param name="maxPoints">Maximum amount of coordinate points to generate.</param>
         /// <param name="circleSize">The distance or spacing in meters between the previous and next coordinate generated.</param>
         /// <returns></returns>
-        private static List<Coordinate> Calculate(List<Coordinate> coords, uint maxPoints = 3000, double circleSize = 70)
+        private static List<Coordinate> Calculate(List<ICoordinate> coords, uint maxPoints = 3000, double circleSize = 70)
         {
             var bbox = coords.GetBoundingBox();
             var minLat = bbox.MinimumLatitude;

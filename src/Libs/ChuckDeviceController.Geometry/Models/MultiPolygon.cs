@@ -42,9 +42,9 @@
         /// Converts multi polygon geofence to list of coordinates
         /// </summary>
         /// <returns>Returns list of coordinates for geofence</returns>
-        public List<Coordinate> ConvertToCoordinates()
+        public List<ICoordinate> ConvertToCoordinates()
         {
-            var coords = this.Select(polygon => new Coordinate(polygon[0], polygon[1]))
+            var coords = this.Select(polygon => (ICoordinate)new Coordinate(polygon[0], polygon[1]))
                              .ToList();
             return coords;
         }

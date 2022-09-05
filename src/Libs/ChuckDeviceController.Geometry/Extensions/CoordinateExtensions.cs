@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Geometry.Extensions
 {
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Geometry.Models;
 
     public static class CoordinatesDistanceExtensions
@@ -33,7 +34,7 @@
             return distance;
         }
 
-        public static BoundingBox GetBoundingBox(this List<Coordinate> coordinates)
+        public static BoundingBox GetBoundingBox(this List<ICoordinate> coordinates)
         {
             // Add checks here, if necessary, to make sure that points is not null,
             // and that it contains at least one (or perhaps two?) elements

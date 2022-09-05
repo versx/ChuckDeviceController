@@ -1,33 +1,31 @@
-﻿namespace ChuckDeviceController.Geometry.Models
+﻿namespace ChuckDeviceController.Common.Geometry
 {
-    using ChuckDeviceController.Common.Geometry;
-
     /// <summary>
     /// Square or rectangular bounding box boundary for an area/geofence.
     /// </summary>
-    public class BoundingBox : IBoundingBox
+    public interface IBoundingBox
     {
         #region Properties
 
         /// <summary>
         /// Gets or sets the minimum latitude of the bounding box.
         /// </summary>
-        public double MinimumLatitude { get; set; } // minX
+        double MinimumLatitude { get; } // minX
 
         /// <summary>
         /// Gets or sets the maximum latitude of the bounding box.
         /// </summary>
-        public double MaximumLatitude { get; set; } // maxX
+        double MaximumLatitude { get; } // maxX
 
         /// <summary>
         /// Gets or sets the minimum longitude of the bounding box.
         /// </summary>
-        public double MinimumLongitude { get; set; } // minY
+        double MinimumLongitude { get; } // minY
 
         /// <summary>
         /// Gets or sets the maximum longitude of the bounding box.
         /// </summary>
-        public double MaximumLongitude { get; set; } // maxY
+        double MaximumLongitude { get; } // maxY
 
         #endregion
 
@@ -44,12 +42,6 @@
         /// <returns>
         ///     Returns <c>true</c> if the coordinate is within the bounding boxes boundaries.
         /// </returns>
-        public bool IsInBoundingBox(double latitude, double longitude)
-        {
-            var result =
-                latitude >= MinimumLatitude && longitude >= MinimumLongitude &&
-                latitude <= MaximumLatitude && longitude <= MaximumLongitude;
-            return result;
-        }
+        bool IsInBoundingBox(double latitude, double longitude);
     }
 }
