@@ -74,7 +74,7 @@
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
                             <li><a class="dropdown-item" asp-action="Details" asp-route-route="@item.Route"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Details</a></li>
-                            <li><a class="dropdown-item" asp-action="Delete" asp-route-route="@item.Route"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
+                            <li><a class="dropdown-item" asp-action="Delete" asp-route-route="@item.Route" onclick="confirmDelete();"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
                         </ul>
                     </div>
                 </td>
@@ -85,6 +85,11 @@
 
 @section Scripts {
     <script>
+        const confirmDelete = () => {
+            const result = confirm('Are you sure that you want to delete this routes request benchmark?');
+            return result;
+        };
+
         $(document).ready(function() {
             $('#table-benchmarks').DataTable({
                 columnDefs: [

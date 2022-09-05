@@ -35,7 +35,8 @@
 
 .theme-dark .card-header,
 .theme-dark thead > tr > th {
-    background-color: rgb(21, 21, 21);
+    /*background-color: rgb(21, 21, 21);*/
+    background-color: #6d7fcc;
     color: white;
 }
 

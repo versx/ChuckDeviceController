@@ -21,7 +21,6 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry.Models;
 
     // TODO: Refactor class into separate smaller classes
 
