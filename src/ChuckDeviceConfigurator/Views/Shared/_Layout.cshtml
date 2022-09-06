@@ -18,13 +18,13 @@
         {
             var sortedDropdownItems = item.DropdownItems.ToList();
             sortedDropdownItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-    <li class="nav-item">
-                                                                                                    <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(item.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
-                                                                                                        @Html.Raw(string.IsNullOrEmpty(item.Icon) ? "" : $"<i class='{item.Icon}'></i>")
-                                                                                                        @item.Text
-                                                                                                    </a>
-                                                                                                    <ul class="collapse list-unstyled" id="@(item.Text)Submenu">
-                                                                                                        @foreach (var dropdownItem in sortedDropdownItems)
+            <li class="nav-item">
+                <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#@(item.Text)Submenu" class="dropdown-toggle" role="button" aria-expanded="false">
+                    @Html.Raw(string.IsNullOrEmpty(item.Icon) ? "" : $"<i class='{item.Icon}'></i>")
+                    @item.Text
+                </a>
+                <ul class="collapse list-unstyled" id="@(item.Text)Submenu">
+                    @foreach (var dropdownItem in sortedDropdownItems)
                     {
                         var hasMore = dropdownItem.IsDropdown && dropdownItem.DropdownItems?.Count() > 0;
                         if (hasMore)
@@ -35,36 +35,36 @@
                         {
                             if (dropdownItem.IsSeparator)
                             {
-                                                                                                                    <li><hr class="dropdown-divider"></li>
+                                <li><hr class="dropdown-divider"></li>
                             }
                             else
                             {
-                                                                                                                    <li class="nav-item">
-                                                                                                                        <a class="dropdown-item @(dropdownItem.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownItem.ControllerName" asp-action="@dropdownItem.ActionName">
-                                                                                                                            @Html.Raw(string.IsNullOrEmpty(dropdownItem.Icon) ? "" : $"<i class='{dropdownItem.Icon}'></i>")
-                                                                                                                            @dropdownItem.Text
-                                                                                                                        </a>
-                                                                                                                    </li>
+                                <li class="nav-item">
+                                    <a class="dropdown-item @(dropdownItem.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownItem.ControllerName" asp-action="@dropdownItem.ActionName">
+                                        @Html.Raw(string.IsNullOrEmpty(dropdownItem.Icon) ? "" : $"<i class='{dropdownItem.Icon}'></i>")
+                                        @dropdownItem.Text
+                                    </a>
+                                </li>
                             }
                         }
                     }
-                                                                                                    </ul>
-    </li>
+                </ul>
+            </li>
         }
         else
         {
             if (item?.IsSeparator ?? false)
             {
-    <li><hr class="dropdown-divider"></li>
+                <li><hr class="dropdown-divider"></li>
             }
             else
             {
-    <li class="nav-item">
-                                                                                                        <a class="@(item.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@item.ControllerName" asp-action="@item.ActionName">
-                                                                                                            @Html.Raw(string.IsNullOrEmpty(item?.Icon) ? "" : $"<i class='{item.Icon}'></i>")
-                                                                                                            @item.Text
-                                                                                                        </a>
-    </li>
+                <li class="nav-item">
+                    <a class="@(item.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@item.ControllerName" asp-action="@item.ActionName">
+                        @Html.Raw(string.IsNullOrEmpty(item?.Icon) ? "" : $"<i class='{item.Icon}'></i>")
+                        @item.Text
+                    </a>
+                </li>
             }
         }
     }
@@ -108,14 +108,15 @@
                 if (sidebarItems != null)
                 {
                     sidebarItems.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                    <ul class="list-unstyled components">
+                    <ul class="list-unstyled">
                     @foreach (var header in sidebarItems)
                     {
                         await AddSidebarItem(header);
                     }
                     </ul>
                 }
-                <ul class="list-unstyled components">
+                <hr class="dropdown-divider">
+                <ul class="list-unstyled">
                     <li>
                         <a asp-controller="Settings" asp-action="Index">
                             <i class="fa-solid fa-fw fa-gear"></i>
@@ -142,6 +143,7 @@
                     </li>
                 </ul>
             }
+            <hr class="dropdown-divider">
             <partial name="_LoginPartial" />
         </nav>
         <div id="content">
