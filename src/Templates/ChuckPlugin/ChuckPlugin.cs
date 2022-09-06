@@ -76,7 +76,7 @@
         /// <summary>
         /// Gets the name of the plugin to use.
         /// </summary>
-        public string Name => "ChuckDeviceControllerPluginMvc1";
+        public string Name => "ChuckPlugin";
 
         /// <summary>
         /// Gets a brief description about the plugin explaining how it
@@ -92,7 +92,7 @@
         /// <summary>
         /// Gets the current version of the plugin.
         /// </summary>
-        public Version Version => new("1.0.0.0");
+        public Version Version => new(1, 0, 0);
 
         #endregion
 

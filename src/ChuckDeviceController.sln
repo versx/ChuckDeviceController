@@ -57,6 +57,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditAuthProviderPlugin", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Templates", "Templates", "{1F67100D-811A-4A1D-B6F1-3A557F2A8C2B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckPluginRazor", "Templates\ChuckPluginRazor\ChuckPluginRazor.csproj", "{807F4C80-AE60-4DAD-AB58-5DB299A31586}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckPluginMvc", "Templates\ChuckPluginMvc\ChuckPluginMvc.csproj", "{A12F8E4A-E8A2-4449-9D8A-4E554DFA656B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckPlugin", "Templates\ChuckPlugin\ChuckPlugin.csproj", "{1357315E-1FDD-4305-A533-EEC65A57C5B6}"
@@ -71,9 +73,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RequestBenchmarkPlugin", "P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Extensions.Data", "Libs\ChuckDeviceController.Extensions.Data\ChuckDeviceController.Extensions.Data.csproj", "{C590B900-2D6D-471A-A131-9FBDE7673525}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorTestPlugin", "Plugins\RazorTestPlugin\RazorTestPlugin.csproj", "{33AC5844-1F41-44C4-BFDF-C6ACD4FC6DC7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckPluginRazor", "Templates\ChuckPluginRazor\ChuckPluginRazor.csproj", "{807F4C80-AE60-4DAD-AB58-5DB299A31586}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorTestPlugin", "Plugins\RazorTestPlugin\RazorTestPlugin.csproj", "{33AC5844-1F41-44C4-BFDF-C6ACD4FC6DC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

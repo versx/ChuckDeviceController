@@ -49,13 +49,13 @@ namespace ChuckDeviceControllerPluginRazor
         /// <summary>
         /// Gets the name of the plugin to use.
         /// </summary>
-        public string Name => "RazorTestPlugin";
+        public string Name => "ChuckPluginRazor";
 
         /// <summary>
         /// Gets a brief description about the plugin explaining how it
         /// works and what it does.
         /// </summary>
-        public string Description => "Demostrates the capabilities of the plugin system using Razor pages.";
+        public string Description => "Demostrates the capabilities of the plugin system using Razor pages architecture.";
 
         /// <summary>
         /// Gets the name of the author/creator of the plugin.

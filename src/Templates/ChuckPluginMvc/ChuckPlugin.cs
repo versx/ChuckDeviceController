@@ -71,13 +71,13 @@
         /// <summary>
         /// Gets the name of the plugin to use.
         /// </summary>
-        public string Name => "ChuckDeviceControllerPluginMvc1";
+        public string Name => "ChuckPluginMvc";
 
         /// <summary>
         /// Gets a brief description about the plugin explaining how it
         /// works and what it does.
         /// </summary>
-        public string Description => "Demostrates the capabilities of the plugin system.";
+        public string Description => "Demostrates the capabilities of the plugin system using Razor Model-View-Controller (MVC) architecture.";
 
         /// <summary>
         /// Gets the name of the author/creator of the plugin.
@@ -87,7 +87,7 @@
         /// <summary>
         /// Gets the current version of the plugin.
         /// </summary>
-        public Version Version => new("1.0.0.0");
+        public Version Version => new(1, 0, 0);
 
         #endregion
 
