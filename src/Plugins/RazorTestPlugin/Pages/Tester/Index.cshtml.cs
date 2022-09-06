@@ -13,7 +13,6 @@
 
         public void OnGet()
         {
-            Console.WriteLine($"On GET request executed");
         }
     }
 }

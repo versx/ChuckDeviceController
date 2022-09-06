@@ -157,7 +157,7 @@ namespace RazorTestPlugin
                     // Dropdown header display index in the sidebar
                     displayIndex: 1,
                     // Dropdown header Fontawesome icon
-                    icon: "fa-solid fa-fw fa-microscope",
+                    icon: "fa-solid fa-fw fa-highlighter",
                     // Yes we want this to be used as a dropdown and not just
                     // a single sidebar entry
                     isDropdown: true,
@@ -165,7 +165,7 @@ namespace RazorTestPlugin
                     dropdownItems: new List<SidebarItem>
                     {
                         // Sidebar item #1
-                        new("Test", "Tester", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
+                        new("Test", "Tester", displayIndex: 0, icon: "fa-solid fa-fw fa-stapler"),
                     }
                 ),
                 new SidebarItem
