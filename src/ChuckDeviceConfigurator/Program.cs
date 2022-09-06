@@ -20,7 +20,6 @@ using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
-using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Plugin;
@@ -135,13 +134,13 @@ builder.Services.AddSwaggerGen(options =>
 
 #region Database Contexts
 
-builder.Services.AddDbContextFactory<ControllerContext>(options =>
+builder.Services.AddDbContextFactory<ControllerDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<MapContext>(options =>
+builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContext<ControllerContext>(options =>
+builder.Services.AddDbContext<ControllerDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
-builder.Services.AddDbContext<MapContext>(options =>
+builder.Services.AddDbContext<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
 
 #endregion
@@ -312,7 +311,7 @@ async void OnPluginHostStateChanged(object? sender, PluginHostStateChangedEventA
     using (var scope = serviceProvider.CreateScope())
     {
         var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<ControllerContext>();
+        var context = services.GetRequiredService<ControllerDbContext>();
         var canUpdate = false;
 
         // Get cached plugin state from database
@@ -376,7 +375,7 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
                 await serviceProvider.MigrateDatabaseAsync<UserIdentityContext>();
 
                 // Migrate the device controller tables
-                await serviceProvider.MigrateDatabaseAsync<ControllerContext>();
+                await serviceProvider.MigrateDatabaseAsync<ControllerDbContext>();
             }
 
             // TODO: Add database meta or something to determine if default entities have been seeded

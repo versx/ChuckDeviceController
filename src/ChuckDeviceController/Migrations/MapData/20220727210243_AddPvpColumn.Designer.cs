@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChuckDeviceController.Migrations.MapData
 {
-    [DbContext(typeof(MapContext))]
+    [DbContext(typeof(MapDbContext))]
     [Migration("20220727210243_AddPvpColumn")]
     partial class AddPvpColumn
     {

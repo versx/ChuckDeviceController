@@ -8,7 +8,7 @@
     using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Data.Triggers;
 
-    public class MapContext : DbContext
+    public class MapDbContext : DbContext
     {
         #region Properties
 
@@ -46,7 +46,7 @@
         #endregion
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public MapContext(DbContextOptions<MapContext> options)
+        public MapDbContext(DbContextOptions<MapDbContext> options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {

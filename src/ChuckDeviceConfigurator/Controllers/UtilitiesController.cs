@@ -10,7 +10,6 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Entities;
@@ -21,15 +20,15 @@
     public class UtilitiesController : Controller
     {
         private readonly ILogger<UtilitiesController> _logger;
-        private readonly ControllerContext _deviceContext;
-        private readonly MapContext _mapContext;
+        private readonly ControllerDbContext _deviceContext;
+        private readonly MapDbContext _mapContext;
         private readonly IJobControllerService _jobControllerService;
         private readonly LeafletMapConfig _mapConfig;
 
         public UtilitiesController(
             ILogger<UtilitiesController> logger,
-            ControllerContext deviceContext,
-            MapContext mapContext,
+            ControllerDbContext deviceContext,
+            MapDbContext mapContext,
             IJobControllerService jobControllerService,
             IOptions<LeafletMapConfig> mapConfig)
         {

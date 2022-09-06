@@ -5,7 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
     using POGOProtos.Rpc;
 
-    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Net.Models.Responses;
@@ -20,7 +20,7 @@
         private static readonly Dictionary<string, ushort> _levelCache = new();
 
         private readonly ILogger<ProtoController> _logger;
-        private readonly ControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IProtoProcessorService _protoProcessor;
 
         #endregion
@@ -29,7 +29,7 @@
 
         public ProtoController(
             ILogger<ProtoController> logger,
-            ControllerContext context,
+            ControllerDbContext context,
             IProtoProcessorService protoProcessor)
         {
             _logger = logger;

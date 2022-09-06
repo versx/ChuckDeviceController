@@ -14,9 +14,9 @@
 
     public class PokemonInsertOrUpdateTrigger : IBeforeSaveTrigger<Pokemon>
     {
-        private readonly MapContext _context;
+        private readonly MapDbContext _context;
 
-        public PokemonInsertOrUpdateTrigger(MapContext context)
+        public PokemonInsertOrUpdateTrigger(MapDbContext context)
         {
             _context = context;
         }

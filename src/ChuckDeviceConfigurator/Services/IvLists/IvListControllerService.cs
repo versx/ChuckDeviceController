@@ -10,7 +10,7 @@
 		#region Variables
 
 		//private readonly ILogger<IIvListControllerService> _logger;
-		private readonly IDbContextFactory<ControllerContext> _factory;
+		private readonly IDbContextFactory<ControllerDbContext> _factory;
 
 		private readonly object _ivListsLock = new();
 		private List<IvList> _ivLists;
@@ -21,7 +21,7 @@
 
 		public IvListControllerService(
 			//ILogger<IIvListControllerService> logger,
-			IDbContextFactory<ControllerContext> factory)
+			IDbContextFactory<ControllerDbContext> factory)
 		{
 			//_logger = logger;
 			_factory = factory;

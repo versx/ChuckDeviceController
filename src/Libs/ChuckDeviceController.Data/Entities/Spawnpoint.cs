@@ -53,7 +53,7 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapContext context, bool update = false)
+        public async Task UpdateAsync(MapDbContext context, bool update = false)
         {
             Spawnpoint? oldSpawnpoint = null;
             try

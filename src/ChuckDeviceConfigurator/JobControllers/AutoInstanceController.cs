@@ -2,7 +2,6 @@
 {
     using System.Threading.Tasks;
 
-    using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
@@ -27,8 +26,8 @@
         #region Variables
 
         private readonly ILogger<AutoInstanceController> _logger;
-        private readonly IDbContextFactory<MapContext> _mapFactory;
-        private readonly IDbContextFactory<ControllerContext> _deviceFactory;
+        private readonly IDbContextFactory<MapDbContext> _mapFactory;
+        private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
 
         private readonly List<PokestopWithMode> _allStops = new();
         private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops = new();
@@ -94,8 +93,8 @@
         #region Constructor
 
         public AutoInstanceController(
-            IDbContextFactory<MapContext> mapFactory,
-            IDbContextFactory<ControllerContext> deviceFactory,
+            IDbContextFactory<MapDbContext> mapFactory,
+            IDbContextFactory<ControllerDbContext> deviceFactory,
             Instance instance,
             List<IMultiPolygon> multiPolygons,
             short timeZoneOffset = Strings.DefaultTimeZoneOffset)

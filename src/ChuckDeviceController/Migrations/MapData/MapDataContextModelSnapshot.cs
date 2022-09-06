@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChuckDeviceController.Migrations.MapData
 {
-    [DbContext(typeof(MapContext))]
+    [DbContext(typeof(MapDbContext))]
     partial class MapDataContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

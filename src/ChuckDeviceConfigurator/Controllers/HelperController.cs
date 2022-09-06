@@ -5,7 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
 
     using ChuckDeviceController.Common.Data;
-    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Plugin;
 
@@ -16,13 +16,13 @@
         private const string DefaultTheme = "light";
 
         //private readonly ILogger<HelperController> _logger;
-        private readonly ControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IUiHost _uiHost;
 
         public HelperController(
             //ILogger<HelperController> logger,
-            ControllerContext context,
+            ControllerDbContext context,
             IConfiguration configuration,
             IUiHost uiHost)
         {

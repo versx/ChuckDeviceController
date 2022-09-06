@@ -15,8 +15,8 @@
     {
         #region Variables
 
-        private readonly IDbContextFactory<ControllerContext> _controllerFactory;
-        private readonly IDbContextFactory<MapContext> _mapFactory;
+        private readonly IDbContextFactory<ControllerDbContext> _controllerFactory;
+        private readonly IDbContextFactory<MapDbContext> _mapFactory;
         private readonly ILogger<IAssignmentControllerService> _logger;
         private readonly IGeofenceControllerService _geofenceService;
 
@@ -48,8 +48,8 @@
 
         public AssignmentControllerService(
             ILogger<IAssignmentControllerService> logger,
-            IDbContextFactory<ControllerContext> controllerFactory,
-            IDbContextFactory<MapContext> mapFactory,
+            IDbContextFactory<ControllerDbContext> controllerFactory,
+            IDbContextFactory<MapDbContext> mapFactory,
             IGeofenceControllerService geofenceService)
         {
             _logger = logger;

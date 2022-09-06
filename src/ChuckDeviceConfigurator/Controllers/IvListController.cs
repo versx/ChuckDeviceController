@@ -9,7 +9,7 @@
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
-    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
 
@@ -25,7 +25,7 @@
             "Purified",
         };
         private readonly ILogger<IvListController> _logger;
-        private readonly ControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IIvListControllerService _ivListService;
 
         #endregion
@@ -34,7 +34,7 @@
 
         public IvListController(
             ILogger<IvListController> logger,
-            ControllerContext context,
+            ControllerDbContext context,
             IIvListControllerService ivListService)
         {
             _logger = logger;

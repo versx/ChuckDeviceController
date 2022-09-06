@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChuckDeviceConfigurator.Migrations
 {
-    [DbContext(typeof(ControllerContext))]
+    [DbContext(typeof(ControllerDbContext))]
     partial class DeviceControllerContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

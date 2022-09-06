@@ -7,7 +7,7 @@
 
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
-    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
 
@@ -16,11 +16,11 @@
     public class AccountController : Controller
     {
         private readonly ILogger<AccountController> _logger;
-        private readonly ControllerContext _context;
+        private readonly ControllerDbContext _context;
 
         public AccountController(
             ILogger<AccountController> logger,
-            ControllerContext context)
+            ControllerDbContext context)
         {
             _logger = logger;
             _context = context;

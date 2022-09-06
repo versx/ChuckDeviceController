@@ -68,11 +68,11 @@ builder.Services.Configure<ProcessorOptions>(builder.Configuration.GetSection("O
 #region Database Contexts
 
 // Register data contexts and factories
-builder.Services.AddDbContextFactory<MapContext>(options =>
+builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContext<MapContext>(options =>
+builder.Services.AddDbContext<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContext<ControllerContext>(options =>
+builder.Services.AddDbContext<ControllerDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
 
 #endregion
@@ -104,7 +104,7 @@ var app = builder.Build();
 if (config.GetValue<bool>("AutomaticMigrations"))
 {
     // Migrate database if needed
-    await app.Services.MigrateDatabaseAsync<MapContext>();
+    await app.Services.MigrateDatabaseAsync<MapDbContext>();
 }
 
 // Configure the HTTP request pipeline.

@@ -30,7 +30,7 @@
         #region Variables
 
         private readonly ILogger<SmartRaidInstanceController> _logger;
-        private readonly IDbContextFactory<MapContext> _factory;
+        private readonly IDbContextFactory<MapDbContext> _factory;
         private readonly System.Timers.Timer _timer;
 
         //private readonly object _smartRaidLock = new();
@@ -65,7 +65,7 @@
         #region Constructor
 
         public SmartRaidInstanceController(
-            IDbContextFactory<MapContext> factory,
+            IDbContextFactory<MapDbContext> factory,
             Instance instance,
             List<IMultiPolygon> multiPolygons)
         {

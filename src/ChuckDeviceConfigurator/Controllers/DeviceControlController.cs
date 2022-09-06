@@ -6,6 +6,7 @@
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common.Tasks;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
@@ -16,12 +17,12 @@
     public class DeviceControlController : ControllerBase
     {
         private readonly ILogger<DeviceControlController> _logger;
-        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IJobControllerService _jobControllerService;
 
         public DeviceControlController(
             ILogger<DeviceControlController> logger,
-            ChuckDeviceController.Data.Contexts.ControllerContext context,
+            ControllerDbContext context,
             IJobControllerService jobControllerService)
         {
             _logger = logger;

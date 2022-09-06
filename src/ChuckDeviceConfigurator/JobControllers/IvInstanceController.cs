@@ -16,7 +16,6 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
-    using ChuckDeviceController.Geometry.Models;
 
     public class IvInstanceController : IJobController, ILureInstanceController, IScanNextInstanceController
     {
@@ -31,7 +30,7 @@
         #region Variables
 
         private readonly ILogger<IvInstanceController> _logger;
-        private readonly IDbContextFactory<MapContext> _mapFactory;
+        private readonly IDbContextFactory<MapDbContext> _mapFactory;
         private readonly PokemonPriorityQueue<Pokemon> _pokemonQueue;
         private readonly PokemonPriorityQueue<ScannedPokemon> _scannedPokemon;
         private static readonly List<ushort> EventAttackIV = new() { 0, 1, 15 };
@@ -75,7 +74,7 @@
         #region Constructor
 
         public IvInstanceController(
-            IDbContextFactory<MapContext> mapFactory,
+            IDbContextFactory<MapDbContext> mapFactory,
             Instance instance,
             List<IMultiPolygon> multiPolygons,
             List<string> pokemonIds)

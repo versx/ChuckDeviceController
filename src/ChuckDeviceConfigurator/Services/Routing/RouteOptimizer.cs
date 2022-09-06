@@ -17,7 +17,7 @@
         #region Variables
 
         private static readonly RandomNumberGenerator _rand = RandomNumberGenerator.Create();
-        private readonly IDbContextFactory<MapContext> _factory;
+        private readonly IDbContextFactory<MapDbContext> _factory;
 
         #endregion
 
@@ -63,7 +63,7 @@
 
         #region Constructor
 
-        public RouteOptimizer(IDbContextFactory<MapContext> factory, List<MultiPolygon> multiPolygons)
+        public RouteOptimizer(IDbContextFactory<MapDbContext> factory, List<MultiPolygon> multiPolygons)
         {
             _factory = factory;
             MultiPolygons = multiPolygons;

@@ -11,7 +11,7 @@
 		#region Variables
 
 		//private readonly ILogger<IWebhookControllerService> _logger;
-		private readonly IDbContextFactory<ControllerContext> _factory;
+		private readonly IDbContextFactory<ControllerDbContext> _factory;
 
 		private readonly object _webhooksLock = new();
 		private List<Webhook> _webhooks;
@@ -22,7 +22,7 @@
 
 		public WebhookControllerService(
 			//ILogger<IWebhookControllerService> logger,
-			IDbContextFactory<ControllerContext> factory)
+			IDbContextFactory<ControllerDbContext> factory)
 		{
 			//_logger = logger;
 			_factory = factory;

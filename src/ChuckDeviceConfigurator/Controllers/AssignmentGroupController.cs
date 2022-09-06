@@ -10,7 +10,7 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
     [Controller]
@@ -18,12 +18,12 @@
     public class AssignmentGroupController : Controller
     {
         private readonly ILogger<AssignmentGroupController> _logger;
-        private readonly ControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentGroupController(
             ILogger<AssignmentGroupController> logger,
-            ControllerContext context,
+            ControllerDbContext context,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;

@@ -12,7 +12,6 @@
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Contexts;
-    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager;
@@ -22,15 +21,15 @@
     {
         private readonly ILogger<HomeController> _logger =
             new Logger<HomeController>(LoggerFactory.Create(x => x.AddConsole()));
-        private readonly ControllerContext _deviceContext;
-        private readonly MapContext _mapContext;
+        private readonly ControllerDbContext _deviceContext;
+        private readonly MapDbContext _mapContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUiHost _uiHost;
         //private readonly IPluginManager _pluginManager;
 
         public HomeController(
-            ControllerContext deviceContext,
-            MapContext mapContext,
+            ControllerDbContext deviceContext,
+            MapDbContext mapContext,
             UserManager<ApplicationUser> userManager,
             //IPluginManager pluginManager,
             IUiHost uiHost)

@@ -6,6 +6,7 @@
 
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
     [Controller]
@@ -13,11 +14,11 @@
     public class DeviceGroupController : Controller
     {
         private readonly ILogger<DeviceGroupController> _logger;
-        private readonly ChuckDeviceController.Data.Contexts.ControllerContext _context;
+        private readonly ControllerDbContext _context;
 
         public DeviceGroupController(
             ILogger<DeviceGroupController> logger,
-            ChuckDeviceController.Data.Contexts.ControllerContext context)
+            ControllerDbContext context)
         {
             _logger = logger;
             _context = context;

@@ -9,19 +9,19 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
     [Authorize(Roles = RoleConsts.AssignmentsRole)]
     public class AssignmentController : Controller
     {
         private readonly ILogger<AssignmentController> _logger;
-        private readonly ControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentController(
             ILogger<AssignmentController> logger,
-            ControllerContext controllerContext,
+            ControllerDbContext controllerContext,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;

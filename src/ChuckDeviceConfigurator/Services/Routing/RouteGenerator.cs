@@ -23,13 +23,13 @@
 
         #region Variables
 
-        private readonly IDbContextFactory<MapContext> _factory;
+        private readonly IDbContextFactory<MapDbContext> _factory;
 
         #endregion
 
         #region Constructor
 
-        public RouteGenerator(IDbContextFactory<MapContext> factory)
+        public RouteGenerator(IDbContextFactory<MapDbContext> factory)
         {
             _factory = factory;
         }

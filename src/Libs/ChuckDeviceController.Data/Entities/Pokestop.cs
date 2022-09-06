@@ -502,7 +502,7 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(MapContext context, bool updateQuest = false)
+        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(MapDbContext context, bool updateQuest = false)
         {
             var webhooks = new Dictionary<WebhookType, Pokestop>();
             Pokestop? oldPokestop = null;

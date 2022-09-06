@@ -85,7 +85,7 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapContext context)
+        public async Task UpdateAsync(MapDbContext context)
         {
             Incident? oldIncident = null;
             try

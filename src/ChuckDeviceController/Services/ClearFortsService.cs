@@ -13,7 +13,7 @@
         private readonly ILogger<IClearFortsService> _logger;
         private readonly IConfiguration _configuration;
         //private readonly IDbContextFactory<MapContext> _factory;
-        private MapContext _context;
+        private MapDbContext _context;
         private readonly string _connectionString;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
@@ -139,7 +139,7 @@
             }
         }
 
-        private MapContext CreateDbContextIfNull()
+        private MapDbContext CreateDbContextIfNull()
         {
             if (_context == null)
             {

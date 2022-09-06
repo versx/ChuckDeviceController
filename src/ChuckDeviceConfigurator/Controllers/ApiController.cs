@@ -7,7 +7,7 @@
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Common.Jobs;
-    using ControllerContext = ChuckDeviceController.Data.Contexts.ControllerContext;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
@@ -18,7 +18,7 @@
 
         private readonly ILogger<IJobControllerService> _logger;
         private readonly IJobControllerService _jobControllerService;
-        private readonly ControllerContext _controllerContext;
+        private readonly ControllerDbContext _controllerContext;
 
         #endregion
 
@@ -27,7 +27,7 @@
         public ApiController(
             ILogger<IJobControllerService> logger,
             IJobControllerService jobControllerService,
-            ControllerContext controllerContext)
+            ControllerDbContext controllerContext)
         {
             _logger = logger;
             _jobControllerService = jobControllerService;

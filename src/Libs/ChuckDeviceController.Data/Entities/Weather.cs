@@ -106,7 +106,7 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapContext context)
+        public async Task UpdateAsync(MapDbContext context)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
