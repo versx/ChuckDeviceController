@@ -18,7 +18,7 @@ namespace ChuckDeviceControllerPluginRazor
         // Possible options: embedded resources, local/external, or none.
         StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External),
     ]
-    public class RazorTestPlugin : IPlugin
+    public class ChuckPluginRazor : IPlugin
     {
         #region Plugin Host Variables
 
@@ -82,7 +82,7 @@ namespace ChuckDeviceControllerPluginRazor
         ///     parameter, essentially dependency injection.
         /// </summary>
         /// <param name="loggingHost">Logging host handler.</param>
-        public RazorTestPlugin(ILoggingHost loggingHost)
+        public ChuckPluginRazor(ILoggingHost loggingHost)
         {
             _loggingHost = loggingHost;
         }

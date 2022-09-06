@@ -13,6 +13,7 @@
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</ProjectReference>
+		<ProjectReference Include="..\..\Libs\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
