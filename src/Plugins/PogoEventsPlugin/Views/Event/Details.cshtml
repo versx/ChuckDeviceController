@@ -1,0 +1,27 @@
+﻿@using PogoEventsPlugin.Utilities
+@model ActiveEvent
+@{
+    ViewData["Title"] = "Pokemon Go Event Details " + Model.Name;
+}
+
+<h1>Details Pokemon Event</h1>
+
+<p>@Html.ValidationMessage("Event", new { @class="text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Event", ControllerText = "Pokemon Events", CurrentPage = "Pokemon Event Details" })
+
+<div>
+    <h4>Pokemon Event '@Model?.Name'</h4>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger">
+            <i class="fa-solid fa-trash"></i>&nbsp;Delete
+        </a>
+    </div>
+</div>
+
+<hr />
+@Html.DisplayForModel("EventDetails")
