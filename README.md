@@ -31,6 +31,7 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 9.0 usi
     * 2FA capability  
     * 3rd party authentication for Discord, GitHub, and Google accounts as well as local accounts  
 - Separate device controller, proto parser & data upsert service as well as a webhook relay service to load balance across multiple machines if needed or desired  
+- [MAD](https://github.com/Map-A-Droid/MAD) proto data parsing support
 - Reusable Geofence and Circle point lists  
 - Reusable IV lists for Pokemon IV job controller instances  
 - Quality of life utilities  
