@@ -1,4 +1,4 @@
-﻿namespace ChuckPlugin
+﻿namespace ChuckDeviceControllerPlugin
 {
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;

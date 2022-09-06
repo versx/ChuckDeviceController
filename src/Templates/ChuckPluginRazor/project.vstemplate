@@ -1,12 +1,12 @@
 <VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Project">
   <TemplateData>
-    <Name>ChuckDeviceController ASP.NET Core Mvc Plugin Template</Name>
-    <Description>A project template used to create a ChuckDeviceController ASP.NET Core Mvc plugin.</Description>
+    <Name>ChuckDeviceController ASP.NET Core Razor Plugin Template</Name>
+    <Description>A project template used to create a ChuckDeviceController ASP.NET Core Razor plugin.</Description>
     <ProjectType>CSharp</ProjectType>
     <ProjectSubType></ProjectSubType>
-    <SortOrder>2</SortOrder>
+    <SortOrder>3</SortOrder>
     <CreateNewFolder>true</CreateNewFolder>
-    <DefaultName>ChuckPluginMvc</DefaultName>
+    <DefaultName>ChuckPluginRazor</DefaultName>
     <ProvideDefaultName>true</ProvideDefaultName>
     <LocationField>Enabled</LocationField>
     <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
@@ -20,24 +20,25 @@
     <ProjectTypeTag>plugin</ProjectTypeTag>
   </TemplateData>
   <TemplateContent>
-    <Project TargetFileName="ChuckPluginMvc.csproj" File="ChuckPluginMvc.csproj" ReplaceParameters="true">
+    <Project TargetFileName="ChuckPluginRazor.csproj" File="ChuckPluginRazor.csproj" ReplaceParameters="true">
       <Folder Name="Properties" TargetFolderName="Properties">
         <ProjectItem ReplaceParameters="true" TargetFileName="launchSettings.json">launchSettings.json</ProjectItem>
       </Folder>
       <Folder Name="wwwroot" TargetFolderName="wwwroot">
         <ProjectItem ReplaceParameters="true" TargetFileName="README.md">README.md</ProjectItem>
       </Folder>
-      <Folder Name="Controllers" TargetFolderName="Controllers">
-        <ProjectItem ReplaceParameters="true" TargetFileName="TestController.cs">TestController.cs</ProjectItem>
-      </Folder>
-      <Folder Name="Views" TargetFolderName="Views">
-        <Folder Name="Test" TargetFolderName="Test">
-          <ProjectItem ReplaceParameters="true" TargetFileName="Details.cshtml">Details.cshtml</ProjectItem>
+      <Folder Name="Pages" TargetFolderName="Pages">
+        <Folder Name="Tester" TargetFolderName="Tester">
           <ProjectItem ReplaceParameters="true" TargetFileName="Index.cshtml">Index.cshtml</ProjectItem>
+          <ProjectItem ReplaceParameters="true" TargetFileName="Index.cshtml.cs">Index.cshtml.cs</ProjectItem>
+        </Folder>
+        <Folder Name="Shared" TargetFolderName="Shared">
+          <ProjectItem ReplaceParameters="true" TargetFileName="_TestPartial.cshtml">_TestPartial.cshtml</ProjectItem>
         </Folder>
         <ProjectItem ReplaceParameters="true" TargetFileName="_ViewImports.cshtml">_ViewImports.cshtml</ProjectItem>
-      </Folder>
-      <ProjectItem ReplaceParameters="true" TargetFileName="ChuckPlugin.cs">ChuckPlugin.cs</ProjectItem>
+        <ProjectItem ReplaceParameters="true" TargetFileName="_ViewStart.cshtml">_ViewStart.cshtml</ProjectItem>
+      </Folder>		
+      <ProjectItem ReplaceParameters="true" TargetFileName="ChuckPluginRazor.cs">ChuckPluginRazor.cs</ProjectItem>
     </Project>
   </TemplateContent>
 </VSTemplate>

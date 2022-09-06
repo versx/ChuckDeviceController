@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceControllerPluginMvc1.Controllers
+﻿namespace ChuckDeviceControllerPluginMvc.Controllers
 {
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;

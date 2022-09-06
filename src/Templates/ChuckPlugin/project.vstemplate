@@ -4,7 +4,7 @@
     <Description>A project template used to create a ChuckDeviceController .NET Core plugin.</Description>
     <ProjectType>CSharp</ProjectType>
     <ProjectSubType></ProjectSubType>
-    <SortOrder>2</SortOrder>
+    <SortOrder>1</SortOrder>
     <CreateNewFolder>true</CreateNewFolder>
     <DefaultName>ChuckPlugin</DefaultName>
     <ProvideDefaultName>true</ProvideDefaultName>
@@ -12,6 +12,12 @@
     <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
     <CreateInPlace>true</CreateInPlace>
     <Icon>__TemplateIcon.ico</Icon>
+    <LanguageTag>csharp</LanguageTag>
+    <PlatformTag>windows</PlatformTag>
+    <PlatformTag>linux</PlatformTag>
+    <PlatformTag>macos</PlatformTag>
+    <ProjectTypeTag>library</ProjectTypeTag>
+    <ProjectTypeTag>plugin</ProjectTypeTag>
   </TemplateData>
   <TemplateContent>
     <Project TargetFileName="ChuckPlugin.csproj" File="ChuckPlugin.csproj" ReplaceParameters="true">
