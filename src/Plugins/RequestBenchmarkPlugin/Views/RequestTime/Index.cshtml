@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Request Benchmarks";
     var totalRequests = Model?.Sum(x => x.Requests) ?? 0;
-    var totalTime = Utils.FormatTime(Model?.Sum(x => x.Total) ?? 0, 2);
+    var totalTime = Utils.FormatTime(Model?.Sum(x => x.Total) ?? 0);
 }
 
 <h1>Request Benchmarks</h1>
@@ -65,7 +65,7 @@
                     @Html.Raw(Utils.FormatTime(item.Average, isHtml: true))
                 </td>
                 <td>
-                    @Html.Raw(Utils.FormatTime(item.Total))
+                    @Html.Raw(Utils.FormatTime(item.Total, 4))
                 </td>
                 <td>
                     <div class="dropdown">

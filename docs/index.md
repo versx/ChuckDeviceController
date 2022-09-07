@@ -2,7 +2,7 @@
 
 
 ## Description
-ChuckDeviceController is a .NET based frontend and backend written in C# 9.0 using ASP.NET Core and EntityFramework Core to control real devices and parse received protobuff data from iOS devices running Pokemon Go.
+ChuckDeviceController is a .NET based frontend and backend written in C# 10.0 using ASP.NET Core and EntityFramework Core to control real devices and parse received protobuff data from iOS devices running Pokemon Go.
 
 **ChuckDeviceConfigurator:**  
 Controls devices that request jobs as well as includes a dashboard interface to configure job controllers and other required entity types.  
