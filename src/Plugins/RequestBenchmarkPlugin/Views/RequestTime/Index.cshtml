@@ -8,18 +8,39 @@
 <h1>Request Benchmarks</h1>
 <br />
 
-<div class="pb-5">
-    <div class="float-start">
-        <label class="control-label"><b>Total Requests:</b> @totalRequests.ToString("N0")</label>
-    </div>
-    <div class="float-end">
-        <label class="control-label"><b>Total Time:</b> @totalTime</label>
+<p>
+    <a class="btn btn-danger btn-sm float-end" asp-action="Clear">Clear All</a>
+</p>
+<br />
+
+<div class="card text-center">
+    <div class="card-header text-center"><b>Overview</b></div>
+    <div class="card-body">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 p-3">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h3 class="pull-right"><i class="fa-solid fa-globe"></i></h3>
+                            <h4 class="list-group-item-heading">Total Requests</h4>
+                            <p class="list-group-item-text">@totalRequests.ToString("N0")</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 p-3">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h3 class="pull-right"><i class="fa-solid fa-clock"></i></h3>
+                            <h4 class="list-group-item-heading">Total Time</h4>
+                            <p class="list-group-item-text">@totalTime</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-
-<p>
-    <a class="btn btn-danger btn-sm" asp-action="Clear">Clear All</a>
-</p>
+<br>
 
 <table id="table-benchmarks" class="table table-striped table-bordered nowrap">
     <thead class="table-dark">
