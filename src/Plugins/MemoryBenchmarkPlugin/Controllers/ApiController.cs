@@ -1,11 +1,8 @@
 ﻿namespace MemoryBenchmarkPlugin.Controllers
 {
-    using System.Buffers;
-    using System.Collections.Concurrent;
     using System.Diagnostics;
 
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.FileProviders;
 
     // Credits: https://github.com/sebastienros/memoryleak
     // Reference: https://docs.microsoft.com/en-us/aspnet/core/performance/memory?view=aspnetcore-6.0
@@ -40,6 +37,7 @@
         [HttpGet("collect")]
         public IActionResult GetCollect()
         {
+            // TODO: Add generation and collection mode support
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();

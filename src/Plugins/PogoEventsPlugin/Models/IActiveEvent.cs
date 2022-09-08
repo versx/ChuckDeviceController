@@ -10,20 +10,22 @@
 
         string End { get; }
 
-        IEnumerable<ActiveEventItem> Spawns { get; } // id, template
+        IEnumerable<EventItem> Spawns { get; } // id, template
 
-        IEnumerable<ActiveEventItem> Eggs { get; } // id, template
+        IEnumerable<EventItem> Eggs { get; } // id, template
 
-        IEnumerable<ActiveEventRaidItem> Raids { get; } // id, template
+        IEnumerable<EventRaidItem> Raids { get; } // id, template
 
-        IEnumerable<ActiveEventItem> Shinies { get; } // ?
+        IEnumerable<EventItem> Shinies { get; } // ?
 
-        IEnumerable<BonusItem> Bonuses { get; } // ?
+        IEnumerable<EventBonusItem> Bonuses { get; } // ?
 
-        IEnumerable<ActiveEventItem> Features { get; } // ?
+        IEnumerable<string> Features { get; } // ?
 
         bool HasQuests { get; } // has_quests
 
         bool HasSpawnpoints { get; } // has_spawnpoints
+
+        bool IsActive { get; }
     }
 }

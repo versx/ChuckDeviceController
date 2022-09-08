@@ -38,17 +38,26 @@
             var data = await NetUtils.GetAsync(EventsEndpoint);
             if (string.IsNullOrEmpty(data))
             {
-                // TODO: Failed to fetch active events
+                // Failed to fetch active events
+                _logger.LogError($"Failed to fetch active Pokemon Go events manifest.");
                 return;
             }
-            var events = data.FromJson<List<ActiveEvent>>();
-            if (events == null)
+            try
             {
-                // TODO: Failed to deserialize fetched active events
-                return;
-            }
+                var events = data.FromJson<List<ActiveEvent>>();
+                if (events == null)
+                {
+                    // Failed to deserialize fetched active events
+                    _logger.LogError($"Failed to deserialize fetched active Pokemon Go events manifest.");
+                    return;
+                }
 
-            _activeEvents = events;
+                _activeEvents = events;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+            }
         }
     }
 }

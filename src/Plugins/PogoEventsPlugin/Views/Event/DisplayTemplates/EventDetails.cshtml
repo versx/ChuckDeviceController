@@ -1,5 +1,4 @@
-﻿@using PogoEventsPlugin.Utilities
-@model ActiveEvent
+﻿@model ActiveEvent
 @{
     var baseImageUrl = "https://raw.githubusercontent.com/WatWowMap/wwm-uicons/main/pokemon/";
 }
@@ -28,6 +27,12 @@
     </dt>
     <dd class="col-sm-8">
         @Html.DisplayFor(model => model.End)
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.IsActive)
+    </dt>
+    <dd class="col-sm-8">
+        @(Model?.IsActive ?? false ? "Yes" : "No")
     </dd>
     <dt class="col-sm-4">
         @Html.DisplayNameFor(model => model.Spawns)
@@ -102,7 +107,7 @@
     <dd class="col-sm-8">
         @if (Model?.Shinies?.Any() ?? false)
         {
-            @Html.Raw(Utils.FormatEventItems(Model?.Shinies ?? new List<ActiveEventItem>()));
+            @Html.Raw(Utils.FormatEventItems(Model?.Shinies ?? new List<EventItem>()));
         }
         else
         {
@@ -133,7 +138,7 @@
     <dd class="col-sm-8">
         @if (Model?.Features?.Any() ?? false)
         {
-            @Html.Raw(Utils.FormatEventItems(Model?.Features ?? new List<ActiveEventItem>()));
+            @Html.Raw(string.Join("<br>", Model?.Features ?? new List<string>()));
         }
         else
         {

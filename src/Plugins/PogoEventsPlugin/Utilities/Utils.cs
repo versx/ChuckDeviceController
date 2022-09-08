@@ -6,12 +6,12 @@
 
     public static class Utils
     {
-        public static string FormatEventItems(IEnumerable<IActiveEventItem> items)
+        public static string FormatEventItems(IEnumerable<IEventItem> items)
         {
             return string.Join("<br>", items.Select(item => FormatUpper(item.Template)));
         }
 
-        public static string FormatEventRaidItems(IEnumerable<IActiveEventRaidItem> raids, ILocalizationHost localeHost)
+        public static string FormatEventRaidItems(IEnumerable<IEventRaidItem> raids, ILocalizationHost localeHost)
         {
             var items = raids.Select(raid =>
             {
@@ -24,7 +24,7 @@
             return string.Join("<br>", items);
         }
 
-        public static string FormatEventBonusItems(IEnumerable<IBonusItem> bonuses)
+        public static string FormatEventBonusItems(IEnumerable<IEventBonusItem> bonuses)
         {
             return string.Join("<br>", bonuses.Select(bonus => bonus.Text));
         }

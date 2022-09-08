@@ -16,28 +16,39 @@
         public string End { get; set; }
 
         [DisplayName("Wild Pokemon Spawns")]
-        public IEnumerable<ActiveEventItem> Spawns { get; set; }
+        public IEnumerable<EventItem> Spawns { get; set; }
 
         [DisplayName("Hatchable Eggs")]
-        public IEnumerable<ActiveEventItem> Eggs { get; set; }
+        public IEnumerable<EventItem> Eggs { get; set; }
 
         [DisplayName("Raid Bosses")]
-        public IEnumerable<ActiveEventRaidItem> Raids { get; set; }
+        public IEnumerable<EventRaidItem> Raids { get; set; }
 
         [DisplayName("Shiny Pokemon")]
-        public IEnumerable<ActiveEventItem> Shinies { get; set; }
+        public IEnumerable<EventItem> Shinies { get; set; }
 
         [DisplayName("Bonuses")]
-        public IEnumerable<BonusItem> Bonuses { get; set; }
+        public IEnumerable<EventBonusItem> Bonuses { get; set; }
 
-        public IEnumerable<ActiveEventItem> Features { get; set; }
+        [DisplayName("Features")]
+        public IEnumerable<string> Features { get; set; }
 
-        [DisplayName("Has Quests")]
-        [JsonPropertyName("has_quests")]
+        [
+            DisplayName("Has Quests"),
+            JsonPropertyName("has_quests"),
+        ]
         public bool HasQuests { get; set; }
 
-        [DisplayName("Has Spawnpoints Increase")]
-        [JsonPropertyName("has_spawnpoints")]
+        [
+            DisplayName("Has Spawnpoints Increase"),
+            JsonPropertyName("has_spawnpoints"),
+        ]
         public bool HasSpawnpoints { get; set; }
+
+        [
+            DisplayName("Is Active"),
+            JsonIgnore,
+        ]
+        public bool IsActive { get; set; }
     }
 }
