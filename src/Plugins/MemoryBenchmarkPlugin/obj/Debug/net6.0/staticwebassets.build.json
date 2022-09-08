@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "iJFNxQ0KxMIG6ddLqicTmKYh6EgDdR5ZeMa2emSj7Qo=",
+  "Source": "MemoryBenchmarkPlugin",
+  "BasePath": "_content/MemoryBenchmarkPlugin",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "MemoryBenchmarkPlugin/wwwroot",
+      "Source": "MemoryBenchmarkPlugin",
+      "ContentRoot": "/Users/versx/Desktop/ChuckDeviceController/src/Plugins/MemoryBenchmarkPlugin/wwwroot/",
+      "BasePath": "_content/MemoryBenchmarkPlugin",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}
