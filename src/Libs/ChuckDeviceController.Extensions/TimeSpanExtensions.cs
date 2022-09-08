@@ -1,10 +1,8 @@
-﻿namespace ChuckDeviceConfigurator.Utilities
+﻿namespace ChuckDeviceController.Extensions
 {
-    using ChuckDeviceController.Extensions;
-
-    public static class TimeSpanUtils
+    public static class TimeSpanExtensions
     {
-        public static string ToReadableString(ulong timestampS, bool includeAgoText = true)
+        public static string ToReadableString(this ulong timestampS, bool includeAgoText = true)
         {
             var now = DateTime.UtcNow;
             var date = timestampS.FromSeconds();

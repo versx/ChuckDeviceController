@@ -23,6 +23,9 @@
             <th>
                 @Html.DisplayNameFor(model => model[0].End)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].IsActive);
+            </th>
             <th width="5%">Action</th>
         </tr>
     </thead>
@@ -41,6 +44,9 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.End)
+                </td>
+                <td>
+                    @Html.Raw(Utils.FormatBoolean(item.IsActive, html: true))
                 </td>
                 <td>
                     <div class="dropdown">

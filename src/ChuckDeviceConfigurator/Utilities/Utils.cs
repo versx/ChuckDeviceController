@@ -9,7 +9,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Plugin;
 
-    public static class Utils
+    public static partial class Utils
     {
         public static string FormatAssignmentTime(uint timeS)
         {
@@ -107,7 +107,7 @@
                 ? updated == 0
                     ? "Never"
                     : lastUpdated
-                : TimeSpanUtils.ToReadableString(updated);
+                : updated.ToReadableString();
 
             var color = isMoreThanOneDay
                 ? updated == 0
@@ -182,9 +182,9 @@
                 : link;
         }
 
-        public static string GetQueueLink(string ivInstanceName, string displayText = "Queue", string basePath = "/Instance/IvQueue", bool html = false)
+        public static string GetQueueLink(string instanceName, string displayText = "Queue", string basePath = "/Instance/IvQueue", bool html = false)
         {
-            var encodedName = Uri.EscapeDataString(ivInstanceName);
+            var encodedName = Uri.EscapeDataString(instanceName);
             var url = $"{basePath}/{encodedName}";
             var status = $"<a href='{url}'>{displayText}</a>";
             return html
@@ -200,7 +200,7 @@
             stopwatch.Start();
 
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
-            Console.WriteLine($"Benchmark took {totalSeconds}s");
+            Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");
             return totalSeconds;
         }
 

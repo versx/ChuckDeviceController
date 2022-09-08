@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
+  </ItemGroup>
+
 </Project>

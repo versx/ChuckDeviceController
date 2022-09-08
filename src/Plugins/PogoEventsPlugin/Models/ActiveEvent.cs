@@ -49,6 +49,11 @@
             DisplayName("Is Active"),
             JsonIgnore,
         ]
-        public bool IsActive { get; set; }
+        public bool IsActive =>
+            // If Start date/time set, check if current date is greater than Start date
+            (Start != null && DateTime.Parse(Start) <= DateTime.UtcNow) ||
+            // or if Start date is not set, check if End date is set and hasn't lapsed yet.
+            // Probably not a good idea to assume event started just because start date is not set but ...
+            (string.IsNullOrEmpty(Start) && End != null && DateTime.Parse(End) >= DateTime.UtcNow);
     }
 }

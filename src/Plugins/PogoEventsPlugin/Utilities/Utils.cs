@@ -4,6 +4,8 @@
 
     using ChuckDeviceController.Plugin;
 
+    // TODO: Move to ChuckDeviceController.Plugin.Helpers library
+
     public static class Utils
     {
         public static string FormatEventItems(IEnumerable<IEventItem> items)
@@ -34,6 +36,18 @@
             var value = text[1..^1].ToLower();
             var firstChar = text[0].ToString().ToUpper();
             return firstChar + value;
+        }
+
+        public static string FormatBoolean(bool isTrue, bool html = false)
+        {
+            var status = isTrue ? "Yes" : "No";
+            if (!html)
+            {
+                return status;
+            }
+            var color = isTrue ? "green" : "red";
+            var displayText = $"<span style='color: {color}'>{status}</span>";
+            return displayText;
         }
     }
 }

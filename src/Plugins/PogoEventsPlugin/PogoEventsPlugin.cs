@@ -8,6 +8,7 @@ namespace PogoEventsPlugin
 
     using Services;
 
+    // TODO: Integrate with main application, allow setting active event to adjust IV lists and such
     // TODO: Check for changes, when new events found send Discord message. (i.e. impl PogoEventsWatcher logic)
 
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]

@@ -32,7 +32,7 @@
         @Html.DisplayNameFor(model => model.IsActive)
     </dt>
     <dd class="col-sm-8">
-        @(Model?.IsActive ?? false ? "Yes" : "No")
+        @Html.Raw(Utils.FormatBoolean(Model?.IsActive ?? false))
     </dd>
     <dt class="col-sm-4">
         @Html.DisplayNameFor(model => model.Spawns)

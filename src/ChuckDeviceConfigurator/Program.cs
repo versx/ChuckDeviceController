@@ -27,8 +27,10 @@ using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
 
 
-// TODO: Create 'CopyPlugin.sh' script for plugins to execute post build event (.dlls other than CDC libs, Views, wwwroot, .deps.json file, etc)
-// TODO: Show top navbar on mobile when sidebar is closed?
+// TODO: Allow plugins to communicate to each other (i.e. event bus, SignalR? (maybe - probably not tho), redis, own impl, etc)
+// TODO: Modularize everything, add as many services as possible as plugins
+// TODO: Consolidate benchmark/profiling/diagnostic plugins into one? (i.e. RequestBenchmarkPlugin, MemoryBenchmarkPlugin, MiniProfilerPlugin)
+// TODO: Add HealthChecksPlugin
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
@@ -228,9 +230,6 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 // call OnLoad callback and register with 'IPluginManager' cache
 await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment);
 
-// Start job controller service _after_ all plugins have been loaded (TODO: Add PluginsLoadedComplete event?)
-jobControllerService.Start();
-
 #endregion
 
 #region App Builder
@@ -380,11 +379,11 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
 
             // TODO: Add database meta or something to determine if default entities have been seeded
 
-            // Start job controller service
-            jobController.Start();
-
             // Start assignment controller service
             assignmentController.Start();
+
+            // Start job controller service _after_ all plugins have been loaded (TODO: Add PluginsLoadedComplete event?)
+            jobController.Start();
 
             // Seed default user roles
             await UserIdentityContextSeed.SeedRolesAsync(roleManager);
