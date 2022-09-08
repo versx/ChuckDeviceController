@@ -34,7 +34,7 @@
         public IEnumerable<string> Features { get; set; }
 
         [
-            DisplayName("Has Quests"),
+            DisplayName("Has Event Quests"),
             JsonPropertyName("has_quests"),
         ]
         public bool HasQuests { get; set; }

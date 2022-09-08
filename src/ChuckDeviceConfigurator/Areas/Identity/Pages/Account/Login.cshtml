@@ -1,9 +1,9 @@
 ﻿@page
 @model LoginModel
-@using ChuckDeviceConfigurator
+@using ChuckDeviceConfigurator.Configuration
 @{
     ViewData["Title"] = "Log in";
-    var authProviderIcons = Strings.AuthProviderIcons;
+    var authProviderIcons = AuthProviderConfig.AuthProviderIcons;
 }
 
 <h1>@ViewData["Title"]</h1>

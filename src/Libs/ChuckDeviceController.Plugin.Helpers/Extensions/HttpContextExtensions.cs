@@ -2,7 +2,7 @@
 {
     using Microsoft.AspNetCore.Http;
 
-    public static class HttpContextExtensions
+    public static partial class HttpContextExtensions
     {
         private const string LoweredRoute = "RouteLowered";
         private const string RouteNormal = "Route";

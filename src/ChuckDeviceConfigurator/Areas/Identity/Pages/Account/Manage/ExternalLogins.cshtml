@@ -1,10 +1,10 @@
 ﻿@page
 @model ExternalLoginsModel
-@using ChuckDeviceConfigurator
+@using ChuckDeviceConfigurator.Configuration
 @{
     ViewData["Title"] = "Manage your external logins";
     ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
-    var authProviderIcons = Strings.AuthProviderIcons;
+    var authProviderIcons = AuthProviderConfig.AuthProviderIcons;
 }
 
 <partial name="_StatusMessage" for="StatusMessage" />

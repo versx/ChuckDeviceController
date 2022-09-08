@@ -73,7 +73,7 @@
 
                 PluginDashboardStats = _uiHost.DashboardStatsItems,
 
-                Uptime = TimeSpanUtils.ToReadableString(Strings.Uptime.ToTotalSeconds(), includeAgoText: false),
+                Uptime = Strings.Uptime.ToTotalSeconds().ToReadableString(includeAgoText: false),
             };
             return View(model);
         }

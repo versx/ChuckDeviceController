@@ -4,7 +4,7 @@
 
     using Microsoft.AspNetCore.Http;
 
-    public static class HttpRequestExtensions
+    public static partial class HttpRequestExtensions
     {
         // Credits: https://stackoverflow.com/a/14536035
         private static readonly IReadOnlyList<string> CrawlerKeywords = new List<string>
