@@ -12,6 +12,6 @@
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        Task CreateInstanceTypeAsync(IInstance options);
+        Task CreateInstanceAsync(IInstance options);
     }
 }

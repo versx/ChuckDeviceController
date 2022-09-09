@@ -559,15 +559,15 @@
             {
                 var customInstanceType = "test_controller";
 
+                // Register custom job controller type TestInstanceController
+                await _jobControllerHost.RegisterJobControllerAsync<TestInstanceController>(customInstanceType);
+
                 // Create geofence entity
                 var geofence = CreateGeofence();
                 //await _geofenceServiceHost.CreateGeofenceAsync(geofence);
 
                 var instance = CreateInstance(customInstanceType, new() { geofence.Name });
-                //await _instanceServiceHost.CreateInstanceTypeAsync(instance);
-
-                // Register custom job controller type TestInstanceController
-                await _jobControllerHost.RegisterJobControllerAsync<TestInstanceController>(customInstanceType);
+                await _instanceServiceHost.CreateInstanceAsync(instance);
 
                 TestAssignDevice(instance.Name);
             }
@@ -665,6 +665,28 @@
         public override string ToString()
         {
             return $"{Latitude},{Longitude}";
+        }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj == null)
+                return -1;
+
+            var other = (Coordinate)obj;
+
+            var latResult = Latitude.CompareTo(other.Latitude);
+            if (latResult != 0)
+            {
+                return latResult;
+            }
+
+            var lonResult = Longitude.CompareTo(other.Longitude);
+            if (lonResult != 0)
+            {
+                return lonResult;
+            }
+
+            return 0;
         }
     }
 

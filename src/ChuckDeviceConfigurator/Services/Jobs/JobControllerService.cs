@@ -144,7 +144,7 @@
 
         #region Plugin Host
 
-        public async Task CreateInstanceTypeAsync(IInstance options)
+        public async Task CreateInstanceAsync(IInstance options)
         {
             // Allow plugins to create instances to link with job controllers, that way they are easily used via the UI
             var instance = new Instance
@@ -163,6 +163,7 @@
                 },
             };
 
+            // TODO: Single bulk merge
             using (var context = _deviceFactory.CreateDbContext())
             {
                 if (context.Instances.Any(i => i.Name == instance.Name))
@@ -202,12 +203,6 @@
 
         public async Task AssignDeviceToJobControllerAsync(IDevice device, string instanceName)
         {
-            if (!_instances.ContainsKey(instanceName))
-            {
-                _logger.LogError($"Job controller instance with name '{instanceName}' does not exist, unable to assign device '{device.Uuid}'. Make sure you add the job controller first before assigning devices to it.");
-                return;
-            }
-
             if (!_devices.ContainsKey(device.Uuid))
             {
                 _logger.LogError($"Device with name '{device.Uuid}' does not exist, unable to assign job controller instance");
