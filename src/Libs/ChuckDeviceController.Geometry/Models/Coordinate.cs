@@ -4,7 +4,7 @@
 
     using ChuckDeviceController.Common.Geometry;
 
-    public class Coordinate : ICoordinate, IComparable
+    public class Coordinate : ICoordinate
     {
         [JsonPropertyName("lat")]
         public double Latitude { get; set; }
