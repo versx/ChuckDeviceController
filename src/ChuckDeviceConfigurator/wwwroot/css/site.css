@@ -130,3 +130,8 @@ footer > div > a {
 nav > ol > li > a {
     text-decoration: none;
 }
+
+.card-header {
+    background-color: #212529;
+    color: #fff;
+}
