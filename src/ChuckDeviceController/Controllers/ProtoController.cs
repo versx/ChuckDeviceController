@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Controllers
 {
-    using System;
-
     using Microsoft.AspNetCore.Mvc;
     using POGOProtos.Rpc;
 

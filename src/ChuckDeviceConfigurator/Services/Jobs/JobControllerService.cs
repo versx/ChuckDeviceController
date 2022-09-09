@@ -113,9 +113,14 @@
                         _logger.LogInformation($"Starting instance {instance.Name} ({instance.Type})");
                         await AddInstanceAsync(instance);
 
-                        var newDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
-                        _logger.LogInformation($"Started instance {instance.Name} ({instance.Type}), now loading {newDevices:N0} assigned devices.");
-                        foreach (var device in newDevices)
+                        var assignedDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
+                        var deviceCount = assignedDevices.Count();
+                        var suffix = deviceCount > 0
+                            ? $", now loading {deviceCount:N0} assigned devices."
+                            : "";
+                        _logger.LogInformation($"Started instance {instance.Name} ({instance.Type}){suffix}");
+
+                        foreach (var device in assignedDevices)
                         {
                             AddDevice(device);
                         }

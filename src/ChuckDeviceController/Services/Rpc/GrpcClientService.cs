@@ -45,7 +45,7 @@
             // Create gRPC channel for receiving gRPC server address
             using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
 
-            // Create new gRPC client for gRPC channel for address
+            // Create new gRPC client using gRPC channel for address
             var client = new Payload.PayloadClient(channel);
 
             // Serialize entity and send to server to deserialize
@@ -102,7 +102,7 @@
                 // Create gRPC channel for receiving gRPC server address
                 using var channel = GrpcChannel.ForAddress(_grpcWebhookServerEndpoint);
 
-                // Create new gRPC client for gRPC channel for address
+                // Create new gRPC client using gRPC channel for address
                 var client = new WebhookPayload.WebhookPayloadClient(channel);
 
                 // Create gRPC payload request

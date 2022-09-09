@@ -1356,43 +1356,6 @@
             };
         }
 
-        /*
-        private async Task AddOrUpdateAsync<T>(List<T> entities) where T : BaseEntity
-        {
-            try
-            {
-                var isolationOptions = new TransactionOptions
-                {
-                    IsolationLevel = IsolationLevel.ReadUncommitted
-                };
-                using (var context = _dbFactory.CreateDbContext())
-                {
-                    using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew, isolationOptions))
-                    {
-                        await context.BulkMergeAsync(entities, x =>
-                        {
-                            x.AutoMap = AutoMapType.ByIndexerName;
-                            x.BatchSize = 100;
-                            //x.BatchTimeout = 10 * 1000;
-                            x.InsertIfNotExists = true;
-                            x.InsertKeepIdentity = true;
-                            x.MergeKeepIdentity = true;
-                            x.Resolution = ResolutionType.Smart;
-                            x.UseTableLock = true;
-                            x.AllowDuplicateKeys = true;
-                            //x.ColumnPrimaryKeyExpression = entity => entity.Id || entity.Uuid;
-                        }).ConfigureAwait(false);
-                        //scope.Complete();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"AddOrUpdateAsync: {ex}");
-            }
-        }
-        */
-
         #endregion
 
         #region Grpc Senders
