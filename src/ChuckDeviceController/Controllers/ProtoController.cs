@@ -108,8 +108,6 @@
                 device.LastLatitude = payload.LatitudeTarget;
                 device.LastLongitude = payload.LongitudeTarget;
                 device.LastSeen = now;
-
-                _context.Update(device);
             }
             else
             {
@@ -121,9 +119,18 @@
                     LastLongitude = payload.LongitudeTarget,
                     LastSeen = now,
                 };
-                await _context.AddAsync(device);
             }
-            await _context.SaveChangesAsync();
+            await _context.Devices.SingleMergeAsync(device, options =>
+            {
+                options.UseTableLock = true;
+                options.OnMergeUpdateInputExpression = p => new
+                {
+                    p.AccountUsername,
+                    p.LastLatitude,
+                    p.LastLongitude,
+                    p.LastSeen,
+                };
+            });
 
             return device;
         }
