@@ -163,18 +163,20 @@
                 },
             };
 
-            // TODO: Single bulk merge
             using (var context = _deviceFactory.CreateDbContext())
             {
-                if (context.Instances.Any(i => i.Name == instance.Name))
+                await context.Instances.SingleMergeAsync(instance, options =>
                 {
-                    context.Instances.Update(instance);
-                }
-                else
-                {
-                    await context.Instances.AddAsync(instance);
-                }
-                await context.SaveChangesAsync();
+                    options.UseTableLock = true;
+                    options.OnMergeUpdateInputExpression = p => new
+                    {
+                        p.Type,
+                        p.MinimumLevel,
+                        p.MaximumLevel,
+                        p.Geofences,
+                        p.Data,
+                    };
+                });
             }
 
             await AddInstanceAsync(instance);
