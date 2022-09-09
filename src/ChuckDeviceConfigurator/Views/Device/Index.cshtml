@@ -14,6 +14,7 @@
 <table id="table-devices" class="table table-striped table-bordered dt-responsive nowrap">
     <thead class="table-dark">
         <tr>
+            <th width="5%">Status</th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Uuid)
             </th>
@@ -40,8 +41,11 @@
         {
             <tr>
                 <th scope="row">
-                    @Utils.GetDeviceStatus(item.LastSeen ?? 0) @Html.DisplayFor(modelItem => item.Uuid)
+                    @Utils.GetDeviceStatus(item.LastSeen ?? 0)
                 </th>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Uuid)
+                </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.InstanceName)
                 </td>
