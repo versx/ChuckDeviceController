@@ -564,7 +564,7 @@
 
                 // Create geofence entity
                 var geofence = CreateGeofence();
-                //await _geofenceServiceHost.CreateGeofenceAsync(geofence);
+                await _geofenceServiceHost.CreateGeofenceAsync(geofence);
 
                 var instance = CreateInstance(customInstanceType, new() { geofence.Name });
                 await _instanceServiceHost.CreateInstanceAsync(instance);

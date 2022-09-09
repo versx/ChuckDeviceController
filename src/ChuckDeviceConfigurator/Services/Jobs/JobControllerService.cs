@@ -110,12 +110,11 @@
                 {
                     var callback = new WaitCallback(async _ =>
                     {
-                        _logger.LogInformation($"Starting instance {instance.Name}");
+                        _logger.LogInformation($"Starting instance {instance.Name} ({instance.Type})");
                         await AddInstanceAsync(instance);
-                        _logger.LogInformation($"Started instance {instance.Name}");
 
-                        var newDevices = devices.AsEnumerable()
-                                                .Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
+                        var newDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
+                        _logger.LogInformation($"Started instance {instance.Name} ({instance.Type}), now loading {newDevices:N0} assigned devices.");
                         foreach (var device in newDevices)
                         {
                             AddDevice(device);
@@ -124,7 +123,7 @@
 
                     if (!ThreadPool.QueueUserWorkItem(callback))
                     {
-                        _logger.LogError($"Failed to start instance {instance.Name}");
+                        _logger.LogError($"Failed to start instance {instance.Name} ({instance.Type})");
                     }
                 }
             }
@@ -159,7 +158,10 @@
                     AccountGroup = options.Data.AccountGroup,
                     IsEvent = options.Data.IsEvent,
                     CustomInstanceType = options.Data.CustomInstanceType,
-                    // TODO: Allow for custom instance data properties
+                    // TODO: Allow for custom InstanceData properties from plugins
+                    // Maybe register the properties via the 'host' and keep track via dict like SettingsHost does ...
+                    // Load InstanceData properties from plugins as well as instances into a dictionary, loop properties for Create/Edit views. :thinking:
+                    // Sounds terrible... low priority
                 },
             };
 
@@ -705,7 +707,7 @@
                 return timeZoneOffset;
             }
 
-            // Check if time zone service contains out time zone name
+            // Check if time zone service contains our time zone name
             if (!_timeZoneService.TimeZones.ContainsKey(timeZone))
             {
                 // If it does not, return UTC+0 offset
@@ -716,7 +718,7 @@
             timeZoneOffset = enableDst
                 // Return DST offset for time zone
                 ? tzData.Dst
-                // Return non-DST offset for time zone
+                // Return non-DST (UTC) offset for time zone
                 : tzData.Utc;
             return timeZoneOffset;
         }
