@@ -14,7 +14,6 @@
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Plugin;
 
     public class BootstrapInstanceController : BaseSmartInstanceController, IScanNextInstanceController
@@ -193,8 +192,6 @@
 
         private List<ICoordinate> GenerateBootstrapCoordinates()
         {
-            //TestRouting();
-
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
