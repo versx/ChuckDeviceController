@@ -15,6 +15,13 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 10.0 us
     * Create new job controller instances  
     * Fetch database entries  
     * Add WebAPI routes and page views to existing dashboard  
+    * Assign devices to job controller instances  
+    * Create instances  
+    * Create geofences  
+    * Load/save configuration files  
+    * Route generator and optimizer  
+    * Event bus service for communication between plugins and host application  
+    * Add custom settings to the dashboard UI  
     * Much more planned...  
 - Job controller instance types  
     * Bootstrap  
@@ -30,8 +37,8 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 10.0 us
 - User and access management system  
     * 2FA capability  
     * 3rd party authentication for Discord, GitHub, and Google accounts as well as local accounts  
-- Separate device controller, proto parser & data upsert service as well as a webhook relay service to load balance across multiple machines if needed or desired  
 - [MAD](https://github.com/Map-A-Droid/MAD) proto data parsing support
+- Separate device controller, proto parser & data upsert service as well as a webhook relay service to load balance across multiple machines if needed or desired  
 - Reusable Geofence and Circle point lists  
 - Reusable IV lists for Pokemon IV job controller instances  
 - Quality of life utilities  
@@ -43,22 +50,21 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 10.0 us
     * Assignments/Assignment groups re-quester  
 - and more...  
 
-## Requirements
-- .NET 6 SDK  
-- MySQL or MariaDB  
+<hr>
 
-## Supported Databases  
+## Installation
+
+### Supported Databases  
 - MySQL 5.7
 - MySQL 8.0
 - MariaDB 10.3
 - MariaDB 10.4
 - MariaDB 10.5
 
-<hr>
-
-## Installation
 ### Requirements
-1. Install [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)  
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)  
+- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)  
+- [MySQL](https://dev.mysql.com/downloads/mysql/) or [MariaDB](https://mariadb.org/download/?t=mariadb&p=mariadb)  
 
 **Ubuntu:** (Replace `{22,20,18}` with your respective major OS version)  
 ```
@@ -94,12 +100,13 @@ Apple Silicon: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-
 1. Copy ChuckDeviceConfigurator config `cp ChuckDeviceConfigurator/appsettings.json bin/debug/appsettings.json`  
 1. Change directories `cd bin/debug` and fill out `appsettings.json` configuration file  
 1. Run ChuckDeviceConfigurator `dotnet ChuckDeviceConfigurator.dll`  
-1. Visit Dashboard at `http://LAN_MACHINE_IP:8881` 
+1. Visit Dashboard at `http://LAN_MACHINE_IP:8881`  
 
 ### ChuckDeviceController  
 1. Copy ChuckDeviceController config `cp ChuckDeviceController/appsettings.json bin/debug/appsettings.json`  
 1. Change directories `cd bin/debug` and fill out `appsettings.json` configuration file  
 1. Run ChuckDeviceController `dotnet ChuckDeviceController.dll`   
+1. Point devices `Data Endpoint` to `http://LAN_MACHINE_IP:8888` to start processing and consuming all received proto data  
 
 ### ChuckDeviceCommunicator (optional)  
 1. Copy ChuckDeviceCommunicator config `cp ChuckDeviceCommunicator/appsettings.json bin/debug/appsettings.json`  
@@ -123,6 +130,10 @@ View all available API routes:
   // Enables automatic migrations if set, otherwise `dotnet ef migrations` tool
   // will need to be run manually to migrate database tables
   "AutomaticMigrations": true,
+  // Enables database event triggers for historical Pokemon, Raid, Quest, and Invasion statistics
+  "StatisticTriggers": {
+    "Pokemon": false
+  },
   // Proto data endpoint
   "Urls": "http://*:8888",
   // gRPC service used to communicate with the configurator
@@ -135,6 +146,15 @@ View all available API routes:
       "Microsoft.AspNetCore": "Warning"
     }
   },
+  "Options": {
+    // When enabled, automatically clears (marks 'deleted') upgraded or downgraded
+    // Pokestops and Gyms
+    "ClearOldForts": true,
+    // Determines whether or not to process map (aka Lure) Pokemon spawns
+    "ProcessMapPokemon": true
+  },
+  // Converts incoming proto data from MAD devices to a compatible format
+  "ConvertMadData": false,
   "AllowedHosts": "*"
 }
 ```
@@ -194,6 +214,16 @@ View all available API routes:
       "Microsoft.AspNetCore": "Warning"
     }
   },
+  "Map": {
+    "StartLatitude": 0,
+    "StartLongitude": 0,
+    "StartZoom": 13,
+    "MinimumZoom": 4,
+    "MaximumZoom": 18,
+    "TileserverUrl": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  },
+  // Possible theme values: dark, light
+  "Theme": "dark",
   "AllowedHosts": "*"
 }
 ```
@@ -236,16 +266,34 @@ View all available API routes:
 
 <hr>
 
+## Available Plugins  
+- BitbucketAuthProviderPlugin: Adds `Bitbucket.org` user authentication support    
+- DeviceAuthPlugin: Adds device token and IP based device authentication support
+- Example.DotNetCorePlugin: Very basic 'Clock' plugin example  
+- GitLabAuthProviderPlugin: Adds `GitLab.com` user authentication support  
+- MemoryBenchmarkPlugin: Displays basic memory usage information and chart  
+- PogoEventsPlugin: Provides current and upcoming Pokemon Go events.  
+- RazorTestPlugin: Very basic Razor pages plugin example  
+- RedditAuthProviderPlugin: Adds `Reddit.com` user authentication support  
+- RequestBenchmarkPlugin: Displays web request benchmark times for routes used  
+- RobotsPlugin: Adds web crawler robots management based on specified UserAgent strings and routes which creates a dynamic `robots.txt` file  
+- TestPlugin: In-depth example plugin demonstrating all, if not most, possible functionality of the plugin system  
+- TodoPlugin: Basic TODO list plugin that adds support for keeping track of things to do  
+- VisualStudioAuthProviderPlugin: Adds `VisualStudioOnline.com` user authentication support  
+
+<hr>
+
 ## TODO:  
-- Finish plugin system  
 - Improve database performance  
-- Add MAD support  
 - Localization  
+- Finish TTH finder job controller
 
 <hr>
 
 ## Previews:  
 TODO  
+
+<hr>
 
 ## Dedication  
 ❤️ In loving memory of [Chuckleslove](https://github.com/Chuckleslove), rest in peace brother
