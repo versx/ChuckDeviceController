@@ -57,9 +57,7 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 10.0 us
 ### Supported Databases  
 - MySQL 5.7
 - MySQL 8.0
-- MariaDB 10.3
-- MariaDB 10.4
-- MariaDB 10.5
+- MariaDB 10.3+
 
 ### Requirements
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)  
