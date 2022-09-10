@@ -23,8 +23,14 @@
   <ItemGroup>
     <None Remove="UI\" />
     <None Remove="Data\" />
+    <None Remove="EventBus\" />
+    <None Remove="EventBus\Events\" />
+    <None Remove="EventBus\Observer\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Data\" />
+    <Folder Include="EventBus\" />
+    <Folder Include="EventBus\Events\" />
+    <Folder Include="EventBus\Observer\" />
   </ItemGroup>
 </Project>

@@ -101,11 +101,17 @@
     <None Remove="SendGrid" />
     <None Remove="Services\Geofences\" />
     <None Remove="Services\Plugins\" />
+    <None Remove="Services\Plugins\Hosts\EventBusService\" />
+    <None Remove="Services\Plugins\Hosts\EventBusService\Publishers\" />
+    <None Remove="Services\Plugins\Hosts\EventBusService\Subscribers\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\Geofences\" />
     <Folder Include="Views\Device\EditorTemplates\" />
     <Folder Include="Views\Shared\EditorTemplates\" />
+    <Folder Include="Services\Plugins\Hosts\EventBusService\" />
+    <Folder Include="Services\Plugins\Hosts\EventBusService\Publishers\" />
+    <Folder Include="Services\Plugins\Hosts\EventBusService\Subscribers\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="appsettings.json">
