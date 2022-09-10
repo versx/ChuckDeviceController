@@ -14,6 +14,8 @@ using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.Net.Mail;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts;
+using ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService;
+using ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService.Publishers;
 using ChuckDeviceConfigurator.Services.Routing;
 using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
@@ -23,6 +25,9 @@ using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Plugin;
+using ChuckDeviceController.Plugin.EventBus;
+using ChuckDeviceController.Plugin.EventBus.Events;
+using ChuckDeviceController.Plugin.EventBus.Observer;
 using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
 
@@ -182,6 +187,9 @@ var loggingHost = new LoggingHost();
 var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
 var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
 var geofenceServiceHost = new GeofenceServiceHost(connectionString);
+var eventAggregatorHost = new EventAggregatorHost();
+eventAggregatorHost.Subscribe(new PluginObserver());
+eventAggregatorHost.Subscribe(new TestObserver());
 
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
 builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
@@ -191,6 +199,8 @@ builder.Services.AddSingleton<ILoggingHost>(loggingHost);
 builder.Services.AddSingleton<IUiHost>(uiHost);
 builder.Services.AddSingleton<IGeofenceServiceHost>(geofenceServiceHost);
 builder.Services.AddSingleton<IRouteHost, RouteGenerator>();
+builder.Services.AddSingleton<IEventAggregatorHost>(eventAggregatorHost);
+builder.Services.AddScoped<IPublisher, PluginPublisher>();
 
 var routeHost = builder.Services.GetService<IRouteHost>();
 builder.Services.AddSingleton((IRouteGenerator)routeHost);
@@ -215,6 +225,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IGeofenceServiceHost), geofenceServiceHost },
     { typeof(IInstanceServiceHost), jobControllerService },
     { typeof(IRouteHost), routeHost },
+    { typeof(IEventAggregatorHost), eventAggregatorHost },
 };
 
 // Instantiate 'IPluginManager' singleton with configurable options

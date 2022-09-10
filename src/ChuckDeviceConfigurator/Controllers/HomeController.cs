@@ -9,11 +9,13 @@
 
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Plugin.EventBus;
+    using ChuckDeviceController.Plugin.EventBus.Events;
+    using ChuckDeviceController.Plugin.EventBus.Observer;
     using ChuckDeviceController.PluginManager;
 
     [Authorize(Roles = RoleConsts.DefaultRole)]
@@ -25,20 +27,20 @@
         private readonly MapDbContext _mapContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUiHost _uiHost;
-        //private readonly IPluginManager _pluginManager;
+        private readonly IEventAggregatorHost _eventAggregatorHost;
 
         public HomeController(
             ControllerDbContext deviceContext,
             MapDbContext mapContext,
             UserManager<ApplicationUser> userManager,
-            //IPluginManager pluginManager,
-            IUiHost uiHost)
+            IUiHost uiHost,
+            IEventAggregatorHost eventAggregatorHost)
         {
             _deviceContext = deviceContext;
             _mapContext = mapContext;
             _userManager = userManager;
-            //_pluginManager = pluginManager;
             _uiHost = uiHost;
+            _eventAggregatorHost = eventAggregatorHost;
         }
 
         public IActionResult Index()
@@ -75,6 +77,10 @@
 
                 Uptime = Strings.Uptime.ToTotalSeconds().ToReadableString(includeAgoText: false),
             };
+
+            _eventAggregatorHost.Subscribe(new PluginObserver());
+            _eventAggregatorHost.Publish(new PluginEvent("Test from HomeController"));
+
             return View(model);
         }
 

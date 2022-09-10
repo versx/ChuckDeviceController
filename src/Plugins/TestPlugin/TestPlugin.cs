@@ -8,6 +8,8 @@
     using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Plugin.EventBus;
+    using ChuckDeviceController.Plugin.EventBus.Events;
     using ChuckDeviceController.Plugin.Helpers.Extensions;
     using ChuckDeviceController.Plugin.Services;
 
@@ -93,6 +95,8 @@
 
         private readonly IInstanceServiceHost _instanceServiceHost;
 
+        private readonly IEventAggregatorHost _eventAggregatorHost;
+
         #endregion
 
         #region Plugin Metadata Properties
@@ -154,13 +158,15 @@
             ILocalizationHost localeHost,
             IJobControllerServiceHost jobControllerServiceHost,
             IInstanceServiceHost instanceServiceHost,
-            IGeofenceServiceHost geofenceServiceHost)
+            IGeofenceServiceHost geofenceServiceHost,
+            IEventAggregatorHost eventAggregatorHost)
         {
             _loggingHost = loggingHost;
             _localeHost = localeHost;
             _jobControllerHost = jobControllerServiceHost;
             _instanceServiceHost = instanceServiceHost;
             _geofenceServiceHost = geofenceServiceHost;
+            _eventAggregatorHost = eventAggregatorHost;
 
             //_appHost.Restart();
         }
@@ -421,6 +427,9 @@
             TestJobControllerServiceHost();
 
             TestDatabaseHost();
+
+            //_eventAggregatorHost.Subscribe(new PluginObserver());
+            _eventAggregatorHost.Publish(new PluginEvent("test message from plugin"));
         }
 
         /// <summary>
