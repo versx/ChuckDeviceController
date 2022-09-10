@@ -8,6 +8,7 @@ using ChuckDeviceConfigurator.Configuration;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Extensions;
 using ChuckDeviceConfigurator.Localization;
+using ChuckDeviceConfigurator.Middleware;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
@@ -26,7 +27,6 @@ using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.EventBus;
-using ChuckDeviceController.Plugin.EventBus.Events;
 using ChuckDeviceController.Plugin.EventBus.Observer;
 using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
@@ -210,6 +210,7 @@ builder.Services.AddSingleton((IRouteGenerator)routeHost);
 var jobControllerService = builder.Services.GetService<IJobControllerService>();
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
 builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
+// Load all devices
 jobControllerService.LoadDevices();
 
 // TODO: Use builder.Services registered instead of 'sharedServiceHosts' - Fix issue with IDbContextFactory and eventually ILogger<T> parameters (just make static and use logger factory instead)
@@ -241,8 +242,6 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 // call OnLoad callback and register with 'IPluginManager' cache
 await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment);
 
-jobControllerService.Start();
-
 #endregion
 
 #region App Builder
@@ -267,10 +266,12 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
+    //app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseMiddleware<UnhandledExceptionMiddleware>();
 
 // Call 'Configure' method in plugins
 pluginManager.Configure(app);
@@ -395,7 +396,8 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
             // Start assignment controller service
             assignmentController.Start();
 
-            // Start job controller service _after_ all plugins have been loaded (TODO: Add PluginsLoadedComplete event?)
+            // Start the job controller service after all plugins have loaded. (TODO: Add PluginsLoadedComplete event?)
+            // This is so all custom IJobController's provided via plugins have been registered.
             jobController.Start();
 
             // Seed default user roles
