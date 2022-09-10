@@ -154,6 +154,7 @@ builder.Services.AddDbContext<MapDbContext>(options =>
 
 #region Host Services
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages(); // <- Required for plugins to render Razor pages
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
@@ -205,12 +206,11 @@ builder.Services.AddScoped<IPublisher, PluginPublisher>();
 var routeHost = builder.Services.GetService<IRouteHost>();
 builder.Services.AddSingleton((IRouteGenerator)routeHost);
 
-builder.Services.AddHttpContextAccessor();
-
 // TODO: Do not build service provider from collection manually, leave it up to DI - https://andrewlock.net/access-services-inside-options-and-startup-using-configureoptions/
 var jobControllerService = builder.Services.GetService<IJobControllerService>();
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
 builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
+jobControllerService.LoadDevices();
 
 // TODO: Use builder.Services registered instead of 'sharedServiceHosts' - Fix issue with IDbContextFactory and eventually ILogger<T> parameters (just make static and use logger factory instead)
 var sharedServiceHosts = new Dictionary<Type, object>
@@ -240,6 +240,8 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 // Find plugins, register plugin services, load plugin assemblies,
 // call OnLoad callback and register with 'IPluginManager' cache
 await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment);
+
+jobControllerService.Start();
 
 #endregion
 

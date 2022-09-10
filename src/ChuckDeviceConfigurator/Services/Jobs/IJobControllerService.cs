@@ -3,6 +3,7 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceConfigurator.Services.Rpc.Models;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Plugin;
@@ -27,6 +28,8 @@
         #endregion
 
         #region Public
+
+        void LoadDevices();
 
         /// <summary>
         /// Starts the <see cref="IJobControllerService"/>.

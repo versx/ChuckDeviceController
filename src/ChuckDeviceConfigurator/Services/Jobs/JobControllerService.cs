@@ -99,6 +99,18 @@
 
         #region Public Methods
 
+        public void LoadDevices()
+        {
+            using (var context = _deviceFactory.CreateDbContext())
+            {
+                var devices = context.Devices.ToList();
+                foreach (var device in devices)
+                {
+                    AddDevice(device);
+                }
+            }
+        }
+
         public void Start()
         {
             using (var context = _deviceFactory.CreateDbContext())
@@ -120,10 +132,10 @@
                             : "";
                         _logger.LogInformation($"Started instance {instance.Name} ({instance.Type}){suffix}");
 
-                        foreach (var device in assignedDevices)
-                        {
-                            AddDevice(device);
-                        }
+                        //foreach (var device in assignedDevices)
+                        //{
+                        //    AddDevice(device);
+                        //}
                     });
 
                     if (!ThreadPool.QueueUserWorkItem(callback))
