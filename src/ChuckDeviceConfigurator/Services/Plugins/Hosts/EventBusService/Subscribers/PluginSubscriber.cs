@@ -4,7 +4,7 @@
     using ChuckDeviceController.Plugin.EventBus.Events;
 
     /// <summary>
-    /// Plugin subscriber tracks only plugin created event.
+    /// Plugin subscriber tracks only generic plugin events payloads.
     /// </summary>
     public class PluginSubscriber : ICustomObserver<PluginEvent>
     {

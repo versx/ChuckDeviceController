@@ -6,7 +6,10 @@
     {
         #region Variables
 
+        private static readonly Logger<IEventAggregatorHost> _logger =
+            new(LoggerFactory.Create(x => x.AddConsole()));
         private readonly List<IEvent> _events;
+        private readonly List<IEvent> _eventsRelayed;
         private readonly List<IObserver<IEvent>> _observers;
         private readonly Dictionary<Type, List<IObserver<IEvent>>> _typedObservers;
 
@@ -26,6 +29,7 @@
         public EventAggregatorHost()
         {
             _events = new List<IEvent>();
+            _eventsRelayed = new List<IEvent>();
             _observers = new List<IObserver<IEvent>>();
             _typedObservers = new Dictionary<Type, List<IObserver<IEvent>>>();
         }
@@ -45,10 +49,15 @@
             foreach (var observer in _observers)
             {
                 // Provide the observer with new data.
-                //observer.OnNext(@event);
-                ExecutePublish(observer, @event);
+                var result = ExecutePublish(observer, @event);
+                if (result != EventExecutionResult.Executed)
+                {
+                    // Error occurred
+                    _logger.LogError($"Failed to emit event bus event '{@event.GetType().FullName}' with result '{result}' to observer.");
+                }
             }
 
+            // Check if provided event has a cached strongly typed observer
             if (!_typedObservers.TryGetValue(@event.GetType(), out var typedObservers))
             {
                 return;
@@ -57,8 +66,12 @@
             foreach (var observer in typedObservers)
             {
                 // Provide the typed observer with new data.
-                //observer.OnNext(@event);
-                ExecutePublish(observer, @event);
+                var result = ExecutePublish(observer, @event);
+                if (result != EventExecutionResult.Executed)
+                {
+                    // Error occurred
+                    _logger.LogError($"Failed to emit event bus event '{@event.GetType().FullName}' with result '{result}' to typed observer");
+                }
             }
         }
 
@@ -104,7 +117,7 @@
         private IDisposable SubscribeToAllEvents(IObserver<IEvent> newObserver) =>
             SubscribeAndSendEvents(_observers, newObserver, _events);
 
-        private static IDisposable SubscribeAndSendEvents(
+        private IDisposable SubscribeAndSendEvents(
             List<IObserver<IEvent>> currentObservers,
             IObserver<IEvent> newObserver,
             IEnumerable<IEvent> events)
@@ -116,24 +129,36 @@
                 // Provide observer with existing data.
                 foreach (var @event in events)
                 {
-                    newObserver.OnNext(@event);
+                    var result = ExecutePublish(newObserver, @event);
+                    if (result != EventExecutionResult.Executed)
+                    {
+                        // Error occurred
+                        _logger.LogError($"Failed to publish event '{@event.GetType().FullName}' to event bus with result '{result}'");
+                    }
+
+                    // TODO: Use lock
+                    if (_events.Contains(@event))
+                    {
+                        _events.Remove(@event);
+                    }
                 }
             }
 
             return new Unsubscriber<IEvent>(currentObservers, newObserver);
         }
 
-        private static EventExecutionResult ExecutePublish(IObserver<IEvent> observer, IEvent @event)
+        private EventExecutionResult ExecutePublish(IObserver<IEvent> observer, IEvent @event)
         {
             EventExecutionResult result;
             try
             {
                 observer.OnNext(@event);
+                _eventsRelayed.Add(@event);
                 result = EventExecutionResult.Executed;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ExecutePublish: {ex}");
+                _logger.LogError($"ExecutePublish: {ex}");
                 result = EventExecutionResult.UnhandledException;
             }
             return result;

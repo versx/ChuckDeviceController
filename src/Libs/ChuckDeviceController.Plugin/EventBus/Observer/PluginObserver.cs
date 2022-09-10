@@ -2,6 +2,7 @@
 {
     using ChuckDeviceController.Plugin.EventBus.Events;
 
+    // TODO: Test impl
     public class PluginObserver : ICustomObserver<PluginEvent>
     {
         public void OnCompleted()
