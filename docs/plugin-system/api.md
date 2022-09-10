@@ -18,6 +18,9 @@
 - [DatabaseConnectionState](#T-ChuckDeviceController-Plugin-DatabaseConnectionState 'ChuckDeviceController.Plugin.DatabaseConnectionState')
     - [Connected](#F-ChuckDeviceController-Plugin-DatabaseConnectionState-Connected 'ChuckDeviceController.Plugin.DatabaseConnectionState.Connected')
     - [Disconnected](#F-ChuckDeviceController-Plugin-DatabaseConnectionState-Disconnected 'ChuckDeviceController.Plugin.DatabaseConnectionState.Disconnected')
+- [IConfigurationHost](#T-ChuckDeviceController-Plugin-IConfigurationHost 'ChuckDeviceController.Plugin.IConfigurationHost')
+    - [GetConfiguration(jsonFileName,sectionName)](#M-ChuckDeviceController-Plugin-IConfigurationHost-GetConfiguration-System-String,System-String- 'ChuckDeviceController.Plugin.IConfigurationHost.GetConfiguration(System.String,System.String)')
+    - [GetValue\`\`1(name,defaultValue,sectionName)](#M-ChuckDeviceController-Plugin-IConfigurationHost-GetValue``1-System-String,``0,System-String- 'ChuckDeviceController.Plugin.IConfigurationHost.GetValue``1(System.String,``0,System.String)')
 - [IDashboardStatsItem](#T-ChuckDeviceController-Plugin-IDashboardStatsItem 'ChuckDeviceController.Plugin.IDashboardStatsItem')
     - [IsHtml](#P-ChuckDeviceController-Plugin-IDashboardStatsItem-IsHtml 'ChuckDeviceController.Plugin.IDashboardStatsItem.IsHtml')
     - [Name](#P-ChuckDeviceController-Plugin-IDashboardStatsItem-Name 'ChuckDeviceController.Plugin.IDashboardStatsItem.Name')
@@ -36,10 +39,13 @@
 - [IDatabaseHost](#T-ChuckDeviceController-Plugin-IDatabaseHost 'ChuckDeviceController.Plugin.IDatabaseHost')
     - [GetByIdAsync\`\`2(id)](#M-ChuckDeviceController-Plugin-IDatabaseHost-GetByIdAsync``2-``1- 'ChuckDeviceController.Plugin.IDatabaseHost.GetByIdAsync``2(``1)')
     - [GetListAsync\`\`1()](#M-ChuckDeviceController-Plugin-IDatabaseHost-GetListAsync``1 'ChuckDeviceController.Plugin.IDatabaseHost.GetListAsync``1')
+- [IFileStorageHost](#T-ChuckDeviceController-Plugin-IFileStorageHost 'ChuckDeviceController.Plugin.IFileStorageHost')
 - [IJobControllerServiceEvents](#T-ChuckDeviceController-Plugin-IJobControllerServiceEvents 'ChuckDeviceController.Plugin.IJobControllerServiceEvents')
 - [IJobControllerServiceHost](#T-ChuckDeviceController-Plugin-IJobControllerServiceHost 'ChuckDeviceController.Plugin.IJobControllerServiceHost')
     - [AddJobControllerAsync(name,controller)](#M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AddJobControllerAsync-System-String,ChuckDeviceController-Common-Jobs-IJobController- 'ChuckDeviceController.Plugin.IJobControllerServiceHost.AddJobControllerAsync(System.String,ChuckDeviceController.Common.Jobs.IJobController)')
     - [AssignDeviceToJobControllerAsync(device,jobControllerName)](#M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AssignDeviceToJobControllerAsync-ChuckDeviceController-Common-Data-Contracts-IDevice,System-String- 'ChuckDeviceController.Plugin.IJobControllerServiceHost.AssignDeviceToJobControllerAsync(ChuckDeviceController.Common.Data.Contracts.IDevice,System.String)')
+- [ILoadData](#T-ChuckDeviceController-Plugin-ILoadData 'ChuckDeviceController.Plugin.ILoadData')
+    - [Load\`\`1(folderName,fileName)](#M-ChuckDeviceController-Plugin-ILoadData-Load``1-System-String,System-String- 'ChuckDeviceController.Plugin.ILoadData.Load``1(System.String,System.String)')
 - [ILocalizationHost](#T-ChuckDeviceController-Plugin-ILocalizationHost 'ChuckDeviceController.Plugin.ILocalizationHost')
     - [CountryCode](#P-ChuckDeviceController-Plugin-ILocalizationHost-CountryCode 'ChuckDeviceController.Plugin.ILocalizationHost.CountryCode')
     - [CurrentCulture](#P-ChuckDeviceController-Plugin-ILocalizationHost-CurrentCulture 'ChuckDeviceController.Plugin.ILocalizationHost.CurrentCulture')
@@ -65,16 +71,7 @@
     - [Description](#P-ChuckDeviceController-Plugin-IMetadata-Description 'ChuckDeviceController.Plugin.IMetadata.Description')
     - [Name](#P-ChuckDeviceController-Plugin-IMetadata-Name 'ChuckDeviceController.Plugin.IMetadata.Name')
     - [Version](#P-ChuckDeviceController-Plugin-IMetadata-Version 'ChuckDeviceController.Plugin.IMetadata.Version')
-- [INavbarHeader](#T-ChuckDeviceController-Plugin-INavbarHeader 'ChuckDeviceController.Plugin.INavbarHeader')
-    - [ActionName](#P-ChuckDeviceController-Plugin-INavbarHeader-ActionName 'ChuckDeviceController.Plugin.INavbarHeader.ActionName')
-    - [ControllerName](#P-ChuckDeviceController-Plugin-INavbarHeader-ControllerName 'ChuckDeviceController.Plugin.INavbarHeader.ControllerName')
-    - [DisplayIndex](#P-ChuckDeviceController-Plugin-INavbarHeader-DisplayIndex 'ChuckDeviceController.Plugin.INavbarHeader.DisplayIndex')
-    - [Icon](#P-ChuckDeviceController-Plugin-INavbarHeader-Icon 'ChuckDeviceController.Plugin.INavbarHeader.Icon')
-    - [IsDisabled](#P-ChuckDeviceController-Plugin-INavbarHeader-IsDisabled 'ChuckDeviceController.Plugin.INavbarHeader.IsDisabled')
-    - [Text](#P-ChuckDeviceController-Plugin-INavbarHeader-Text 'ChuckDeviceController.Plugin.INavbarHeader.Text')
 - [IPlugin](#T-ChuckDeviceController-Plugin-IPlugin 'ChuckDeviceController.Plugin.IPlugin')
-- [IPluginBootstrapper](#T-ChuckDeviceController-Plugin-Services-IPluginBootstrapper 'ChuckDeviceController.Plugin.Services.IPluginBootstrapper')
-    - [Bootstrap(services)](#M-ChuckDeviceController-Plugin-Services-IPluginBootstrapper-Bootstrap-Microsoft-Extensions-DependencyInjection-IServiceCollection- 'ChuckDeviceController.Plugin.Services.IPluginBootstrapper.Bootstrap(Microsoft.Extensions.DependencyInjection.IServiceCollection)')
 - [IPluginBootstrapperServiceAttribute](#T-ChuckDeviceController-Plugin-Services-IPluginBootstrapperServiceAttribute 'ChuckDeviceController.Plugin.Services.IPluginBootstrapperServiceAttribute')
     - [ProxyType](#P-ChuckDeviceController-Plugin-Services-IPluginBootstrapperServiceAttribute-ProxyType 'ChuckDeviceController.Plugin.Services.IPluginBootstrapperServiceAttribute.ProxyType')
     - [ServiceType](#P-ChuckDeviceController-Plugin-Services-IPluginBootstrapperServiceAttribute-ServiceType 'ChuckDeviceController.Plugin.Services.IPluginBootstrapperServiceAttribute.ServiceType')
@@ -89,40 +86,69 @@
     - [Provider](#P-ChuckDeviceController-Plugin-Services-IPluginServiceAttribute-Provider 'ChuckDeviceController.Plugin.Services.IPluginServiceAttribute.Provider')
     - [ProxyType](#P-ChuckDeviceController-Plugin-Services-IPluginServiceAttribute-ProxyType 'ChuckDeviceController.Plugin.Services.IPluginServiceAttribute.ProxyType')
     - [ServiceType](#P-ChuckDeviceController-Plugin-Services-IPluginServiceAttribute-ServiceType 'ChuckDeviceController.Plugin.Services.IPluginServiceAttribute.ServiceType')
-- [IRepository\`2](#T-ChuckDeviceController-Plugin-Data-IRepository`2 'ChuckDeviceController.Plugin.Data.IRepository`2')
-    - [GetByIdAsync(id)](#M-ChuckDeviceController-Plugin-Data-IRepository`2-GetByIdAsync-`1- 'ChuckDeviceController.Plugin.Data.IRepository`2.GetByIdAsync(`1)')
-    - [GetListAsync()](#M-ChuckDeviceController-Plugin-Data-IRepository`2-GetListAsync 'ChuckDeviceController.Plugin.Data.IRepository`2.GetListAsync')
+- [IRepository\`2](#T-ChuckDeviceController-Plugin-IRepository`2 'ChuckDeviceController.Plugin.IRepository`2')
+    - [GetByIdAsync(id)](#M-ChuckDeviceController-Plugin-IRepository`2-GetByIdAsync-`1- 'ChuckDeviceController.Plugin.IRepository`2.GetByIdAsync(`1)')
+    - [GetListAsync()](#M-ChuckDeviceController-Plugin-IRepository`2-GetListAsync 'ChuckDeviceController.Plugin.IRepository`2.GetListAsync')
+- [ISaveData](#T-ChuckDeviceController-Plugin-ISaveData 'ChuckDeviceController.Plugin.ISaveData')
+    - [Save\`\`1(data,folderName,name,prettyPrint)](#M-ChuckDeviceController-Plugin-ISaveData-Save``1-``0,System-String,System-String,System-Boolean- 'ChuckDeviceController.Plugin.ISaveData.Save``1(``0,System.String,System.String,System.Boolean)')
+- [ISettingsProperty](#T-ChuckDeviceController-Plugin-ISettingsProperty 'ChuckDeviceController.Plugin.ISettingsProperty')
+    - [Class](#P-ChuckDeviceController-Plugin-ISettingsProperty-Class 'ChuckDeviceController.Plugin.ISettingsProperty.Class')
+    - [DefaultValue](#P-ChuckDeviceController-Plugin-ISettingsProperty-DefaultValue 'ChuckDeviceController.Plugin.ISettingsProperty.DefaultValue')
+    - [DisplayIndex](#P-ChuckDeviceController-Plugin-ISettingsProperty-DisplayIndex 'ChuckDeviceController.Plugin.ISettingsProperty.DisplayIndex')
+    - [Group](#P-ChuckDeviceController-Plugin-ISettingsProperty-Group 'ChuckDeviceController.Plugin.ISettingsProperty.Group')
+    - [IsRequired](#P-ChuckDeviceController-Plugin-ISettingsProperty-IsRequired 'ChuckDeviceController.Plugin.ISettingsProperty.IsRequired')
+    - [Name](#P-ChuckDeviceController-Plugin-ISettingsProperty-Name 'ChuckDeviceController.Plugin.ISettingsProperty.Name')
+    - [Style](#P-ChuckDeviceController-Plugin-ISettingsProperty-Style 'ChuckDeviceController.Plugin.ISettingsProperty.Style')
+    - [Text](#P-ChuckDeviceController-Plugin-ISettingsProperty-Text 'ChuckDeviceController.Plugin.ISettingsProperty.Text')
+    - [Type](#P-ChuckDeviceController-Plugin-ISettingsProperty-Type 'ChuckDeviceController.Plugin.ISettingsProperty.Type')
+    - [Validate](#P-ChuckDeviceController-Plugin-ISettingsProperty-Validate 'ChuckDeviceController.Plugin.ISettingsProperty.Validate')
+    - [Value](#P-ChuckDeviceController-Plugin-ISettingsProperty-Value 'ChuckDeviceController.Plugin.ISettingsProperty.Value')
+- [ISettingsPropertyEvents](#T-ChuckDeviceController-Plugin-ISettingsPropertyEvents 'ChuckDeviceController.Plugin.ISettingsPropertyEvents')
+    - [OnClick()](#M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnClick-ChuckDeviceController-Plugin-ISettingsProperty- 'ChuckDeviceController.Plugin.ISettingsPropertyEvents.OnClick(ChuckDeviceController.Plugin.ISettingsProperty)')
+    - [OnSave()](#M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnSave-ChuckDeviceController-Plugin-ISettingsProperty- 'ChuckDeviceController.Plugin.ISettingsPropertyEvents.OnSave(ChuckDeviceController.Plugin.ISettingsProperty)')
+    - [OnToggle()](#M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnToggle-ChuckDeviceController-Plugin-ISettingsProperty- 'ChuckDeviceController.Plugin.ISettingsPropertyEvents.OnToggle(ChuckDeviceController.Plugin.ISettingsProperty)')
+- [ISettingsPropertyGroup](#T-ChuckDeviceController-Plugin-ISettingsPropertyGroup 'ChuckDeviceController.Plugin.ISettingsPropertyGroup')
+    - [DisplayIndex](#P-ChuckDeviceController-Plugin-ISettingsPropertyGroup-DisplayIndex 'ChuckDeviceController.Plugin.ISettingsPropertyGroup.DisplayIndex')
+    - [Id](#P-ChuckDeviceController-Plugin-ISettingsPropertyGroup-Id 'ChuckDeviceController.Plugin.ISettingsPropertyGroup.Id')
+    - [Text](#P-ChuckDeviceController-Plugin-ISettingsPropertyGroup-Text 'ChuckDeviceController.Plugin.ISettingsPropertyGroup.Text')
+- [ISettingsTab](#T-ChuckDeviceController-Plugin-ISettingsTab 'ChuckDeviceController.Plugin.ISettingsTab')
+    - [Anchor](#P-ChuckDeviceController-Plugin-ISettingsTab-Anchor 'ChuckDeviceController.Plugin.ISettingsTab.Anchor')
+    - [Class](#P-ChuckDeviceController-Plugin-ISettingsTab-Class 'ChuckDeviceController.Plugin.ISettingsTab.Class')
+    - [DisplayIndex](#P-ChuckDeviceController-Plugin-ISettingsTab-DisplayIndex 'ChuckDeviceController.Plugin.ISettingsTab.DisplayIndex')
+    - [Id](#P-ChuckDeviceController-Plugin-ISettingsTab-Id 'ChuckDeviceController.Plugin.ISettingsTab.Id')
+    - [Style](#P-ChuckDeviceController-Plugin-ISettingsTab-Style 'ChuckDeviceController.Plugin.ISettingsTab.Style')
+    - [Text](#P-ChuckDeviceController-Plugin-ISettingsTab-Text 'ChuckDeviceController.Plugin.ISettingsTab.Text')
+- [ISidebarItem](#T-ChuckDeviceController-Plugin-ISidebarItem 'ChuckDeviceController.Plugin.ISidebarItem')
+    - [ActionName](#P-ChuckDeviceController-Plugin-ISidebarItem-ActionName 'ChuckDeviceController.Plugin.ISidebarItem.ActionName')
+    - [ControllerName](#P-ChuckDeviceController-Plugin-ISidebarItem-ControllerName 'ChuckDeviceController.Plugin.ISidebarItem.ControllerName')
+    - [DisplayIndex](#P-ChuckDeviceController-Plugin-ISidebarItem-DisplayIndex 'ChuckDeviceController.Plugin.ISidebarItem.DisplayIndex')
+    - [Icon](#P-ChuckDeviceController-Plugin-ISidebarItem-Icon 'ChuckDeviceController.Plugin.ISidebarItem.Icon')
+    - [IsDisabled](#P-ChuckDeviceController-Plugin-ISidebarItem-IsDisabled 'ChuckDeviceController.Plugin.ISidebarItem.IsDisabled')
+    - [IsSeparator](#P-ChuckDeviceController-Plugin-ISidebarItem-IsSeparator 'ChuckDeviceController.Plugin.ISidebarItem.IsSeparator')
+    - [Text](#P-ChuckDeviceController-Plugin-ISidebarItem-Text 'ChuckDeviceController.Plugin.ISidebarItem.Text')
 - [IUiEvents](#T-ChuckDeviceController-Plugin-IUiEvents 'ChuckDeviceController.Plugin.IUiEvents')
 - [IUiHost](#T-ChuckDeviceController-Plugin-IUiHost 'ChuckDeviceController.Plugin.IUiHost')
     - [DashboardStatsItems](#P-ChuckDeviceController-Plugin-IUiHost-DashboardStatsItems 'ChuckDeviceController.Plugin.IUiHost.DashboardStatsItems')
     - [DashboardTiles](#P-ChuckDeviceController-Plugin-IUiHost-DashboardTiles 'ChuckDeviceController.Plugin.IUiHost.DashboardTiles')
-    - [NavbarHeaders](#P-ChuckDeviceController-Plugin-IUiHost-NavbarHeaders 'ChuckDeviceController.Plugin.IUiHost.NavbarHeaders')
+    - [SettingsProperties](#P-ChuckDeviceController-Plugin-IUiHost-SettingsProperties 'ChuckDeviceController.Plugin.IUiHost.SettingsProperties')
+    - [SettingsTabs](#P-ChuckDeviceController-Plugin-IUiHost-SettingsTabs 'ChuckDeviceController.Plugin.IUiHost.SettingsTabs')
+    - [SidebarItems](#P-ChuckDeviceController-Plugin-IUiHost-SidebarItems 'ChuckDeviceController.Plugin.IUiHost.SidebarItems')
     - [AddDashboardStatisticAsync(stat)](#M-ChuckDeviceController-Plugin-IUiHost-AddDashboardStatisticAsync-ChuckDeviceController-Plugin-IDashboardStatsItem- 'ChuckDeviceController.Plugin.IUiHost.AddDashboardStatisticAsync(ChuckDeviceController.Plugin.IDashboardStatsItem)')
     - [AddDashboardStatisticsAsync(stats)](#M-ChuckDeviceController-Plugin-IUiHost-AddDashboardStatisticsAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-IDashboardStatsItem}- 'ChuckDeviceController.Plugin.IUiHost.AddDashboardStatisticsAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.IDashboardStatsItem})')
     - [AddDashboardTileAsync(tile)](#M-ChuckDeviceController-Plugin-IUiHost-AddDashboardTileAsync-ChuckDeviceController-Plugin-IDashboardTile- 'ChuckDeviceController.Plugin.IUiHost.AddDashboardTileAsync(ChuckDeviceController.Plugin.IDashboardTile)')
     - [AddDashboardTilesAsync(tiles)](#M-ChuckDeviceController-Plugin-IUiHost-AddDashboardTilesAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-IDashboardTile}- 'ChuckDeviceController.Plugin.IUiHost.AddDashboardTilesAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.IDashboardTile})')
-    - [AddNavbarHeaderAsync(header)](#M-ChuckDeviceController-Plugin-IUiHost-AddNavbarHeaderAsync-ChuckDeviceController-Plugin-NavbarHeader- 'ChuckDeviceController.Plugin.IUiHost.AddNavbarHeaderAsync(ChuckDeviceController.Plugin.NavbarHeader)')
-    - [AddNavbarHeadersAsync(headers)](#M-ChuckDeviceController-Plugin-IUiHost-AddNavbarHeadersAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-NavbarHeader}- 'ChuckDeviceController.Plugin.IUiHost.AddNavbarHeadersAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.NavbarHeader})')
+    - [AddSettingsPropertiesAsync(tabId,properties)](#M-ChuckDeviceController-Plugin-IUiHost-AddSettingsPropertiesAsync-System-String,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-SettingsProperty}- 'ChuckDeviceController.Plugin.IUiHost.AddSettingsPropertiesAsync(System.String,System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SettingsProperty})')
+    - [AddSettingsPropertyAsync(tabId,property)](#M-ChuckDeviceController-Plugin-IUiHost-AddSettingsPropertyAsync-System-String,ChuckDeviceController-Plugin-SettingsProperty- 'ChuckDeviceController.Plugin.IUiHost.AddSettingsPropertyAsync(System.String,ChuckDeviceController.Plugin.SettingsProperty)')
+    - [AddSettingsTabAsync(tab)](#M-ChuckDeviceController-Plugin-IUiHost-AddSettingsTabAsync-ChuckDeviceController-Plugin-SettingsTab- 'ChuckDeviceController.Plugin.IUiHost.AddSettingsTabAsync(ChuckDeviceController.Plugin.SettingsTab)')
+    - [AddSidebarItemAsync(header)](#M-ChuckDeviceController-Plugin-IUiHost-AddSidebarItemAsync-ChuckDeviceController-Plugin-SidebarItem- 'ChuckDeviceController.Plugin.IUiHost.AddSidebarItemAsync(ChuckDeviceController.Plugin.SidebarItem)')
+    - [AddSidebarItemsAsync(headers)](#M-ChuckDeviceController-Plugin-IUiHost-AddSidebarItemsAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-SidebarItem}- 'ChuckDeviceController.Plugin.IUiHost.AddSidebarItemsAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SidebarItem})')
+    - [GetSettingsPropertyValue\`\`1(name)](#M-ChuckDeviceController-Plugin-IUiHost-GetSettingsPropertyValue``1-System-String- 'ChuckDeviceController.Plugin.IUiHost.GetSettingsPropertyValue``1(System.String)')
     - [UpdateDashboardStatisticAsync(stat)](#M-ChuckDeviceController-Plugin-IUiHost-UpdateDashboardStatisticAsync-ChuckDeviceController-Plugin-IDashboardStatsItem- 'ChuckDeviceController.Plugin.IUiHost.UpdateDashboardStatisticAsync(ChuckDeviceController.Plugin.IDashboardStatsItem)')
     - [UpdateDashboardStatisticsAsync(stats)](#M-ChuckDeviceController-Plugin-IUiHost-UpdateDashboardStatisticsAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-IDashboardStatsItem}- 'ChuckDeviceController.Plugin.IUiHost.UpdateDashboardStatisticsAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.IDashboardStatsItem})')
 - [IWebPlugin](#T-ChuckDeviceController-Plugin-IWebPlugin 'ChuckDeviceController.Plugin.IWebPlugin')
     - [Configure(appBuilder)](#M-ChuckDeviceController-Plugin-IWebPlugin-Configure-Microsoft-AspNetCore-Builder-WebApplication- 'ChuckDeviceController.Plugin.IWebPlugin.Configure(Microsoft.AspNetCore.Builder.WebApplication)')
+    - [ConfigureMvcBuilder(mvcBuilder)](#M-ChuckDeviceController-Plugin-IWebPlugin-ConfigureMvcBuilder-Microsoft-Extensions-DependencyInjection-IMvcBuilder- 'ChuckDeviceController.Plugin.IWebPlugin.ConfigureMvcBuilder(Microsoft.Extensions.DependencyInjection.IMvcBuilder)')
     - [ConfigureServices(services)](#M-ChuckDeviceController-Plugin-IWebPlugin-ConfigureServices-Microsoft-Extensions-DependencyInjection-IServiceCollection- 'ChuckDeviceController.Plugin.IWebPlugin.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)')
-- [NavbarHeader](#T-ChuckDeviceController-Plugin-NavbarHeader 'ChuckDeviceController.Plugin.NavbarHeader')
-    - [#ctor()](#M-ChuckDeviceController-Plugin-NavbarHeader-#ctor 'ChuckDeviceController.Plugin.NavbarHeader.#ctor')
-    - [#ctor(text,controllerName,actionName,icon,displayIndex,isDropdown,dropdownItems,isDisabled,isSeparator)](#M-ChuckDeviceController-Plugin-NavbarHeader-#ctor-System-String,System-String,System-String,System-String,System-UInt32,System-Boolean,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-NavbarHeader},System-Boolean,System-Boolean- 'ChuckDeviceController.Plugin.NavbarHeader.#ctor(System.String,System.String,System.String,System.String,System.UInt32,System.Boolean,System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.NavbarHeader},System.Boolean,System.Boolean)')
-    - [ActionName](#P-ChuckDeviceController-Plugin-NavbarHeader-ActionName 'ChuckDeviceController.Plugin.NavbarHeader.ActionName')
-    - [ControllerName](#P-ChuckDeviceController-Plugin-NavbarHeader-ControllerName 'ChuckDeviceController.Plugin.NavbarHeader.ControllerName')
-    - [DisplayIndex](#P-ChuckDeviceController-Plugin-NavbarHeader-DisplayIndex 'ChuckDeviceController.Plugin.NavbarHeader.DisplayIndex')
-    - [DropdownItems](#P-ChuckDeviceController-Plugin-NavbarHeader-DropdownItems 'ChuckDeviceController.Plugin.NavbarHeader.DropdownItems')
-    - [Icon](#P-ChuckDeviceController-Plugin-NavbarHeader-Icon 'ChuckDeviceController.Plugin.NavbarHeader.Icon')
-    - [IsDisabled](#P-ChuckDeviceController-Plugin-NavbarHeader-IsDisabled 'ChuckDeviceController.Plugin.NavbarHeader.IsDisabled')
-    - [IsDropdown](#P-ChuckDeviceController-Plugin-NavbarHeader-IsDropdown 'ChuckDeviceController.Plugin.NavbarHeader.IsDropdown')
-    - [IsSeparator](#P-ChuckDeviceController-Plugin-NavbarHeader-IsSeparator 'ChuckDeviceController.Plugin.NavbarHeader.IsSeparator')
-    - [Text](#P-ChuckDeviceController-Plugin-NavbarHeader-Text 'ChuckDeviceController.Plugin.NavbarHeader.Text')
-- [PluginBootstrapperAttribute](#T-ChuckDeviceController-Plugin-Services-PluginBootstrapperAttribute 'ChuckDeviceController.Plugin.Services.PluginBootstrapperAttribute')
-    - [#ctor(pluginType)](#M-ChuckDeviceController-Plugin-Services-PluginBootstrapperAttribute-#ctor-System-Type- 'ChuckDeviceController.Plugin.Services.PluginBootstrapperAttribute.#ctor(System.Type)')
-    - [PluginType](#P-ChuckDeviceController-Plugin-Services-PluginBootstrapperAttribute-PluginType 'ChuckDeviceController.Plugin.Services.PluginBootstrapperAttribute.PluginType')
 - [PluginBootstrapperServiceAttribute](#T-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute 'ChuckDeviceController.Plugin.Services.PluginBootstrapperServiceAttribute')
     - [#ctor(serviceType)](#M-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute-#ctor-System-Type- 'ChuckDeviceController.Plugin.Services.PluginBootstrapperServiceAttribute.#ctor(System.Type)')
     - [#ctor(serviceType,proxyType)](#M-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute-#ctor-System-Type,System-Type- 'ChuckDeviceController.Plugin.Services.PluginBootstrapperServiceAttribute.#ctor(System.Type,System.Type)')
@@ -150,13 +176,78 @@
 - [PluginServiceProvider](#T-ChuckDeviceController-Plugin-Services-PluginServiceProvider 'ChuckDeviceController.Plugin.Services.PluginServiceProvider')
     - [Host](#F-ChuckDeviceController-Plugin-Services-PluginServiceProvider-Host 'ChuckDeviceController.Plugin.Services.PluginServiceProvider.Host')
     - [Plugin](#F-ChuckDeviceController-Plugin-Services-PluginServiceProvider-Plugin 'ChuckDeviceController.Plugin.Services.PluginServiceProvider.Plugin')
+- [RequestTimings](#T-ChuckDeviceController-Plugin-RequestTimings 'ChuckDeviceController.Plugin.RequestTimings')
+    - [#ctor()](#M-ChuckDeviceController-Plugin-RequestTimings-#ctor 'ChuckDeviceController.Plugin.RequestTimings.#ctor')
+    - [Average](#P-ChuckDeviceController-Plugin-RequestTimings-Average 'ChuckDeviceController.Plugin.RequestTimings.Average')
+    - [DecimalPlaces](#P-ChuckDeviceController-Plugin-RequestTimings-DecimalPlaces 'ChuckDeviceController.Plugin.RequestTimings.DecimalPlaces')
+    - [Fastest](#P-ChuckDeviceController-Plugin-RequestTimings-Fastest 'ChuckDeviceController.Plugin.RequestTimings.Fastest')
+    - [IsCloned](#P-ChuckDeviceController-Plugin-RequestTimings-IsCloned 'ChuckDeviceController.Plugin.RequestTimings.IsCloned')
+    - [LogTimings](#P-ChuckDeviceController-Plugin-RequestTimings-LogTimings 'ChuckDeviceController.Plugin.RequestTimings.LogTimings')
+    - [Requests](#P-ChuckDeviceController-Plugin-RequestTimings-Requests 'ChuckDeviceController.Plugin.RequestTimings.Requests')
+    - [Slowest](#P-ChuckDeviceController-Plugin-RequestTimings-Slowest 'ChuckDeviceController.Plugin.RequestTimings.Slowest')
+    - [Total](#P-ChuckDeviceController-Plugin-RequestTimings-Total 'ChuckDeviceController.Plugin.RequestTimings.Total')
+    - [TrimmedAverage](#P-ChuckDeviceController-Plugin-RequestTimings-TrimmedAverage 'ChuckDeviceController.Plugin.RequestTimings.TrimmedAverage')
+    - [Clone()](#M-ChuckDeviceController-Plugin-RequestTimings-Clone 'ChuckDeviceController.Plugin.RequestTimings.Clone')
+    - [Increment(stopWatch)](#M-ChuckDeviceController-Plugin-RequestTimings-Increment-System-Diagnostics-Stopwatch- 'ChuckDeviceController.Plugin.RequestTimings.Increment(System.Diagnostics.Stopwatch)')
+    - [Increment(totalTicks)](#M-ChuckDeviceController-Plugin-RequestTimings-Increment-System-Int64- 'ChuckDeviceController.Plugin.RequestTimings.Increment(System.Int64)')
+- [SettingsProperty](#T-ChuckDeviceController-Plugin-SettingsProperty 'ChuckDeviceController.Plugin.SettingsProperty')
+    - [#ctor()](#M-ChuckDeviceController-Plugin-SettingsProperty-#ctor 'ChuckDeviceController.Plugin.SettingsProperty.#ctor')
+    - [#ctor(text,name,type,value,defaultValue,displayIndex,isRequired,validate,className,style,group)](#M-ChuckDeviceController-Plugin-SettingsProperty-#ctor-System-String,System-String,ChuckDeviceController-Plugin-SettingsPropertyType,System-Object,System-Object,System-UInt32,System-Boolean,System-Boolean,System-String,System-String,ChuckDeviceController-Plugin-SettingsPropertyGroup- 'ChuckDeviceController.Plugin.SettingsProperty.#ctor(System.String,System.String,ChuckDeviceController.Plugin.SettingsPropertyType,System.Object,System.Object,System.UInt32,System.Boolean,System.Boolean,System.String,System.String,ChuckDeviceController.Plugin.SettingsPropertyGroup)')
+    - [Class](#P-ChuckDeviceController-Plugin-SettingsProperty-Class 'ChuckDeviceController.Plugin.SettingsProperty.Class')
+    - [DefaultValue](#P-ChuckDeviceController-Plugin-SettingsProperty-DefaultValue 'ChuckDeviceController.Plugin.SettingsProperty.DefaultValue')
+    - [DisplayIndex](#P-ChuckDeviceController-Plugin-SettingsProperty-DisplayIndex 'ChuckDeviceController.Plugin.SettingsProperty.DisplayIndex')
+    - [Group](#P-ChuckDeviceController-Plugin-SettingsProperty-Group 'ChuckDeviceController.Plugin.SettingsProperty.Group')
+    - [IsRequired](#P-ChuckDeviceController-Plugin-SettingsProperty-IsRequired 'ChuckDeviceController.Plugin.SettingsProperty.IsRequired')
+    - [Name](#P-ChuckDeviceController-Plugin-SettingsProperty-Name 'ChuckDeviceController.Plugin.SettingsProperty.Name')
+    - [Style](#P-ChuckDeviceController-Plugin-SettingsProperty-Style 'ChuckDeviceController.Plugin.SettingsProperty.Style')
+    - [Text](#P-ChuckDeviceController-Plugin-SettingsProperty-Text 'ChuckDeviceController.Plugin.SettingsProperty.Text')
+    - [Type](#P-ChuckDeviceController-Plugin-SettingsProperty-Type 'ChuckDeviceController.Plugin.SettingsProperty.Type')
+    - [Validate](#P-ChuckDeviceController-Plugin-SettingsProperty-Validate 'ChuckDeviceController.Plugin.SettingsProperty.Validate')
+    - [Value](#P-ChuckDeviceController-Plugin-SettingsProperty-Value 'ChuckDeviceController.Plugin.SettingsProperty.Value')
+- [SettingsPropertyGroup](#T-ChuckDeviceController-Plugin-SettingsPropertyGroup 'ChuckDeviceController.Plugin.SettingsPropertyGroup')
+    - [#ctor()](#M-ChuckDeviceController-Plugin-SettingsPropertyGroup-#ctor 'ChuckDeviceController.Plugin.SettingsPropertyGroup.#ctor')
+    - [#ctor(id,text,displayIndex)](#M-ChuckDeviceController-Plugin-SettingsPropertyGroup-#ctor-System-String,System-String,System-UInt32- 'ChuckDeviceController.Plugin.SettingsPropertyGroup.#ctor(System.String,System.String,System.UInt32)')
+    - [DisplayIndex](#P-ChuckDeviceController-Plugin-SettingsPropertyGroup-DisplayIndex 'ChuckDeviceController.Plugin.SettingsPropertyGroup.DisplayIndex')
+    - [Id](#P-ChuckDeviceController-Plugin-SettingsPropertyGroup-Id 'ChuckDeviceController.Plugin.SettingsPropertyGroup.Id')
+    - [Text](#P-ChuckDeviceController-Plugin-SettingsPropertyGroup-Text 'ChuckDeviceController.Plugin.SettingsPropertyGroup.Text')
+    - [Equals(obj)](#M-ChuckDeviceController-Plugin-SettingsPropertyGroup-Equals-System-Object- 'ChuckDeviceController.Plugin.SettingsPropertyGroup.Equals(System.Object)')
+    - [Equals(other)](#M-ChuckDeviceController-Plugin-SettingsPropertyGroup-Equals-ChuckDeviceController-Plugin-SettingsPropertyGroup- 'ChuckDeviceController.Plugin.SettingsPropertyGroup.Equals(ChuckDeviceController.Plugin.SettingsPropertyGroup)')
+    - [GetHashCode()](#M-ChuckDeviceController-Plugin-SettingsPropertyGroup-GetHashCode 'ChuckDeviceController.Plugin.SettingsPropertyGroup.GetHashCode')
+- [SettingsPropertyType](#T-ChuckDeviceController-Plugin-SettingsPropertyType 'ChuckDeviceController.Plugin.SettingsPropertyType')
+    - [CheckBox](#F-ChuckDeviceController-Plugin-SettingsPropertyType-CheckBox 'ChuckDeviceController.Plugin.SettingsPropertyType.CheckBox')
+    - [Number](#F-ChuckDeviceController-Plugin-SettingsPropertyType-Number 'ChuckDeviceController.Plugin.SettingsPropertyType.Number')
+    - [Select](#F-ChuckDeviceController-Plugin-SettingsPropertyType-Select 'ChuckDeviceController.Plugin.SettingsPropertyType.Select')
+    - [Text](#F-ChuckDeviceController-Plugin-SettingsPropertyType-Text 'ChuckDeviceController.Plugin.SettingsPropertyType.Text')
+    - [TextArea](#F-ChuckDeviceController-Plugin-SettingsPropertyType-TextArea 'ChuckDeviceController.Plugin.SettingsPropertyType.TextArea')
+- [SettingsTab](#T-ChuckDeviceController-Plugin-SettingsTab 'ChuckDeviceController.Plugin.SettingsTab')
+    - [#ctor()](#M-ChuckDeviceController-Plugin-SettingsTab-#ctor 'ChuckDeviceController.Plugin.SettingsTab.#ctor')
+    - [#ctor(id,text,anchor,displayIndex,className,style)](#M-ChuckDeviceController-Plugin-SettingsTab-#ctor-System-String,System-String,System-String,System-UInt32,System-String,System-String- 'ChuckDeviceController.Plugin.SettingsTab.#ctor(System.String,System.String,System.String,System.UInt32,System.String,System.String)')
+    - [Anchor](#P-ChuckDeviceController-Plugin-SettingsTab-Anchor 'ChuckDeviceController.Plugin.SettingsTab.Anchor')
+    - [Class](#P-ChuckDeviceController-Plugin-SettingsTab-Class 'ChuckDeviceController.Plugin.SettingsTab.Class')
+    - [DisplayIndex](#P-ChuckDeviceController-Plugin-SettingsTab-DisplayIndex 'ChuckDeviceController.Plugin.SettingsTab.DisplayIndex')
+    - [Id](#P-ChuckDeviceController-Plugin-SettingsTab-Id 'ChuckDeviceController.Plugin.SettingsTab.Id')
+    - [Style](#P-ChuckDeviceController-Plugin-SettingsTab-Style 'ChuckDeviceController.Plugin.SettingsTab.Style')
+    - [Text](#P-ChuckDeviceController-Plugin-SettingsTab-Text 'ChuckDeviceController.Plugin.SettingsTab.Text')
+- [SidebarItem](#T-ChuckDeviceController-Plugin-SidebarItem 'ChuckDeviceController.Plugin.SidebarItem')
+    - [#ctor()](#M-ChuckDeviceController-Plugin-SidebarItem-#ctor 'ChuckDeviceController.Plugin.SidebarItem.#ctor')
+    - [#ctor(text,controllerName,actionName,icon,displayIndex,isDropdown,dropdownItems,isDisabled,isSeparator)](#M-ChuckDeviceController-Plugin-SidebarItem-#ctor-System-String,System-String,System-String,System-String,System-UInt32,System-Boolean,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-SidebarItem},System-Boolean,System-Boolean- 'ChuckDeviceController.Plugin.SidebarItem.#ctor(System.String,System.String,System.String,System.String,System.UInt32,System.Boolean,System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SidebarItem},System.Boolean,System.Boolean)')
+    - [ActionName](#P-ChuckDeviceController-Plugin-SidebarItem-ActionName 'ChuckDeviceController.Plugin.SidebarItem.ActionName')
+    - [ControllerName](#P-ChuckDeviceController-Plugin-SidebarItem-ControllerName 'ChuckDeviceController.Plugin.SidebarItem.ControllerName')
+    - [DisplayIndex](#P-ChuckDeviceController-Plugin-SidebarItem-DisplayIndex 'ChuckDeviceController.Plugin.SidebarItem.DisplayIndex')
+    - [DropdownItems](#P-ChuckDeviceController-Plugin-SidebarItem-DropdownItems 'ChuckDeviceController.Plugin.SidebarItem.DropdownItems')
+    - [Icon](#P-ChuckDeviceController-Plugin-SidebarItem-Icon 'ChuckDeviceController.Plugin.SidebarItem.Icon')
+    - [IsDisabled](#P-ChuckDeviceController-Plugin-SidebarItem-IsDisabled 'ChuckDeviceController.Plugin.SidebarItem.IsDisabled')
+    - [IsDropdown](#P-ChuckDeviceController-Plugin-SidebarItem-IsDropdown 'ChuckDeviceController.Plugin.SidebarItem.IsDropdown')
+    - [IsSeparator](#P-ChuckDeviceController-Plugin-SidebarItem-IsSeparator 'ChuckDeviceController.Plugin.SidebarItem.IsSeparator')
+    - [Text](#P-ChuckDeviceController-Plugin-SidebarItem-Text 'ChuckDeviceController.Plugin.SidebarItem.Text')
 - [StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation')
     - [External](#F-ChuckDeviceController-Plugin-StaticFilesLocation-External 'ChuckDeviceController.Plugin.StaticFilesLocation.External')
     - [None](#F-ChuckDeviceController-Plugin-StaticFilesLocation-None 'ChuckDeviceController.Plugin.StaticFilesLocation.None')
     - [Resources](#F-ChuckDeviceController-Plugin-StaticFilesLocation-Resources 'ChuckDeviceController.Plugin.StaticFilesLocation.Resources')
 - [StaticFilesLocationAttribute](#T-ChuckDeviceController-Plugin-StaticFilesLocationAttribute 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute')
-    - [#ctor(location)](#M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation- 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.#ctor(ChuckDeviceController.Plugin.StaticFilesLocation)')
-    - [Location](#P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Location 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.Location')
+    - [#ctor(views,webRoot)](#M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation- 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.#ctor(ChuckDeviceController.Plugin.StaticFilesLocation,ChuckDeviceController.Plugin.StaticFilesLocation)')
+    - [Views](#P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Views 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.Views')
+    - [WebRoot](#P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-WebRoot 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.WebRoot')
 
 <a name='T-ChuckDeviceController-Plugin-DashboardStatsItem'></a>
 ## DashboardStatsItem `type`
@@ -297,6 +388,72 @@ Database is in the connected state.
 ##### Summary
 
 Database is in the disconnected state.
+
+<a name='T-ChuckDeviceController-Plugin-IConfigurationHost'></a>
+## IConfigurationHost `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+This interface contract can be used by all plugin modules to load setting and configuration data.
+
+    The default implementation which is loaded if no other plugin registers an instance uses 
+    appsettings.json to store configuration data to be used by Plugins.
+
+    An instance of this interface is available via the DI container, any custom implementations
+    must be configured to be used in the DI contaner when being initialised.
+
+##### Remarks
+
+This class can be customised by the host application, if no implementation is provided then
+    a default implementation is provided.
+
+<a name='M-ChuckDeviceController-Plugin-IConfigurationHost-GetConfiguration-System-String,System-String-'></a>
+### GetConfiguration(jsonFileName,sectionName) `method`
+
+##### Summary
+
+Retrieves a configuration instance.
+
+##### Returns
+
+Configuration file instance initialised with the required settings.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| jsonFileName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of JSON file name to be used. If a JSON cofiguration file is not provided, the default
+    'appsettings.json' will be loaded from the calling plugin's root folder. |
+| sectionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of configuration data section required. |
+
+<a name='M-ChuckDeviceController-Plugin-IConfigurationHost-GetValue``1-System-String,``0,System-String-'></a>
+### GetValue\`\`1(name,defaultValue,sectionName) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| defaultValue | [\`\`0](#T-``0 '``0') |  |
+| sectionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+
+##### Generic Types
+
+| Name | Description |
+| ---- | ----------- |
+| T | Class who's settings are being requested. |
 
 <a name='T-ChuckDeviceController-Plugin-IDashboardStatsItem'></a>
 ## IDashboardStatsItem `type`
@@ -522,6 +679,19 @@ This method has no parameters.
 | ---- | ----------- |
 | T | Database entity contract type. |
 
+<a name='T-ChuckDeviceController-Plugin-IFileStorageHost'></a>
+## IFileStorageHost `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Interface contract used for reading data from as well as
+    persisting data to storage. The type of storage used will
+    depend on the implementation.
+
 <a name='T-ChuckDeviceController-Plugin-IJobControllerServiceEvents'></a>
 ## IJobControllerServiceEvents `type`
 
@@ -574,6 +744,43 @@ instance by name.
 | ---- | ---- | ----------- |
 | device | [ChuckDeviceController.Common.Data.Contracts.IDevice](#T-ChuckDeviceController-Common-Data-Contracts-IDevice 'ChuckDeviceController.Common.Data.Contracts.IDevice') | Device entity. |
 | jobControllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Job controller instance name. |
+
+<a name='T-ChuckDeviceController-Plugin-ILoadData'></a>
+## ILoadData `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugin-ILoadData-Load``1-System-String,System-String-'></a>
+### Load\`\`1(folderName,fileName) `method`
+
+##### Summary
+
+Loads file data of type T from the plugin's folder.
+
+##### Returns
+
+Type of data to be loaded or default type if exception occurs.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| folderName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Sub folder within plugin's folder, optional. If not set,
+    searches root of plugin's folder. |
+| fileName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | File name of storage file to load, including extension
+    otherwise generic '.dat' extension will be appended. |
+
+##### Generic Types
+
+| Name | Description |
+| ---- | ----------- |
+| T | Type of file data to be loaded. |
 
 <a name='T-ChuckDeviceController-Plugin-ILocalizationHost'></a>
 ## ILocalizationHost `type`
@@ -914,65 +1121,6 @@ Gets or sets the name of the Plugin.
 
 Gets or sets the current version of the Plugin.
 
-<a name='T-ChuckDeviceController-Plugin-INavbarHeader'></a>
-## INavbarHeader `type`
-
-##### Namespace
-
-ChuckDeviceController.Plugin
-
-##### Summary
-
-Navigation bar header plugin contract.
-
-<a name='P-ChuckDeviceController-Plugin-INavbarHeader-ActionName'></a>
-### ActionName `property`
-
-##### Summary
-
-Gets or sets the controller action name to execute
-when the navbar header is clicked.
-
-<a name='P-ChuckDeviceController-Plugin-INavbarHeader-ControllerName'></a>
-### ControllerName `property`
-
-##### Summary
-
-Gets or sets the controller name the action name
-should relate to.
-
-<a name='P-ChuckDeviceController-Plugin-INavbarHeader-DisplayIndex'></a>
-### DisplayIndex `property`
-
-##### Summary
-
-Gets or sets the numeric display index order of
-the navbar header in the list of navbar headers.
-
-<a name='P-ChuckDeviceController-Plugin-INavbarHeader-Icon'></a>
-### Icon `property`
-
-##### Summary
-
-Gets or sets the FontAwesome v6 icon key to use for 
-the navbar header. https://fontawesome.com/icons
-
-<a name='P-ChuckDeviceController-Plugin-INavbarHeader-IsDisabled'></a>
-### IsDisabled `property`
-
-##### Summary
-
-Gets or sets a value determining whether the
-navbar header is disabled or not.
-
-<a name='P-ChuckDeviceController-Plugin-INavbarHeader-Text'></a>
-### Text `property`
-
-##### Summary
-
-Gets or sets the text to display for this navbar
-header.
-
 <a name='T-ChuckDeviceController-Plugin-IPlugin'></a>
 ## IPlugin `type`
 
@@ -984,34 +1132,6 @@ ChuckDeviceController.Plugin
 
 Base Plugin interface contract all plugins are required to
 inherit at a minimum.
-
-<a name='T-ChuckDeviceController-Plugin-Services-IPluginBootstrapper'></a>
-## IPluginBootstrapper `type`
-
-##### Namespace
-
-ChuckDeviceController.Plugin.Services
-
-##### Summary
-
-Register services from a separate class, aka 'ConfigureServices'
-
-<a name='M-ChuckDeviceController-Plugin-Services-IPluginBootstrapper-Bootstrap-Microsoft-Extensions-DependencyInjection-IServiceCollection-'></a>
-### Bootstrap(services) `method`
-
-##### Summary
-
-
-
-##### Returns
-
-
-
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| services | [Microsoft.Extensions.DependencyInjection.IServiceCollection](#T-Microsoft-Extensions-DependencyInjection-IServiceCollection 'Microsoft.Extensions.DependencyInjection.IServiceCollection') |  |
 
 <a name='T-ChuckDeviceController-Plugin-Services-IPluginBootstrapperServiceAttribute'></a>
 ## IPluginBootstrapperServiceAttribute `type`
@@ -1154,12 +1274,12 @@ Gets or sets the service implementation type.
 
 Gets or sets the Service contract type.
 
-<a name='T-ChuckDeviceController-Plugin-Data-IRepository`2'></a>
+<a name='T-ChuckDeviceController-Plugin-IRepository`2'></a>
 ## IRepository\`2 `type`
 
 ##### Namespace
 
-ChuckDeviceController.Plugin.Data
+ChuckDeviceController.Plugin
 
 ##### Summary
 
@@ -1172,7 +1292,7 @@ Repository contract for specific database entity types.
 | TEntity | Database entity contract type. |
 | TId | Database entity primary key type. |
 
-<a name='M-ChuckDeviceController-Plugin-Data-IRepository`2-GetByIdAsync-`1-'></a>
+<a name='M-ChuckDeviceController-Plugin-IRepository`2-GetByIdAsync-`1-'></a>
 ### GetByIdAsync(id) `method`
 
 ##### Summary
@@ -1189,7 +1309,7 @@ Returns a database entity.
 | ---- | ---- | ----------- |
 | id | [\`1](#T-`1 '`1') | Primary key of the database entity. |
 
-<a name='M-ChuckDeviceController-Plugin-Data-IRepository`2-GetListAsync'></a>
+<a name='M-ChuckDeviceController-Plugin-IRepository`2-GetListAsync'></a>
 ### GetListAsync() `method`
 
 ##### Summary
@@ -1203,6 +1323,350 @@ Returns a list of database entities.
 ##### Parameters
 
 This method has no parameters.
+
+<a name='T-ChuckDeviceController-Plugin-ISaveData'></a>
+## ISaveData `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugin-ISaveData-Save``1-``0,System-String,System-String,System-Boolean-'></a>
+### Save\`\`1(data,folderName,name,prettyPrint) `method`
+
+##### Summary
+
+Saves file data of type T to the plugin's folder.
+
+##### Returns
+
+Returns
+
+```
+true
+```
+
+if successful, otherwise
+
+```
+false
+```
+
+.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| data | [\`\`0](#T-``0 '``0') | File data to be saved. |
+| folderName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Sub folder within plugin's folder, optional. If not set,
+    uses root of plugin's folder. |
+| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | File name of storage file to save, including extension
+    otherwise generic '.dat' extension will be appended. |
+| prettyPrint | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
+
+##### Generic Types
+
+| Name | Description |
+| ---- | ----------- |
+| T | Type of data to be saved. |
+
+<a name='T-ChuckDeviceController-Plugin-ISettingsProperty'></a>
+## ISettingsProperty `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Settings property interface contract used by plugins to
+create UI setting elements in the dashboard.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-Class'></a>
+### Class `property`
+
+##### Summary
+
+Gets or sets the CSS class name to use.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-DefaultValue'></a>
+### DefaultValue `property`
+
+##### Summary
+
+Gets or sets the default value to use for the element, if
+it supports it.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-DisplayIndex'></a>
+### DisplayIndex `property`
+
+##### Summary
+
+Gets or sets a value used for sorting each HTML element
+created for the properties.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-Group'></a>
+### Group `property`
+
+##### Summary
+
+Gets or sets the group the settings property
+will be in.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-IsRequired'></a>
+### IsRequired `property`
+
+##### Summary
+
+Gets or sets a value determining whether the HTML element
+value is required.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-Name'></a>
+### Name `property`
+
+##### Summary
+
+Gets or sets the ID and name of the element.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-Style'></a>
+### Style `property`
+
+##### Summary
+
+Gets or sets the raw CSS styling to use.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the displayed text for the property, possibly
+used in a label.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-Type'></a>
+### Type `property`
+
+##### Summary
+
+Gets or sets the type of HTML element to create.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-Validate'></a>
+### Validate `property`
+
+##### Summary
+
+Gets or sets a value determining whether to validate the
+value of the HTML element.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsProperty-Value'></a>
+### Value `property`
+
+##### Summary
+
+Gets or sets the initial value to set for the element.
+
+<a name='T-ChuckDeviceController-Plugin-ISettingsPropertyEvents'></a>
+## ISettingsPropertyEvents `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnClick-ChuckDeviceController-Plugin-ISettingsProperty-'></a>
+### OnClick() `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+This method has no parameters.
+
+<a name='M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnSave-ChuckDeviceController-Plugin-ISettingsProperty-'></a>
+### OnSave() `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+This method has no parameters.
+
+<a name='M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnToggle-ChuckDeviceController-Plugin-ISettingsProperty-'></a>
+### OnToggle() `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+This method has no parameters.
+
+<a name='T-ChuckDeviceController-Plugin-ISettingsPropertyGroup'></a>
+## ISettingsPropertyGroup `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Interface contract for grouping settings properties.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsPropertyGroup-DisplayIndex'></a>
+### DisplayIndex `property`
+
+##### Summary
+
+Gets or sets a value used for sorting each HTML element
+created for the properties.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsPropertyGroup-Id'></a>
+### Id `property`
+
+##### Summary
+
+Gets or sets the unique ID for the settings property group.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsPropertyGroup-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the display text for the settings property group.
+
+<a name='T-ChuckDeviceController-Plugin-ISettingsTab'></a>
+## ISettingsTab `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Settings tab interface contract to add UI settings for plugins.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsTab-Anchor'></a>
+### Anchor `property`
+
+##### Summary
+
+Gets or sets the html anchor tag name of the tab.
+Note: No hash symbol needed.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsTab-Class'></a>
+### Class `property`
+
+##### Summary
+
+Gets or sets the CSS class name to use.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsTab-DisplayIndex'></a>
+### DisplayIndex `property`
+
+##### Summary
+
+Gets or sets the display index of the tab in the tab list.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsTab-Id'></a>
+### Id `property`
+
+##### Summary
+
+Gets or sets the unique ID of the tab.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsTab-Style'></a>
+### Style `property`
+
+##### Summary
+
+Gets or sets the raw CSS styling to use.
+
+<a name='P-ChuckDeviceController-Plugin-ISettingsTab-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the display text of the tab.
+
+<a name='T-ChuckDeviceController-Plugin-ISidebarItem'></a>
+## ISidebarItem `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Side navigation bar plugin contract.
+
+<a name='P-ChuckDeviceController-Plugin-ISidebarItem-ActionName'></a>
+### ActionName `property`
+
+##### Summary
+
+Gets or sets the controller action name to execute
+when the sidebar item is clicked.
+
+<a name='P-ChuckDeviceController-Plugin-ISidebarItem-ControllerName'></a>
+### ControllerName `property`
+
+##### Summary
+
+Gets or sets the controller name the action name
+should relate to.
+
+<a name='P-ChuckDeviceController-Plugin-ISidebarItem-DisplayIndex'></a>
+### DisplayIndex `property`
+
+##### Summary
+
+Gets or sets the numeric display index order of
+the sidebar item in the list of sidebar items.
+
+<a name='P-ChuckDeviceController-Plugin-ISidebarItem-Icon'></a>
+### Icon `property`
+
+##### Summary
+
+Gets or sets the FontAwesome v6 icon key to use for 
+the sidebar item. https://fontawesome.com/icons
+
+<a name='P-ChuckDeviceController-Plugin-ISidebarItem-IsDisabled'></a>
+### IsDisabled `property`
+
+##### Summary
+
+Gets or sets a value determining whether the
+sidebar item is disabled or not.
+
+<a name='P-ChuckDeviceController-Plugin-ISidebarItem-IsSeparator'></a>
+### IsSeparator `property`
+
+##### Summary
+
+Gets or sets a value determining whether to insert a
+separator instead of a dropdown item.
+
+<a name='P-ChuckDeviceController-Plugin-ISidebarItem-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the text to display for this sidebar
+item.
 
 <a name='T-ChuckDeviceController-Plugin-IUiEvents'></a>
 ## IUiEvents `type`
@@ -1241,12 +1705,26 @@ Gets a list of dashboard statistics registered by plugins.
 
 Gets a list of dashboard tiles registered by plugins.
 
-<a name='P-ChuckDeviceController-Plugin-IUiHost-NavbarHeaders'></a>
-### NavbarHeaders `property`
+<a name='P-ChuckDeviceController-Plugin-IUiHost-SettingsProperties'></a>
+### SettingsProperties `property`
 
 ##### Summary
 
-Gets a list of navbar headers registered by plugins.
+Gets a dictionary of settings properties for tabs registered by plugins.
+
+<a name='P-ChuckDeviceController-Plugin-IUiHost-SettingsTabs'></a>
+### SettingsTabs `property`
+
+##### Summary
+
+Gets a list of settings tabs registered by plugins.
+
+<a name='P-ChuckDeviceController-Plugin-IUiHost-SidebarItems'></a>
+### SidebarItems `property`
+
+##### Summary
+
+Gets a list of sidebar items registered by plugins.
 
 <a name='M-ChuckDeviceController-Plugin-IUiHost-AddDashboardStatisticAsync-ChuckDeviceController-Plugin-IDashboardStatsItem-'></a>
 ### AddDashboardStatisticAsync(stat) `method`
@@ -1302,33 +1780,93 @@ Adds a list of statistic tiles to the front page dashboard.
 | ---- | ---- | ----------- |
 | tiles | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.IDashboardTile}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.IDashboardTile}') | List of dashboard statistic tiles to add. |
 
-<a name='M-ChuckDeviceController-Plugin-IUiHost-AddNavbarHeaderAsync-ChuckDeviceController-Plugin-NavbarHeader-'></a>
-### AddNavbarHeaderAsync(header) `method`
+<a name='M-ChuckDeviceController-Plugin-IUiHost-AddSettingsPropertiesAsync-System-String,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-SettingsProperty}-'></a>
+### AddSettingsPropertiesAsync(tabId,properties) `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| tabId | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| properties | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SettingsProperty}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SettingsProperty}') |  |
+
+<a name='M-ChuckDeviceController-Plugin-IUiHost-AddSettingsPropertyAsync-System-String,ChuckDeviceController-Plugin-SettingsProperty-'></a>
+### AddSettingsPropertyAsync(tabId,property) `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| tabId | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| property | [ChuckDeviceController.Plugin.SettingsProperty](#T-ChuckDeviceController-Plugin-SettingsProperty 'ChuckDeviceController.Plugin.SettingsProperty') |  |
+
+<a name='M-ChuckDeviceController-Plugin-IUiHost-AddSettingsTabAsync-ChuckDeviceController-Plugin-SettingsTab-'></a>
+### AddSettingsTabAsync(tab) `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| tab | [ChuckDeviceController.Plugin.SettingsTab](#T-ChuckDeviceController-Plugin-SettingsTab 'ChuckDeviceController.Plugin.SettingsTab') |  |
+
+<a name='M-ChuckDeviceController-Plugin-IUiHost-AddSidebarItemAsync-ChuckDeviceController-Plugin-SidebarItem-'></a>
+### AddSidebarItemAsync(header) `method`
 
 ##### Summary
 
 Adds a item to the main
-application's Mvc navbar header.
+application's Mvc sidebar.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| header | [ChuckDeviceController.Plugin.NavbarHeader](#T-ChuckDeviceController-Plugin-NavbarHeader 'ChuckDeviceController.Plugin.NavbarHeader') | Navbar to add. |
+| header | [ChuckDeviceController.Plugin.SidebarItem](#T-ChuckDeviceController-Plugin-SidebarItem 'ChuckDeviceController.Plugin.SidebarItem') | Sidebar item to add. |
 
-<a name='M-ChuckDeviceController-Plugin-IUiHost-AddNavbarHeadersAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-NavbarHeader}-'></a>
-### AddNavbarHeadersAsync(headers) `method`
+<a name='M-ChuckDeviceController-Plugin-IUiHost-AddSidebarItemsAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-SidebarItem}-'></a>
+### AddSidebarItemsAsync(headers) `method`
 
 ##### Summary
 
 Adds a list of items to the
-main application's Mvc navbar header.
+main application's Mvc sidebar.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| headers | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.NavbarHeader}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.NavbarHeader}') | List of navbars to add. |
+| headers | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SidebarItem}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SidebarItem}') | List of sidebar items to add. |
+
+<a name='M-ChuckDeviceController-Plugin-IUiHost-GetSettingsPropertyValue``1-System-String-'></a>
+### GetSettingsPropertyValue\`\`1(name) `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+
+##### Generic Types
+
+| Name | Description |
+| ---- | ----------- |
+| T |  |
 
 <a name='M-ChuckDeviceController-Plugin-IUiHost-UpdateDashboardStatisticAsync-ChuckDeviceController-Plugin-IDashboardStatsItem-'></a>
 ### UpdateDashboardStatisticAsync(stat) `method`
@@ -1374,13 +1912,26 @@ Interface contract allowing Mvc services registration and configuration
 
 ##### Summary
 
-Configures the application to set up middlewares, routing rules, etc.
+Configures the application to set up middlewares, map routing rules, etc.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | appBuilder | [Microsoft.AspNetCore.Builder.WebApplication](#T-Microsoft-AspNetCore-Builder-WebApplication 'Microsoft.AspNetCore.Builder.WebApplication') | Provides the mechanisms to configure an application's request pipeline. |
+
+<a name='M-ChuckDeviceController-Plugin-IWebPlugin-ConfigureMvcBuilder-Microsoft-Extensions-DependencyInjection-IMvcBuilder-'></a>
+### ConfigureMvcBuilder(mvcBuilder) `method`
+
+##### Summary
+
+Provides an opportunity for plugins to configure Mvc Builder.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| mvcBuilder | [Microsoft.Extensions.DependencyInjection.IMvcBuilder](#T-Microsoft-Extensions-DependencyInjection-IMvcBuilder 'Microsoft.Extensions.DependencyInjection.IMvcBuilder') | IMvcBuilder instance that can be configured. |
 
 <a name='M-ChuckDeviceController-Plugin-IWebPlugin-ConfigureServices-Microsoft-Extensions-DependencyInjection-IServiceCollection-'></a>
 ### ConfigureServices(services) `method`
@@ -1394,153 +1945,6 @@ Register services into the IServiceCollection to use with Dependency Injection.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | services | [Microsoft.Extensions.DependencyInjection.IServiceCollection](#T-Microsoft-Extensions-DependencyInjection-IServiceCollection 'Microsoft.Extensions.DependencyInjection.IServiceCollection') | Specifies the contract for a collection of service descriptors. |
-
-<a name='T-ChuckDeviceController-Plugin-NavbarHeader'></a>
-## NavbarHeader `type`
-
-##### Namespace
-
-ChuckDeviceController.Plugin
-
-##### Summary
-
-Navigation bar header plugin contract implementation.
-
-<a name='M-ChuckDeviceController-Plugin-NavbarHeader-#ctor'></a>
-### #ctor() `constructor`
-
-##### Summary
-
-Instantiates a new navbar header instance using default 
-property values.
-
-##### Parameters
-
-This constructor has no parameters.
-
-<a name='M-ChuckDeviceController-Plugin-NavbarHeader-#ctor-System-String,System-String,System-String,System-String,System-UInt32,System-Boolean,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-NavbarHeader},System-Boolean,System-Boolean-'></a>
-### #ctor(text,controllerName,actionName,icon,displayIndex,isDropdown,dropdownItems,isDisabled,isSeparator) `constructor`
-
-##### Summary
-
-Instantiates a new navbar header instance using the specified
-property values.
-
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
-| isDropdown | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
-| dropdownItems | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.NavbarHeader}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.NavbarHeader}') |  |
-| isDisabled | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
-| isSeparator | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
-
-<a name='P-ChuckDeviceController-Plugin-NavbarHeader-ActionName'></a>
-### ActionName `property`
-
-##### Summary
-
-Gets or sets the controller action name to execute
-when the navbar header is clicked.
-
-<a name='P-ChuckDeviceController-Plugin-NavbarHeader-ControllerName'></a>
-### ControllerName `property`
-
-##### Summary
-
-Gets or sets the controller name the action name
-should relate to.
-
-<a name='P-ChuckDeviceController-Plugin-NavbarHeader-DisplayIndex'></a>
-### DisplayIndex `property`
-
-##### Summary
-
-Gets or sets the numeric display index order of
-the navbar header in the list of navbar headers.
-
-<a name='P-ChuckDeviceController-Plugin-NavbarHeader-DropdownItems'></a>
-### DropdownItems `property`
-
-##### Summary
-
-Gets or sets a list of navbar header dropdown items.
-
-<a name='P-ChuckDeviceController-Plugin-NavbarHeader-Icon'></a>
-### Icon `property`
-
-##### Summary
-
-Gets or sets the FontAwesome v6 icon key to use for 
-the navbar header. https://fontawesome.com/icons
-
-<a name='P-ChuckDeviceController-Plugin-NavbarHeader-IsDisabled'></a>
-### IsDisabled `property`
-
-##### Summary
-
-Gets or sets a value determining whether the
-navbar header is disabled or not.
-
-<a name='P-ChuckDeviceController-Plugin-NavbarHeader-IsDropdown'></a>
-### IsDropdown `property`
-
-##### Summary
-
-Gets or sets a value determining whether the navbar
-header should be treated as a dropdown.
-
-<a name='P-ChuckDeviceController-Plugin-NavbarHeader-IsSeparator'></a>
-### IsSeparator `property`
-
-##### Summary
-
-Gets or sets a value determining whether to insert a
-separator instead of a dropdown item.
-
-<a name='P-ChuckDeviceController-Plugin-NavbarHeader-Text'></a>
-### Text `property`
-
-##### Summary
-
-Gets or sets the text to display for this navbar
-header.
-
-<a name='T-ChuckDeviceController-Plugin-Services-PluginBootstrapperAttribute'></a>
-## PluginBootstrapperAttribute `type`
-
-##### Namespace
-
-ChuckDeviceController.Plugin.Services
-
-##### Summary
-
-Register services from a separate class, aka 'ConfigureServices'
-
-<a name='M-ChuckDeviceController-Plugin-Services-PluginBootstrapperAttribute-#ctor-System-Type-'></a>
-### #ctor(pluginType) `constructor`
-
-##### Summary
-
-
-
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| pluginType | [System.Type](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Type 'System.Type') |  |
-
-<a name='P-ChuckDeviceController-Plugin-Services-PluginBootstrapperAttribute-PluginType'></a>
-### PluginType `property`
-
-##### Summary
-
-Gets or sets the plugin contract type.
 
 <a name='T-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute'></a>
 ## PluginBootstrapperServiceAttribute `type`
@@ -1788,6 +2192,618 @@ Service was provided by the host application.
 
 Service was provided by the plugin.
 
+<a name='T-ChuckDeviceController-Plugin-RequestTimings'></a>
+## RequestTimings `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Used to contain timing data for requests.
+
+This stores the number of requests and total time in milleseconds
+serving the requests.
+
+<a name='M-ChuckDeviceController-Plugin-RequestTimings-#ctor'></a>
+### #ctor() `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+This constructor has no parameters.
+
+<a name='P-ChuckDeviceController-Plugin-RequestTimings-Average'></a>
+### Average `property`
+
+##### Summary
+
+Gets the average number of milliseconds per request.
+
+<a name='P-ChuckDeviceController-Plugin-RequestTimings-DecimalPlaces'></a>
+### DecimalPlaces `property`
+
+##### Summary
+
+Gets the number of decimal places the results should be rounded to, default is 5
+
+<a name='P-ChuckDeviceController-Plugin-RequestTimings-Fastest'></a>
+### Fastest `property`
+
+##### Summary
+
+Gets the total number of milliseconds used for the request that was quickest.
+
+<a name='P-ChuckDeviceController-Plugin-RequestTimings-IsCloned'></a>
+### IsCloned `property`
+
+##### Summary
+
+Gets a value determining whether the timings have been cloned or not.
+
+<a name='P-ChuckDeviceController-Plugin-RequestTimings-LogTimings'></a>
+### LogTimings `property`
+
+##### Summary
+
+Gets a value determining whether to log request times or not.
+
+<a name='P-ChuckDeviceController-Plugin-RequestTimings-Requests'></a>
+### Requests `property`
+
+##### Summary
+
+Gets the total number of requests made.
+
+<a name='P-ChuckDeviceController-Plugin-RequestTimings-Slowest'></a>
+### Slowest `property`
+
+##### Summary
+
+Gets the total number of milliseconds used for the request that was slowest.
+
+<a name='P-ChuckDeviceController-Plugin-RequestTimings-Total'></a>
+### Total `property`
+
+##### Summary
+
+Gets the total number of requests.
+
+<a name='P-ChuckDeviceController-Plugin-RequestTimings-TrimmedAverage'></a>
+### TrimmedAverage `property`
+
+##### Summary
+
+Gets the calculated trimmed average by removing the highest and lowest scores before averaging
+
+<a name='M-ChuckDeviceController-Plugin-RequestTimings-Clone'></a>
+### Clone() `method`
+
+##### Summary
+
+Clones an instance of a Timings class
+
+##### Returns
+
+Timings
+
+##### Parameters
+
+This method has no parameters.
+
+<a name='M-ChuckDeviceController-Plugin-RequestTimings-Increment-System-Diagnostics-Stopwatch-'></a>
+### Increment(stopWatch) `method`
+
+##### Summary
+
+Increments the total milliseconds
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| stopWatch | [System.Diagnostics.Stopwatch](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Diagnostics.Stopwatch 'System.Diagnostics.Stopwatch') |  |
+
+<a name='M-ChuckDeviceController-Plugin-RequestTimings-Increment-System-Int64-'></a>
+### Increment(totalTicks) `method`
+
+##### Summary
+
+Increments the total ticks
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| totalTicks | [System.Int64](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Int64 'System.Int64') | Total number of ticks to increment by. |
+
+<a name='T-ChuckDeviceController-Plugin-SettingsProperty'></a>
+## SettingsProperty `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Settings property interface contract used by plugins to
+create UI setting elements in the dashboard.
+
+<a name='M-ChuckDeviceController-Plugin-SettingsProperty-#ctor'></a>
+### #ctor() `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+This constructor has no parameters.
+
+<a name='M-ChuckDeviceController-Plugin-SettingsProperty-#ctor-System-String,System-String,ChuckDeviceController-Plugin-SettingsPropertyType,System-Object,System-Object,System-UInt32,System-Boolean,System-Boolean,System-String,System-String,ChuckDeviceController-Plugin-SettingsPropertyGroup-'></a>
+### #ctor(text,name,type,value,defaultValue,displayIndex,isRequired,validate,className,style,group) `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| type | [ChuckDeviceController.Plugin.SettingsPropertyType](#T-ChuckDeviceController-Plugin-SettingsPropertyType 'ChuckDeviceController.Plugin.SettingsPropertyType') |  |
+| value | [System.Object](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object 'System.Object') |  |
+| defaultValue | [System.Object](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object 'System.Object') |  |
+| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+| isRequired | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
+| validate | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
+| className | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| style | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| group | [ChuckDeviceController.Plugin.SettingsPropertyGroup](#T-ChuckDeviceController-Plugin-SettingsPropertyGroup 'ChuckDeviceController.Plugin.SettingsPropertyGroup') |  |
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-Class'></a>
+### Class `property`
+
+##### Summary
+
+Gets or sets the CSS class name to use.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-DefaultValue'></a>
+### DefaultValue `property`
+
+##### Summary
+
+Gets or sets the default value to use for the element, if
+it supports it.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-DisplayIndex'></a>
+### DisplayIndex `property`
+
+##### Summary
+
+Gets or sets a value used for sorting each HTML element
+created for the properties.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-Group'></a>
+### Group `property`
+
+##### Summary
+
+Gets or sets the group the settings property
+will be in.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-IsRequired'></a>
+### IsRequired `property`
+
+##### Summary
+
+Gets or sets a value determining whether the HTML element
+value is required.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-Name'></a>
+### Name `property`
+
+##### Summary
+
+Gets or sets the ID and name of the element.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-Style'></a>
+### Style `property`
+
+##### Summary
+
+Gets or sets the raw CSS styling to use.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the displayed text for the property, possibly
+used in a label.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-Type'></a>
+### Type `property`
+
+##### Summary
+
+Gets or sets the type of HTML element to create.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-Validate'></a>
+### Validate `property`
+
+##### Summary
+
+Gets or sets a value determining whether to validate the
+value of the HTML element.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsProperty-Value'></a>
+### Value `property`
+
+##### Summary
+
+Gets or sets the initial value to set for the element.
+
+<a name='T-ChuckDeviceController-Plugin-SettingsPropertyGroup'></a>
+## SettingsPropertyGroup `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Interface contract for grouping settings properties.
+
+<a name='M-ChuckDeviceController-Plugin-SettingsPropertyGroup-#ctor'></a>
+### #ctor() `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+This constructor has no parameters.
+
+<a name='M-ChuckDeviceController-Plugin-SettingsPropertyGroup-#ctor-System-String,System-String,System-UInt32-'></a>
+### #ctor(id,text,displayIndex) `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| id | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+
+<a name='P-ChuckDeviceController-Plugin-SettingsPropertyGroup-DisplayIndex'></a>
+### DisplayIndex `property`
+
+##### Summary
+
+Gets or sets a value used for sorting each HTML element
+created for the properties.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsPropertyGroup-Id'></a>
+### Id `property`
+
+##### Summary
+
+Gets or sets the unique ID for the settings property group.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsPropertyGroup-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the display text for the settings property group.
+
+<a name='M-ChuckDeviceController-Plugin-SettingsPropertyGroup-Equals-System-Object-'></a>
+### Equals(obj) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| obj | [System.Object](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object 'System.Object') |  |
+
+<a name='M-ChuckDeviceController-Plugin-SettingsPropertyGroup-Equals-ChuckDeviceController-Plugin-SettingsPropertyGroup-'></a>
+### Equals(other) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| other | [ChuckDeviceController.Plugin.SettingsPropertyGroup](#T-ChuckDeviceController-Plugin-SettingsPropertyGroup 'ChuckDeviceController.Plugin.SettingsPropertyGroup') |  |
+
+<a name='M-ChuckDeviceController-Plugin-SettingsPropertyGroup-GetHashCode'></a>
+### GetHashCode() `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+This method has no parameters.
+
+<a name='T-ChuckDeviceController-Plugin-SettingsPropertyType'></a>
+## SettingsPropertyType `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Determines the type of HTML element to create for
+the settings property.
+
+<a name='F-ChuckDeviceController-Plugin-SettingsPropertyType-CheckBox'></a>
+### CheckBox `constants`
+
+##### Summary
+
+Settings property type is a checkbox field.
+
+<a name='F-ChuckDeviceController-Plugin-SettingsPropertyType-Number'></a>
+### Number `constants`
+
+##### Summary
+
+Settings property type is a numeric selector.
+
+<a name='F-ChuckDeviceController-Plugin-SettingsPropertyType-Select'></a>
+### Select `constants`
+
+##### Summary
+
+Settings property type is a select item list element.
+
+<a name='F-ChuckDeviceController-Plugin-SettingsPropertyType-Text'></a>
+### Text `constants`
+
+##### Summary
+
+Settings property type is a text field.
+
+<a name='F-ChuckDeviceController-Plugin-SettingsPropertyType-TextArea'></a>
+### TextArea `constants`
+
+##### Summary
+
+Settings property type is a text area.
+
+<a name='T-ChuckDeviceController-Plugin-SettingsTab'></a>
+## SettingsTab `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Settings tab interface contract to add UI settings for plugins.
+
+<a name='M-ChuckDeviceController-Plugin-SettingsTab-#ctor'></a>
+### #ctor() `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+This constructor has no parameters.
+
+<a name='M-ChuckDeviceController-Plugin-SettingsTab-#ctor-System-String,System-String,System-String,System-UInt32,System-String,System-String-'></a>
+### #ctor(id,text,anchor,displayIndex,className,style) `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| id | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| anchor | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+| className | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| style | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+
+<a name='P-ChuckDeviceController-Plugin-SettingsTab-Anchor'></a>
+### Anchor `property`
+
+##### Summary
+
+Gets or sets the html anchor tag name of the tab.
+Note: No hash symbol needed.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsTab-Class'></a>
+### Class `property`
+
+##### Summary
+
+Gets or sets the CSS class name to use.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsTab-DisplayIndex'></a>
+### DisplayIndex `property`
+
+##### Summary
+
+Gets or sets the display index of the tab in the tab list.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsTab-Id'></a>
+### Id `property`
+
+##### Summary
+
+Gets or sets the unique ID of the tab.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsTab-Style'></a>
+### Style `property`
+
+##### Summary
+
+Gets or sets the raw CSS styling to use.
+
+<a name='P-ChuckDeviceController-Plugin-SettingsTab-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the display text of the tab.
+
+<a name='T-ChuckDeviceController-Plugin-SidebarItem'></a>
+## SidebarItem `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Navigation bar header plugin contract implementation.
+
+<a name='M-ChuckDeviceController-Plugin-SidebarItem-#ctor'></a>
+### #ctor() `constructor`
+
+##### Summary
+
+Instantiates a new navbar header instance using default 
+property values.
+
+##### Parameters
+
+This constructor has no parameters.
+
+<a name='M-ChuckDeviceController-Plugin-SidebarItem-#ctor-System-String,System-String,System-String,System-String,System-UInt32,System-Boolean,System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-SidebarItem},System-Boolean,System-Boolean-'></a>
+### #ctor(text,controllerName,actionName,icon,displayIndex,isDropdown,dropdownItems,isDisabled,isSeparator) `constructor`
+
+##### Summary
+
+Instantiates a new navbar header instance using the specified
+property values.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+| isDropdown | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
+| dropdownItems | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SidebarItem}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SidebarItem}') |  |
+| isDisabled | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
+| isSeparator | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
+
+<a name='P-ChuckDeviceController-Plugin-SidebarItem-ActionName'></a>
+### ActionName `property`
+
+##### Summary
+
+Gets or sets the controller action name to execute
+when the navbar header is clicked.
+
+<a name='P-ChuckDeviceController-Plugin-SidebarItem-ControllerName'></a>
+### ControllerName `property`
+
+##### Summary
+
+Gets or sets the controller name the action name
+should relate to.
+
+<a name='P-ChuckDeviceController-Plugin-SidebarItem-DisplayIndex'></a>
+### DisplayIndex `property`
+
+##### Summary
+
+Gets or sets the numeric display index order of
+the navbar header in the list of navbar headers.
+
+<a name='P-ChuckDeviceController-Plugin-SidebarItem-DropdownItems'></a>
+### DropdownItems `property`
+
+##### Summary
+
+Gets or sets a list of navbar header dropdown items.
+
+<a name='P-ChuckDeviceController-Plugin-SidebarItem-Icon'></a>
+### Icon `property`
+
+##### Summary
+
+Gets or sets the FontAwesome v6 icon key to use for 
+the navbar header. https://fontawesome.com/icons
+
+<a name='P-ChuckDeviceController-Plugin-SidebarItem-IsDisabled'></a>
+### IsDisabled `property`
+
+##### Summary
+
+Gets or sets a value determining whether the
+navbar header is disabled or not.
+
+<a name='P-ChuckDeviceController-Plugin-SidebarItem-IsDropdown'></a>
+### IsDropdown `property`
+
+##### Summary
+
+Gets or sets a value determining whether the navbar
+header should be treated as a dropdown.
+
+<a name='P-ChuckDeviceController-Plugin-SidebarItem-IsSeparator'></a>
+### IsSeparator `property`
+
+##### Summary
+
+Gets or sets a value determining whether to insert a
+separator instead of a dropdown item.
+
+<a name='P-ChuckDeviceController-Plugin-SidebarItem-Text'></a>
+### Text `property`
+
+##### Summary
+
+Gets or sets the text to display for this navbar
+header.
+
 <a name='T-ChuckDeviceController-Plugin-StaticFilesLocation'></a>
 ## StaticFilesLocation `type`
 
@@ -1830,10 +2846,11 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Determines where the static files (i.e. 'wwwroot') will be located to the plugin.
+Determines where the static files (i.e. 'wwwroot' and 'Views') will be located
+relevant to the plugin.
 
-<a name='M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation-'></a>
-### #ctor(location) `constructor`
+<a name='M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation-'></a>
+### #ctor(views,webRoot) `constructor`
 
 ##### Summary
 
@@ -1843,11 +2860,21 @@ Determines where the static files (i.e. 'wwwroot') will be located to the plugin
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| location | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') |  |
+| views | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') |  |
+| webRoot | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') |  |
 
-<a name='P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Location'></a>
-### Location `property`
+<a name='P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Views'></a>
+### Views `property`
 
 ##### Summary
 
-Gets the location of the static files.
+Gets an enum value determining where any Mvc Views are located.
+i.e. 'Views' folder.
+
+<a name='P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-WebRoot'></a>
+### WebRoot `property`
+
+##### Summary
+
+Gets an enum value determining where any web resource files are
+located. i.e. 'wwwroot' web root folder.
