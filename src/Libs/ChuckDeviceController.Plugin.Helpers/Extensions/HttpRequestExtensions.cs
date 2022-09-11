@@ -45,7 +45,7 @@
                 : userAgent;
         }
 
-        public static string GetIPAddress(this HttpRequest request)
+        public static string GetIPAddress(this HttpRequest request, string defaultValue = "0.0.0.0")
         {
             var cfHeader = request.Headers["cf-connecting-ip"].ToString();
             var forwardedfor = request.Headers["x-forwarded-for"].ToString()?.Split(',').FirstOrDefault();
@@ -59,7 +59,7 @@
                         ? remoteIp
                         : !string.IsNullOrEmpty(localIp)
                             ? localIp
-                            : "0.0.0.0";
+                            : defaultValue;
             return ipAddr;
         }
 

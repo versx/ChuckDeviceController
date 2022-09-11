@@ -2,7 +2,6 @@
 {
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common.Tasks;
@@ -12,6 +11,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
+    using ChuckDeviceController.Plugin.Helpers.Extensions;
 
     [ApiController]
     public class DeviceControlController : ControllerBase
