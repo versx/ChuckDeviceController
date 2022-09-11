@@ -64,6 +64,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Protobuf Include="..\Libs\ChuckDeviceController.Protos\JwtAuth.proto" GrpcServices="Client" />
     <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\ProtoPayload.proto" GrpcServices="Client" />
     <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\WebhookPayload.proto" GrpcServices="Client" />
     <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Client\leveling.proto" GrpcServices="Client" />

@@ -13,6 +13,7 @@
     {
         private const string DefaultContentType = "application/grpc";
         private const string ClaimTypeNameRole = "role";
+        private const string IgnoreJwtValidationHeader = "IgnoreJwtValidation";
 
         private static readonly ILogger<JwtTokenValidatorMiddleware> _logger =
             new Logger<JwtTokenValidatorMiddleware>(LoggerFactory.Create(x => x.AddConsole()));
@@ -35,14 +36,27 @@
             // Only validate 'Authorization' header JWT if gRPC request.
             if (httpContext.Request.ContentType == DefaultContentType)
             {
-                // Extract 'Authorization' header value from request
-                var token = httpContext.Request.GetAuthorizationHeader();
-                // Validate JWT token from 'Authorization' header
-                var result = ValidateToken(httpContext, token);
-                if (!result)
+                // Check if request has 'IgnoreJwtValidation' header set,
+                // which indicates it's for the JwtAuth endpoint. If
+                // so, allow it to proceed otherwise validate JWT.
+                var ignoreValidationHeader = httpContext.Request.GetHeader(IgnoreJwtValidationHeader);
+                if (string.IsNullOrEmpty(ignoreValidationHeader))
                 {
-                    // Ignore request if validation failed
-                    return;
+                    // Extract 'Authorization' header value from request
+                    var token = httpContext.Request.GetAuthorizationHeader();
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        // No 'Authorization' header set but required
+                        return;
+                    }
+
+                    // Validate JWT token from 'Authorization' header
+                    var result = ValidateToken(httpContext, token);
+                    if (!result)
+                    {
+                        // Ignore request if validation failed
+                        return;
+                    }
                 }
             }
 

@@ -306,6 +306,7 @@ app.UseCookiePolicy(new CookiePolicyOptions
 app.UseAuthorization();
 
 // gRPC listener server services
+app.MapGrpcService<JwtAuthServerService>();
 app.MapGrpcService<ProtoPayloadServerService>();
 app.MapGrpcService<TrainerInfoServerService>();
 app.MapGrpcService<WebhookEndpointServerService>();

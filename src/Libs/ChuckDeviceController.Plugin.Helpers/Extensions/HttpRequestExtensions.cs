@@ -78,14 +78,23 @@
             }
         }
 
-        public static string GetAuthorizationHeader(this HttpRequest request, bool removePrefix = true)
+        public static string? GetHeader(this HttpRequest request, string key)
         {
-            var token = request.Headers["Authorization"].ToString();
+            if (!request.Headers.ContainsKey(key))
+                return null;
+
+            var header = request.Headers[key].ToString();
+            return header;
+        }
+
+        public static string? GetAuthorizationHeader(this HttpRequest request, bool removePrefix = true)
+        {
+            var header = request.GetHeader("Authorization");
             if (removePrefix)
             {
-                token = token.Replace("Bearer ", null);
+                header = header?.Replace("Bearer ", null);
             }
-            return token.Replace("\"", null);
+            return header?.Replace("\"", null);
         }
     }
 }

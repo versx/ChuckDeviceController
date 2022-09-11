@@ -1,0 +1,24 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "ChuckDeviceController.Protos";
+
+package authorization;
+
+service JwtAuth {
+    rpc Generate (JwtAuthRequest) returns (JwtAuthResponse);
+}
+
+message JwtAuthRequest {
+	string Identifier = 1;
+}
+
+message JwtAuthResponse {
+	string AccessToken = 1;
+	uint32 ExpiresIn = 2;
+	JwtAuthStatus Status = 3;
+}
+
+enum JwtAuthStatus {
+	Ok = 0;
+	Error = 1;
+}

@@ -83,37 +83,45 @@
                 return new TestTask();
             }
 
-            // TODO: Bandaid for now
-            if (currentIndex > Coordinates.Count)
+            try
             {
-                currentIndex = 0;
-            }
+                // TODO: Bandaid for now
+                if (currentIndex > Coordinates.Count)
+                {
+                    currentIndex = 0;
+                }
 
-            // Get next scan coordinate for device based on route type
-            var currentCoord = Coordinates![currentIndex];
-            // Check if current index is last in coordinates list,
-            // if so we've completed the route. Reset route to first
-            // coordinate for next device.
-            if (_lastIndex == Coordinates.Count - 1)
-            {
-                _lastLastCompletedTime = _lastCompletedTime;
-                _lastCompletedTime = GetUnixTimestamp();
-                _lastIndex = 0;
-            }
-            else
-            {
-                _lastIndex++;
-            }
+                // Get next scan coordinate for device based on route type
+                var currentCoord = Coordinates![currentIndex];
+                // Check if current index is last in coordinates list,
+                // if so we've completed the route. Reset route to first
+                // coordinate for next device.
+                if (_lastIndex == Coordinates.Count - 1)
+                {
+                    _lastLastCompletedTime = _lastCompletedTime;
+                    _lastCompletedTime = GetUnixTimestamp();
+                    _lastIndex = 0;
+                }
+                else
+                {
+                    _lastIndex++;
+                }
 
-            // Check if we were unable to retrieve a coordinate to send
-            if (currentCoord == null)
-            {
-                Console.WriteLine($"[{Name}] [{options.Uuid}] Failed to retrieve next scan coordinate");
-                return new TestTask();
-            }
+                // Check if we were unable to retrieve a coordinate to send
+                if (currentCoord == null)
+                {
+                    Console.WriteLine($"[{Name}] [{options.Uuid}] Failed to retrieve next scan coordinate");
+                    return new TestTask();
+                }
 
-            var task = CreateTask(currentCoord);
-            return await Task.FromResult(task);
+                var task = CreateTask(currentCoord);
+                return await Task.FromResult(task);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex}");
+            }
+            return null;
         }
 
         public async Task<string> GetStatusAsync()
