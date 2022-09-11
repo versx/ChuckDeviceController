@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
-using ChuckDeviceConfigurator.Configuration;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Extensions;
 using ChuckDeviceConfigurator.Localization;
@@ -32,7 +31,6 @@ using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
 
 
-// TODO: Allow plugins to communicate with each other (i.e. event bus, SignalR? (maybe - probably not tho), redis, own impl, etc)
 // TODO: Modularize everything, add as many services as possible as plugins
 // TODO: Consolidate benchmark/profiling/diagnostic plugins into one? (i.e. RequestBenchmarkPlugin, MemoryBenchmarkPlugin, MiniProfilerPlugin)
 // TODO: Add HealthChecksPlugin

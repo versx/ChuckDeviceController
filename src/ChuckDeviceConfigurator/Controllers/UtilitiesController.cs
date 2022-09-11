@@ -4,12 +4,12 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Options;
 
-    using ChuckDeviceConfigurator.Configuration;
     using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Entities;

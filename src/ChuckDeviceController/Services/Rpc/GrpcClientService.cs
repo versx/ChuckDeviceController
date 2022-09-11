@@ -13,6 +13,7 @@
         private readonly string? _grpcWebhookServerEndpoint;
         private readonly ILogger<IGrpcClientService> _logger;
         private readonly AuthHeadersInterceptor _authHeadersInterceptor;
+        protected readonly Dictionary<string, ulong> _jwtTokens = new();
 
         public GrpcClientService(
             ILogger<IGrpcClientService> logger,

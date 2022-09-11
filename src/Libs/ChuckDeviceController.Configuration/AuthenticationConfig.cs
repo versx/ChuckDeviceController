@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Configuration
+﻿namespace ChuckDeviceController.Configuration
 {
     public class AuthenticationConfig
     {

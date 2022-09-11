@@ -2,7 +2,7 @@
 {
     using Microsoft.AspNetCore.Authentication;
 
-    using ChuckDeviceConfigurator.Configuration;
+    using ChuckDeviceController.Configuration;
 
     public static class AuthenticationBuilderExtensions
     {

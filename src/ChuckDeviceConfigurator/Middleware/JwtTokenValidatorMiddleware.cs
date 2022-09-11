@@ -6,12 +6,11 @@
     using Microsoft.Extensions.Options;
     using Microsoft.IdentityModel.Tokens;
 
-    using ChuckDeviceConfigurator.Configuration;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Plugin.Helpers.Extensions;
 
     public class JwtTokenValidatorMiddleware
     {
-        // TODO: Cache JWT tokens with expiration
         private const string DefaultContentType = "application/grpc";
         private const string ClaimTypeNameRole = "role";
 
@@ -27,35 +26,39 @@
 
             if (string.IsNullOrEmpty(_jwtConfig.Key))
             {
-                throw new ArgumentNullException($"JWT signing issuer key secret cannot be null!");
+                throw new ArgumentNullException(nameof(_jwtConfig.Key), $"JWT signing issuer key secret cannot be null!");
             }
         }
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
+            // Only validate 'Authorization' header JWT if gRPC request.
             if (httpContext.Request.ContentType == DefaultContentType)
             {
-                // Only validate 'Authorization' header JWT if gRPC request.
+                // Extract 'Authorization' header value from request
                 var token = httpContext.Request.GetAuthorizationHeader();
+                // Validate JWT token from 'Authorization' header
                 var result = ValidateToken(httpContext, token);
                 if (!result)
                 {
+                    // Ignore request if validation failed
                     return;
                 }
             }
 
+            // Allow request to continue
             await _next(httpContext);
         }
 
         private bool ValidateToken(HttpContext context, string token)
         {
+            if (string.IsNullOrEmpty(token))
+                return false;
+
             try
             {
-                if (string.IsNullOrEmpty(token))
-                    return false;
-
-                var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.UTF8.GetBytes(_jwtConfig.Key);
+                var tokenHandler = new JwtSecurityTokenHandler();
                 var tokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
@@ -79,7 +82,6 @@
 
                 context.Items[Strings.Identifier] = identifier;
                 return true;
-
             }
             catch //(Exception ex)
             {

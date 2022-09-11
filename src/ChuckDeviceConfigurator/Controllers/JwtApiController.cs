@@ -8,6 +8,8 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.IdentityModel.Tokens;
 
+    using ChuckDeviceController.Common.Authorization;
+
     [ApiController]
     [AllowAnonymous]
     [Route("api/jwt/")]
@@ -34,6 +36,7 @@
             var key = jwtSection.GetValue<string>("Key");
             var secret = Encoding.UTF8.GetBytes(key);
             var id = Guid.NewGuid().ToString();
+            var tokenExpires = DateTime.UtcNow.AddMinutes(30);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
@@ -41,7 +44,7 @@
                     new Claim(ClaimTypes.Role, identifier),
                     new Claim(JwtRegisteredClaimNames.Jti, id),
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                Expires = tokenExpires,
                 Issuer = issuer,
                 Audience = audience,
                 SigningCredentials = new SigningCredentials(
@@ -53,7 +56,13 @@
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = tokenHandler.WriteToken(token);
 
-            return await Task.FromResult(Content(jwtToken));
+            var response = new JwtTokenResponse(
+                accessToken: jwtToken,
+                expiresIn: (uint)tokenExpires.Subtract(DateTime.UtcNow).TotalSeconds,
+                status: JwtAuthorizationStatus.OK
+            );
+            var json = new JsonResult(response);
+            return await Task.FromResult(json);
         }
     }
 }
