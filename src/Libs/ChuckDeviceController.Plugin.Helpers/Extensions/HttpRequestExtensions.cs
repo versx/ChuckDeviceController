@@ -77,5 +77,15 @@
                 return string.Empty;
             }
         }
+
+        public static string GetAuthorizationHeader(this HttpRequest request, bool removePrefix = true)
+        {
+            var token = request.Headers["Authorization"].ToString();
+            if (removePrefix)
+            {
+                token = token.Replace("Bearer ", null);
+            }
+            return token.Replace("\"", null);
+        }
     }
 }

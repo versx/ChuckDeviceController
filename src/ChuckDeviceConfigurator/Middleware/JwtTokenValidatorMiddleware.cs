@@ -7,6 +7,7 @@
     using Microsoft.IdentityModel.Tokens;
 
     using ChuckDeviceConfigurator.Configuration;
+    using ChuckDeviceController.Plugin.Helpers.Extensions;
 
     public class JwtTokenValidatorMiddleware
     {
@@ -34,7 +35,7 @@
             if (httpContext.Request.ContentType == DefaultContentType)
             {
                 // Only validate 'Authorization' header JWT if gRPC request.
-                var token = GetAuthorizationHeader(httpContext.Request);
+                var token = httpContext.Request.GetAuthorizationHeader();
                 var result = ValidateToken(httpContext, token);
                 if (!result)
                 {
@@ -84,15 +85,6 @@
                 _logger.LogError($"Failed to validate the JWT token for the gRPC service request to '{context.Request.Path}'.");
             }
             return false;
-        }
-
-        private static string GetAuthorizationHeader(HttpRequest request)
-        {
-            var token = request.Headers["Authorization"]
-                .ToString()
-                .Replace("Bearer ", null)
-                .Replace("\"", null);
-            return token;
         }
     }
 }
