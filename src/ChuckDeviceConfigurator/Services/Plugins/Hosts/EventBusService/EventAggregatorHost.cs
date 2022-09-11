@@ -106,7 +106,7 @@
                 _typedObservers[typeof(T)] = observers;
             }
 
-            var events = _events.Where(evt => evt is T);
+            var events = _events.Where(evt => evt is T).ToList();
             return SubscribeAndSendEvents(observers, newObserver, events);
         }
 
@@ -120,15 +120,17 @@
         private IDisposable SubscribeAndSendEvents(
             List<IObserver<IEvent>> currentObservers,
             IObserver<IEvent> newObserver,
-            IEnumerable<IEvent> events)
+            IReadOnlyList<IEvent> events)
         {
             if (!currentObservers.Contains(newObserver))
             {
                 currentObservers.Add(newObserver);
 
                 // Provide observer with existing data.
-                foreach (var @event in events)
+                //foreach (var @event in events)
+                for (var i = 0; i < events.Count; i++)
                 {
+                    var @event = events[i];
                     var result = ExecutePublish(newObserver, @event);
                     if (result != EventExecutionResult.Executed)
                     {
