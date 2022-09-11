@@ -341,7 +341,7 @@
 
             var gymIds = _smartRaidGyms.Keys.ToList();
             var gyms = await GetGymsAsync(gymIds);
-            if ((gyms?.Count ?? 0) == 0)
+            if (!(gyms?.Any() ?? false))
             {
                 // Failed to get gyms by ids
                 _logger.LogWarning($"[{Name}] Nearby gyms list is empty.");
@@ -349,11 +349,18 @@
                 return;
             }
 
-            // Retrieve and sync all gyms/gym info from the database that match
-            // the gym ids from the smart raid gyms cache.
-            foreach (var gym in gyms!)
+            try
             {
-                _smartRaidGyms[gym.Id] = gym;
+                // Retrieve and sync all gyms/gym info from the database that match
+                // the gym ids from the smart raid gyms cache.
+                foreach (var gym in gyms!)
+                {
+                    _smartRaidGyms[gym.Id] = gym;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
             }
         }
 
