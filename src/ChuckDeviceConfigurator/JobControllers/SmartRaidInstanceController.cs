@@ -339,18 +339,18 @@
             //var sw = new System.Diagnostics.Stopwatch();
             //sw.Start();
 
-            var gymIds = _smartRaidGyms.Keys.ToList();
-            var gyms = await GetGymsAsync(gymIds);
-            if (!(gyms?.Any() ?? false))
-            {
-                // Failed to get gyms by ids
-                _logger.LogWarning($"[{Name}] Nearby gyms list is empty.");
-                Thread.Sleep(5000);
-                return;
-            }
-
             try
             {
+                var gymIds = _smartRaidGyms.Keys.ToList();
+                var gyms = await GetGymsAsync(gymIds);
+                if (!(gyms?.Any() ?? false))
+                {
+                    // Failed to get gyms by ids
+                    _logger.LogWarning($"[{Name}] Nearby gyms list is empty.");
+                    Thread.Sleep(5000);
+                    return;
+                }
+
                 // Retrieve and sync all gyms/gym info from the database that match
                 // the gym ids from the smart raid gyms cache.
                 foreach (var gym in gyms!)
@@ -396,7 +396,7 @@
         {
             using (var context = _factory.CreateDbContext())
             {
-                if ((ids?.Count ?? 0) == 0)
+                if (!(ids?.Any() ?? false))
                 {
                     var allGyms = context.Gyms.ToList();
                     return await Task.FromResult(allGyms);

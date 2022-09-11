@@ -83,6 +83,12 @@
                 return new TestTask();
             }
 
+            // TODO: Bandaid for now
+            if (currentIndex > Coordinates.Count)
+            {
+                currentIndex = 0;
+            }
+
             // Get next scan coordinate for device based on route type
             var currentCoord = Coordinates![currentIndex];
             // Check if current index is last in coordinates list,
