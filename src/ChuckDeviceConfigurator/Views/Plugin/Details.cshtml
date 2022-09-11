@@ -30,40 +30,52 @@
 
 <hr />
 <dl class="row">
-    <dt class = "col-sm-2">
+    <dt class="col-sm-4">
         @Html.DisplayNameFor(model => model.Plugin.Name)
     </dt>
-    <dd class = "col-sm-10">
+    <dd class="col-sm-8">
         @Html.DisplayFor(model => model.Plugin.Name)
     </dd>
-    <dt class = "col-sm-2">
+    <dt class="col-sm-4">
         @Html.DisplayNameFor(model => model.Plugin.Description)
     </dt>
-    <dd class = "col-sm-10">
+    <dd class="col-sm-8">
         @Html.DisplayFor(model => model.Plugin.Description)
     </dd>
-    <dt class = "col-sm-2">
+    <dt class="col-sm-4">
         @Html.DisplayNameFor(model => model.Plugin.Author)
     </dt>
-    <dd class = "col-sm-10">
+    <dd class="col-sm-8">
         @Html.DisplayFor(model => model.Plugin.Author)
     </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Permissions)
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.PermissionsOptions.RequestedPermissions)
     </dt>
-    <dd class = "col-sm-10">
-        @Html.Raw(string.Join("<br>", (Model?.Permissions ?? PluginPermissions.None).ToString().Split(", ")))
+    <dd class="col-sm-8">
+        @Html.Raw(string.Join("<br>", (Model?.PermissionsOptions?.RequestedPermissions ?? PluginPermissions.None).ToString().Split(", ")))
     </dd>
-    <dt class = "col-sm-2">
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.PermissionsOptions.AllowedPermissions)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.Raw(string.Join("<br>", (Model?.PermissionsOptions?.AllowedPermissions ?? PluginPermissions.None).ToString().Split(", ")))
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.PermissionsOptions.AcceptedPermissionsPolicy)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.DisplayFor(model => model.PermissionsOptions.AcceptedPermissionsPolicy)
+    </dd>
+    <dt class="col-sm-4">
         @Html.DisplayNameFor(model => model.Plugin.Version)
     </dt>
-    <dd class = "col-sm-10">
+    <dd class="col-sm-8">
         @Html.DisplayFor(model => model.Plugin.Version)
     </dd>
-    <dt class = "col-sm-2">
+    <dt class="col-sm-4">
         @Html.DisplayNameFor(model => model.State)
     </dt>
-    <dd class = "col-sm-10">
+    <dd class="col-sm-8">
         @Html.Raw(Utils.GetPluginStateColor(Model?.State ?? PluginState.Unset))
     </dd>
 </dl>

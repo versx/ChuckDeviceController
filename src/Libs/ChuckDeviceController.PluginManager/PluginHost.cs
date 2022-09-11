@@ -14,8 +14,7 @@
 
         public IPlugin Plugin { get; }
 
-        // TODO: Change 'Permissions' to 'RequestedPermissions' and add 'AllowedPermissions' property
-        public PluginPermissions Permissions { get; } = PluginPermissions.None;
+        public PluginPermissionsOptions PermissionsOptions { get; }
 
         public PluginState State { get; private set; }
 
@@ -31,18 +30,8 @@
 
         #region Constructors
 
-        public PluginHost(
-            IPlugin plugin,
-            PluginPermissions permissions,
-            IAssemblyShim assembly,
-            IPluginAssemblyLoadContext loadContext,
-            IEnumerable<ServiceDescriptor> pluginServices)
-            : this(plugin, permissions, assembly, loadContext, pluginServices, new())
-        {
-        }
-
         public PluginHost(IPlugin plugin,
-            PluginPermissions permissions,
+            PluginPermissionsOptions permissionOptions,
             IAssemblyShim assembly,
             IPluginAssemblyLoadContext loadContext,
             IEnumerable<ServiceDescriptor> pluginServices,
@@ -50,12 +39,17 @@
             PluginState state = PluginState.Unset)
         {
             Plugin = plugin;
-            Permissions = permissions;
+            PermissionsOptions = permissionOptions;
             LoadContext = loadContext;
             Assembly = assembly;
             PluginServices = pluginServices;
             EventHandlers = eventHandlers;
             State = state;
+
+            if (permissionOptions.AcceptedPermissionsPolicy == PluginAcceptedPermissionsPolicy.AcceptAllAutomatically)
+            {
+                AcceptPermissions(PermissionsOptions.RequestedPermissions);
+            }
         }
 
         #endregion
@@ -78,6 +72,7 @@
 
         public void SetState(PluginState state, bool ignoreEvent = false)
         {
+            var test = PermissionsOptions.AllowedPermissions |= PluginPermissions.WriteDatabase;
             State = state;
 
             if (!ignoreEvent)
@@ -87,6 +82,64 @@
             }
         }
 
+        public void AcceptPermissions(PluginPermissions acceptedPermissions)
+        {
+            PermissionsOptions.Accept(acceptedPermissions);
+        }
+
+        public void RevokePermissions(PluginPermissions revokePermissions)
+        {
+            PermissionsOptions.Revoke(revokePermissions);
+        }
+
         #endregion
+    }
+
+    public class PluginPermissionsOptions
+    {
+        public PluginPermissions RequestedPermissions { get; }
+
+        public PluginPermissions AllowedPermissions { get; internal set; }
+
+        public PluginAcceptedPermissionsPolicy AcceptedPermissionsPolicy { get; }
+
+        public PluginPermissionsOptions(
+            PluginPermissions requestedPermissions,
+            PluginPermissions allowedPermissions,
+            PluginAcceptedPermissionsPolicy acceptedPermissionsPolicy)
+        {
+            RequestedPermissions = requestedPermissions;
+            AllowedPermissions = allowedPermissions;
+            AcceptedPermissionsPolicy = acceptedPermissionsPolicy;
+        }
+
+        public bool IsAllowed(PluginPermissions permissions)
+        {
+            return (AllowedPermissions & permissions) == permissions;
+        }
+
+        public void Accept(PluginPermissions permissions)
+        {
+            AllowedPermissions |= permissions;
+        }
+
+        public void Revoke(PluginPermissions permissions)
+        {
+            AllowedPermissions &= (~permissions);
+        }
+    }
+
+    public interface IPluginPermissionsEvents
+    {
+        void OnPermissionGranted(PluginPermissions permissions);
+
+        void OnPermissionDenied(PluginPermissions permissions);
+    }
+
+    public enum PluginAcceptedPermissionsPolicy
+    {
+        AcceptManually = 0, // AcceptNone?
+        AcceptSpecific,
+        AcceptAllAutomatically,
     }
 }

@@ -78,10 +78,20 @@
                 pluginInstance.SetPluginServiceFields(sharedServiceHosts);
                 pluginInstance.SetPluginServiceProperties(sharedServiceHosts);
 
-                var permissions = pluginType.GetPluginPermissions();
+                var requestedPermissions = pluginType.GetPluginPermissions();
+                // TODO: Determine allowed permissions based on accepted permissions policy
+                var allowedPermissions = PluginPermissions.None;
+                var permissionsOptions = new PluginPermissionsOptions
+                (
+                    requestedPermissions: requestedPermissions,
+                    allowedPermissions: allowedPermissions,
+                    // TODO: Make 'PluginAcceptedPermissionsPolicy' configurable via UI (for all plugins)
+                    acceptedPermissionsPolicy: PluginAcceptedPermissionsPolicy.AcceptAllAutomatically
+                );
+
                 var pluginHost = new PluginHost(
                     plugin,
-                    permissions,
+                    permissionsOptions,
                     new PluginAssembly(pluginResult.Assembly),
                     pluginResult.LoadContext,
                     pluginServiceDescriptors,

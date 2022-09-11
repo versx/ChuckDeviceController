@@ -13,6 +13,7 @@
     {
         // TODO: Cache JWT tokens with expiration
         private const string DefaultContentType = "application/grpc";
+        private const string ClaimTypeNameRole = "role";
 
         private static readonly ILogger<JwtTokenValidatorMiddleware> _logger =
             new Logger<JwtTokenValidatorMiddleware>(LoggerFactory.Create(x => x.AddConsole()));
@@ -73,10 +74,10 @@
                 );
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var claim = jwtToken.Claims.FirstOrDefault(x => x.Type == "role");//ClaimTypes.Role);
+                var claim = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypeNameRole); //ClaimTypes.Role);
                 var identifier = claim?.Value;
 
-                context.Items["Identifier"] = identifier;
+                context.Items[Strings.Identifier] = identifier;
                 return true;
 
             }

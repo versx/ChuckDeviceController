@@ -20,7 +20,7 @@
                 @Html.DisplayNameFor(model => model.Items[0].Plugin.Author)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].Permissions)
+                @Html.DisplayNameFor(model => model.Items[0].PermissionsOptions)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Plugin.Version)
@@ -43,7 +43,11 @@
                     @Html.DisplayFor(modelItem => item.Plugin.Author)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Permissions)
+                    <div>
+                        Requested: @string.Join(", ", item.PermissionsOptions?.RequestedPermissions)<br>
+                        Allowed: @string.Join(", ", item.PermissionsOptions?.AllowedPermissions)<br>
+                        Policy: @(item.PermissionsOptions?.AcceptedPermissionsPolicy ?? PluginAcceptedPermissionsPolicy.AcceptManually)
+                    </div>
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Plugin.Version)
@@ -76,7 +80,8 @@
                     { responsivePriority: 0, targets: 0 },
                     { responsivePriority: 2, targets: 1 },
                     { responsivePriority: 5, targets: 2 },
-                    { responsivePriority: 6, targets: 3, render: $.fn.dataTable.render.ellipsis(50) },
+                    //{ responsivePriority: 6, targets: 3, render: $.fn.dataTable.render.ellipsis(50) },
+                    { responsivePriority: 6, targets: 3 },
                     { responsivePriority: 4, targets: 4 },
                     { responsivePriority: 3, targets: 5 },
                     { responsivePriority: 1, targets: -1, orderable: false },

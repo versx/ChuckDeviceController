@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.PluginManager
 {
+    using System.ComponentModel;
+
     using Microsoft.Extensions.DependencyInjection;
 
     using ChuckDeviceController.Common.Data;
@@ -24,7 +26,10 @@
         /// Gets the requested <seealso cref="PluginPermissions"/>
         /// for the loaded plugin.
         /// </summary>
-        PluginPermissions Permissions { get; }
+        [DisplayName("Permissions Options")]
+        PluginPermissionsOptions PermissionsOptions { get; }
+        //PluginPermissions RequestedPermissions { get; }
+        //PluginPermissions AllowedPermissions { get; }
 
         /// <summary>
         /// Gets the state of the plugin, whether it is enabled and running,
