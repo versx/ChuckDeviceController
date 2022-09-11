@@ -2,10 +2,12 @@
 {
     using Grpc.Core;
 
+    using ChuckDeviceConfigurator.Attributes;
     using ChuckDeviceConfigurator.Services.Webhooks;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
 
+    [JwtAuthorize]
     public class WebhookEndpointServerService : WebhookEndpoint.WebhookEndpointBase
     {
         #region Variables

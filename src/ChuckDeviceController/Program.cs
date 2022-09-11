@@ -8,6 +8,7 @@ using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
+using ChuckDeviceController.Services.Rpc.Interceptors;
 
 // TODO: Make 'MaxDatabaseRetry' configurable
 // TODO: Make 'DatabaseRetryIntervalS' configurable
@@ -63,6 +64,9 @@ builder.Services.AddSingleton<IBackgroundTaskQueue>(_ =>
 builder.Services.AddSingleton<IClearFortsService, ClearFortsService>();
 builder.Services.Configure<ProcessorOptions>(builder.Configuration.GetSection("Options"));
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<AuthHeadersInterceptor>();
+
 #endregion
 
 #region Database Contexts
@@ -97,6 +101,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+#region App Builder
 
 var app = builder.Build();
 
@@ -124,3 +129,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+#endregion

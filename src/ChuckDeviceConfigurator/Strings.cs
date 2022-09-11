@@ -81,6 +81,7 @@
         public const string DefaultDateTimeFormat = "MM/dd/yyyy hh:mm:ss tt";
         public const string DefaultTableRefreshRateS = "10";
         public const uint MaxPokemonId = 898;
+        public const string Identifier = "Identifier";
 
         #region Device Icons & Properties
 

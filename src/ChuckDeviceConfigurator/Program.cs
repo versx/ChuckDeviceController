@@ -107,8 +107,22 @@ builder.Services.AddMemoryCache(options =>
 //builder.Services.AddDistributedMemoryCache();
 
 // Register external 3rd party authentication providers if configured
+builder.Services.Configure<JwtAuthConfig>(config.GetSection("Jwt"));
 builder.Services
+    .AddAuthorization(options =>
+    {
+        //options.AddPolicy("GrpcAuthenticationServices", policy =>
+        //{
+        //    policy.RequireRole("Grpc");
+        //    policy.RequireAssertion(context =>
+        //    {
+        //        var result = context.User.HasClaim(claim => claim.Type == "role");
+        //        return result;
+        //    });
+        //});
+    })
     .AddAuthentication()
+    .AddJwtBearer()
     .AddCookie(options =>
     {
         // Cookie settings
@@ -272,6 +286,7 @@ else
 }
 
 app.UseMiddleware<UnhandledExceptionMiddleware>();
+app.UseMiddleware<JwtTokenValidatorMiddleware>(); // TODO: Make JWT token auth for gRPC services configurable?
 
 // Call 'Configure' method in plugins
 pluginManager.Configure(app);

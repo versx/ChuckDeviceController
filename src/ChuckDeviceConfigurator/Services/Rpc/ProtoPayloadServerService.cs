@@ -3,11 +3,14 @@
     using Grpc.Core;
     using POGOProtos.Rpc;
 
+    using ChuckDeviceConfigurator.Attributes;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
 
+    [JwtAuthorize]
+    //[Authorize(Policy = "GrpcAuthenticationServices")]
     public class ProtoPayloadServerService : Payload.PayloadBase
     {
         #region Variables

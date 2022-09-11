@@ -2,9 +2,11 @@
 {
     using Grpc.Core;
 
+    using ChuckDeviceConfigurator.Attributes;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Protos;
 
+    [JwtAuthorize]
     public class TrainerInfoServerService : Leveling.LevelingBase
     {
         #region Variables

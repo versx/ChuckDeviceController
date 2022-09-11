@@ -1,21 +1,26 @@
 ﻿namespace ChuckDeviceController.Services.Rpc
 {
+    using Grpc.Core.Interceptors;
     using Grpc.Net.Client;
 
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
+    using ChuckDeviceController.Services.Rpc.Interceptors;
 
     public class GrpcClientService : IGrpcClientService
     {
         private readonly string _grpcConfiguratorServerEndpoint;
         private readonly string? _grpcWebhookServerEndpoint;
         private readonly ILogger<IGrpcClientService> _logger;
+        private readonly AuthHeadersInterceptor _authHeadersInterceptor;
 
         public GrpcClientService(
             ILogger<IGrpcClientService> logger,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            AuthHeadersInterceptor authHeadersInterceptor)
         {
             _logger = logger;
+            _authHeadersInterceptor = authHeadersInterceptor;
 
             // TODO: Group server endpoints in config
             var configuratorEndpoint = configuration.GetValue<string>("GrpcConfiguratorServer");
@@ -45,8 +50,11 @@
             // Create gRPC channel for receiving gRPC server address
             using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
 
+            var invoker = channel.Intercept(_authHeadersInterceptor);
+
             // Create new gRPC client using gRPC channel for address
-            var client = new Payload.PayloadClient(channel);
+            //var client = new Payload.PayloadClient(channel);
+            var client = new Payload.PayloadClient(invoker);
 
             // Serialize entity and send to server to deserialize
             var json = data.ToJson();
@@ -75,8 +83,11 @@
             // Create gRPC channel for receiving gRPC server address
             using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
 
+            var invoker = channel.Intercept(_authHeadersInterceptor);
+
             // Create new gRPC client for gRPC channel for address
-            var client = new Leveling.LevelingClient(channel);
+            //var client = new Leveling.LevelingClient(channel);
+            var client = new Leveling.LevelingClient(invoker);
 
             // Create gRPC payload request
             var request = new TrainerInfoRequest
@@ -102,8 +113,11 @@
                 // Create gRPC channel for receiving gRPC server address
                 using var channel = GrpcChannel.ForAddress(_grpcWebhookServerEndpoint);
 
+                var invoker = channel.Intercept(_authHeadersInterceptor);
+
                 // Create new gRPC client using gRPC channel for address
-                var client = new WebhookPayload.WebhookPayloadClient(channel);
+                //var client = new WebhookPayload.WebhookPayloadClient(channel);
+                var client = new WebhookPayload.WebhookPayloadClient(invoker);
 
                 // Create gRPC payload request
                 var request = new WebhookPayloadRequest
