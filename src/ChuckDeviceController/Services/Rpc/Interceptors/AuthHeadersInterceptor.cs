@@ -46,6 +46,8 @@
             return base.AsyncUnaryCall(request, context, continuation);
         }
 
+        #region Private Methods
+
         private async Task<Metadata?> GetAuthorizationTokenAsync()
         {
             if (_jwtTokens.Any())
@@ -113,5 +115,7 @@
             };
             return headers;
         }
+
+        #endregion
     }
 }

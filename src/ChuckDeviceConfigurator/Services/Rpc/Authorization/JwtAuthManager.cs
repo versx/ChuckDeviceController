@@ -11,12 +11,23 @@
 
     public class JwtAuthManager
     {
+        #region Constants
+
         private const int JwtTokenValidity = 30; // minutes
         private const string DefaultGrpcServiceIdentifier = "Grpc";
         private const string DefaultInternalServiceIdentifier = "InternalService";
+        private const string ClaimTypeNameRole = "role";
+
+        #endregion
+
+        #region Variables
 
         private static readonly ILogger<JwtAuthManager> _logger =
             new Logger<JwtAuthManager>(LoggerFactory.Create(x => x.AddConsole()));
+
+        #endregion
+
+        #region Public Methods
 
         public static JwtAuthResponse Generate(JwtAuthRequest request, JwtAuthConfig config)
         {
@@ -33,6 +44,18 @@
             //_logger.LogDebug($"Received access token: {token}");
             return token;
         }
+
+        public static bool Validate(string token, JwtAuthConfig config)
+        {
+            if (string.IsNullOrEmpty(token))
+                return false;
+
+            return ValidateJwtToken(token, config);
+        }
+
+        #endregion
+
+        #region Private Methods
 
         private static JwtAuthResponse GenerateJwtToken(string identifier, JwtAuthConfig config)
         {
@@ -67,6 +90,43 @@
             return response;
         }
 
+        private static bool ValidateJwtToken(string token, JwtAuthConfig config)
+        {
+            try
+            {
+                var key = Encoding.UTF8.GetBytes(config.Key);
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var tokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    // Set ClockSkew to zero so tokens expire exactly at their
+                    // expiration time. (instead of 5 minutes later)
+                    ClockSkew = TimeSpan.Zero,
+                };
+
+                var claimsPrincipal = tokenHandler.ValidateToken(
+                    token,
+                    tokenValidationParameters,
+                    out SecurityToken validatedToken
+                );
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+                var claim = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypeNameRole); //ClaimTypes.Role);
+                var identifier = claim?.Value;
+
+                var result = !string.IsNullOrEmpty(identifier) && identifier == DefaultInternalServiceIdentifier;
+                return result;
+            }
+            catch //(Exception ex)
+            {
+                _logger.LogError($"Failed to validate the JWT token for the gRPC service request.");
+            }
+            return false;
+        }
+
         private static string GetAuthRequestIdentifierRole(JwtAuthRequest request)
         {
             if (request.Identifier == DefaultGrpcServiceIdentifier)
@@ -75,5 +135,7 @@
             }
             return null;
         }
+
+        #endregion
     }
 }

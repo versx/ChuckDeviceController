@@ -284,7 +284,7 @@ else
 }
 
 app.UseMiddleware<UnhandledExceptionMiddleware>();
-app.UseMiddleware<JwtTokenValidatorMiddleware>(); // TODO: Make JWT token auth for gRPC services configurable?
+app.UseMiddleware<JwtValidatorMiddleware>(); // TODO: Make JWT token auth for gRPC services configurable?
 
 // Call 'Configure' method in plugins
 pluginManager.Configure(app);
