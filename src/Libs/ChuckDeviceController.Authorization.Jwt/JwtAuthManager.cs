@@ -14,8 +14,6 @@
     {
         #region Constants
 
-        // TODO: Make JWT validity timespan configurable
-        private const int JwtTokenValidity = 1; // minutes
         private const string DefaultGrpcServiceIdentifier = "Grpc";
         private const string DefaultInternalServiceIdentifier = "InternalService";
         private const string ClaimTypeNameRole = "role";
@@ -70,7 +68,7 @@
         {
             var id = Guid.NewGuid().ToString();
             var secret = Encoding.UTF8.GetBytes(config.Key);
-            var tokenExpires = DateTime.UtcNow.AddMinutes(JwtTokenValidity);
+            var tokenExpires = DateTime.UtcNow.AddMinutes(config.TokenValidityM);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
