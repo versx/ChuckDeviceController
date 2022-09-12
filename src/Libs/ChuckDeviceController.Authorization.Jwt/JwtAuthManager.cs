@@ -48,7 +48,7 @@
             }
 
             var token = GenerateJwtToken(identifierRole, config);
-            _logger.LogDebug($"Generated access token: {token}");
+            //_logger.LogDebug($"Generated access token: {token}");
             return token;
         }
 
