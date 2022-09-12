@@ -55,7 +55,7 @@
 
         #region Properties
 
-        public ProcessorOptions Options { get; }
+        public ProcessorOptionsConfig Options { get; }
 
         #endregion
 
@@ -63,7 +63,7 @@
 
         public DataProcessorService(
             ILogger<IDataProcessorService> logger,
-            IOptions<ProcessorOptions> options,
+            IOptions<ProcessorOptionsConfig> options,
             IBackgroundTaskQueue taskQueue,
             IDbContextFactory<MapDbContext> factory,
             IMemoryCache diskCache,

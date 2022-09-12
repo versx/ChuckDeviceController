@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Configuration
 {
-    public class ProcessorOptions
+    public class ProcessorOptionsConfig
     {
         public bool ClearOldForts { get; set; } = true;
 

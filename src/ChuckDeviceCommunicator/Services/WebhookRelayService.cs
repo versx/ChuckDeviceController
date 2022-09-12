@@ -4,10 +4,10 @@
 
     using Microsoft.Extensions.Options;
 
-    using ChuckDeviceCommunicator.Configuration;
     using ChuckDeviceCommunicator.Services.Rpc;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Json;

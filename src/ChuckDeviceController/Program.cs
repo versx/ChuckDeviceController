@@ -62,7 +62,7 @@ builder.Services.AddSingleton<IBackgroundTaskQueue>(_ =>
 });
 
 builder.Services.AddSingleton<IClearFortsService, ClearFortsService>();
-builder.Services.Configure<ProcessorOptions>(builder.Configuration.GetSection("Options"));
+builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSection("Options"));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<AuthHeadersInterceptor>();
