@@ -5,9 +5,12 @@
     using Grpc.Net.Client;
 
     using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Protos;
+
+    // TODO: Pass property to determine whether JWT auth is enabled or not
 
     public class AuthHeadersInterceptor : Interceptor
     {
@@ -16,15 +19,18 @@
         private const string AuthorizationHeader = "Authorization";
         private const string IgnoreJwtValidationHeader = "IgnoreJwtValidation";
         private const string DefaultGrpcServiceIdentifier = "Grpc";
-        private const string DefaultInternalServiceIdentifier = "InternalService";
+        //private const string DefaultInternalServiceIdentifier = "InternalService";
 
         #endregion
 
         #region Variables
 
+        private static readonly ILogger<AuthHeadersInterceptor> _logger =
+            new Logger<AuthHeadersInterceptor>(LoggerFactory.Create(x => x.AddConsole()));
         protected static readonly Dictionary<string, ulong> _jwtTokens = new();
         private static readonly object _lock = new();
         private readonly string _grpcConfiguratorServerEndpoint;
+        private bool _isJwtAuthEnabled = true;
 
         #endregion
 
@@ -49,16 +55,19 @@
             ClientInterceptorContext<TRequest, TResponse> context,
             AsyncUnaryCallContinuation<TRequest, TResponse> continuation)
         {
-            //var headers = CreateMetadata("failer");
-            var headers = GetAuthorizationTokenAsync().Result;
-            if (headers != null)
+            if (_isJwtAuthEnabled)
             {
-                var callOptions = context.Options.WithHeaders(headers);
-                context = new ClientInterceptorContext<TRequest, TResponse>(
-                    context.Method,
-                    context.Host,
-                    callOptions
-                );
+                //var headers = CreateMetadata("failer");
+                var headers = GetAuthorizationTokenAsync().Result;
+                if (headers != null)
+                {
+                    var callOptions = context.Options.WithHeaders(headers);
+                    context = new ClientInterceptorContext<TRequest, TResponse>(
+                        context.Method,
+                        context.Host,
+                        callOptions
+                    );
+                }
             }
             return base.AsyncUnaryCall(request, context, continuation);
         }
@@ -89,8 +98,9 @@
             // Send generate JWT token request
             var response = await SendGenerateJwtTokenRequest();
             // Ensure we received a response and that it was successful
-            if (response == null || response.Status != JwtAuthStatus.Ok)
+            if (response == null || response?.Status != JwtAuthStatus.Ok)
             {
+                // Likely because JWT auth is disabled
                 return null;
             }
 
@@ -102,22 +112,43 @@
             return CreateMetadata(response.AccessToken);
         }
 
-        private async Task<JwtAuthResponse> SendGenerateJwtTokenRequest()
+        private async Task<JwtAuthResponse?> SendGenerateJwtTokenRequest()
         {
-            using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
-            var client = new JwtAuth.JwtAuthClient(channel);
-            var request = new JwtAuthRequest
+            try
             {
-                Identifier = DefaultGrpcServiceIdentifier,
-            };
+                using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
+                var client = new JwtAuth.JwtAuthClient(channel);
+                var request = new JwtAuthRequest
+                {
+                    Identifier = DefaultGrpcServiceIdentifier,
+                };
 
-            var headers = CreateJwtMetadata();
-            var response = await client.GenerateAsync(request, headers);
+                var headers = CreateJwtMetadata();
+                var response = await client.GenerateAsync(request, headers);
 
-            // Cleanly shutdown gRPC client channel
-            await channel.ShutdownAsync();
+                // Cleanly shutdown gRPC client channel
+                await channel.ShutdownAsync();
 
-            return response;
+                return response;
+            }
+            catch (RpcException rpcEx)
+            {
+                if (rpcEx.StatusCode == StatusCode.Unimplemented ||
+                    rpcEx.Status.Detail == "Bad gRPC response. HTTP status code: 404")
+                {
+                    // gRPC JwtAuthServerService is not registered with configurator,
+                    // set switch to false to skip generate JWT requests.
+                    // NOTES: Needed otherwise sending requests to an endpoint that
+                    // doesn't exist. Definitely not a good solution.
+                    // TODO: Figure out solution to replace workaround.
+                    _isJwtAuthEnabled = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+            }
+            return null;
         }
 
         #endregion

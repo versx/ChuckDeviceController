@@ -47,7 +47,7 @@ if (config.Providers.Count() == 2)
 
 var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
 // Need to call at startup so time gets set now and not when first visit to dashboard
-logger.LogDebug($"Uptime: {Strings.Uptime}");
+logger.LogInformation($"Started: {Strings.Uptime}");
 
 // Create locale translation files
 try
@@ -63,6 +63,8 @@ catch (Exception ex)
 
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
+
+var jwtAuthEnabled = config.GetSection("Jwt").GetValue<bool>("Enabled");
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
@@ -285,7 +287,10 @@ else
 }
 
 app.UseMiddleware<UnhandledExceptionMiddleware>();
-app.UseMiddleware<JwtValidatorMiddleware>(); // TODO: Make JWT token auth for gRPC services configurable?
+if (jwtAuthEnabled)
+{
+    app.UseMiddleware<JwtValidatorMiddleware>();
+}
 
 // Call 'Configure' method in plugins
 pluginManager.Configure(app);
@@ -307,7 +312,10 @@ app.UseCookiePolicy(new CookiePolicyOptions
 app.UseAuthorization();
 
 // gRPC listener server services
-app.MapGrpcService<JwtAuthServerService>();
+if (jwtAuthEnabled)
+{
+    app.MapGrpcService<JwtAuthServerService>();
+}
 app.MapGrpcService<ProtoPayloadServerService>();
 app.MapGrpcService<TrainerInfoServerService>();
 app.MapGrpcService<WebhookEndpointServerService>();
