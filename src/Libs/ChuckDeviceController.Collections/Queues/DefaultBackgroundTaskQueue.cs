@@ -29,9 +29,14 @@
             await _queue.Writer.WriteAsync(workItem);
         }
 
-        public async ValueTask<Func<CancellationToken, ValueTask>> DequeueAsync(
+        public async Task<Func<CancellationToken, ValueTask>> DequeueAsync(
             CancellationToken cancellationToken)
         {
+            if (Count == 0)
+            {
+                return new Func<CancellationToken, ValueTask>(token => new());
+            }
+
             var workItem = await _queue.Reader.ReadAsync(cancellationToken);
             return workItem;
         }
@@ -40,6 +45,11 @@
             int maxBatchSize,
             CancellationToken cancellationToken)
         {
+            if (Count == 0)
+            {
+                return new();
+            }
+
             var workItems = await _queue.Reader.ReadMultipleAsync(maxBatchSize, cancellationToken);
             return workItems;
         }

@@ -19,7 +19,8 @@
         /// </summary>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns></returns>
-        ValueTask<Func<CancellationToken, ValueTask>> DequeueAsync(
+        //ValueTask<Func<CancellationToken, ValueTask>> DequeueAsync(
+        Task<Func<CancellationToken, ValueTask>> DequeueAsync(
             CancellationToken cancellationToken);
 
         /// <summary>

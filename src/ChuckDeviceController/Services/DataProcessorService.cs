@@ -86,6 +86,8 @@
 
         public async Task ConsumeDataAsync(string username, List<dynamic> data)
         {
+            ProtoDataStatistics.Instance.TotalEntitiesReceived += (uint)data.Count;
+
             await _taskQueue.EnqueueAsync(async token =>
                 await ProcessWorkItemAsync(username, data, token));
         }
@@ -159,7 +161,6 @@
 
             CheckQueueLength();
 
-            var count = data.Count;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -303,6 +304,9 @@
             }
 
             stopwatch.Stop();
+
+            var count = data.Count;
+            ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)count;
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             _logger.LogInformation($"Data processer inserted {count:N0} items in {totalSeconds}s");
 

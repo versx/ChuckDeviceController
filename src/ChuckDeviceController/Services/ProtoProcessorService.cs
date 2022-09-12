@@ -119,6 +119,8 @@
 
         public async Task EnqueueAsync(ProtoPayloadQueueItem payload)
         {
+            ProtoDataStatistics.Instance.TotalPayloadsReceived++;
+
             await _taskQueue.EnqueueAsync(async token =>
                 await ProcessWorkItemAsync(payload, token));
         }
@@ -611,6 +613,7 @@
                     var storeData = await IsAllowedToSaveDataAsync(username);
                     if (storeData)
                     {
+                        ProtoDataStatistics.Instance.TotalProtosSent += (uint)processedProtos.Count;
                         await _dataProcessor.ConsumeDataAsync(username, processedProtos);
                     }
                 }

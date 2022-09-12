@@ -15,4 +15,22 @@
         public const uint MaximumQueueSizeWarning = 500;
         public const ushort MaximumQueueCapacity = 8192;
     }
+
+    public class ProtoDataStatistics
+    {
+        #region Singleton
+
+        private static ProtoDataStatistics? _instance;
+        public static ProtoDataStatistics Instance => _instance ??= new();
+
+        #endregion
+
+        public uint TotalPayloadsReceived { get; internal set; }
+
+        public uint TotalProtosSent { get; internal set; }
+
+        public uint TotalEntitiesReceived { get; internal set; }
+
+        public uint TotalEntitiesUpserted { get; internal set; }
+    }
 }
