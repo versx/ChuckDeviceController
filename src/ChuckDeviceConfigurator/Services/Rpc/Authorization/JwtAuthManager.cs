@@ -13,7 +13,8 @@
     {
         #region Constants
 
-        private const int JwtTokenValidity = 30; // minutes
+        // TODO: Make JWT validity timespan configurable
+        private const int JwtTokenValidity = 1; // minutes
         private const string DefaultGrpcServiceIdentifier = "Grpc";
         private const string DefaultInternalServiceIdentifier = "InternalService";
         private const string ClaimTypeNameRole = "role";
@@ -27,9 +28,16 @@
 
         #endregion
 
+        #region Singleton
+
+        private static JwtAuthManager? _instance;
+        public static JwtAuthManager Instance => _instance ??= new JwtAuthManager();
+
+        #endregion
+
         #region Public Methods
 
-        public static JwtAuthResponse Generate(JwtAuthRequest request, JwtAuthConfig config)
+        public JwtAuthResponse Generate(JwtAuthRequest request, JwtAuthConfig config)
         {
             var identifierRole = GetAuthRequestIdentifierRole(request);
             if (string.IsNullOrEmpty(identifierRole))
@@ -41,11 +49,11 @@
             }
 
             var token = GenerateJwtToken(identifierRole, config);
-            //_logger.LogDebug($"Received access token: {token}");
+            _logger.LogDebug($"Generated access token: {token}");
             return token;
         }
 
-        public static bool Validate(string token, JwtAuthConfig config)
+        public bool Validate(string token, JwtAuthConfig config)
         {
             if (string.IsNullOrEmpty(token))
                 return false;
@@ -59,8 +67,8 @@
 
         private static JwtAuthResponse GenerateJwtToken(string identifier, JwtAuthConfig config)
         {
-            var secret = Encoding.UTF8.GetBytes(config.Key);
             var id = Guid.NewGuid().ToString();
+            var secret = Encoding.UTF8.GetBytes(config.Key);
             var tokenExpires = DateTime.UtcNow.AddMinutes(JwtTokenValidity);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -117,6 +125,7 @@
                 var claim = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypeNameRole); //ClaimTypes.Role);
                 var identifier = claim?.Value;
 
+                // Ensure the service identifier is set and is our constant internal service value
                 var result = !string.IsNullOrEmpty(identifier) && identifier == DefaultInternalServiceIdentifier;
                 return result;
             }

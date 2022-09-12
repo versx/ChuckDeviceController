@@ -30,9 +30,9 @@
             // Only validate 'Authorization' header JWT if gRPC request.
             if (httpContext.Request.ContentType == DefaultContentType)
             {
-                // Check if request has 'IgnoreJwtValidation' header set,
-                // which indicates it's for the JwtAuth endpoint. If
-                // so, allow it to proceed otherwise validate JWT.
+                // Extract 'IgnoreJwtValidation' header value from request,
+                // which indicates it's for the JwtAuth endpoint. If so, 
+                // allow it to proceed otherwise validate JWT.
                 var ignoreValidationHeader = httpContext.Request.GetHeader(IgnoreJwtValidationHeader);
                 if (string.IsNullOrEmpty(ignoreValidationHeader))
                 {
@@ -45,7 +45,7 @@
                     }
 
                     // Validate JWT token from 'Authorization' header
-                    var result = JwtAuthManager.Validate(token, _jwtConfig);
+                    var result = JwtAuthManager.Instance.Validate(token, _jwtConfig);
                     if (!result)
                     {
                         // Ignore request if validation failed

@@ -22,9 +22,9 @@
 
         public override async Task<JwtAuthResponse> Generate(JwtAuthRequest request, ServerCallContext context)
         {
-            _logger.LogDebug($"Received JWT auth request for identifier '{request.Identifier}'");
+            //_logger.LogDebug($"Received JWT auth request for identifier '{request.Identifier}'");
 
-            var response = JwtAuthManager.Generate(request, _jwtAuthConfig);
+            var response = JwtAuthManager.Instance.Generate(request, _jwtAuthConfig);
             if (response == null)
             {
                 throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid identifier"));
