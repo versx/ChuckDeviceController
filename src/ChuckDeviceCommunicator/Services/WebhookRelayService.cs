@@ -706,29 +706,36 @@
         {
             _logger.LogInformation($"Requesting webhook endpoints from configurator...");
 
-            var response = await _grpcClientService.GetWebhookEndpointsAsync();
-            if (response.Status != WebhookEndpointStatus.Ok)
+            try
             {
-                _logger.LogError($"Failed to retrieve webhook endpoints!");
-                return;
-            }
+                var response = await _grpcClientService.GetWebhookEndpointsAsync();
+                if (response.Status != WebhookEndpointStatus.Ok)
+                {
+                    _logger.LogError($"Failed to retrieve webhook endpoints!");
+                    return;
+                }
 
-            var json = response.Payload;
-            var webhooks = json.FromJson<List<Webhook>>();
-            if (webhooks == null || webhooks.Count == 0)
+                var json = response.Payload;
+                var webhooks = json.FromJson<List<Webhook>>();
+                if (webhooks == null || webhooks.Count == 0)
+                {
+                    _logger.LogError($"Failed to retrieve webhook endpoints, list was null or empty!");
+                    return;
+                }
+
+                // Set webhook endpoints
+                lock (_webhookLock)
+                {
+                    _webhookEndpoints.Clear();
+                    _webhookEndpoints.AddRange(webhooks);
+                }
+
+                _logger.LogInformation($"Successfully retrieved updated webhook endpoints.");
+            }
+            catch (Exception ex)
             {
-                _logger.LogError($"Failed to retrieve webhook endpoints, list was null or empty!");
-                return;
+                _logger.LogError($"Error: {ex}");
             }
-
-            // Set webhook endpoints
-            lock (_webhookLock)
-            {
-                _webhookEndpoints.Clear();
-                _webhookEndpoints.AddRange(webhooks);
-            }
-
-            _logger.LogInformation($"Successfully retrieved updated webhook endpoints.");
         }
 
         #endregion

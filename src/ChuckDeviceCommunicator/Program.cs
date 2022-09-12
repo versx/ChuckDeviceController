@@ -1,9 +1,9 @@
 using ChuckDeviceCommunicator.Configuration;
 using ChuckDeviceCommunicator.Services;
 using ChuckDeviceCommunicator.Services.Rpc;
+using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
 using ChuckDeviceController.Configuration;
 
-// TODO: Implement JWT auth for gRPC service requests
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
@@ -16,6 +16,9 @@ if (config.Providers.Count() == 2)
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<AuthHeadersInterceptor>();
 
 // Add services to the container.
 builder.Services.AddGrpc();

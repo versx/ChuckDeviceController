@@ -132,12 +132,12 @@
             }
             catch //(Exception ex)
             {
-                _logger.LogError($"Failed to validate the JWT token for the gRPC service request.");
+                _logger.LogError($"Failed to validate the JWT token for gRPC service request.");
             }
             return false;
         }
 
-        private static string GetAuthRequestIdentifierRole(JwtAuthRequest request)
+        private static string? GetAuthRequestIdentifierRole(JwtAuthRequest request)
         {
             if (request.Identifier == DefaultGrpcServiceIdentifier)
             {
