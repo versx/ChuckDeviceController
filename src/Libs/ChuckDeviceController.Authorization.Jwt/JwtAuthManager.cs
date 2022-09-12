@@ -1,9 +1,10 @@
-﻿namespace ChuckDeviceConfigurator.Services.Rpc.Authorization
+﻿namespace ChuckDeviceController.Authorization.Jwt
 {
     using System.IdentityModel.Tokens.Jwt;
     using System.Security.Claims;
     using System.Text;
 
+    using Microsoft.Extensions.Logging;
     using Microsoft.IdentityModel.Tokens;
 
     using ChuckDeviceController.Configuration;

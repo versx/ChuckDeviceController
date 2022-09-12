@@ -1,8 +1,10 @@
-﻿namespace ChuckDeviceController.Services.Rpc.Interceptors
+﻿namespace ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors
 {
     using Grpc.Core;
     using Grpc.Core.Interceptors;
     using Grpc.Net.Client;
+
+    using Microsoft.Extensions.Configuration;
 
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Protos;

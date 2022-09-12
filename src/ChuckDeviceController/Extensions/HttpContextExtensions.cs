@@ -2,6 +2,7 @@
 {
     using System.Text;
 
+    using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Net.Models.Requests;
 

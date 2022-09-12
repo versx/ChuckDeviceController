@@ -6,11 +6,11 @@
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Common.Geometry;
+    using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Plugin.EventBus;
     using ChuckDeviceController.Plugin.EventBus.Events;
-    using ChuckDeviceController.Plugin.Helpers.Extensions;
     using ChuckDeviceController.Plugin.Services;
 
     using Microsoft.AspNetCore.Builder;

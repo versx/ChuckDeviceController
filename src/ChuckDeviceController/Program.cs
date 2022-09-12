@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using ChuckDeviceController;
+using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
 using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
@@ -8,7 +9,6 @@ using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
-using ChuckDeviceController.Services.Rpc.Interceptors;
 
 // TODO: Make 'MaxDatabaseRetry' configurable
 // TODO: Make 'DatabaseRetryIntervalS' configurable

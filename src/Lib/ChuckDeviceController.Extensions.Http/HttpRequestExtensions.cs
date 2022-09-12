@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Plugin.Helpers.Extensions
+﻿namespace ChuckDeviceController.Extensions.Http
 {
     using System.Text;
 

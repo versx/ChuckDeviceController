@@ -15,6 +15,7 @@
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
 	</ProjectReference>
+    <ProjectReference Include="..\..\Lib\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
   </ItemGroup>
 
   <ItemGroup>

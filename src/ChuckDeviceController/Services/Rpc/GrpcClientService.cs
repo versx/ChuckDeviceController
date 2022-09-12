@@ -3,9 +3,9 @@
     using Grpc.Core.Interceptors;
     using Grpc.Net.Client;
 
+    using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
-    using ChuckDeviceController.Services.Rpc.Interceptors;
 
     public class GrpcClientService : IGrpcClientService
     {

@@ -9,9 +9,9 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
-    using ChuckDeviceController.Plugin.Helpers.Extensions;
 
     [ApiController]
     public class DeviceControlController : ControllerBase

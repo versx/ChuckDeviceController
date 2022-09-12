@@ -7,7 +7,7 @@
     using Configuration;
     using Extensions;
 
-    using ChuckDeviceController.Plugin.Helpers.Extensions;
+    using ChuckDeviceController.Extensions.Http;
 
     public sealed class IpAddressAuthMiddleware
     {

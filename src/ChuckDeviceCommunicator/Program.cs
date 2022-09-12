@@ -3,6 +3,7 @@ using ChuckDeviceCommunicator.Services;
 using ChuckDeviceCommunicator.Services.Rpc;
 using ChuckDeviceController.Configuration;
 
+// TODO: Implement JWT auth for gRPC service requests
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);

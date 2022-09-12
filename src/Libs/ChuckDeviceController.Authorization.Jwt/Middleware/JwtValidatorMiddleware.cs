@@ -1,10 +1,10 @@
-﻿namespace ChuckDeviceConfigurator.Middleware
+﻿namespace ChuckDeviceController.Authorization.Jwt.Middleware
 {
+    using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Options;
 
-    using ChuckDeviceConfigurator.Services.Rpc.Authorization;
     using ChuckDeviceController.Configuration;
-    using ChuckDeviceController.Plugin.Helpers.Extensions;
+    using ChuckDeviceController.Extensions.Http;
 
     public class JwtValidatorMiddleware
     {

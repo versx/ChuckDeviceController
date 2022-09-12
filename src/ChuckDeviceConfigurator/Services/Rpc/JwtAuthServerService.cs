@@ -3,7 +3,7 @@
     using Grpc.Core;
     using Microsoft.Extensions.Options;
 
-    using ChuckDeviceConfigurator.Services.Rpc.Authorization;
+    using ChuckDeviceController.Authorization.Jwt;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Protos;
 
