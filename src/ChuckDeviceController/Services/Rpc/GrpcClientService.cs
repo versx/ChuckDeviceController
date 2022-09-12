@@ -71,7 +71,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Unable to send proto payload to '{_grpcConfiguratorServerEndpoint}'");
+                _logger.LogError($"Unable to send proto payload to '{_grpcConfiguratorServerEndpoint}: {ex.Message}'");
             }
         }
 
@@ -100,7 +100,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Unable to get trainer leveling status from '{_grpcConfiguratorServerEndpoint}'");
+                _logger.LogError($"Unable to get trainer leveling status from '{_grpcConfiguratorServerEndpoint}': {ex.Message}");
             }
             return null;
         }
@@ -135,9 +135,9 @@
                 var response = await client.ReceivedWebhookPayloadAsync(request);
                 return response;
             }
-            catch //(Exception ex)
+            catch (Exception ex)
             {
-                _logger.LogWarning($"Unable to send webhook to webhook relay service at '{_grpcWebhookServerEndpoint}'");
+                _logger.LogWarning($"Unable to send webhook to webhook relay service at '{_grpcWebhookServerEndpoint}: {ex.Message}'");
             }
             return null;
         }

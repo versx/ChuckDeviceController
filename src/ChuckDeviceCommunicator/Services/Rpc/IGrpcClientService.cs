@@ -15,6 +15,6 @@
         ///     Returns the webhook endpoint response containing the available
         ///     webhook endpoints.
         /// </returns>
-        Task<WebhookEndpointResponse> GetWebhookEndpointsAsync();
+        Task<WebhookEndpointResponse?> GetWebhookEndpointsAsync();
     }
 }

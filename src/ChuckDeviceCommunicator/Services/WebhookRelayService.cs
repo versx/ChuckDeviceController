@@ -709,7 +709,7 @@
             try
             {
                 var response = await _grpcClientService.GetWebhookEndpointsAsync();
-                if (response.Status != WebhookEndpointStatus.Ok)
+                if (response?.Status != WebhookEndpointStatus.Ok)
                 {
                     _logger.LogError($"Failed to retrieve webhook endpoints!");
                     return;

@@ -8,10 +8,12 @@
 
     public class GrpcClientService : IGrpcClientService
     {
+        private readonly ILogger<IGrpcClientService> _logger;
         private readonly string _grpcConfiguratorServerEndpoint;
         private readonly AuthHeadersInterceptor _authHeadersInterceptor;
 
         public GrpcClientService(
+            ILogger<IGrpcClientService> logger,
             IConfiguration configuration,
             AuthHeadersInterceptor authHeadersInterceptor)
         {
@@ -20,6 +22,7 @@
             {
                 throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(configuratorEndpoint));
             }
+            _logger = logger;
             _grpcConfiguratorServerEndpoint = configuratorEndpoint;
             _authHeadersInterceptor = authHeadersInterceptor;
         }
@@ -32,23 +35,31 @@
         ///     Returns the webhook endpoint response containing the available
         ///     webhook endpoints.
         /// </returns>
-        public async Task<WebhookEndpointResponse> GetWebhookEndpointsAsync()
+        public async Task<WebhookEndpointResponse?> GetWebhookEndpointsAsync()
         {
-            // Create gRPC channel for receiving gRPC server address
-            using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
+            try
+            {
+                // Create gRPC channel for receiving gRPC server address
+                using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
 
-            var invoker = channel.Intercept(_authHeadersInterceptor);
+                var invoker = channel.Intercept(_authHeadersInterceptor);
 
-            // Create new gRPC client for gRPC channel for address
-            //var client = new WebhookEndpoint.WebhookEndpointClient(channel);
-            var client = new WebhookEndpoint.WebhookEndpointClient(invoker);
+                // Create new gRPC client for gRPC channel for address
+                //var client = new WebhookEndpoint.WebhookEndpointClient(channel);
+                var client = new WebhookEndpoint.WebhookEndpointClient(invoker);
 
-            // Create gRPC payload request
-            var request = new WebhookEndpointRequest();
+                // Create gRPC payload request
+                var request = new WebhookEndpointRequest();
 
-            // Handle the response of the request
-            var response = await client.ReceivedWebhookEndpointAsync(request);
-            return response;
+                // Handle the response of the request
+                var response = await client.ReceivedWebhookEndpointAsync(request);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unable to send webhook to webhook relay service at '{_grpcConfiguratorServerEndpoint}: {ex.Message}'");
+            }
+            return null;
         }
     }
 }

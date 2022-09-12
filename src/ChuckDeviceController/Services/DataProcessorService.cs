@@ -33,7 +33,7 @@
         #region Variables
 
         private readonly ILogger<IDataProcessorService> _logger;
-        private readonly IBackgroundTaskQueue _taskQueue;
+        private static readonly IBackgroundTaskQueue _taskQueue = new DefaultBackgroundTaskQueue(Strings.MaximumQueueCapacity);
         private readonly IDbContextFactory<MapDbContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
@@ -64,14 +64,14 @@
         public DataProcessorService(
             ILogger<IDataProcessorService> logger,
             IOptions<ProcessorOptionsConfig> options,
-            IBackgroundTaskQueue taskQueue,
+            //IBackgroundTaskQueue taskQueue,
             IDbContextFactory<MapDbContext> factory,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
             IClearFortsService clearFortsService)
         {
             _logger = logger;
-            _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
+            //_taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
             _dbFactory = factory;
             _diskCache = diskCache;
             _grpcClientService = grpcClientService;
@@ -305,10 +305,9 @@
 
             stopwatch.Stop();
 
-            var count = data.Count;
-            ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)count;
+            ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)data.Count;
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-            _logger.LogInformation($"Data processer inserted {count:N0} items in {totalSeconds}s");
+            _logger.LogInformation($"Data processer upserted {data.Count:N0} entities in {totalSeconds}s");
 
             if (Options.ClearOldForts)
             {
