@@ -10,8 +10,6 @@ using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
-// TODO: Make 'MaxDatabaseRetry' configurable
-// TODO: Make 'DatabaseRetryIntervalS' configurable
 
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);

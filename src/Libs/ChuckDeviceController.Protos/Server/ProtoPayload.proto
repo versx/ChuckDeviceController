@@ -2,6 +2,8 @@
 
 option csharp_namespace = "ChuckDeviceController.Protos";
 
+import "google/protobuf/wrappers.proto";
+
 package payload;
 
 // The proto payload service definition.
@@ -14,7 +16,7 @@ service Payload {
 message PayloadRequest {
     string payload = 1;
     PayloadType payloadType = 2;
-    string username = 3;
+    google.protobuf.StringValue username = 3;
     bool hasIV = 4;
 }
 

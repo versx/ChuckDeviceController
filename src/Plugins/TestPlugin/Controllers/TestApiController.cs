@@ -19,7 +19,7 @@
         // When we call the POST route and check if the 4 additional coordinates were added
         // it will still only show the default initialized values. Setting the variable to
         // static will make it persist between requests.
-        private static List<ICoordinate> _coords = new()
+        private static readonly List<ICoordinate> _coords = new()
         {
             new Coordinate(1.1, 1.1),
             new Coordinate(2.2, 2.2),

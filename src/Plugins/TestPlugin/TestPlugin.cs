@@ -25,8 +25,6 @@
     //http://127.0.0.1:8881/plugin/v1
     //http://127.0.0.1:8881/Test
 
-    // TODO: Allow creation of new user roles for plugins?
-
     /// <summary>
     ///     Example plugin demonstrating the capabilities
     ///     of the plugin system and how it works.

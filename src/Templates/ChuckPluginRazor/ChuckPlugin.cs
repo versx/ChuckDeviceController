@@ -184,7 +184,6 @@ namespace ChuckDeviceControllerPluginRazor
         public void OnReload()
         {
             _loggingHost.LogInformation($"[{Name}] OnReload called");
-            // TODO: Reload/re-register UI elements that might have been removed
         }
 
         /// <summary>

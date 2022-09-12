@@ -42,62 +42,67 @@
         // Reference: https://stackoverflow.com/a/70099900
         public async Task SendRpcPayloadAsync<T>(T data, PayloadType payloadType, string? username = null, bool hasIV = false)
         {
-            if (string.IsNullOrEmpty(_grpcConfiguratorServerEndpoint))
+            try
             {
-                throw new Exception($"ChuckDeviceConfigurator gRPC server endpoint is empty but is required!");
+                // Create gRPC channel for receiving gRPC server address
+                using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
+
+                var invoker = channel.Intercept(_authHeadersInterceptor);
+
+                // Create new gRPC client using gRPC channel for address
+                //var client = new Payload.PayloadClient(channel);
+                var client = new Payload.PayloadClient(invoker);
+
+                // Serialize entity and send to server to deserialize
+                var json = data.ToJson();
+
+                // Create gRPC payload request
+                var request = new PayloadRequest
+                {
+                    Payload = json,
+                    PayloadType = payloadType,
+                    Username = username,
+                    HasIV = hasIV,
+                };
+
+                // Handle the response of the request
+                var reply = await client.ReceivedPayloadAsync(request);
+                //Console.WriteLine($"Response: {reply?.Status}");
             }
-
-            // Create gRPC channel for receiving gRPC server address
-            using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
-
-            var invoker = channel.Intercept(_authHeadersInterceptor);
-
-            // Create new gRPC client using gRPC channel for address
-            //var client = new Payload.PayloadClient(channel);
-            var client = new Payload.PayloadClient(invoker);
-
-            // Serialize entity and send to server to deserialize
-            var json = data.ToJson();
-
-            // Create gRPC payload request
-            var request = new PayloadRequest
+            catch (Exception ex)
             {
-                Payload = json,
-                PayloadType = payloadType,
-                Username = username ?? "-", // TODO: Handle null username, StringValue in proto
-                HasIV = hasIV,
-            };
-
-            // Handle the response of the request
-            var reply = await client.ReceivedPayloadAsync(request);
-            //Console.WriteLine($"Response: {reply?.Status}");
+                _logger.LogError(ex, $"Unable to send proto payload to '{_grpcConfiguratorServerEndpoint}'");
+            }
         }
 
-        public async Task<TrainerInfoResponse> GetTrainerLevelingStatusAsync(string username)
+        public async Task<TrainerInfoResponse?> GetTrainerLevelingStatusAsync(string username)
         {
-            if (string.IsNullOrEmpty(_grpcConfiguratorServerEndpoint))
+            try
             {
-                throw new Exception($"ChuckDeviceConfigurator gRPC server endpoint is empty but is required!");
+                // Create gRPC channel for receiving gRPC server address
+                using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
+
+                var invoker = channel.Intercept(_authHeadersInterceptor);
+
+                // Create new gRPC client for gRPC channel for address
+                //var client = new Leveling.LevelingClient(channel);
+                var client = new Leveling.LevelingClient(invoker);
+
+                // Create gRPC payload request
+                var request = new TrainerInfoRequest
+                {
+                    Username = username,
+                };
+
+                // Handle the response of the request
+                var response = await client.ReceivedTrainerInfoAsync(request);
+                return response;
             }
-
-            // Create gRPC channel for receiving gRPC server address
-            using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
-
-            var invoker = channel.Intercept(_authHeadersInterceptor);
-
-            // Create new gRPC client for gRPC channel for address
-            //var client = new Leveling.LevelingClient(channel);
-            var client = new Leveling.LevelingClient(invoker);
-
-            // Create gRPC payload request
-            var request = new TrainerInfoRequest
+            catch (Exception ex)
             {
-                Username = username,
-            };
-
-            // Handle the response of the request
-            var response = await client.ReceivedTrainerInfoAsync(request);
-            return response;
+                _logger.LogError(ex, $"Unable to get trainer leveling status from '{_grpcConfiguratorServerEndpoint}'");
+            }
+            return null;
         }
 
         public async Task<WebhookPayloadResponse?> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json)

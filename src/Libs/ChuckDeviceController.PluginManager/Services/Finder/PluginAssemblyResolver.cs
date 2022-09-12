@@ -68,7 +68,7 @@
             catch (FileNotFoundException) when (assemblyName?.Name == "System.Runtime")
             {
                 var hostRuntimeAssembly = typeof(GCSettings).GetTypeInfo().Assembly;
-                throw new Exception($"System.Runtime {assemblyName.Version} failed to load. Are you trying to load a new plugin into an old host? Host Runtime Version: {hostRuntimeAssembly.GetName().Version} on {hostRuntimeAssembly.CodeBase}");
+                throw new Exception($"System.Runtime {assemblyName.Version} failed to load. Are you trying to load a new plugin into an old host? Host Runtime Version: {hostRuntimeAssembly.GetName().Version} on {hostRuntimeAssembly.Location}");
             }
         }
     }

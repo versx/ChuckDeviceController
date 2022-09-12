@@ -9,14 +9,14 @@
 
     public class JwtAuthServerService : JwtAuth.JwtAuthBase
     {
-        private readonly ILogger<JwtAuthServerService> _logger;
+        //private readonly ILogger<JwtAuthServerService> _logger;
         private readonly JwtAuthConfig _jwtAuthConfig;
 
         public JwtAuthServerService(
-            ILogger<JwtAuthServerService> logger,
+            //ILogger<JwtAuthServerService> logger,
             IOptions<JwtAuthConfig> options)
         {
-            _logger = logger;
+            //_logger = logger;
             _jwtAuthConfig = options.Value;
         }
 

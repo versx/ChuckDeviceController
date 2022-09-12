@@ -660,7 +660,7 @@
         {
             // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
             var levelingStatus = await _grpcClientService.GetTrainerLevelingStatusAsync(username);
-            if (levelingStatus.Status != TrainerInfoStatus.Ok)
+            if ((levelingStatus?.Status ?? TrainerInfoStatus.Error) != TrainerInfoStatus.Ok)
             {
                 // Failure occurred, return true to be safe
                 return true;
@@ -668,8 +668,9 @@
 
             // Only store data if trainer is not currently leveling or if trainer is leveling and instance is configured
             // to store leveling data found
-            var storeData = (levelingStatus.IsLeveling && levelingStatus.StoreLevelingData) ||
-                         !levelingStatus.IsLeveling;
+            var storeData = 
+                (levelingStatus!.IsLeveling && levelingStatus!.StoreLevelingData) ||
+                !levelingStatus!.IsLeveling;
             return storeData;
         }
 

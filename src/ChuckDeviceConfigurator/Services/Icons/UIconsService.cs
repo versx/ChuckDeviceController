@@ -10,7 +10,6 @@
     /// </summary>
     public class UIconsService : IUIconsService
     {
-        // TODO: Get file names instead of specifying icon formats
         private const string DefaultIconFormat = "png";
         private const string IndexJson = "index.json";
         private const string DefaultIconUrl = "https://raw.githubusercontent.com/WatWowMap/wwm-uicons/main/pokemon/";
