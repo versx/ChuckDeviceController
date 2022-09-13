@@ -87,6 +87,8 @@
                 return;
             }
 
+            _logger.LogDebug($"Received 1 {PayloadType.Pokemon} proto message");
+
             _jobControllerService.GotPokemon(pokemon, hasIv);
         }
 
@@ -100,7 +102,7 @@
                 return;
             }
 
-            _logger.LogInformation($"Received {pokemon.Count:N0} {PayloadType.Pokemon} proto messages");
+            _logger.LogDebug($"Received {pokemon.Count:N0} {PayloadType.Pokemon} proto messages");
 
             foreach (var pkmn in pokemon)
             {
@@ -118,6 +120,8 @@
                 return;
             }
 
+            _logger.LogDebug($"Received 1 {PayloadType.Fort} proto message");
+
             _jobControllerService.GotFort(fort, username);
         }
 
@@ -131,7 +135,7 @@
                 return;
             }
 
-            _logger.LogInformation($"Received {forts.Count:N0} {PayloadType.Fort} proto messages");
+            _logger.LogDebug($"Received {forts.Count:N0} {PayloadType.Fort} proto messages");
 
             foreach (var fort in forts)
             {
@@ -149,7 +153,7 @@
                 return;
             }
 
-            _logger.LogInformation($"Received {PayloadType.PlayerInfo} proto message");
+            _logger.LogDebug($"Received {PayloadType.PlayerInfo} proto message");
 
             var username = Convert.ToString(data["username"]);
             var level = Convert.ToUInt16(Convert.ToString(data["level"]));
