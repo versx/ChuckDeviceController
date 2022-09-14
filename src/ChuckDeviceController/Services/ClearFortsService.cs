@@ -1,20 +1,18 @@
 ﻿namespace ChuckDeviceController.Services
 {
+    using System.Threading;
+
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Factories;
 
-    public class ClearFortsService : IClearFortsService
+    public class ClearFortsService : TimedHostedService, IClearFortsService
     {
         #region Variables
 
         private readonly ILogger<IClearFortsService> _logger;
-        private readonly IConfiguration _configuration;
-        //private readonly IDbContextFactory<MapContext> _factory;
-        private MapDbContext _context;
-        private readonly string _connectionString;
+        private readonly IDbContextFactory<MapDbContext> _factory;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
@@ -24,16 +22,14 @@
 
         #endregion
 
+        public override uint TimerIntervalMs => 1 * 60 * 1000; // 15 minutes
+
         public ClearFortsService(
             ILogger<IClearFortsService> logger,
-            IConfiguration configuration)
-            //IDbContextFactory<MapContext> factory)
+            IDbContextFactory<MapDbContext> factory) : base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {
             _logger = logger;
-            _configuration = configuration;
-            //_factory = factory;
-            _connectionString = _configuration.GetConnectionString("DefaultConnection");
-            _context = DbContextFactory.CreateMapDataContext(_connectionString);
+            _factory = factory;
         }
 
         public void AddCell(ulong cellId)
@@ -79,20 +75,28 @@
             }
         }
 
+        /// <summary>
+        /// Mark upgraded/downgraded forts as deleted that no longer exist.
+        /// </summary>
+        /// <returns></returns>
         public async Task ClearOldFortsAsync()
         {
-            var gymsToDelete = new List<Gym>();
-            var stopsToDelete = new List<Pokestop>();
+            // TODO: Fix 'second operation' race condition
 
-            _context = CreateDbContextIfNull();
-
-            //using (var context = _factory.CreateDbContext())
+            try
             {
-                foreach (var (cellId, pokestopIds) in _stopIdsPerCell)
+                using var context = _factory.CreateDbContext();
+
+                var stopsToDelete = new List<Pokestop>();
+                var stopIdKeys = _stopIdsPerCell.Keys.ToList();
+                for (var i = 0; i < stopIdKeys.Count; i++)
                 {
+                    var cellId = stopIdKeys[i];
+                    var pokestopIds = _stopIdsPerCell[cellId];
+
                     // Get pokestops within S2 cell and not marked deleted
-                    var pokestops = _context.Pokestops.Where(stop => stop.CellId == cellId && !stop.IsDeleted)
-                                                      .ToList();
+                    var pokestops = context.Pokestops.Where(stop => stop.CellId == cellId && !stop.IsDeleted)
+                                                     .ToList();
                     if (pokestopIds.Count > 0)
                     {
                         // Filter pokestops that have not been seen within S2 cell by devices
@@ -107,11 +111,16 @@
                     }
                 }
 
-                foreach (var (cellId, gymIds) in _gymIdsPerCell)
+                var gymsToDelete = new List<Gym>();
+                var gymIdKeys = _gymIdsPerCell.Keys.ToList();
+                for (var i = 0; i < gymIdKeys.Count; i++)
                 {
+                    var cellId = gymIdKeys[i];
+                    var gymIds = _gymIdsPerCell[cellId];
+
                     // Get gyms within S2 cell and not marked deleted
-                    var gyms = _context.Gyms.Where(gym => gym.CellId == cellId && !gym.IsDeleted)
-                                            .ToList();
+                    var gyms = context.Gyms.Where(gym => gym.CellId == cellId && !gym.IsDeleted)
+                                           .ToList();
                     if (gymIds.Count > 0)
                     {
                         // Filter gyms that have not been seen within S2 cell by devices
@@ -129,23 +138,43 @@
                 if (stopsToDelete.Count > 0)
                 {
                     _logger.LogInformation($"Marking {stopsToDelete.Count:N0} Pokestops as deleted since they seem to no longer exist.");
-                    await _context.Pokestops.BulkMergeAsync(stopsToDelete);
+                    await context.Pokestops.BulkMergeAsync(stopsToDelete, options =>
+                    {
+                        options.UseTableLock = true;
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.IsDeleted,
+                        };
+                    });
                 }
+
                 if (gymsToDelete.Count > 0)
                 {
                     _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they seem to no longer exist.");
-                    await _context.Gyms.BulkMergeAsync(gymsToDelete);
+                    await context.Gyms.BulkMergeAsync(gymsToDelete, options =>
+                    {
+                        options.UseTableLock = true;
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.IsDeleted,
+                        };
+                    });
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while marking old forts as deleted: {ex.Message}");
             }
         }
 
-        private MapDbContext CreateDbContextIfNull()
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (_context == null)
-            {
-                _context = DbContextFactory.CreateMapDataContext(_connectionString);
-            }
-            return _context;
+            await Task.CompletedTask;
+        }
+
+        protected override async Task RunJobAsync(CancellationToken stoppingToken)
+        {
+            await ClearOldFortsAsync();
         }
     }
 }

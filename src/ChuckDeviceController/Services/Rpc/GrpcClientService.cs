@@ -135,9 +135,9 @@
                 var response = await client.ReceivedWebhookPayloadAsync(request);
                 return response;
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
-                _logger.LogWarning($"Unable to send webhook to webhook relay service at '{_grpcWebhookServerEndpoint}: {ex.Message}'");
+                //_logger.LogWarning($"Unable to send webhook to webhook relay service at '{_grpcWebhookServerEndpoint}: {ex.Message}'");
             }
             return null;
         }

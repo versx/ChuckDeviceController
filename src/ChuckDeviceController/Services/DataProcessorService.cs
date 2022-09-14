@@ -312,7 +312,7 @@
             if (Options.ClearOldForts)
             {
                 // Clear any old Gyms or Pokestops that might have been removed from the game
-                await _clearFortsService.ClearOldFortsAsync();
+                //await _clearFortsService.ClearOldFortsAsync();
             }
 
             return stoppingToken;
