@@ -1,6 +1,10 @@
 ﻿namespace ChuckDeviceController.Collections.Queues
 {
-    public interface IBackgroundTaskQueue
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public interface IBackgroundTaskQueue<T>
     {
         /// <summary>
         /// Gets a value determining the length of the background task item queue
@@ -12,15 +16,14 @@
         /// </summary>
         /// <param name="workItem">Task item to be executed</param>
         /// <returns></returns>
-        ValueTask EnqueueAsync(Func<CancellationToken, ValueTask> workItem);
+        Task EnqueueAsync(Func<CancellationToken, Task> workItem);
 
         /// <summary>
         /// Attempts to remove and return the object at the beginning of the queue.
         /// </summary>
         /// <param name="cancellationToken">Task cancellation token.</param>
         /// <returns></returns>
-        //ValueTask<Func<CancellationToken, ValueTask>> DequeueAsync(
-        Task<Func<CancellationToken, ValueTask>> DequeueAsync(
+        Task<Func<CancellationToken, Task>?> DequeueAsync(
             CancellationToken cancellationToken);
 
         /// <summary>
@@ -29,8 +32,8 @@
         /// <param name="maxBatchSize"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<List<Func<CancellationToken, ValueTask>>> DequeueMultipleAsync(
-                    int maxBatchSize,
-                    CancellationToken cancellationToken);
+        Task<List<Func<CancellationToken, Task>>?> DequeueMultipleAsync(
+            int maxBatchSize,
+            CancellationToken cancellationToken);
     }
 }
