@@ -11,9 +11,13 @@
         public static readonly string AssemblyVersion = StrongAssemblyName?.Version?.ToString() ?? "v1.0.0";
 
         // Default queue properties
-        public const int MaximumQueueBatchSize = 25;
+        public const int MaximumQueueBatchSize = 50;
         public const uint MaximumQueueSizeWarning = 500;
         public const ushort MaximumQueueCapacity = 8192;
+
+        //public const int MaximumQueueBatchSize = 1024;
+        //public const uint MaximumQueueSizeWarning = 4096;
+        //public const ushort MaximumQueueCapacity = 10 * 1024;
     }
 
     public class ProtoDataStatistics

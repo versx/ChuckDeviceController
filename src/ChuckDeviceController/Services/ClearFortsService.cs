@@ -6,6 +6,7 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.HostedServices;
 
     public class ClearFortsService : TimedHostedService, IClearFortsService
     {

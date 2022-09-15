@@ -310,6 +310,7 @@ app.UseCookiePolicy(new CookiePolicyOptions
     MinimumSameSitePolicy = SameSiteMode.Lax,
 });
 app.UseAuthorization();
+//app.UseSession();
 
 // gRPC listener server services
 if (jwtAuthEnabled)
