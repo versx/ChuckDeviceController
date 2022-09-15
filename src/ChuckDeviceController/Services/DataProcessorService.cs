@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Services
 {
     using System.Diagnostics;
+    using System.Threading;
 
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
@@ -19,6 +20,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Extensions;
+    using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Pvp;
     using ChuckDeviceController.Pvp.Models;
@@ -28,12 +30,12 @@
     // TODO: Implement memory cache for all map data entities
     // TODO: Split up/refactor class
 
-    public class DataProcessorService : BackgroundService, IDataProcessorService
+    public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
         #region Variables
 
         private readonly ILogger<IDataProcessorService> _logger;
-        private static readonly IBackgroundTaskQueue _taskQueue = new DefaultBackgroundTaskQueue(Strings.MaximumQueueCapacity);
+        private readonly IBackgroundTaskQueue<List<dynamic>> _taskQueue;
         private readonly IDbContextFactory<MapDbContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
@@ -64,14 +66,15 @@
         public DataProcessorService(
             ILogger<IDataProcessorService> logger,
             IOptions<ProcessorOptionsConfig> options,
-            //IBackgroundTaskQueue taskQueue,
+            IBackgroundTaskQueue<List<dynamic>> taskQueue,
             IDbContextFactory<MapDbContext> factory,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
             IClearFortsService clearFortsService)
+            : base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {
             _logger = logger;
-            //_taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
+            _taskQueue = taskQueue;
             _dbFactory = factory;
             _diskCache = diskCache;
             _grpcClientService = grpcClientService;
@@ -88,10 +91,10 @@
         {
             ProtoDataStatistics.Instance.TotalEntitiesReceived += (uint)data.Count;
 
-            await _taskQueue.EnqueueAsync(async token =>
-                await ProcessWorkItemAsync(username, data, token));
+            await _taskQueue.EnqueueAsync(async token => await ProcessWorkItemAsync(username, data, token));
         }
 
+        /*
         public override async Task StopAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation(
@@ -99,7 +102,7 @@
 
             await base.StopAsync(stoppingToken);
         }
-
+        
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation(
@@ -112,27 +115,32 @@
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                //if (_taskQueue.Count == 0)
+                //{
+                //    Thread.Sleep(1);
+                //    continue;
+                //}
+
                 try
                 {
-                    //var workItem = await _taskQueue.DequeueAsync(stoppingToken);
-                    //await workItem(stoppingToken);
-                    var workItems = await _taskQueue.DequeueMultipleAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                    var workItem = await _taskQueue.DequeueAsync(stoppingToken);
+                    await workItem(stoppingToken);
+                    //var workItems = await _taskQueue.DequeueMultipleAsync(Strings.MaximumQueueBatchSize, stoppingToken);
                     //var tasks = workItems.Select(item => Task.Factory.StartNew(async () => await item(stoppingToken)));
                     //Task.WaitAll(tasks.ToArray(), stoppingToken);
-                    await Task.Run(() =>
-                    {
-                        foreach (var workItem in workItems)
-                        {
-                            Task.Factory.StartNew(async () => await workItem(stoppingToken));
-                        }
-                    }, stoppingToken);
+                    //await Task.Run(() =>
+                    //{
+                    //    foreach (var workItem in workItems)
+                    //    {
+                    //        await Task.Factory.StartNew(async () => await workItem(stoppingToken));
+                    //        //await workItem(stoppingToken);
+                    //    }
+                    //}, stoppingToken);
 
-                    /*
-                    foreach (var workItem in workItems)
-                    {
-                        await workItem(stoppingToken);
-                    }
-                    */
+                    //foreach (var workItem in workItems)
+                    //{
+                    //    await workItem(stoppingToken);
+                    //}
                 }
                 catch (OperationCanceledException)
                 {
@@ -142,21 +150,19 @@
                 {
                     _logger.LogError(ex, "Error occurred executing task work item.");
                 }
-                //await Task.Delay(10, stoppingToken);
-                Thread.Sleep(5);
+                //await Task.Delay(TimeSpan.FromMilliseconds(50), stoppingToken);
+                Thread.Sleep(1);
             }
 
             _logger.LogError("Exited background processing...");
         }
+        */
 
-        private async Task<CancellationToken> ProcessWorkItemAsync(
-            string username,
-            List<dynamic> data,
-            CancellationToken stoppingToken)
+        private async Task ProcessWorkItemAsync(string username, List<dynamic> data, CancellationToken stoppingToken)
         {
             if (data.Count == 0)
             {
-                return stoppingToken;
+                return;
             }
 
             CheckQueueLength();
@@ -314,11 +320,66 @@
                 // Clear any old Gyms or Pokestops that might have been removed from the game
                 //await _clearFortsService.ClearOldFortsAsync();
             }
-
-            return stoppingToken;
         }
 
         #endregion
+
+        protected override async Task RunJobAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                //var workItem = await _taskQueue.DequeueAsync(stoppingToken);
+                //if (workItem is null)
+                //    return;
+
+                //await workItem(stoppingToken);
+                var workItems = await _taskQueue.DequeueMultipleAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                if (workItems == null)
+                {
+                    Thread.Sleep(1);
+                    return;
+                }
+
+                Parallel.ForEach(workItems, async task => await task(stoppingToken));
+
+                //var tasks = workItems.Select(item => Task.Factory.StartNew(async () => await item(stoppingToken)));
+                //Task.WaitAll(tasks.ToArray(), stoppingToken);
+                //await Task.Run(() =>
+                //{
+                //    foreach (var workItem in workItems)
+                //    {
+                //        await Task.Factory.StartNew(async () => await workItem(stoppingToken));
+                //        //await workItem(stoppingToken);
+                //    }
+                //}, stoppingToken);
+
+                //foreach (var workItem in workItems)
+                //{
+                //    await workItem(stoppingToken);
+                //    Thread.Sleep(1);
+                //}
+            }
+            catch (OperationCanceledException)
+            {
+                // Prevent throwing if stoppingToken was signaled
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred executing task work item.");
+            }
+            //await Task.Delay(TimeSpan.FromMilliseconds(50), stoppingToken);
+            Thread.Sleep(1);
+
+            //_logger.LogError("Exited background processing...");
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _logger.LogInformation(
+                $"{nameof(IDataProcessorService)} is now running in the background.");
+
+            await Task.CompletedTask;
+        }
 
         #region Data Handling Methods
 
@@ -1302,13 +1363,14 @@
 
         private void CheckQueueLength()
         {
+            var usage = $"{_taskQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}";
             if (_taskQueue.Count == Strings.MaximumQueueCapacity)
             {
-                _logger.LogWarning($"Data processing queue is at maximum capacity! {_taskQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}");
+                _logger.LogWarning($"Data processing queue is at maximum capacity! {usage}");
             }
             else if (_taskQueue.Count > Strings.MaximumQueueSizeWarning)
             {
-                _logger.LogWarning($"Data processing queue is {_taskQueue.Count:N0} items long.");
+                _logger.LogWarning($"Data processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
         }
 

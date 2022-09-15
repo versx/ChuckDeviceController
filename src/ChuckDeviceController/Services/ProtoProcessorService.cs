@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Services
 {
-    using System;
     using System.Diagnostics;
 
     using Google.Common.Geometry;
@@ -22,13 +21,15 @@
         #region Variables
 
         private readonly ILogger<IProtoProcessorService> _logger;
-        private readonly IBackgroundTaskQueue _taskQueue;
+        //private readonly IBackgroundTaskQueue<ProtoPayloadQueueItem> _taskQueue;
+        private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
         private readonly IDataProcessorService _dataProcessor;
         private readonly IGrpcClientService _grpcClientService;
 
-        private readonly Dictionary<ulong, int> _emptyCells = new();
+        private static readonly Dictionary<ulong, int> _emptyCells = new();
         private static readonly TimedMap<bool> _arQuestActualMap = new();
         private static readonly TimedMap<bool> _arQuestTargetMap = new();
+        private static readonly Dictionary<string, bool> _canStoreData = new();
 
         #endregion
 
@@ -43,12 +44,13 @@
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
             IOptions<ProcessorOptionsConfig> options,
-            IBackgroundTaskQueue taskQueue,
+            //IBackgroundTaskQueue<ProtoPayloadQueueItem> taskQueue,
+            IAsyncQueue<ProtoPayloadQueueItem> taskQueue,
             IDataProcessorService dataProcessor,
             IGrpcClientService grpcClientService)
         {
             _logger = logger;
-            _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
+            _taskQueue = taskQueue;
             _dataProcessor = dataProcessor;
             _grpcClientService = grpcClientService;
 
@@ -59,12 +61,13 @@
 
         #region Background Service
 
-        public override async Task StopAsync(CancellationToken stoppingToken)
+        public async Task EnqueueAsync(ProtoPayloadQueueItem payload)
         {
-            _logger.LogInformation(
-                $"{nameof(IProtoProcessorService)} is stopping.");
+            ProtoDataStatistics.Instance.TotalPayloadsReceived++;
 
-            await base.StopAsync(stoppingToken);
+            //await _taskQueue.EnqueueAsync(async token => await ProcessWorkItemAsync(payload, token));
+            _taskQueue.Enqueue(payload);
+            await Task.CompletedTask;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -72,35 +75,58 @@
             _logger.LogInformation(
                 $"{nameof(IProtoProcessorService)} is now running in the background.");
 
-            await BackgroundProcessing(stoppingToken);
+            await Task.Run(async () =>
+                await BackgroundProcessing(stoppingToken)
+            , stoppingToken);
         }
 
         private async Task BackgroundProcessing(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                if (_taskQueue.Count == 0)
+                {
+                    Thread.Sleep(1);
+                    continue;
+                }
+
                 try
                 {
                     //var workItem = await _taskQueue.DequeueAsync(stoppingToken);
+                    //if (workItem is null)
+                    //    continue;
+
                     //await workItem(stoppingToken);
-                    var workItems = await _taskQueue.DequeueMultipleAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                    //var workItems = await _taskQueue.DequeueMultipleAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                    var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                    if (workItems == null)
+                    {
+                        Thread.Sleep(1);
+                        continue;
+                    }
+
+                    //Parallel.ForEach(workItems, async task => await task(stoppingToken));
+                    Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken));
+
+                    //workItems
+                    //    .AsParallel()
+                    //    .WithDegreeOfParallelism(Convert.ToInt32(Math.Ceiling((Environment.ProcessorCount * 0.75) * 2.0)));
                     //var tasks = workItems.Select(item => Task.Factory.StartNew(async () => await item(stoppingToken)));
                     //Task.WaitAll(tasks.ToArray(), stoppingToken);
 
-                    await Task.Run(() =>
-                    {
-                        foreach (var workItem in workItems)
-                        {
-                            Task.Factory.StartNew(async () => await workItem(stoppingToken));
-                        }
-                    }, stoppingToken);
+                    //await Task.Run(async () =>
+                    //{
+                    //    foreach (var workItem in workItems)
+                    //    {
+                    //        //await Task.Factory.StartNew(async () => await workItem(stoppingToken));
+                    //        await workItem(stoppingToken);
+                    //    }
+                    //}, stoppingToken);
 
-                    /*
-                    foreach (var workItem in workItems)
-                    {
-                        await workItem(stoppingToken);
-                    }
-                    */
+                    //foreach (var workItem in workItems)
+                    //{
+                    //    await workItem(stoppingToken);
+                    //}
                 }
                 catch (OperationCanceledException)
                 {
@@ -110,27 +136,17 @@
                 {
                     _logger.LogError(ex, "Error occurred executing task work item.");
                 }
-                //await Task.Delay(10, stoppingToken);
-                Thread.Sleep(5);
+                //await Task.Delay(TimeSpan.FromMilliseconds(50), stoppingToken);
+                Thread.Sleep(1);
             }
 
             _logger.LogError("Exited background processing...");
         }
 
-        public async Task EnqueueAsync(ProtoPayloadQueueItem payload)
-        {
-            ProtoDataStatistics.Instance.TotalPayloadsReceived++;
-
-            await _taskQueue.EnqueueAsync(async token =>
-                await ProcessWorkItemAsync(payload, token));
-        }
-
-        private async Task<CancellationToken> ProcessWorkItemAsync(
-            ProtoPayloadQueueItem payload,
-            CancellationToken stoppingToken)
+        private async Task ProcessWorkItemAsync(ProtoPayloadQueueItem payload, CancellationToken cancellationToken)
         {
             if (payload?.Payload == null || payload?.Device == null)
-                return stoppingToken;
+                return;
 
             CheckQueueLength();
 
@@ -605,8 +621,8 @@
             // Insert/upsert wildPokemon, nearbyPokemon, mapPokemon, forts, cells, clientWeather, etc into database
             if (processedProtos.Count > 0)
             {
-                // var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                // _logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
+                var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+                //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
                 if (!string.IsNullOrEmpty(username))
                 {
@@ -618,8 +634,6 @@
                     }
                 }
             }
-
-            return stoppingToken;
         }
 
         #endregion
@@ -659,8 +673,18 @@
 
         #region Private Methods
 
+        private readonly object _storeDatalock = new();
+
         private async Task<bool> IsAllowedToSaveDataAsync(string username)
         {
+            lock (_storeDatalock)
+            {
+                if (_canStoreData.ContainsKey(username))
+                {
+                    return _canStoreData[username];
+                }
+            }
+
             // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
             var levelingStatus = await _grpcClientService.GetTrainerLevelingStatusAsync(username);
             if ((levelingStatus?.Status ?? TrainerInfoStatus.Error) != TrainerInfoStatus.Ok)
@@ -674,6 +698,18 @@
             var storeData = 
                 (levelingStatus!.IsLeveling && levelingStatus!.StoreLevelingData) ||
                 !levelingStatus!.IsLeveling;
+
+            lock (_storeDatalock)
+            {
+                if (_canStoreData.ContainsKey(username))
+                {
+                    _canStoreData[username] = storeData;
+                }
+                else
+                {
+                    _canStoreData.Add(username, storeData);
+                }
+            }
             return storeData;
         }
 
@@ -686,7 +722,7 @@
             }
             else if (_taskQueue.Count > Strings.MaximumQueueSizeWarning)
             {
-                _logger.LogWarning($"Proto processing queue is over capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
+                _logger.LogWarning($"Proto processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
         }
 

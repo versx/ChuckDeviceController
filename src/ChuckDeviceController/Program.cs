@@ -50,14 +50,24 @@ builder.WebHost.ConfigureLogging(configure =>
 #region Services
 
 // Register available DI services
-builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
-builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
-builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
-builder.Services.AddSingleton<IBackgroundTaskQueue>(_ =>
+builder.Services.AddSingleton<IBackgroundTaskQueue<ProtoPayloadQueueItem>>(_ =>//, DefaultBackgroundTaskQueue<ProtoPayloadQueueItem>>();
 {
-    // Get max subscription queue capacity config value
-    return new DefaultBackgroundTaskQueue(Strings.MaximumQueueCapacity);
+    return new DefaultBackgroundTaskQueue<ProtoPayloadQueueItem>(Strings.MaximumQueueCapacity);
 });
+builder.Services.AddSingleton<IBackgroundTaskQueue<List<dynamic>>>(_ =>//, DefaultBackgroundTaskQueue<List<dynamic>>>();
+{
+    return new DefaultBackgroundTaskQueue<List<dynamic>>(Strings.MaximumQueueCapacity);
+});
+
+builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>>(_ => new AsyncQueue<ProtoPayloadQueueItem>());
+builder.Services.AddSingleton<IAsyncQueue<List<dynamic>>>(_ => new AsyncQueue<List<dynamic>>());
+
+builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
+builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
+
+builder.Services.AddHostedService<DataProcessorService>();
+builder.Services.AddHostedService<ProtoProcessorService>();
+builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
 
 builder.Services.AddSingleton<IClearFortsService, ClearFortsService>();
 builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSection("Options"));
