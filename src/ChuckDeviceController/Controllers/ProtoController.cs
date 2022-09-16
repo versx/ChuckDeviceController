@@ -3,13 +3,13 @@
     using Microsoft.AspNetCore.Mvc;
     using POGOProtos.Rpc;
 
+    using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Net.Models.Responses;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Services;
-    using ChuckDeviceController.Collections.Queues;
 
     [ApiController]
     public class ProtoController : ControllerBase

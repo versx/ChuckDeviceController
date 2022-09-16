@@ -83,7 +83,6 @@
         public async Task ClearOldFortsAsync()
         {
             // TODO: Fix 'second operation' race condition
-
             try
             {
                 using var context = _factory.CreateDbContext();

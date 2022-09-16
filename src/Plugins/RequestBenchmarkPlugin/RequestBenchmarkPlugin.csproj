@@ -11,6 +11,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.8" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.8" />
+		<PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 	</ItemGroup>
 
 	<ItemGroup>

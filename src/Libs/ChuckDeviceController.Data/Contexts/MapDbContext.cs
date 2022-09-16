@@ -50,6 +50,9 @@
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {
+            // Disable entity tracking for map entities for multiple reasons:
+            // - It would be useful, but it's not worth the overhead and issues it could potentially introduce.
+            // - Most data entities are consumable only for a certain time span.
             base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 

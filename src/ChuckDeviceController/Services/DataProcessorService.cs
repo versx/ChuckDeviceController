@@ -206,7 +206,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateCellsAsync(cells));
                     if (Options.IsEnabled(DataLogLevel.S2Cells))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} S2 cells");
+                        _logger.LogInformation($"Upserted {cells.Count:N0} S2 Sells in {benchmark}s");
                     }
                 }
             }
@@ -223,7 +223,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateClientWeatherAsync(clientWeather));
                     if (Options.IsEnabled(DataLogLevel.Weather))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Client Weather Cells");
+                        _logger.LogInformation($"Upserted {clientWeather.Count:N0} Client Weather Cells in {benchmark}s");
                     }
                 }
             }
@@ -238,7 +238,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateWildPokemonAsync(wildPokemon));
                     if (Options.IsEnabled(DataLogLevel.WildPokemon))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Wild Pokemon");
+                        _logger.LogInformation($"Upserted {wildPokemon.Count:N0} Wild Pokemon in {benchmark}s");
                     }
                 }
             }
@@ -253,7 +253,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateNearbyPokemonAsync(nearbyPokemon));
                     if (Options.IsEnabled(DataLogLevel.NearbyPokemon))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Nearby Pokemon");
+                        _logger.LogInformation($"Upserted {nearbyPokemon.Count:N0} Nearby Pokemon in {benchmark}s");
                     }
                 }
             }
@@ -268,7 +268,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateMapPokemonAsync(mapPokemon));
                     if (Options.IsEnabled(DataLogLevel.MapPokemon))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Lure Pokemon");
+                        _logger.LogInformation($"Upserted {mapPokemon.Count:N0} Lure Pokemon in {benchmark}s");
                     }
                 }
             }
@@ -288,7 +288,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateFortsAsync(username, forts));
                     if (Options.IsEnabled(DataLogLevel.Forts))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Forts");
+                        _logger.LogInformation($"Upserted {forts.Count:N0} Forts in {benchmark}s");
                     }
                 }
             }
@@ -303,7 +303,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateFortDetailsAsync(fortDetails));
                     if (Options.IsEnabled(DataLogLevel.FortDetails))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Fort Details");
+                        _logger.LogInformation($"Upserted {fortDetails.Count:N0} Fort Details in {benchmark}s");
                     }
                 }
             }
@@ -318,7 +318,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateGymInfoAsync(gymInfos));
                     if (Options.IsEnabled(DataLogLevel.GymInfo))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Gym Information");
+                        _logger.LogInformation($"Upserted {gymInfos.Count:N0} Gym Information in {benchmark}s");
                     }
                 }
             }
@@ -333,7 +333,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateQuestsAsync(quests));
                     if (Options.IsEnabled(DataLogLevel.Quests))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Pokestop Quests");
+                        _logger.LogInformation($"Upserted {quests.Count:N0} Pokestop Quests in {benchmark}s");
                     }
                 }
             }
@@ -348,7 +348,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateEncountersAsync(encounters));
                     if (Options.IsEnabled(DataLogLevel.PokemonEncounters))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Pokemon Encounters");
+                        _logger.LogInformation($"Upserted {encounters.Count:N0} Pokemon Encounters in {benchmark}s");
                     }
                 }
             }
@@ -363,7 +363,7 @@
                     var benchmark = BenchmarkAction(async () => await UpdateDiskEncountersAsync(diskEncounters));
                     if (Options.IsEnabled(DataLogLevel.PokemonDiskEncounters))
                     {
-                        _logger.LogInformation($"Upserted {benchmark} Disk Pokemon Encounters");
+                        _logger.LogInformation($"Upserted {diskEncounters.Count:N0} Disk Pokemon Encounters in {benchmark}s");
                     }
                 }
             }

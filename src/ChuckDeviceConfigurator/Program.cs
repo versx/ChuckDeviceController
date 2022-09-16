@@ -72,20 +72,8 @@ builder.WebHost.UseConfiguration(config);
 
 #region Logger Filtering
 
-builder.WebHost.ConfigureLogging(configure =>
-{
-    var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
-    configure.SetMinimumLevel(logLevel);
-    configure.AddSimpleConsole(options =>
-    {
-        options.IncludeScopes = false;
-        options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
-    });
-    configure.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-    //configure.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", LogLevel.Error);
-    configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
-    configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
-});
+var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
+builder.WebHost.ConfigureLogging(configure => configure.AddSimpleConsole(options => GetLoggingConfig(logLevel, configure)));
 
 #endregion
 
@@ -467,6 +455,23 @@ IdentityOptions GetDefaultIdentityOptions()
         //options.ClaimsIdentity.EmailClaimType
     };
     return options;
+}
+
+// TODO: Create extension and move to separate library
+static ILoggingBuilder GetLoggingConfig(LogLevel defaultLogLevel, ILoggingBuilder configure)
+{
+    configure.SetMinimumLevel(defaultLogLevel);
+    configure.AddSimpleConsole(options =>
+    {
+        options.IncludeScopes = false;
+        options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
+    });
+    configure.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+    //configure.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", LogLevel.Error);
+    configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
+    configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
+
+    return configure;
 }
 
 #endregion

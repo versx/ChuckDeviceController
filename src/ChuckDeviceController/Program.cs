@@ -10,7 +10,6 @@ using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
-
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
 if (config.Providers.Count() == 2)
@@ -20,6 +19,7 @@ if (config.Providers.Count() == 2)
     Environment.FailFast($"Failed to find or load configuration file, exiting...");
 }
 
+//var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
 
@@ -30,31 +30,23 @@ builder.WebHost.UseUrls(config["Urls"]);
 
 #region Logging Filtering
 
+var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
 builder.WebHost.ConfigureLogging(configure =>
-{
-    var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
-    configure.SetMinimumLevel(logLevel);
     configure.AddSimpleConsole(options =>
-    {
-        options.IncludeScopes = false;
-        options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
-    });
-    configure.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-    configure.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", LogLevel.Error);
-    configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
-    configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
-});
+        GetLoggingConfig(logLevel, configure)
+    )
+);
 
 #endregion
 
 #region Services
 
 // Register available DI services
-builder.Services.AddSingleton<IBackgroundTaskQueue<ProtoPayloadQueueItem>>(_ =>//, DefaultBackgroundTaskQueue<ProtoPayloadQueueItem>>();
+builder.Services.AddSingleton<IBackgroundTaskQueue<ProtoPayloadQueueItem>>(_ =>
 {
     return new DefaultBackgroundTaskQueue<ProtoPayloadQueueItem>(Strings.MaximumQueueCapacity);
 });
-builder.Services.AddSingleton<IBackgroundTaskQueue<List<dynamic>>>(_ =>//, DefaultBackgroundTaskQueue<List<dynamic>>>();
+builder.Services.AddSingleton<IBackgroundTaskQueue<List<dynamic>>>(_ =>
 {
     return new DefaultBackgroundTaskQueue<List<dynamic>>(Strings.MaximumQueueCapacity);
 });
@@ -139,3 +131,20 @@ app.MapControllers();
 app.Run();
 
 #endregion
+
+// TODO: Create extension and move to separate library
+static ILoggingBuilder GetLoggingConfig(LogLevel defaultLogLevel, ILoggingBuilder configure)
+{
+    configure.SetMinimumLevel(defaultLogLevel);
+    configure.AddSimpleConsole(options =>
+    {
+        options.IncludeScopes = false;
+        options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
+    });
+    configure.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+    //configure.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", LogLevel.Error);
+    configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
+    configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
+
+    return configure;
+}

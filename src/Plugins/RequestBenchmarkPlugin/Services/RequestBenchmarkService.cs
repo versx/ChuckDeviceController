@@ -42,13 +42,14 @@
         {
             lock (_lock)
             {
-                if (!_requestBenchmarks.ContainsKey(route))
+                if (_requestBenchmarks.ContainsKey(route))
+                {
+                    _requestBenchmarks[route] = benchmark;
+                }
+                else
                 {
                     _requestBenchmarks.Add(route, benchmark);
-                    return;
                 }
-
-                _requestBenchmarks[route] = benchmark;
             }
         }
     }
