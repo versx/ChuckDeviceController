@@ -93,6 +93,7 @@ builder.Services.AddMemoryCache(options =>
 // Register available hosted services
 builder.Services.AddHostedService<ProtoProcessorService>();
 builder.Services.AddHostedService<DataProcessorService>();
+builder.Services.AddHostedService<ClearFortsService>();
 
 #endregion
 
