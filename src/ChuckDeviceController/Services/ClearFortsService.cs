@@ -23,7 +23,7 @@
 
         #endregion
 
-        public override uint TimerIntervalMs => 1 * 60 * 1000; // 15 minutes
+        public override uint TimerIntervalMs => 15 * 60 * 1000; // 15 minutes
 
         public ClearFortsService(
             ILogger<IClearFortsService> logger,
