@@ -57,10 +57,7 @@ builder.Services.AddSingleton<IAsyncQueue<List<dynamic>>>(_ => new AsyncQueue<Li
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
 builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
 
-builder.Services.AddHostedService<DataProcessorService>();
-builder.Services.AddHostedService<ProtoProcessorService>();
 builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
-
 builder.Services.AddSingleton<IClearFortsService, ClearFortsService>();
 builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSection("Options"));
 
@@ -91,9 +88,9 @@ builder.Services.AddMemoryCache(options =>
 #region Hosted Services
 
 // Register available hosted services
-builder.Services.AddHostedService<ProtoProcessorService>();
-builder.Services.AddHostedService<DataProcessorService>();
 builder.Services.AddHostedService<ClearFortsService>();
+builder.Services.AddHostedService<DataProcessorService>();
+builder.Services.AddHostedService<ProtoProcessorService>();
 
 #endregion
 
