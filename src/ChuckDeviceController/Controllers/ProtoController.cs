@@ -9,6 +9,7 @@
     using ChuckDeviceController.Net.Models.Responses;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Services;
+    using ChuckDeviceController.Collections.Queues;
 
     [ApiController]
     public class ProtoController : ControllerBase
@@ -19,7 +20,7 @@
 
         private readonly ILogger<ProtoController> _logger;
         private readonly ControllerDbContext _context;
-        private readonly IProtoProcessorService _protoProcessor;
+        private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
 
         #endregion
 
@@ -28,11 +29,11 @@
         public ProtoController(
             ILogger<ProtoController> logger,
             ControllerDbContext context,
-            IProtoProcessorService protoProcessor)
+            IAsyncQueue<ProtoPayloadQueueItem> taskQueue)
         {
             _logger = logger;
             _context = context;
-            _protoProcessor = protoProcessor;
+            _taskQueue = taskQueue;
         }
 
         #endregion
@@ -83,11 +84,12 @@
             await SetAccountLevelAsync(payload.Uuid, payload.Username, payload.Level, payload.TrainerXp ?? 0);
 
             // Queue proto payload for processing
-            await _protoProcessor.EnqueueAsync(new ProtoPayloadQueueItem
+            _taskQueue.Enqueue(new ProtoPayloadQueueItem
             {
                 Payload = payload,
                 Device = device,
             });
+            ProtoDataStatistics.Instance.TotalPayloadsReceived++;
 
             var response = BuildProtoResponse(payload);
             return response;

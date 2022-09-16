@@ -21,7 +21,6 @@
         #region Variables
 
         private readonly ILogger<IProtoProcessorService> _logger;
-        //private readonly IBackgroundTaskQueue<ProtoPayloadQueueItem> _taskQueue;
         private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
         private readonly IDataProcessorService _dataProcessor;
         private readonly IGrpcClientService _grpcClientService;
@@ -44,7 +43,6 @@
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
             IOptions<ProcessorOptionsConfig> options,
-            //IBackgroundTaskQueue<ProtoPayloadQueueItem> taskQueue,
             IAsyncQueue<ProtoPayloadQueueItem> taskQueue,
             IDataProcessorService dataProcessor,
             IGrpcClientService grpcClientService)
@@ -65,8 +63,8 @@
         {
             ProtoDataStatistics.Instance.TotalPayloadsReceived++;
 
-            //await _taskQueue.EnqueueAsync(async token => await ProcessWorkItemAsync(payload, token));
             _taskQueue.Enqueue(payload);
+
             await Task.CompletedTask;
         }
 
@@ -92,12 +90,6 @@
 
                 try
                 {
-                    //var workItem = await _taskQueue.DequeueAsync(stoppingToken);
-                    //if (workItem is null)
-                    //    continue;
-
-                    //await workItem(stoppingToken);
-                    //var workItems = await _taskQueue.DequeueMultipleAsync(Strings.MaximumQueueBatchSize, stoppingToken);
                     var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
                     if (workItems == null)
                     {
@@ -105,14 +97,7 @@
                         continue;
                     }
 
-                    //Parallel.ForEach(workItems, async task => await task(stoppingToken));
                     Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken));
-
-                    //workItems
-                    //    .AsParallel()
-                    //    .WithDegreeOfParallelism(Convert.ToInt32(Math.Ceiling((Environment.ProcessorCount * 0.75) * 2.0)));
-                    //var tasks = workItems.Select(item => Task.Factory.StartNew(async () => await item(stoppingToken)));
-                    //Task.WaitAll(tasks.ToArray(), stoppingToken);
 
                     //await Task.Run(async () =>
                     //{
@@ -147,6 +132,8 @@
         {
             if (payload?.Payload == null || payload?.Device == null)
                 return;
+
+            //_logger.LogInformation($"Processing {payload?.Payload?.Contents?.Count:N0} protos");
 
             CheckQueueLength();
 
