@@ -7,6 +7,7 @@ using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
+using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
@@ -42,23 +43,18 @@ builder.WebHost.ConfigureLogging(configure =>
 #region Services
 
 // Register available DI services
-builder.Services.AddSingleton<IBackgroundTaskQueue<ProtoPayloadQueueItem>>(_ =>
-{
-    return new DefaultBackgroundTaskQueue<ProtoPayloadQueueItem>(Strings.MaximumQueueCapacity);
-});
-builder.Services.AddSingleton<IBackgroundTaskQueue<List<dynamic>>>(_ =>
-{
-    return new DefaultBackgroundTaskQueue<List<dynamic>>(Strings.MaximumQueueCapacity);
-});
+//builder.Services.AddSingleton<IBackgroundTaskQueue<ProtoPayloadQueueItem>>(_ =>
+//    new DefaultBackgroundTaskQueue<ProtoPayloadQueueItem>(Strings.MaximumQueueCapacity));
+//builder.Services.AddSingleton<IBackgroundTaskQueue<List<dynamic>>>(_ =>
+//    new DefaultBackgroundTaskQueue<List<dynamic>>(Strings.MaximumQueueCapacity));
 
 builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>>(_ => new AsyncQueue<ProtoPayloadQueueItem>());
 builder.Services.AddSingleton<IAsyncQueue<List<dynamic>>>(_ => new AsyncQueue<List<dynamic>>());
 
+builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
-builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
-
 builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
-builder.Services.AddSingleton<IClearFortsService, ClearFortsService>();
+builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
 builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSection("Options"));
 
 builder.Services.AddHttpContextAccessor();
@@ -88,7 +84,7 @@ builder.Services.AddMemoryCache(options =>
 #region Hosted Services
 
 // Register available hosted services
-builder.Services.AddHostedService<ClearFortsService>();
+builder.Services.AddHostedService<ClearFortsHostedService>();
 builder.Services.AddHostedService<DataProcessorService>();
 builder.Services.AddHostedService<ProtoProcessorService>();
 

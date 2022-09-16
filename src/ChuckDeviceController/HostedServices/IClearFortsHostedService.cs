@@ -1,6 +1,6 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace ChuckDeviceController.HostedServices
 {
-    public interface IClearFortsService
+    public interface IClearFortsHostedService
     {
         void AddCell(ulong cellId);
 

@@ -40,7 +40,7 @@
         private readonly IDbContextFactory<MapDbContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
-        private readonly IClearFortsService _clearFortsService;
+        private readonly IClearFortsHostedService _clearFortsService;
 
         private readonly AsyncLock _cellsLock = new();
         private readonly AsyncLock _weatherLock = new();
@@ -71,7 +71,7 @@
             IDbContextFactory<MapDbContext> factory,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
-            IClearFortsService clearFortsService)
+            IClearFortsHostedService clearFortsService)
             //: base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {
             _logger = logger;

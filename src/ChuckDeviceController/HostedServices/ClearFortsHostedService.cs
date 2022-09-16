@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace ChuckDeviceController.HostedServices
 {
     using System.Threading;
 
@@ -6,13 +6,12 @@
 
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.HostedServices;
 
-    public class ClearFortsService : TimedHostedService, IClearFortsService
+    public class ClearFortsHostedService : TimedHostedService, IClearFortsHostedService
     {
         #region Variables
 
-        private readonly ILogger<IClearFortsService> _logger;
+        private readonly ILogger<IClearFortsHostedService> _logger;
         private readonly IDbContextFactory<MapDbContext> _factory;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
@@ -25,8 +24,8 @@
 
         public override uint TimerIntervalMs => 15 * 60 * 1000; // 15 minutes
 
-        public ClearFortsService(
-            ILogger<IClearFortsService> logger,
+        public ClearFortsHostedService(
+            ILogger<IClearFortsHostedService> logger,
             IDbContextFactory<MapDbContext> factory) : base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {
             _logger = logger;
