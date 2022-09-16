@@ -41,6 +41,7 @@
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
         private readonly IClearFortsHostedService _clearFortsService;
+        private readonly IMemoryCache _memCache;
 
         private readonly AsyncLock _cellsLock = new();
         private readonly AsyncLock _weatherLock = new();
@@ -71,7 +72,8 @@
             IDbContextFactory<MapDbContext> factory,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
-            IClearFortsHostedService clearFortsService)
+            IClearFortsHostedService clearFortsService,
+            IMemoryCache memCache)
             //: base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {
             _logger = logger;
@@ -80,6 +82,7 @@
             _diskCache = diskCache;
             _grpcClientService = grpcClientService;
             _clearFortsService = clearFortsService;
+            _memCache = memCache;
 
             Options = options.Value;
         }
@@ -471,10 +474,8 @@
                 foreach (var cell in s2cells)
                 {
                     _clearFortsService.AddCell(cell.Id);
+                    _memCache.Set(cell.Id, cell);
                 }
-
-                // TODO: Make configurable (check if we can control via config Logging section via class name)
-                //_logger.LogInformation($"Upserted {s2cells.Count:N0} S2 cells");
             }
             catch (Exception ex)
             {
@@ -498,6 +499,8 @@
                     {
                         await SendWebhookPayloadAsync(WebhookPayloadType.Weather, weatherCell);
                     }
+
+                    _memCache.Set(weatherCell.Id, weatherCell);
                 }
 
                 await context.Weather.BulkMergeAsync(weather, options =>
@@ -519,8 +522,6 @@
                         p.Updated,
                     };
                 });
-
-                //_logger.LogInformation($"Upserted {weather.Count:N0} Client Weather Cells");
             }
             catch (Exception ex)
             {
@@ -675,8 +676,6 @@
                         };
                     });
 
-                    //_logger.LogInformation($"Upserted {pokemonToUpsert.Count:N0} Nearby Pokemon");
-
                     await SendPokemonAsync(pokemonToUpsert);
                 }
             }
@@ -735,8 +734,6 @@
                         options.UseTableLock = true;
                         options.ForceTriggerResolution = true;
                     });
-
-                    //_logger.LogInformation($"Upserted {pokemonToUpsert.Count:N0} Lure Pokemon");
 
                     await SendPokemonAsync(pokemonToUpsert);
                 }
@@ -869,8 +866,6 @@
                         //options.Resolution = ResolutionType.Smart
                         //options.ResultInfo.
                     });
-
-                    //_logger.LogInformation($"Upserted {pokestopsToUpsert.Count:N0} Pokestops");
                 }
                 if (incidentsToUpsert.Count > 0)
                 {
@@ -880,7 +875,6 @@
                 if (gymsToUpsert.Count > 0)
                 {
                     await context.Gyms.BulkMergeAsync(gymsToUpsert, options => options.UseTableLock = true);
-                    //_logger.LogInformation($"Upserted {gymsToUpsert.Count:N0} Gyms");
                 }
             }
             catch (Exception ex)
