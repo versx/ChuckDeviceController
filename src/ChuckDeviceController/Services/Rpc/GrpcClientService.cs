@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Services.Rpc
 {
+    using Grpc.Core;
     using Grpc.Core.Interceptors;
     using Grpc.Net.Client;
 
@@ -44,30 +45,29 @@
         {
             try
             {
-                // Create gRPC channel for receiving gRPC server address
-                using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
-
-                var invoker = channel.Intercept(_authHeadersInterceptor);
-
-                // Create new gRPC client using gRPC channel for address
-                //var client = new Payload.PayloadClient(channel);
-                var client = new Payload.PayloadClient(invoker);
-
-                // Serialize entity and send to server to deserialize
-                var json = data.ToJson();
-
-                // Create gRPC payload request
-                var request = new PayloadRequest
+                var (channel, invoker) = CreateClient(_grpcConfiguratorServerEndpoint);
+                using (channel)
                 {
-                    Payload = json,
-                    PayloadType = payloadType,
-                    Username = username,
-                    HasIV = hasIV,
-                };
+                    // Create new gRPC client using gRPC channel for address
+                    //var client = new Payload.PayloadClient(channel);
+                    var client = new Payload.PayloadClient(invoker);
 
-                // Handle the response of the request
-                var reply = await client.ReceivedPayloadAsync(request);
-                //Console.WriteLine($"Response: {reply?.Status}");
+                    // Serialize entity and send to server to deserialize
+                    var json = data.ToJson();
+
+                    // Create gRPC payload request
+                    var request = new PayloadRequest
+                    {
+                        Payload = json,
+                        PayloadType = payloadType,
+                        Username = username,
+                        HasIV = hasIV,
+                    };
+
+                    // Handle the response of the request
+                    var reply = await client.ReceivedPayloadAsync(request);
+                    //Console.WriteLine($"Response: {reply?.Status}");
+                }
             }
             catch (Exception ex)
             {
@@ -79,24 +79,23 @@
         {
             try
             {
-                // Create gRPC channel for receiving gRPC server address
-                using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
-
-                var invoker = channel.Intercept(_authHeadersInterceptor);
-
-                // Create new gRPC client for gRPC channel for address
-                //var client = new Leveling.LevelingClient(channel);
-                var client = new Leveling.LevelingClient(invoker);
-
-                // Create gRPC payload request
-                var request = new TrainerInfoRequest
+                var (channel, invoker) = CreateClient(_grpcConfiguratorServerEndpoint);
+                using (channel)
                 {
-                    Username = username,
-                };
+                    // Create new gRPC client for gRPC channel for address
+                    //var client = new Leveling.LevelingClient(channel);
+                    var client = new Leveling.LevelingClient(invoker);
 
-                // Handle the response of the request
-                var response = await client.ReceivedTrainerInfoAsync(request);
-                return response;
+                    // Create gRPC payload request
+                    var request = new TrainerInfoRequest
+                    {
+                        Username = username,
+                    };
+
+                    // Handle the response of the request
+                    var response = await client.ReceivedTrainerInfoAsync(request);
+                    return response;
+                }
             }
             catch (Exception ex)
             {
@@ -115,31 +114,39 @@
 
             try
             {
-                // Create gRPC channel for receiving gRPC server address
-                using var channel = GrpcChannel.ForAddress(_grpcWebhookServerEndpoint);
-
-                var invoker = channel.Intercept(_authHeadersInterceptor);
-
-                // Create new gRPC client using gRPC channel for address
-                //var client = new WebhookPayload.WebhookPayloadClient(channel);
-                var client = new WebhookPayload.WebhookPayloadClient(invoker);
-
-                // Create gRPC payload request
-                var request = new WebhookPayloadRequest
+                var (channel, invoker) = CreateClient(_grpcWebhookServerEndpoint);
+                using (channel)
                 {
-                    PayloadType = webhookType,
-                    Payload = json,
-                };
+                    // Create new gRPC client using gRPC channel for address
+                    //var client = new WebhookPayload.WebhookPayloadClient(channel);
+                    var client = new WebhookPayload.WebhookPayloadClient(invoker);
 
-                // Handle the response of the request
-                var response = await client.ReceivedWebhookPayloadAsync(request);
-                return response;
+                    // Create gRPC payload request
+                    var request = new WebhookPayloadRequest
+                    {
+                        PayloadType = webhookType,
+                        Payload = json,
+                    };
+
+                    // Handle the response of the request
+                    var response = await client.ReceivedWebhookPayloadAsync(request);
+                    return response;
+                }
             }
             catch //(Exception ex)
             {
                 //_logger.LogWarning($"Unable to send webhook to webhook relay service at '{_grpcWebhookServerEndpoint}: {ex.Message}'");
             }
             return null;
+        }
+
+        private (GrpcChannel, CallInvoker) CreateClient(string url)
+        {
+            // Create gRPC channel for receiving gRPC server address
+            var channel = GrpcChannel.ForAddress(url);
+            // Create gRPC channel interceptor to invoke gRPC client
+            var invoker = channel.Intercept(_authHeadersInterceptor);
+            return (channel, invoker);
         }
     }
 }
