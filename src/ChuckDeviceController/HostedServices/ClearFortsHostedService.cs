@@ -92,17 +92,15 @@
                 {
                     var cellId = stopIdKeys[i];
                     var pokestopIds = _stopIdsPerCell[cellId];
+                    if (!pokestopIds.Any())
+                        continue;
 
                     // Get pokestops within S2 cell and not marked deleted
+                    // Filter pokestops that have not been seen within S2 cell by devices
                     var pokestops = context.Pokestops.Where(stop => stop.CellId == cellId && !stop.IsDeleted)
+                                                     .Where(stop => !pokestopIds.Contains(stop.Id))
                                                      .ToList();
-                    if (pokestopIds.Count > 0)
-                    {
-                        // Filter pokestops that have not been seen within S2 cell by devices
-                        pokestops = pokestops.Where(stop => !pokestopIds.Contains(stop.Id))
-                                             .ToList();
-                    }
-                    if (pokestops.Count > 0)
+                    if (pokestops.Any())
                     {
                         // Mark gyms as deleted
                         pokestops.ForEach(stop => stop.IsDeleted = true);
@@ -116,17 +114,15 @@
                 {
                     var cellId = gymIdKeys[i];
                     var gymIds = _gymIdsPerCell[cellId];
+                    if (!gymIds.Any())
+                        continue;
 
                     // Get gyms within S2 cell and not marked deleted
+                    // Filter gyms that have not been seen within S2 cell by devices
                     var gyms = context.Gyms.Where(gym => gym.CellId == cellId && !gym.IsDeleted)
+                                           .Where(gym => !gymIds.Contains(gym.Id))
                                            .ToList();
-                    if (gymIds.Count > 0)
-                    {
-                        // Filter gyms that have not been seen within S2 cell by devices
-                        gyms = gyms.Where(gym => !gymIds.Contains(gym.Id))
-                                   .ToList();
-                    }
-                    if (gyms.Count > 0)
+                    if (gyms.Any())
                     {
                         // Mark gyms as deleted
                         gyms.ForEach(gym => gym.IsDeleted = true);
