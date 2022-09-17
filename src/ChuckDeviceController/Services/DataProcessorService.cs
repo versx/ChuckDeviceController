@@ -946,10 +946,10 @@
                     {
                         case FortType.Checkpoint:
                             //var pokestop = await context.Pokestops.FindAsync(data.Id);
-                            var pokestop = (
+                            var pokestop = await (
                                 from p in context.Pokestops
                                 select new Pokestop(new { p.Id, p.Name, p.Url })
-                            ).FirstOrDefault();
+                            ).FirstOrDefaultAsync();
                             if (pokestop == null)
                                 continue;
 
@@ -967,10 +967,10 @@
                             break;
                         case FortType.Gym:
                             //var gym = await context.Gyms.FindAsync(data.Id);
-                            var gym = (
+                            var gym = await (
                                 from g in context.Gyms
                                 select new Gym(new { g.Id, g.Name, g.Url })
-                            ).FirstOrDefault();
+                            ).FirstOrDefaultAsync();
                             if (gym == null)
                                 continue;
 
@@ -1050,20 +1050,24 @@
                     var data = (GymGetInfoOutProto)gymInfo.data;
                     var fortId = data.GymStatusAndDefenders.PokemonFortProto.FortId;
 
-                    var gym = await context.Gyms.FindAsync(fortId);
-                    if (gym != null)
+                    //var gym = await context.Gyms.FindAsync(fortId);
+                    var gym = await (
+                        from g in context.Gyms
+                        select new Gym(new { g.Id, g.Name, g.Url })
+                    ).FirstOrDefaultAsync();
+                    if (gym == null)
+                        continue;
+
+                    gym.AddDetails(data);
+                    var webhooks = await gym.UpdateAsync(context);
+                    foreach (var webhook in webhooks)
                     {
-                        gym.AddDetails(data);
-                        var webhooks = await gym.UpdateAsync(context);
-                        foreach (var webhook in webhooks)
-                        {
-                            var type = ConvertWebhookType(webhook.Key);
-                            await SendWebhookPayloadAsync(type, gym);
-                        }
-                        if (gym.HasChanges)
-                        {
-                            gymsToUpsert.Add(gym);
-                        }
+                        var type = ConvertWebhookType(webhook.Key);
+                        await SendWebhookPayloadAsync(type, gym);
+                    }
+                    if (gym.HasChanges)
+                    {
+                        gymsToUpsert.Add(gym);
                     }
 
                     var gymDefenders = data.GymStatusAndDefenders.GymDefender;
@@ -1077,22 +1081,16 @@
                             var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
                             gymTrainersToUpsert.Add(gymTrainer);
 
-                            if (gym != null)
-                            {
-                                // Send webhook
-                                await SendWebhookPayloadAsync(WebhookPayloadType.GymTrainer, new GymWithTrainer(gym, gymTrainer));
-                            }
+                            // Send webhook
+                            await SendWebhookPayloadAsync(WebhookPayloadType.GymTrainer, new GymWithTrainer(gym, gymTrainer));
                         }
                         if (gymDefenderData.MotivatedPokemon != null)
                         {
                             var gymDefender = new GymDefender(gymDefenderData, fortId);
                             gymDefendersToUpsert.Add(gymDefender);
 
-                            if (gym != null)
-                            {
-                                // Send webhook
-                                await SendWebhookPayloadAsync(WebhookPayloadType.GymDefender, new GymWithDefender(gym, gymDefender));
-                            }
+                            // Send webhook
+                            await SendWebhookPayloadAsync(WebhookPayloadType.GymDefender, new GymWithDefender(gym, gymDefender));
                         }
                     }
                 }
@@ -1163,21 +1161,46 @@
                     var hasAr = quest.hasAr;
                     var fortId = data.FortId;
 
-                    var pokestop = await context.Pokestops.FindAsync(fortId);
-                    if (pokestop != null)
-                    {
-                        pokestop.AddQuest(title, data, hasAr);
-                        var webhooks = await pokestop.UpdateAsync(context, updateQuest: true);
-                        foreach (var webhook in webhooks)
+                    //var pokestop = await context.Pokestops.FindAsync(fortId);
+                    var pokestop = await (
+                        from stop in context.Pokestops
+                        where stop.Id == fortId
+                        select new Pokestop(new
                         {
-                            var type = ConvertWebhookType(webhook.Key);
-                            await SendWebhookPayloadAsync(type, webhook.Value);
-                        }
+                            stop.Id,
+                            stop.Name,
+                            stop.Url,
+                            stop.QuestType,
+                            stop.QuestTitle,
+                            stop.QuestTimestamp,
+                            stop.QuestTemplate,
+                            stop.QuestTarget,
+                            stop.QuestRewards,
+                            stop.QuestConditions,
 
-                        if (pokestop.HasChanges && (pokestop.HasQuestChanges || pokestop.HasAlternativeQuestChanges))
-                        {
-                            questsToUpsert.Add(pokestop);
-                        }
+                            stop.AlternativeQuestType,
+                            stop.AlternativeQuestTitle,
+                            stop.AlternativeQuestTimestamp,
+                            stop.AlternativeQuestTemplate,
+                            stop.AlternativeQuestTarget,
+                            stop.AlternativeQuestRewards,
+                            stop.AlternativeQuestConditions,
+                        })
+                    ).FirstOrDefaultAsync();
+                    if (pokestop == null)
+                        continue;
+
+                    pokestop.AddQuest(title, data, hasAr);
+                    var webhooks = await pokestop.UpdateAsync(context, updateQuest: true);
+                    foreach (var webhook in webhooks)
+                    {
+                        var type = ConvertWebhookType(webhook.Key);
+                        await SendWebhookPayloadAsync(type, webhook.Value);
+                    }
+
+                    if (pokestop.HasChanges && (pokestop.HasQuestChanges || pokestop.HasAlternativeQuestChanges))
+                    {
+                        questsToUpsert.Add(pokestop);
                     }
                 }
 
@@ -1291,6 +1314,7 @@
                         };
                     });
 
+                    // Cache all Spawnpoint entities in memory cache
                     spawnpointsToUpsert.ForEach(spawnpoint => _memCache.Set(spawnpoint.Id, spawnpoint));
 
                     _logger.LogInformation($"Upserted {spawnpointsToUpsert.Count:N0} Spawnpoints");
@@ -1308,11 +1332,13 @@
                         };
                     });
 
+                    // Add S2 cells to ClearFortsHostedService
                     foreach (var cell in s2cellsToUpsert)
                     {
                         _clearFortsService.AddCell(cell.Id);
                     }
 
+                    // Cache all S2 cell entities in memory cache
                     s2cellsToUpsert.ForEach(s2cell => _memCache.Set(s2cell.Id, s2cell));
                 }
 
@@ -1344,6 +1370,7 @@
                     });
 
                     //_logger.LogInformation($"Upserted {pokemonToUpsert.Count:N0} Pokemon Encounters");
+                    // Cache all Pokemon entities in memory cache
                     pokemonToUpsert.ForEach(pokemon => _memCache.Set(pokemon.Id, pokemon));
 
                     await SendPokemonAsync(pokemonToUpsert);
@@ -1466,7 +1493,12 @@
 
             if (!pokemon.IsExpireTimestampVerified && spawnId > 0)
             {
-                var spawnpoint = await context.Spawnpoints.FindAsync(pokemon.SpawnId);
+                //var spawnpoint = await context.Spawnpoints.FindAsync(pokemon.SpawnId);
+                var spawnpoint = await (
+                    from spawn in context.Spawnpoints
+                    where spawn.Id == spawnId
+                    select spawn
+                ).FirstOrDefaultAsync();
                 if (spawnpoint != null && spawnpoint.DespawnSecond != null)
                 {
                     var despawnSecond = spawnpoint.DespawnSecond;
