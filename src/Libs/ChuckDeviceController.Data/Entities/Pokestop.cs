@@ -162,6 +162,13 @@
             Id = string.Empty;
         }
 
+        public Pokestop(dynamic data)
+        {
+            Id = data.Id;
+            Name = data.Name;
+            Url = data.Url;
+        }
+
         public Pokestop(PokemonFortProto fortData, ulong s2cellId)
         {
             Id = fortData.FortId;

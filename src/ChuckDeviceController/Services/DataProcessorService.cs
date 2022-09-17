@@ -135,7 +135,8 @@
 
                 try
                 {
-                    var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
+                    var workItems = new[] { await _taskQueue.DequeueAsync(stoppingToken) };
+                    //var workItems = await _taskQueue.DequeueBulkAsync(5, stoppingToken);
                     //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
                     if (workItems == null)
                     {
@@ -940,40 +941,49 @@
                 foreach (var fortDetail in fortDetails)
                 {
                     var data = (FortDetailsOutProto)fortDetail.data;
+                    // TODO: Check memory cache
                     switch (data.FortType)
                     {
                         case FortType.Checkpoint:
-                            var pokestop = await context.Pokestops.FindAsync(data.Id);
-                            if (pokestop != null)
+                            //var pokestop = await context.Pokestops.FindAsync(data.Id);
+                            var pokestop = (
+                                from p in context.Pokestops
+                                select new Pokestop(new { p.Id, p.Name, p.Url })
+                            ).FirstOrDefault();
+                            if (pokestop == null)
+                                continue;
+
+                            pokestop.AddDetails(data);
+                            var pokestopWebhooks = await pokestop.UpdateAsync(context);
+                            foreach (var webhook in pokestopWebhooks)
                             {
-                                pokestop.AddDetails(data);
-                                var webhooks = await pokestop.UpdateAsync(context);
-                                foreach (var webhook in webhooks)
-                                {
-                                    var type = ConvertWebhookType(webhook.Key);
-                                    await SendWebhookPayloadAsync(type, pokestop);
-                                }
-                                if (pokestop.HasChanges)
-                                {
-                                    pokestopsToUpsert.Add(pokestop);
-                                }
+                                var type = ConvertWebhookType(webhook.Key);
+                                await SendWebhookPayloadAsync(type, pokestop);
+                            }
+                            if (pokestop.HasChanges)
+                            {
+                                pokestopsToUpsert.Add(pokestop);
                             }
                             break;
                         case FortType.Gym:
-                            var gym = await context.Gyms.FindAsync(data.Id);
-                            if (gym != null)
+                            //var gym = await context.Gyms.FindAsync(data.Id);
+                            var gym = (
+                                from g in context.Gyms
+                                select new Gym(new { g.Id, g.Name, g.Url })
+                            ).FirstOrDefault();
+                            if (gym == null)
+                                continue;
+
+                            gym.AddDetails(data);
+                            var gymWebhooks = await gym.UpdateAsync(context);
+                            foreach (var webhook in gymWebhooks)
                             {
-                                gym.AddDetails(data);
-                                var webhooks = await gym.UpdateAsync(context);
-                                foreach (var webhook in webhooks)
-                                {
-                                    var type = ConvertWebhookType(webhook.Key);
-                                    await SendWebhookPayloadAsync(type, gym);
-                                }
-                                if (gym.HasChanges)
-                                {
-                                    gymsToUpsert.Add(gym);
-                                }
+                                var type = ConvertWebhookType(webhook.Key);
+                                await SendWebhookPayloadAsync(type, gym);
+                            }
+                            if (gym.HasChanges)
+                            {
+                                gymsToUpsert.Add(gym);
                             }
                             break;
                     }

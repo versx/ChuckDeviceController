@@ -103,6 +103,13 @@
             Id = string.Empty;
         }
 
+        public Gym(dynamic data)
+        {
+            Id = data.Id;
+            Name = data.Name;
+            Url = data.Url;
+        }
+
         public Gym(PokemonFortProto fortData, ulong cellId)
         {
             Id = fortData.FortId;

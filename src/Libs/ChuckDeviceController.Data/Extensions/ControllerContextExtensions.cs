@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Extensions
 {
-    using System;
-
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
