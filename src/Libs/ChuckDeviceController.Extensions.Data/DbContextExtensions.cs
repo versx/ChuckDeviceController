@@ -35,6 +35,7 @@
 
         public static DbContextOptionsBuilder GetDbContextOptions(this DbContextOptionsBuilder options, string connectionString, ServerVersion serverVersion, string assemblyName)
         {
+            options.EnableDetailedErrors(detailedErrorsEnabled: true);
             options.UseMySql(connectionString, serverVersion, opt => opt.GetMySqlOptions(assemblyName));
             return options;
         }

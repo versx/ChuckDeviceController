@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Services
 {
+    using System.Data;
     using System.Diagnostics;
     using System.Linq.Expressions;
     using System.Threading;
@@ -469,7 +470,8 @@
             try
             {
                 // Convert cell ids to Cell models
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 //var raw = context.Database.ExecuteSqlRawAsync("", cells);
                 var s2cells = cells
                     // Filter cells not already cached
@@ -503,7 +505,8 @@
             try
             {
                 // Convert weather protos to Weather models
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 var weather = clientWeather
                     // Filter cells not already cached
                     .Where(weatherCell => !_memCache.IsSet<long, Weather>(weatherCell.S2CellId))
@@ -558,7 +561,8 @@
         {
             try
             {
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 var pokemonToUpsert = new List<Pokemon>();
                 var spawnpointsToUpsert = new List<Spawnpoint>();
                 foreach (var wild in wildPokemon)
@@ -662,7 +666,8 @@
         {
             try
             {
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var nearby in nearbyPokemon)
                 {
@@ -720,7 +725,8 @@
         {
             try
             {
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var map in mapPokemon)
                 {
@@ -780,7 +786,8 @@
         {
             try
             {
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 // Send found/nearby forts with gRPC service for leveling instance
                 var lvlForts = forts.Where(fort => fort.data.FortType != FortType.Gym)
                                     .Select(fort => fort.data)
@@ -924,7 +931,8 @@
         {
             try
             {
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 var pokestopsToUpsert = new List<Pokestop>();
                 var gymsToUpsert = new List<Gym>();
 
@@ -1020,7 +1028,8 @@
         {
             try
             {
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 var gymsToUpsert = new List<Gym>();
                 var gymDefendersToUpsert = new List<GymDefender>();
                 var gymTrainersToUpsert = new List<GymTrainer>();
@@ -1132,7 +1141,8 @@
         {
             try
             {
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 var questsToUpsert = new List<Pokestop>();
 
                 // Convert quest protos to Pokestop models
@@ -1207,7 +1217,9 @@
 
             try
             {
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
+                //var leakMonitor = new ConnectionLeakWatcher(context);
                 var pokemonToUpsert = new List<Pokemon>();
                 var spawnpointsToUpsert = new List<Spawnpoint>();
                 var s2cellsToUpsert = new List<Cell>();
@@ -1338,7 +1350,8 @@
         {
             try
             {
-                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var diskEncounter in diskEncounters)
                 {
@@ -1627,5 +1640,90 @@
             };
             return options;
         }
+    }
+
+    /// <summary>
+    ///     This class can help identify db connection leaks (connections that are not closed after use).
+    /// Usage:
+    ///     connection = new SqlConnection(..);
+    ///     connection.Open()
+    /// #if DEBUG
+    ///     new ConnectionLeakWatcher(connection);
+    /// #endif
+    ///     That's it. Don't store a reference to the watcher. It will make itself available for garbage collection
+    ///     once it has fulfilled its purpose. Watch the visual studio debug output for details on potentially leaked connections.
+    ///     Note that a connection could possibly just be taking its time and may eventually be closed properly despite being flagged by this class.
+    ///     So take the output with a pinch of salt.
+    /// </summary>
+    /// <credits>https://stackoverflow.com/a/15002420</credits>
+    public class ConnectionLeakWatcher : IDisposable
+    {
+        private static int _idCounter = 0;
+        private readonly int _connectionId = ++_idCounter;
+        private readonly Timer? _timer;
+        //Store reference to connection so we can unsubscribe from state change events
+        //private SqlConnection? _connection;
+        private System.Data.Common.DbConnection? _connection;
+
+        public string StackTrace { get; set; }
+
+        //public ConnectionLeakWatcher(SqlConnection connection)
+        //public ConnectionLeakWatcher(System.Data.Common.DbConnection connection)
+        public ConnectionLeakWatcher(DbContext context)
+        {
+            //_connection = connection;
+            _connection = context.Database.GetDbConnection();
+            StackTrace = Environment.StackTrace;
+
+            _connection.StateChange += ConnectionOnStateChange;
+            Debug.WriteLine($"Connection opened {_connectionId}");
+
+            _timer = new Timer(_ =>
+            {
+                //The timeout expired without the connection being closed. Write to debug output the stack trace of the connection creation to assist in pinpointing the problem
+                Debug.WriteLine("Suspected connection leak with origin: {0}{1}{0}Connection id: {2}", Environment.NewLine, StackTrace, _connectionId);
+                //That's it - we're done. Clean up by calling Dispose.
+                Dispose();
+            }, null, 10000, Timeout.Infinite);
+        }
+
+        private void ConnectionOnStateChange(object sender, StateChangeEventArgs stateChangeEventArgs)
+        {
+            //Connection state changed. Was it closed?
+            if (stateChangeEventArgs.CurrentState == ConnectionState.Closed)
+            {
+                //The connection was closed within the timeout
+                Debug.WriteLine($"Connection closed {_connectionId}");
+                //That's it - we're done. Clean up by calling Dispose.
+                Dispose();
+            }
+        }
+
+        #region Dispose
+
+        private bool _isDisposed = false;
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+
+            _timer.Dispose();
+
+            if (_connection != null)
+            {
+                _connection.StateChange -= ConnectionOnStateChange;
+                _connection = null;
+            }
+
+            _isDisposed = true;
+
+            GC.SuppressFinalize(this);
+        }
+
+        ~ConnectionLeakWatcher()
+        {
+            Dispose();
+        }
+
+        #endregion
     }
 }
