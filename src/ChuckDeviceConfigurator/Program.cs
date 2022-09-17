@@ -36,6 +36,8 @@ using ChuckDeviceController.PluginManager.Mvc.Extensions;
 // TODO: Consolidate benchmark/profiling/diagnostic plugins into one? (i.e. RequestBenchmarkPlugin, MemoryBenchmarkPlugin, MiniProfilerPlugin)
 // TODO: Add HealthChecksPlugin
 
+#region Config
+
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
 if (config.Providers.Count() == 2)
@@ -45,9 +47,15 @@ if (config.Providers.Count() == 2)
     Environment.FailFast($"Failed to find or load configuration file, exiting...");
 }
 
+#endregion
+
+#region Logger
+
 var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
 // Need to call at startup so time gets set now and not when first visit to dashboard
 logger.LogInformation($"Started: {Strings.Uptime}");
+
+#endregion
 
 // Create locale translation files
 try

@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Services
 {
     using System.Diagnostics;
+    using System.Linq.Expressions;
     using System.Threading;
 
     using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
+    using Z.BulkOperations;
 
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common.Data;
@@ -41,7 +43,7 @@
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
         private readonly IClearFortsHostedService _clearFortsService;
-        private readonly IMemoryCache _memCache;
+        private readonly IMemoryCacheHostedService _memCache;
 
         private readonly AsyncLock _cellsLock = new();
         private readonly AsyncLock _weatherLock = new();
@@ -54,6 +56,7 @@
         private readonly AsyncLock _questsLock = new();
         private readonly AsyncLock _encountersLock = new();
         private readonly AsyncLock _diskEncountersLock = new();
+        private readonly AsyncLock _dbLock = new();
 
         #endregion
 
@@ -73,7 +76,8 @@
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
             IClearFortsHostedService clearFortsService,
-            IMemoryCache memCache)
+            //IMemoryCache memCache)
+            IMemoryCacheHostedService memCache)
             //: base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {
             _logger = logger;
@@ -130,7 +134,8 @@
 
                 try
                 {
-                    var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                    var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
+                    //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
                     if (workItems == null)
                     {
                         Thread.Sleep(1);
@@ -197,194 +202,200 @@
             }
             */
 
-            var cells = data.Where(x => x.type == ProtoDataType.Cell)
-                            .Select(x => x.cell)
-                            .Distinct()
-                            .ToList();
-            if (cells.Count > 0)
+            using (await _dbLock.LockAsync(stoppingToken))
             {
-                // Insert S2 cells
-                using (await _cellsLock.LockAsync(stoppingToken))
+                //using var context = await _dbFactory.CreateDbContextAsync(stoppingToken);
+                //using var context = _dbFactory.CreateDbContext();
+
+                var cells = data.Where(x => x.type == ProtoDataType.Cell)
+                                .Select(x => x.cell)
+                                .Distinct()
+                                .ToList();
+                if (cells.Count > 0)
                 {
-                    var benchmark = BenchmarkAction(async () => await UpdateCellsAsync(cells));
-                    if (Options.IsEnabled(DataLogLevel.S2Cells))
+                    // Insert S2 cells
+                    //using (await _cellsLock.LockAsync(stoppingToken))
                     {
-                        _logger.LogInformation($"Upserted {cells.Count:N0} S2 Sells in {benchmark}s");
+                        var benchmark = BenchmarkAction(async () => await UpdateCellsAsync(cells));
+                        if (Options.IsEnabled(DataLogLevel.S2Cells))
+                        {
+                            _logger.LogInformation($"Upserted {cells.Count:N0} S2 Sells in {benchmark}s");
+                        }
                     }
                 }
-            }
 
-            var clientWeather = data.Where(x => x.type == ProtoDataType.ClientWeather)
-                                    .Select(x => x.data)
-                                    .Distinct()
-                                    .ToList();
-            if (clientWeather.Count > 0)
-            {
-                // Insert weather cells
-                using (await _weatherLock.LockAsync(stoppingToken))
+                var clientWeather = data.Where(x => x.type == ProtoDataType.ClientWeather)
+                                        .Select(x => (ClientWeatherProto)x.data)
+                                        .Distinct()
+                                        .ToList();
+                if (clientWeather.Count > 0)
                 {
-                    var benchmark = BenchmarkAction(async () => await UpdateClientWeatherAsync(clientWeather));
-                    if (Options.IsEnabled(DataLogLevel.Weather))
+                    // Insert weather cells
+                    //using (await _weatherLock.LockAsync(stoppingToken))
                     {
-                        _logger.LogInformation($"Upserted {clientWeather.Count:N0} Client Weather Cells in {benchmark}s");
+                        var benchmark = BenchmarkAction(async () => await UpdateClientWeatherAsync(clientWeather));
+                        if (Options.IsEnabled(DataLogLevel.Weather))
+                        {
+                            _logger.LogInformation($"Upserted {clientWeather.Count:N0} Client Weather Cells in {benchmark}s");
+                        }
                     }
                 }
-            }
 
-            var wildPokemon = data.Where(x => x.type == ProtoDataType.WildPokemon)
-                                  .ToList();
-            if (wildPokemon.Count > 0)
-            {
-                // Insert wild pokemon
-                using (await _wildPokemonLock.LockAsync(stoppingToken))
+                var forts = data.Where(x => x.type == ProtoDataType.Fort)
+                                .ToList();
+                if (forts.Count > 0)
                 {
-                    var benchmark = BenchmarkAction(async () => await UpdateWildPokemonAsync(wildPokemon));
-                    if (Options.IsEnabled(DataLogLevel.WildPokemon))
+                    // Insert Forts
+                    //using (await _fortsLock.LockAsync(stoppingToken))
                     {
-                        _logger.LogInformation($"Upserted {wildPokemon.Count:N0} Wild Pokemon in {benchmark}s");
+                        var benchmark = BenchmarkAction(async () => await UpdateFortsAsync(username, forts));
+                        if (Options.IsEnabled(DataLogLevel.Forts))
+                        {
+                            _logger.LogInformation($"Upserted {forts.Count:N0} Forts in {benchmark}s");
+                        }
                     }
                 }
-            }
 
-            var nearbyPokemon = data.Where(x => x.type == ProtoDataType.NearbyPokemon)
-                                    .ToList();
-            if (nearbyPokemon.Count > 0)
-            {
-                // Insert nearby pokemon
-                using (await _nearbyPokemonLock.LockAsync(stoppingToken))
+                var fortDetails = data.Where(x => x.type == ProtoDataType.FortDetails)
+                                      .ToList();
+                if (fortDetails.Count > 0)
                 {
-                    var benchmark = BenchmarkAction(async () => await UpdateNearbyPokemonAsync(nearbyPokemon));
-                    if (Options.IsEnabled(DataLogLevel.NearbyPokemon))
+                    // Insert Fort Details
+                    //using (await _fortDetailsLock.LockAsync(stoppingToken))
                     {
-                        _logger.LogInformation($"Upserted {nearbyPokemon.Count:N0} Nearby Pokemon in {benchmark}s");
+                        var benchmark = BenchmarkAction(async () => await UpdateFortDetailsAsync(fortDetails));
+                        if (Options.IsEnabled(DataLogLevel.FortDetails))
+                        {
+                            _logger.LogInformation($"Upserted {fortDetails.Count:N0} Fort Details in {benchmark}s");
+                        }
                     }
                 }
-            }
 
-            var mapPokemon = data.Where(x => x.type == ProtoDataType.MapPokemon)
-                                 .ToList();
-            if (mapPokemon.Count > 0)
-            {
-                // Insert map pokemon
-                using (await _mapPokemonLock.LockAsync(stoppingToken))
+                var gymInfos = data.Where(x => x.type == ProtoDataType.GymInfo)
+                                   .ToList();
+                if (gymInfos.Count > 0)
                 {
-                    var benchmark = BenchmarkAction(async () => await UpdateMapPokemonAsync(mapPokemon));
-                    if (Options.IsEnabled(DataLogLevel.MapPokemon))
+                    // Insert gym info
+                    //using (await _fortDetailsLock.LockAsync(stoppingToken))
                     {
-                        _logger.LogInformation($"Upserted {mapPokemon.Count:N0} Lure Pokemon in {benchmark}s");
+                        var benchmark = BenchmarkAction(async () => await UpdateGymInfoAsync(gymInfos));
+                        if (Options.IsEnabled(DataLogLevel.GymInfo))
+                        {
+                            _logger.LogInformation($"Upserted {gymInfos.Count:N0} Gym Information in {benchmark}s");
+                        }
                     }
                 }
-            }
 
-            //if (wildPokemon.Count > 0 || nearbyPokemon.Count > 0 || mapPokemon.Count > 0)
-            //{
-            //    await UpdatePokemonAsync(wildPokemon, nearbyPokemon, mapPokemon);
-            //}
 
-            var forts = data.Where(x => x.type == ProtoDataType.Fort)
-                            .ToList();
-            if (forts.Count > 0)
-            {
-                // Insert Forts
-                using (await _fortsLock.LockAsync(stoppingToken))
+                var wildPokemon = data.Where(x => x.type == ProtoDataType.WildPokemon)
+                                      .ToList();
+                if (wildPokemon.Count > 0)
                 {
-                    var benchmark = BenchmarkAction(async () => await UpdateFortsAsync(username, forts));
-                    if (Options.IsEnabled(DataLogLevel.Forts))
+                    // Insert wild pokemon
+                    //using (await _wildPokemonLock.LockAsync(stoppingToken))
                     {
-                        _logger.LogInformation($"Upserted {forts.Count:N0} Forts in {benchmark}s");
+                        var benchmark = BenchmarkAction(async () => await UpdateWildPokemonAsync(wildPokemon));
+                        if (Options.IsEnabled(DataLogLevel.WildPokemon))
+                        {
+                            _logger.LogInformation($"Upserted {wildPokemon.Count:N0} Wild Pokemon in {benchmark}s");
+                        }
                     }
                 }
-            }
 
-            var fortDetails = data.Where(x => x.type == ProtoDataType.FortDetails)
-                                  .ToList();
-            if (fortDetails.Count > 0)
-            {
-                // Insert Fort Details
-                using (await _fortDetailsLock.LockAsync(stoppingToken))
+                var nearbyPokemon = data.Where(x => x.type == ProtoDataType.NearbyPokemon)
+                                        .ToList();
+                if (nearbyPokemon.Count > 0)
                 {
-                    var benchmark = BenchmarkAction(async () => await UpdateFortDetailsAsync(fortDetails));
-                    if (Options.IsEnabled(DataLogLevel.FortDetails))
+                    // Insert nearby pokemon
+                    //using (await _nearbyPokemonLock.LockAsync(stoppingToken))
                     {
-                        _logger.LogInformation($"Upserted {fortDetails.Count:N0} Fort Details in {benchmark}s");
+                        var benchmark = BenchmarkAction(async () => await UpdateNearbyPokemonAsync(nearbyPokemon));
+                        if (Options.IsEnabled(DataLogLevel.NearbyPokemon))
+                        {
+                            _logger.LogInformation($"Upserted {nearbyPokemon.Count:N0} Nearby Pokemon in {benchmark}s");
+                        }
                     }
                 }
-            }
 
-            var gymInfos = data.Where(x => x.type == ProtoDataType.GymInfo)
-                               .ToList();
-            if (gymInfos.Count > 0)
-            {
-                // Insert gym info
-                using (await _fortDetailsLock.LockAsync(stoppingToken))
-                {
-                    var benchmark = BenchmarkAction(async () => await UpdateGymInfoAsync(gymInfos));
-                    if (Options.IsEnabled(DataLogLevel.GymInfo))
-                    {
-                        _logger.LogInformation($"Upserted {gymInfos.Count:N0} Gym Information in {benchmark}s");
-                    }
-                }
-            }
-
-            var quests = data.Where(x => x.type == ProtoDataType.Quest)
-                             .ToList();
-            if (quests.Count > 0)
-            {
-                // Insert quests
-                using (await _questsLock.LockAsync(stoppingToken))
-                {
-                    var benchmark = BenchmarkAction(async () => await UpdateQuestsAsync(quests));
-                    if (Options.IsEnabled(DataLogLevel.Quests))
-                    {
-                        _logger.LogInformation($"Upserted {quests.Count:N0} Pokestop Quests in {benchmark}s");
-                    }
-                }
-            }
-
-            var encounters = data.Where(x => x.type == ProtoDataType.Encounter)
-                                 .ToList();
-            if (encounters.Count > 0)
-            {
-                // Insert Pokemon encounters
-                using (await _encountersLock.LockAsync(stoppingToken))
-                {
-                    var benchmark = BenchmarkAction(async () => await UpdateEncountersAsync(encounters));
-                    if (Options.IsEnabled(DataLogLevel.PokemonEncounters))
-                    {
-                        _logger.LogInformation($"Upserted {encounters.Count:N0} Pokemon Encounters in {benchmark}s");
-                    }
-                }
-            }
-
-            var diskEncounters = data.Where(x => x.type == ProtoDataType.DiskEncounter)
+                var mapPokemon = data.Where(x => x.type == ProtoDataType.MapPokemon)
                                      .ToList();
-            if (diskEncounters.Count > 0)
-            {
-                // Insert lured/disk Pokemon encounters
-                using (await _diskEncountersLock.LockAsync(stoppingToken))
+                if (mapPokemon.Count > 0)
                 {
-                    var benchmark = BenchmarkAction(async () => await UpdateDiskEncountersAsync(diskEncounters));
-                    if (Options.IsEnabled(DataLogLevel.PokemonDiskEncounters))
+                    // Insert map pokemon
+                    //using (await _mapPokemonLock.LockAsync(stoppingToken))
                     {
-                        _logger.LogInformation($"Upserted {diskEncounters.Count:N0} Disk Pokemon Encounters in {benchmark}s");
+                        var benchmark = BenchmarkAction(async () => await UpdateMapPokemonAsync(mapPokemon));
+                        if (Options.IsEnabled(DataLogLevel.MapPokemon))
+                        {
+                            _logger.LogInformation($"Upserted {mapPokemon.Count:N0} Lure Pokemon in {benchmark}s");
+                        }
                     }
                 }
-            }
 
-            stopwatch.Stop();
+                //if (wildPokemon.Count > 0 || nearbyPokemon.Count > 0 || mapPokemon.Count > 0)
+                //{
+                //    await UpdatePokemonAsync(wildPokemon, nearbyPokemon, mapPokemon);
+                //}
 
-            // TODO: Configurable log level
-            if (Options.IsEnabled(DataLogLevel.Summary))
-            {
-                var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                _logger.LogInformation($"Data processer upserted {data.Count:N0} entities in {totalSeconds}s");
-            }
+                var quests = data.Where(x => x.type == ProtoDataType.Quest)
+                                 .ToList();
+                if (quests.Count > 0)
+                {
+                    // Insert quests
+                    //using (await _questsLock.LockAsync(stoppingToken))
+                    {
+                        var benchmark = BenchmarkAction(async () => await UpdateQuestsAsync(quests));
+                        if (Options.IsEnabled(DataLogLevel.Quests))
+                        {
+                            _logger.LogInformation($"Upserted {quests.Count:N0} Pokestop Quests in {benchmark}s");
+                        }
+                    }
+                }
 
-            // TODO: Add config check to startup services registration pipeline
-            if (Options.ClearOldForts)
-            {
-                // Clear any old Gyms or Pokestops that might have been removed from the game
-                //await _clearFortsService.ClearOldFortsAsync();
+                var encounters = data.Where(x => x.type == ProtoDataType.Encounter)
+                                     .ToList();
+                if (encounters.Count > 0)
+                {
+                    // Insert Pokemon encounters
+                    //using (await _encountersLock.LockAsync(stoppingToken))
+                    {
+                        var benchmark = BenchmarkAction(async () => await UpdateEncountersAsync(encounters));
+                        if (Options.IsEnabled(DataLogLevel.PokemonEncounters))
+                        {
+                            _logger.LogInformation($"Upserted {encounters.Count:N0} Pokemon Encounters in {benchmark}s");
+                        }
+                    }
+                }
+
+                var diskEncounters = data.Where(x => x.type == ProtoDataType.DiskEncounter)
+                                         .ToList();
+                if (diskEncounters.Count > 0)
+                {
+                    // Insert lured/disk Pokemon encounters
+                    //using (await _diskEncountersLock.LockAsync(stoppingToken))
+                    {
+                        var benchmark = BenchmarkAction(async () => await UpdateDiskEncountersAsync(diskEncounters));
+                        if (Options.IsEnabled(DataLogLevel.PokemonDiskEncounters))
+                        {
+                            _logger.LogInformation($"Upserted {diskEncounters.Count:N0} Disk Pokemon Encounters in {benchmark}s");
+                        }
+                    }
+                }
+
+                stopwatch.Stop();
+
+                if (Options.IsEnabled(DataLogLevel.Summary))
+                {
+                    var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+                    _logger.LogInformation($"Data processer upserted {data.Count:N0} entities in {totalSeconds}s");
+                }
+
+                // TODO: Add config check to startup services registration pipeline
+                if (Options.ClearOldForts)
+                {
+                    // Clear any old Gyms or Pokestops that might have been removed from the game
+                    //await _clearFortsService.ClearOldFortsAsync();
+                }
             }
         }
 
@@ -435,7 +446,7 @@
 
         #region Data Handling Methods
 
-        private async Task UpdatePlayerDataAsync(List<dynamic> playerData)
+        private async Task UpdatePlayerDataAsync(IEnumerable<dynamic> playerData)
         {
             try
             {
@@ -452,24 +463,27 @@
             await Task.CompletedTask;
         }
 
-        private async Task UpdateCellsAsync(List<dynamic> cells)
+        private async Task UpdateCellsAsync(IEnumerable<dynamic> cells)
+        //private async Task UpdateCellsAsync(MapDbContext context, IEnumerable<dynamic> cells)
         {
             try
             {
                 // Convert cell ids to Cell models
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
                 //var raw = context.Database.ExecuteSqlRawAsync("", cells);
-                var s2cells = cells.Select(cell => new Cell(cell))
-                                   .ToList();
-                await context.Cells.BulkMergeAsync(s2cells, options =>
-                {
-                    options.AllowDuplicateKeys = false;
-                    options.UseTableLock = true;
-                    options.OnMergeUpdateInputExpression = p => new
+                var s2cells = cells
+                    // Filter cells not already cached
+                    .Where(cell => !_memCache.IsSet<ulong, Cell>(cell))
+                    .Select(cell =>
                     {
-                        p.Updated,
-                    };
-                });
+                        ulong id = Convert.ToUInt64(Convert.ToString(cell));
+                        //var cached = _memCache.Get<ulong, Cell>(id);
+                        //return cached ?? new Cell(id);
+                        return new Cell(id);
+                    })
+                    .ToList();
+                // TODO: Check if s2 cell is in cache, if so remove from upsert list
+                await context.Cells.BulkMergeAsync(s2cells, options => GetBulkOptions<Cell>(p => new { p.Updated }));
 
                 foreach (var cell in s2cells)
                 {
@@ -483,14 +497,24 @@
             }
         }
 
-        private async Task UpdateClientWeatherAsync(List<dynamic> clientWeather)
+        private async Task UpdateClientWeatherAsync(IEnumerable<ClientWeatherProto> clientWeather)
+        //private async Task UpdateClientWeatherAsync(MapDbContext context, IEnumerable<ClientWeatherProto> clientWeather)
         {
             try
             {
                 // Convert weather protos to Weather models
-                using var context = _dbFactory.CreateDbContext();
-                var weather = clientWeather.Select(weather => new Weather(weather))
-                                           .ToList();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                var weather = clientWeather
+                    // Filter cells not already cached
+                    .Where(weatherCell => !_memCache.IsSet<long, Weather>(weatherCell.S2CellId))
+                    .Select(weatherCell =>
+                    {
+                        long id = Convert.ToInt64(Convert.ToString(weatherCell.S2CellId));
+                        //var cached = _memCache.Get<long, Weather>(id);
+                        //return cached ?? new Weather(weatherCell);
+                        return new Weather(weatherCell);
+                    })
+                    .ToList();
                 foreach (var weatherCell in weather)
                 {
                     await weatherCell.UpdateAsync(context);
@@ -529,11 +553,12 @@
             }
         }
 
-        private async Task UpdateWildPokemonAsync(List<dynamic> wildPokemon)
+        private async Task UpdateWildPokemonAsync(IEnumerable<dynamic> wildPokemon)
+        //private async Task UpdateWildPokemonAsync(MapDbContext context, IEnumerable<dynamic> wildPokemon)
         {
             try
             {
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
                 var pokemonToUpsert = new List<Pokemon>();
                 var spawnpointsToUpsert = new List<Spawnpoint>();
                 foreach (var wild in wildPokemon)
@@ -574,6 +599,8 @@
                         };
                     });
 
+                    spawnpointsToUpsert.ForEach(spawnpoint => _memCache.Set(spawnpoint.Id, spawnpoint));
+
                     _logger.LogInformation($"Upserted {spawnpointsToUpsert.Count:N0} Spawnpoints");
                 }
 
@@ -603,6 +630,8 @@
                         };
                     });
 
+                    pokemonToUpsert.ForEach(pkmn => _memCache.Set(pkmn.Id, pkmn));
+
                     /*
                     foreach (var pokemon in pokemonToUpsert)
                     {
@@ -628,11 +657,12 @@
             }
         }
 
-        private async Task UpdateNearbyPokemonAsync(List<dynamic> nearbyPokemon)
+        private async Task UpdateNearbyPokemonAsync(IEnumerable<dynamic> nearbyPokemon)
+        //private async Task UpdateNearbyPokemonAsync(MapDbContext context, IEnumerable<dynamic> nearbyPokemon)
         {
             try
             {
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var nearby in nearbyPokemon)
                 {
@@ -685,11 +715,12 @@
             }
         }
 
-        private async Task UpdateMapPokemonAsync(List<dynamic> mapPokemon)
+        private async Task UpdateMapPokemonAsync(IEnumerable<dynamic> mapPokemon)
+        //private async Task UpdateMapPokemonAsync(MapDbContext context, IEnumerable<dynamic> mapPokemon)
         {
             try
             {
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var map in mapPokemon)
                 {
@@ -744,11 +775,12 @@
             }
         }
 
-        private async Task UpdateFortsAsync(string username, List<dynamic> forts)
+        private async Task UpdateFortsAsync(string username, IEnumerable<dynamic> forts)
+        //private async Task UpdateFortsAsync(MapDbContext context, string username, IEnumerable<dynamic> forts)
         {
             try
             {
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
                 // Send found/nearby forts with gRPC service for leveling instance
                 var lvlForts = forts.Where(fort => fort.data.FortType != FortType.Gym)
                                     .Select(fort => fort.data)
@@ -871,10 +903,14 @@
                 {
                     await context.Incidents.BulkMergeAsync(incidentsToUpsert, options => options.UseTableLock = true);
                     _logger.LogInformation($"Upserted {incidentsToUpsert.Count:N0} Pokestop Incidents");
+
+                    incidentsToUpsert.ForEach(incident => _memCache.Set(incident.Id, incident));
                 }
                 if (gymsToUpsert.Count > 0)
                 {
                     await context.Gyms.BulkMergeAsync(gymsToUpsert, options => options.UseTableLock = true);
+
+                    gymsToUpsert.ForEach(gym => _memCache.Set(gym.Id, gym));
                 }
             }
             catch (Exception ex)
@@ -883,11 +919,12 @@
             }
         }
 
-        private async Task UpdateFortDetailsAsync(List<dynamic> fortDetails)
+        private async Task UpdateFortDetailsAsync(IEnumerable<dynamic> fortDetails)
+        //private async Task UpdateFortDetailsAsync(MapDbContext context, IEnumerable<dynamic> fortDetails)
         {
             try
             {
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
                 var pokestopsToUpsert = new List<Pokestop>();
                 var gymsToUpsert = new List<Gym>();
 
@@ -949,6 +986,7 @@
                         };
                     });
 
+                    pokestopsToUpsert.ForEach(pokestop => _memCache.Set(pokestop.Id, pokestop));
                     //_logger.LogInformation($"Upserted {pokestopsToUpsert.Count:N0} Pokestop Details");
                 }
 
@@ -967,6 +1005,7 @@
                         };
                     });
 
+                    gymsToUpsert.ForEach(gym => _memCache.Set(gym.Id, gym));
                     //_logger.LogInformation($"Upserted {gymsToUpsert.Count:N0} Gym Details");
                 }
             }
@@ -976,11 +1015,12 @@
             }
         }
 
-        private async Task UpdateGymInfoAsync(List<dynamic> gymInfos)
+        private async Task UpdateGymInfoAsync(IEnumerable<dynamic> gymInfos)
+        //private async Task UpdateGymInfoAsync(MapDbContext context, IEnumerable<dynamic> gymInfos)
         {
             try
             {
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
                 var gymsToUpsert = new List<Gym>();
                 var gymDefendersToUpsert = new List<GymDefender>();
                 var gymTrainersToUpsert = new List<GymTrainer>();
@@ -1053,6 +1093,7 @@
                         };
                     });
 
+                    gymsToUpsert.ForEach(gym => _memCache.Set(gym.Id, gym));
                     //_logger.LogInformation($"Upserted {gymsToUpsert.Count:N0} Gym Information");
                 }
 
@@ -1064,6 +1105,7 @@
                         options.UseTableLock = true;
                     });
 
+                    gymTrainersToUpsert.ForEach(trainer => _memCache.Set(trainer.Name, trainer));
                     _logger.LogInformation($"Upserted {gymTrainersToUpsert.Count:N0} Gym Trainers");
                 }
 
@@ -1075,6 +1117,7 @@
                         options.UseTableLock = true;
                     });
 
+                    gymDefendersToUpsert.ForEach(defender => _memCache.Set(defender.Id, defender));
                     _logger.LogInformation($"Upserted {gymDefendersToUpsert.Count:N0} Gym Defenders");
                 }
             }
@@ -1084,11 +1127,12 @@
             }
         }
 
-        private async Task UpdateQuestsAsync(List<dynamic> quests)
+        private async Task UpdateQuestsAsync(IEnumerable<dynamic> quests)
+        //private async Task UpdateQuestsAsync(MapDbContext context, IEnumerable<dynamic> quests)
         {
             try
             {
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
                 var questsToUpsert = new List<Pokestop>();
 
                 // Convert quest protos to Pokestop models
@@ -1145,6 +1189,7 @@
                         };
                     });
 
+                    questsToUpsert.ForEach(quest => _memCache.Set(quest.Id, quest));
                     //_logger.LogInformation($"Upserted {quests.Count:N0} Pokestop Quests");
                 }
             }
@@ -1154,51 +1199,59 @@
             }
         }
 
-        private async Task UpdateEncountersAsync(List<dynamic> encounters)
+        private async Task UpdateEncountersAsync(IEnumerable<dynamic> encounters)
+        //private async Task UpdateEncountersAsync(MapDbContext context, IEnumerable<dynamic> encounters)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var timestampMs = now * 1000;
 
             try
             {
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
                 var pokemonToUpsert = new List<Pokemon>();
                 var spawnpointsToUpsert = new List<Spawnpoint>();
                 var s2cellsToUpsert = new List<Cell>();
                 foreach (var encounter in encounters)
                 {
-                    var data = (EncounterOutProto)encounter.data;
-                    var username = encounter.username;
-                    var isEvent = encounter.isEvent;
-                    var encounterId = data.Pokemon.EncounterId.ToString();
-                    var pokemon = await context.Pokemon.FindAsync(encounterId);
-                    if (pokemon == null)
+                    try
                     {
-                        // New Pokemon
-                        var cellId = S2CellExtensions.S2CellIdFromLatLng(data.Pokemon.Latitude, data.Pokemon.Longitude);
-                        if (!context.Cells.Any(cell => cell.Id == cellId.Id))
+                        var data = (EncounterOutProto)encounter.data;
+                        var username = encounter.username;
+                        var isEvent = encounter.isEvent;
+                        var encounterId = data.Pokemon.EncounterId.ToString();
+                        var pokemon = await context.Pokemon.FindAsync(encounterId);
+                        if (pokemon == null)
                         {
-                            s2cellsToUpsert.Add(new Cell(cellId.Id));
+                            // New Pokemon
+                            var cellId = S2CellExtensions.S2CellIdFromLatLng(data.Pokemon.Latitude, data.Pokemon.Longitude);
+                            if (!context.Cells.Any(cell => cell.Id == cellId.Id))
+                            {
+                                s2cellsToUpsert.Add(new Cell(cellId.Id));
+                            }
+                            pokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
                         }
-                        pokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
-                    }
-                    await pokemon.AddEncounterAsync(data, username);
-                    var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data.Pokemon, timestampMs);
-                    if (spawnpoint != null)
-                    {
-                        spawnpointsToUpsert.Add(spawnpoint);
-                    }
+                        await pokemon.AddEncounterAsync(data, username);
+                        var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data.Pokemon, timestampMs);
+                        if (spawnpoint != null)
+                        {
+                            spawnpointsToUpsert.Add(spawnpoint);
+                        }
 
-                    if (pokemon.HasIvChanges)
-                    {
-                        SetPvpRankings(pokemon);
-                    }
-                    await pokemon.UpdateAsync(context, updateIv: true);
-                    pokemonToUpsert.Add(pokemon);
+                        if (pokemon.HasIvChanges)
+                        {
+                            SetPvpRankings(pokemon);
+                        }
+                        await pokemon.UpdateAsync(context, updateIv: true);
+                        pokemonToUpsert.Add(pokemon);
 
-                    if (pokemon.SendWebhook)
+                        if (pokemon.SendWebhook)
+                        {
+                            await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
+                        }
+                    }
+                    catch (Exception ex)
                     {
-                        await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
+                        Console.WriteLine($"Error: {ex}");
                     }
                 }
 
@@ -1216,17 +1269,29 @@
                         };
                     });
 
+                    spawnpointsToUpsert.ForEach(spawnpoint => _memCache.Set(spawnpoint.Id, spawnpoint));
+
                     _logger.LogInformation($"Upserted {spawnpointsToUpsert.Count:N0} Spawnpoints");
                 }
 
                 if (s2cellsToUpsert.Count > 0)
                 {
-                    await context.Cells.BulkMergeAsync(s2cellsToUpsert, options => options.UseTableLock = true);
+                    await context.Cells.BulkMergeAsync(s2cellsToUpsert, options =>
+                    {
+                        options.AllowDuplicateKeys = false;
+                        options.UseTableLock = true;
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.Updated,
+                        };
+                    });
 
                     foreach (var cell in s2cellsToUpsert)
                     {
                         _clearFortsService.AddCell(cell.Id);
                     }
+
+                    s2cellsToUpsert.ForEach(s2cell => _memCache.Set(s2cell.Id, s2cell));
                 }
 
                 if (pokemonToUpsert.Count > 0)
@@ -1257,6 +1322,7 @@
                     });
 
                     //_logger.LogInformation($"Upserted {pokemonToUpsert.Count:N0} Pokemon Encounters");
+                    pokemonToUpsert.ForEach(pokemon => _memCache.Set(pokemon.Id, pokemon));
 
                     await SendPokemonAsync(pokemonToUpsert);
                 }
@@ -1267,78 +1333,78 @@
             }
         }
 
-        private async Task UpdateDiskEncountersAsync(List<dynamic> diskEncounters)
+        private async Task UpdateDiskEncountersAsync(IEnumerable<dynamic> diskEncounters)
+        //private async Task UpdateDiskEncountersAsync(MapDbContext context, IEnumerable<dynamic> diskEncounters)
         {
-            using (var context = _dbFactory.CreateDbContext())
+            try
             {
-                try
+                using var context = await _dbFactory.CreateDbContextAsync();
+                var pokemonToUpsert = new List<Pokemon>();
+                foreach (var diskEncounter in diskEncounters)
                 {
-                    var pokemonToUpsert = new List<Pokemon>();
-                    foreach (var diskEncounter in diskEncounters)
+                    var data = (DiskEncounterOutProto)diskEncounter.data;
+                    var username = diskEncounter.username;
+                    var isEvent = diskEncounter.isEvent;
+                    var displayId = data.Pokemon.PokemonDisplay.DisplayId;
+                    var pokemon = await context.Pokemon.FindAsync(displayId);
+                    if (pokemon != null)
                     {
-                        var data = (DiskEncounterOutProto)diskEncounter.data;
-                        var username = diskEncounter.username;
-                        var isEvent = diskEncounter.isEvent;
-                        var displayId = data.Pokemon.PokemonDisplay.DisplayId;
-                        var pokemon = await context.Pokemon.FindAsync(displayId);
-                        if (pokemon != null)
+                        pokemon.AddDiskEncounter(data, username);
+                        if (pokemon.HasIvChanges)
                         {
-                            pokemon.AddDiskEncounter(data, username);
-                            if (pokemon.HasIvChanges)
-                            {
-                                SetPvpRankings(pokemon);
-                            }
-                            await pokemon.UpdateAsync(context, updateIv: true);
-                            pokemonToUpsert.Add(pokemon);
-
-                            if (pokemon.SendWebhook)
-                            {
-                                await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
-                            }
+                            SetPvpRankings(pokemon);
                         }
-                        else
+                        await pokemon.UpdateAsync(context, updateIv: true);
+                        pokemonToUpsert.Add(pokemon);
+
+                        if (pokemon.SendWebhook)
                         {
-                            _diskCache.Set(displayId, data, TimeSpan.FromMinutes(30));
-                            _logger.LogInformation($"Disk encounter with id '{displayId}' added to cache");
+                            await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
                         }
                     }
-
-                    if (pokemonToUpsert.Count > 0)
+                    else
                     {
-                        await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
-                        {
-                            options.UseTableLock = true;
-                            // Only update IV specific columns
-                            options.OnMergeUpdateInputExpression = p => new
-                            {
-                                p.Id,
-                                p.PokemonId,
-                                p.Form,
-                                p.Costume,
-                                p.Gender,
-                                p.AttackIV,
-                                p.DefenseIV,
-                                p.StaminaIV,
-                                p.CP,
-                                p.Level,
-                                p.Size,
-                                p.Weight,
-                                p.Move1,
-                                p.Move2,
-                                p.Weather,
-                                p.PvpRankings,
-                            };
-                        });
-
-                        //_logger.LogInformation($"Upserted {pokemonToUpsert.Count:N0} Disk Pokemon Encounters");
-
-                        await SendPokemonAsync(pokemonToUpsert);
+                        _diskCache.Set(displayId, data, TimeSpan.FromMinutes(30));
+                        _logger.LogInformation($"Disk encounter with id '{displayId}' added to cache");
                     }
                 }
-                catch (Exception ex)
+
+                if (pokemonToUpsert.Count > 0)
                 {
-                    _logger.LogError($"UpdateDiskEncountersAsync: {ex.InnerException?.Message ?? ex.Message}");
+                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    {
+                        options.UseTableLock = true;
+                        // Only update IV specific columns
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.Id,
+                            p.PokemonId,
+                            p.Form,
+                            p.Costume,
+                            p.Gender,
+                            p.AttackIV,
+                            p.DefenseIV,
+                            p.StaminaIV,
+                            p.CP,
+                            p.Level,
+                            p.Size,
+                            p.Weight,
+                            p.Move1,
+                            p.Move2,
+                            p.Weather,
+                            p.PvpRankings,
+                        };
+                    });
+
+                    //_logger.LogInformation($"Upserted {pokemonToUpsert.Count:N0} Disk Pokemon Encounters");
+                    pokemonToUpsert.ForEach(pokemon => _memCache.Set(pokemon.Id, pokemon));
+
+                    await SendPokemonAsync(pokemonToUpsert);
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"UpdateDiskEncountersAsync: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
@@ -1539,7 +1605,7 @@
 
         #endregion
 
-        private double BenchmarkAction(Action action, ushort precision = 4)
+        private static double BenchmarkAction(Action action, ushort precision = 4)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -1549,6 +1615,17 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
             //Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");
             return totalSeconds;
+        }
+
+        private static BulkOperation<T> GetBulkOptions<T>(Expression<Func<T, object>> keys) where T : BaseEntity
+        {
+            var options = new BulkOperation<T>
+            {
+                AllowDuplicateKeys = false,
+                UseTableLock = true,
+                OnMergeUpdateInputExpression = keys,
+            };
+            return options;
         }
     }
 }

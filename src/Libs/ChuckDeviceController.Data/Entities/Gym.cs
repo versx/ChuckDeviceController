@@ -13,7 +13,6 @@
     using ChuckDeviceController.Extensions;
 
     [Table("gym")]
-    //public class Gym : BaseEntity, IGym, ICoordinateEntity, IFortEntity, IWebhookEntity
     public class Gym : BaseFort, IGym, IWebhookEntity
     {
         #region Constants

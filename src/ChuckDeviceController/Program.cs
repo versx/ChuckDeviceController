@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 using ChuckDeviceController;
 using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
@@ -11,6 +12,9 @@ using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
+
+#region Config
+
 var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var config = Config.LoadConfig(args, env);
 if (config.Providers.Count() == 2)
@@ -19,6 +23,8 @@ if (config.Providers.Count() == 2)
     // failed to load config provider.
     Environment.FailFast($"Failed to find or load configuration file, exiting...");
 }
+
+#endregion
 
 //var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -42,14 +48,11 @@ builder.WebHost.ConfigureLogging(configure =>
 
 #region Services
 
-// Register available DI services
-//builder.Services.AddSingleton<IBackgroundTaskQueue<ProtoPayloadQueueItem>>(_ =>
-//    new DefaultBackgroundTaskQueue<ProtoPayloadQueueItem>(Strings.MaximumQueueCapacity));
-//builder.Services.AddSingleton<IBackgroundTaskQueue<List<dynamic>>>(_ =>
-//    new DefaultBackgroundTaskQueue<List<dynamic>>(Strings.MaximumQueueCapacity));
-
 builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>>(_ => new AsyncQueue<ProtoPayloadQueueItem>());
 builder.Services.AddSingleton<IAsyncQueue<List<dynamic>>>(_ => new AsyncQueue<List<dynamic>>());
+
+//builder.Services.AddScoped<IMemoryCacheHostedService, MemoryCacheHostedService>();
+builder.Services.AddSingleton<IMemoryCacheHostedService, MemoryCacheHostedService>();
 
 builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
@@ -59,6 +62,16 @@ builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSect
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<AuthHeadersInterceptor>();
+
+var memCacheOptions = new MemoryCacheOptions
+{
+    // TODO: Make 'CacheSizeLimit' configurable
+    SizeLimit = 10240,
+    ExpirationScanFrequency = TimeSpan.FromMinutes(60),
+    CompactionPercentage = 0.50,
+};
+builder.Services.AddMemoryCache(options => options = memCacheOptions);
+builder.Services.AddDistributedMemoryCache(options => options = (MemoryDistributedCacheOptions)memCacheOptions);
 
 #endregion
 
@@ -74,18 +87,12 @@ builder.Services.AddDbContext<ControllerDbContext>(options =>
 
 #endregion
 
-builder.Services.AddMemoryCache(options =>
-{
-    // TODO: Make 'CacheSizeLimit' configurable
-    options.SizeLimit = 100;
-});
-//builder.Services.AddDistributedMemoryCache();
-
 #region Hosted Services
 
 // Register available hosted services
 builder.Services.AddHostedService<ClearFortsHostedService>();
 builder.Services.AddHostedService<DataProcessorService>();
+builder.Services.AddHostedService<MemoryCacheHostedService>();
 builder.Services.AddHostedService<ProtoProcessorService>();
 
 #endregion
