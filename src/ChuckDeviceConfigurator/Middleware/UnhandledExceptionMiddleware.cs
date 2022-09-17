@@ -1,10 +1,13 @@
 ﻿namespace ChuckDeviceConfigurator.Middleware
 {
     using System.Net;
-    using System.Text.Json;
+
+    using ChuckDeviceController.Extensions.Json;
 
     public class UnhandledExceptionMiddleware
     {
+        private static readonly ILogger<UnhandledExceptionMiddleware> _logger =
+            new Logger<UnhandledExceptionMiddleware>(LoggerFactory.Create(x => x.AddConsole()));
         private readonly RequestDelegate _next;
 
         public UnhandledExceptionMiddleware(RequestDelegate next)
@@ -29,14 +32,13 @@
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-            Console.WriteLine($"Unhandled Error: {exception}");
+            _logger.LogCritical($"Unhandled Error: {exception}");
 
-            var json = new ErrorDetails
+            await context.Response.WriteAsync(new ErrorDetails
             {
                 StatusCode = context.Response.StatusCode,
-                Message = "Internal Server Error from the custom middleware."
-            }.ToString();
-            await context.Response.WriteAsync(json);
+                Message = "Internal Server Error from the custom middleware.",
+            }.ToString());
         }
     }
 
@@ -48,7 +50,7 @@
 
         public override string ToString()
         {
-            return JsonSerializer.Serialize(this);
+            return this.ToJson();
         }
     }
 }
