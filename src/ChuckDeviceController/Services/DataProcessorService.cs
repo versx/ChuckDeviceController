@@ -2,6 +2,7 @@
 {
     using System.Data;
     using System.Diagnostics;
+    using System.Linq;
     using System.Linq.Expressions;
     using System.Threading;
 
@@ -16,6 +17,7 @@
     using Z.BulkOperations;
 
     using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
@@ -135,8 +137,8 @@
 
                 try
                 {
-                    var workItems = new[] { await _taskQueue.DequeueAsync(stoppingToken) };
-                    //var workItems = await _taskQueue.DequeueBulkAsync(5, stoppingToken);
+                    //var workItems = new[] { await _taskQueue.DequeueAsync(stoppingToken) };
+                    var workItems = await _taskQueue.DequeueBulkAsync(5, stoppingToken);
                     //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
                     if (workItems == null)
                     {
@@ -210,10 +212,10 @@
                 //using var context = _dbFactory.CreateDbContext();
 
                 var cells = data.Where(x => x.type == ProtoDataType.Cell)
-                                .Select(x => x.cell)
+                                .Select(x => (ulong)x.cell)
                                 .Distinct()
                                 .ToList();
-                if (cells.Count > 0)
+                if (cells.Any())
                 {
                     // Insert S2 cells
                     //using (await _cellsLock.LockAsync(stoppingToken))
@@ -230,7 +232,7 @@
                                         .Select(x => (ClientWeatherProto)x.data)
                                         .Distinct()
                                         .ToList();
-                if (clientWeather.Count > 0)
+                if (clientWeather.Any())
                 {
                     // Insert weather cells
                     //using (await _weatherLock.LockAsync(stoppingToken))
@@ -245,7 +247,7 @@
 
                 var forts = data.Where(x => x.type == ProtoDataType.Fort)
                                 .ToList();
-                if (forts.Count > 0)
+                if (forts.Any())
                 {
                     // Insert Forts
                     //using (await _fortsLock.LockAsync(stoppingToken))
@@ -260,7 +262,7 @@
 
                 var fortDetails = data.Where(x => x.type == ProtoDataType.FortDetails)
                                       .ToList();
-                if (fortDetails.Count > 0)
+                if (fortDetails.Any())
                 {
                     // Insert Fort Details
                     //using (await _fortDetailsLock.LockAsync(stoppingToken))
@@ -275,7 +277,7 @@
 
                 var gymInfos = data.Where(x => x.type == ProtoDataType.GymInfo)
                                    .ToList();
-                if (gymInfos.Count > 0)
+                if (gymInfos.Any())
                 {
                     // Insert gym info
                     //using (await _fortDetailsLock.LockAsync(stoppingToken))
@@ -291,7 +293,7 @@
 
                 var wildPokemon = data.Where(x => x.type == ProtoDataType.WildPokemon)
                                       .ToList();
-                if (wildPokemon.Count > 0)
+                if (wildPokemon.Any())
                 {
                     // Insert wild pokemon
                     //using (await _wildPokemonLock.LockAsync(stoppingToken))
@@ -306,7 +308,7 @@
 
                 var nearbyPokemon = data.Where(x => x.type == ProtoDataType.NearbyPokemon)
                                         .ToList();
-                if (nearbyPokemon.Count > 0)
+                if (nearbyPokemon.Any())
                 {
                     // Insert nearby pokemon
                     //using (await _nearbyPokemonLock.LockAsync(stoppingToken))
@@ -321,7 +323,7 @@
 
                 var mapPokemon = data.Where(x => x.type == ProtoDataType.MapPokemon)
                                      .ToList();
-                if (mapPokemon.Count > 0)
+                if (mapPokemon.Any())
                 {
                     // Insert map pokemon
                     //using (await _mapPokemonLock.LockAsync(stoppingToken))
@@ -341,7 +343,7 @@
 
                 var quests = data.Where(x => x.type == ProtoDataType.Quest)
                                  .ToList();
-                if (quests.Count > 0)
+                if (quests.Any())
                 {
                     // Insert quests
                     //using (await _questsLock.LockAsync(stoppingToken))
@@ -356,7 +358,7 @@
 
                 var encounters = data.Where(x => x.type == ProtoDataType.Encounter)
                                      .ToList();
-                if (encounters.Count > 0)
+                if (encounters.Any())
                 {
                     // Insert Pokemon encounters
                     //using (await _encountersLock.LockAsync(stoppingToken))
@@ -371,7 +373,7 @@
 
                 var diskEncounters = data.Where(x => x.type == ProtoDataType.DiskEncounter)
                                          .ToList();
-                if (diskEncounters.Count > 0)
+                if (diskEncounters.Any())
                 {
                     // Insert lured/disk Pokemon encounters
                     //using (await _diskEncountersLock.LockAsync(stoppingToken))
@@ -465,28 +467,43 @@
             await Task.CompletedTask;
         }
 
-        private async Task UpdateCellsAsync(IEnumerable<dynamic> cells)
+        private async Task UpdateCellsAsync(IEnumerable<ulong> cells)
         //private async Task UpdateCellsAsync(MapDbContext context, IEnumerable<dynamic> cells)
         {
+            var sql = string.Empty;
             try
             {
                 // Convert cell ids to Cell models
+                var s2cells = cells
+                    // Filter cells not already cached, cached cells expire every 60 minutes.
+                    // Once expired they will be updated when found again.
+                    .Where(cellId => !_memCache.IsSet<ulong, Cell>(cellId))
+                    .Select(cellId => new Cell(cellId)) //var cached = _memCache.Get<ulong, Cell>(cellId); ?? new Cell(cellId)
+                    .ToList();
+
+                // Check if any new/need to be updated cells, otherwise skip
+                if (!s2cells.Any())
+                    return;
+
                 //using var context = await _dbFactory.CreateDbContextAsync();
                 using var context = _dbFactory.CreateDbContext();
-                //var raw = context.Database.ExecuteSqlRawAsync("", cells);
-                var s2cells = cells
-                    // Filter cells not already cached
-                    .Where(cell => !_memCache.IsSet<ulong, Cell>(cell))
-                    .Select(cell =>
-                    {
-                        ulong id = Convert.ToUInt64(Convert.ToString(cell));
-                        //var cached = _memCache.Get<ulong, Cell>(id);
-                        //return cached ?? new Cell(id);
-                        return new Cell(id);
-                    })
-                    .ToList();
-                // TODO: Check if s2 cell is in cache, if so remove from upsert list
-                await context.Cells.BulkMergeAsync(s2cells, options => GetBulkOptions<Cell>(p => new { p.Updated }));
+                var ts = DateTime.UtcNow.ToTotalSeconds();
+                var cellsSql = s2cells.Select(cell => $"({cell.Id}, {cell.Level}, {cell.Latitude}, {cell.Longitude}, {ts})");
+                var args = string.Join(",", cellsSql);
+                sql = $@"
+INSERT INTO s2cell (id, level, center_lat, center_lon, updated)
+VALUES
+    {args}
+ON DUPLICATE KEY UPDATE
+    level=VALUES(level),
+    center_lat=VALUES(center_lat),
+    center_lon=VALUES(center_lon),
+    updated=VALUES(updated)
+";
+                var result = await context.Database.ExecuteSqlRawAsync(sql);
+                _logger.LogInformation($"Inserted or upserted {result:N0} S2 cell entities");
+
+                //await context.Cells.BulkMergeAsync(s2cells, options => GetBulkOptions<Cell>(p => new { p.Updated }));
 
                 foreach (var cell in s2cells)
                 {
@@ -503,34 +520,86 @@
         private async Task UpdateClientWeatherAsync(IEnumerable<ClientWeatherProto> clientWeather)
         //private async Task UpdateClientWeatherAsync(MapDbContext context, IEnumerable<ClientWeatherProto> clientWeather)
         {
+            var sql = string.Empty;
             try
             {
                 // Convert weather protos to Weather models
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
                 var weather = clientWeather
                     // Filter cells not already cached
-                    .Where(weatherCell => !_memCache.IsSet<long, Weather>(weatherCell.S2CellId))
-                    .Select(weatherCell =>
-                    {
-                        long id = Convert.ToInt64(Convert.ToString(weatherCell.S2CellId));
-                        //var cached = _memCache.Get<long, Weather>(id);
-                        //return cached ?? new Weather(weatherCell);
-                        return new Weather(weatherCell);
-                    })
+                    .Where(wcell => !_memCache.IsSet<long, Weather>(wcell.S2CellId))
+                    // Instantiate new Weather entity models for new weather cells not cached
+                    .Select(wcell => new Weather(wcell))
                     .ToList();
-                foreach (var weatherCell in weather)
-                {
-                    await weatherCell.UpdateAsync(context);
 
-                    if (weatherCell.SendWebhook)
+                // Check if any new/need to be updated weather cells, otherwise skip
+                if (!weather.Any())
+                    return;
+
+                //using var context = await _dbFactory.CreateDbContextAsync();
+                using var context = _dbFactory.CreateDbContext();
+                foreach (var wcell in weather)
+                {
+                    await wcell.UpdateAsync(context, _memCache);
+
+                    // Check if 'SendWebhook' flag was triggered, if so relay webhook payload to communicator
+                    if (wcell.SendWebhook)
                     {
-                        await SendWebhookPayloadAsync(WebhookPayloadType.Weather, weatherCell);
+                        await SendWebhookPayloadAsync(WebhookPayloadType.Weather, wcell);
                     }
 
-                    _memCache.Set(weatherCell.Id, weatherCell);
+                    // Cache weather cell entity by id
+                    _memCache.Set(wcell.Id, wcell);
                 }
 
+                var ts = DateTime.UtcNow.ToTotalSeconds();
+                var weatherSql = weather.Select(wcell =>
+                {
+                    var list = new List<object>
+                    {
+                        wcell.Id,
+                        wcell.Level,
+                        wcell.Latitude,
+                        wcell.Longitude,
+                        Convert.ToInt32(wcell.GameplayCondition),
+                        wcell.CloudLevel,
+                        wcell.RainLevel,
+                        wcell.SnowLevel,
+                        wcell.FogLevel,
+                        wcell.WindLevel,
+                        wcell.WindDirection,
+                        wcell.WarnWeather ?? false,
+                        wcell.SpecialEffectLevel,
+                        wcell.Severity ?? 0,
+                        wcell.Updated,
+                    };
+                    return "(" + string.Join(",", list) + ")";
+                });
+                var args = string.Join(",", weatherSql);
+                sql = $@"
+INSERT INTO weather (id, level, latitude, longitude, gameplay_condition, cloud_level, rain_level, snow_level, fog_level, wind_level, wind_direction, warn_weather, special_effect_level, severity, updated)
+VALUES
+    {args}
+ON DUPLICATE KEY UPDATE
+    level=VALUES(level),
+    latitude=VALUES(latitude),
+    longitude=VALUES(longitude),
+    gameplay_condition=VALUES(gameplay_condition),
+    wind_direction=VALUES(wind_direction),
+    cloud_level=VALUES(cloud_level),
+    rain_level=VALUES(rain_level),
+    wind_level=VALUES(wind_level),
+    snow_level=VALUES(snow_level),
+    fog_level=VALUES(fog_level),
+    special_effect_level=VALUES(special_effect_level),
+    severity=VALUES(severity),
+    warn_weather=VALUES(warn_weather),
+    updated=VALUES(updated)
+";
+                var result = await context.Database.ExecuteSqlRawAsync(sql);
+                // TODO: Check why result value returns double of entities amount it updated
+                _logger.LogInformation($"Inserted or upserted {result:N0} weather cell entities");
+
+                /*
                 await context.Weather.BulkMergeAsync(weather, options =>
                 {
                     options.AllowDuplicateKeys = false;
@@ -550,10 +619,11 @@
                         p.Updated,
                     };
                 });
+                */
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateClientWeatherAsync: {ex.InnerException?.Message ?? ex.Message}");
+               _logger.LogError($"UpdateClientWeatherAsync: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
@@ -574,13 +644,13 @@
                     var username = wild.username;
                     var isEvent = wild.isEvent;
                     var pokemon = new Pokemon(data, cellId, username, isEvent);
-                    var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data, timestampMs);
+                    var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data.TimeTillHiddenMs, timestampMs);
                     if (spawnpoint != null)
                     {
                         spawnpointsToUpsert.Add(spawnpoint);
                     }
 
-                    await pokemon.UpdateAsync(context, updateIv: false);
+                    await pokemon.UpdateAsync(context, _memCache, updateIv: false);
                     pokemonToUpsert.Add(pokemon);
 
                     if (pokemon.SendWebhook)
@@ -677,7 +747,7 @@
                     var username = nearby.username;
                     var isEvent = nearby.isEvent;
                     var pokemon = new Pokemon(context, data, cellId, username, isEvent);
-                    await pokemon.UpdateAsync(context, updateIv: false);
+                    await pokemon.UpdateAsync(context, _memCache, updateIv: false);
                     pokemonToUpsert.Add(pokemon);
 
                     if (pokemon.SendWebhook)
@@ -736,7 +806,7 @@
                     var username = map.username;
                     var isEvent = map.isEvent;
                     var pokemon = new Pokemon(context, data, cellId, username, isEvent);
-                    await pokemon.UpdateAsync(context, updateIv: false);
+                    await pokemon.UpdateAsync(context, _memCache, updateIv: false);
 
                     // Check if we have a pending disk encounter cache
                     var displayId = data.PokemonDisplay.DisplayId;
@@ -747,7 +817,7 @@
                         _logger.LogDebug($"Found Pokemon disk encounter with id '{displayId}' in cache");
 
                         pokemon.AddDiskEncounter(cachedDiskEncounter, username);
-                        await pokemon.UpdateAsync(context, updateIv: true);
+                        await pokemon.UpdateAsync(context, _memCache, updateIv: true);
                     }
                     else
                     {
@@ -817,7 +887,7 @@
                         case FortType.Checkpoint:
                             // Init Pokestop model from fort proto data
                             var pokestop = new Pokestop(data, cellId);
-                            var pokestopWebhooks = await pokestop.UpdateAsync(context, updateQuest: false);
+                            var pokestopWebhooks = await pokestop.UpdateAsync(context, _memCache, updateQuest: false);
                             if (pokestopWebhooks.Count > 0)
                             {
                                 foreach (var webhook in pokestopWebhooks)
@@ -834,7 +904,7 @@
                             {
                                 foreach (var incident in pokestop!.Incidents!)
                                 {
-                                    await incident.UpdateAsync(context);
+                                    await incident.UpdateAsync(context, _memCache);
                                     if (incident.SendWebhook)
                                     {
                                         await SendWebhookPayloadAsync(WebhookPayloadType.Invasion, new PokestopWithIncident(pokestop, incident));
@@ -848,7 +918,7 @@
                         case FortType.Gym:
                             // Init Gym model from fort proto data
                             var gym = new Gym(data, cellId);
-                            var gymWebhooks = await gym.UpdateAsync(context);
+                            var gymWebhooks = await gym.UpdateAsync(context, _memCache);
                             if (gymWebhooks.Count > 0)
                             {
                                 foreach (var webhook in gymWebhooks)
@@ -954,7 +1024,7 @@
                                 continue;
 
                             pokestop.AddDetails(data);
-                            var pokestopWebhooks = await pokestop.UpdateAsync(context);
+                            var pokestopWebhooks = await pokestop.UpdateAsync(context, _memCache);
                             foreach (var webhook in pokestopWebhooks)
                             {
                                 var type = ConvertWebhookType(webhook.Key);
@@ -975,7 +1045,7 @@
                                 continue;
 
                             gym.AddDetails(data);
-                            var gymWebhooks = await gym.UpdateAsync(context);
+                            var gymWebhooks = await gym.UpdateAsync(context, _memCache);
                             foreach (var webhook in gymWebhooks)
                             {
                                 var type = ConvertWebhookType(webhook.Key);
@@ -1059,7 +1129,7 @@
                         continue;
 
                     gym.AddDetails(data);
-                    var webhooks = await gym.UpdateAsync(context);
+                    var webhooks = await gym.UpdateAsync(context, _memCache);
                     foreach (var webhook in webhooks)
                     {
                         var type = ConvertWebhookType(webhook.Key);
@@ -1191,7 +1261,7 @@
                         continue;
 
                     pokestop.AddQuest(title, data, hasAr);
-                    var webhooks = await pokestop.UpdateAsync(context, updateQuest: true);
+                    var webhooks = await pokestop.UpdateAsync(context, _memCache, updateQuest: true);
                     foreach (var webhook in webhooks)
                     {
                         var type = ConvertWebhookType(webhook.Key);
@@ -1276,7 +1346,7 @@
                             pokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
                         }
                         await pokemon.AddEncounterAsync(data, username);
-                        var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data.Pokemon, timestampMs);
+                        var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data.Pokemon.TimeTillHiddenMs, timestampMs);
                         if (spawnpoint != null)
                         {
                             spawnpointsToUpsert.Add(spawnpoint);
@@ -1286,7 +1356,7 @@
                         {
                             SetPvpRankings(pokemon);
                         }
-                        await pokemon.UpdateAsync(context, updateIv: true);
+                        await pokemon.UpdateAsync(context, _memCache, updateIv: true);
                         pokemonToUpsert.Add(pokemon);
 
                         if (pokemon.SendWebhook)
@@ -1304,6 +1374,7 @@
                 {
                     await context.Spawnpoints.BulkMergeAsync(spawnpointsToUpsert, options =>
                     {
+                        options.AllowDuplicateKeys = false;
                         options.UseTableLock = true;
                         options.OnMergeUpdateInputExpression = p => new
                         {
@@ -1404,7 +1475,7 @@
                         {
                             SetPvpRankings(pokemon);
                         }
-                        await pokemon.UpdateAsync(context, updateIv: true);
+                        await pokemon.UpdateAsync(context, _memCache, updateIv: true);
                         pokemonToUpsert.Add(pokemon);
 
                         if (pokemon.SendWebhook)
@@ -1458,7 +1529,7 @@
             }
         }
 
-        private static async Task<Spawnpoint?> UpdateSpawnpointAsync(MapDbContext context, Pokemon pokemon, WildPokemonProto wild, ulong timestampMs)
+        private async Task<Spawnpoint?> UpdateSpawnpointAsync(MapDbContext context, Pokemon pokemon, int timeTillHiddenMs, ulong timestampMs)
         {
             var spawnId = pokemon.SpawnId ?? 0;
             if (spawnId == 0)
@@ -1467,9 +1538,9 @@
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-            if (wild.TimeTillHiddenMs <= 90000 && wild.TimeTillHiddenMs > 0)
+            if (timeTillHiddenMs <= 90000 && timeTillHiddenMs > 0)
             {
-                pokemon.ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(wild.TimeTillHiddenMs)) / 1000);
+                pokemon.ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(timeTillHiddenMs)) / 1000);
                 pokemon.IsExpireTimestampVerified = true;
                 var date = timestampMs.FromMilliseconds();
                 var secondOfHour = date.Second + (date.Minute * 60);
@@ -1483,7 +1554,7 @@
                     LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
                     Updated = now,
                 };
-                await spawnpoint.UpdateAsync(context, update: true);
+                await spawnpoint.UpdateAsync(context, _memCache, update: true);
                 return spawnpoint;
             }
             else
@@ -1530,7 +1601,7 @@
                         LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
                         Updated = now,
                     };
-                    await newSpawnpoint.UpdateAsync(context, update: true);
+                    await newSpawnpoint.UpdateAsync(context, _memCache, update: true);
                     return newSpawnpoint;
                 }
             }

@@ -8,6 +8,7 @@
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
@@ -106,7 +107,7 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapDbContext context)
+        public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
@@ -114,7 +115,20 @@
             Weather? oldWeather = null;
             try
             {
-                oldWeather = await context.Weather.FindAsync(Id);
+                // Check cache first for client weather entity
+                var cached = memCache.Get<long, Weather>(Id);
+                if (cached != null)
+                {
+                    oldWeather = cached;
+                }
+                else
+                {
+                    oldWeather = await context.Weather.FindAsync(Id);
+                    if (oldWeather != null)
+                    {
+                        memCache.Set(Id, oldWeather);
+                    }
+                }
             }
             catch (Exception ex)
             {

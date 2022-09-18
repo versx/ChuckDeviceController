@@ -1,9 +1,9 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
@@ -53,12 +53,25 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapDbContext context, bool update = false)
+        public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache, bool update = false)
         {
             Spawnpoint? oldSpawnpoint = null;
             try
             {
-                oldSpawnpoint = await context.Spawnpoints.FindAsync(Id);
+                // Check cache first for spawnpoint entity
+                var cached = memCache.Get<ulong, Spawnpoint>(Id);
+                if (cached != null)
+                {
+                    oldSpawnpoint = cached;
+                }
+                else
+                {
+                    oldSpawnpoint = await context.Spawnpoints.FindAsync(Id);
+                    if (oldSpawnpoint != null)
+                    {
+                        memCache.Set(Id, oldSpawnpoint);
+                    }
+                }
             }
             catch (Exception ex)
             {

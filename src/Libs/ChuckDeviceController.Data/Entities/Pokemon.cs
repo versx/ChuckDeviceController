@@ -1,12 +1,12 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
     using POGOProtos.Rpc;
 
+    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
@@ -250,6 +250,7 @@
             }
             else
             {
+                // TODO: Get from cache
                 var pokestop = context.Pokestops.FindAsync(nearbyPokemon.FortId).Result;
                 if (pokestop == null)
                 {
@@ -488,7 +489,7 @@
             Changed = Updated;
         }
 
-        public async Task UpdateAsync(MapDbContext context, bool updateIv = false)
+        public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache, bool updateIv = false)
         {
             var updateIV = updateIv;
             var setIvForWeather = false;
@@ -498,7 +499,19 @@
             Pokemon? oldPokemon = null;
             try
             {
-                oldPokemon = await context.Pokemon.FindAsync(Id);
+                var cached = memCache.Get<string, Pokemon>(Id);
+                if (cached != null)
+                {
+                    oldPokemon = cached;
+                }
+                else
+                {
+                    oldPokemon = await context.Pokemon.FindAsync(Id); // IsEvent: false
+                    if (oldPokemon != null)
+                    {
+                        memCache.Set(Id, oldPokemon);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -510,7 +523,19 @@
                 Pokemon? oldPokemonNoEvent = null;
                 try
                 {
-                    oldPokemonNoEvent = await context.Pokemon.FindAsync(Id); // IsEvent: false
+                    var cached = memCache.Get<string, Pokemon>(Id);
+                    if (cached != null)
+                    {
+                        oldPokemonNoEvent = cached;
+                    }
+                    else
+                    {
+                        oldPokemonNoEvent = await context.Pokemon.FindAsync(Id); // IsEvent: false
+                        if (oldPokemonNoEvent != null)
+                        {
+                            memCache.Set(Id, oldPokemonNoEvent);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -541,7 +566,19 @@
                 Pokemon? oldPokemonNoEvent = null;
                 try
                 {
-                    oldPokemonNoEvent = await context.Pokemon.FindAsync(Id); // IsEvent: false
+                    var cached = memCache.Get<string, Pokemon>(Id);
+                    if (cached != null)
+                    {
+                        oldPokemonNoEvent = cached;
+                    }
+                    else
+                    {
+                        oldPokemonNoEvent = await context.Pokemon.FindAsync(Id); // IsEvent: false
+                        if (oldPokemonNoEvent != null)
+                        {
+                            memCache.Set(Id, oldPokemonNoEvent);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -2,9 +2,10 @@
 {
     using Microsoft.Extensions.Caching.Memory;
 
+    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Data.Cache;
     using ChuckDeviceController.Data.Entities;
-    
+
     public class MemoryCacheHostedService : BackgroundService, IMemoryCacheHostedService
     {
         private const ushort ExpiryLimitM = 60; // minutes

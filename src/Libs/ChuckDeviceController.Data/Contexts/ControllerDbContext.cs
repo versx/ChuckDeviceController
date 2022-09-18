@@ -38,6 +38,8 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
+
             modelBuilder.Entity<Assignment>(entity =>
             {
                 entity.HasIndex(p => p.InstanceName);

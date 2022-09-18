@@ -71,6 +71,8 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
+
             /*
             modelBuilder.Entity<Cell>(entity =>
             {

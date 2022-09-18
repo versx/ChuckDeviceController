@@ -1,12 +1,12 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
@@ -85,12 +85,25 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapDbContext context)
+        public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache)
         {
             Incident? oldIncident = null;
             try
             {
-                oldIncident = await context.Incidents.FindAsync(Id);
+                // Check cache first for pokestop incident entity
+                var cached = memCache.Get<string, Incident>(Id);
+                if (cached != null)
+                {
+                    oldIncident = cached;
+                }
+                else
+                {
+                    oldIncident = await context.Incidents.FindAsync(Id);
+                    if (oldIncident != null)
+                    {
+                        memCache.Set(Id, oldIncident);
+                    }
+                }
             }
             catch (Exception ex)
             {

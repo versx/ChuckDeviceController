@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.HostedServices
+﻿namespace ChuckDeviceController.Common.Cache
 {
     public interface IMemoryCacheHostedService
     {

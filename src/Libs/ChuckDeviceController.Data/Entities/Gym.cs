@@ -5,6 +5,7 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
@@ -204,13 +205,26 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MapDbContext context)
+        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache)
         {
             var webhooks = new Dictionary<WebhookType, Gym>();
             Gym? oldGym = null;
             try
             {
-                oldGym = await context.Gyms.FindAsync(Id);
+                // Check cache first for gym entity
+                var cached = memCache.Get<string, Gym>(Id);
+                if (cached != null)
+                {
+                    oldGym = cached;
+                }
+                else
+                {
+                    oldGym = await context.Gyms.FindAsync(Id);
+                    if (oldGym != null)
+                    {
+                        memCache.Set(Id, oldGym);
+                    }
+                }
             }
             catch (Exception ex)
             {

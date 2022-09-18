@@ -4,6 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 using ChuckDeviceController;
 using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
 using ChuckDeviceController.Collections.Queues;
+using ChuckDeviceController.Common.Cache;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Extensions;

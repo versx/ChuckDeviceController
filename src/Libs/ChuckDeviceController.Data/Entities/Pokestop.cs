@@ -13,6 +13,7 @@
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Common.Cache;
 
     [Table("pokestop")]
     public class Pokestop : BaseFort, IPokestop, IWebhookEntity
@@ -508,13 +509,26 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(MapDbContext context, bool updateQuest = false)
+        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache, bool updateQuest = false)
         {
             var webhooks = new Dictionary<WebhookType, Pokestop>();
             Pokestop? oldPokestop = null;
             try
             {
-                oldPokestop = await context.Pokestops.FindAsync(Id);
+                // Check cache first for pokestop entity
+                var cached = memCache.Get<string, Pokestop>(Id);
+                if (cached != null)
+                {
+                    oldPokestop = cached;
+                }
+                else
+                {
+                    oldPokestop = await context.Pokestops.FindAsync(Id);
+                    if (oldPokestop != null)
+                    {
+                        memCache.Set(Id, oldPokestop);
+                    }
+                }
             }
             catch (Exception ex)
             {
