@@ -59,15 +59,6 @@
 
         #region Background Service
 
-        public async Task EnqueueAsync(ProtoPayloadQueueItem payload)
-        {
-            ProtoDataStatistics.Instance.TotalPayloadsReceived++;
-
-            _protoQueue.Enqueue(payload);
-
-            await Task.CompletedTask;
-        }
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation(
