@@ -30,12 +30,6 @@
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
 
-    public class DataQueueItem
-    {
-        public string Username { get; set; }
-
-        public List<dynamic> Data { get; set; }
-    }
 
     // TODO: Use/benchmark Dapper Micro ORM
     // TODO: Split up/refactor class
@@ -45,7 +39,7 @@
         #region Variables
 
         private readonly ILogger<IDataProcessorService> _logger;
-        private readonly IAsyncQueue<List<dynamic>> _taskQueue;
+        private readonly IAsyncQueue<DataQueueItem> _taskQueue;
         private readonly IDbContextFactory<MapDbContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
@@ -65,7 +59,7 @@
         public DataProcessorService(
             ILogger<IDataProcessorService> logger,
             IOptions<ProcessorOptionsConfig> options,
-            IAsyncQueue<List<dynamic>> taskQueue,
+            IAsyncQueue<DataQueueItem> taskQueue,
             IDbContextFactory<MapDbContext> factory,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
@@ -121,15 +115,15 @@
                 }
 
                 // TODO: Filter data entities here and push to separate methods
-                Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync("TODO: Fix", payload, stoppingToken).ConfigureAwait(false));
+                Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
 
-                ProtoDataStatistics.Instance.TotalEntitiesReceived += (uint)workItems.Sum(x => x.Count);
+                ProtoDataStatistics.Instance.TotalEntitiesReceived += (uint)workItems.Sum(x => x.Data?.Count ?? 0);
 
                 //await Task.Run(async () =>
                 //{
                 //    foreach (var workItem in workItems)
                 //    {
-                //        //await Task.Factory.StartNew(async () => await ProcessWorkItemAsync("UserName", workItem, stoppingToken));
+                //        //await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
                 //    }
                 //}, stoppingToken);
             }
@@ -145,9 +139,9 @@
             Thread.Sleep(1);
         }
 
-        private async Task ProcessWorkItemAsync(string username, List<dynamic> data, CancellationToken stoppingToken)
+        private async Task ProcessWorkItemAsync(DataQueueItem workItem, CancellationToken stoppingToken)
         {
-            if (data.Count == 0)
+            if (!(workItem.Data?.Any() ?? false))
             {
                 return;
             }
@@ -157,7 +151,7 @@
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)data.Count;
+            ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
 
             /*
             var playerData = data.Where(x => x.type == ProtoDataType.PlayerData)
@@ -173,10 +167,11 @@
             //using var context = await _dbFactory.CreateDbContextAsync(stoppingToken);
             ////using var context = _dbFactory.CreateDbContext();
 
-            var cells = data.Where(x => x.type == ProtoDataType.Cell)
-                            .Select(x => (ulong)x.cell)
-                            .Distinct()
-                            .ToList();
+            var cells = workItem.Data
+                .Where(x => x.type == ProtoDataType.Cell)
+                .Select(x => (ulong)x.cell)
+                .Distinct()
+                .ToList();
             if (cells.Any())
             {
                 // Insert S2 cells
@@ -186,10 +181,11 @@
                 }
             }
 
-            var clientWeather = data.Where(x => x.type == ProtoDataType.ClientWeather)
-                                    .Select(x => (ClientWeatherProto)x.data)
-                                    .Distinct()
-                                    .ToList();
+            var clientWeather = workItem.Data
+                .Where(x => x.type == ProtoDataType.ClientWeather)
+                .Select(x => (ClientWeatherProto)x.data)
+                .Distinct()
+                .ToList();
             if (clientWeather.Any())
             {
                 // Insert weather cells
@@ -199,19 +195,21 @@
                 }
             }
 
-            var forts = data.Where(x => x.type == ProtoDataType.Fort)
-                            .ToList();
+            var forts = workItem.Data
+                .Where(x => x.type == ProtoDataType.Fort)
+                .ToList();
             if (forts.Any())
             {
                 // Insert Forts
                 //using (await _fortsLock.LockAsync(stoppingToken))
                 {
-                    await UpdateFortsAsync(username, forts);
+                    await UpdateFortsAsync(workItem.Username, forts);
                 }
             }
 
-            var fortDetails = data.Where(x => x.type == ProtoDataType.FortDetails)
-                                  .ToList();
+            var fortDetails = workItem.Data
+                .Where(x => x.type == ProtoDataType.FortDetails)
+                .ToList();
             if (fortDetails.Any())
             {
                 // Insert Fort Details
@@ -221,8 +219,9 @@
                 }
             }
 
-            var gymInfos = data.Where(x => x.type == ProtoDataType.GymInfo)
-                               .ToList();
+            var gymInfos = workItem.Data
+                .Where(x => x.type == ProtoDataType.GymInfo)
+                .ToList();
             if (gymInfos.Any())
             {
                 // Insert gym info
@@ -232,8 +231,9 @@
                 }
             }
 
-            var wildPokemon = data.Where(x => x.type == ProtoDataType.WildPokemon)
-                                  .ToList();
+            var wildPokemon = workItem.Data
+                .Where(x => x.type == ProtoDataType.WildPokemon)
+                .ToList();
             if (wildPokemon.Any())
             {
                 // Insert wild pokemon
@@ -243,8 +243,9 @@
                 }
             }
 
-            var nearbyPokemon = data.Where(x => x.type == ProtoDataType.NearbyPokemon)
-                                    .ToList();
+            var nearbyPokemon = workItem.Data
+                .Where(x => x.type == ProtoDataType.NearbyPokemon)
+                .ToList();
             if (nearbyPokemon.Any())
             {
                 // Insert nearby pokemon
@@ -254,8 +255,9 @@
                 }
             }
 
-            var mapPokemon = data.Where(x => x.type == ProtoDataType.MapPokemon)
-                                 .ToList();
+            var mapPokemon = workItem.Data
+                .Where(x => x.type == ProtoDataType.MapPokemon)
+                .ToList();
             if (mapPokemon.Any())
             {
                 // Insert map pokemon
@@ -273,8 +275,9 @@
             //    }
             //}
 
-            var quests = data.Where(x => x.type == ProtoDataType.Quest)
-                             .ToList();
+            var quests = workItem.Data
+                .Where(x => x.type == ProtoDataType.Quest)
+                .ToList();
             if (quests.Any())
             {
                 // Insert quests
@@ -284,8 +287,9 @@
                 }
             }
 
-            var encounters = data.Where(x => x.type == ProtoDataType.Encounter)
-                                 .ToList();
+            var encounters = workItem.Data
+                .Where(x => x.type == ProtoDataType.Encounter)
+                .ToList();
             if (encounters.Any())
             {
                 // Insert Pokemon encounters
@@ -293,8 +297,9 @@
                 await UpdateEncountersAsync(encounters);
             }
 
-            var diskEncounters = data.Where(x => x.type == ProtoDataType.DiskEncounter)
-                                     .ToList();
+            var diskEncounters = workItem.Data
+                .Where(x => x.type == ProtoDataType.DiskEncounter)
+                .ToList();
             if (diskEncounters.Any())
             {
                 // Insert lured/disk Pokemon encounters
@@ -315,7 +320,7 @@
             {
                 stopwatch.Stop();
                 var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                _logger.LogInformation($"Data processer upserted {data.Count:N0} total entities in {totalSeconds}s");
+                _logger.LogInformation($"Data processer upserted {workItem.Data.Count:N0} total entities in {totalSeconds}s");
             }
         }
 

@@ -21,8 +21,8 @@
         #region Variables
 
         private readonly ILogger<IProtoProcessorService> _logger;
-        private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
-        private readonly IAsyncQueue<List<dynamic>> _dataTaskQueue;
+        private readonly IAsyncQueue<ProtoPayloadQueueItem> _protoQueue;
+        private readonly IAsyncQueue<DataQueueItem> _dataQueue;
         private readonly IGrpcClientService _grpcClientService;
 
         private static readonly Dictionary<ulong, int> _emptyCells = new();
@@ -43,13 +43,13 @@
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
             IOptions<ProcessorOptionsConfig> options,
-            IAsyncQueue<ProtoPayloadQueueItem> taskQueue,
-            IAsyncQueue<List<dynamic>> dataTaskQueue,
+            IAsyncQueue<ProtoPayloadQueueItem> protoQueue,
+            IAsyncQueue<DataQueueItem> dataQueue,
             IGrpcClientService grpcClientService)
         {
             _logger = logger;
-            _taskQueue = taskQueue;
-            _dataTaskQueue = dataTaskQueue;
+            _protoQueue = protoQueue;
+            _dataQueue = dataQueue;
             _grpcClientService = grpcClientService;
 
             Options = options.Value;
@@ -63,7 +63,7 @@
         {
             ProtoDataStatistics.Instance.TotalPayloadsReceived++;
 
-            _taskQueue.Enqueue(payload);
+            _protoQueue.Enqueue(payload);
 
             await Task.CompletedTask;
         }
@@ -82,7 +82,7 @@
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (_taskQueue.Count == 0)
+                if (_protoQueue.Count == 0)
                 {
                     Thread.Sleep(1);
                     continue;
@@ -90,14 +90,14 @@
 
                 try
                 {
-                    var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                    var workItems = await _protoQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
                     if (workItems == null)
                     {
                         Thread.Sleep(1);
                         continue;
                     }
 
-                    Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken));
+                    Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
 
                     //await Task.Run(async () =>
                     //{
@@ -620,7 +620,11 @@
             //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
             ProtoDataStatistics.Instance.TotalProtosSent += (uint)processedProtos.Count;
-            _dataTaskQueue.Enqueue(processedProtos);
+            _dataQueue.Enqueue(new DataQueueItem
+            {
+                Username = username,
+                Data = processedProtos,
+            });
         }
 
         #endregion
@@ -702,12 +706,12 @@
 
         private void CheckQueueLength()
         {
-            var usage = $"{_taskQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}";
-            if (_taskQueue.Count == Strings.MaximumQueueCapacity)
+            var usage = $"{_protoQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}";
+            if (_protoQueue.Count == Strings.MaximumQueueCapacity)
             {
                 _logger.LogWarning($"Proto processing queue is at maximum capacity! {usage}");
             }
-            else if (_taskQueue.Count > Strings.MaximumQueueSizeWarning)
+            else if (_protoQueue.Count > Strings.MaximumQueueSizeWarning)
             {
                 _logger.LogWarning($"Proto processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }

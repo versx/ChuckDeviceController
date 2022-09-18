@@ -49,8 +49,8 @@ builder.WebHost.ConfigureLogging(configure =>
 
 #region Services
 
-builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>>(_ => new AsyncQueue<ProtoPayloadQueueItem>());
-builder.Services.AddSingleton<IAsyncQueue<List<dynamic>>>(_ => new AsyncQueue<List<dynamic>>());
+builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>, AsyncQueue<ProtoPayloadQueueItem>>();
+builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueItem>>();
 
 builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
@@ -80,7 +80,7 @@ builder.Services.AddDistributedMemoryCache(options => options = (MemoryDistribut
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 builder.Services.AddDbContext<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped); // TODO: Was Singleton
 builder.Services.AddDbContext<ControllerDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
 
