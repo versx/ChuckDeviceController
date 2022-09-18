@@ -29,6 +29,7 @@
 
         public static async Task ConvertPayloadDataAsync(this HttpContext context, string username)
         {
+            // TODO: Add TryCatch
             // At this point this should be a MAD device sending the request.
             // Read the request's post body.
             var uuid = context.Request.Headers[OriginHeader];

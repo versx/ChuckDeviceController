@@ -16,11 +16,18 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var isMad = context.IsMadDeviceRequest(RawDataEndpoint);
-            if (!isMad)
+            try
             {
-                await _next(context);
-                return;
+                var isMad = context.IsMadDeviceRequest(RawDataEndpoint);
+                if (!isMad)
+                {
+                    await _next(context);
+                    return;
+                }
+            }
+            catch //(Exception ex)
+            {
+                //Console.WriteLine($"Error - MadDataMiddleware: {ex.Message}");
             }
 
             await context.ConvertPayloadDataAsync(DefaultMadUsername);
