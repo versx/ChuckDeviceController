@@ -31,12 +31,17 @@
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
 
-    // TODO: Use one MySQL factory DbContext for all received entities
+    public class DataQueueItem
+    {
+        public string Username { get; set; }
+
+        public List<dynamic> Data { get; set; }
+    }
+
     // TODO: Use/benchmark Dapper Micro ORM
-    // TODO: Implement memory cache for all map data entities
     // TODO: Split up/refactor class
 
-    public class DataProcessorService : BackgroundService, IDataProcessorService
+    public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
         #region Variables
 
@@ -79,9 +84,8 @@
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
             IClearFortsHostedService clearFortsService,
-            //IMemoryCache memCache)
             IMemoryCacheHostedService memCache)
-            //: base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
+            : base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {
             _logger = logger;
             _taskQueue = taskQueue;
@@ -98,15 +102,6 @@
 
         #region Background Service
 
-        public async Task ConsumeDataAsync(string username, List<dynamic> data)
-        {
-            ProtoDataStatistics.Instance.TotalEntitiesReceived += (uint)data.Count;
-
-            //await _taskQueue.EnqueueAsync(async token => await ProcessWorkItemAsync(username, data, token));
-            _taskQueue.Enqueue(data);
-            await Task.CompletedTask;
-        }
-
         public override async Task StopAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation(
@@ -114,71 +109,54 @@
 
             await base.StopAsync(stoppingToken);
         }
-        
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation(
                 $"{nameof(IDataProcessorService)} is now running in the background.");
 
-            await Task.Run(async () =>
-                await BackgroundProcessing(stoppingToken)
-            , stoppingToken);
+            await Task.CompletedTask;
         }
 
-        private async Task BackgroundProcessing(CancellationToken stoppingToken)
+        protected override async Task RunJobAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
                 if (_taskQueue.Count == 0)
                 {
-                    Thread.Sleep(1);
-                    continue;
+                    return;
                 }
 
-                try
+                //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                var workItems = await _taskQueue.DequeueBulkAsync(50, stoppingToken);
+                if (!workItems.Any())
                 {
-                    //var workItems = new[] { await _taskQueue.DequeueAsync(stoppingToken) };
-                    var workItems = await _taskQueue.DequeueBulkAsync(5, stoppingToken);
-                    //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
-                    if (workItems == null)
-                    {
-                        Thread.Sleep(1);
-                        continue;
-                    }
-
-                    Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync("TODO: Fix", payload, stoppingToken));
-                    //Parallel.ForEach(workItems, task => task(stoppingToken));
-
-                    //var workItems = await _taskQueue.DequeueMultipleAsync(Strings.MaximumQueueBatchSize, stoppingToken);
-                    //var tasks = workItems.Select(item => Task.Factory.StartNew(async () => await item(stoppingToken)));
-                    //Task.WaitAll(tasks.ToArray(), stoppingToken);
-                    //await Task.Run(() =>
-                    //{
-                    //    foreach (var workItem in workItems)
-                    //    {
-                    //        await Task.Factory.StartNew(async () => await workItem(stoppingToken));
-                    //        //await workItem(stoppingToken);
-                    //    }
-                    //}, stoppingToken);
-
-                    //foreach (var workItem in workItems)
-                    //{
-                    //    await workItem(stoppingToken);
-                    //}
+                    return;
                 }
-                catch (OperationCanceledException)
-                {
-                    // Prevent throwing if stoppingToken was signaled
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error occurred executing task work item.");
-                }
-                //await Task.Delay(TimeSpan.FromMilliseconds(50), stoppingToken);
-                Thread.Sleep(1);
+
+                // TODO: Filter data entities here and push to separate methods
+                Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync("TODO: Fix", payload, stoppingToken).ConfigureAwait(false));
+
+                ProtoDataStatistics.Instance.TotalEntitiesReceived += (uint)workItems.Sum(x => x.Count);
+
+                //await Task.Run(async () =>
+                //{
+                //    foreach (var workItem in workItems)
+                //    {
+                //        //await Task.Factory.StartNew(async () => await ProcessWorkItemAsync("UserName", workItem, stoppingToken));
+                //    }
+                //}, stoppingToken);
             }
-
-            _logger.LogError("Exited background processing...");
+            catch (OperationCanceledException)
+            {
+                // Prevent throwing if stoppingToken was signaled
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred executing task work item.");
+            }
+            //await Task.Delay(TimeSpan.FromMilliseconds(50), stoppingToken);
+            Thread.Sleep(1);
         }
 
         private async Task ProcessWorkItemAsync(string username, List<dynamic> data, CancellationToken stoppingToken)
@@ -206,202 +184,156 @@
             }
             */
 
-            using (await _dbLock.LockAsync())
+            //using var context = await _dbFactory.CreateDbContextAsync(stoppingToken);
+            ////using var context = _dbFactory.CreateDbContext();
+
+            var cells = data.Where(x => x.type == ProtoDataType.Cell)
+                            .Select(x => (ulong)x.cell)
+                            .Distinct()
+                            .ToList();
+            if (cells.Any())
             {
-                //using var context = await _dbFactory.CreateDbContextAsync(stoppingToken);
-                //using var context = _dbFactory.CreateDbContext();
-
-                var cells = data.Where(x => x.type == ProtoDataType.Cell)
-                                .Select(x => (ulong)x.cell)
-                                .Distinct()
-                                .ToList();
-                if (cells.Any())
+                // Insert S2 cells
+                //using (await _cellsLock.LockAsync(stoppingToken))
                 {
-                    // Insert S2 cells
-                    //using (await _cellsLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateCellsAsync(cells);
-                    }
-                }
-
-                var clientWeather = data.Where(x => x.type == ProtoDataType.ClientWeather)
-                                        .Select(x => (ClientWeatherProto)x.data)
-                                        .Distinct()
-                                        .ToList();
-                if (clientWeather.Any())
-                {
-                    // Insert weather cells
-                    //using (await _weatherLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateClientWeatherAsync(clientWeather);
-                    }
-                }
-
-                var forts = data.Where(x => x.type == ProtoDataType.Fort)
-                                .ToList();
-                if (forts.Any())
-                {
-                    // Insert Forts
-                    //using (await _fortsLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateFortsAsync(username, forts);
-                    }
-                }
-
-                var fortDetails = data.Where(x => x.type == ProtoDataType.FortDetails)
-                                      .ToList();
-                if (fortDetails.Any())
-                {
-                    // Insert Fort Details
-                    //using (await _fortDetailsLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateFortDetailsAsync(fortDetails);
-                    }
-                }
-
-                var gymInfos = data.Where(x => x.type == ProtoDataType.GymInfo)
-                                   .ToList();
-                if (gymInfos.Any())
-                {
-                    // Insert gym info
-                    //using (await _fortDetailsLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateGymInfoAsync(gymInfos);
-                    }
-                }
-
-                var wildPokemon = data.Where(x => x.type == ProtoDataType.WildPokemon)
-                                      .ToList();
-                if (wildPokemon.Any())
-                {
-                    // Insert wild pokemon
-                    //using (await _wildPokemonLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateWildPokemonAsync(wildPokemon);
-                    }
-                }
-
-                var nearbyPokemon = data.Where(x => x.type == ProtoDataType.NearbyPokemon)
-                                        .ToList();
-                if (nearbyPokemon.Any())
-                {
-                    // Insert nearby pokemon
-                    //using (await _nearbyPokemonLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateNearbyPokemonAsync(nearbyPokemon);
-                    }
-                }
-
-                var mapPokemon = data.Where(x => x.type == ProtoDataType.MapPokemon)
-                                     .ToList();
-                if (mapPokemon.Any())
-                {
-                    // Insert map pokemon
-                    //using (await _mapPokemonLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateMapPokemonAsync(mapPokemon);
-                    }
-                }
-
-                //if (wildPokemon.Any() || nearbyPokemon.Any() || mapPokemon.Any())
-                //{
-                //    using (await _pokemonLock.LockAsync(stoppingToken))
-                //    {
-                //        await UpdatePokemonAsync(wildPokemon, nearbyPokemon, mapPokemon);
-                //    }
-                //}
-
-                var quests = data.Where(x => x.type == ProtoDataType.Quest)
-                                 .ToList();
-                if (quests.Any())
-                {
-                    // Insert quests
-                    //using (await _questsLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateQuestsAsync(quests);
-                    }
-                }
-
-                var encounters = data.Where(x => x.type == ProtoDataType.Encounter)
-                                     .ToList();
-                if (encounters.Any())
-                {
-                    // Insert Pokemon encounters
-                    //using var _ = await _encountersLock.LockAsync(stoppingToken);
-                        await UpdateEncountersAsync(encounters);
-                }
-
-                var diskEncounters = data.Where(x => x.type == ProtoDataType.DiskEncounter)
-                                         .ToList();
-                if (diskEncounters.Any())
-                {
-                    // Insert lured/disk Pokemon encounters
-                    //using (await _diskEncountersLock.LockAsync(stoppingToken))
-                    {
-                        await UpdateDiskEncountersAsync(diskEncounters);
-                    }
-                }
-
-                // TODO: Add config check to startup services registration pipeline
-                if (Options.ClearOldForts)
-                {
-                    // Clear any old Gyms or Pokestops that might have been removed from the game
-                    //await _clearFortsService.ClearOldFortsAsync();
+                    await UpdateCellsAsync(cells);
                 }
             }
 
-            stopwatch.Stop();
+            var clientWeather = data.Where(x => x.type == ProtoDataType.ClientWeather)
+                                    .Select(x => (ClientWeatherProto)x.data)
+                                    .Distinct()
+                                    .ToList();
+            if (clientWeather.Any())
+            {
+                // Insert weather cells
+                //using (await _weatherLock.LockAsync(stoppingToken))
+                {
+                    await UpdateClientWeatherAsync(clientWeather);
+                }
+            }
+
+            var forts = data.Where(x => x.type == ProtoDataType.Fort)
+                            .ToList();
+            if (forts.Any())
+            {
+                // Insert Forts
+                //using (await _fortsLock.LockAsync(stoppingToken))
+                {
+                    await UpdateFortsAsync(username, forts);
+                }
+            }
+
+            var fortDetails = data.Where(x => x.type == ProtoDataType.FortDetails)
+                                  .ToList();
+            if (fortDetails.Any())
+            {
+                // Insert Fort Details
+                //using (await _fortDetailsLock.LockAsync(stoppingToken))
+                {
+                    await UpdateFortDetailsAsync(fortDetails);
+                }
+            }
+
+            var gymInfos = data.Where(x => x.type == ProtoDataType.GymInfo)
+                               .ToList();
+            if (gymInfos.Any())
+            {
+                // Insert gym info
+                //using (await _fortDetailsLock.LockAsync(stoppingToken))
+                {
+                    await UpdateGymInfoAsync(gymInfos);
+                }
+            }
+
+            var wildPokemon = data.Where(x => x.type == ProtoDataType.WildPokemon)
+                                  .ToList();
+            if (wildPokemon.Any())
+            {
+                // Insert wild pokemon
+                //using (await _wildPokemonLock.LockAsync(stoppingToken))
+                {
+                    await UpdateWildPokemonAsync(wildPokemon);
+                }
+            }
+
+            var nearbyPokemon = data.Where(x => x.type == ProtoDataType.NearbyPokemon)
+                                    .ToList();
+            if (nearbyPokemon.Any())
+            {
+                // Insert nearby pokemon
+                //using (await _nearbyPokemonLock.LockAsync(stoppingToken))
+                {
+                    await UpdateNearbyPokemonAsync(nearbyPokemon);
+                }
+            }
+
+            var mapPokemon = data.Where(x => x.type == ProtoDataType.MapPokemon)
+                                 .ToList();
+            if (mapPokemon.Any())
+            {
+                // Insert map pokemon
+                //using (await _mapPokemonLock.LockAsync(stoppingToken))
+                {
+                    await UpdateMapPokemonAsync(mapPokemon);
+                }
+            }
+
+            //if (wildPokemon.Any() || nearbyPokemon.Any() || mapPokemon.Any())
+            //{
+            //    using (await _pokemonLock.LockAsync(stoppingToken))
+            //    {
+            //        await UpdatePokemonAsync(wildPokemon, nearbyPokemon, mapPokemon);
+            //    }
+            //}
+
+            var quests = data.Where(x => x.type == ProtoDataType.Quest)
+                             .ToList();
+            if (quests.Any())
+            {
+                // Insert quests
+                //using (await _questsLock.LockAsync(stoppingToken))
+                {
+                    await UpdateQuestsAsync(quests);
+                }
+            }
+
+            var encounters = data.Where(x => x.type == ProtoDataType.Encounter)
+                                 .ToList();
+            if (encounters.Any())
+            {
+                // Insert Pokemon encounters
+                //using var _ = await _encountersLock.LockAsync(stoppingToken);
+                await UpdateEncountersAsync(encounters);
+            }
+
+            var diskEncounters = data.Where(x => x.type == ProtoDataType.DiskEncounter)
+                                     .ToList();
+            if (diskEncounters.Any())
+            {
+                // Insert lured/disk Pokemon encounters
+                //using (await _diskEncountersLock.LockAsync(stoppingToken))
+                {
+                    await UpdateDiskEncountersAsync(diskEncounters);
+                }
+            }
+
+            // TODO: Add config check to startup services registration pipeline
+            if (Options.ClearOldForts)
+            {
+                // Clear any old Gyms or Pokestops that might have been removed from the game
+                //await _clearFortsService.ClearOldFortsAsync();
+            }
+
             if (Options.IsEnabled(DataLogLevel.Summary))
             {
+                stopwatch.Stop();
                 var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
                 _logger.LogInformation($"Data processer upserted {data.Count:N0} total entities in {totalSeconds}s");
             }
         }
 
         #endregion
-
-        /*
-        protected override async Task RunJobAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                var workItems = await _taskQueue.DequeueMultipleAsync(Strings.MaximumQueueBatchSize, stoppingToken);
-                if (workItems == null)
-                {
-                    Thread.Sleep(1);
-                    return;
-                }
-
-                Parallel.ForEach(workItems, async task => await task(stoppingToken));
-
-                //foreach (var workItem in workItems)
-                //{
-                //    await workItem(stoppingToken);
-                //    Thread.Sleep(1);
-                //}
-            }
-            catch (OperationCanceledException)
-            {
-                // Prevent throwing if stoppingToken was signaled
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred executing task work item.");
-            }
-            //await Task.Delay(TimeSpan.FromMilliseconds(50), stoppingToken);
-            Thread.Sleep(1);
-
-            //_logger.LogError("Exited background processing...");
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            _logger.LogInformation(
-                $"{nameof(IDataProcessorService)} is now running in the background.");
-
-            await Task.CompletedTask;
-        }
-        */
 
         #region Data Handling Methods
 
@@ -442,8 +374,8 @@
                 if (!s2cells.Any())
                     return;
 
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 var ts = DateTime.UtcNow.ToTotalSeconds();
                 var cellsSql = s2cells.Select(cell => $"({cell.Id}, {cell.Level}, {cell.Latitude}, {cell.Longitude}, {ts})");
                 var args = string.Join(",", cellsSql);
@@ -500,8 +432,8 @@ ON DUPLICATE KEY UPDATE
                 if (!weather.Any())
                     return;
 
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 foreach (var wcell in weather)
                 {
                     await wcell.UpdateAsync(context, _memCache);
@@ -511,9 +443,6 @@ ON DUPLICATE KEY UPDATE
                     {
                         await SendWebhookPayloadAsync(WebhookPayloadType.Weather, wcell);
                     }
-
-                    // Cache weather cell entity by id
-                    _memCache.Set(wcell.Id, wcell);
                 }
 
                 var ts = DateTime.UtcNow.ToTotalSeconds();
@@ -603,8 +532,8 @@ ON DUPLICATE KEY UPDATE
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 var pokemonToUpsert = new List<Pokemon>();
                 var spawnpointsToUpsert = new List<Spawnpoint>();
                 foreach (var wild in wildPokemon)
@@ -645,9 +574,10 @@ ON DUPLICATE KEY UPDATE
                         };
                     });
 
-                    spawnpointsToUpsert.ForEach(spawnpoint => _memCache.Set(spawnpoint.Id, spawnpoint));
-
-                    _logger.LogInformation($"Upserted {spawnpointsToUpsert.Count:N0} Spawnpoints");
+                    if (Options.IsEnabled(DataLogLevel.Spawnpoints))
+                    {
+                        _logger.LogInformation($"Upserted {spawnpointsToUpsert.Count:N0} Spawnpoints");
+                    }
                 }
 
                 if (pokemonToUpsert.Count > 0)
@@ -681,8 +611,6 @@ ON DUPLICATE KEY UPDATE
                         var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
                         _logger.LogInformation($"Upserted {pokemonToUpsert.Count:N0} Wild Pokemon in {seconds}s");
                     }
-
-                    pokemonToUpsert.ForEach(pkmn => _memCache.Set(pkmn.Id, pkmn));
 
                     /*
                     foreach (var pokemon in pokemonToUpsert)
@@ -718,8 +646,8 @@ ON DUPLICATE KEY UPDATE
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var nearby in nearbyPokemon)
                 {
@@ -787,8 +715,8 @@ ON DUPLICATE KEY UPDATE
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var map in mapPokemon)
                 {
@@ -858,8 +786,8 @@ ON DUPLICATE KEY UPDATE
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 // Send found/nearby forts with gRPC service for leveling instance
                 var lvlForts = forts.Where(fort => fort.data.FortType != FortType.Gym)
                                     .Select(fort => fort.data)
@@ -978,8 +906,6 @@ ON DUPLICATE KEY UPDATE
                         //options.ResultInfo.
                     });
 
-                    pokestopsToUpsert.ForEach(pokestop => _memCache.Set(pokestop.Id, pokestop));
-
                     if (Options.IsEnabled(DataLogLevel.Forts)) // TODO: Make separate pokestop/gym logging flags
                     {
                         var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
@@ -990,8 +916,6 @@ ON DUPLICATE KEY UPDATE
                 {
                     await context.Incidents.BulkMergeAsync(incidentsToUpsert, options => options.UseTableLock = true);
 
-                    incidentsToUpsert.ForEach(incident => _memCache.Set(incident.Id, incident));
-
                     if (Options.IsEnabled(DataLogLevel.Incidents))
                     {
                         var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
@@ -1001,8 +925,6 @@ ON DUPLICATE KEY UPDATE
                 if (gymsToUpsert.Count > 0)
                 {
                     await context.Gyms.BulkMergeAsync(gymsToUpsert, options => options.UseTableLock = true);
-
-                    gymsToUpsert.ForEach(gym => _memCache.Set(gym.Id, gym));
 
                     if (Options.IsEnabled(DataLogLevel.Forts))
                     {
@@ -1026,8 +948,8 @@ ON DUPLICATE KEY UPDATE
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 var pokestopsToUpsert = new List<Pokestop>();
                 var gymsToUpsert = new List<Gym>();
 
@@ -1098,8 +1020,6 @@ ON DUPLICATE KEY UPDATE
                         };
                     });
 
-                    pokestopsToUpsert.ForEach(pokestop => _memCache.Set(pokestop.Id, pokestop));
-
                     if (Options.IsEnabled(DataLogLevel.FortDetails))
                     {
                         var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
@@ -1121,8 +1041,6 @@ ON DUPLICATE KEY UPDATE
                             p.Url,
                         };
                     });
-
-                    gymsToUpsert.ForEach(gym => _memCache.Set(gym.Id, gym));
 
                     if (Options.IsEnabled(DataLogLevel.FortDetails))
                     {
@@ -1146,8 +1064,8 @@ ON DUPLICATE KEY UPDATE
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 var gymsToUpsert = new List<Gym>();
                 var gymDefendersToUpsert = new List<GymDefender>();
                 var gymTrainersToUpsert = new List<GymTrainer>();
@@ -1218,8 +1136,6 @@ ON DUPLICATE KEY UPDATE
                         };
                     });
 
-                    gymsToUpsert.ForEach(gym => _memCache.Set(gym.Id, gym));
-
                     if (Options.IsEnabled(DataLogLevel.GymInfo))
                     {
                         var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
@@ -1235,8 +1151,6 @@ ON DUPLICATE KEY UPDATE
                         options.UseTableLock = true;
                     });
 
-                    gymTrainersToUpsert.ForEach(trainer => _memCache.Set(trainer.Name, trainer));
-
                     if (Options.IsEnabled(DataLogLevel.GymTrainers))
                     {
                         var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
@@ -1251,8 +1165,6 @@ ON DUPLICATE KEY UPDATE
                         options.AllowDuplicateKeys = false;
                         options.UseTableLock = true;
                     });
-
-                    gymDefendersToUpsert.ForEach(defender => _memCache.Set(defender.Id, defender));
 
                     if (Options.IsEnabled(DataLogLevel.GymDefenders))
                     {
@@ -1276,8 +1188,8 @@ ON DUPLICATE KEY UPDATE
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 var questsToUpsert = new List<Pokestop>();
 
                 // Convert quest protos to Pokestop models
@@ -1359,8 +1271,6 @@ ON DUPLICATE KEY UPDATE
                         };
                     });
 
-                    questsToUpsert.ForEach(quest => _memCache.Set(quest.Id, quest));
-
                     if (Options.IsEnabled(DataLogLevel.Quests))
                     {
                         var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
@@ -1386,8 +1296,8 @@ ON DUPLICATE KEY UPDATE
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 //var leakMonitor = new ConnectionLeakWatcher(context);
                 var pokemonToUpsert = new List<Pokemon>();
                 var spawnpointsToUpsert = new List<Spawnpoint>();
@@ -1400,7 +1310,14 @@ ON DUPLICATE KEY UPDATE
                         var username = encounter.username;
                         var isEvent = encounter.isEvent;
                         var encounterId = data.Pokemon.EncounterId.ToString();
-                        var pokemon = await context.Pokemon.FindAsync(encounterId);
+                        //var pokemon = await context.Pokemon.FindAsync(encounterId);
+                        var pokemon = _memCache.Get<string, Pokemon>(encounterId);
+                        // Check if pokemon entity is cached
+                        if (pokemon == null)
+                        {
+                            // Pokemon not in cache set, look for it in database
+                            pokemon = await context.Pokemon.FindAsync(encounterId);
+                        }
                         if (pokemon == null)
                         {
                             // New Pokemon
@@ -1412,6 +1329,7 @@ ON DUPLICATE KEY UPDATE
                             pokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
                         }
                         await pokemon.AddEncounterAsync(data, username);
+
                         var spawnpoint = await UpdateSpawnpointAsync(context, pokemon, data.Pokemon.TimeTillHiddenMs, timestampMs);
                         if (spawnpoint != null)
                         {
@@ -1451,9 +1369,6 @@ ON DUPLICATE KEY UPDATE
                         };
                     });
 
-                    // Cache all Spawnpoint entities in memory cache
-                    spawnpointsToUpsert.ForEach(spawnpoint => _memCache.Set(spawnpoint.Id, spawnpoint));
-
                     if (Options.IsEnabled(DataLogLevel.Spawnpoints))
                     {
                         var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
@@ -1473,14 +1388,14 @@ ON DUPLICATE KEY UPDATE
                         };
                     });
 
-                    // Add S2 cells to ClearFortsHostedService
                     foreach (var cell in s2cellsToUpsert)
                     {
+                        // Cache all S2 cell entities in memory cache
+                        _memCache.Set(cell.Id, cell);
+
+                        // Add S2 cells to ClearFortsHostedService
                         _clearFortsService.AddCell(cell.Id);
                     }
-
-                    // Cache all S2 cell entities in memory cache
-                    s2cellsToUpsert.ForEach(s2cell => _memCache.Set(s2cell.Id, s2cell));
 
                     if (Options.IsEnabled(DataLogLevel.S2Cells))
                     {
@@ -1516,9 +1431,6 @@ ON DUPLICATE KEY UPDATE
                         };
                     });
 
-                    // Cache all Pokemon entities in memory cache
-                    pokemonToUpsert.ForEach(pokemon => _memCache.Set(pokemon.Id, pokemon));
-
                     if (Options.IsEnabled(DataLogLevel.PokemonEncounters))
                     {
                         var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
@@ -1543,16 +1455,21 @@ ON DUPLICATE KEY UPDATE
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                //using var context = await _dbFactory.CreateDbContextAsync();
-                using var context = _dbFactory.CreateDbContext();
+                using var context = await _dbFactory.CreateDbContextAsync();
+                //using var context = _dbFactory.CreateDbContext();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var diskEncounter in diskEncounters)
                 {
                     var data = (DiskEncounterOutProto)diskEncounter.data;
                     var username = diskEncounter.username;
                     var isEvent = diskEncounter.isEvent;
-                    var displayId = data.Pokemon.PokemonDisplay.DisplayId;
-                    var pokemon = await context.Pokemon.FindAsync(displayId);
+                    var displayId = Convert.ToString(data.Pokemon.PokemonDisplay.DisplayId);
+                    //var pokemon = await context.Pokemon.FindAsync(displayId);
+                    var pokemon = _memCache.Get<string, Pokemon>(displayId);
+                    if (pokemon == null)
+                    {
+                        pokemon = await context.Pokemon.FindAsync(displayId);
+                    }
                     if (pokemon != null)
                     {
                         pokemon.AddDiskEncounter(data, username);
@@ -1601,8 +1518,6 @@ ON DUPLICATE KEY UPDATE
                             p.PvpRankings,
                         };
                     });
-
-                    pokemonToUpsert.ForEach(pokemon => _memCache.Set(pokemon.Id, pokemon));
 
                     if (Options.IsEnabled(DataLogLevel.PokemonDiskEncounters))
                     {
@@ -1765,6 +1680,29 @@ ON DUPLICATE KEY UPDATE
             };
         }
 
+        private static double BenchmarkAction(Action action, ushort precision = 4)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            action();
+            stopwatch.Start();
+
+            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
+            //Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");
+            return totalSeconds;
+        }
+
+        private static BulkOperation<T> GetBulkOptions<T>(Expression<Func<T, object>> keys) where T : BaseEntity
+        {
+            var options = new BulkOperation<T>
+            {
+                AllowDuplicateKeys = false,
+                UseTableLock = true,
+                OnMergeUpdateInputExpression = keys,
+            };
+            return options;
+        }
+
         #endregion
 
         #region Grpc Senders
@@ -1822,29 +1760,6 @@ ON DUPLICATE KEY UPDATE
         }
 
         #endregion
-
-        private static double BenchmarkAction(Action action, ushort precision = 4)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            action();
-            stopwatch.Start();
-
-            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
-            //Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");
-            return totalSeconds;
-        }
-
-        private static BulkOperation<T> GetBulkOptions<T>(Expression<Func<T, object>> keys) where T : BaseEntity
-        {
-            var options = new BulkOperation<T>
-            {
-                AllowDuplicateKeys = false,
-                UseTableLock = true,
-                OnMergeUpdateInputExpression = keys,
-            };
-            return options;
-        }
     }
 
     /// <summary>

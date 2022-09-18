@@ -52,12 +52,10 @@ builder.WebHost.ConfigureLogging(configure =>
 builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>>(_ => new AsyncQueue<ProtoPayloadQueueItem>());
 builder.Services.AddSingleton<IAsyncQueue<List<dynamic>>>(_ => new AsyncQueue<List<dynamic>>());
 
-//builder.Services.AddScoped<IMemoryCacheHostedService, MemoryCacheHostedService>();
-builder.Services.AddSingleton<IMemoryCacheHostedService, MemoryCacheHostedService>();
-
 builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
 builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
+builder.Services.AddSingleton<IMemoryCacheHostedService, MemoryCacheHostedService>();
 builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
 builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSection("Options"));
 
