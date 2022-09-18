@@ -6,8 +6,8 @@
 
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _stoppingCts = new();
-        private Timer _timer;
-        private Task _executingTask;
+        private Timer? _timer;
+        private Task? _executingTask;
 
         #endregion
 
@@ -58,7 +58,7 @@
         private async Task ExecuteTaskAsync(CancellationToken stoppingToken)
         {
             await RunJobAsync(stoppingToken);
-            _timer.Change(TimeSpan.FromMilliseconds(TimerIntervalMs), TimeSpan.FromMilliseconds(-1));
+            _timer?.Change(TimeSpan.FromMilliseconds(TimerIntervalMs), TimeSpan.FromMilliseconds(-1));
         }
 
         private void InternalExecuteTask(object state)

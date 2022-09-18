@@ -9,7 +9,6 @@
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Options;
-    using Nito.AsyncEx;
     using POGOProtos.Rpc;
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
@@ -52,19 +51,6 @@
         private readonly IGrpcClientService _grpcClientService;
         private readonly IClearFortsHostedService _clearFortsService;
         private readonly IMemoryCacheHostedService _memCache;
-
-        private readonly AsyncLock _cellsLock = new();
-        private readonly AsyncLock _weatherLock = new();
-        private readonly AsyncLock _wildPokemonLock = new();
-        private readonly AsyncLock _nearbyPokemonLock = new();
-        private readonly AsyncLock _mapPokemonLock = new();
-        private readonly AsyncLock _fortsLock = new();
-        private readonly AsyncLock _fortDetailsLock = new();
-        private readonly AsyncLock _gymInfoLock = new();
-        private readonly AsyncLock _questsLock = new();
-        private readonly AsyncLock _encountersLock = new();
-        private readonly AsyncLock _diskEncountersLock = new();
-        private readonly AsyncLock _dbLock = new();
 
         #endregion
 
