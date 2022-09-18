@@ -7,6 +7,7 @@
     {
         public const string DefaultUserAgent = "Mozilla/5.0";
         public const string DefaultMimeType = "application/json";
+        private const uint DefaultRequestTimeoutS = 30;
 
         public static string? Get(string url)
         {
@@ -27,7 +28,7 @@
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), DefaultMimeType);
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.ContentType.ToString(), DefaultMimeType);
-                client.Timeout = TimeSpan.FromSeconds(30);
+                client.Timeout = TimeSpan.FromSeconds(DefaultRequestTimeoutS);
                 return await client.GetStringAsync(url);
             }
             catch (Exception ex)
@@ -48,7 +49,7 @@
         /// <param name="url">Url to send the request to.</param>
         /// <param name="payload">JSON payload that will be sent in the request.</param>
         /// <returns>Returns the response string of the HTTP POST request.</returns>
-        public static async Task<(HttpStatusCode, string?)> PostAsync(string url, string? payload = null, uint timeoutS = 30, string userAgent = DefaultUserAgent)
+        public static async Task<(HttpStatusCode, string?)> PostAsync(string url, string? payload = null, uint timeoutS = DefaultRequestTimeoutS, string userAgent = DefaultUserAgent)
         {
             try
             {
@@ -62,9 +63,9 @@
                     RequestUri = new Uri(url),
                     Headers =
                     {
-                        { HttpRequestHeader.UserAgent.ToString(), userAgent },
                         { HttpRequestHeader.Accept.ToString(), DefaultMimeType },
                         { HttpRequestHeader.ContentType.ToString(), DefaultMimeType },
+                        { HttpRequestHeader.UserAgent.ToString(), userAgent ?? DefaultUserAgent },
                     },
                 };
                 if (!string.IsNullOrEmpty(payload))
@@ -95,6 +96,7 @@
                 SetDefaultSecurityProtocol();
 
                 using var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(DefaultRequestTimeoutS);
                 var requestMessage = new HttpRequestMessage
                 {
                     Method = HttpMethod.Head,

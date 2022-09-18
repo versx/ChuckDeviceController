@@ -541,8 +541,8 @@
                 _ranking.Clear();
             }
 
-            Console.WriteLine($"New game master file parsed successfully");
             _loading = false;
+            Console.WriteLine($"New game master file parsed successfully");
         }
 
         #endregion
