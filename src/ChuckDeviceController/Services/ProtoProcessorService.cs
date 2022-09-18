@@ -606,21 +606,21 @@
             stopwatch.Stop();
 
             // Insert/upsert wildPokemon, nearbyPokemon, mapPokemon, forts, cells, clientWeather, etc into database
-            if (processedProtos.Count > 0)
-            {
-                var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
+            if (!processedProtos.Any())
+                return;
 
-                if (!string.IsNullOrEmpty(username))
-                {
-                    var storeData = await IsAllowedToSaveDataAsync(username);
-                    if (storeData)
-                    {
-                        ProtoDataStatistics.Instance.TotalProtosSent += (uint)processedProtos.Count;
-                        await _dataProcessor.ConsumeDataAsync(username, processedProtos);
-                    }
-                }
-            }
+            if (string.IsNullOrEmpty(username))
+                return;
+
+            var storeData = await IsAllowedToSaveDataAsync(username);
+            if (!storeData)
+                return;
+
+            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+            //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
+
+            ProtoDataStatistics.Instance.TotalProtosSent += (uint)processedProtos.Count;
+            await _dataProcessor.ConsumeDataAsync(username, processedProtos);
         }
 
         #endregion
