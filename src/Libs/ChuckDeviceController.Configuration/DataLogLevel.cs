@@ -16,10 +16,11 @@
         GymInfo = 1 << 9,
         GymDefenders = 1 << 10,
         GymTrainers = 1 << 11,
-        Spawnpoints = 1 << 12,
-        S2Cells = 1 << 13,
-        Weather = 1 << 14,
-        PlayerData = 1 << 15,
+        Incidents = 1 << 12,
+        Spawnpoints = 1 << 13,
+        S2Cells = 1 << 14,
+        Weather = 1 << 15,
+        PlayerData = 1 << 16,
         All = Summary
             | WildPokemon
             | NearbyPokemon
@@ -32,6 +33,7 @@
             | GymInfo
             | GymDefenders
             | GymTrainers
+            | Incidents
             | Spawnpoints
             | S2Cells
             | Weather
