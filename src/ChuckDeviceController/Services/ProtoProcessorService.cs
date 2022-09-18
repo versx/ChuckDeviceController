@@ -29,6 +29,7 @@
         private static readonly TimedMap<bool> _arQuestActualMap = new();
         private static readonly TimedMap<bool> _arQuestTargetMap = new();
         private static readonly Dictionary<string, bool> _canStoreData = new();
+        private readonly object _storeDataLock = new();
 
         #endregion
 
@@ -655,11 +656,9 @@
 
         #region Private Methods
 
-        private readonly object _storeDatalock = new();
-
         private async Task<bool> IsAllowedToSaveDataAsync(string username)
         {
-            lock (_storeDatalock)
+            lock (_storeDataLock)
             {
                 if (_canStoreData.ContainsKey(username))
                 {
@@ -681,7 +680,7 @@
                 (levelingStatus!.IsLeveling && levelingStatus!.StoreLevelingData) ||
                 !levelingStatus!.IsLeveling;
 
-            lock (_storeDatalock)
+            lock (_storeDataLock)
             {
                 if (_canStoreData.ContainsKey(username))
                 {
