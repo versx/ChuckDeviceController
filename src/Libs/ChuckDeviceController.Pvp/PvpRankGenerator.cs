@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Pvp
 {
-    using System.Text.Json;
     using System.Timers;
 
     using ChuckDeviceController.Extensions.Json;
@@ -14,22 +13,17 @@
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
+    // Credits: https://github.com/Chuckleslove
     // Credits: https://github.com/RealDeviceMap/RealDeviceMap/blob/development/Sources/RealDeviceMapLib/Misc/PVPStatsManager.swift
     // Credits: https://github.com/WatWowMap/Chuck/blob/master/src/services/pvp.js
     // Credits: https://github.com/WatWowMap/Chuck/blob/master/src/services/pvp-core.js
-    // Credits: https://github.com/Chuckleslove
     public class PvpRankGenerator : IPvpRankGenerator
     {
         #region Variables
 
         private Dictionary<PokemonWithFormAndGender, PokemonBaseStats> _pokemonBaseStats = new();
-        private readonly Dictionary<PokemonWithFormAndGender, List<PvpRank>> _rankingLittle = new();
-        private readonly Dictionary<PokemonWithFormAndGender, List<PvpRank>> _rankingGreat = new();
-        private readonly Dictionary<PokemonWithFormAndGender, List<PvpRank>> _rankingUltra = new();
-
-        private readonly object _littleLock = new();
-        private readonly object _greatLock = new();
-        private readonly object _ultraLock = new();
+        private readonly Dictionary<PvpLeague, Dictionary<PokemonWithFormAndGender, List<PvpRank>>> _ranking = new();
+        private readonly object _rankLock = new();
         private static readonly object _instanceLock = new();
 
         private readonly Timer _timer;
@@ -214,38 +208,18 @@
             var info = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
             List<PvpRank>? cached = null;
 
-            switch (league)
+            lock (_rankLock)
             {
-                case PvpLeague.Little:
-                    lock (_littleLock)
+                if (_ranking.ContainsKey(league))
+                {
+                    if (_ranking[league].ContainsKey(info))
                     {
-                        if (_rankingLittle.ContainsKey(info))
-                        {
-                            cached = _rankingLittle[info];
-                        }
+                        cached = _ranking[league][info];
                     }
-                    break;
-                case PvpLeague.Great:
-                    lock (_greatLock)
-                    {
-                        if (_rankingGreat.ContainsKey(info))
-                        {
-                            cached = _rankingGreat[info];
-                        }
-                    }
-                    break;
-                case PvpLeague.Ultra:
-                    lock (_ultraLock)
-                    {
-                        if (_rankingUltra.ContainsKey(info))
-                        {
-                            cached = _rankingUltra[info];
-                        }
-                    }
-                    break;
+                }
             }
 
-            if (cached == null)
+            if (!(cached?.Any() ?? false))
             {
                 if (!_pokemonBaseStats.ContainsKey(info))
                 {
@@ -253,27 +227,22 @@
                 }
                 var baseStats = _pokemonBaseStats[info];
                 var values = CalculateAllRanks(baseStats, (ushort)league);
-                switch (league)
+                lock (_rankLock)
                 {
-                    case PvpLeague.Little:
-                        lock (_littleLock)
-                        {
-                            _rankingLittle[info] = values;
-                        }
-                        break;
-                    case PvpLeague.Great:
-                        lock (_greatLock)
-                        {
-                            _rankingGreat[info] = values;
-                        }
-                        break;
-                    case PvpLeague.Ultra:
-                        lock (_ultraLock)
-                        {
-                            _rankingUltra[info] = values;
-                        }
-                        break;
+                    if (!_ranking.ContainsKey(league))
+                    {
+                        _ranking.Add(league, new());
+                    }
+                    if (!_ranking[league].ContainsKey(info))
+                    {
+                        _ranking[league].Add(info, values);
+                    }
+                    else
+                    {
+                        _ranking[league][info] = values;
+                    }
                 }
+
                 return values;
             }
             return cached;
@@ -557,6 +526,7 @@
             }
 
             _pokemonBaseStats = pokemonBaseStats;
+            /*
             lock (_littleLock)
             {
                 _rankingLittle.Clear();
@@ -568,6 +538,11 @@
             lock (_ultraLock)
             {
                 _rankingUltra.Clear();
+            }
+            */
+            lock (_rankLock)
+            {
+                _ranking.Clear();
             }
 
             Console.WriteLine($"New game master file parsed successfully");

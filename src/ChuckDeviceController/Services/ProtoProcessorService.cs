@@ -29,7 +29,7 @@
         private static readonly TimedMap<bool> _arQuestActualMap = new();
         private static readonly TimedMap<bool> _arQuestTargetMap = new();
         private static readonly Dictionary<string, bool> _canStoreData = new();
-        private readonly object _storeDataLock = new();
+        private static readonly object _storeDataLock = new();
 
         #endregion
 
