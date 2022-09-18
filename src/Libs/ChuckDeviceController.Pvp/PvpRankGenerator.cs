@@ -28,6 +28,7 @@
 
         private readonly Timer _timer;
         private string? _lastETag;
+        private static bool _loading;
 
         #endregion
 
@@ -43,11 +44,10 @@
                 lock (_instanceLock)
                 {
                     _instance ??= new PvpRankGenerator();
+                    return _instance;
                 }
-                return _instance;
             }
         }
-
 
         #endregion
 
@@ -59,9 +59,10 @@
             _timer.Elapsed += async (sender, e) => await LoadMasterFileIfNeededAsync();
             _timer.Start();
 
-            LoadMasterFileAsync().ConfigureAwait(false)
-                                 .GetAwaiter()
-                                 .GetResult();
+            LoadMasterFileAsync()
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
         }
 
         #endregion
@@ -379,12 +380,16 @@
 
         private async Task LoadMasterFileIfNeededAsync()
         {
+            if (_loading)
+                return;
+
             var newETag = await GetETag(Strings.MasterFileEndpoint);
             if (string.IsNullOrEmpty(newETag))
             {
                 Console.WriteLine($"Failed to get HTTP header ETag from game master file request");
                 return;
             }
+
             if (newETag != _lastETag)
             {
                 Console.WriteLine($"Game master file changed, downloading new version...");
@@ -392,8 +397,12 @@
             }
         }
 
-        private async Task LoadMasterFileAsync()
+        public async Task LoadMasterFileAsync()
         {
+            if (_loading)
+                return;
+
+            _loading = true;
             Console.WriteLine($"Checking if game master file needs to be downloaded...");
 
             var newETag = await GetETag(Strings.MasterFileEndpoint);
@@ -526,26 +535,14 @@
             }
 
             _pokemonBaseStats = pokemonBaseStats;
-            /*
-            lock (_littleLock)
-            {
-                _rankingLittle.Clear();
-            }
-            lock (_greatLock)
-            {
-                _rankingGreat.Clear();
-            }
-            lock (_ultraLock)
-            {
-                _rankingUltra.Clear();
-            }
-            */
+
             lock (_rankLock)
             {
                 _ranking.Clear();
             }
 
             Console.WriteLine($"New game master file parsed successfully");
+            _loading = false;
         }
 
         #endregion

@@ -107,7 +107,8 @@
                     return;
                 }
 
-                var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
                 if (!workItems.Any())
                 {
                     return;

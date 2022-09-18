@@ -12,6 +12,7 @@ using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
+using ChuckDeviceController.Pvp;
 
 
 #region Config
@@ -100,6 +101,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+Console.WriteLine($"Pvp: {PvpRankGenerator.Instance}");
 
 #region App Builder
 
