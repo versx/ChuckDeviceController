@@ -107,8 +107,7 @@
                     return;
                 }
 
-                //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
-                var workItems = await _taskQueue.DequeueBulkAsync(50, stoppingToken);
+                var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
                 if (!workItems.Any())
                 {
                     return;
@@ -149,7 +148,10 @@
             CheckQueueLength();
 
             var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            if (Options.IsEnabled(DataLogLevel.Summary))
+            {
+                stopwatch.Start();
+            }
 
             ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
 
@@ -175,10 +177,7 @@
             if (cells.Any())
             {
                 // Insert S2 cells
-                //using (await _cellsLock.LockAsync(stoppingToken))
-                {
-                    await UpdateCellsAsync(cells);
-                }
+                await UpdateCellsAsync(cells);
             }
 
             var clientWeather = workItem.Data
@@ -189,10 +188,7 @@
             if (clientWeather.Any())
             {
                 // Insert weather cells
-                //using (await _weatherLock.LockAsync(stoppingToken))
-                {
-                    await UpdateClientWeatherAsync(clientWeather);
-                }
+                await UpdateClientWeatherAsync(clientWeather);
             }
 
             var forts = workItem.Data
@@ -201,10 +197,7 @@
             if (forts.Any())
             {
                 // Insert Forts
-                //using (await _fortsLock.LockAsync(stoppingToken))
-                {
-                    await UpdateFortsAsync(workItem.Username, forts);
-                }
+                await UpdateFortsAsync(workItem.Username, forts);
             }
 
             var fortDetails = workItem.Data
@@ -213,10 +206,7 @@
             if (fortDetails.Any())
             {
                 // Insert Fort Details
-                //using (await _fortDetailsLock.LockAsync(stoppingToken))
-                {
-                    await UpdateFortDetailsAsync(fortDetails);
-                }
+                await UpdateFortDetailsAsync(fortDetails);
             }
 
             var gymInfos = workItem.Data
@@ -225,10 +215,7 @@
             if (gymInfos.Any())
             {
                 // Insert gym info
-                //using (await _fortDetailsLock.LockAsync(stoppingToken))
-                {
-                    await UpdateGymInfoAsync(gymInfos);
-                }
+                await UpdateGymInfoAsync(gymInfos);
             }
 
             var wildPokemon = workItem.Data
@@ -237,10 +224,7 @@
             if (wildPokemon.Any())
             {
                 // Insert wild pokemon
-                //using (await _wildPokemonLock.LockAsync(stoppingToken))
-                {
-                    await UpdateWildPokemonAsync(wildPokemon);
-                }
+                await UpdateWildPokemonAsync(wildPokemon);
             }
 
             var nearbyPokemon = workItem.Data
@@ -249,11 +233,8 @@
             if (nearbyPokemon.Any())
             {
                 // Insert nearby pokemon
-                //using (await _nearbyPokemonLock.LockAsync(stoppingToken))
-                {
-                    await UpdateNearbyPokemonAsync(nearbyPokemon);
-                }
-            }
+                await UpdateNearbyPokemonAsync(nearbyPokemon);
+             }
 
             var mapPokemon = workItem.Data
                 .Where(x => x.type == ProtoDataType.MapPokemon)
@@ -261,18 +242,12 @@
             if (mapPokemon.Any())
             {
                 // Insert map pokemon
-                //using (await _mapPokemonLock.LockAsync(stoppingToken))
-                {
-                    await UpdateMapPokemonAsync(mapPokemon);
-                }
+                await UpdateMapPokemonAsync(mapPokemon);
             }
 
             //if (wildPokemon.Any() || nearbyPokemon.Any() || mapPokemon.Any())
             //{
-            //    using (await _pokemonLock.LockAsync(stoppingToken))
-            //    {
-            //        await UpdatePokemonAsync(wildPokemon, nearbyPokemon, mapPokemon);
-            //    }
+            //    await UpdatePokemonAsync(wildPokemon, nearbyPokemon, mapPokemon);
             //}
 
             var quests = workItem.Data
@@ -281,10 +256,7 @@
             if (quests.Any())
             {
                 // Insert quests
-                //using (await _questsLock.LockAsync(stoppingToken))
-                {
-                    await UpdateQuestsAsync(quests);
-                }
+                await UpdateQuestsAsync(quests);
             }
 
             var encounters = workItem.Data
@@ -293,7 +265,6 @@
             if (encounters.Any())
             {
                 // Insert Pokemon encounters
-                //using var _ = await _encountersLock.LockAsync(stoppingToken);
                 await UpdateEncountersAsync(encounters);
             }
 
@@ -303,10 +274,7 @@
             if (diskEncounters.Any())
             {
                 // Insert lured/disk Pokemon encounters
-                //using (await _diskEncountersLock.LockAsync(stoppingToken))
-                {
-                    await UpdateDiskEncountersAsync(diskEncounters);
-                }
+                await UpdateDiskEncountersAsync(diskEncounters);
             }
 
             // TODO: Add config check to startup services registration pipeline
@@ -953,10 +921,11 @@ ON DUPLICATE KEY UPDATE
                     {
                         case FortType.Checkpoint:
                             //var pokestop = await context.Pokestops.FindAsync(data.Id);
-                            var pokestop = await (
-                                from p in context.Pokestops
-                                select new Pokestop(new { p.Id, p.Name, p.Url })
-                            ).FirstOrDefaultAsync();
+                            //var pokestop = await (
+                            //    from p in context.Pokestops
+                            //    select new Pokestop(new { p.Id, p.Name, p.Url })
+                            //).FirstOrDefaultAsync();
+                            var pokestop = await GetEntity<string, Pokestop>(context, data.Id);
                             if (pokestop == null)
                                 continue;
 
@@ -974,10 +943,11 @@ ON DUPLICATE KEY UPDATE
                             break;
                         case FortType.Gym:
                             //var gym = await context.Gyms.FindAsync(data.Id);
-                            var gym = await (
-                                from g in context.Gyms
-                                select new Gym(new { g.Id, g.Name, g.Url })
-                            ).FirstOrDefaultAsync();
+                            //var gym = await (
+                            //    from g in context.Gyms
+                            //    select new Gym(new { g.Id, g.Name, g.Url })
+                            //).FirstOrDefaultAsync();
+                            var gym = await GetEntity<string, Gym>(context, data.Id);
                             if (gym == null)
                                 continue;
 
@@ -1068,10 +1038,11 @@ ON DUPLICATE KEY UPDATE
                     var fortId = data.GymStatusAndDefenders.PokemonFortProto.FortId;
 
                     //var gym = await context.Gyms.FindAsync(fortId);
-                    var gym = await (
-                        from g in context.Gyms
-                        select new Gym(new { g.Id, g.Name, g.Url })
-                    ).FirstOrDefaultAsync();
+                    //var gym = await (
+                    //    from g in context.Gyms
+                    //    select new Gym(new { g.Id, g.Name, g.Url })
+                    //).FirstOrDefaultAsync();
+                    var gym = await GetEntity<string, Gym>(context, fortId);
                     if (gym == null)
                         continue;
 
@@ -1192,6 +1163,7 @@ ON DUPLICATE KEY UPDATE
                     var fortId = data.FortId;
 
                     //var pokestop = await context.Pokestops.FindAsync(fortId);
+                    /*
                     var pokestop = await (
                         from stop in context.Pokestops
                         where stop.Id == fortId
@@ -1217,6 +1189,8 @@ ON DUPLICATE KEY UPDATE
                             stop.AlternativeQuestConditions,
                         })
                     ).FirstOrDefaultAsync();
+                    */
+                    var pokestop = await GetEntity<string, Pokestop>(context, fortId);
                     if (pokestop == null)
                         continue;
 
@@ -1302,13 +1276,8 @@ ON DUPLICATE KEY UPDATE
                         var isEvent = encounter.isEvent;
                         var encounterId = data.Pokemon.EncounterId.ToString();
                         //var pokemon = await context.Pokemon.FindAsync(encounterId);
-                        var pokemon = _memCache.Get<string, Pokemon>(encounterId);
-                        // Check if pokemon entity is cached
-                        if (pokemon == null)
-                        {
-                            // Pokemon not in cache set, look for it in database
-                            pokemon = await context.Pokemon.FindAsync(encounterId);
-                        }
+                        //var pokemon = _memCache.Get<string, Pokemon>(encounterId);
+                        var pokemon = await GetEntity<string, Pokemon>(context, encounterId);
                         if (pokemon == null)
                         {
                             // New Pokemon
@@ -1456,11 +1425,7 @@ ON DUPLICATE KEY UPDATE
                     var isEvent = diskEncounter.isEvent;
                     var displayId = Convert.ToString(data.Pokemon.PokemonDisplay.DisplayId);
                     //var pokemon = await context.Pokemon.FindAsync(displayId);
-                    var pokemon = _memCache.Get<string, Pokemon>(displayId);
-                    if (pokemon == null)
-                    {
-                        pokemon = await context.Pokemon.FindAsync(displayId);
-                    }
+                    var pokemon = await GetEntity<string, Pokemon>(context, displayId);
                     if (pokemon != null)
                     {
                         pokemon.AddDiskEncounter(data, username);
@@ -1563,11 +1528,12 @@ ON DUPLICATE KEY UPDATE
             if (!pokemon.IsExpireTimestampVerified && spawnId > 0)
             {
                 //var spawnpoint = await context.Spawnpoints.FindAsync(pokemon.SpawnId);
-                var spawnpoint = await (
-                    from spawn in context.Spawnpoints
-                    where spawn.Id == spawnId
-                    select spawn
-                ).FirstOrDefaultAsync();
+                //var spawnpoint = await (
+                //    from spawn in context.Spawnpoints
+                //    where spawn.Id == spawnId
+                //    select spawn
+                //).FirstOrDefaultAsync();
+                var spawnpoint = await GetEntity<ulong, Spawnpoint>(context, pokemon.SpawnId ?? 0);
                 if (spawnpoint != null && spawnpoint.DespawnSecond != null)
                 {
                     var despawnSecond = spawnpoint.DespawnSecond;
@@ -1692,6 +1658,16 @@ ON DUPLICATE KEY UPDATE
                 OnMergeUpdateInputExpression = keys,
             };
             return options;
+        }
+
+        private async Task<TEntity?> GetEntity<TKey, TEntity>(MapDbContext context, TKey key)
+        {
+            var entity = _memCache.Get<TKey, TEntity>(key);
+            if (entity == null)
+            {
+                entity = (TEntity?)await context.FindAsync(typeof(TEntity), key);
+            }
+            return entity;
         }
 
         #endregion
