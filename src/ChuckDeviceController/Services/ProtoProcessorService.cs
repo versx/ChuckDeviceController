@@ -22,7 +22,7 @@
 
         private readonly ILogger<IProtoProcessorService> _logger;
         private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
-        private readonly IDataProcessorService _dataProcessor;
+        private readonly IAsyncQueue<List<dynamic>> _dataTaskQueue;
         private readonly IGrpcClientService _grpcClientService;
 
         private static readonly Dictionary<ulong, int> _emptyCells = new();
@@ -44,12 +44,12 @@
             ILogger<IProtoProcessorService> logger,
             IOptions<ProcessorOptionsConfig> options,
             IAsyncQueue<ProtoPayloadQueueItem> taskQueue,
-            IDataProcessorService dataProcessor,
+            IAsyncQueue<List<dynamic>> dataTaskQueue,
             IGrpcClientService grpcClientService)
         {
             _logger = logger;
             _taskQueue = taskQueue;
-            _dataProcessor = dataProcessor;
+            _dataTaskQueue = dataTaskQueue;
             _grpcClientService = grpcClientService;
 
             Options = options.Value;
@@ -620,7 +620,7 @@
             //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
             ProtoDataStatistics.Instance.TotalProtosSent += (uint)processedProtos.Count;
-            await _dataProcessor.ConsumeDataAsync(username, processedProtos);
+            _dataTaskQueue.Enqueue(processedProtos);
         }
 
         #endregion
