@@ -224,6 +224,10 @@
                     {
                         memCache.Set(Id, oldGym);
                     }
+                    else
+                    {
+                        memCache.Set(Id, this);
+                    }
                 }
             }
             catch (Exception ex)
@@ -355,6 +359,9 @@
                     webhooks.Add(WebhookType.GymInfo, this);
                 }
             }
+
+            // Cache gym entity by id
+            memCache.Set(Id, this);
 
             return webhooks;
         }

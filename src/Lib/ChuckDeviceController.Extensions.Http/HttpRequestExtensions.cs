@@ -71,9 +71,9 @@
                 var data = await stream.ReadToEndAsync().ConfigureAwait(false);
                 return data;
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
-                Console.WriteLine($"Error: {ex}");
+                //Console.WriteLine($"Error - ReadBodyAsStringAsync: {ex.Message}");
                 return string.Empty;
             }
         }

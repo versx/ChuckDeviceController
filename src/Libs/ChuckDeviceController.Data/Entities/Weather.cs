@@ -14,6 +14,7 @@
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
+    using Google.Common.Geometry;
 
     [Table("weather")]
     public partial class Weather : BaseEntity, IWeather, ICoordinateEntity, IWebhookEntity
@@ -128,6 +129,10 @@
                     {
                         memCache.Set(Id, oldWeather);
                     }
+                    else
+                    {
+                        memCache.Set(Id, this);
+                    }
                 }
             }
             catch (Exception ex)
@@ -144,6 +149,9 @@
             {
                 SendWebhook = true;
             }
+
+            // Cache weather cell entity by id
+            memCache.Set(Id, this);
         }
 
         public dynamic? GetWebhookData(string type)

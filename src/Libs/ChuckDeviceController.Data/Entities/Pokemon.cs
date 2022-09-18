@@ -511,6 +511,10 @@
                     {
                         memCache.Set(Id, oldPokemon);
                     }
+                    else
+                    {
+                        memCache.Set(Id, this);
+                    }
                 }
             }
             catch (Exception ex)
@@ -767,7 +771,8 @@
                 IsNewPokemonWithIV = true;
             }
 
-            // TODO: Cache pokemon
+            // Cache pokemon entity by id
+            memCache.Set(Id, this);
         }
 
         public dynamic? GetWebhookData(string type)

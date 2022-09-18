@@ -103,6 +103,10 @@
                     {
                         memCache.Set(Id, oldIncident);
                     }
+                    else
+                    {
+                        memCache.Set(Id, this);
+                    }
                 }
             }
             catch (Exception ex)
@@ -158,6 +162,9 @@
                     SendWebhook = true;
                 }
             }
+
+            // Cache pokestop incident entity by id
+            memCache.Set(Id, this);
         }
 
         public dynamic? GetWebhookData(string type)

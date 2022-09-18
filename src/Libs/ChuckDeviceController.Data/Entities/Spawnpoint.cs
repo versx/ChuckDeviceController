@@ -71,6 +71,10 @@
                     {
                         memCache.Set(Id, oldSpawnpoint);
                     }
+                    else
+                    {
+                        memCache.Set(Id, this);
+                    }
                 }
             }
             catch (Exception ex)
@@ -82,12 +86,7 @@
             Updated = now;
             LastSeen = now;
 
-            if (!update && oldSpawnpoint != null)
-            {
-                return;
-            }
-
-            if (oldSpawnpoint != null)
+            if (update && oldSpawnpoint != null)
             {
                 if (DespawnSecond == null && oldSpawnpoint.DespawnSecond != null)
                 {
@@ -102,6 +101,9 @@
                     return;
                 }
             }
+
+            // Cache spawnpoint entity by id
+            memCache.Set(Id, this);
         }
 
         #endregion

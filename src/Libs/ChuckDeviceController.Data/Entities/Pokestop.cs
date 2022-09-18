@@ -528,6 +528,10 @@
                     {
                         memCache.Set(Id, oldPokestop);
                     }
+                    else
+                    {
+                        memCache.Set(Id, this);
+                    }
                 }
             }
             catch (Exception ex)
@@ -619,6 +623,9 @@
                     webhooks.Add(WebhookType.AlternativeQuests, this);
                 }
             }
+
+            // Cache pokestop entity by id
+            memCache.Set(Id, this);
 
             return webhooks;
         }
