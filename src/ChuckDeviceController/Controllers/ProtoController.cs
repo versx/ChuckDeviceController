@@ -17,6 +17,7 @@
         #region Variables
 
         private static readonly Dictionary<string, ushort> _levelCache = new();
+        private static readonly object _levelCacheLock = new();
 
         private readonly ILogger<ProtoController> _logger;
         private readonly ControllerDbContext _context;
@@ -137,32 +138,43 @@
 
         private async Task SetAccountLevelAsync(string uuid, string? username, ushort level, ulong trainerXp = 0)
         {
-            if (string.IsNullOrEmpty(username) || level <= 0)
-                return;
-
-            // Check if account level has already been cached
-            if (!_levelCache.ContainsKey(username))
+            try
             {
-                _levelCache.Add(username, level);
-                return;
+                if (string.IsNullOrEmpty(username) || level <= 0)
+                    return;
+
+                ushort oldLevel;
+                lock (_levelCacheLock)
+                {
+                    // Check if account level has already been cached
+                    if (!_levelCache.ContainsKey(username))
+                    {
+                        _levelCache.Add(username, level);
+                        return;
+                    }
+
+                    // Check if cached level is same as current level
+                    oldLevel = _levelCache[username];
+                    if (oldLevel == level)
+                        return;
+
+                    // Account level has changed, update cache
+                    _levelCache[username] = level;
+                }
+
+                // Update account level if account exists
+                var account = await _context.Accounts.FindAsync(username);
+                if (account != null)
+                {
+                    account.Level = level;
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation($"[{uuid}] Account {username} on {uuid} from {oldLevel} to {level} with {trainerXp}");
+                }
             }
-
-            // Check if cached level is same as current level
-            var oldLevel = _levelCache[username];
-            if (oldLevel == level)
-                return;
-
-            // Account level has changed, update cache
-            _levelCache[username] = level;
-
-            // Update account level if account exists
-            var account = await _context.Accounts.FindAsync(username);
-            if (account != null)
+            catch (Exception ex)
             {
-                account.Level = level;
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation($"[{uuid}] Account {username} on {uuid} from {oldLevel} to {level} with {trainerXp}");
+                _logger.LogError($"[{uuid}] Error: {ex}");
             }
         }
 
