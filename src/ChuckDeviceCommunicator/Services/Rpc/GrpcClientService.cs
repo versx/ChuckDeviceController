@@ -2,28 +2,32 @@
 {
     using Grpc.Core.Interceptors;
     using Grpc.Net.Client;
+    using Microsoft.Extensions.Options;
+
 
     using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Protos;
 
     public class GrpcClientService : IGrpcClientService
     {
         private readonly ILogger<IGrpcClientService> _logger;
-        private readonly string _grpcConfiguratorServerEndpoint;
+        private readonly GrpcEndpointsConfig _options;
         private readonly AuthHeadersInterceptor _authHeadersInterceptor;
 
         public GrpcClientService(
             ILogger<IGrpcClientService> logger,
-            IConfiguration configuration,
+            IOptions<GrpcEndpointsConfig> options,
             AuthHeadersInterceptor authHeadersInterceptor)
         {
-            var configuratorEndpoint = configuration.GetValue<string>("GrpcConfiguratorServer");
-            if (string.IsNullOrEmpty(configuratorEndpoint))
+            _options = options.Value;
+
+            if (string.IsNullOrEmpty(_options.Configurator))
             {
-                throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(configuratorEndpoint));
+                throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(_options.Configurator));
             }
+
             _logger = logger;
-            _grpcConfiguratorServerEndpoint = configuratorEndpoint;
             _authHeadersInterceptor = authHeadersInterceptor;
         }
 
@@ -40,7 +44,7 @@
             try
             {
                 // Create gRPC channel for receiving gRPC server address
-                using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
+                using var channel = GrpcChannel.ForAddress(_options.Configurator);
 
                 var invoker = channel.Intercept(_authHeadersInterceptor);
 
@@ -57,7 +61,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unable to send webhook to webhook relay service at '{_grpcConfiguratorServerEndpoint}: {ex.Message}'");
+                _logger.LogError($"Unable to send webhook to webhook relay service at '{_options.Configurator}: {ex.Message}'");
             }
             return null;
         }

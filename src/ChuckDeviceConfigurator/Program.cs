@@ -41,8 +41,7 @@ using ChuckDeviceController.PluginManager.Mvc.Extensions;
 
 #region Config
 
-var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-var config = Config.LoadConfig(args, env);
+var config = Config.LoadConfig(args, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
 if (config.Providers.Count() == 2)
 {
     // Only environment variables and command line providers added,

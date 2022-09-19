@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -13,13 +15,10 @@ using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 using ChuckDeviceController.Pvp;
-using Microsoft.Extensions.Options;
-
 
 #region Config
 
-var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-var config = Config.LoadConfig(args, env);
+var config = Config.LoadConfig(args, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
 if (config.Providers.Count() == 2)
 {
     // Only environment variables and command line providers added,
@@ -29,9 +28,9 @@ if (config.Providers.Count() == 2)
 
 #endregion
 
-//var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
+var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
@@ -63,6 +62,8 @@ builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSect
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<AuthHeadersInterceptor>();
+
+builder.Services.Configure<GrpcEndpointsConfig>(builder.Configuration.GetSection("Grpc"));
 
 builder.Services.Configure<MemoryCacheOptions>(builder.Configuration.GetSection("Cache"));
 builder.Services.AddMemoryCache();
@@ -97,7 +98,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-Console.WriteLine($"Pvp: {PvpRankGenerator.Instance}");
+// Instantiate PvpRankGenerator singleton immediately before protos are received
+logger.LogDebug($"Pvp: {PvpRankGenerator.Instance}");
 
 #region App Builder
 

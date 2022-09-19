@@ -4,9 +4,10 @@
     using Grpc.Core.Interceptors;
     using Grpc.Net.Client;
 
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
 
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Protos;
 
@@ -29,21 +30,21 @@
             new Logger<AuthHeadersInterceptor>(LoggerFactory.Create(x => x.AddConsole()));
         protected static readonly Dictionary<string, ulong> _jwtTokens = new();
         private static readonly object _lock = new();
-        private readonly string _grpcConfiguratorServerEndpoint;
-        private bool _isJwtAuthEnabled = true;
+        private static bool _isJwtAuthEnabled = true;
+
+        private readonly GrpcEndpointsConfig _options;
 
         #endregion
 
         #region Constructor
 
-        public AuthHeadersInterceptor(IConfiguration configuration)
+        public AuthHeadersInterceptor(IOptions<GrpcEndpointsConfig> options)
         {
-            var configuratorEndpoint = configuration.GetValue<string>("GrpcConfiguratorServer");
-            if (string.IsNullOrEmpty(configuratorEndpoint))
+            _options = options.Value;
+            if (string.IsNullOrEmpty(_options.Configurator))
             {
-                throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(configuratorEndpoint));
+                throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(_options.Configurator));
             }
-            _grpcConfiguratorServerEndpoint = configuratorEndpoint;
         }
 
         #endregion
@@ -116,7 +117,7 @@
         {
             try
             {
-                using var channel = GrpcChannel.ForAddress(_grpcConfiguratorServerEndpoint);
+                using var channel = GrpcChannel.ForAddress(_options.Configurator);
                 var client = new JwtAuth.JwtAuthClient(channel);
                 var request = new JwtAuthRequest
                 {

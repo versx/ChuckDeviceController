@@ -3,9 +3,7 @@ using ChuckDeviceCommunicator.Services.Rpc;
 using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
 using ChuckDeviceController.Configuration;
 
-
-var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-var config = Config.LoadConfig(args, env);
+var config = Config.LoadConfig(args, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
 if (config.Providers.Count() == 2)
 {
     // Only environment variables and command line providers added,
@@ -24,6 +22,7 @@ builder.Services.AddGrpc();
 builder.Services.AddSingleton<IWebhookRelayService, WebhookRelayService>();
 builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
 builder.Services.Configure<WebhookRelayConfig>(builder.Configuration.GetSection("Relay"));
+builder.Services.Configure<GrpcEndpointsConfig>(builder.Configuration.GetSection("Grpc"));
 
 
 var app = builder.Build();

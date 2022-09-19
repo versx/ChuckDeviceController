@@ -3,40 +3,37 @@
     using Grpc.Core;
     using Grpc.Core.Interceptors;
     using Grpc.Net.Client;
+    using Microsoft.Extensions.Options;
 
     using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
 
     public class GrpcClientService : IGrpcClientService
     {
-        private readonly string _grpcConfiguratorServerEndpoint;
-        private readonly string? _grpcWebhookServerEndpoint;
         private readonly ILogger<IGrpcClientService> _logger;
         private readonly AuthHeadersInterceptor _authHeadersInterceptor;
+        private readonly GrpcEndpointsConfig _options;
 
         public GrpcClientService(
             ILogger<IGrpcClientService> logger,
-            IConfiguration configuration,
+            IOptions<GrpcEndpointsConfig> options,
             AuthHeadersInterceptor authHeadersInterceptor)
         {
             _logger = logger;
+            _options = options.Value;
             _authHeadersInterceptor = authHeadersInterceptor;
 
-            // TODO: Group server endpoints in config
-            var configuratorEndpoint = configuration.GetValue<string>("GrpcConfiguratorServer");
-            if (string.IsNullOrEmpty(configuratorEndpoint))
+            if (string.IsNullOrEmpty(_options.Configurator))
             {
-                throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(configuratorEndpoint));
+                throw new ArgumentNullException($"gRPC configurator server endpoint is not set but is required!", nameof(_options.Configurator));
             }
-            _grpcConfiguratorServerEndpoint = configuratorEndpoint;
 
-            var webhookEndpoint = configuration.GetValue<string>("GrpcWebhookServer");
-            if (!string.IsNullOrEmpty(webhookEndpoint))
+            if (!string.IsNullOrEmpty(_options.Communicator))
             {
                 // Make optional if no webhooks are wanted
-                //throw new ArgumentNullException($"gRPC webhook server endpoint is not set but is required!", nameof(webhookEndpoint));
-                _grpcWebhookServerEndpoint = webhookEndpoint;
+                //throw new ArgumentNullException($"gRPC webhook server endpoint is not set but is required!", nameof(_options.Communicator));
             }
         }
 
@@ -45,7 +42,7 @@
         {
             try
             {
-                var (channel, invoker) = CreateClient(_grpcConfiguratorServerEndpoint);
+                var (channel, invoker) = CreateClient(_options.Configurator);
                 using (channel)
                 {
                     // Create new gRPC client using gRPC channel for address
@@ -71,7 +68,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unable to send proto payload to '{_grpcConfiguratorServerEndpoint}: {ex.Message}'");
+                _logger.LogError($"Unable to send proto payload to '{_options.Configurator}: {ex.Message}'");
             }
         }
 
@@ -79,7 +76,7 @@
         {
             try
             {
-                var (channel, invoker) = CreateClient(_grpcConfiguratorServerEndpoint);
+                var (channel, invoker) = CreateClient(_options.Configurator);
                 using (channel)
                 {
                     // Create new gRPC client for gRPC channel for address
@@ -99,14 +96,14 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unable to get trainer leveling status from '{_grpcConfiguratorServerEndpoint}': {ex.Message}");
+                _logger.LogError($"Unable to get trainer leveling status from '{_options.Configurator}': {ex.Message}");
             }
             return null;
         }
 
         public async Task<WebhookPayloadResponse?> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json)
         {
-            if (string.IsNullOrEmpty(_grpcWebhookServerEndpoint))
+            if (string.IsNullOrEmpty(_options.Communicator))
             {
                 // User does not want to process/receive webhooks
                 return null;
@@ -114,7 +111,7 @@
 
             try
             {
-                var (channel, invoker) = CreateClient(_grpcWebhookServerEndpoint);
+                var (channel, invoker) = CreateClient(_options.Communicator);
                 using (channel)
                 {
                     // Create new gRPC client using gRPC channel for address

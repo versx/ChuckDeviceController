@@ -860,7 +860,7 @@ ON DUPLICATE KEY UPDATE
 
                     if (Options.IsEnabled(DataLogLevel.Forts)) // TODO: Make separate pokestop/gym logging flags
                     {
-                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                         _logger.LogInformation($"Upserted {pokestopsToUpsert.Count:N0} Pokestops in {seconds}s");
                     }
                 }
@@ -870,7 +870,7 @@ ON DUPLICATE KEY UPDATE
 
                     if (Options.IsEnabled(DataLogLevel.Incidents))
                     {
-                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                         _logger.LogInformation($"Upserted {incidentsToUpsert.Count:N0} Pokestop Incidents in {seconds}s");
                     }
                 }
@@ -880,7 +880,7 @@ ON DUPLICATE KEY UPDATE
 
                     if (Options.IsEnabled(DataLogLevel.Forts))
                     {
-                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                         _logger.LogInformation($"Upserted {gymsToUpsert.Count:N0} Gyms in {seconds}s");
                     }
                 }
@@ -969,7 +969,7 @@ ON DUPLICATE KEY UPDATE
 
                     if (Options.IsEnabled(DataLogLevel.FortDetails))
                     {
-                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                         _logger.LogInformation($"Upserted {pokestopsToUpsert.Count:N0} Pokestop Details in {seconds}s");
                     }
                 }
@@ -991,7 +991,7 @@ ON DUPLICATE KEY UPDATE
 
                     if (Options.IsEnabled(DataLogLevel.FortDetails))
                     {
-                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                         _logger.LogInformation($"Upserted {gymsToUpsert.Count:N0} Gym Details in {seconds}s");
                     }
                 }
@@ -1086,7 +1086,7 @@ ON DUPLICATE KEY UPDATE
 
                     if (Options.IsEnabled(DataLogLevel.GymInfo))
                     {
-                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                         _logger.LogInformation($"Upserted {gymsToUpsert.Count:N0} Gym Information in {seconds}s");
                     }
                 }
@@ -1101,7 +1101,7 @@ ON DUPLICATE KEY UPDATE
 
                     if (Options.IsEnabled(DataLogLevel.GymTrainers))
                     {
-                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                         _logger.LogInformation($"Upserted {gymTrainersToUpsert.Count:N0} Gym Trainers in {seconds}s");
                     }
                 }
@@ -1116,7 +1116,7 @@ ON DUPLICATE KEY UPDATE
 
                     if (Options.IsEnabled(DataLogLevel.GymDefenders))
                     {
-                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                        var seconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                         _logger.LogInformation($"Upserted {gymDefendersToUpsert.Count:N0} Gym Defenders in {seconds}s");
                     }
                 }
@@ -1598,7 +1598,7 @@ ON DUPLICATE KEY UPDATE
             };
         }
 
-        private static double BenchmarkAction(Action action, ushort precision = 4)
+        private static double BenchmarkAction(Action action, ushort precision = 5)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -1650,8 +1650,10 @@ ON DUPLICATE KEY UPDATE
             if (ShowBenchmarkTimes)
             {
                 sw?.Stop();
-                var totalSeconds = Math.Round(sw?.Elapsed.TotalSeconds ?? 0, 4);
-                time = sw != null ? $" in {totalSeconds}s" : string.Empty;
+                var totalSeconds = Math.Round(sw?.Elapsed.TotalSeconds ?? 0, 5).ToString("F5");
+                time = sw != null
+                    ? $" in {totalSeconds}s"
+                    : string.Empty;
             }
             _logger.LogInformation($"{nameof(DataProcessorService)} upserted {entities.Count:N0} {text}{time}");
         }
