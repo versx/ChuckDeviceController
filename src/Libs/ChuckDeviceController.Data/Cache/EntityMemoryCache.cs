@@ -10,7 +10,7 @@
         {
             // Reference: https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Caching.Memory/src/MemoryCacheOptions.cs
             //SizeLimit = 2 * 10240,
-            ExpirationScanFrequency = TimeSpan.FromSeconds(15), // default: 1 minute
+            ExpirationScanFrequency = TimeSpan.FromMinutes(15), // default: 1 minute
             CompactionPercentage = 0.50, // default: 0.05
         };
         private readonly MemoryCache _memCache;
@@ -19,7 +19,7 @@
 
         public IMemoryCache Cache => _memCache;
 
-        public EntityMemoryCache(MemoryCacheOptions? options = null)
+        public EntityMemoryCache(MemoryCacheOptions options)
             : base(_defaultMemCacheOptions)
         {
             _memCache = new MemoryCache(options ?? _defaultMemCacheOptions);

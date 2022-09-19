@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.HostedServices
 {
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Options;
 
     using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Data.Cache;
@@ -21,18 +22,21 @@
         private readonly IMemoryCache _s2CellCache;
         private readonly IMemoryCache _spawnpointCache;
         private readonly IMemoryCache _weatherCache;
+        private readonly MemoryCacheOptions _options;
 
         #endregion
 
-        public MemoryCacheHostedService()
+        public MemoryCacheHostedService(IOptions<MemoryCacheOptions> options)
         {
-            _pokemonCache = new EntityMemoryCache();
-            _gymCache = new EntityMemoryCache();
-            _pokestopCache = new EntityMemoryCache();
-            _incidentCache = new EntityMemoryCache();
-            _s2CellCache = new EntityMemoryCache();
-            _spawnpointCache = new EntityMemoryCache();
-            _weatherCache = new EntityMemoryCache();
+            _options = options.Value;
+
+            _pokemonCache = new EntityMemoryCache(_options);
+            _gymCache = new EntityMemoryCache(_options);
+            _pokestopCache = new EntityMemoryCache(_options);
+            _incidentCache = new EntityMemoryCache(_options);
+            _s2CellCache = new EntityMemoryCache(_options);
+            _spawnpointCache = new EntityMemoryCache(_options);
+            _weatherCache = new EntityMemoryCache(_options);
         }
 
         public TEntity? Get<TKey, TEntity>(TKey key)

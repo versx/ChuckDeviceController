@@ -8,9 +8,8 @@
 
         public ulong LastCompleted { get; set; }
 
-        // TODO: Actually implement this by checking if device has visited all coordinates,
-        // keep track of coordinates visited I suppose?
-        // TODO: Maybe add property for first coord it received and assume route is completed if last coord is first coord - 1
+        // TODO: Actually implement this by checking if device has visited all coordinates, keep track of coordinates visited I suppose?
+        // TODO: Maybe add property for first coord it received and assume route is completed if last visited coord is first coord - 1
         public ulong LastCompletedWholeRoute { get; set; }
 
         public uint CoordinatesCompletedCount { get; set; }

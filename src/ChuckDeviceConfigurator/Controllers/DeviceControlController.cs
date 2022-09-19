@@ -302,7 +302,7 @@
             else
             {
                 // Handle account assignment changes from UI
-                // TODO: Double check that this doesn't loop if account and in-game name differ
+                // REVIEW: Double check that this doesn't loop if account and in-game name differ
                 if (device.AccountUsername != username)
                 {
                     return CreateSwitchAccountTask(minLevel, maxLevel);

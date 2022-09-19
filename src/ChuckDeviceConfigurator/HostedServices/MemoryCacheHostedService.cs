@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.HostedServices
 {
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Options;
 
     using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Data.Cache;
@@ -16,13 +17,16 @@
             new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole()));
         private readonly IMemoryCache _deviceCache;
         private readonly IMemoryCache _accountCache;
+        private readonly MemoryCacheOptions _options;
 
         #endregion
 
-        public MemoryCacheHostedService()
+        public MemoryCacheHostedService(IOptions<MemoryCacheOptions> options)
         {
-            _deviceCache = new EntityMemoryCache();
-            _accountCache = new EntityMemoryCache();
+            _options = options.Value;
+
+            _deviceCache = new EntityMemoryCache(_options);
+            _accountCache = new EntityMemoryCache(_options);
         }
 
         public TEntity? Get<TKey, TEntity>(TKey key)
