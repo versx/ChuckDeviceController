@@ -148,6 +148,7 @@
             {
                 _logger.LogWarning($"[{device.Uuid}] Device is not assigned to an instance or the assigned instance is still starting!");
             }
+
             return new DeviceResponse
             {
                 Status = "ok",

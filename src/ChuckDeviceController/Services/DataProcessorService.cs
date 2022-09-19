@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Services
 {
     using System.Data;
+    using System.Data.Common;
     using System.Diagnostics;
     using System.Linq;
     using System.Linq.Expressions;
@@ -36,8 +37,6 @@
 
     public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
-        private const bool ShowBenchmarkTimes = true;
-
         #region Variables
 
         private readonly ILogger<IDataProcessorService> _logger;
@@ -47,12 +46,15 @@
         private readonly IGrpcClientService _grpcClientService;
         private readonly IClearFortsHostedService _clearFortsService;
         private readonly IMemoryCacheHostedService _memCache;
+        private readonly IWebHostEnvironment _env;
 
         #endregion
 
         #region Properties
 
         public ProcessorOptionsConfig Options { get; }
+
+        public bool ShowBenchmarkTimes => _env?.IsDevelopment() ?? false;
 
         #endregion
 
@@ -66,7 +68,8 @@
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
             IClearFortsHostedService clearFortsService,
-            IMemoryCacheHostedService memCache)
+            IMemoryCacheHostedService memCache,
+            IWebHostEnvironment env)
             : base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {
             _logger = logger;
@@ -76,6 +79,7 @@
             _grpcClientService = grpcClientService;
             _clearFortsService = clearFortsService;
             _memCache = memCache;
+            _env = env;
 
             Options = options.Value;
         }
@@ -1749,7 +1753,7 @@ ON DUPLICATE KEY UPDATE
         private readonly Timer? _timer;
         //Store reference to connection so we can unsubscribe from state change events
         //private SqlConnection? _connection;
-        private System.Data.Common.DbConnection? _connection;
+        private DbConnection? _connection;
 
         public string StackTrace { get; set; }
 
