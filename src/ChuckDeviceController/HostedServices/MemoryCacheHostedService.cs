@@ -72,7 +72,7 @@
 
         public void Set<TKey, TEntity>(TKey key, TEntity obj, TimeSpan? expiry = null)
         {
-            var defaultExpiry = TimeSpan.FromMinutes(ExpiryLimitM);
+            var defaultExpiry = TimeSpan.FromMinutes(ExpiryLimitM); // TODO: Make 'MemoryCacheHostedService.ExpiryLimitM' configurable
             var name = typeof(TEntity).Name;
             switch (name)
             {
@@ -163,6 +163,93 @@
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.CompletedTask;
+        }
+    }
+
+    public class GenericMemoryCacheHostedService : BackgroundService, IMemoryCacheHostedService
+    {
+        private const ushort ExpiryLimitM = 60; // minutes
+
+        #region Variables
+
+        private static readonly ILogger<IMemoryCacheHostedService> _logger =
+            new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole()));
+        private readonly Dictionary<string, IMemoryCache> _memCache;
+        private readonly MemoryCacheOptions _options;
+
+        #endregion
+
+        public GenericMemoryCacheHostedService(IOptions<MemoryCacheOptions> options, IEnumerable<string> cacheTypeNames)
+        {
+            _options = options.Value;
+            _memCache = new Dictionary<string, IMemoryCache>();
+
+            LoadCaches(cacheTypeNames);
+        }
+
+        public TEntity? Get<TKey, TEntity>(TKey key)
+        {
+            var value = default(TEntity);
+            var name = typeof(TEntity).Name;
+            
+            if (_memCache.ContainsKey(name))
+            {
+                var memCache = _memCache[name];
+                value = memCache.Get<TEntity>(key);
+            }
+            return value;
+        }
+
+        public void Set<TKey, TEntity>(TKey key, TEntity obj, TimeSpan? expiry = null)
+        {
+            var defaultExpiry = TimeSpan.FromMinutes(ExpiryLimitM); // TODO: Make 'MemoryCacheHostedService.ExpiryLimitM' configurable
+            var name = typeof(TEntity).Name;
+
+            if (_memCache.ContainsKey(name))
+            {
+                var memCache = _memCache[name];
+                memCache.Set(key, obj, expiry ?? defaultExpiry);
+            }
+        }
+
+        public void Unset<TKey, TEntity>(TKey key)
+        {
+            var name = typeof(TEntity).Name;
+
+            if (_memCache.ContainsKey(name))
+            {
+                var memCache = _memCache[name];
+                memCache.Remove(key);
+            }
+        }
+
+        public bool IsSet<TKey, TEntity>(TKey key)
+        {
+            var value = false;
+            var name = typeof(TEntity).Name;
+
+            if (_memCache.ContainsKey(name))
+            {
+                var memCache = _memCache[name];
+                value = memCache.TryGetValue<TEntity>(key, out var _);
+            }
+            return value;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            await Task.CompletedTask;
+        }
+
+        private void LoadCaches(IEnumerable<string> typeNames)
+        {
+            foreach (var typeName in typeNames)
+            {
+                if (!_memCache.ContainsKey(typeName))
+                {
+                    _memCache.Add(typeName, new EntityMemoryCache(_options));
+                }
+            }
         }
     }
 }
