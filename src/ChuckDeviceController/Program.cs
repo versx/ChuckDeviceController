@@ -68,7 +68,7 @@ var memCacheOptions = new MemoryCacheOptions
     // TODO: Make 'CacheSizeLimit' configurable
     SizeLimit = 10240,
     ExpirationScanFrequency = TimeSpan.FromMinutes(60),
-    CompactionPercentage = 0.50,
+    CompactionPercentage = 0.25,
 };
 builder.Services.AddMemoryCache(options => options = memCacheOptions);
 builder.Services.AddDistributedMemoryCache(options => options = (MemoryDistributedCacheOptions)memCacheOptions);
