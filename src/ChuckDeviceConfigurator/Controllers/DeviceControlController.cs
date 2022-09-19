@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
+    using System.Reflection;
+
     using Microsoft.AspNetCore.Mvc;
 
     using ChuckDeviceConfigurator.Services.Jobs;
@@ -116,6 +118,7 @@
 
         private async Task<DeviceResponse> HandleInitializeRequestAsync(string uuid, Device? device = null)
         {
+            var gitsha = GetGitHash();
             if (device is null)
             {
                 // Register new device
@@ -136,7 +139,7 @@
                     {
                         Assigned = false,
                         Version = Strings.AssemblyVersion,
-                        Commit = "", // TODO: Get git commit
+                        Commit = gitsha,
                         Provider = Strings.AssemblyName,
                     },
                 };
@@ -156,7 +159,7 @@
                 {
                     Assigned = assignedInstance,
                     Version = Strings.AssemblyVersion,
-                    Commit = "", // TODO: Get git commit
+                    Commit = gitsha,
                     Provider = Strings.AssemblyName,
                 },
             };
@@ -526,6 +529,22 @@
                 entity = (TEntity?)await context.FindAsync(typeof(TEntity), key);
             }
             return entity;
+        }
+
+        /// <summary>
+        /// Gets the git hash value from the assembly or '--' if it cannot be found.
+        /// </summary>
+        private static string GetGitHash(string defaultValue = "--")
+        {
+            // TODO: Move to reusable project lib
+            var assembly = Assembly.GetExecutingAssembly();
+            var attr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            var split = attr?.InformationalVersion?.Split('+');
+            if (split?.Length == 2)
+            {
+                return split.Last();
+            }
+            return defaultValue;
         }
     }
 }
