@@ -1,16 +1,16 @@
-using System.Reflection;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 using ChuckDeviceController;
 using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
 using ChuckDeviceController.Collections.Queues;
-using ChuckDeviceController.Common.Cache;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
+using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
+using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
@@ -50,22 +50,40 @@ builder.WebHost.ConfigureLogging(configure =>
 
 #region Services
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
+builder.Services.Configure<GrpcEndpointsConfig>(builder.Configuration.GetSection("Grpc"));
+builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSection("Options"));
+
 builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>, AsyncQueue<ProtoPayloadQueueItem>>();
 builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueItem>>();
 
 builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
 builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
-builder.Services.AddSingleton<IMemoryCacheHostedService, MemoryCacheHostedService>();
+builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
+{
+    using var scope = factory.CreateScope();
+    var serviceProvider = scope.ServiceProvider;
+    var logger = new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole()));
+    var types = new List<string>
+    {
+        nameof(Cell),
+        nameof(Gym),
+        nameof(Incident),
+        nameof(Pokemon),
+        nameof(Pokestop),
+        nameof(Spawnpoint),
+        nameof(Weather),
+    };
+    var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
+    var memCache = new GenericMemoryCacheHostedService(logger, memCacheOptions, types);
+    return memCache;
+});
 builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
-builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSection("Options"));
 
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<AuthHeadersInterceptor>();
 
-builder.Services.Configure<GrpcEndpointsConfig>(builder.Configuration.GetSection("Grpc"));
-
-builder.Services.Configure<MemoryCacheOptions>(builder.Configuration.GetSection("Cache"));
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 
@@ -88,7 +106,7 @@ builder.Services.AddDbContext<ControllerDbContext>(options =>
 // Register available hosted services
 builder.Services.AddHostedService<ClearFortsHostedService>();
 builder.Services.AddHostedService<DataProcessorService>();
-builder.Services.AddHostedService<MemoryCacheHostedService>();
+builder.Services.AddHostedService<GenericMemoryCacheHostedService>();
 builder.Services.AddHostedService<ProtoProcessorService>();
 
 #endregion

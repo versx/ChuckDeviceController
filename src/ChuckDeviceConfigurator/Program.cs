@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Extensions;
-using ChuckDeviceConfigurator.HostedServices;
 using ChuckDeviceConfigurator.Localization;
 using ChuckDeviceConfigurator.Middleware;
 using ChuckDeviceConfigurator.Services.Assignments;
@@ -23,11 +23,11 @@ using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceController.Authorization.Jwt.Middleware;
-using ChuckDeviceController.Common.Cache;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions.Data;
+using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.EventBus;
 using ChuckDeviceController.Plugin.EventBus.Observer;
@@ -165,23 +165,37 @@ builder.Services.AddDbContext<MapDbContext>(options =>
 
 #endregion
 
-#region Host Services
+#region Services
+
+builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
+builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
+builder.Services.Configure<LeafletMapConfig>(builder.Configuration.GetSection("Map"));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages(); // <- Required for plugins to render Razor pages
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();
-builder.Services.AddSingleton<IMemoryCacheHostedService, MemoryCacheHostedService>();
+builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
+{
+    using var scope = factory.CreateScope();
+    var serviceProvider = scope.ServiceProvider;
+    var logger = new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole()));
+    var types = new List<string>
+    {
+        nameof(Account),
+        nameof(Device),
+    };
+    var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
+    var memCache = new GenericMemoryCacheHostedService(logger, memCacheOptions, types);
+    return memCache;
+});
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 //builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
-
-builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
-builder.Services.Configure<LeafletMapConfig>(builder.Configuration.GetSection("Map"));
 
 builder.Services.AddGrpc(options =>
 {
@@ -190,11 +204,14 @@ builder.Services.AddGrpc(options =>
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });
 
-builder.Services.Configure<MemoryCacheOptions>(builder.Configuration.GetSection("Cache"));
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 
-builder.Services.AddHostedService<MemoryCacheHostedService>();
+#endregion
+
+#region Hosted Services
+
+builder.Services.AddHostedService<GenericMemoryCacheHostedService>();
 
 #endregion
 

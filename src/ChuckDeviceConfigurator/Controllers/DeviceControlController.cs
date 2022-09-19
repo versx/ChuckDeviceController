@@ -6,13 +6,13 @@
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
-    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http;
+    using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
 

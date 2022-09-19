@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,13 +7,12 @@
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
-    using Google.Common.Geometry;
+    using ChuckDeviceController.Extensions.Http.Caching;
 
     [Table("weather")]
     public partial class Weather : BaseEntity, IWeather, ICoordinateEntity, IWebhookEntity

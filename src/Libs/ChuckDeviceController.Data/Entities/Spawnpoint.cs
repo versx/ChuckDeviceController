@@ -3,11 +3,11 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Http.Caching;
 
     [Table("spawnpoint")]
     public class Spawnpoint : BaseEntity, ISpawnpoint, ICoordinateEntity

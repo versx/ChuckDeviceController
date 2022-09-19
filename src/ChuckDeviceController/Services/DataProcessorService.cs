@@ -17,12 +17,12 @@
     using Z.BulkOperations;
 
     using ChuckDeviceController.Collections.Queues;
-    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.HostedServices;

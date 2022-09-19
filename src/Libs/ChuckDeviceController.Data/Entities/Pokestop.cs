@@ -13,7 +13,7 @@
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Common.Cache;
+    using ChuckDeviceController.Extensions.Http.Caching;
 
     [Table("pokestop")]
     public class Pokestop : BaseFort, IPokestop, IWebhookEntity
