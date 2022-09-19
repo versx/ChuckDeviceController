@@ -36,7 +36,7 @@
 
     public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
-        private const bool ShowBenchmarkTimes = false;
+        private const bool ShowBenchmarkTimes = true;
 
         #region Variables
 
@@ -110,7 +110,8 @@
                 }
 
                 //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
-                var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
+                var workItems = await _taskQueue.DequeueBulkAsync(5, stoppingToken);
+                //var workItems = new[] { await _taskQueue.DequeueAsync(stoppingToken) };
                 if (!workItems.Any())
                 {
                     return;
@@ -150,10 +151,10 @@
 
             CheckQueueLength();
 
-            var stopwatch = new Stopwatch();
+            var sw = new Stopwatch();
             if (ShowBenchmarkTimes)
             {
-                stopwatch.Start();
+                sw.Start();
             }
 
             ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
@@ -196,7 +197,6 @@
                 await UpdateClientWeatherAsync(clientWeather);
             }
 
-            /*
             var forts = workItem.Data
                 .Where(x => x.type == ProtoDataType.Fort)
                 .ToList();
@@ -225,6 +225,7 @@
                 await UpdateGymInfoAsync(gymInfos);
             }
 
+            /*
             var wildPokemon = workItem.Data
                 .Where(x => x.type == ProtoDataType.WildPokemon)
                 .ToList();
@@ -292,17 +293,7 @@
                 //await _clearFortsService.ClearOldFortsAsync();
             }
 
-            if (Options.IsEnabled(DataLogLevel.Summary))
-            {
-                var time = string.Empty;
-                if (ShowBenchmarkTimes)
-                {
-                    stopwatch.Stop();
-                    var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                    time = $" total entities in {totalSeconds}s";
-                }
-                _logger.LogInformation($"Data processer upserted {workItem.Data.Count:N0}{time}");
-            }
+            PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
         }
 
         #endregion
@@ -1665,7 +1656,7 @@ ON DUPLICATE KEY UPDATE
 
         private void PrintBenchmarkTimes(DataLogLevel logLevel, IReadOnlyList<object> entities, string text = "total entities", Stopwatch? sw = null)
         {
-            if (Options.IsEnabled(logLevel))
+            if (!Options.IsEnabled(logLevel))
                 return;
 
             var time = string.Empty;
@@ -1673,9 +1664,9 @@ ON DUPLICATE KEY UPDATE
             {
                 sw?.Stop();
                 var totalSeconds = Math.Round(sw?.Elapsed.TotalSeconds ?? 0, 4);
-                time = $" {text} in {totalSeconds}s";
+                time = sw != null ? $" in {totalSeconds}s" : string.Empty;
             }
-            _logger.LogInformation($"Data processer upserted {entities.Count:N0}{time}");
+            _logger.LogInformation($"{nameof(DataProcessorService)} upserted {entities.Count:N0} {text}{time}");
         }
 
         #endregion
