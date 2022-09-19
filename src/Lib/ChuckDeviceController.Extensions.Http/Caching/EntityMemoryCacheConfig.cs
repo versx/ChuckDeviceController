@@ -9,5 +9,7 @@
         public uint SizeLimit { get; set; } = 10240;
 
         public ushort EntityExpiryLimitM { get; set; } = 15;
+
+        public IReadOnlyList<string> EntityNames { get; set; } = new List<string>();
     }
 }

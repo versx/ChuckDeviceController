@@ -3,7 +3,6 @@
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Options;
 
     public class GenericMemoryCacheHostedService : BackgroundService, IMemoryCacheHostedService
     {
@@ -19,13 +18,12 @@
 
         public GenericMemoryCacheHostedService(
             ILogger<IMemoryCacheHostedService> logger,
-            IOptions<EntityMemoryCacheConfig>? options,
-            IReadOnlyList<string> cacheTypeNames)
+            EntityMemoryCacheConfig? options)
         {
             _logger = logger;
-            _options = options?.Value ?? new EntityMemoryCacheConfig();
+            _options = options ?? new EntityMemoryCacheConfig();
 
-            LoadCaches(cacheTypeNames);
+            LoadCaches(_options.EntityNames);
         }
 
         #endregion

@@ -181,13 +181,14 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     using var scope = factory.CreateScope();
     var serviceProvider = scope.ServiceProvider;
     var logger = new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole()));
-    var types = new List<string>
+    var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
+    var memCacheConfig = memCacheOptions?.Value ?? new();
+    memCacheConfig.EntityNames = new List<string>
     {
         nameof(Account),
         nameof(Device),
     };
-    var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
-    var memCache = new GenericMemoryCacheHostedService(logger, memCacheOptions, types);
+    var memCache = new GenericMemoryCacheHostedService(logger, memCacheConfig);
     return memCache;
 });
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
