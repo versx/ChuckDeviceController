@@ -115,7 +115,7 @@
                 }
 
                 //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
-                var workItems = await _taskQueue.DequeueBulkAsync(5, stoppingToken);
+                var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
                 //var workItems = new[] { await _taskQueue.DequeueAsync(stoppingToken) };
                 if (!workItems.Any())
                 {

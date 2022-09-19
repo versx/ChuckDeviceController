@@ -183,13 +183,13 @@
 
         private async Task<DeviceResponse> HandleGetAccountAsync(Device? device)
         {
-            var minLevel = Strings.DefaultMinimumLevel;
-            var maxLevel = Strings.DefaultMaximumLevel;
-
             if (device == null)
             {
                 return CreateErrorResponse($"Failed to get account, provided device was null");
             }
+
+            var minLevel = Strings.DefaultMinimumLevel;
+            var maxLevel = Strings.DefaultMaximumLevel;
 
             // Get instance controller for device and set min/max level variables
             var jobController = _jobControllerService.GetInstanceController(device.Uuid);
@@ -203,10 +203,11 @@
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
                 var devices = _context.Devices.ToList();
-                var inUseAccounts = devices.Where(d => !string.IsNullOrEmpty(d.AccountUsername))
-                                           .OrderBy(d => d.LastSeen)
-                                           .Select(d => d.AccountUsername?.ToLower())
-                                           .ToList();
+                var inUseAccounts = devices
+                    .Where(d => !string.IsNullOrEmpty(d.AccountUsername))
+                    .OrderBy(d => d.LastSeen)
+                    .Select(d => d.AccountUsername?.ToLower())
+                    .ToList();
 
                 // Get new account between min/max level and not in inUseAccount list
                 account = _context.GetNewAccount(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts!);
@@ -218,11 +219,7 @@
                     return CreateErrorResponse($"[{device.Uuid}] Failed to get account, are you sure you have enough acounts?");
                 }
 
-                device.AccountUsername = account.Username;
-                _context.Devices.Update(device);
-                await _context.SaveChangesAsync();
-
-                _memCache.Set(device.Uuid, device);
+                await UpdateDeviceAsync(device, account.Username);
             }
             else
             {
@@ -235,38 +232,26 @@
                 }
 
                 _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}'");
-                if (account.Level >= minLevel && account.Level <= maxLevel &&
-                    (account.FirstWarningTimestamp == null || account.FirstWarningTimestamp == 0) &&
-                    string.IsNullOrEmpty(account.Failed) &&
-                    (account.FailedTimestamp == null || account.FailedTimestamp == 0))
+                if (!IsAccountValid(account, minLevel, maxLevel))
                 {
-                    // Clear pending account switch flag for device if set
-                    if (device.IsPendingAccountSwitch)
-                    {
-                        device.IsPendingAccountSwitch = false;
-                        _context.Update(device);
-                        await _context.SaveChangesAsync();
+                    // Current account does not meet requirements
+                    await UpdateDeviceAsync(device);
 
-                        _memCache.Set(device.Uuid, device);
-                    }
-
-                    return new DeviceResponse
-                    {
-                        Status = "ok",
-                        Data = new DeviceAccountResponse
-                        {
-                            Username = account.Username.Trim(),
-                            Password = account.Password.Trim(),
-                            Level = account.Level,
-                            FirstWarningTimestamp = account.FirstWarningTimestamp,
-                        },
-                    };
-                }
-                else
-                {
                     // Switch account
                     return CreateSwitchAccountTask(minLevel, maxLevel);
                 }
+
+                // Clear pending account switch flag for device if set
+                if (device.IsPendingAccountSwitch)
+                {
+                    device.IsPendingAccountSwitch = false;
+                    _context.Update(device);
+                    await _context.SaveChangesAsync();
+
+                    _memCache.Set(device.Uuid, device);
+                }
+
+                _memCache.Set(account.Username, account);
             }
 
             return new DeviceResponse
@@ -302,14 +287,12 @@
             {
                 return CreateSwitchAccountTask(minLevel, maxLevel);
             }
-            else
+
+            // Handle account assignment changes from UI
+            // REVIEW: Double check that this doesn't loop if account and in-game name differ
+            if (device.AccountUsername != username)
             {
-                // Handle account assignment changes from UI
-                // REVIEW: Double check that this doesn't loop if account and in-game name differ
-                if (device.AccountUsername != username)
-                {
-                    return CreateSwitchAccountTask(minLevel, maxLevel);
-                }
+                return CreateSwitchAccountTask(minLevel, maxLevel);
             }
 
             Account? account = null;
@@ -466,12 +449,10 @@
             // Only clear the account username if the device is pending an account switch made from the UI
             if (!device.IsPendingAccountSwitch)
             {
-                device.AccountUsername = null;
-                _context.Devices.Update(device);
-                await _context.SaveChangesAsync();
-
-                _memCache.Set(device.Uuid, device);
+                await UpdateDeviceAsync(device);
             }
+
+            _memCache.Set(device.Uuid, device);
 
             return new DeviceResponse
             {
@@ -534,6 +515,7 @@
         /// <summary>
         /// Gets the git hash value from the assembly or '--' if it cannot be found.
         /// </summary>
+        /// <credits>https://stackoverflow.com/a/45248069</credits>
         private static string GetGitHash(string defaultValue = "--")
         {
             // TODO: Move to reusable project lib
@@ -545,6 +527,29 @@
                 return split.Last();
             }
             return defaultValue;
+        }
+
+        private async Task UpdateDeviceAsync(Device device, string? username = null)
+        {
+            device.AccountUsername = username;
+            _context.Devices.Update(device);
+            await _context.SaveChangesAsync();
+
+            // Update device in cache
+            _memCache.Set(device.Uuid, device);
+        }
+
+        private static bool IsAccountValid(Account? account, ushort minLevel, ushort maxLevel)
+        {
+            if (account == null)
+                return false;
+
+            var isValid =
+                account.Level >= minLevel && account.Level <= maxLevel &&
+                (account.FirstWarningTimestamp ?? 0) == 0 &&
+                string.IsNullOrEmpty(account.Failed) &&
+                (account.FailedTimestamp ?? 0) == 0;
+            return isValid;
         }
     }
 }
