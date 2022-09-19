@@ -237,6 +237,9 @@
                     // Current account does not meet requirements
                     await UpdateDeviceAsync(device);
 
+                    // Remove account from cache
+                    _memCache.Unset<string, Account>(account.Username);
+
                     // Switch account
                     return CreateSwitchAccountTask(minLevel, maxLevel);
                 }
@@ -446,7 +449,8 @@
                 return CreateSwitchAccountTask(minLevel, maxLevel);
             }
 
-            // Only clear the account username if the device is pending an account switch made from the UI
+            // Clear the account username if the device is not pending an account switch made from the UI
+            // otherwise this will lead to a continuous loop
             if (!device.IsPendingAccountSwitch)
             {
                 await UpdateDeviceAsync(device);
