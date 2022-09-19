@@ -3,7 +3,9 @@
     using System.Threading;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Options;
 
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -13,6 +15,7 @@
 
         private readonly ILogger<IClearFortsHostedService> _logger;
         private readonly IDbContextFactory<MapDbContext> _factory;
+        private readonly ProcessorOptionsConfig _options;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
@@ -25,15 +28,20 @@
         public override uint TimerIntervalMs => 15 * 60 * 1000; // 15 minutes
 
         public ClearFortsHostedService(
+            IOptions<ProcessorOptionsConfig> options,
             ILogger<IClearFortsHostedService> logger,
             IDbContextFactory<MapDbContext> factory) : base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {
+            _options = options.Value;
             _logger = logger;
             _factory = factory;
         }
 
         public void AddCell(ulong cellId)
         {
+            if (!_options.ClearOldForts)
+                return;
+
             lock (_gymCellLock)
             {
                 if (!_gymIdsPerCell.ContainsKey(cellId))
@@ -53,6 +61,9 @@
 
         public void AddGym(ulong cellId, string gymId)
         {
+            if (!_options.ClearOldForts)
+                return;
+
             lock (_gymCellLock)
             {
                 if (!_gymIdsPerCell.ContainsKey(cellId))
@@ -65,6 +76,9 @@
 
         public void AddPokestop(ulong cellId, string pokestopId)
         {
+            if (!_options.ClearOldForts)
+                return;
+
             lock (_stopCellLock)
             {
                 if (!_stopIdsPerCell.ContainsKey(cellId))
@@ -81,10 +95,9 @@
         /// <returns></returns>
         public async Task ClearOldFortsAsync()
         {
-            // TODO: Fix 'second operation' race condition
             try
             {
-                using var context = _factory.CreateDbContext();
+                using var context = await _factory.CreateDbContextAsync();
 
                 var stopsToDelete = new List<Pokestop>();
                 var stopIdKeys = _stopIdsPerCell.Keys.ToList();
@@ -97,9 +110,10 @@
 
                     // Get pokestops within S2 cell and not marked deleted
                     // Filter pokestops that have not been seen within S2 cell by devices
-                    var pokestops = context.Pokestops.Where(stop => stop.CellId == cellId && !stop.IsDeleted)
-                                                     .Where(stop => !pokestopIds.Contains(stop.Id))
-                                                     .ToList();
+                    var pokestops = context.Pokestops
+                        .Where(stop => stop.CellId == cellId && !stop.IsDeleted)
+                        .Where(stop => !pokestopIds.Contains(stop.Id))
+                        .ToList();
                     if (pokestops.Any())
                     {
                         // Mark gyms as deleted
@@ -119,9 +133,10 @@
 
                     // Get gyms within S2 cell and not marked deleted
                     // Filter gyms that have not been seen within S2 cell by devices
-                    var gyms = context.Gyms.Where(gym => gym.CellId == cellId && !gym.IsDeleted)
-                                           .Where(gym => !gymIds.Contains(gym.Id))
-                                           .ToList();
+                    var gyms = context.Gyms
+                        .Where(gym => gym.CellId == cellId && !gym.IsDeleted)
+                        .Where(gym => !gymIds.Contains(gym.Id))
+                        .ToList();
                     if (gyms.Any())
                     {
                         // Mark gyms as deleted
@@ -169,6 +184,9 @@
 
         protected override async Task RunJobAsync(CancellationToken stoppingToken)
         {
+            if (!_options.ClearOldForts)
+                return;
+
             await ClearOldFortsAsync();
         }
     }

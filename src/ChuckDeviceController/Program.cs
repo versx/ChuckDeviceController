@@ -13,6 +13,7 @@ using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 using ChuckDeviceController.Pvp;
+using Microsoft.Extensions.Options;
 
 
 #region Config
@@ -66,7 +67,6 @@ builder.Services.AddSingleton<AuthHeadersInterceptor>();
 builder.Services.Configure<MemoryCacheOptions>(builder.Configuration.GetSection("Cache"));
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
-//builder.Services.AddDistributedMemoryCache(options => options = (MemoryDistributedCacheOptions)memCacheOptions);
 
 #endregion
 

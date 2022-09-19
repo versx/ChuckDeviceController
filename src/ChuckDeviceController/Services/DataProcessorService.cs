@@ -31,7 +31,8 @@
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
 
-
+    // TODO: Create stateless DataConsumer for each entity
+    // TODO: Possibly create scoped DataProcessorService for each device uuid
     // TODO: Use/benchmark Dapper Micro ORM
     // TODO: Split up/refactor class
 
@@ -289,13 +290,6 @@
                 await UpdateDiskEncountersAsync(diskEncounters);
             }
             */
-
-            // TODO: Add config check to startup services registration pipeline
-            if (Options.ClearOldForts)
-            {
-                // Clear any old Gyms or Pokestops that might have been removed from the game
-                //await _clearFortsService.ClearOldFortsAsync();
-            }
 
             PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
         }
@@ -919,15 +913,9 @@ ON DUPLICATE KEY UPDATE
                 foreach (var fortDetail in fortDetails)
                 {
                     var data = (FortDetailsOutProto)fortDetail.data;
-                    // TODO: Check memory cache
                     switch (data.FortType)
                     {
                         case FortType.Checkpoint:
-                            //var pokestop = await context.Pokestops.FindAsync(data.Id);
-                            //var pokestop = await (
-                            //    from p in context.Pokestops
-                            //    select new Pokestop(new { p.Id, p.Name, p.Url })
-                            //).FirstOrDefaultAsync();
                             var pokestop = await GetEntity<string, Pokestop>(context, data.Id);
                             if (pokestop == null)
                                 continue;
@@ -945,11 +933,6 @@ ON DUPLICATE KEY UPDATE
                             }
                             break;
                         case FortType.Gym:
-                            //var gym = await context.Gyms.FindAsync(data.Id);
-                            //var gym = await (
-                            //    from g in context.Gyms
-                            //    select new Gym(new { g.Id, g.Name, g.Url })
-                            //).FirstOrDefaultAsync();
                             var gym = await GetEntity<string, Gym>(context, data.Id);
                             if (gym == null)
                                 continue;

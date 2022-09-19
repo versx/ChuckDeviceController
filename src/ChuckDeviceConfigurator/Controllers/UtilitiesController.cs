@@ -436,7 +436,7 @@
         // GET: UtilitiesController/TruncateData
         public ActionResult TruncateData()
         {
-            // TODO: Maybe setup schedules to truncate at an interval
+            // TODO: Possibly setup schedules to truncate at an interval
             // TODO: When a data type is selected, show the amount that'll be deleted based on the time span selected
             ViewBag.PokemonCount = _mapContext.Pokemon.LongCount().ToString("N0");
             ViewBag.IncidentsCount = _mapContext.Incidents.LongCount().ToString("N0");

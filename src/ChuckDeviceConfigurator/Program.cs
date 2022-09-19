@@ -194,7 +194,6 @@ builder.Services.AddGrpc(options =>
 builder.Services.Configure<MemoryCacheOptions>(builder.Configuration.GetSection("Cache"));
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
-//builder.Services.AddDistributedMemoryCache(options => options = (MemoryDistributedCacheOptions)memCacheOptions);
 
 builder.Services.AddHostedService<MemoryCacheHostedService>();
 
