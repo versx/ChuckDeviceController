@@ -219,6 +219,8 @@
                     return CreateErrorResponse($"[{device.Uuid}] Failed to get account, are you sure you have enough acounts?");
                 }
 
+                _memCache.Set(account.Username, account);
+
                 await UpdateDeviceAsync(device, account.Username);
             }
             else
