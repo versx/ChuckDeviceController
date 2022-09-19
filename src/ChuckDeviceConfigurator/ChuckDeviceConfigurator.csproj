@@ -121,4 +121,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <Target Name="SetSourceRevisionId" BeforeTargets="InitializeSourceControlInformation">
+    <Exec
+      Command="git describe --long --always --dirty --exclude=* --abbrev=40"
+      ConsoleToMSBuild="True"
+      IgnoreExitCode="False"
+    >
+      <Output PropertyName="SourceRevisionId" TaskParameter="ConsoleOutput"/>
+    </Exec>
+  </Target>
+	
 </Project>
