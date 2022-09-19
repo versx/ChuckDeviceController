@@ -1,12 +1,13 @@
 ﻿namespace ChuckDeviceConfigurator.Configuration
 {
+    using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
 
     public class AuthProviderConfig
     {
         #region Provider Icons
 
-        public static readonly IReadOnlyDictionary<string, AuthProviderConfig> DefaultAuthProviderIcons =
+        private static readonly IReadOnlyDictionary<string, AuthProviderConfig> DefaultAuthProviderIcons =
             new Dictionary<string, AuthProviderConfig>
             {
                 { "Discord", new("fa-brands fa-discord fa-align-left social-icon", style: "background: #5865F2; color: #fff;") },
@@ -55,8 +56,14 @@
             {
                 return DefaultAuthProviderIcons;
             }
-            var obj = data?.FromJson<Dictionary<string, AuthProviderConfig>>();
-            return obj ?? DefaultAuthProviderIcons;
+            // Merge default with configured auth providers
+            var obj = data.FromJson<Dictionary<string, AuthProviderConfig>>();
+            if (obj == null)
+            {
+                return DefaultAuthProviderIcons;
+            }
+            var merged = DefaultAuthProviderIcons.Merge(obj, updateValues: true);
+            return merged ?? DefaultAuthProviderIcons;
         }
     }
 }

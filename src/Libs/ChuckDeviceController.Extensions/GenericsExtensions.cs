@@ -1,6 +1,8 @@
 ﻿namespace ChuckDeviceController.Extensions
 {
     using System.Diagnostics;
+    using System.Reflection;
+    using System.Runtime.Serialization;
     using System.Security.Cryptography;
 
     public static class GenericsExtensions
@@ -119,10 +121,24 @@
             return value;
         }
 
-        public static Dictionary<string, string> Merge(this Dictionary<string, string> locales1, Dictionary<string, string> locales2, bool updateValues = false)
+        public static Dictionary<TKey, TValue> Merge<TKey, TValue>(
+            this IReadOnlyDictionary<TKey, TValue> items1,
+            IReadOnlyDictionary<TKey, TValue> items2,
+            bool updateValues = false)
+            where TKey : notnull
         {
-            var result = locales1;
-            foreach (var (key, value) in locales2)
+            if (items1 is null)
+            {
+                throw new ArgumentNullException(nameof(items1));
+            }
+
+            if (items2 is null)
+            {
+                throw new ArgumentNullException(nameof(items2));
+            }
+
+            var result = new Dictionary<TKey, TValue>(items1);
+            foreach (var (key, value) in items2)
             {
                 if (!result.ContainsKey(key))
                 {
@@ -131,7 +147,7 @@
                 }
 
                 // Key already exists, check if values are the same
-                if (result[key] != value && updateValues)
+                if (!Equals(result[key], value) && updateValues)
                 {
                     result[key] = value;
                 }
