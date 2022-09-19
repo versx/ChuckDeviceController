@@ -9,7 +9,7 @@
 
     public class MemoryCacheHostedService : BackgroundService, IMemoryCacheHostedService
     {
-        private const ushort ExpiryLimitM = 60; // minutes
+        private const ushort ExpiryLimitM = 15; // minutes
 
         #region Variables
 
@@ -47,7 +47,7 @@
 
         public void Set<TKey, TEntity>(TKey key, TEntity obj, TimeSpan? expiry = null)
         {
-            var defaultExpiry = TimeSpan.FromMinutes(ExpiryLimitM);
+            var defaultExpiry = TimeSpan.FromMinutes(ExpiryLimitM); // TODO: Make 'MemoryCacheHostedService.ExpiryLimitM' configurable
             var name = typeof(TEntity).Name;
             switch (name)
             {
