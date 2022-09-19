@@ -19,18 +19,16 @@
             try
             {
                 var isMad = context.IsMadDeviceRequest(RawDataEndpoint);
-                if (!isMad)
+                if (isMad)
                 {
-                    await _next(context);
-                    return;
+                    await context.ConvertPayloadDataAsync(DefaultMadUsername);
                 }
             }
-            catch //(Exception ex)
+            catch (Exception ex)
             {
-                //Console.WriteLine($"Error - MadDataMiddleware: {ex.Message}");
+                Console.WriteLine($"Error - MadDataMiddleware: {ex.Message}");
             }
 
-            await context.ConvertPayloadDataAsync(DefaultMadUsername);
             await _next(context);
         }
     }
