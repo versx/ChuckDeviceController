@@ -4,6 +4,7 @@
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
+    using ChuckDeviceController.Common.Cache;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -16,19 +17,30 @@
     [ApiController]
     public class DeviceControlController : ControllerBase
     {
+        #region Variables
+
         private readonly ILogger<DeviceControlController> _logger;
         private readonly ControllerDbContext _context;
         private readonly IJobControllerService _jobControllerService;
+        private readonly IMemoryCacheHostedService _memCache;
+
+        #endregion
+
+        #region Constructor
 
         public DeviceControlController(
             ILogger<DeviceControlController> logger,
             ControllerDbContext context,
-            IJobControllerService jobControllerService)
+            IJobControllerService jobControllerService,
+            IMemoryCacheHostedService memCache)
         {
             _logger = logger;
             _context = context;
             _jobControllerService = jobControllerService;
+            _memCache = memCache;
         }
+
+        #endregion
 
         #region Routes
 
@@ -62,7 +74,8 @@
                 return CreateErrorResponse($"Device UUID is not set in payload.");
             }
 
-            var device = await _context.Devices.FindAsync(payload.Uuid);
+            //var device = await _context.Devices.FindAsync(payload.Uuid);
+            var device = await GetEntity<string, Device>(_context, payload.Uuid);
             /*
             if (device == null && payload.Type != "init")
             {
@@ -85,9 +98,9 @@
                      "account_warning" or
                      "account_invalid_credentials" or
                      "account_suspended":
-                    return await HandleAccountStatusRequestAsync(device, payload.Type);
+                    return await HandleAccountStatusRequestAsync(device?.Uuid, device?.AccountUsername, payload?.Type);
                 case "tutorial_done":
-                    return await HandleTutorialStatusAsync(device);
+                    return await HandleTutorialStatusAsync(device?.AccountUsername);
                 case "logged_out":
                     return await HandleLogoutAsync(device);
                 case "job_failed":
@@ -103,20 +116,25 @@
 
         private async Task<DeviceResponse> HandleInitializeRequestAsync(string uuid, Device? device = null)
         {
-            if (device is not null)
+            if (device is null)
             {
-                // Device is already registered
-                var assignedInstance = !string.IsNullOrEmpty(device.InstanceName);
-                if (!assignedInstance)
+                // Register new device
+                _logger.LogInformation($"[{uuid}] Registering new device...");
+                device = new Device
                 {
-                    _logger.LogWarning($"[{device.Uuid}] Device is not assigned to an instance or the assigned instance is still starting!");
-                }
+                    Uuid = uuid,
+                };
+                await _context.AddAsync(device);
+                await _context.SaveChangesAsync();
+
+                _memCache.Set(uuid, device);
+
                 return new DeviceResponse
                 {
                     Status = "ok",
                     Data = new DeviceAssignmentResponse
                     {
-                        Assigned = assignedInstance,
+                        Assigned = false,
                         Version = Strings.AssemblyVersion,
                         Commit = "", // TODO: Get git commit
                         Provider = Strings.AssemblyName,
@@ -124,20 +142,18 @@
                 };
             }
 
-            // Register new device
-            _logger.LogDebug($"[{uuid}] Registering new device...");
-            await _context.AddAsync(new Device
+            // Device is already registered
+            var assignedInstance = !string.IsNullOrEmpty(device.InstanceName);
+            if (!assignedInstance)
             {
-                Uuid = uuid,
-            });
-            await _context.SaveChangesAsync();
-
+                _logger.LogWarning($"[{device.Uuid}] Device is not assigned to an instance or the assigned instance is still starting!");
+            }
             return new DeviceResponse
             {
                 Status = "ok",
                 Data = new DeviceAssignmentResponse
                 {
-                    Assigned = false,
+                    Assigned = assignedInstance,
                     Version = Strings.AssemblyVersion,
                     Commit = "", // TODO: Get git commit
                     Provider = Strings.AssemblyName,
@@ -145,13 +161,15 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleHeartbeatRequestAsync(Device device)
+        private async Task<DeviceResponse> HandleHeartbeatRequestAsync(Device? device)
         {
             if (device != null)
             {
                 device.LastHost = Request.GetIPAddress();
                 _context.Update(device);
                 await _context.SaveChangesAsync();
+
+                _memCache.Set(device.Uuid, device);
             }
             return new DeviceResponse
             {
@@ -159,7 +177,7 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleGetAccountAsync(Device device)
+        private async Task<DeviceResponse> HandleGetAccountAsync(Device? device)
         {
             var minLevel = Strings.DefaultMinimumLevel;
             var maxLevel = Strings.DefaultMaximumLevel;
@@ -199,10 +217,13 @@
                 device.AccountUsername = account.Username;
                 _context.Devices.Update(device);
                 await _context.SaveChangesAsync();
+
+                _memCache.Set(device.Uuid, device);
             }
             else
             {
-                account = await _context.Accounts.FindAsync(device.AccountUsername);
+                //account = await _context.Accounts.FindAsync(device.AccountUsername);
+                account = await GetEntity<string, Account>(_context, device.AccountUsername);
                 if (account == null)
                 {
                     // Failed to get account
@@ -221,6 +242,8 @@
                         device.IsPendingAccountSwitch = false;
                         _context.Update(device);
                         await _context.SaveChangesAsync();
+
+                        _memCache.Set(device.Uuid, device);
                     }
 
                     return new DeviceResponse
@@ -255,7 +278,7 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleGetJobRequestAsync(Device device, string? username)
+        private async Task<DeviceResponse> HandleGetJobRequestAsync(Device? device, string? username)
         {
             if (device == null)
             {
@@ -289,11 +312,13 @@
             if (!string.IsNullOrEmpty(username))
             {
                 // Get account by username from request payload
-                account = await _context.Accounts.FindAsync(username);
+                //account = await _context.Accounts.FindAsync(username);
+                account = await GetEntity<string, Account>(_context, username);
                 if (account == null)
                 {
                     // Unable to find account based on payload username, look for device's assigned account username instead
-                    account = await _context.Accounts.FindAsync(device.AccountUsername);
+                    //account = await _context.Accounts.FindAsync(device.AccountUsername);
+                    account = await GetEntity<string, Account>(_context, device.AccountUsername);
                     if (account == null)
                     {
                         _logger.LogError($"[{device.Uuid}] Failed to lookup account {username} and {device.AccountUsername} in database, switching accounts...");
@@ -323,22 +348,23 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleAccountStatusRequestAsync(Device device, string status)
+        private async Task<DeviceResponse> HandleAccountStatusRequestAsync(string? uuid, string? username, string? status)
         {
             // Check if device is assigned an account username
-            if (string.IsNullOrEmpty(device.AccountUsername))
+            if (string.IsNullOrEmpty(username))
             {
-                return CreateErrorResponse($"Device '{device.Uuid}' is not assigned an account!");
+                return CreateErrorResponse($"[{uuid}] Device is not assigned an account!");
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var account = await _context.Accounts.FindAsync(device.AccountUsername);
+            //var account = await _context.Accounts.FindAsync(device.AccountUsername);
+            var account = await GetEntity<string, Account>(_context, username);
             if (account == null)
             {
-                return CreateErrorResponse($"Failed to retrieve account with username '{device.AccountUsername}'");
+                return CreateErrorResponse($"Failed to retrieve account with username '{username}'");
             }
 
-            switch (status.ToLower())
+            switch (status?.ToLower())
             {
                 case "account_banned":
                     if (account.FirstWarningTimestamp == null || string.IsNullOrEmpty(account.Failed))
@@ -378,17 +404,19 @@
             _context.Accounts.Update(account);
             await _context.SaveChangesAsync();
 
+            _memCache.Set(account.Username, account);
+
             return new DeviceResponse
             {
                 Status = "ok",
             };
         }
 
-        private async Task<DeviceResponse> HandleTutorialStatusAsync(Device device)
+        private async Task<DeviceResponse> HandleTutorialStatusAsync(string? username)
         {
-            var username = device.AccountUsername;
-            var account = await _context.Accounts.FindAsync(username);
-            if (device == null || string.IsNullOrEmpty(username) || account == null)
+            //var account = await _context.Accounts.FindAsync(username);
+            var account = await GetEntity<string, Account>(_context, username);
+            if (string.IsNullOrEmpty(username) || account == null)
             {
                 return CreateErrorResponse("Failed to get account.");
             }
@@ -401,13 +429,15 @@
             _context.Accounts.Update(account);
             await _context.SaveChangesAsync();
 
+            _memCache?.Set(username, account);
+
             return new DeviceResponse
             {
                 Status = "ok",
             };
         }
 
-        private async Task<DeviceResponse> HandleLogoutAsync(Device device)
+        private async Task<DeviceResponse> HandleLogoutAsync(Device? device)
         {
             if (device == null)
             {
@@ -435,6 +465,8 @@
                 device.AccountUsername = null;
                 _context.Devices.Update(device);
                 await _context.SaveChangesAsync();
+
+                _memCache.Set(device.Uuid, device);
             }
 
             return new DeviceResponse
@@ -444,6 +476,8 @@
         }
 
         #endregion
+
+        #region Response Handlers
 
         private static DeviceResponse CreateSwitchAccountTask(ushort minLevel, ushort maxLevel)
         {
@@ -474,6 +508,23 @@
                 Error = error,
                 Data = data,
             };
+        }
+
+        #endregion
+
+        private async Task<TEntity?> GetEntity<TKey, TEntity>(ControllerDbContext context, TKey? key)
+        {
+            if (key == null)
+            {
+                return default;
+            }
+
+            var entity = _memCache.Get<TKey, TEntity>(key);
+            if (entity == null)
+            {
+                entity = (TEntity?)await context.FindAsync(typeof(TEntity), key);
+            }
+            return entity;
         }
     }
 }

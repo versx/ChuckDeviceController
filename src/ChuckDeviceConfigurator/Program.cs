@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Extensions;
+using ChuckDeviceConfigurator.HostedServices;
 using ChuckDeviceConfigurator.Localization;
 using ChuckDeviceConfigurator.Middleware;
 using ChuckDeviceConfigurator.Services.Assignments;
@@ -21,6 +23,7 @@ using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceController.Authorization.Jwt.Middleware;
+using ChuckDeviceController.Common.Cache;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
@@ -170,9 +173,9 @@ builder.Services.AddRazorPages(); // <- Required for plugins to render Razor pag
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();
+builder.Services.AddSingleton<IMemoryCacheHostedService, MemoryCacheHostedService>();
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
-// TODO: Remove extra service registration of 'JobControllerService' or confirm there are no issues and two instances are not created
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 //builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
@@ -187,6 +190,18 @@ builder.Services.AddGrpc(options =>
     options.EnableDetailedErrors = true;
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });
+
+var memCacheOptions = new MemoryCacheOptions
+{
+    // TODO: Make 'CacheSizeLimit' configurable
+    SizeLimit = 10240,
+    ExpirationScanFrequency = TimeSpan.FromMinutes(15),
+    CompactionPercentage = 0.25,
+};
+builder.Services.AddMemoryCache(options => options = memCacheOptions);
+builder.Services.AddDistributedMemoryCache(options => options = (MemoryDistributedCacheOptions)memCacheOptions);
+
+builder.Services.AddHostedService<MemoryCacheHostedService>();
 
 #endregion
 
