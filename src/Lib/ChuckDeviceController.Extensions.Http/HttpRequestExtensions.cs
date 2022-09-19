@@ -67,13 +67,14 @@
         {
             try
             {
+                request.EnableBuffering();
                 using var stream = new StreamReader(request.Body, encoding ?? Encoding.UTF8);
                 var data = await stream.ReadToEndAsync().ConfigureAwait(false);
                 return data;
             }
-            catch //(Exception ex)
+            catch (Exception ex)
             {
-                //Console.WriteLine($"Error - ReadBodyAsStringAsync: {ex.Message}");
+                Console.WriteLine($"Error - ReadBodyAsStringAsync: {ex.Message}");
                 return string.Empty;
             }
         }

@@ -33,7 +33,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to download data from {url}: {ex}");
+                Console.WriteLine($"Failed to download data from {url}: {ex.Message}");
             }
             return null;
         }
@@ -79,7 +79,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to post data to {url}: {ex}");
+                Console.WriteLine($"Failed to post data to {url}: {ex.Message}");
             }
             return (HttpStatusCode.BadRequest, null);
         }
@@ -115,7 +115,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to download data from {url}: {ex}");
+                Console.WriteLine($"Failed to download data from {url}: {ex.Message}");
             }
             return null;
         }
