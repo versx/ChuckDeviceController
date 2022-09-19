@@ -65,7 +65,6 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
 {
     using var scope = factory.CreateScope();
     var serviceProvider = scope.ServiceProvider;
-    var logger = new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole()));
     var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
     var memCacheConfig = memCacheOptions?.Value ?? new();
     memCacheConfig.EntityNames = new List<string>
@@ -78,7 +77,10 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
         nameof(Spawnpoint),
         nameof(Weather),
     };
-    var memCache = new GenericMemoryCacheHostedService(logger, memCacheConfig);
+    var memCache = new GenericMemoryCacheHostedService(
+        new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole())),
+        Options.Create(memCacheConfig)
+    );
     return memCache;
 });
 builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
