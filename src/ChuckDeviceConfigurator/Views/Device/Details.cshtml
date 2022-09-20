@@ -5,7 +5,7 @@
 
 <h1>Device Details</h1>
 
-<div id="restart-status"></div>
+<div id="device-status"></div>
 
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
@@ -27,10 +27,14 @@
         <a href="#" class="btn btn-warning" onclick="restartGame('@Model?.LastHost');">
             <i class="fa-solid fa-power-off"></i>&nbsp;Restart Game
         </a>
+        <a href="#" class="btn btn-warning" onclick="getScreenshot('@Model?.LastHost');">
+            <i class="fa-solid fa-image"></i>&nbsp;Get Screenshot
+        </a>
     </div>
 </div>
 
 <hr />
+<img id="screenshot" src="#" class="d-none" />
 @Html.DisplayForModel("DeviceDetails")
 
 <script src="~/js/device-requests.js"></script>

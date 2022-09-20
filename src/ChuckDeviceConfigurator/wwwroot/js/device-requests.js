@@ -34,11 +34,14 @@ const errorAlert = `
 </div>
 `;
 
-const restartGame = (ipAddr) => {
-    const alertAutoDismissIntervalMs = 5000;
-    const requestTimeoutMs = 3000;
+const alertAutoDismissIntervalMs = 5000;
+const requestTimeoutMs = 3000;
 
-    const statusAlertEl = document.getElementById('restart-status');
+// TODO: Make alerts configurable
+// TODO: Make device endpoint configurable
+
+const restartGame = (ipAddr) => {
+    const statusAlertEl = document.getElementById('device-status');
     if (!ipAddr) {
         const alertMsg = warningAlert.replace('[PLACE_HOLDER]', '<strong>Warning!</strong> IP address for device is not set, skipping restart game request...');
         statusAlertEl.innerHTML += alertMsg;
@@ -46,19 +49,15 @@ const restartGame = (ipAddr) => {
         return;
     }
 
-    // TODO: Make device endpoint configurable
     const url = `http://${ipAddr}:8080/restart`;
     const options = { signal: AbortSignal.timeout(requestTimeoutMs) };
     fetch(url, options)
         .then(response => {
             //console.log('response:', response);
-            if (response.status === 200) {
-                const alertMsg = successAlert.replace('[PLACE_HOLDER]', `<strong>Success!</strong> Device at IP address ${ipAddr} has been restarted!`);
-                statusAlertEl.innerHTML += alertMsg;
-            } else {
-                const alertMsg = errorAlert.replace('[PLACE_HOLDER]', `<strong>Error!</strong> ${response.statusText}`);
-                statusAlertEl.innerHTML += alertMsg;
-            }
+            const alertMsg = response.status === 200
+                ? successAlert.replace('[PLACE_HOLDER]', `<strong>Success!</strong> Device at IP address ${ipAddr} has been restarted!`)
+                : errorAlert.replace('[PLACE_HOLDER]', `<strong>Error!</strong> ${response.statusText}`);
+            statusAlertEl.innerHTML += alertMsg;
         })
         .catch(err => {
             console.error('restartGame:', err);
@@ -68,8 +67,42 @@ const restartGame = (ipAddr) => {
     alertTimeout(alertAutoDismissIntervalMs);
 };
 
+const getScreenshot = (ipAddr) => {
+    const statusAlertEl = document.getElementById('device-status');
+    if (!ipAddr) {
+        const alertMsg = warningAlert.replace('[PLACE_HOLDER]', '<strong>Warning!</strong> IP address for device is not set, skipping get screenshot request...');
+        statusAlertEl.innerHTML += alertMsg;
+        alertTimeout(alertAutoDismissIntervalMs);
+        return;
+    }
+
+    const url = `http://${ipAddr}:8080/screen`;
+    fetch(url)
+        .then(response => response.blob())
+        .then(response => {
+            //console.log('response:', response);
+            if (response) {
+                const imageObjectUrl = URL.createObjectURL(response);
+                const imgEl = document.getElementById('screenshot');
+                imgEl.src = imageObjectUrl;
+                if (imgEl.classList.contains('d-none')) {
+                    imgEl.classList.remove('d-none');
+                }
+                statusAlertEl.innerHTML += successAlert.replace('[PLACE_HOLDER]', `<strong>Success!</strong> Screenshot retrieved from device at IP address ${ipAddr}!`);
+            } else {
+                statusAlertEl.innerHTML += errorAlert.replace('[PLACE_HOLDER]', `<strong>Error!</strong> ${response.statusText}`);
+            }
+        })
+        .catch(err => {
+            console.error('getScreenshot:', err);
+            const alertMsg = errorAlert.replace('[PLACE_HOLDER]', `<strong>Error!</strong> ${err}`);
+            statusAlertEl.innerHTML += alertMsg;
+        });
+    alertTimeout(alertAutoDismissIntervalMs);
+}
+
 const alertTimeout = (wait) => {
     setTimeout(function () {
-        $('#restart-status').children('.alert-dismissible:first-child').remove();
+        $('#device-status').children('.alert-dismissible:first-child').remove();
     }, wait);
 };
