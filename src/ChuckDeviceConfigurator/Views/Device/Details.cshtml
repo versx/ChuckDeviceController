@@ -5,6 +5,8 @@
 
 <h1>Device Details</h1>
 
+<div id="restart-status"></div>
+
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
 <br />
@@ -22,8 +24,13 @@
         <a asp-action="Delete" asp-route-id="@Model?.Uuid" class="btn btn-danger">
             <i class="fa-solid fa-trash"></i>&nbsp;Delete
         </a>
+        <a href="#" class="btn btn-warning" onclick="restartGame('@Model?.LastHost');">
+            <i class="fa-solid fa-power-off"></i>&nbsp;Restart Game
+        </a>
     </div>
 </div>
 
 <hr />
 @Html.DisplayForModel("DeviceDetails")
+
+<script src="~/js/device-requests.js"></script>

@@ -7,6 +7,8 @@
 <h1>Devices</h1>
 <br />
 
+<div id="restart-status"></div>
+
 <p>
     <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
 </p>
@@ -71,6 +73,7 @@
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Uuid"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                             <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Uuid"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
                             <li><a class="dropdown-item" asp-action="ForceAccountSwitch" asp-route-id="@item.Uuid" onclick="return confirm('Are you sure you want to force device \'@item.Uuid\' to logout and switch accounts?');"><i class="fa-solid fa-repeat"></i>&nbsp;Switch Account</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="restartGame('@item.LastHost');"><i class="fa-solid fa-power-off"></i>&nbsp;Restart Game</a></li>
                         </ul>
                     </div>
                 </td>
@@ -80,6 +83,7 @@
 </table>
 
 @section Scripts {
+    <script src="~/js/device-requests.js"></script>
     <script>
         $(document).ready(function() {
             $('#table-devices').DataTable({
