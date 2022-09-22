@@ -37,7 +37,15 @@
         {
             options.EnableDetailedErrors(detailedErrorsEnabled: true);
             options.UseMySql(connectionString, serverVersion, opt => opt.GetMySqlOptions(assemblyName));
+            //options.UseLoggerFactory(ContextLoggerFactory);
+            //options.LogTo(message =>
+            //{
+            //    Console.WriteLine($"SQL: {message}");
+            //}, LogLevel.Information, Microsoft.EntityFrameworkCore.Diagnostics.DbContextLoggerOptions.SingleLine | Microsoft.EntityFrameworkCore.Diagnostics.DbContextLoggerOptions.DefaultWithLocalTime);
             return options;
         }
     }
+
+    //private static ILoggerFactory ContextLoggerFactory
+    //    => LoggerFactory.Create(b => b.AddConsole().AddFilter("", LogLevel.Information));
 }

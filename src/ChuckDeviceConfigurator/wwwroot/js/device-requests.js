@@ -92,6 +92,7 @@ const getScreenshot = (ipAddr) => {
             } else {
                 statusAlertEl.innerHTML += errorAlert.replace('[PLACE_HOLDER]', `<strong>Error!</strong> ${response.statusText}`);
             }
+            // TODO: Consider only showing alert if warn/error not success, since the image showing/updating would be the visual cue
         })
         .catch(err => {
             console.error('getScreenshot:', err);
@@ -99,7 +100,7 @@ const getScreenshot = (ipAddr) => {
             statusAlertEl.innerHTML += alertMsg;
         });
     alertTimeout(alertAutoDismissIntervalMs);
-}
+};
 
 const alertTimeout = (wait) => {
     setTimeout(function () {
