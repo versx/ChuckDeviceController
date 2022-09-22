@@ -2,6 +2,9 @@
 {
     using ChuckDeviceController.Plugin.EventBus;
 
+    /// <summary>
+    /// Event bus aggregator service
+    /// </summary>
     public class EventAggregatorHost : IEventAggregatorHost
     {
         #region Variables
@@ -12,6 +15,7 @@
         private readonly List<IEvent> _eventsRelayed;
         private readonly List<IObserver<IEvent>> _observers;
         private readonly Dictionary<Type, List<IObserver<IEvent>>> _typedObservers;
+        private readonly object _eventsLock = new();
 
         #endregion
 
@@ -44,7 +48,10 @@
         /// <param name="event">The event to publish.</param>
         public void Publish(IEvent @event)
         {
-            _events.Add(@event);
+            lock (_eventsLock)
+            {
+                _events.Add(@event);
+            }
 
             foreach (var observer in _observers)
             {
@@ -106,7 +113,11 @@
                 _typedObservers[typeof(T)] = observers;
             }
 
-            var events = _events.Where(evt => evt is T).ToList();
+            List<IEvent> events;
+            lock (_eventsLock)
+            {
+                events = _events.Where(evt => evt is T).ToList();
+            }
             return SubscribeAndSendEvents(observers, newObserver, events);
         }
 
@@ -128,20 +139,19 @@
 
                 // Provide observer with existing data.
                 //foreach (var @event in events)
-                for (var i = 0; i < events.Count; i++)
+                lock (_eventsLock)
                 {
-                    var @event = events[i];
-                    var result = ExecutePublish(newObserver, @event);
-                    if (result != EventExecutionResult.Executed)
+                    for (var i = 0; i < events.Count; i++)
                     {
-                        // Error occurred
-                        _logger.LogError($"Failed to publish event '{@event.GetType().FullName}' to event bus with result '{result}'");
-                    }
+                        var @event = events[i];
+                        var result = ExecutePublish(newObserver, @event);
+                        if (result != EventExecutionResult.Executed)
+                        {
+                            // Error occurred
+                            _logger.LogError($"Failed to publish event '{@event.GetType().FullName}' to event bus with result '{result}'");
+                        }
 
-                    // TODO: Use lock
-                    if (_events.Contains(@event))
-                    {
-                        _events.Remove(@event);
+                        RemoveEvent(@event);
                     }
                 }
             }
@@ -164,6 +174,17 @@
                 result = EventExecutionResult.UnhandledException;
             }
             return result;
+        }
+
+        private void RemoveEvent(IEvent @event)
+        {
+            lock (_eventsLock)
+            {
+                if (_events.Contains(@event))
+                {
+                    _events.Remove(@event);
+                }
+            }
         }
 
         #endregion
