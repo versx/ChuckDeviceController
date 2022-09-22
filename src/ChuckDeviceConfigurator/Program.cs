@@ -56,7 +56,8 @@ if (config.Providers.Count() == 2)
 
 var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
 // Need to call at startup so time gets set now and not when first visit to dashboard
-logger.LogInformation($"Started: {Strings.Uptime}");
+var started = Strings.Uptime.ToLocalTime();
+logger.LogInformation($"Started: {started.ToLongDateString()} {started.ToLongTimeString()}");
 
 #endregion
 
@@ -104,7 +105,6 @@ builder.Services.AddMemoryCache(options =>
 {
     options.SizeLimit = long.MaxValue;
 });
-//builder.Services.AddDistributedMemoryCache();
 
 // Register external 3rd party authentication providers if configured
 builder.Services.Configure<JwtAuthConfig>(config.GetSection("Jwt"));
