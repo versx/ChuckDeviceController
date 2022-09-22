@@ -105,7 +105,13 @@
                       .WithOne(d => d.Fort)
                       .HasForeignKey(d => d.FortId);
 
+                entity.HasIndex(p => p.Latitude);
+                entity.HasIndex(p => p.Longitude);
+                entity.HasIndex(p => p.IsEnabled);
+                entity.HasIndex(p => p.IsDeleted);
                 entity.HasIndex(p => p.CellId);
+                entity.HasIndex(p => p.Updated);
+                entity.HasIndex(p => p.RaidEndTimestamp);
             });
 
             modelBuilder.Entity<GymDefender>(entity =>
@@ -135,6 +141,7 @@
                       //.HasConstraintName("FK_incident_pokestop_pokestop_id");
 
                 entity.HasIndex(p => p.PokestopId);
+                entity.HasIndex(p => p.Expiration);
             });
 
             modelBuilder.Entity<Pokestop>(entity =>
@@ -196,7 +203,28 @@
                       .HasForeignKey(p => p.PokestopId)
                       .OnDelete(DeleteBehavior.SetNull);
 
+                entity.HasIndex(p => p.Latitude);
+                entity.HasIndex(p => p.Longitude);
+                entity.HasIndex(p => p.IsEnabled);
+                entity.HasIndex(p => p.IsDeleted);
                 entity.HasIndex(p => p.CellId);
+                entity.HasIndex(p => p.Updated);
+
+                entity.HasIndex(p => p.QuestConditions);
+                entity.HasIndex(p => p.QuestRewards);
+                entity.HasIndex(p => p.QuestTarget);
+                entity.HasIndex(p => p.QuestTemplate);
+                entity.HasIndex(p => p.QuestTimestamp);
+                entity.HasIndex(p => p.QuestTitle);
+                entity.HasIndex(p => p.QuestType);
+
+                entity.HasIndex(p => p.AlternativeQuestConditions);
+                entity.HasIndex(p => p.AlternativeQuestRewards);
+                entity.HasIndex(p => p.AlternativeQuestTarget);
+                entity.HasIndex(p => p.AlternativeQuestTemplate);
+                entity.HasIndex(p => p.AlternativeQuestTimestamp);
+                entity.HasIndex(p => p.AlternativeQuestTitle);
+                entity.HasIndex(p => p.AlternativeQuestType);
             });
 
             modelBuilder.Entity<Pokemon>(entity =>
@@ -228,6 +256,10 @@
                       .WithMany(p => p.Pokemon)
                       .HasForeignKey(p => p.SpawnId);
                 */
+
+                entity.HasIndex(p => p.AttackIV);
+                entity.HasIndex(p => p.DefenseIV);
+                entity.HasIndex(p => p.StaminaIV);
 
                 entity.HasIndex(p => p.CellId);
                 entity.HasIndex(p => p.PokestopId);
