@@ -230,7 +230,6 @@
                 await UpdateGymInfoAsync(gymInfos);
             }
 
-            /*
             var wildPokemon = workItem.Data
                 .Where(x => x.type == ProtoDataType.WildPokemon)
                 .ToList();
@@ -289,7 +288,6 @@
                 // Insert lured/disk Pokemon encounters
                 await UpdateDiskEncountersAsync(diskEncounters);
             }
-            */
 
             PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
         }

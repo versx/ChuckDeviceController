@@ -261,13 +261,23 @@
                       .HasForeignKey(p => p.SpawnId);
                 */
 
+                entity.HasIndex(p => p.Latitude);
+                entity.HasIndex(p => p.Longitude);
+                entity.HasIndex(p => new { p.Latitude, p.Longitude }, "ix_coords");
+
                 entity.HasIndex(p => p.AttackIV);
                 entity.HasIndex(p => p.DefenseIV);
                 entity.HasIndex(p => p.StaminaIV);
+                entity.HasIndex(p => new { p.AttackIV, p.DefenseIV, p.StaminaIV }, "ix_iv");
 
+                entity.HasIndex(p => p.PokemonId);
+                entity.HasIndex(p => p.Level);
+                entity.HasIndex(p => p.ExpireTimestamp);
                 entity.HasIndex(p => p.CellId);
                 entity.HasIndex(p => p.PokestopId);
                 entity.HasIndex(p => p.SpawnId);
+                entity.HasIndex(p => p.Updated);
+                entity.HasIndex(p => p.Username);
             });
 
             modelBuilder.Entity<Spawnpoint>(entity =>
