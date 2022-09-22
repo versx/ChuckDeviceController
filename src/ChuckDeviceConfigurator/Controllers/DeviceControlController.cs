@@ -323,6 +323,11 @@
                 }
             }
 
+            if (account != null)
+            {
+                _memCache.Set(account.Username, account);
+            }
+
             var options = new TaskOptions(device.Uuid, device.AccountUsername, account);
             var task = await jobController.GetTaskAsync(options);
             if (task == null)
@@ -509,10 +514,7 @@
             }
 
             var entity = _memCache.Get<TKey, TEntity>(key);
-            if (entity == null)
-            {
-                entity = (TEntity?)await context.FindAsync(typeof(TEntity), key);
-            }
+            entity ??= (TEntity?)await context.FindAsync(typeof(TEntity), key);
             return entity;
         }
 
