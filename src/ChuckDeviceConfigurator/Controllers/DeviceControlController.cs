@@ -127,8 +127,11 @@
                 {
                     Uuid = uuid,
                 };
-                await _context.AddAsync(device);
-                await _context.SaveChangesAsync();
+                await _context.Devices.SingleInsertAsync(device, options =>
+                {
+                    options.AllowDuplicateKeys = false;
+                    options.UseTableLock = true;
+                });
 
                 _memCache.Set(uuid, device);
 
@@ -169,9 +172,20 @@
         {
             if (device != null)
             {
-                device.LastHost = Request.GetIPAddress();
-                _context.Update(device);
-                await _context.SaveChangesAsync();
+                var ipAddr = Request.GetIPAddress();
+                if (device.LastHost != ipAddr)
+                {
+                    device.LastHost = ipAddr;
+                    await _context.Devices.SingleMergeAsync(device, options =>
+                    {
+                        options.AllowDuplicateKeys = false;
+                        options.UseTableLock = true;
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.LastHost,
+                        };
+                    });
+                }
 
                 _memCache.Set(device.Uuid, device);
             }
@@ -248,8 +262,15 @@
                 if (device.IsPendingAccountSwitch)
                 {
                     device.IsPendingAccountSwitch = false;
-                    _context.Update(device);
-                    await _context.SaveChangesAsync();
+                    await _context.Devices.SingleMergeAsync(device, options =>
+                    {
+                        options.AllowDuplicateKeys = false;
+                        options.UseTableLock = true;
+                        options.OnMergeUpdateInputExpression = p => new
+                        {
+                            p.IsPendingAccountSwitch,
+                        };
+                    });
 
                     _memCache.Set(device.Uuid, device);
                 }
@@ -396,8 +417,17 @@
                     }
                     break;
             }
-            _context.Accounts.Update(account);
-            await _context.SaveChangesAsync();
+            await _context.Accounts.SingleMergeAsync(account, options =>
+            {
+                options.AllowDuplicateKeys = false;
+                options.UseTableLock = true;
+                options.OnMergeUpdateInputExpression = p => new
+                {
+                    p.Failed,
+                    p.FailedTimestamp,
+                    p.FirstWarningTimestamp,
+                };
+            });
 
             _memCache.Set(account.Username, account);
 
@@ -421,8 +451,16 @@
             }
             account.Tutorial = 1;
 
-            _context.Accounts.Update(account);
-            await _context.SaveChangesAsync();
+            await _context.Accounts.SingleMergeAsync(account, options =>
+            {
+                options.AllowDuplicateKeys = false;
+                options.UseTableLock = true;
+                options.OnMergeUpdateInputExpression = p => new
+                {
+                    p.Level,
+                    p.Tutorial,
+                };
+            });
 
             _memCache?.Set(username, account);
 
@@ -538,8 +576,15 @@
         private async Task UpdateDeviceAsync(Device device, string? username = null)
         {
             device.AccountUsername = username;
-            _context.Devices.Update(device);
-            await _context.SaveChangesAsync();
+            await _context.Devices.SingleMergeAsync(device, options =>
+            {
+                options.AllowDuplicateKeys = false;
+                options.UseTableLock = true;
+                options.OnMergeUpdateInputExpression = p => new
+                {
+                    p.AccountUsername,
+                };
+            });
 
             // Update device in cache
             _memCache.Set(device.Uuid, device);
