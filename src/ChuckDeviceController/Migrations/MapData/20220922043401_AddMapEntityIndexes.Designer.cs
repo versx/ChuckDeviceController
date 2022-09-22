@@ -2,15 +2,17 @@
 using ChuckDeviceController.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace ChuckDeviceController.Migrations.MapData
 {
     [DbContext(typeof(MapDbContext))]
-    partial class MapDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220922043401_AddMapEntityIndexes")]
+    partial class AddMapEntityIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
