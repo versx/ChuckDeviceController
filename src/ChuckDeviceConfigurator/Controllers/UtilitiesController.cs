@@ -433,19 +433,45 @@
 
         #region Truncate Data
 
-        // GET: UtilitiesController/TruncateData
-        public ActionResult TruncateData()
+        // GET: UtilitiesController/TruncateData[?timeSpan=1&dataType=Pokemon]
+        public ActionResult TruncateData(int? timeSpan = null, string? dataType = null)
         {
-            // TODO: Possibly setup schedules to truncate at an interval
-            // TODO: When a data type is selected, show the amount that'll be deleted based on the time span selected
-            ViewBag.PokemonCount = _mapContext.Pokemon.LongCount().ToString("N0");
-            ViewBag.IncidentsCount = _mapContext.Incidents.LongCount().ToString("N0");
-            ViewBag.DataTypes = new List<string>
+            if (timeSpan == null && dataType == null)
             {
-                "Pokemon",
-                "Incidents",
-            };
-            return View();
+                // TODO: Possibly setup schedules to truncate at an interval
+                // TODO: When a data type is selected, show the amount that'll be deleted based on the time span selected
+                ViewBag.PokemonCount = _mapContext.Pokemon.LongCount().ToString("N0");
+                ViewBag.IncidentsCount = _mapContext.Incidents.LongCount().ToString("N0");
+                ViewBag.DataTypes = new List<string>
+                {
+                    "Pokemon",
+                    "Incidents",
+                };
+                return View();
+            }
+
+            try
+            {
+                var now = DateTime.UtcNow.ToTotalSeconds();
+                var time = Convert.ToUInt64(timeSpan * Strings.SixtyMinutesS);
+                switch (dataType)
+                {
+                    case "Pokemon":
+                        var pokemonCount = _mapContext.Pokemon.Count(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time);
+                        return new JsonResult(pokemonCount);
+                    case "Incidents":
+                        var invasionsCount = _mapContext.Incidents.Count(incident => Math.Abs((decimal)now - incident.Expiration) > time);
+                        return new JsonResult(invasionsCount);
+                    default:
+                        _logger.LogWarning($"Unknown data type provided '{dataType}', unable to truncate.");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+            }
+            return new JsonResult(0);
         }
 
         // POST: UtilitiesController/TruncateData
@@ -463,7 +489,7 @@
                     case "Pokemon":
                         sw.Start();
                         var pokemonCount = await _mapContext.Pokemon
-                                                            .Where(pokemon => pokemon.ExpireTimestamp < now && now - pokemon.ExpireTimestamp > time)
+                                                            .Where(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time)
                                                             .DeleteFromQueryAsync(options =>
                                                             {
                                                                 options.UseTableLock = true;
@@ -475,7 +501,7 @@
                     case "Incidents":
                         sw.Start();
                         var invasionsCount = await _mapContext.Incidents
-                                                              .Where(incident => incident.Expiration < now && now - incident.Expiration > time)
+                                                              .Where(incident => Math.Abs((decimal)now - incident.Expiration) > time)
                                                               .DeleteFromQueryAsync(options =>
                                                               {
                                                                   options.UseTableLock = true;

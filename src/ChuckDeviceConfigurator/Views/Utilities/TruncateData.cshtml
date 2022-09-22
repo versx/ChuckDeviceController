@@ -45,9 +45,41 @@
                 <input type="submit" value="Truncate" class="btn btn-danger" />
             </div>
         </form>
+        <div id="count-response">
+        </div>
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $('#TimeSpan').on('change', function(e) {
+            const timeSpan = this.value;
+            const dataType = $('#DataType').val();
+            showAmountDeletable(timeSpan, dataType);
+        });
+        $('#DataType').on('change', function(e) {
+            const timeSpan = $('#TimeSpan').val();
+            const dataType = this.value;
+            showAmountDeletable(timeSpan, dataType);
+        });
+
+        const showAmountDeletable = (timeSpan, dataType) => {
+            if (!timeSpan || !dataType) {
+                return;
+            }
+
+            const url = `/Utilities/TruncateData?${timeSpan}&dataType=${dataType}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(response => {
+                    console.log('response:', response);
+                    const message = `${response} ${dataType} can be deleted in the selected time frame.`;
+                    $('#count-response').html(`<p>${message}</p>`);
+                })
+                .catch(err => {
+                    console.error('error:', err);
+                });
+        };
+    </script>
 }
