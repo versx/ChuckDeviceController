@@ -210,10 +210,16 @@
     <br>
 
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class = "col-sm-4">
+            @Html.DisplayNameFor(model => model.Started)
+        </dt>
+        <dd class = "col-sm-8">
+            @Html.DisplayFor(model => model.Started)
+        </dd>
+        <dt class="col-sm-4">
             @Html.DisplayNameFor(model => model.Uptime)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-8">
             @Html.DisplayFor(model => model.Uptime)
         </dd>
     </dl>

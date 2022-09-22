@@ -150,6 +150,9 @@
         [DisplayName("Uptime")]
         public string? Uptime { get; set; }
 
+        [DisplayName("Started")]
+        public string? Started { get; set; }
+
         public IReadOnlyList<IDashboardStatsItem> PluginDashboardStats { get; set; }
     }
 }

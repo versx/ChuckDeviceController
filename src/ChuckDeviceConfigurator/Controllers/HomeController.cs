@@ -46,6 +46,8 @@
         public IActionResult Index()
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
+            var uptime = Strings.Uptime;
+            var uptimeLocal = uptime.ToLocalTime();
             var model = new DashboardViewModel
             {
                 Accounts = (ulong)_deviceContext.Accounts.LongCount(),
@@ -75,7 +77,8 @@
 
                 PluginDashboardStats = _uiHost.DashboardStatsItems,
 
-                Uptime = Strings.Uptime.ToTotalSeconds().ToReadableString(includeAgoText: false),
+                Uptime = uptime.ToTotalSeconds().ToReadableString(includeAgoText: false),
+                Started = $"{uptimeLocal.ToLongDateString()} {uptimeLocal.ToLongTimeString()}",
             };
 
             _eventAggregatorHost.Subscribe(new PluginObserver());
