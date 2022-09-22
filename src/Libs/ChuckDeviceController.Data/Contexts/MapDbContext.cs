@@ -73,9 +73,10 @@
         {
             //modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
 
-            /*
+            
             modelBuilder.Entity<Cell>(entity =>
             {
+                /*
                 entity.HasMany(c => c.Gyms)
                       .WithOne(g => g.Cell)
                       .HasForeignKey(g => g.CellId)
@@ -90,8 +91,11 @@
                       .WithOne(p => p.Cell)
                       .HasForeignKey(p => p.CellId)
                       .OnDelete(DeleteBehavior.Cascade);
+                */
+
+                entity.HasIndex(p => p.Latitude);
+                entity.HasIndex(p => p.Longitude);
             });
-            */
 
             modelBuilder.Entity<Gym>(entity =>
             {
@@ -266,15 +270,19 @@
                 entity.HasIndex(p => p.SpawnId);
             });
 
-            /*
             modelBuilder.Entity<Spawnpoint>(entity =>
             {
+                /*
                 entity.HasMany(p => p.Pokemon)
                       .WithOne(p => p.Spawnpoint)
                       .HasForeignKey(p => p.SpawnId)
                       .OnDelete(DeleteBehavior.SetNull);
+                */
+
+                entity.HasIndex(p => p.Latitude);
+                entity.HasIndex(p => p.Longitude);
+                entity.HasIndex(p => p.DespawnSecond);
             });
-            */
 
             modelBuilder.Entity<PokemonStats>(entity =>
             {

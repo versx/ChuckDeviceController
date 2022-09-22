@@ -56,7 +56,7 @@
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         public Cell()
         {

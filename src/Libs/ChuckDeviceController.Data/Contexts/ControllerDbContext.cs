@@ -40,9 +40,25 @@
         {
             //modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
 
+            // TODO: Add indexes for device controller db context entities
             modelBuilder.Entity<Assignment>(entity =>
             {
                 entity.HasIndex(p => p.InstanceName);
+
+                /*
+                entity.HasOne(p => p.Instance)
+                      .WithMany(p => p.Assignments)
+                      .HasForeignKey(p => p.InstanceName);
+                entity.HasOne(p => p.SourceInstance)
+                      .WithMany(p => p.Assignment)
+                      .HasForeignKey(p => p.SourceInstanceName);
+                entity.HasOne(p => p.Device)
+                      .WithMany(p => p.Assignments)
+                      .HasForeignKey(p => p.DeviceUuid);
+                entity.HasOne(p => p.DeviceGroup)
+                      .WithMany(p => p.Assignments)
+                      .HasForeignKey(p => p.DeviceGroupName);
+                */
             });
 
             modelBuilder.Entity<AssignmentGroup>(entity =>
