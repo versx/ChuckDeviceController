@@ -11,6 +11,7 @@
     ///     the current time on the dashboard page of the host
     ///     application under the statistics section.
     /// </summary>
+    [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
     public class ClockPlugin : IPlugin
     {
         #region Metadata Properties

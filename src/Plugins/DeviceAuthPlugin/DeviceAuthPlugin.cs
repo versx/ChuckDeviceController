@@ -10,6 +10,7 @@ namespace DeviceAuthPlugin
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
+    [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
     public class DeviceAuthPlugin : IPlugin
     {
         private readonly IConfiguration _config;

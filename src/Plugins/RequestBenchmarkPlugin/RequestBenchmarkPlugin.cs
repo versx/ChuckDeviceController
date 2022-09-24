@@ -11,6 +11,7 @@ namespace RequestBenchmarkPlugin
     using Middleware;
     using Services;
 
+    [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class RequestBenchmarkPlugin : IPlugin
     {

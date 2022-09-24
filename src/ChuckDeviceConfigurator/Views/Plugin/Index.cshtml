@@ -20,7 +20,7 @@
                 @Html.DisplayNameFor(model => model.Items[0].Plugin.Author)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].PermissionsOptions)
+                @Html.DisplayNameFor(model => model.Items[0].ApiKey.Scope)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Plugin.Version)
@@ -43,11 +43,7 @@
                     @Html.DisplayFor(modelItem => item.Plugin.Author)
                 </td>
                 <td>
-                    <div>
-                        Requested: @string.Join(", ", item.PermissionsOptions?.RequestedPermissions)<br>
-                        Allowed: @string.Join(", ", item.PermissionsOptions?.AllowedPermissions)<br>
-                        Policy: @(item.PermissionsOptions?.AcceptedPermissionsPolicy ?? PluginAcceptedPermissionsPolicy.AcceptManually)
-                    </div>
+                    @string.Join(", ", item.ApiKey?.Scope ?? new())
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Plugin.Version)

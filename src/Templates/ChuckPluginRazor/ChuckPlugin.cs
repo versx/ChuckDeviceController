@@ -13,7 +13,7 @@ namespace ChuckDeviceControllerPluginRazor
     /// </summary>
     [
         // Specifies the permissions the plugin will require to the host application
-        PluginPermissions(PluginPermissions.AddControllers),
+        PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT"),
         // Specifies where the 'wwwroot' folder will be if any are used or needed.
         // Possible options: embedded resources, local/external, or none.
         StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External),

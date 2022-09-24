@@ -49,22 +49,10 @@
         @Html.DisplayFor(model => model.Plugin.Author)
     </dd>
     <dt class="col-sm-4">
-        @Html.DisplayNameFor(model => model.PermissionsOptions.RequestedPermissions)
+        @Html.DisplayNameFor(model => model.ApiKey.Scope)
     </dt>
     <dd class="col-sm-8">
-        @Html.Raw(string.Join("<br>", (Model?.PermissionsOptions?.RequestedPermissions ?? PluginPermissions.None).ToString().Split(", ")))
-    </dd>
-    <dt class="col-sm-4">
-        @Html.DisplayNameFor(model => model.PermissionsOptions.AllowedPermissions)
-    </dt>
-    <dd class="col-sm-8">
-        @Html.Raw(string.Join("<br>", (Model?.PermissionsOptions?.AllowedPermissions ?? PluginPermissions.None).ToString().Split(", ")))
-    </dd>
-    <dt class="col-sm-4">
-        @Html.DisplayNameFor(model => model.PermissionsOptions.AcceptedPermissionsPolicy)
-    </dt>
-    <dd class="col-sm-8">
-        @Html.DisplayFor(model => model.PermissionsOptions.AcceptedPermissionsPolicy)
+        @Html.Raw(string.Join("<br>", Model?.ApiKey?.Scope ?? new()))
     </dd>
     <dt class="col-sm-4">
         @Html.DisplayNameFor(model => model.Plugin.Version)

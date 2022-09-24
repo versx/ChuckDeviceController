@@ -155,12 +155,6 @@
             return services;
         }
 
-        public static PluginPermissions GetPluginPermissions(this Type pluginType)
-        {
-            var attr = pluginType.GetCustomAttribute<PluginPermissionsAttribute>();
-            return attr?.Permissions ?? PluginPermissions.None;
-        }
-
         public static string? GetPluginApiKey(this Type pluginType)
         {
             var attr = pluginType.GetCustomAttribute<PluginApiKeyAttribute>();
