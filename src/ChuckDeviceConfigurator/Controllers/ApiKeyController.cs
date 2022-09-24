@@ -77,6 +77,7 @@
                 var pluginApiKey = _apiKeyManager.GenerateApiKey();
                 var apiKey = new ApiKey
                 {
+                    Name = model.Name,
                     Key = pluginApiKey,
                     ExpirationTimestamp = seconds,
                     Scope = scope,
