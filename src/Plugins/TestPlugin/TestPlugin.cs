@@ -30,12 +30,6 @@
     ///     of the plugin system and how it works.
     /// </summary>
     [
-        // Specifies the permissions the plugin will require to the host application
-        PluginPermissions(PluginPermissions.ReadDatabase |
-                          PluginPermissions.WriteDatabase |
-                          PluginPermissions.DeleteDatabase |
-                          PluginPermissions.AddControllers |
-                          PluginPermissions.AddJobControllers),
         // Specifies where the 'wwwroot' folder will be if any are used or needed.
         // Possible options: embedded resources, local/external, or none.
         StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External),

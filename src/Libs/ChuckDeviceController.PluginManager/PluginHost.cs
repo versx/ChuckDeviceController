@@ -81,6 +81,7 @@
         #endregion
     }
 
+    /*
     public class PluginPermissionsOptions
     {
         public PluginPermissions RequestedPermissions { get; }
@@ -128,4 +129,5 @@
         AcceptSpecific,
         AcceptAllAutomatically,
     }
+    */
 }
