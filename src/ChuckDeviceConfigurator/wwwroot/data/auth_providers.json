@@ -33,5 +33,10 @@
     "Icon": "fa-brands fa-microsoft fa-align-left social-icon",
     "Class": "",
     "Style": "background: #3376D0; color: #fff;"
+  },
+  "Microsoft": {
+    "Icon": "fa-brands fa-microsoft fa-align-left social-icon",
+    "Class": "",
+    "Style": "background: #3376D0; color: #fff;"
   }
 }
