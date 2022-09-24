@@ -4,6 +4,7 @@
     using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
@@ -14,7 +15,6 @@
         // Variables
         private static readonly ILogger<IPluginLoader> _logger =
             new Logger<IPluginLoader>(LoggerFactory.Create(x => x.AddConsole()));
-
 
         // Properties
         public IEnumerable<PluginHost> LoadedPlugins { get; }
@@ -30,12 +30,15 @@
         public PluginLoader(
             PluginFinderResult<IPlugin> pluginResult,
             IReadOnlyDictionary<Type, object> sharedServiceHosts,
+            IReadOnlyList<IApiKey> apiKeys,
             IServiceCollection services)
         {
             if (pluginResult.Assembly == null)
             {
                 throw new NullReferenceException($"Failed to load plugin assembly '{pluginResult.AssemblyPath}'");
             }
+
+            //_apiKeys = apiKeys;
 
             var assemblyTypes = pluginResult.Assembly.GetTypes();
             //var pluginBootstrapTypes = assemblyTypes.GetAssignableTypes<IPluginBootstrapper>();
@@ -79,26 +82,17 @@
                 pluginInstance.SetPluginServiceProperties(sharedServiceHosts);
 
                 var apiKey = pluginType.GetPluginApiKey();
-                Console.WriteLine($"API key: {apiKey}");
-                // TODO: Validate API key
-                // TODO: Invalidate API key (disable/remove)
-                // TODO: Get API key
-                // TODO: Generate API key
-
-                var requestedPermissions = pluginType.GetPluginPermissions();
-                // TODO: Determine allowed permissions based on accepted permissions policy
-                var allowedPermissions = PluginPermissions.None;
-                var permissionsOptions = new PluginPermissionsOptions
-                (
-                    requestedPermissions: requestedPermissions,
-                    allowedPermissions: allowedPermissions,
-                    // TODO: Make 'PluginAcceptedPermissionsPolicy' configurable via UI (for all plugins)
-                    acceptedPermissionsPolicy: PluginAcceptedPermissionsPolicy.AcceptAllAutomatically
-                );
+                // Check that key exists and is enabled
+                var match = apiKeys?.FirstOrDefault(key => key.Key == apiKey && key.IsEnabled);
+                if (match == null)
+                {
+                    _logger.LogError($"Failed to validate plugin's API key or none set, skipping...");
+                    continue;
+                }
 
                 var pluginHost = new PluginHost(
                     plugin,
-                    permissionsOptions,
+                    match,
                     new PluginAssembly(pluginResult.Assembly),
                     pluginResult.LoadContext,
                     pluginServiceDescriptors,

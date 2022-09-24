@@ -5,6 +5,7 @@
     using Microsoft.Extensions.DependencyInjection;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
 
     public interface IPluginManager
     {
@@ -36,9 +37,9 @@
 
         void Configure(WebApplication appBuilder);
 
-        Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env);
+        Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env, IReadOnlyList<IApiKey> apiKeys);
 
-        Task LoadPluginAsync(string filePath);
+        Task LoadPluginAsync(string filePath, IReadOnlyList<IApiKey> apiKeys);
 
         Task RegisterPluginAsync(PluginHost pluginHost);
 

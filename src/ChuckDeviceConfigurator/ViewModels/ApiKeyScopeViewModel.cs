@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.ViewModels
 {
-    using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Common.Data;
 
     public class ApiKeyScopeViewModel
     {

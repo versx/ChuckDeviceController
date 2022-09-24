@@ -1,10 +1,9 @@
 ﻿namespace ChuckDeviceController.PluginManager
 {
-    using System.ComponentModel;
-
     using Microsoft.Extensions.DependencyInjection;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Services.Finder;
     using ChuckDeviceController.PluginManager.Services.Loader;
@@ -23,13 +22,9 @@
         IPlugin Plugin { get; }
 
         /// <summary>
-        /// Gets the requested <seealso cref="PluginPermissions"/>
-        /// for the loaded plugin.
+        /// 
         /// </summary>
-        [DisplayName("Permissions Options")]
-        PluginPermissionsOptions PermissionsOptions { get; }
-        //PluginPermissions RequestedPermissions { get; }
-        //PluginPermissions AllowedPermissions { get; }
+        IApiKey ApiKey { get; }
 
         /// <summary>
         /// Gets the state of the plugin, whether it is enabled and running,

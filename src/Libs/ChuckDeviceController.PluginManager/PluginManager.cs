@@ -10,6 +10,7 @@
     using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
     using ChuckDeviceController.PluginManager.Mvc.Razor;
@@ -30,6 +31,7 @@
         private static readonly Dictionary<string, IPluginHost> _plugins = new();
         private IServiceCollection _services;
         private IWebHostEnvironment _webHostEnv;
+        private IReadOnlyList<IApiKey> _apiKeys;
 
         #endregion
 
@@ -131,10 +133,11 @@
             }
         }
 
-        public async Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env)
+        public async Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env, IReadOnlyList<IApiKey> apiKeys)
         {
             _services = services;
             _webHostEnv = env;
+            _apiKeys = apiKeys;
 
             var rootPluginsDirectory = Options.RootPluginsDirectory;
             var finderOptions = new PluginFinderOptions
@@ -175,11 +178,11 @@
                 }
 
                 // Load and activate plugins found by plugin finder
-                var pluginLoader = new PluginLoader<IPlugin>(result, Options.SharedServiceHosts, services);
+                var pluginLoader = new PluginLoader<IPlugin>(result, Options.SharedServiceHosts, apiKeys, services);
                 var loadedPlugins = pluginLoader.LoadedPlugins;
-                if (!loadedPlugins.Any())
+                if (!(loadedPlugins?.Any() ?? false))
                 {
-                    _logger.LogError($"Failed to find any valid plugins in assembly '{result.AssemblyPath}'");
+                    _logger.LogWarning($"No valid plugins found in assembly '{result.AssemblyPath}'");
                     continue;
                 }
 
@@ -192,7 +195,7 @@
             return services;
         }
 
-        public async Task LoadPluginAsync(string filePath)
+        public async Task LoadPluginAsync(string filePath, IReadOnlyList<IApiKey> apiKeys)
         {
             var rootPluginsDirectory = Options.RootPluginsDirectory;
             var finderOptions = new PluginFinderOptions
@@ -219,7 +222,7 @@
                 }
 
                 // Load and activate plugins found by plugin finder
-                var pluginLoader = new PluginLoader<IPlugin>(result, Options.SharedServiceHosts, _services);
+                var pluginLoader = new PluginLoader<IPlugin>(result, Options.SharedServiceHosts, apiKeys, _services);
                 var loadedPlugins = pluginLoader.LoadedPlugins;
                 if (!loadedPlugins.Any())
                 {

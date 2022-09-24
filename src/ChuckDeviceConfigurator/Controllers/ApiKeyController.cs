@@ -6,7 +6,7 @@
     using ChuckDeviceConfigurator.Services.Plugins;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;

@@ -40,7 +40,7 @@
         // Possible options: embedded resources, local/external, or none.
         StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External),
         // Specify the plugin API key to authorize with the host application.
-        PluginApiKey(""),
+        PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT"),
     ]
     public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents, ISettingsPropertyEvents
     {

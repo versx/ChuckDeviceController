@@ -277,6 +277,15 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IEventAggregatorHost), eventAggregatorHost },
 };
 
+// TODO: Retrieve api keys upon change
+var apiKeys = new List<ApiKey>();
+var controllerContext = builder.Services.GetService<IDbContextFactory<ControllerDbContext>>();
+if (controllerContext != null)
+{
+    using var context = controllerContext.CreateDbContext();
+    apiKeys = context.ApiKeys.ToList();
+}
+
 // Instantiate 'IPluginManager' singleton with configurable options
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 {
@@ -288,7 +297,7 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 
 // Find plugins, register plugin services, load plugin assemblies,
 // call OnLoad callback and register with 'IPluginManager' cache
-await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment);
+await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, apiKeys);
 
 #endregion
 

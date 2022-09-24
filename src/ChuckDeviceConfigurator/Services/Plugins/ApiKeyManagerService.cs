@@ -3,6 +3,7 @@
     using System.Security.Cryptography;
 
     using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Entities;
 
     public class ApiKeyManagerService : IApiKeyManagerService
     {
@@ -31,9 +32,41 @@
 
         #region Public Methods
 
+        public async Task<string> GetApiKey(uint id)
+        {
+            var apiKey = await _context.ApiKeys.FindAsync(id);
+            return apiKey?.Key;
+        }
+
+        public async Task<string> GetApiKey(string name)
+        {
+            var apiKey = _context.ApiKeys.FirstOrDefault(key => key.Name == name);
+            return await Task.FromResult(apiKey?.Key);
+        }
+
+        public async Task<ApiKey> GetApiKeyByName(string name)
+        {
+            var apiKey = _context.ApiKeys.FirstOrDefault(key => key.Name == name);
+            return await Task.FromResult(apiKey);
+        }
+
         public async Task<bool> ValidateKey(string apiKey)
         {
-            var exists = _context.ApiKeys.Any(key => key.Equals(apiKey));
+            // Validate key value is set
+            if (string.IsNullOrEmpty(apiKey))
+                return false;
+
+            // Validate key length/character count
+            if (apiKey.Length != LengthOfKey)
+                return false;
+
+            // Validate key starts with prefix
+            if (!apiKey.StartsWith(Prefix))
+                return false;
+
+            // Validate key exists in database and enabled
+            var exists = _context.ApiKeys.Any(key => key.Equals(apiKey) && key.IsEnabled);
+
             return await Task.FromResult(exists);
         }
 
@@ -46,6 +79,7 @@
                 return;
             }
 
+            // TODO: Remove or disable API key
             _context.ApiKeys.Remove(entity);
             await _context.SaveChangesAsync();
         }

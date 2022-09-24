@@ -5,6 +5,7 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
 
     [Table("api_key")]
