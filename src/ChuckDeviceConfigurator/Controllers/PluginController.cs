@@ -6,6 +6,7 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.PluginManager;
     using ChuckDeviceController.Plugin;
 
@@ -13,26 +14,28 @@
     public class PluginController : Controller
     {
         private readonly ILogger<PluginController> _logger;
-        //private readonly IPluginManager _pluginManager;
         private readonly IUiHost _uiHost;
+        private readonly ControllerDbContext _context;
 
         public PluginController(
             ILogger<PluginController> logger,
-            //IPluginManager pluginManager,
-            IUiHost uiHost)
+            IUiHost uiHost,
+            ControllerDbContext context)
         {
             _logger = logger;
-            //_pluginManager = pluginManager;
             _uiHost = uiHost;
+            _context = context;
         }
 
         // GET: PluginController
         public ActionResult Index()
         {
             var plugins = PluginManager.Instance.Plugins.Values.ToList();
-            var model = new ViewModelsModel<IPluginHost>
+            var apiKeys = _context.ApiKeys.ToList();
+            var model = new PluginsViewModel
             {
-                Items = plugins,
+                Plugins = plugins,
+                ApiKeys = apiKeys,
             };
             return View(model);
         }

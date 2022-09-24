@@ -30,15 +30,15 @@
         }
 
         // GET: ApiKeyController
-        public ActionResult Index()
-        {
-            var apiKeys = _context.ApiKeys.ToList();
-            var model = new ViewModelsModel<ApiKey>
-            {
-                Items = apiKeys,
-            };
-            return View(model);
-        }
+        //public ActionResult Index()
+        //{
+        //    var apiKeys = _context.ApiKeys.ToList();
+        //    var model = new ViewModelsModel<ApiKey>
+        //    {
+        //        Items = apiKeys,
+        //    };
+        //    return View(model);
+        //}
 
         // GET: ApiKeyController/Details/5
         public async Task<ActionResult> Details(uint id)
