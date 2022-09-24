@@ -44,7 +44,7 @@
                     @Html.DisplayFor(modelItem => item.Key)
                 </td>
                 <td>
-                    @string.Join(", ", item.Scope)
+                    @Html.Raw(string.Join("<br>", item.Scope))
                 </td>
                 <td>
                     @(item.ExpirationTimestamp == 0 ? "Never" : item.ExpirationTimestamp.FromSeconds().ToLocalTime())
@@ -58,9 +58,9 @@
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item" asp-action="Manage" asp-route-id="@item.Id"><i class="fa-solid fa-play"></i>&nbsp;Enable</a></li>
-                            <li><a class="dropdown-item" asp-action="Reload" asp-route-id="@item.Id"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Reload</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
+                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
+                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash"></i>&nbsp;Delete</a></li>
                         </ul>
                     </div>
                 </td>

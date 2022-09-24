@@ -1,0 +1,45 @@
+﻿@using ChuckDeviceController.Extensions
+@model ManageApiKeyViewModel
+@* TODO: Conseal API key, add toggle to reveal *@
+@{
+    Console.WriteLine($"Expires: {Model?.Expiration.Ticks}");
+}
+
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Id)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Id)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Name)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Key)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Key)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Expiration)
+    </dt>
+    <dd class="col-sm-10">
+        @(Model?.Expiration.Ticks == 0 ? "Never" : Model?.Expiration.ToLocalTime())
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Scope)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(string.Join("<br>", (Model?.Scope ?? new()).Select(scope => scope.Scope)))
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.IsEnabled)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(Utils.FormatBoolean(Model?.IsEnabled ?? false, html: true))
+    </dd>
+</dl>

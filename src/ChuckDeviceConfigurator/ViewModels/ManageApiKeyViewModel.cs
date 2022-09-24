@@ -2,12 +2,16 @@
 {
     using System.ComponentModel;
 
-    using ChuckDeviceController.Common.Data.Contracts;
-
-    public class CreateApiKeyViewModel
+    public class ManageApiKeyViewModel
     {
+        [DisplayName("ID")]
+        public uint Id { get; set; }
+
         [DisplayName("Name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
+
+        [DisplayName("API Key")]
+        public string? Key { get; set; }
 
         [DisplayName("Expiration Date")]
         public DateTime Expiration { get; set; }
@@ -17,12 +21,5 @@
 
         [DisplayName("Enabled")]
         public bool IsEnabled { get; set; }
-    }
-
-    public class ApiKeyScopeViewModel
-    {
-        public PluginApiKeyScope Scope { get; set; }
-
-        public bool Selected { get; set; }
     }
 }
