@@ -3,6 +3,7 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
 
@@ -17,6 +18,8 @@
         }
 
         public DbSet<Account> Accounts { get; set; }
+
+        public DbSet<ApiKey> ApiKeys { get; set; }
 
         public DbSet<Assignment> Assignments { get; set; }
 
@@ -41,6 +44,16 @@
             //modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
 
             // TODO: Add indexes for device controller db context entities
+            modelBuilder.Entity<ApiKey>(entity =>
+            {
+                entity.HasIndex(p => p.ExpirationTimestamp);
+                entity.Property(p => p.Scope)
+                      .HasConversion(
+                          DbContextFactory.CreateJsonValueConverter<List<PluginApiKeyScope>?>(),
+                          DbContextFactory.CreateValueComparer<PluginApiKeyScope>()
+                      );
+            });
+
             modelBuilder.Entity<Assignment>(entity =>
             {
                 entity.HasIndex(p => p.InstanceName);

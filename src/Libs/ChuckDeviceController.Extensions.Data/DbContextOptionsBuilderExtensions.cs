@@ -15,6 +15,8 @@
             options.EnableIndexOptimizedBooleanColumns(true);
             options.EnableRetryOnFailure(maxRetries, TimeSpan.FromSeconds(retryIntervalS), null);
             options.MigrationsAssembly(assemblyName);
+            options.MinBatchSize(1);
+            options.MaxBatchSize(25);
             return options;
         }
     }

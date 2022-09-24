@@ -437,6 +437,10 @@
             }
         }
 
+        private string GetPluginApiKey()
+        {
+        }
+
         #endregion
     }
 }

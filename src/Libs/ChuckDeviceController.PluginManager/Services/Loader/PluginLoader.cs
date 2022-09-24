@@ -78,6 +78,13 @@
                 pluginInstance.SetPluginServiceFields(sharedServiceHosts);
                 pluginInstance.SetPluginServiceProperties(sharedServiceHosts);
 
+                var apiKey = pluginType.GetPluginApiKey();
+                Console.WriteLine($"API key: {apiKey}");
+                // TODO: Validate API key
+                // TODO: Invalidate API key (disable/remove)
+                // TODO: Get API key
+                // TODO: Generate API key
+
                 var requestedPermissions = pluginType.GetPluginPermissions();
                 // TODO: Determine allowed permissions based on accepted permissions policy
                 var allowedPermissions = PluginPermissions.None;

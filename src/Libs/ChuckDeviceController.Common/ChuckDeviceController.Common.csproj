@@ -13,7 +13,4 @@
   <ItemGroup>
     <None Remove="Data\Contracts\" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\Contracts\" />
-  </ItemGroup>
 </Project>

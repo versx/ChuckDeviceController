@@ -161,6 +161,12 @@
             return attr?.Permissions ?? PluginPermissions.None;
         }
 
+        public static string? GetPluginApiKey(this Type pluginType)
+        {
+            var attr = pluginType.GetCustomAttribute<PluginApiKeyAttribute>();
+            return attr?.ApiKey;
+        }
+
         public static object[]? GetConstructorArgs(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
         {
             var constructors = pluginType.GetPluginConstructors();

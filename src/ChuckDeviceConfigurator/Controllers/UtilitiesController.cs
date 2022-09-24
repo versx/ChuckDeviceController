@@ -11,8 +11,8 @@
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
 
@@ -454,18 +454,20 @@
             {
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 var time = Convert.ToUInt64(timeSpan * Strings.SixtyMinutesS);
+                var count = 0;
                 switch (dataType)
                 {
                     case "Pokemon":
-                        var pokemonCount = _mapContext.Pokemon.Count(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time);
-                        return new JsonResult(pokemonCount);
+                        count = _mapContext.Pokemon.Count(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time);
+                        break;
                     case "Incidents":
-                        var invasionsCount = _mapContext.Incidents.Count(incident => Math.Abs((decimal)now - incident.Expiration) > time);
-                        return new JsonResult(invasionsCount);
+                        count = _mapContext.Incidents.Count(incident => Math.Abs((decimal)now - incident.Expiration) > time);
+                        break;
                     default:
                         _logger.LogWarning($"Unknown data type provided '{dataType}', unable to truncate.");
                         break;
                 }
+                return new JsonResult(count);
             }
             catch (Exception ex)
             {
