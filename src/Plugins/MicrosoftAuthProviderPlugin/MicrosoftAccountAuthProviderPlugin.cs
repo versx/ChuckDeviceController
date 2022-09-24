@@ -1,5 +1,8 @@
 ﻿namespace MicrosoftAccountAuthProviderPlugin
 {
+    using Microsoft.Extensions.Configuration;
+
+    using ChuckDeviceController.Common.Configuration;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
@@ -54,16 +57,17 @@
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var config = new OpenAuthConfig();
+            _config.GetSection("Microsoft").Bind(config);
+
             var authBuilder = services.AddAuthentication();
 
-            if (_config.GetValue<bool>("Microsoft:Enabled"))
+            if (config.Enabled)
             {
-                var clientId = _config.GetValue<string>("Microsoft:ClientId");
-                var clientSecret = _config.GetValue<string>("Microsoft:ClientSecret");
                 authBuilder.AddMicrosoftAccount(options =>
                 {
-                    options.ClientId = clientId!;
-                    options.ClientSecret = clientSecret!;
+                    options.ClientId = config.ClientId!;
+                    options.ClientSecret = config.ClientSecret!;
                 });
             }
         }

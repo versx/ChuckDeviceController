@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
 
+    using ChuckDeviceController.Common.Configuration;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
@@ -44,16 +45,17 @@
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var config = new OpenAuthConfig();
+            _config.GetSection("Bitbucket").Bind(config);
+
             var authBuilder = services.AddAuthentication();
 
-            if (_config.GetValue<bool>("Bitbucket:Enabled"))
+            if (config.Enabled)
             {
-                var clientId = _config.GetValue<string>("Bitbucket:ClientId");
-                var clientSecret = _config.GetValue<string>("Bitbucket:ClientSecret");
                 authBuilder.AddBitbucket(options =>
                 {
-                    options.ClientId = clientId!;
-                    options.ClientSecret = clientSecret!;
+                    options.ClientId = config.ClientId!;
+                    options.ClientSecret = config.ClientSecret!;
                     //options.Scope("");
                 });
             }

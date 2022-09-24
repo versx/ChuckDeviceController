@@ -183,6 +183,7 @@ builder.Services.AddRazorPages(); // <- Required for plugins to render Razor pag
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();
+
 builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
 {
     using var scope = factory.CreateScope();

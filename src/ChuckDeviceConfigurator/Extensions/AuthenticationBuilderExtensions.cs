@@ -2,13 +2,15 @@
 {
     using Microsoft.AspNetCore.Authentication;
 
-    using ChuckDeviceController.Configuration;
+    using ChuckDeviceConfigurator.Configuration;
 
     public static class AuthenticationBuilderExtensions
     {
         public static AuthenticationBuilder AddOpenAuthProviders(this AuthenticationBuilder auth, IConfiguration configuration)
         {
-            var authConfig = configuration.GetSection("Authentication").Get<AuthenticationConfig>();
+            var authConfig = new AuthenticationConfig();
+            configuration.GetSection("Authentication").Bind(authConfig);
+
             if (authConfig == null)
             {
                 // User does not have authentication options configured, allow

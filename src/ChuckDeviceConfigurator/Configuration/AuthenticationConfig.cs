@@ -1,5 +1,7 @@
-﻿namespace ChuckDeviceController.Configuration
+﻿namespace ChuckDeviceConfigurator.Configuration
 {
+    using ChuckDeviceController.Common.Configuration;
+
     public class AuthenticationConfig
     {
         public OpenAuthConfig Discord { get; set; } = new();

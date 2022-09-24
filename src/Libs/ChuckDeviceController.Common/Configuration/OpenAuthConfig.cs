@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Configuration
+﻿namespace ChuckDeviceController.Common.Configuration
 {
     public class OpenAuthConfig
     {
