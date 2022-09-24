@@ -47,7 +47,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasIndex("Longitude");
 
-                    b.ToTable("s2cell");
+                    b.ToTable("s2cell", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Gym", b =>
@@ -208,7 +208,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasIndex("Updated");
 
-                    b.ToTable("gym");
+                    b.ToTable("gym", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.GymDefender", b =>
@@ -384,7 +384,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasIndex("TrainerName");
 
-                    b.ToTable("gym_defender");
+                    b.ToTable("gym_defender", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.GymTrainer", b =>
@@ -441,7 +441,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasIndex("Name");
 
-                    b.ToTable("gym_trainer");
+                    b.ToTable("gym_trainer", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Incident", b =>
@@ -485,7 +485,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasIndex("PokestopId");
 
-                    b.ToTable("incident");
+                    b.ToTable("incident", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Pokemon", b =>
@@ -634,7 +634,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("updated");
 
                     b.Property<string>("Username")
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("longtext")
                         .HasColumnName("username");
 
                     b.Property<ushort?>("Weather")
@@ -653,31 +653,13 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasIndex("DefenseIV");
 
-                    b.HasIndex("ExpireTimestamp");
-
-                    b.HasIndex("Latitude");
-
-                    b.HasIndex("Level");
-
-                    b.HasIndex("Longitude");
-
-                    b.HasIndex("PokemonId");
-
                     b.HasIndex("PokestopId");
 
                     b.HasIndex("SpawnId");
 
                     b.HasIndex("StaminaIV");
 
-                    b.HasIndex("Updated");
-
-                    b.HasIndex("Username");
-
-                    b.HasIndex(new[] { "Latitude", "Longitude" }, "ix_coords");
-
-                    b.HasIndex(new[] { "AttackIV", "DefenseIV", "StaminaIV" }, "ix_iv");
-
-                    b.ToTable("pokemon");
+                    b.ToTable("pokemon", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonHundoStats", b =>
@@ -700,7 +682,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasKey("Date", "PokemonId", "FormId");
 
-                    b.ToTable("pokemon_hundo_stats");
+                    b.ToTable("pokemon_hundo_stats", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonIvStats", b =>
@@ -728,7 +710,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasKey("Date", "PokemonId", "FormId", "IV");
 
-                    b.ToTable("pokemon_iv_stats");
+                    b.ToTable("pokemon_iv_stats", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonShinyStats", b =>
@@ -751,7 +733,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasKey("Date", "PokemonId", "FormId");
 
-                    b.ToTable("pokemon_shiny_stats");
+                    b.ToTable("pokemon_shiny_stats", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonStats", b =>
@@ -774,7 +756,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasKey("Date", "PokemonId", "FormId");
 
-                    b.ToTable("pokemon_stats");
+                    b.ToTable("pokemon_stats", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Pokestop", b =>
@@ -997,7 +979,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasIndex("Updated");
 
-                    b.ToTable("pokestop");
+                    b.ToTable("pokestop", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Spawnpoint", b =>
@@ -1034,7 +1016,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasIndex("Longitude");
 
-                    b.ToTable("spawnpoint");
+                    b.ToTable("spawnpoint", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Weather", b =>
@@ -1101,7 +1083,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasKey("Id");
 
-                    b.ToTable("weather");
+                    b.ToTable("weather", (string)null);
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Gym", b =>
