@@ -19,6 +19,14 @@
         public uint Id { get; set; }
 
         [
+            JsonPropertyName("name"),
+            DisplayName("Name"),
+            Column("name"),
+            Required,
+        ]
+        public string Name { get; set; }
+
+        [
             JsonPropertyName("key"),
             DisplayName("Key"),
             Column("key"),
@@ -40,5 +48,13 @@
             Column("expiration_timestamp"),
         ]
         public ulong ExpirationTimestamp { get; set; }
+
+        [
+            JsonPropertyName("enabled"),
+            DisplayName("Enabled"),
+            Column("enabled"),
+            Required,
+        ]
+        public bool IsEnabled { get; set; }
     }
 }

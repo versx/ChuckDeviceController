@@ -16,6 +16,7 @@ using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.Net.Mail;
+using ChuckDeviceConfigurator.Services.Plugins;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService.Publishers;
@@ -205,6 +206,8 @@ builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 //builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
+
+builder.Services.AddScoped<IApiKeyManagerService, ApiKeyManagerService>();
 
 builder.Services.AddGrpc(options =>
 {

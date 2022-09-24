@@ -94,11 +94,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Watch Include="Views\**\*.*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="Views\ApiKey\Index.cshtml" />
+    <Watch Include="Views\**\*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -114,9 +110,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Watch Remove="Views\ApiKey\Index.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Services\Geofences\" />
     <Folder Include="Views\Device\EditorTemplates\" />
     <Folder Include="Views\Shared\EditorTemplates\" />
@@ -124,9 +117,7 @@
     <Folder Include="Services\Plugins\Hosts\EventBusService\Publishers\" />
     <Folder Include="Services\Plugins\Hosts\EventBusService\Subscribers\" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Views\ApiKey\Index.cshtml" />
-  </ItemGroup>
+
   <ItemGroup>
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
