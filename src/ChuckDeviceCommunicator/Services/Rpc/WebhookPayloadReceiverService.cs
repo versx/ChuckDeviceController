@@ -30,7 +30,6 @@
             }
 
             await _webhookRelayService.EnqueueAsync(request.PayloadType, request.Payload);
-
             return new WebhookPayloadResponse
             {
                 Status = WebhookPayloadStatus.Ok,

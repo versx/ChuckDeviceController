@@ -15,6 +15,9 @@
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Net.Utilities;
     using ChuckDeviceController.Protos;
+    using ChuckDeviceController.Common.Data.Contracts;
+
+    // TODO: Use SemaphoreSlim 
 
     public class WebhookRelayService : IWebhookRelayService
     {
@@ -498,6 +501,11 @@
                             if (!GeofenceService.IsPointInPolygon(pokemon.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
+                        if (endpoint.Data?.PokemonIds.Any() ?? false)
+                        {
+                            if (endpoint.Data.PokemonIds.Contains(pokemon.PokemonId))
+                                continue;
+                        }
                         events.Add(pokemon.GetWebhookData(WebhookHeaders.Pokemon));
                     }
                 }
@@ -508,6 +516,11 @@
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
                             if (!GeofenceService.IsPointInPolygon(pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                                continue;
+                        }
+                        if (endpoint.Data?.PokestopIds.Any() ?? false)
+                        {
+                            if (endpoint.Data.PokestopIds.Contains(pokestop.Id))
                                 continue;
                         }
                         events.Add(pokestop.GetWebhookData(WebhookHeaders.Pokestop));
@@ -522,6 +535,11 @@
                             if (!GeofenceService.IsPointInPolygon(lure.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
+                        if (endpoint.Data?.LureIds.Any() ?? false)
+                        {
+                            if (endpoint.Data.LureIds.Contains(lure.LureId))
+                                continue;
+                        }
                         events.Add(lure.GetWebhookData(WebhookHeaders.Lure));
                     }
                 }
@@ -532,6 +550,11 @@
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
                             if (!GeofenceService.IsPointInPolygon(pokestopWithIncident.Pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                                continue;
+                        }
+                        if (endpoint.Data?.InvasionIds.Any() ?? false)
+                        {
+                            if (endpoint.Data.InvasionIds.Contains(pokestopWithIncident.Invasion.Character))
                                 continue;
                         }
                         events.Add(pokestopWithIncident.Invasion.GetWebhookData(WebhookHeaders.Invasion, pokestopWithIncident.Pokestop));
@@ -546,6 +569,10 @@
                             if (!GeofenceService.IsPointInPolygon(quest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
+                        // TODO: Add quest filtering
+                        //if (endpoint.Data?.Quests.Any() ?? false)
+                        //{
+                        //}
                         events.Add(quest.GetWebhookData(WebhookHeaders.Quest));
                     }
                 }
@@ -558,6 +585,10 @@
                             if (!GeofenceService.IsPointInPolygon(alternativeQuest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
+                        // TODO: Add alternative quest filtering
+                        //if (endpoint.Data?.Quests.Any() ?? false)
+                        //{
+                        //}
                         events.Add(alternativeQuest.GetWebhookData(WebhookHeaders.AlternativeQuest));
                     }
                 }
@@ -568,6 +599,11 @@
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
                             if (!GeofenceService.IsPointInPolygon(gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                                continue;
+                        }
+                        if (endpoint.Data?.GymTeamIds.Any() ?? false)
+                        {
+                            if (endpoint.Data.GymTeamIds.Contains((ushort)gym.Team))
                                 continue;
                         }
                         events.Add(gym.GetWebhookData(WebhookHeaders.Gym));
@@ -582,6 +618,12 @@
                             if (!GeofenceService.IsPointInPolygon(gymInfo.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
+                        // TODO: Add gym info (gym ids) filtering
+                        //if (endpoint.Data?.GymIds.Any() ?? false)
+                        //{
+                        //    if (endpoint.Data.GymIds.Contains(gymInfo.Id))
+                        //        continue;
+                        //}
                         events.Add(gymInfo.GetWebhookData("gym-info"));
                     }
                 }
@@ -594,6 +636,7 @@
                             if (!GeofenceService.IsPointInPolygon(gymDefender.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
+                        // TODO: Add gym defenders filtering
                         events.Add(gymDefender.Defender.GetWebhookData("gym-defender", gymDefender.Gym));
                     }
                 }
@@ -606,6 +649,7 @@
                             if (!GeofenceService.IsPointInPolygon(gymTrainer.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
+                        // TODO: Add gym trainers filtering
                         events.Add(gymTrainer.Trainer.GetWebhookData("gym-trainer", gymTrainer.Gym));
                     }
                 }
@@ -616,6 +660,11 @@
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
                             if (!GeofenceService.IsPointInPolygon(egg.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                                continue;
+                        }
+                        if (endpoint.Data?.EggLevels.Any() ?? false)
+                        {
+                            if (endpoint.Data.EggLevels.Contains(egg.RaidLevel ?? 0))
                                 continue;
                         }
                         events.Add(egg.GetWebhookData(WebhookHeaders.Egg));
@@ -630,6 +679,11 @@
                             if (!GeofenceService.IsPointInPolygon(raid.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
+                        if (endpoint.Data?.RaidPokemonIds.Any() ?? false)
+                        {
+                            if (endpoint.Data.RaidPokemonIds.Contains(raid.RaidPokemonId ?? 0))
+                                continue;
+                        }
                         events.Add(raid.GetWebhookData(WebhookHeaders.Raid));
                     }
                 }
@@ -640,6 +694,11 @@
                         if ((endpoint.Geofences?.Count ?? 0) > 0)
                         {
                             if (!GeofenceService.IsPointInPolygon(weather.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                                continue;
+                        }
+                        if (endpoint.Data?.WeatherConditionIds.Any() ?? false)
+                        {
+                            if (endpoint.Data.WeatherConditionIds.Contains((ushort)weather.GameplayCondition))
                                 continue;
                         }
                         events.Add(weather.GetWebhookData(WebhookHeaders.Weather));

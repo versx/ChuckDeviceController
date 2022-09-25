@@ -14,7 +14,7 @@
 
         uint Style { get; }
 
-        uint Character { get; }
+        ushort Character { get; }
 
         ulong Updated { get; }
     }

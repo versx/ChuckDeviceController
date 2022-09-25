@@ -49,7 +49,7 @@
         public uint Style { get; set; }
 
         [Column("character")]
-        public uint Character { get; set; }
+        public ushort Character { get; set; }
 
         [Column("updated")]
         public ulong Updated { get; set; }

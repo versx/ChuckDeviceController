@@ -28,7 +28,7 @@
         #region Properties
 
         [Column("lure_id")]
-        public uint LureId { get; set; }
+        public ushort LureId { get; set; }
 
         [Column("lure_expire_timestamp")]
         public ulong? LureExpireTimestamp { get; set; }
@@ -198,7 +198,7 @@
                     fortData.ActiveFortModifier.Contains(Item.TroyDiskRainy))
                 {
                     LureExpireTimestamp = lastModifiedTimestamp + DefaultLureTimeS;
-                    LureId = Convert.ToUInt32(fortData.ActiveFortModifier[0]);
+                    LureId = Convert.ToUInt16(fortData.ActiveFortModifier[0]);
                 }
             }
             LastModifiedTimestamp = lastModifiedTimestamp;

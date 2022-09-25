@@ -12,7 +12,7 @@
 
         string? Url { get; }
 
-        uint LureId { get; }
+        ushort LureId { get; }
 
         ulong? LureExpireTimestamp { get; }
 
