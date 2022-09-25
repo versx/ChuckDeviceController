@@ -12,21 +12,15 @@
 
 <h4>Instance</h4>
 <hr />
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create">
+
+<form asp-action="Create">
+    <div class="row">
+        <div class="col-md-6">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-floating mb-3">
                 <input asp-for="Name" class="form-control" placeholder="Instance name" />
                 <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="AssignedDevices"></label> <small class="text-muted"><i>(optional)</i></small>
-                <select asp-for="AssignedDevices" class="form-control" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))" placeholder="Instance assigned devices">
-                    <option value="">Please select one</option>
-                </select>
-                <span asp-validation-for="AssignedDevices" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()" placeholder="Instance type">
@@ -34,6 +28,7 @@
                 </select>
                 <label asp-for="Type"></label>
                 <span asp-validation-for="Type" class="text-danger"></span>
+                <p id="instance-type-description" class="text-muted"></p>
             </div>
             <div class="form-floating mb-3 custom">
                 <select asp-for="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes))" placeholder="Custom instance type">
@@ -175,12 +170,25 @@
             <div class="checkbox mb-3">
                 <label><input type="checkbox" asp-for="Data.IsEvent"> Is Unique Event</label>
             </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label asp-for="AssignedDevices"></label> <small class="text-muted"><i>(optional)</i></small>
+                <select asp-for="AssignedDevices" class="form-control" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))" placeholder="Instance assigned devices">
+                    <option value="">Please select one</option>
+                </select>
+                <span asp-validation-for="AssignedDevices" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
-        </form>
+        </div>
     </div>
-</div>
+</form>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
@@ -206,6 +214,8 @@ $('#Type').change(function() {
     const instanceTypeId = this.value;
     hideAllElements(instanceTypeId);
     handleInstanceTypeChanged(instanceTypeId);
+
+    setInstanceDescription(parseInt(instanceTypeId));
 });
 
 function hideAllElements(instanceTypeId) {
@@ -273,6 +283,23 @@ function parseGeofencesJson() { // TODO: Pass geofencesJson as param when moved 
         console.error('Failed to parse geofences list:', e);
         return null;
     }
+}
+
+function setInstanceDescription(instanceTypeId) {
+    let description = '';
+    switch (instanceTypeId) {
+        case 0: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.CirclePokemon]"; break;
+        case 1: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.DynamicRoute]"; break;
+        case 2: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.CircleRaid]"; break;
+        case 3: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.SmartRaid]"; break;
+        case 4: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.AutoQuest]"; break;
+        case 5: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.PokemonIV]"; break;
+        case 6: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.Bootstrap]"; break;
+        case 7: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.Leveling]"; break;
+        case 8: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.FindTth]"; break;
+        case 9: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.Custom]"; break;
+    }
+    $('#instance-type-description').text(description);
 }
 </script>
 }
