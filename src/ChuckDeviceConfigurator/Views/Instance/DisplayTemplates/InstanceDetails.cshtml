@@ -50,7 +50,7 @@
         @Html.DisplayNameFor(model => model.Devices)
     </dt>
     <dd class = "col-sm-10">
-        @if ((Model?.Devices?.Count ?? 0) > 0)
+        @if (Model?.Devices?.Any() ?? false)
         {
             <ul class="list-group">
                 @foreach (var device in Model!.Devices)

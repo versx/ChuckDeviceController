@@ -97,6 +97,9 @@
                         @Html.DisplayNameFor(model => model.ApiKeys[0].ExpirationTimestamp)
                     </th>
                     <th>
+                        No. Plugins
+                    </th>
+                    <th>
                         @Html.DisplayNameFor(model => model.ApiKeys[0].IsEnabled)
                     </th>
                     <th width="5%">Action</th>
@@ -117,6 +120,9 @@
                         </td>
                         <td>
                             @(item.ExpirationTimestamp == 0 ? "Never" : item.ExpirationTimestamp.FromSeconds().ToLocalTime())
+                        </td>
+                        <td>
+                            @(Model.Plugins.Count(plugin => plugin.ApiKey.Id == item.Id))
                         </td>
                         <td>
                             @Html.Raw(Utils.FormatBoolean(item.IsEnabled, html: true))

@@ -10,6 +10,7 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.PluginManager;
 
     [Controller]
     [Authorize(Roles = RoleConsts.ApiKeysRole)]
@@ -39,6 +40,10 @@
                 ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
                 return View();
             }
+            var plugins = PluginManager.Instance.Plugins
+                .Where(plugin => plugin.Value.ApiKey.Id == apiKey.Id)
+                .Select(plugin => plugin.Value)
+                .ToList();
             var scope = ((PluginApiKeyScope[])Enum.GetValues(typeof(PluginApiKeyScope)))
                 .Where(scope => scope != PluginApiKeyScope.None)
                 .Select(scope => new ApiKeyScopeViewModel { Scope = scope, Selected = apiKey.Scope?.Contains(scope) ?? false })
@@ -48,9 +53,10 @@
                 Id = apiKey.Id,
                 Name = apiKey.Name,
                 Key = apiKey.Key,
-                Expiration = apiKey.ExpirationTimestamp.FromSeconds(),
+                Expiration = apiKey.ExpirationTimestamp,
                 Scope = scope,
                 IsEnabled = apiKey.IsEnabled,
+                Plugins = plugins,
             };
             return View(model);
         }
@@ -79,16 +85,16 @@
                 if (string.IsNullOrEmpty(model?.Name))
                 {
                     // TODO: Error
-                    return View();
+                    return View(model);
                 }
 
                 var scope = model.Scope
                     .Where(scope => scope.Selected)
                     .Select(scope => scope.Scope)
                     .ToList();
-                var seconds = model.Expiration.Ticks == 0
+                var seconds = model.Expiration == 0
                     ? 0
-                    : model.Expiration.ToTotalSeconds();
+                    : model.Expiration;
                 var pluginApiKey = _apiKeyManager.GenerateApiKey();
                 var apiKey = new ApiKey
                 {
@@ -129,7 +135,7 @@
                 Id = apiKey.Id,
                 Name = apiKey.Name,
                 Key = apiKey.Key,
-                Expiration = apiKey.ExpirationTimestamp.FromSeconds(),
+                Expiration = apiKey.ExpirationTimestamp,
                 Scope = scope,
                 IsEnabled = apiKey.IsEnabled,
             };
@@ -148,15 +154,15 @@
                 {
                     // Failed to retrieve API key from database, does it exist?
                     ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
-                    return View();
+                    return View(model);
                 }
                 var scope = model.Scope
                     .Where(scope => scope.Selected)
                     .Select(scope => scope.Scope)
                     .ToList();
-                var seconds = model.Expiration.Ticks == 0
+                var seconds = model.Expiration == 0
                     ? 0
-                    : model.Expiration.ToTotalSeconds();
+                    : model.Expiration;
 
                 apiKey.Name = model?.Name ?? string.Empty;
                 apiKey.ExpirationTimestamp = seconds;
@@ -171,7 +177,7 @@
             catch
             {
                 ModelState.AddModelError("ApiKey", $"Unknown error occurred while editing API key '{id}'.");
-                return View();
+                return View(model);
             }
         }
 
@@ -185,6 +191,10 @@
                 ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
                 return View();
             }
+            var plugins = PluginManager.Instance.Plugins
+                .Where(plugin => plugin.Value.ApiKey.Id == apiKey.Id)
+                .Select(plugin => plugin.Value)
+                .ToList();
             var scope = ((PluginApiKeyScope[])Enum.GetValues(typeof(PluginApiKeyScope)))
                 .Where(scope => scope != PluginApiKeyScope.None)
                 .Select(scope => new ApiKeyScopeViewModel { Scope = scope, Selected = apiKey.Scope?.Contains(scope) ?? false })
@@ -194,9 +204,10 @@
                 Id = apiKey.Id,
                 Name = apiKey.Name,
                 Key = apiKey.Key,
-                Expiration = apiKey.ExpirationTimestamp.FromSeconds(),
+                Expiration = apiKey.ExpirationTimestamp,
                 Scope = scope,
                 IsEnabled = apiKey.IsEnabled,
+                Plugins = plugins,
             };
             return View(model);
         }
