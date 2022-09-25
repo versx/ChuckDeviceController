@@ -166,7 +166,6 @@
             var pluginAssemblies = pluginFinder.LoadPluginAssemblies(pluginFinderResults);
             foreach (var result in pluginAssemblies)
             {
-                // TODO: New service collection for each plugin?
                 // TODO: Register sharedServiceHosts with new service collection if so
                 //var serviceCollection = new ServiceCollection();
                 if (result.Assembly == null)

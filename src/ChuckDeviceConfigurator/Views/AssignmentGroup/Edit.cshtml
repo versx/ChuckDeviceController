@@ -21,10 +21,10 @@
                 <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-floating mb-3">
+            <div class="form-group mb-3">
+                <label asp-for="AssignmentIds"></label>
                 <select asp-for="AssignmentIds" class="form-control" asp-items="@(ViewBag.Assignments)" placeholder="Assignment group assignments">
                 </select>
-                <label asp-for="AssignmentIds"></label>
                 <span asp-validation-for="AssignmentIds" class="text-danger"></span>
             </div>
             <div class="form-group">

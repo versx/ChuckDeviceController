@@ -81,7 +81,6 @@
                 return;
             }
 
-            // TODO: Remove or disable API key
             _context.ApiKeys.Remove(entity);
             await _context.SaveChangesAsync();
         }

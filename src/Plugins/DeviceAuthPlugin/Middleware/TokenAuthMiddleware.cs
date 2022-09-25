@@ -8,8 +8,7 @@
 
     public sealed class TokenAuthMiddleware
     {
-        // TODO: Make 'AffectedRoutes' configurable
-        private static readonly IEnumerable<string> AffectedRoutes = new List<string>
+        private static readonly IEnumerable<string> AffectedRoutes = new[]
         {
             "/controller",
             "/controler",

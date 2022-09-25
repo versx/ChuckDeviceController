@@ -65,7 +65,7 @@
             <div class="form-group mb-3">
                 <label asp-for="Geofences"></label>
                 <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))" placeholder="Instance geofences">
-                    <option value="">Please select one</option>
+                    <option value="">Please select one or more</option>
                 </select>
                 <span asp-validation-for="Geofences" class="text-danger"></span>
             </div>

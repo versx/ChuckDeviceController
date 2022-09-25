@@ -80,7 +80,7 @@ const getScreenshot = (ipAddr) => {
     fetch(url)
         .then(response => response.blob())
         .then(response => {
-            console.log('response:', response);
+            //console.log('response:', response);
             if (response) {
                 const imageObjectUrl = URL.createObjectURL(response);
                 const imgEl = document.getElementById('screenshot');
