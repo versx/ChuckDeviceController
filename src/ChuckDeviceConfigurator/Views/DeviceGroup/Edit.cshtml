@@ -21,10 +21,10 @@
                 <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-floating mb-3">
+            <div class="form-group mb-3">
+                <label asp-for="DeviceUuids"></label>
                 <select asp-for="DeviceUuids" class="form-control" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))" placeholder="Device group devices">
                 </select>
-                <label asp-for="DeviceUuids"></label>
                 <span asp-validation-for="DeviceUuids" class="text-danger"></span>
             </div>
             <br />

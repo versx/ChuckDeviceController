@@ -18,21 +18,21 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-floating mb-3">
                 <select id="DeviceUuid" name="DeviceUuid" class="form-control" asp-items="@(ViewBag.Devices)" placeholder="Assignment device UUID">
-                    <option value="">Please select one</option>
+                    <option value="" disabled>Please select one</option>
                 </select>
                 <label asp-for="DeviceUuid"></label>
                 <span asp-validation-for="DeviceUuid" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <select asp-for="SourceInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Assignment source instance">
-                    <option value="">Please select one</option>
+                    <option value="" disabled>Please select one</option>
                 </select>
                 <label asp-for="SourceInstanceName"></label>
                 <span asp-validation-for="SourceInstanceName" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Assignment instance">
-                    <option value="">Please select one</option>
+                    <option value="" disabled>Please select one</option>
                 </select>
                 <label asp-for="InstanceName"></label>
                 <span asp-validation-for="InstanceName" class="text-danger"></span>
