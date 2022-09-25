@@ -51,13 +51,16 @@
             <div class="checkbox mb-3">
                 <label><input type="checkbox" asp-for="Enabled" checked> Enable Webhook Endpoint</label>
             </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
         </div>
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Blacklisted Data</div>
                 <div class="card-body">
                     <div class="form-group mb-3 pokemon">
-                        <label asp-for="Data.PokemonIds"></label> <small class="text-muted">(i.e. 1_f123_c11_g1)</small>
+                        <label asp-for="Data.PokemonIds"></label> <small class="text-muted"><i>(i.e. 1_f123_c11_g1)</i></small>
                         <textarea asp-for="Data.PokemonIds" class="form-control"></textarea>
                     </div>
                     <div class="form-group mb-3 pokestops">
@@ -65,7 +68,7 @@
                         <textarea asp-for="Data.PokestopIds" class="form-control"></textarea>
                     </div>
                     <div class="form-group mb-3 raids">
-                        <label asp-for="Data.RaidPokemonIds"></label> <small class="text-muted">(i.e. 1_f123_c11_g1)</small>
+                        <label asp-for="Data.RaidPokemonIds"></label> <small class="text-muted"><i>(i.e. 150_f123_c11_g1)</i></small>
                         <textarea asp-for="Data.RaidPokemonIds" class="form-control"></textarea>
                     </div>
                     <div class="form-group mb-3 eggs">
@@ -118,13 +121,6 @@
                         <span asp-validation-for="Data.WeatherConditionIds" class="text-danger"></span>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </div>
     </div>

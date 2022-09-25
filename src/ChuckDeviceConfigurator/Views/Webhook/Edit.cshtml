@@ -59,13 +59,16 @@
             <div class="checkbox mb-3">
                 <label><input type="checkbox" asp-for="Enabled"> Enable Webhook Endpoint</label>
             </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
         </div>
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Blacklisted Data</div>
                 <div class="card-body">
                     <div class="form-group mb-3 pokemon">
-                        <label asp-for="Data.PokemonIds"></label> <small class="text-muted">(i.e. 1_f123_c11_g1)</small>
+                        <label asp-for="Data.PokemonIds"></label> <small class="text-muted"><i>(i.e. 1_f123_c11_g1)</i></small>
                         <textarea id="Data.PokemonIds" name="Data.PokemonIds" class="form-control">@(string.Join("\n", Model?.Data?.PokemonIds ?? new()))</textarea>
                         <span asp-validation-for="Data.PokemonIds" class="text-danger"></span>
                     </div>
@@ -75,7 +78,7 @@
                         <span asp-validation-for="Data.PokestopIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 raids">
-                        <label asp-for="Data.RaidPokemonIds"></label> <small class="text-muted">(i.e. 150_f123_c11_g1)</small>
+                        <label asp-for="Data.RaidPokemonIds"></label> <small class="text-muted"><i>(i.e. 150_f123_c11_g1)</i></small>
                         <textarea id="Data.RaidPokemonIds" name="Data.RaidPokemonIds" class="form-control">@(string.Join("\n", Model?.Data?.RaidPokemonIds ?? new()))</textarea>
                         <span asp-validation-for="Data.RaidPokemonIds" class="text-danger"></span>
                     </div>
@@ -129,13 +132,6 @@
                         <span asp-validation-for="Data.WeatherConditionIds" class="text-danger"></span>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </div>
     </div>

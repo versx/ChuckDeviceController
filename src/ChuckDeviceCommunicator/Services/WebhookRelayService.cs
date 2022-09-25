@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceCommunicator.Services
 {
+    using System.Text;
     using System.Timers;
 
     using Microsoft.Extensions.Options;
@@ -503,8 +504,13 @@
                         }
                         if (endpoint.Data?.PokemonIds.Any() ?? false)
                         {
-                            // TODO: Add support for pokemon id, form id, costume id, and gender
-                            if (endpoint.Data.PokemonIds.Contains(pokemon.PokemonId.ToString()))
+                            if (IsPokemonBlacklisted(
+                                pokemon.PokemonId,
+                                pokemon.Form,
+                                pokemon.Costume,
+                                pokemon.Gender,
+                                endpoint.Data.PokemonIds
+                            ))
                                 continue;
                         }
                         events.Add(pokemon.GetWebhookData(WebhookHeaders.Pokemon));
@@ -681,8 +687,13 @@
                         }
                         if (endpoint.Data?.RaidPokemonIds.Any() ?? false)
                         {
-                            // TODO: Add support for pokemon id, form id, costume id, and gender
-                            if (endpoint.Data.RaidPokemonIds.Contains((raid.RaidPokemonId ?? 0).ToString()))
+                            if (IsPokemonBlacklisted(
+                                raid.RaidPokemonId,
+                                raid.RaidPokemonForm,
+                                raid.RaidPokemonCostume,
+                                raid.RaidPokemonGender,
+                                endpoint.Data.PokemonIds
+                            ))
                                 continue;
                         }
                         events.Add(raid.GetWebhookData(WebhookHeaders.Raid));
@@ -796,6 +807,30 @@
             {
                 _logger.LogError($"Error: {ex}");
             }
+        }
+
+        private static bool IsPokemonBlacklisted(uint? pokemonId, uint? formId, uint? costumeId, ushort? genderId, List<string> blacklisted)
+        {
+            if (blacklisted == null || blacklisted.Count == 0)
+                return false;
+
+            var sb = new StringBuilder();
+            sb.Append($"{pokemonId}");
+            if (formId > 0)
+            {
+                sb.Append($"_f{formId}");
+            }
+            if (costumeId > 0)
+            {
+                sb.Append($"_c{costumeId}");
+            }
+            if (genderId > 0)
+            {
+                sb.Append($"_g{genderId}");
+            }
+            var key = sb.ToString();
+            var matches = blacklisted.Contains(key);
+            return matches;
         }
 
         #endregion
