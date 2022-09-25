@@ -17,6 +17,8 @@
 
         #region Variables
 
+        private static readonly ILogger<IApiKeyManagerService> _logger =
+            new Logger<IApiKeyManagerService>(LoggerFactory.Create(x => x.AddConsole()));
         private readonly ControllerDbContext _context;
 
         #endregion
@@ -72,10 +74,10 @@
 
         public async Task InvalidateKey(string apiKey)
         {
-            var entity = _context.ApiKeys.FirstOrDefault(key => key.Equals(apiKey));
+            var entity = _context.ApiKeys.FirstOrDefault(key => key.Key!.Equals(apiKey));
             if (entity == null)
             {
-                // TODO: Error unable to find key
+                _logger.LogError($"Unable to validate API key '{apiKey}', it does not exist.");
                 return;
             }
 

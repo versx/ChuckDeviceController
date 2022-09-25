@@ -84,7 +84,7 @@
             {
                 if (string.IsNullOrEmpty(model?.Name))
                 {
-                    // TODO: Error
+                    ModelState.AddModelError("ApiKey", $"Failed to create API key, descriptive name is not set.");
                     return View(model);
                 }
 
