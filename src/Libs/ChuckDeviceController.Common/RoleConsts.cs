@@ -6,6 +6,8 @@
 
         public const string AccountsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Accounts)}";
 
+        public const string ApiKeysRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.ApiKeys)}";
+
         public const string AssignmentsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Assignments)}";
 
         public const string AssignmentGroupsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.AssignmentGroups)}";

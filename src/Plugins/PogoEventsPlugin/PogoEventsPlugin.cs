@@ -11,6 +11,7 @@ namespace PogoEventsPlugin
     // TODO: Integrate with main application, allow setting active event to adjust IV lists and such
     // TODO: Check for changes, when new events found send Discord message. (i.e. impl PogoEventsWatcher logic)
 
+    [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class PogoEventsPlugin : IPlugin
     {

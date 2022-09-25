@@ -216,6 +216,7 @@
             {
                 new("Home", "Home", displayIndex: 0, icon: "fa-solid fa-fw fa-house"),
                 new("Accounts", "Account", displayIndex: 1, icon: "fa-solid fa-fw fa-user"),
+                //new("API Keys", "ApiKey", displayIndex: 2, icon: "fa-solid fa-fw fa-key"),
                 new("Devices", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<SidebarItem>
                 {
                     new("Devices", "Device", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-layer-group"),

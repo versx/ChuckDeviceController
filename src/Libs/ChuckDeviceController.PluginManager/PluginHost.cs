@@ -3,6 +3,7 @@
     using Microsoft.Extensions.DependencyInjection;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Services.Finder;
@@ -14,7 +15,7 @@
 
         public IPlugin Plugin { get; }
 
-        public PluginPermissionsOptions PermissionsOptions { get; }
+        public IApiKey ApiKey { get; }
 
         public PluginState State { get; private set; }
 
@@ -30,8 +31,9 @@
 
         #region Constructors
 
-        public PluginHost(IPlugin plugin,
-            PluginPermissionsOptions permissionOptions,
+        public PluginHost(
+            IPlugin plugin,
+            IApiKey apiKey,
             IAssemblyShim assembly,
             IPluginAssemblyLoadContext loadContext,
             IEnumerable<ServiceDescriptor> pluginServices,
@@ -39,17 +41,12 @@
             PluginState state = PluginState.Unset)
         {
             Plugin = plugin;
-            PermissionsOptions = permissionOptions;
+            ApiKey = apiKey;
             LoadContext = loadContext;
             Assembly = assembly;
             PluginServices = pluginServices;
             EventHandlers = eventHandlers;
             State = state;
-
-            if (permissionOptions.AcceptedPermissionsPolicy == PluginAcceptedPermissionsPolicy.AcceptAllAutomatically)
-            {
-                AcceptPermissions(PermissionsOptions.RequestedPermissions);
-            }
         }
 
         #endregion
@@ -72,7 +69,6 @@
 
         public void SetState(PluginState state, bool ignoreEvent = false)
         {
-            var test = PermissionsOptions.AllowedPermissions |= PluginPermissions.WriteDatabase;
             State = state;
 
             if (!ignoreEvent)
@@ -82,19 +78,10 @@
             }
         }
 
-        public void AcceptPermissions(PluginPermissions acceptedPermissions)
-        {
-            PermissionsOptions.Accept(acceptedPermissions);
-        }
-
-        public void RevokePermissions(PluginPermissions revokePermissions)
-        {
-            PermissionsOptions.Revoke(revokePermissions);
-        }
-
         #endregion
     }
 
+    /*
     public class PluginPermissionsOptions
     {
         public PluginPermissions RequestedPermissions { get; }
@@ -142,4 +129,5 @@
         AcceptSpecific,
         AcceptAllAutomatically,
     }
+    */
 }

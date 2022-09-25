@@ -155,10 +155,10 @@
             return services;
         }
 
-        public static PluginPermissions GetPluginPermissions(this Type pluginType)
+        public static string? GetPluginApiKey(this Type pluginType)
         {
-            var attr = pluginType.GetCustomAttribute<PluginPermissionsAttribute>();
-            return attr?.Permissions ?? PluginPermissions.None;
+            var attr = pluginType.GetCustomAttribute<PluginApiKeyAttribute>();
+            return attr?.ApiKey;
         }
 
         public static object[]? GetConstructorArgs(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)

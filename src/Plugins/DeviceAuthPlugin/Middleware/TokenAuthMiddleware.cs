@@ -42,7 +42,13 @@
                 return;
             }
 
-            var token = context.Request.Headers[HttpRequestHeader.Authorization.ToString()];
+            // Extract 'Authorization' header to get device auth token
+            if (!context.Request.Headers.TryGetValue(HttpRequestHeader.Authorization.ToString(), out var header))
+            {
+                return;
+            }
+
+            var token = Convert.ToString(header);
             if (!Options.Tokens.Contains(token))
             {
                 return;

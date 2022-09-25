@@ -51,14 +51,14 @@
     <div class="card">
         <div class="card-header"><b>User Permissions</b></div>
         <div class="card-body">
-            @foreach (var role in Model!.Roles)
+            @for (var i = 0; i < Model?.Roles.Count; i++)
             {
                 <div class="form-check">
-                    <input type="hidden" asp-for="@role.RoleId" />
-                    <input type="hidden" asp-for="@role.RoleName" />
-                    <input asp-for="@role.Selected" class="form-check-input" />
-                    <label class="form-check-label" asp-for="@role.Selected">
-                        @role.RoleName
+                    <input type="hidden" asp-for="@Model.Roles[i].RoleId" />
+                    <input type="hidden" asp-for="@Model.Roles[i].RoleName" />
+                    <input asp-for="@Model.Roles[i].Selected" class="form-check-input" />
+                    <label class="form-check-label" asp-for="@Model.Roles[i].Selected">
+                        @Model.Roles[i].RoleName
                     </label>
                 </div>
             }

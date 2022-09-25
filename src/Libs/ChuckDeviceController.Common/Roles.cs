@@ -23,6 +23,8 @@
         /// </summary>
         Accounts,
 
+        ApiKeys,
+
         /// <summary>
         /// Access to Assignments management pages.
         /// </summary>

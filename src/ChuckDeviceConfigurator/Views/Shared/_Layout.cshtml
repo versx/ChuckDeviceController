@@ -24,30 +24,30 @@
                     @item.Text
                 </a>
                 <ul class="collapse list-unstyled" id="@(item.Text)Submenu">
-                    @foreach (var dropdownItem in sortedDropdownItems)
+                @foreach (var dropdownItem in sortedDropdownItems)
+                {
+                    var hasMore = dropdownItem.IsDropdown && dropdownItem.DropdownItems?.Count() > 0;
+                    if (hasMore)
                     {
-                        var hasMore = dropdownItem.IsDropdown && dropdownItem.DropdownItems?.Count() > 0;
-                        if (hasMore)
+                        await AddSidebarItem(dropdownItem);
+                    }
+                    else
+                    {
+                        if (dropdownItem.IsSeparator)
                         {
-                            await AddSidebarItem(dropdownItem);
+                            <li><hr class="dropdown-divider"></li>
                         }
                         else
                         {
-                            if (dropdownItem.IsSeparator)
-                            {
-                                <li><hr class="dropdown-divider"></li>
-                            }
-                            else
-                            {
-                                <li class="nav-item">
-                                    <a class="dropdown-item @(dropdownItem.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownItem.ControllerName" asp-action="@dropdownItem.ActionName">
-                                        @Html.Raw(string.IsNullOrEmpty(dropdownItem.Icon) ? "" : $"<i class='{dropdownItem.Icon}'></i>")
-                                        @dropdownItem.Text
-                                    </a>
-                                </li>
-                            }
+                            <li class="nav-item">
+                                <a class="dropdown-item @(dropdownItem.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@dropdownItem.ControllerName" asp-action="@dropdownItem.ActionName">
+                                    @Html.Raw(string.IsNullOrEmpty(dropdownItem.Icon) ? "" : $"<i class='{dropdownItem.Icon}'></i>")
+                                    @dropdownItem.Text
+                                </a>
+                            </li>
                         }
                     }
+                }
                 </ul>
             </li>
         }

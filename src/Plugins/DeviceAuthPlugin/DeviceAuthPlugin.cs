@@ -10,6 +10,7 @@ namespace DeviceAuthPlugin
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
+    [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
     public class DeviceAuthPlugin : IPlugin
     {
         private readonly IConfiguration _config;
@@ -40,13 +41,18 @@ namespace DeviceAuthPlugin
 
         public void Configure(WebApplication appBuilder)
         {
-            if (_config.GetValue<bool>("TokenAuth:Enabled"))
+            var tokenAuthConfig = new TokenAuthConfig();
+            var ipAuthConfig = new IpAuthConfig();
+            _config.GetSection("TokenAuth").Bind(tokenAuthConfig);
+            _config.GetSection("IpAuth").Bind(ipAuthConfig);
+
+            if (tokenAuthConfig.Enabled)
             {
                 // Add device token auth middleware
                 appBuilder.UseTokenAuth();
             }
 
-            if (_config.GetValue<bool>("IpAuth:Enabled"))
+            if (ipAuthConfig.Enabled)
             {
                 // Add device IP address auth middleware
                 appBuilder.UseIpAddressAuth();

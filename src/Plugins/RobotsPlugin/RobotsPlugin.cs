@@ -9,7 +9,7 @@ namespace RobotsPlugin
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
-    [PluginPermissions(PluginPermissions.None)]
+    [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
     [StaticFilesLocation(StaticFilesLocation.External, StaticFilesLocation.External)]
     public class RobotsPlugin : IPlugin
     {

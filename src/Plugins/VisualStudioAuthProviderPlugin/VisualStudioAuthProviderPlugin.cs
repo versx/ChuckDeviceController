@@ -3,9 +3,11 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
 
+    using ChuckDeviceController.Common.Configuration;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
+    [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
     public class VisualStudioAuthProviderPlugin : IPlugin
     {
         #region Variables
@@ -43,16 +45,17 @@
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var config = new OpenAuthConfig();
+            _config.GetSection("VisualStudio").Bind(config);
+
             var authBuilder = services.AddAuthentication();
 
             if (_config.GetValue<bool>("VisualStudio:Enabled"))
             {
-                var clientId = _config.GetValue<string>("VisualStudio:ClientId");
-                var clientSecret = _config.GetValue<string>("VisualStudio:ClientSecret");
                 authBuilder.AddVisualStudio(options =>
                 {
-                    options.ClientId = clientId!;
-                    options.ClientSecret = clientSecret!;
+                    options.ClientId = config.ClientId!;
+                    options.ClientSecret = config.ClientSecret!;
                     //options.Scope("");
                 });
             }

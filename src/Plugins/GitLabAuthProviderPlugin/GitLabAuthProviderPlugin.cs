@@ -3,9 +3,11 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
 
+    using ChuckDeviceController.Common.Configuration;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
+    [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
     public class GitLabAuthProviderPlugin : IPlugin
     {
         #region Variables
@@ -43,16 +45,17 @@
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var config = new OpenAuthConfig();
+            _config.GetSection("GitLab").Bind(config);
+
             var authBuilder = services.AddAuthentication();
 
-            if (_config.GetValue<bool>("GitLab:Enabled"))
+            if (config.Enabled)
             {
-                var clientId = _config.GetValue<string>("GitLab:ClientId");
-                var clientSecret = _config.GetValue<string>("GitLab:ClientSecret");
                 authBuilder.AddGitLab(options =>
                 {
-                    options.ClientId = clientId!;
-                    options.ClientSecret = clientSecret!;
+                    options.ClientId = config.ClientId!;
+                    options.ClientSecret = config.ClientSecret!;
                     //options.Scope("");
                 });
             }

@@ -16,6 +16,7 @@ using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.Net.Mail;
+using ChuckDeviceConfigurator.Services.Plugins;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService.Publishers;
@@ -182,6 +183,7 @@ builder.Services.AddRazorPages(); // <- Required for plugins to render Razor pag
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();
+
 builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
 {
     using var scope = factory.CreateScope();
@@ -205,6 +207,8 @@ builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 //builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
+
+builder.Services.AddScoped<IApiKeyManagerService, ApiKeyManagerService>();
 
 builder.Services.AddGrpc(options =>
 {
@@ -274,6 +278,15 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IEventAggregatorHost), eventAggregatorHost },
 };
 
+// TODO: Retrieve api keys upon change
+var apiKeys = new List<ApiKey>();
+var controllerContext = builder.Services.GetService<IDbContextFactory<ControllerDbContext>>();
+if (controllerContext != null)
+{
+    using var context = controllerContext.CreateDbContext();
+    apiKeys = context.ApiKeys.ToList();
+}
+
 // Instantiate 'IPluginManager' singleton with configurable options
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 {
@@ -285,7 +298,7 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 
 // Find plugins, register plugin services, load plugin assemblies,
 // call OnLoad callback and register with 'IPluginManager' cache
-await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment);
+await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, apiKeys);
 
 #endregion
 

@@ -1,54 +1,43 @@
-﻿namespace ChuckDeviceController.Plugin
+﻿namespace ChuckDeviceController.Common.Data
 {
-    /// <summary>
-    /// Enumeration of available permissions a plugin can request.
-    /// </summary>
-    [Flags]
-    public enum PluginPermissions : byte
+    using System.Text.Json.Serialization;
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum PluginApiKeyScope
     {
         /// <summary>
         /// No extra permissions
         /// </summary>
-        None = 0x0,
+        None,
 
         /// <summary>
         /// Read database entities
         /// </summary>
-        ReadDatabase = 0x1,
+        ReadDatabase,
 
         /// <summary>
         /// Write database entities
         /// </summary>
-        WriteDatabase = 0x2,
-        
+        WriteDatabase,
+
         /// <summary>
         /// Delete database entities (NOTE: Should probably remove since Delete == Write essentially but would be nice to separate it)
         /// </summary>
-        DeleteDatabase = 0x4,
+        DeleteDatabase,
 
         /// <summary>
         /// Add new ASP.NET Mvc controller routes
         /// </summary>
-        AddControllers = 0x8,
+        AddControllers,
 
         /// <summary>
         /// Add new job controller instances for devices
         /// </summary>
-        AddJobControllers = 0x10,
+        AddJobControllers,
 
         /// <summary>
         /// Add new instances
         /// </summary>
-        AddInstances = 0x20,
-
-        /// <summary>
-        /// All available permissions
-        /// </summary>
-        All = ReadDatabase |
-              WriteDatabase |
-              DeleteDatabase |
-              AddControllers |
-              AddJobControllers |
-              AddInstances,
+        AddInstances,
     }
 }

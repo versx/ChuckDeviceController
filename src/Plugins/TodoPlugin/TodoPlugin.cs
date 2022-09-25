@@ -9,6 +9,7 @@ namespace TodoPlugin
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
+    [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class TodoPlugin : IPlugin
     {

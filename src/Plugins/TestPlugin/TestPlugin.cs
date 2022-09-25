@@ -30,15 +30,11 @@
     ///     of the plugin system and how it works.
     /// </summary>
     [
-        // Specifies the permissions the plugin will require to the host application
-        PluginPermissions(PluginPermissions.ReadDatabase |
-                          PluginPermissions.WriteDatabase |
-                          PluginPermissions.DeleteDatabase |
-                          PluginPermissions.AddControllers |
-                          PluginPermissions.AddJobControllers),
         // Specifies where the 'wwwroot' folder will be if any are used or needed.
         // Possible options: embedded resources, local/external, or none.
         StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External),
+        // Specify the plugin API key to authorize with the host application.
+        PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT"),
     ]
     public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents, ISettingsPropertyEvents
     {

@@ -16,7 +16,7 @@ namespace ChuckDeviceConfigurator.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.7")
+                .HasAnnotation("ProductVersion", "6.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Account", b =>
@@ -107,6 +107,43 @@ namespace ChuckDeviceConfigurator.Migrations
                     b.ToTable("account");
                 });
 
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.ApiKey", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<ulong>("ExpirationTimestamp")
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("expiration_timestamp");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("enabled");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("key");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("scope");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpirationTimestamp");
+
+                    b.ToTable("api_key");
+                });
+
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Assignment", b =>
                 {
                     b.Property<uint>("Id")
@@ -132,7 +169,7 @@ namespace ChuckDeviceConfigurator.Migrations
 
                     b.Property<string>("InstanceName")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("instance_name");
 
                     b.Property<string>("SourceInstanceName")
@@ -144,6 +181,8 @@ namespace ChuckDeviceConfigurator.Migrations
                         .HasColumnName("time");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InstanceName");
 
                     b.ToTable("assignment");
                 });
