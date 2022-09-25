@@ -31,7 +31,7 @@
         private static readonly Dictionary<string, IPluginHost> _plugins = new();
         private IServiceCollection _services;
         private IWebHostEnvironment _webHostEnv;
-        private IReadOnlyList<IApiKey> _apiKeys;
+        //private IReadOnlyList<IApiKey> _apiKeys;
 
         #endregion
 
@@ -137,7 +137,7 @@
         {
             _services = services;
             _webHostEnv = env;
-            _apiKeys = apiKeys;
+            //_apiKeys = apiKeys;
 
             var rootPluginsDirectory = Options.RootPluginsDirectory;
             var finderOptions = new PluginFinderOptions

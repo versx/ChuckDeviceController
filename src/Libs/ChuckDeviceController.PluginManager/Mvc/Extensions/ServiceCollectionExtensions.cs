@@ -16,6 +16,15 @@
         private const string DefaultViews = "Views";
         private const string DefaultWebRoot = "wwwroot";
 
+        public static T GetService<T>(this ServiceProvider serviceProvider) where T : notnull
+        {
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            var provider = scope.ServiceProvider;
+            var service = provider.GetRequiredService<T>();
+            return service;
+        }
+
         public static T GetService<T>(this IServiceCollection services) where T : notnull
         {
             var scopeFactory = services.BuildServiceProvider()

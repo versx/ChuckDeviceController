@@ -252,11 +252,13 @@ builder.Services.AddSingleton<IRouteHost, RouteGenerator>();
 builder.Services.AddSingleton<IEventAggregatorHost>(eventAggregatorHost);
 builder.Services.AddScoped<IPublisher, PluginPublisher>();
 
-var routeHost = builder.Services.GetService<IRouteHost>();
+// TODO: Do not build service provider from collection manually, leave it up to DI - https://andrewlock.net/access-services-inside-options-and-startup-using-configureoptions/
+var serviceProvider = builder.Services.BuildServiceProvider();
+
+var routeHost = serviceProvider.GetService<IRouteHost>();
 builder.Services.AddSingleton((IRouteGenerator)routeHost);
 
-// TODO: Do not build service provider from collection manually, leave it up to DI - https://andrewlock.net/access-services-inside-options-and-startup-using-configureoptions/
-var jobControllerService = builder.Services.GetService<IJobControllerService>();
+var jobControllerService = serviceProvider.GetService<IJobControllerService>();
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
 builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
 // Load all devices
@@ -278,9 +280,9 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IEventAggregatorHost), eventAggregatorHost },
 };
 
-// TODO: Retrieve api keys upon change
+// TODO: Retrieve and pass/set api keys upon change
 var apiKeys = new List<ApiKey>();
-var controllerContext = builder.Services.GetService<IDbContextFactory<ControllerDbContext>>();
+var controllerContext = serviceProvider.GetService<IDbContextFactory<ControllerDbContext>>();
 if (controllerContext != null)
 {
     using var context = controllerContext.CreateDbContext();
@@ -296,6 +298,10 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
     SharedServiceHosts = sharedServiceHosts,
 });
 
+pluginManager.PluginHostAdded += OnPluginHostAdded;
+pluginManager.PluginHostRemoved += OnPluginHostRemoved;
+pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
+
 // Find plugins, register plugin services, load plugin assemblies,
 // call OnLoad callback and register with 'IPluginManager' cache
 await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, apiKeys);
@@ -305,10 +311,6 @@ await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, apiK
 #region App Builder
 
 var app = builder.Build();
-
-pluginManager.PluginHostAdded += OnPluginHostAdded;
-pluginManager.PluginHostRemoved += OnPluginHostRemoved;
-pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
 
 // Seed default user and roles
 await SeedDefaultDataAsync(app.Services);
@@ -375,60 +377,43 @@ app.Run();
 
 #region Plugin Callback/Event Handlers
 
-void OnPluginHostAdded(object? sender, PluginHostAddedEventArgs e)
+async void OnPluginHostAdded(object? sender, PluginHostAddedEventArgs e)
 {
     logger.LogInformation($"Plugin added successfully: {e.PluginHost.Plugin.Name}");
+    await AddOrUpdatePluginState(e.PluginHost);
 }
 
-void OnPluginHostRemoved(object? sender, PluginHostRemovedEventArgs e)
+async void OnPluginHostRemoved(object? sender, PluginHostRemovedEventArgs e)
 {
     logger.LogInformation($"Plugin removed successfully: {e.PluginHost.Plugin.Name}");
-}
-
-async void OnPluginHostStateChanged(object? sender, PluginHostStateChangedEventArgs e)
-{
-    var serviceProvider = app.Services;
     using (var scope = serviceProvider.CreateScope())
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ControllerDbContext>();
-        var canUpdate = false;
 
         // Get cached plugin state from database
         var dbPlugin = await context.Plugins.FindAsync(e.PluginHost.Plugin.Name);
-        if (dbPlugin != null)
-        {
-            // Plugin host is cached in database, set previous plugin state,
-            // otherwise set state from param
-            if (dbPlugin.State != e.PluginHost.State)
-            {
-                //e.PluginHost.SetState(dbPlugin.State);
-                dbPlugin.State = e.PluginHost.State;
-                context.Plugins.Update(dbPlugin);
+        if (dbPlugin == null)
+            return;
 
-                canUpdate = true;
-            }
-        }
-        else
+        // Plugin host is cached in database, set previous plugin state,
+        // otherwise set state from param
+        if (dbPlugin.State != e.PluginHost.State)
         {
-            // Plugin host is not cached in database. Set current state to plugin
-            // host and add insert into database
-            dbPlugin = new Plugin
-            {
-                Name = e.PluginHost.Plugin.Name,
-                State = e.PluginHost.State,
-            };
-            await context.Plugins.AddAsync(dbPlugin);
+            //e.PluginHost.SetState(dbPlugin.State);
+            dbPlugin.State = e.PluginHost.State;
+            context.Plugins.Remove(dbPlugin);
 
-            canUpdate = true;
-        }
-
-        if (canUpdate)
-        {
             // Save plugin host state to database
             await context.SaveChangesAsync();
         }
     }
+}
+
+async void OnPluginHostStateChanged(object? sender, PluginHostStateChangedEventArgs e)
+{
+    logger.LogInformation($"Plugin state changed: {e.PluginHost.Plugin.Name} from {e.PreviousState} to {e.PluginHost.State}");
+    await AddOrUpdatePluginState(e.PluginHost);
 }
 
 #endregion
@@ -527,6 +512,61 @@ static ILoggingBuilder GetLoggingConfig(LogLevel defaultLogLevel, ILoggingBuilde
     configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
 
     return configure;
+}
+
+async Task AddOrUpdatePluginState(IPluginHost pluginHost)
+{
+    if (serviceProvider == null)
+    {
+        // TODO: Throw error
+        return;
+    }
+
+    using (var scope = serviceProvider.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var context = services.GetRequiredService<ControllerDbContext>();
+        var pluginsToUpsert = new List<Plugin>();
+
+        // Get cached plugin state from database
+        var dbPlugin = await context.Plugins.FindAsync(pluginHost.Plugin.Name);
+        if (dbPlugin != null)
+        {
+            // Plugin host is cached in database, set previous plugin state,
+            // otherwise set state from param
+            if (dbPlugin.State != pluginHost.State)
+            {
+                //e.PluginHost.SetState(dbPlugin.State);
+                dbPlugin.State = pluginHost.State;
+                pluginsToUpsert.Add(dbPlugin);
+            }
+        }
+        else
+        {
+            // Plugin host is not cached in database. Set current state to plugin
+            // host and add insert into database
+            dbPlugin = new Plugin
+            {
+                Name = pluginHost.Plugin.Name,
+                State = pluginHost.State,
+            };
+            pluginsToUpsert.Add(dbPlugin);
+        }
+
+        if (pluginsToUpsert.Any())
+        {
+            // Save/update plugin host state
+            await context.Plugins.BulkUpdateAsync(pluginsToUpsert, options =>
+            {
+                options.AllowDuplicateKeys = false;
+                options.UseTableLock = true;
+                options.OnMergeUpdateInputExpression = p => new
+                {
+                    p.State,
+                };
+            });
+        }
+    }
 }
 
 #endregion

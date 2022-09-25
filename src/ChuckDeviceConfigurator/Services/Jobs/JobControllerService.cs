@@ -21,6 +21,7 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Plugin;
 
     // TODO: Refactor class into separate smaller classes
 
@@ -36,7 +37,7 @@
         private readonly IGeofenceControllerService _geofenceService;
         private readonly IIvListControllerService _ivListService;
         private readonly IAssignmentControllerService _assignmentService;
-        private readonly IRouteGenerator _routeGenerator;
+        private readonly IRouteHost _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
 
         private static readonly Dictionary<string, Device> _devices = new();
@@ -76,7 +77,7 @@
             ITimeZoneService timeZoneService,
             IGeofenceControllerService geofenceService,
             IIvListControllerService ivListService,
-            IRouteGenerator routeGenerator,
+            IRouteHost routeGenerator,
             IRouteCalculator routeCalculator,
             IAssignmentControllerService assignmentService)
         {
@@ -786,7 +787,7 @@
             return jobController;
         }
 
-        private static IJobController CreateBootstrapJobController(Instance instance, List<IMultiPolygon> multiPolygons, IRouteGenerator routeGenerator, IRouteCalculator routeCalculator)
+        private static IJobController CreateBootstrapJobController(Instance instance, List<IMultiPolygon> multiPolygons, IRouteHost routeGenerator, IRouteCalculator routeCalculator)
         {
             var jobController = new BootstrapInstanceController(
                 instance,
@@ -797,7 +798,7 @@
             return jobController;
         }
 
-        private static IJobController CreateDynamicJobController(Instance instance, List<IMultiPolygon> multiPolygons, IRouteGenerator routeGenerator, IRouteCalculator routeCalculator)
+        private static IJobController CreateDynamicJobController(Instance instance, List<IMultiPolygon> multiPolygons, IRouteHost routeGenerator, IRouteCalculator routeCalculator)
         {
             var jobController = new DynamicRouteInstanceController(
                 instance,
