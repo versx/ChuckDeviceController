@@ -29,7 +29,7 @@
         @Html.DisplayNameFor(model => model.Geofences)
     </dt>
     <dd class = "col-sm-10">
-        @(string.Join(", ", Model?.Geofences ?? new()))
+        @((Model?.Geofences?.Any() ?? false) ? string.Join(", ", Model?.Geofences ?? new()) : "Any")
     </dd>
     <dt class = "col-sm-2">
         @Html.DisplayNameFor(model => model.Enabled)
