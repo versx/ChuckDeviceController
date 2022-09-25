@@ -123,8 +123,6 @@
                 {
                     // Call 'Configure(IApplicationBuilder)' event handler for each plugin
                     plugin.Plugin.Configure(app);
-
-                    // TODO: Call Plugin.OnLoad() here instead of from ServiceCollectionExtensions
                 }
                 catch (Exception ex)
                 {
