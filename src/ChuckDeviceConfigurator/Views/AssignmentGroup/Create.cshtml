@@ -24,7 +24,7 @@
             <div class="form-group mb-3">
                 <label asp-for="AssignmentIds"></label>
                 <select asp-for="AssignmentIds" class="form-control" asp-items="@(ViewBag.Assignments)" placeholder="Assignment group assignments">
-                    <option value="" disabled>Please select one or more</option>
+                    <option value="" disabled selected>Please select one or more</option>
                 </select>
                 <span asp-validation-for="AssignmentIds" class="text-danger"></span>
             </div>

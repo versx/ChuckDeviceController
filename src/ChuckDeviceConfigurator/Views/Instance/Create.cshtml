@@ -24,7 +24,7 @@
             </div>
             <div class="form-floating mb-3">
                 <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()" placeholder="Instance type">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="Type"></label>
                 <span asp-validation-for="Type" class="text-danger"></span>
@@ -32,14 +32,14 @@
             </div>
             <div class="form-floating mb-3 custom">
                 <select asp-for="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes))" placeholder="Custom instance type">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="Data.CustomInstanceType"></label>
                 <span asp-validation-for="Data.CustomInstanceType" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3 circle_route">
                 <select asp-for="Data.CircleRouteType" class="form-control" asp-items="Html.GetEnumSelectList<CircleInstanceRouteType>()" placeholder="Instance circle route type">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="Data.CircleRouteType"></label>
                 <span asp-validation-for="Data.CircleRouteType" class="text-danger"></span>
@@ -65,13 +65,13 @@
             <div class="form-group mb-3">
                 <label asp-for="Geofences"></label>
                 <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))" placeholder="Instance geofences">
-                    <option value="" disabled>Please select one or more</option>
+                    <option value="" disabled selected>Please select one or more</option>
                 </select>
                 <span asp-validation-for="Geofences" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3 pokemon_iv">
                 <select asp-for="Data.IvList" class="form-control" asp-items="@(new SelectList(ViewBag.IvLists, "Name", "Name"))" placeholder="Instance IV list">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="Data.IvList"></label>
                 <span asp-validation-for="Data.IvList" class="text-danger"></span>
@@ -86,7 +86,7 @@
             </div>
             <div class="form-floating mb-3 bootstrap">
                 <select asp-for="Data.BootstrapCompleteInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Bootstrap instance name">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="Data.BootstrapCompleteInstanceName"></label>
                 <span asp-validation-for="Data.BootstrapCompleteInstanceName" class="text-danger"></span>
@@ -98,7 +98,7 @@
             </div>
             <div class="form-floating mb-3 quests">
                 <select asp-for="Data.QuestMode" class="form-control" asp-items="Html.GetEnumSelectList<QuestMode>()" placeholder="Instance quest mode">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="Data.QuestMode"></label>
                 <span asp-validation-for="Data.QuestMode" class="text-danger"></span>
@@ -120,7 +120,7 @@
             </div>
             <div class="form-floating mb-3 quests">
                 <select asp-for="Data.TimeZone" class="form-control" asp-items="@(new SelectList(ViewBag.TimeZones, "Name", "Name"))" placeholder="Instance time zone">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="Data.TimeZone"></label>
                 <span asp-validation-for="Data.TimeZone" class="text-danger"></span>
@@ -175,7 +175,7 @@
             <div class="form-group mb-3">
                 <label asp-for="AssignedDevices"></label> <small class="text-muted"><i>(optional)</i></small>
                 <select asp-for="AssignedDevices" class="form-control" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))" placeholder="Instance assigned devices">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <span asp-validation-for="AssignedDevices" class="text-danger"></span>
             </div>

@@ -24,7 +24,7 @@
             <div class="form-group mb-3">
                 <label asp-for="DeviceUuids" class="control-label"></label>
                 <select asp-for="DeviceUuids" class="form-control" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))">
-                    <option value="" disabled>Please select one or more</option>
+                    <option value="" disabled selected>Please select one or more</option>
                 </select>
                 <span asp-validation-for="DeviceUuids" class="text-danger"></span>
             </div>

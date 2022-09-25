@@ -55,7 +55,7 @@
                     <div class="form-group">
                         <label class="control-label">@property.Text</label>
                         <select id="@property.Name" name="@property.Name" class="@property.Class" style="@property.Style">
-                            <option value="" disabled>Please select one</option>
+                            <option value="" disabled selected>Please select one</option>
                             @foreach (var item in items)
                             {
                                 var settingsValue = Model.Get<string>(property.Name, property.DefaultValue);
