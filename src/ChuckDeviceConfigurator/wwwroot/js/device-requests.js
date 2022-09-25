@@ -80,7 +80,7 @@ const getScreenshot = (ipAddr) => {
     fetch(url)
         .then(response => response.blob())
         .then(response => {
-            //console.log('response:', response);
+            console.log('response:', response);
             if (response) {
                 const imageObjectUrl = URL.createObjectURL(response);
                 const imgEl = document.getElementById('screenshot');
@@ -88,11 +88,9 @@ const getScreenshot = (ipAddr) => {
                 if (imgEl.classList.contains('d-none')) {
                     imgEl.classList.remove('d-none');
                 }
-                statusAlertEl.innerHTML += successAlert.replace('[PLACE_HOLDER]', `<strong>Success!</strong> Screenshot retrieved from device at IP address ${ipAddr}!`);
             } else {
                 statusAlertEl.innerHTML += errorAlert.replace('[PLACE_HOLDER]', `<strong>Error!</strong> ${response.statusText}`);
             }
-            // TODO: Consider only showing alert if warn/error not success, since the image showing/updating would be the visual cue
         })
         .catch(err => {
             console.error('getScreenshot:', err);
