@@ -19,11 +19,11 @@
 
     public interface IWebhookData
     {
-        List<uint> PokemonIds { get; }
+        List<string> PokemonIds { get; }
 
         List<string> PokestopIds { get; }
 
-        List<uint> RaidPokemonIds { get; }
+        List<string> RaidPokemonIds { get; }
 
         List<ushort> EggLevels { get; }
 

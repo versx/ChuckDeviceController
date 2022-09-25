@@ -55,8 +55,9 @@
         // GET: WebhookController/Create
         public ActionResult Create()
         {
-            var geofences = _context.Geofences.Where(geofence => geofence.Type == GeofenceType.Geofence)
-                                              .ToList();
+            var geofences = _context.Geofences
+                .Where(geofence => geofence.Type == GeofenceType.Geofence)
+                .ToList();
             ViewBag.Geofences = geofences;
             ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
             return View();
@@ -76,6 +77,26 @@
                     return View(model);
                 }
 
+                var pokemonIds = (model.Data?.PokemonIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var pokestopIds = (model.Data?.PokestopIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var raidPokemonIds = (model.Data?.RaidPokemonIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var gymIds = (model.Data?.GymIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
                 var geofences = model.Geofences.Where(geofence => !string.IsNullOrEmpty(geofence));
                 var webhook = new Webhook
                 {
@@ -87,12 +108,13 @@
                     Enabled = model.Enabled,
                     Data = new WebhookData
                     {
-                        PokemonIds = model.Data?.PokemonIds ?? new(),
-                        PokestopIds = model.Data?.PokestopIds ?? new(),
-                        RaidPokemonIds = model.Data?.RaidPokemonIds ?? new(),
+                        PokemonIds = pokemonIds ?? new(),
+                        PokestopIds = pokestopIds ?? new(),
+                        RaidPokemonIds = raidPokemonIds ?? new(),
                         LureIds = model.Data?.LureIds ?? new(),
                         EggLevels = model.Data?.EggLevels ?? new(),
                         GymTeamIds = model.Data?.GymTeamIds ?? new(),
+                        GymIds = gymIds ?? new(),
                         InvasionIds = model.Data?.InvasionIds ?? new(),
                         WeatherConditionIds = model.Data?.WeatherConditionIds ?? new(),
                     },
@@ -143,9 +165,29 @@
                 {
                     // Failed to retrieve webhook from database, does it exist?
                     ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
-                    return View(webhook);
+                    return View(model);
                 }
 
+                var pokemonIds = (model.Data?.PokemonIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var pokestopIds = (model.Data?.PokestopIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var raidPokemonIds = (model.Data?.RaidPokemonIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var gymIds = (model.Data?.GymIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
                 var geofences = model.Geofences.Where(geofence => !string.IsNullOrEmpty(geofence));
                 webhook.Name = model.Name;
                 webhook.Url = model.Url;
@@ -155,12 +197,13 @@
                 webhook.Enabled = model.Enabled;
                 webhook.Data = new WebhookData
                 {
-                    PokemonIds = model.Data?.PokemonIds ?? new(),
-                    PokestopIds = model.Data?.PokestopIds ?? new(),
-                    RaidPokemonIds = model.Data?.RaidPokemonIds ?? new(),
+                    PokemonIds = pokemonIds ?? new(),
+                    PokestopIds = pokestopIds ?? new(),
+                    RaidPokemonIds = raidPokemonIds ?? new(),
                     LureIds = model.Data?.LureIds ?? new(),
                     EggLevels = model.Data?.EggLevels ?? new(),
                     GymTeamIds = model.Data?.GymTeamIds ?? new(),
+                    GymIds = gymIds ?? new(),
                     InvasionIds = model.Data?.InvasionIds ?? new(),
                     WeatherConditionIds = model.Data?.WeatherConditionIds ?? new(),
                 };
@@ -175,7 +218,7 @@
             catch
             {
                 ModelState.AddModelError("Webhook", $"Unknown error occurred while editing webhook '{id}'.");
-                return View();
+                return View(model);
             }
         }
 

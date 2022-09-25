@@ -503,7 +503,8 @@
                         }
                         if (endpoint.Data?.PokemonIds.Any() ?? false)
                         {
-                            if (endpoint.Data.PokemonIds.Contains(pokemon.PokemonId))
+                            // TODO: Add support for pokemon id, form id, costume id, and gender
+                            if (endpoint.Data.PokemonIds.Contains(pokemon.PokemonId.ToString()))
                                 continue;
                         }
                         events.Add(pokemon.GetWebhookData(WebhookHeaders.Pokemon));
@@ -618,12 +619,11 @@
                             if (!GeofenceService.IsPointInPolygon(gymInfo.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
-                        // TODO: Add gym info (gym ids) filtering
-                        //if (endpoint.Data?.GymIds.Any() ?? false)
-                        //{
-                        //    if (endpoint.Data.GymIds.Contains(gymInfo.Id))
-                        //        continue;
-                        //}
+                        if (endpoint.Data?.GymIds.Any() ?? false)
+                        {
+                            if (endpoint.Data.GymIds.Contains(gymInfo.Id))
+                                continue;
+                        }
                         events.Add(gymInfo.GetWebhookData("gym-info"));
                     }
                 }
@@ -681,7 +681,8 @@
                         }
                         if (endpoint.Data?.RaidPokemonIds.Any() ?? false)
                         {
-                            if (endpoint.Data.RaidPokemonIds.Contains(raid.RaidPokemonId ?? 0))
+                            // TODO: Add support for pokemon id, form id, costume id, and gender
+                            if (endpoint.Data.RaidPokemonIds.Contains((raid.RaidPokemonId ?? 0).ToString()))
                                 continue;
                         }
                         events.Add(raid.GetWebhookData(WebhookHeaders.Raid));
