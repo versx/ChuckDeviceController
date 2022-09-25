@@ -120,7 +120,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Instantiate PvpRankGenerator singleton immediately before protos are received
-logger.LogDebug($"Pvp: {PvpRankGenerator.Instance}");
+await PvpRankGenerator.Instance.InitializeAsync();
 
 #region App Builder
 

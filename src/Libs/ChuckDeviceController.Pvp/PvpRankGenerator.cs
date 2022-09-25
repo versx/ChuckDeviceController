@@ -57,17 +57,21 @@
         {
             _timer = new Timer(Strings.FetchMasterFileIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await LoadMasterFileIfNeededAsync();
-            _timer.Start();
-
-            LoadMasterFileAsync()
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
         }
 
         #endregion
 
         #region Public Methods
+
+        public async Task InitializeAsync()
+        {
+            if (!_timer.Enabled)
+            {
+                _timer.Start();
+            }
+
+            await LoadMasterFileAsync();
+        }
 
         public IReadOnlyList<PvpRank> GetPvpStats(HoloPokemonId pokemon, PokemonForm? form, IV iv, double level, PvpLeague league)
         {

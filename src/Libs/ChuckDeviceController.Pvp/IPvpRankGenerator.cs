@@ -10,6 +10,8 @@
 
     public interface IPvpRankGenerator
     {
+        Task InitializeAsync();
+
         /// <summary>
         /// Generate all possible PVP rankings for all PVP leagues for a specific Pokemon.
         /// </summary>
