@@ -248,16 +248,14 @@ builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
 builder.Services.AddSingleton<ILoggingHost>(loggingHost);
 builder.Services.AddSingleton<IUiHost>(uiHost);
 builder.Services.AddSingleton<IGeofenceServiceHost>(geofenceServiceHost);
-builder.Services.AddSingleton<IRouteHost, RouteGenerator>();
+builder.Services.AddSingleton<IRoutingHost, RouteGenerator>();
 builder.Services.AddSingleton<IEventAggregatorHost>(eventAggregatorHost);
 builder.Services.AddScoped<IPublisher, PluginPublisher>();
 
 // TODO: Do not build service provider from collection manually, leave it up to DI - https://andrewlock.net/access-services-inside-options-and-startup-using-configureoptions/
 var serviceProvider = builder.Services.BuildServiceProvider();
 
-var routeHost = serviceProvider.GetService<IRouteHost>();
-builder.Services.AddSingleton((IRouteGenerator)routeHost);
-
+var routeHost = serviceProvider.GetService<IRoutingHost>();
 var jobControllerService = serviceProvider.GetService<IJobControllerService>();
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
 builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
@@ -276,7 +274,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IConfigurationHost), configurationProviderHost },
     { typeof(IGeofenceServiceHost), geofenceServiceHost },
     { typeof(IInstanceServiceHost), jobControllerService },
-    { typeof(IRouteHost), routeHost },
+    { typeof(IRoutingHost), routeHost },
     { typeof(IEventAggregatorHost), eventAggregatorHost },
 };
 

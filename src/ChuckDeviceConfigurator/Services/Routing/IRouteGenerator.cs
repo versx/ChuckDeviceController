@@ -5,7 +5,7 @@
     /// <summary>
     /// Route generator
     /// </summary>
-    public interface IRouteGenerator : IRouteHost
-    {
-    }
+    //public interface IRouteGenerator : IRouteGeneratorHost
+    //{
+    //}
 }

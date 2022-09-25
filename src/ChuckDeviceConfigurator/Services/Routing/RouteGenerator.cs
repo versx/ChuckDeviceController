@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -17,7 +16,7 @@
 
     // TODO: Find clusters to use with dynamic route
 
-    public class RouteGenerator : IRouteGenerator
+    public class RouteGenerator : IRoutingHost
     {
         private const ushort DefaultCircleSize = Strings.DefaultCircleSize; // 70m
 

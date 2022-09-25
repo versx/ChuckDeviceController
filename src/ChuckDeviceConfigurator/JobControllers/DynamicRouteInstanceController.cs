@@ -13,7 +13,7 @@
         #region Variables
 
         private readonly ILogger<DynamicRouteInstanceController> _logger;
-        private readonly IRouteGenerator _routeGenerator;
+        private readonly IRoutingHost _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
 
         #endregion
@@ -31,7 +31,7 @@
         public DynamicRouteInstanceController(
             Instance instance,
             List<IMultiPolygon> multiPolygons,
-            IRouteGenerator routeGenerator,
+            IRoutingHost routeGenerator,
             IRouteCalculator routeCalculator)
             : base(instance, new(), CircleInstanceType.Pokemon)
         {

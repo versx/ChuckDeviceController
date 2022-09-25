@@ -3,9 +3,9 @@
     using ChuckDeviceController.Common.Geometry;
 
     /// <summary>
-    /// 
+    /// Route generator plugin host.
     /// </summary>
-    public interface IRouteHost
+    public interface IRoutingHost
     {
         /// <summary>
         ///     Generates a route using the specified route generator options.
