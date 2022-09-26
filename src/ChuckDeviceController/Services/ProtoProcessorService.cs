@@ -35,7 +35,7 @@
 
         #region Properties
 
-        public ProcessorOptionsConfig Options { get; }
+        public ProcessingOptionsConfig Options { get; }
 
         #endregion
 
@@ -43,7 +43,7 @@
 
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
-            IOptions<ProcessorOptionsConfig> options,
+            IOptions<ProcessingOptionsConfig> options,
             IAsyncQueue<ProtoPayloadQueueItem> protoQueue,
             IAsyncQueue<DataQueueItem> dataQueue,
             IGrpcClientService grpcClientService)
@@ -82,7 +82,7 @@
 
                 try
                 {
-                    var workItems = await _protoQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                    var workItems = await _protoQueue.DequeueBulkAsync(Options.Queue.Protos.MaximumBatchSize, stoppingToken);
                     if (workItems == null)
                     {
                         Thread.Sleep(1);
@@ -697,12 +697,12 @@
 
         private void CheckQueueLength()
         {
-            var usage = $"{_protoQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}";
-            if (_protoQueue.Count == Strings.MaximumQueueCapacity)
+            var usage = $"{_protoQueue.Count:N0}/{Options.Queue.Protos.MaximumCapacity:N0}";
+            if (_protoQueue.Count == Options.Queue.Protos.MaximumCapacity)
             {
                 _logger.LogWarning($"Proto processing queue is at maximum capacity! {usage}");
             }
-            else if (_protoQueue.Count > Strings.MaximumQueueSizeWarning)
+            else if (_protoQueue.Count > Options.Queue.Protos.MaximumSizeWarning)
             {
                 _logger.LogWarning($"Proto processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }

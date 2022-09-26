@@ -30,7 +30,6 @@
     using ChuckDeviceController.Pvp;
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
-    using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
     // TODO: Create stateless DataConsumer for each entity
     // TODO: Possibly create scoped DataProcessorService for each device uuid
@@ -54,7 +53,7 @@
 
         #region Properties
 
-        public ProcessorOptionsConfig Options { get; }
+        public ProcessingOptionsConfig Options { get; }
 
         public bool ShowBenchmarkTimes => _env?.IsDevelopment() ?? false;
 
@@ -64,7 +63,7 @@
 
         public DataProcessorService(
             ILogger<IDataProcessorService> logger,
-            IOptions<ProcessorOptionsConfig> options,
+            IOptions<ProcessingOptionsConfig> options,
             IAsyncQueue<DataQueueItem> taskQueue,
             IDbContextFactory<MapDbContext> factory,
             IMemoryCache diskCache,
@@ -115,7 +114,7 @@
                     return;
                 }
 
-                var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                var workItems = await _taskQueue.DequeueBulkAsync(Options.Queue.Data.MaximumBatchSize, stoppingToken);
                 //var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
                 if (!workItems.Any())
                 {
@@ -1506,12 +1505,12 @@
 
         private void CheckQueueLength()
         {
-            var usage = $"{_taskQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}";
-            if (_taskQueue.Count == Strings.MaximumQueueCapacity)
+            var usage = $"{_taskQueue.Count:N0}/{Options.Queue.Data.MaximumCapacity:N0}";
+            if (_taskQueue.Count == Options.Queue.Data.MaximumCapacity)
             {
                 _logger.LogWarning($"Data processing queue is at maximum capacity! {usage}");
             }
-            else if (_taskQueue.Count > Strings.MaximumQueueSizeWarning)
+            else if (_taskQueue.Count > Options.Queue.Data.MaximumSizeWarning)
             {
                 _logger.LogWarning($"Data processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }

@@ -53,7 +53,7 @@ builder.WebHost.ConfigureLogging(configure =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
 builder.Services.Configure<GrpcEndpointsConfig>(builder.Configuration.GetSection("Grpc"));
-builder.Services.Configure<ProcessorOptionsConfig>(builder.Configuration.GetSection("Options"));
+builder.Services.Configure<ProcessingOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions"));
 
 builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>, AsyncQueue<ProtoPayloadQueueItem>>();
 builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueItem>>();

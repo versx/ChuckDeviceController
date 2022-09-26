@@ -15,7 +15,7 @@
 
         private readonly ILogger<IClearFortsHostedService> _logger;
         private readonly IDbContextFactory<MapDbContext> _factory;
-        private readonly ProcessorOptionsConfig _options;
+        private readonly ProcessingOptionsConfig _options;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
@@ -28,7 +28,7 @@
         public override uint TimerIntervalMs => 15 * 60 * 1000; // 15 minutes
 
         public ClearFortsHostedService(
-            IOptions<ProcessorOptionsConfig> options,
+            IOptions<ProcessingOptionsConfig> options,
             ILogger<IClearFortsHostedService> logger,
             IDbContextFactory<MapDbContext> factory) : base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
         {

@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Configuration
 {
-    public class ProcessorOptionsConfig
+    public class ProcessingOptionsConfig
     {
         #region Properties
 
@@ -9,6 +9,8 @@
         public bool ProcessMapPokemon { get; set; } = true;
 
         public DataLogLevel DataProcessorLogLevel { get; set; } = DataLogLevel.Summary;
+
+        public QueueConfig Queue { get; set; } = new();
 
         #endregion
 
