@@ -21,7 +21,7 @@
     <div class="col">
         <form asp-controller="Utilities" asp-action="ClearStalePokestops">
             <div class="pb-5">
-                <input type="submit" value="Delete All" class="btn btn-danger float-end" title="Delete All Stale Pokestops" onclick="return confirm('You are about to delete \'@(Model.Count)\' Pokestops, are you sure this is what you want to do?');" />
+                <input type="submit" value="Delete All" class="btn btn-danger btn-sm float-end" title="Delete All Stale Pokestops" onclick="return confirm('You are about to delete \'@(Model.Count)\' Pokestops, are you sure this is what you want to do?');" />
             </div>
             <table id="table-stale-pokestops" class="table table-striped table-bordered dt-responsive nowrap">
                 <thead class="table-dark">

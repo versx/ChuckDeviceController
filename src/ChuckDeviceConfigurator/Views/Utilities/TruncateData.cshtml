@@ -28,20 +28,19 @@
             </div>
             <br />
 
-            <div class="form-group">
-                <label for="TimeSpan" class="control-label">Time Span (hours - older than)</label>
+            <div class="form-floating mb-3">
                 <input id="TimeSpan" type="number" name="TimeSpan" class="form-control" min="0" max="720" value="24" required />
+                <label for="TimeSpan">Time Span (hours - older than)</label>
                 <span validation-for="TimeSpan" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label for="DataType" class="control-label">Data Type</label>
+            <div class="form-floating mb-3">
                 <select id="DataType" name="DataType" class="form-control" asp-items="@(new SelectList(ViewBag.DataTypes))" required>
                     <option value="">Please select a data type</option>
                 </select>
+                <label for="DataType">Data Type</label>
                 <span validation-for="DataType" class="text-danger"></span>
             </div>
-            <br />
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <input type="submit" value="Truncate" class="btn btn-danger" />
             </div>
         </form>
