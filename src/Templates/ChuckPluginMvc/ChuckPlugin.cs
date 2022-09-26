@@ -274,17 +274,7 @@
 
         #region ISettingsProperty Event Handlers
 
-        public void OnClick(ISettingsProperty property)
-        {
-            _loggingHost.LogInformation($"[{Name}] Plugin setting clicked");
-        }
-
-        public void OnToggle(ISettingsProperty property)
-        {
-            _loggingHost.LogInformation($"[{Name}] Plugin setting toggled");
-        }
-
-        public void OnSave(ISettingsProperty property)
+        public void OnSave(IReadOnlyDictionary<string, List<ISettingsProperty>> properties)
         {
             _loggingHost.LogInformation($"[{Name}] Plugin setting saved");
         }

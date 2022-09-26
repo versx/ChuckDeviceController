@@ -25,12 +25,12 @@
         /// <summary>
         /// Gets a list of settings tabs registered by plugins.
         /// </summary>
-        IReadOnlyList<SettingsTab> SettingsTabs { get; }
+        IReadOnlyList<ISettingsTab> SettingsTabs { get; }
 
         /// <summary>
         /// Gets a dictionary of settings properties for tabs registered by plugins.
         /// </summary>
-        IReadOnlyDictionary<string, List<SettingsProperty>> SettingsProperties { get; }
+        IReadOnlyDictionary<string, List<ISettingsProperty>> SettingsProperties { get; }
 
         #endregion
 

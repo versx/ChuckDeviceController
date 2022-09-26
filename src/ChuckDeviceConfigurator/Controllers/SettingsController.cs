@@ -6,6 +6,7 @@
     using Microsoft.Extensions.Primitives;
 
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.PluginManager;
 
     public class SettingsController : Controller
     {
@@ -82,11 +83,16 @@
 
         private void SaveSettingsConfig(Dictionary<string, object> settings)
         {
-            var result = _fileStorageHost.Save(settings, DefaultSettingsFolderName, DefaultSettingsFileName, true);
+            var result = _fileStorageHost.Save(settings, DefaultSettingsFolderName, DefaultSettingsFileName, prettyPrint: true);
             if (!result)
             {
                 // Failed to save settings
                 return;
+            }
+
+            foreach (var (_, pluginHost) in PluginManager.Instance.Plugins)
+            {
+                pluginHost.EventHandlers?.SettingsEvents?.OnSave(_uiHost.SettingsProperties);
             }
         }
 

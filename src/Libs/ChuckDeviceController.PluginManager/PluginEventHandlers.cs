@@ -10,7 +10,7 @@
 
         public IJobControllerServiceEvents? JobControllerEvents { get; set; }
 
-        public ISettingsPropertyEvents SettingsEvents { get; set; }
+        public ISettingsPropertyEvents? SettingsEvents { get; set; }
 
         public PluginEventHandlers()
         {

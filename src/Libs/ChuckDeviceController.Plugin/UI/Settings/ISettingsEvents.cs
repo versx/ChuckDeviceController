@@ -8,16 +8,6 @@
         /// <summary>
         /// 
         /// </summary>
-        void OnClick(ISettingsProperty property);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void OnToggle(ISettingsProperty property);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void OnSave(ISettingsProperty property);
+        void OnSave(IReadOnlyDictionary<string, List<ISettingsProperty>> properties);
     }
 }

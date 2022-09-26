@@ -19,8 +19,8 @@
         private static readonly Dictionary<string, SidebarItem> _sidebarItems = new();
         private static readonly Dictionary<string, IDashboardStatsItem> _dashboardStats = new();
         private static readonly Dictionary<string, IDashboardTile> _dashboardTiles = new();
-        private static readonly Dictionary<string, SettingsTab> _settingsTabs = new();
-        private static readonly Dictionary<string, List<SettingsProperty>> _settingsProperties = new();
+        private static readonly Dictionary<string, ISettingsTab> _settingsTabs = new();
+        private static readonly Dictionary<string, List<ISettingsProperty>> _settingsProperties = new();
 
         #endregion
 
@@ -32,9 +32,9 @@
 
         public IReadOnlyList<IDashboardTile> DashboardTiles => _dashboardTiles?.Values.ToList();
 
-        public IReadOnlyList<SettingsTab> SettingsTabs => _settingsTabs?.Values.ToList();
+        public IReadOnlyList<ISettingsTab> SettingsTabs => _settingsTabs?.Values.ToList();
 
-        public IReadOnlyDictionary<string, List<SettingsProperty>> SettingsProperties => _settingsProperties;
+        public IReadOnlyDictionary<string, List<ISettingsProperty>> SettingsProperties => _settingsProperties;
 
         #endregion
 
@@ -178,7 +178,7 @@
         {
             if (!_settingsProperties.ContainsKey(tabId))
             {
-                _settingsProperties.Add(tabId, new());
+                _settingsProperties.Add(tabId, new List<ISettingsProperty>());
             }
 
             if (!_settingsProperties[tabId].Contains(property))
