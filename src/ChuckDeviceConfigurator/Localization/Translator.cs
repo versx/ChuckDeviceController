@@ -1,6 +1,9 @@
 ﻿namespace ChuckDeviceConfigurator.Localization
 {
+    using System.Text;
+
     using Microsoft.Extensions.Logging;
+    using POGOProtos.Rpc;
     using ActivityType = POGOProtos.Rpc.HoloActivityType;
     using AlignmentType = POGOProtos.Rpc.PokemonDisplayProto.Types.Alignment;
     using CharacterCategory = POGOProtos.Rpc.EnumWrapper.Types.CharacterCategory;
@@ -153,6 +156,44 @@
             return Translate($"poke_{pokeId}");
         }
 
+        public string GetPokemonName(string pokemonFormCostumeGenderId)
+        {
+            var split = pokemonFormCostumeGenderId.Split('_');
+            if (!split.Any())
+            {
+                return pokemonFormCostumeGenderId;
+            }
+
+            var details = GetPokemonDetails(pokemonFormCostumeGenderId);            
+            var pokemonName = GetPokemonName(details.PokemonId);
+
+            var sb = new StringBuilder();
+            sb.Append(pokemonName);
+
+            if (details.FormId > 0)
+            {
+                var formName = GetFormName(details.FormId);
+                sb.Append($" ({formName})");
+            }
+            if (details.CostumeId > 0)
+            {
+                var costumeName = GetCostumeName(details.CostumeId);
+                sb.Append($" {costumeName}");
+            }
+            if (details.GenderId > 0)
+            {
+                var genderName = GetGenderName(details.GenderId);
+                sb.Append($" {genderName}");
+            }
+            var name = sb.ToString();
+            return name;
+        }
+
+        public string GetGenderName(ushort genderId)
+        {
+            return Translate($"gender_{genderId}");
+        }
+
         public string GetFormName(uint formId, bool includeNormal = false)
         {
             if (formId == 0)
@@ -259,6 +300,39 @@
             return GetGruntType((InvasionCharacter)invasionCharacterId);
         }
 
+        public string GetTeam(Team team)
+        {
+            return GetTeam((ushort)team);
+        }
+
+        public string GetTeam(ushort teamId)
+        {
+            return Translate($"team_{teamId}");
+        }
+
+        public PokemonDetails GetPokemonDetails(string pokemonFormCostumeGenderId)
+        {
+            var split = pokemonFormCostumeGenderId.Split('_');
+            if (!split.Any())
+            {
+                return new();
+            }
+
+            var pokemonId = split[0];
+            var formId = split.Length > 1 ? split.FirstOrDefault(item => item.Contains('f')) : null;
+            var costumeId = split.Length > 1 ? split.FirstOrDefault(item => item.Contains('c')) : null;
+            var genderId = split.Length > 1 ? split.FirstOrDefault(item => item.Contains('g')) : null;
+
+            var details = new PokemonDetails
+            {
+                PokemonId = Convert.ToUInt32(pokemonId ?? "0"),
+                FormId = Convert.ToUInt32(formId ?? "0"),
+                CostumeId = Convert.ToUInt32(costumeId ?? "0"),
+                GenderId = Convert.ToUInt16(genderId ?? "0"),
+            };
+            return details;
+        }
+
         #endregion
 
         #region Private Methods
@@ -293,5 +367,16 @@
         }
 
         #endregion
+    }
+
+    public class PokemonDetails
+    {
+        public uint PokemonId { get; set; }
+
+        public uint FormId { get; set; }
+
+        public uint CostumeId { get; set; }
+
+        public ushort GenderId { get; set; }
     }
 }
