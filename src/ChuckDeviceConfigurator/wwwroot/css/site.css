@@ -136,6 +136,7 @@ nav > ol > li > a {
     color: #fff;
 }
 
-.card {
-    border: 1px solid rgba(0,0,0,.500);
+.card,
+.card-body {
+    border: 1px solid rgba(0, 0, 0, 0.500);
 }
