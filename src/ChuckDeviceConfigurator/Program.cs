@@ -156,14 +156,16 @@ builder.Services.AddSwaggerGen(options =>
 
 #region Database Contexts
 
+// Register data contexts, factories, and pools
+var poolSize = config.GetValue<int>("DbContextPoolSize", 1024);
 builder.Services.AddDbContextFactory<ControllerDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 builder.Services.AddDbContextPool<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName));
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
 builder.Services.AddDbContextPool<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName));
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
 
 #endregion
 
