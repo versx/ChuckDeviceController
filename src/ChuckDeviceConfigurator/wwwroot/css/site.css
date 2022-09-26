@@ -135,3 +135,7 @@ nav > ol > li > a {
     background-color: #212529;
     color: #fff;
 }
+
+.card {
+    border: 1px solid rgba(0,0,0,.500);
+}
