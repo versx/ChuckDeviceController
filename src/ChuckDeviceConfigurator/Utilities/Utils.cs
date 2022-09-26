@@ -25,8 +25,8 @@
                 ? null
                 : assignment.SourceInstanceName;
             var deviceOrGroupName = string.IsNullOrEmpty(assignment.DeviceGroupName)
-                ? (includeIcons ? "<i class=\"fa-solid fa-layer-group\"></i>&nbsp;" : null) + assignment.DeviceUuid
-                : (includeIcons ? "<i class=\"fa-solid fa-mobile-screen-button\"></i>&nbsp;" : null) + assignment.DeviceGroupName;
+                ? (includeIcons ? "<i class=\"fa-solid fa-fw fa-mobile-screen-button\"></i>&nbsp;" : null) + assignment.DeviceUuid
+                : (includeIcons ? "<i class=\"fa-solid fa-fw fa-layer-group\"></i>&nbsp;" : null) + assignment.DeviceGroupName;
             var time = FormatAssignmentTime(assignment.Time);
 
             var sb = new System.Text.StringBuilder();
