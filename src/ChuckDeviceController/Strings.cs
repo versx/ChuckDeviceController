@@ -14,10 +14,6 @@
         public const int MaximumQueueBatchSize = 100;
         public const uint MaximumQueueSizeWarning = 500;
         public const ushort MaximumQueueCapacity = 8192;
-
-        //public const int MaximumQueueBatchSize = 1024;
-        //public const uint MaximumQueueSizeWarning = 4096;
-        //public const ushort MaximumQueueCapacity = 10 * 1024;
     }
 
     public class ProtoDataStatistics

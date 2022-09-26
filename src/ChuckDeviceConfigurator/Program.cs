@@ -154,21 +154,16 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo { Title = Strings.AssemblyName, Version = "v1" });
 });
 
-//var dbContextPool = new DbContextPool<ControllerDbContext>(new DbContextOptions<ControllerDbContext>
-//{
-//});
-//var factory = new PooledDbContextFactory<ControllerDbContext>(dbContextPool);
-
 #region Database Contexts
 
 builder.Services.AddDbContextFactory<ControllerDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContext<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
-builder.Services.AddDbContext<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
+builder.Services.AddDbContextPool<ControllerDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName));
+builder.Services.AddDbContextPool<MapDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName));
 
 #endregion
 

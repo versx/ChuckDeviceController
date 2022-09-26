@@ -608,7 +608,8 @@
             if (!storeData)
                 return;
 
-            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+            // TODO: Make parsed protos logging configurable
+            //var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
             ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;

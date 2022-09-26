@@ -98,9 +98,9 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 builder.Services.AddDbContextPool<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), 5);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName));
 builder.Services.AddDbContextPool<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), 5);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName));
 
 #endregion
 

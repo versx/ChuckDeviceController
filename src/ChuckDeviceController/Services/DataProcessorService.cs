@@ -175,9 +175,6 @@
             }
             */
 
-            //using var context = await _dbFactory.CreateDbContextAsync(stoppingToken);
-            ////using var context = _dbFactory.CreateDbContext();
-
             var cells = workItem.Data
                 .Where(x => x.type == ProtoDataType.Cell)
                 .Select(x => (ulong)x.cell)
@@ -205,7 +202,6 @@
             var forts = workItem.Data
                 .Where(x => x.type == ProtoDataType.Fort)
                 .ToList();
-            //var forts = FilterEntityData<dynamic>("", workItem.Data, ProtoDataType.Fort);
             if (forts.Any())
             {
                 // Insert Forts
