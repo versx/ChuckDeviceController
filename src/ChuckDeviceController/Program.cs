@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -150,6 +152,12 @@ if (config.GetValue<bool>("ConvertMadData"))
 app.UseAuthorization();
 app.MapControllers();
 
+//Task.Run(async () =>
+//{
+//    var stopwatch = new Stopwatch();
+//    await MonitorResults(TimeSpan.FromMinutes(5), stopwatch);
+//});
+
 app.Run();
 
 #endregion
@@ -169,4 +177,40 @@ static ILoggingBuilder GetLoggingConfig(LogLevel defaultLogLevel, ILoggingBuilde
     configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
 
     return configure;
+}
+
+static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
+{
+    var lastInstanceCount = 0UL;
+    var lastRequestCount = 0UL;
+    var lastElapsed = TimeSpan.Zero;
+
+    stopwatch.Start();
+
+    while (stopwatch.Elapsed < duration)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(1));
+
+        var instanceCount = MapDbContext.InstanceCount;
+        var requestCount = ProtoDataStatistics.Instance.TotalRequestsProcessed;
+        var elapsed = stopwatch.Elapsed;
+        var currentElapsed = elapsed - lastElapsed;
+        var currentRequests = requestCount - lastRequestCount;
+
+        Console.WriteLine(
+            $"[{DateTime.Now:HH:mm:ss.fff}] "
+            + $"Context creations/second: {instanceCount - lastInstanceCount} | "
+            + $"Requests/second: {Math.Round(currentRequests / currentElapsed.TotalSeconds)}");
+
+        lastInstanceCount = instanceCount;
+        lastRequestCount = requestCount;
+        lastElapsed = elapsed;
+    }
+
+    Console.WriteLine();
+    Console.WriteLine($"Total context creations: {MapDbContext.InstanceCount}");
+    Console.WriteLine(
+        $"Requests per second:     {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds)}");
+
+    stopwatch.Stop();
 }

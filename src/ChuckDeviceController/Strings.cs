@@ -20,6 +20,8 @@
 
         #endregion
 
+        public ulong TotalRequestsProcessed { get; internal set; }
+
         public uint TotalProtoPayloadsReceived { get; internal set; }
 
         public uint TotalProtosProcessed { get; internal set; }

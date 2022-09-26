@@ -3,17 +3,20 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
 
     public class ControllerDbContext : DbContext
     {
+        public static ulong InstanceCount;
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public ControllerDbContext(DbContextOptions<ControllerDbContext> options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {
+            Interlocked.Increment(ref InstanceCount);
+
             base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 

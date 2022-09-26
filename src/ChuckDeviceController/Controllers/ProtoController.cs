@@ -55,6 +55,8 @@
             Response.Headers["Accept"] = "application/json";
             Response.Headers["Content-Type"] = "application/json";
 
+            ProtoDataStatistics.Instance.TotalRequestsProcessed++;
+
             var response = await HandleProtoRequest(payload).ConfigureAwait(false);
             return response;
         }
@@ -64,6 +66,7 @@
         {
             return new JsonResult(new
             {
+                requests_per_second = ProtoDataStatistics.Instance.TotalRequestsProcessed,
                 protos_received = ProtoDataStatistics.Instance.TotalProtoPayloadsReceived,
                 protos_processed = ProtoDataStatistics.Instance.TotalProtosProcessed,
                 entities_processed = ProtoDataStatistics.Instance.TotalEntitiesProcessed,

@@ -11,7 +11,7 @@
 
         #endregion
 
-        public virtual uint TimerIntervalMs { get; private set; } = 500;
+        public virtual uint TimerIntervalMs { get; private set; } = 3 * 1000;
 
         public TimedHostedService(ILogger<TimedHostedService> logger)
         {

@@ -48,6 +48,7 @@
         private readonly IClearFortsHostedService _clearFortsService;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly IWebHostEnvironment _env;
+        private static readonly SemaphoreSlim _sem = new(0, 10);
 
         #endregion
 
@@ -56,6 +57,8 @@
         public ProcessingOptionsConfig Options { get; }
 
         public bool ShowBenchmarkTimes => _env?.IsDevelopment() ?? false;
+
+        public override uint TimerIntervalMs => 5 * 1000;
 
         #endregion
 
@@ -122,17 +125,17 @@
                 }
 
                 // TODO: Filter data entities here and push to separate methods
-                Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
+                //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
 
                 ProtoDataStatistics.Instance.TotalEntitiesProcessed += (uint)workItems.Sum(x => x.Data?.Count ?? 0);
 
-                //await Task.Run(async () =>
-                //{
-                //    foreach (var workItem in workItems)
-                //    {
-                //        //await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
-                //    }
-                //}, stoppingToken);
+                await Task.Run(async () =>
+                {
+                    foreach (var workItem in workItems)
+                    {
+                        await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
+                    }
+                }, stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -163,6 +166,9 @@
 
             ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
 
+            await _sem.WaitAsync(TimeSpan.FromSeconds(3), stoppingToken);
+            using var context = await _dbFactory.CreateDbContextAsync(stoppingToken);
+
             /*
             var playerData = data.Where(x => x.type == ProtoDataType.PlayerData)
                                  .Select(x => x.data)
@@ -183,7 +189,7 @@
             if (cells.Any())
             {
                 // Insert S2 cells
-                await UpdateCellsAsync(cells);
+                await UpdateCellsAsync(context, cells);
             }
 
             var clientWeather = workItem.Data
@@ -195,7 +201,7 @@
             if (clientWeather.Any())
             {
                 // Insert weather cells
-                await UpdateClientWeatherAsync(clientWeather);
+                await UpdateClientWeatherAsync(context, clientWeather);
             }
 
             var forts = workItem.Data
@@ -204,7 +210,7 @@
             if (forts.Any())
             {
                 // Insert Forts
-                await UpdateFortsAsync(workItem.Username, forts);
+                await UpdateFortsAsync(context, workItem.Username, forts);
             }
 
             var fortDetails = workItem.Data
@@ -213,7 +219,7 @@
             if (fortDetails.Any())
             {
                 // Insert Fort Details
-                await UpdateFortDetailsAsync(fortDetails);
+                await UpdateFortDetailsAsync(context, fortDetails);
             }
 
             var gymInfos = workItem.Data
@@ -222,7 +228,7 @@
             if (gymInfos.Any())
             {
                 // Insert gym info
-                await UpdateGymInfoAsync(gymInfos);
+                await UpdateGymInfoAsync(context, gymInfos);
             }
 
             var wildPokemon = workItem.Data
@@ -231,7 +237,7 @@
             if (wildPokemon.Any())
             {
                 // Insert wild pokemon
-                await UpdateWildPokemonAsync(wildPokemon);
+                await UpdateWildPokemonAsync(context, wildPokemon);
             }
 
             var nearbyPokemon = workItem.Data
@@ -240,7 +246,7 @@
             if (nearbyPokemon.Any())
             {
                 // Insert nearby pokemon
-                await UpdateNearbyPokemonAsync(nearbyPokemon);
+                await UpdateNearbyPokemonAsync(context, nearbyPokemon);
              }
 
             var mapPokemon = workItem.Data
@@ -249,7 +255,7 @@
             if (mapPokemon.Any())
             {
                 // Insert map pokemon
-                await UpdateMapPokemonAsync(mapPokemon);
+                await UpdateMapPokemonAsync(context, mapPokemon);
             }
 
             //if (wildPokemon.Any() || nearbyPokemon.Any() || mapPokemon.Any())
@@ -263,7 +269,7 @@
             if (quests.Any())
             {
                 // Insert quests
-                await UpdateQuestsAsync(quests);
+                await UpdateQuestsAsync(context, quests);
             }
 
             var encounters = workItem.Data
@@ -272,7 +278,7 @@
             if (encounters.Any())
             {
                 // Insert Pokemon encounters
-                await UpdateEncountersAsync(encounters);
+                await UpdateEncountersAsync(context, encounters);
             }
 
             var diskEncounters = workItem.Data
@@ -281,8 +287,10 @@
             if (diskEncounters.Any())
             {
                 // Insert lured/disk Pokemon encounters
-                await UpdateDiskEncountersAsync(diskEncounters);
+                await UpdateDiskEncountersAsync(context, diskEncounters);
             }
+
+            _sem.Release();
 
             PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
         }
@@ -308,8 +316,8 @@
             await Task.CompletedTask;
         }
 
-        private async Task UpdateCellsAsync(IEnumerable<ulong> cells)
-        //private async Task UpdateCellsAsync(MapDbContext context, IEnumerable<dynamic> cells)
+        //private async Task UpdateCellsAsync(IEnumerable<ulong> cells)
+        private async Task UpdateCellsAsync(MapDbContext context, IEnumerable<ulong> cells)
         {
             try
             {
@@ -331,8 +339,7 @@
                 if (!s2cells.Any())
                     return;
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 var ts = DateTime.UtcNow.ToTotalSeconds();
                 var cellsSql = s2cells.Select(cell => $"({cell.Id}, {cell.Level}, {cell.Latitude}, {cell.Longitude}, {ts})");
                 var args = string.Join(",", cellsSql);
@@ -360,8 +367,8 @@
             }
         }
 
-        private async Task UpdateClientWeatherAsync(IEnumerable<ClientWeatherProto> clientWeather)
-        //private async Task UpdateClientWeatherAsync(MapDbContext context, IEnumerable<ClientWeatherProto> clientWeather)
+        //private async Task UpdateClientWeatherAsync(IEnumerable<ClientWeatherProto> clientWeather)
+        private async Task UpdateClientWeatherAsync(MapDbContext context, IEnumerable<ClientWeatherProto> clientWeather)
         {
             try
             {
@@ -383,8 +390,7 @@
                 if (!weather.Any())
                     return;
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 foreach (var wcell in weather)
                 {
                     await wcell.UpdateAsync(context, _memCache);
@@ -453,8 +459,8 @@
             }
         }
 
-        private async Task UpdateWildPokemonAsync(IEnumerable<dynamic> wildPokemon)
-        //private async Task UpdateWildPokemonAsync(MapDbContext context, IEnumerable<dynamic> wildPokemon)
+        //private async Task UpdateWildPokemonAsync(IEnumerable<dynamic> wildPokemon)
+        private async Task UpdateWildPokemonAsync(MapDbContext context, IEnumerable<dynamic> wildPokemon)
         {
             try
             {
@@ -464,8 +470,7 @@
                     sw.Start();
                 }
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 var pokemonToUpsert = new List<Pokemon>();
                 var spawnpointsToUpsert = new List<Spawnpoint>();
                 foreach (var wild in wildPokemon)
@@ -551,8 +556,8 @@
             }
         }
 
-        private async Task UpdateNearbyPokemonAsync(IEnumerable<dynamic> nearbyPokemon)
-        //private async Task UpdateNearbyPokemonAsync(MapDbContext context, IEnumerable<dynamic> nearbyPokemon)
+        //private async Task UpdateNearbyPokemonAsync(IEnumerable<dynamic> nearbyPokemon)
+        private async Task UpdateNearbyPokemonAsync(MapDbContext context, IEnumerable<dynamic> nearbyPokemon)
         {
             try
             {
@@ -562,8 +567,7 @@
                     sw.Start();
                 }
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var nearby in nearbyPokemon)
                 {
@@ -620,8 +624,8 @@
             }
         }
 
-        private async Task UpdateMapPokemonAsync(IEnumerable<dynamic> mapPokemon)
-        //private async Task UpdateMapPokemonAsync(MapDbContext context, IEnumerable<dynamic> mapPokemon)
+        //private async Task UpdateMapPokemonAsync(IEnumerable<dynamic> mapPokemon)
+        private async Task UpdateMapPokemonAsync(MapDbContext context, IEnumerable<dynamic> mapPokemon)
         {
             try
             {
@@ -631,8 +635,7 @@
                     sw.Start();
                 }
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var map in mapPokemon)
                 {
@@ -691,8 +694,8 @@
             }
         }
 
-        private async Task UpdateFortsAsync(string? username, IEnumerable<dynamic> forts)
-        //private async Task UpdateFortsAsync(MapDbContext context, string username, IEnumerable<dynamic> forts)
+        //private async Task UpdateFortsAsync(string? username, IEnumerable<dynamic> forts)
+        private async Task UpdateFortsAsync(MapDbContext context, string username, IEnumerable<dynamic> forts)
         {
             try
             {
@@ -702,8 +705,7 @@
                     sw.Start();
                 }
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 // Send found/nearby forts with gRPC service for leveling instance
                 var lvlForts = forts
                     .Where(fort => fort.data.FortType != FortType.Gym)
@@ -858,8 +860,8 @@
             }
         }
 
-        private async Task UpdateFortDetailsAsync(IEnumerable<dynamic> fortDetails)
-        //private async Task UpdateFortDetailsAsync(MapDbContext context, IEnumerable<dynamic> fortDetails)
+        //private async Task UpdateFortDetailsAsync(IEnumerable<dynamic> fortDetails)
+        private async Task UpdateFortDetailsAsync(MapDbContext context, IEnumerable<dynamic> fortDetails)
         {
             try
             {
@@ -869,8 +871,7 @@
                     sw.Start();
                 }
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 var pokestopsToUpsert = new List<Pokestop>();
                 var gymsToUpsert = new List<Gym>();
 
@@ -969,15 +970,14 @@
             }
         }
 
-        private async Task UpdateGymInfoAsync(IEnumerable<dynamic> gymInfos)
-        //private async Task UpdateGymInfoAsync(MapDbContext context, IEnumerable<dynamic> gymInfos)
+        //private async Task UpdateGymInfoAsync(IEnumerable<dynamic> gymInfos)
+        private async Task UpdateGymInfoAsync(MapDbContext context, IEnumerable<dynamic> gymInfos)
         {
             try
             {
                 var sw = new Stopwatch();
                 sw.Start();
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 var gymsToUpsert = new List<Gym>();
                 var gymDefendersToUpsert = new List<GymDefender>();
                 var gymTrainersToUpsert = new List<GymTrainer>();
@@ -1094,8 +1094,8 @@
             }
         }
 
-        private async Task UpdateQuestsAsync(IEnumerable<dynamic> quests)
-        //private async Task UpdateQuestsAsync(MapDbContext context, IEnumerable<dynamic> quests)
+        //private async Task UpdateQuestsAsync(IEnumerable<dynamic> quests)
+        private async Task UpdateQuestsAsync(MapDbContext context, IEnumerable<dynamic> quests)
         {
             try
             {
@@ -1105,8 +1105,7 @@
                     sw.Start();
                 }
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 var questsToUpsert = new List<Pokestop>();
 
                 // Convert quest protos to Pokestop models
@@ -1202,8 +1201,8 @@
             }
         }
 
-        private async Task UpdateEncountersAsync(IEnumerable<dynamic> encounters)
-        //private async Task UpdateEncountersAsync(MapDbContext context, IEnumerable<dynamic> encounters)
+        //private async Task UpdateEncountersAsync(IEnumerable<dynamic> encounters)
+        private async Task UpdateEncountersAsync(MapDbContext context, IEnumerable<dynamic> encounters)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             var timestampMs = now * 1000;
@@ -1216,8 +1215,7 @@
                     sw.Start();
                 }
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 //var leakMonitor = new ConnectionLeakWatcher(context);
                 var pokemonToUpsert = new List<Pokemon>();
                 var spawnpointsToUpsert = new List<Spawnpoint>();
@@ -1271,7 +1269,7 @@
 
                 if (s2cellsToUpsert.Count > 0)
                 {
-                    await UpdateCellsAsync(s2cellsToUpsert);
+                    await UpdateCellsAsync(context, s2cellsToUpsert);
                 }
 
                 if (pokemonToUpsert.Count > 0)
@@ -1314,8 +1312,8 @@
             }
         }
 
-        private async Task UpdateDiskEncountersAsync(IEnumerable<dynamic> diskEncounters)
-        //private async Task UpdateDiskEncountersAsync(MapDbContext context, IEnumerable<dynamic> diskEncounters)
+        //private async Task UpdateDiskEncountersAsync(IEnumerable<dynamic> diskEncounters)
+        private async Task UpdateDiskEncountersAsync(MapDbContext context, IEnumerable<dynamic> diskEncounters)
         {
             try
             {
@@ -1325,8 +1323,7 @@
                     sw.Start();
                 }
 
-                using var context = await _dbFactory.CreateDbContextAsync();
-                //using var context = _dbFactory.CreateDbContext();
+                //using var context = await _dbFactory.CreateDbContextAsync();
                 var pokemonToUpsert = new List<Pokemon>();
                 foreach (var diskEncounter in diskEncounters)
                 {
