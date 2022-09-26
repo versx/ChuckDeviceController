@@ -219,8 +219,8 @@
                 //new("API Keys", "ApiKey", displayIndex: 2, icon: "fa-solid fa-fw fa-key"),
                 new("Devices", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<SidebarItem>
                 {
-                    new("Devices", "Device", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-layer-group"),
-                    new("Device Groups", "DeviceGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Devices", "Device", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Device Groups", "DeviceGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-layer-group"),
                 }),
                 new("Instances", displayIndex: 3, icon: "fa-solid fa-fw fa-cubes-stacked", isDropdown: true, dropdownItems: new List<SidebarItem>
                 {
