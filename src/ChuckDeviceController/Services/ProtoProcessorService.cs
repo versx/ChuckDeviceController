@@ -611,7 +611,7 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
-            ProtoDataStatistics.Instance.TotalProtosSent += (uint)processedProtos.Count;
+            ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;
             _dataQueue.Enqueue(new DataQueueItem
             {
                 Username = username,

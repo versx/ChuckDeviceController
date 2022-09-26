@@ -90,7 +90,7 @@
                 Payload = payload,
                 Device = device,
             });
-            ProtoDataStatistics.Instance.TotalPayloadsReceived++;
+            ProtoDataStatistics.Instance.TotalProtoPayloadsReceived++;
 
             var response = BuildProtoResponse(payload);
             return response;

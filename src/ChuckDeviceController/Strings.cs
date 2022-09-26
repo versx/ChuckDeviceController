@@ -29,11 +29,11 @@
 
         #endregion
 
-        public uint TotalPayloadsReceived { get; internal set; }
+        public uint TotalProtoPayloadsReceived { get; internal set; }
 
-        public uint TotalProtosSent { get; internal set; }
+        public uint TotalProtosProcessed { get; internal set; }
 
-        public uint TotalEntitiesReceived { get; internal set; }
+        public uint TotalEntitiesProcessed { get; internal set; }
 
         public uint TotalEntitiesUpserted { get; internal set; }
     }

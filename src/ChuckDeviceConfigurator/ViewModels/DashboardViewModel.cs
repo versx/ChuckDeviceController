@@ -153,6 +153,6 @@
         [DisplayName("Started")]
         public string? Started { get; set; }
 
-        public IReadOnlyList<IDashboardStatsItem> PluginDashboardStats { get; set; }
+        public IReadOnlyList<IDashboardStatsItem> PluginDashboardStats { get; set; } = new List<IDashboardStatsItem>();
     }
 }

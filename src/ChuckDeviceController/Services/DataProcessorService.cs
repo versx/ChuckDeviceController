@@ -116,7 +116,6 @@
 
                 //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
                 var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
-                //var workItems = new[] { await _taskQueue.DequeueAsync(stoppingToken) };
                 if (!workItems.Any())
                 {
                     return;
@@ -125,7 +124,7 @@
                 // TODO: Filter data entities here and push to separate methods
                 Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
 
-                ProtoDataStatistics.Instance.TotalEntitiesReceived += (uint)workItems.Sum(x => x.Data?.Count ?? 0);
+                ProtoDataStatistics.Instance.TotalEntitiesProcessed += (uint)workItems.Sum(x => x.Data?.Count ?? 0);
 
                 //await Task.Run(async () =>
                 //{
