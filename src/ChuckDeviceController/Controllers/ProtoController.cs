@@ -59,6 +59,18 @@
             return response;
         }
 
+        [HttpGet("/stats")]
+        public ActionResult GetStats()
+        {
+            return new JsonResult(new
+            {
+                protos_received = ProtoDataStatistics.Instance.TotalProtoPayloadsReceived,
+                protos_processed = ProtoDataStatistics.Instance.TotalProtosProcessed,
+                entities_processed = ProtoDataStatistics.Instance.TotalEntitiesProcessed,
+                entities_upserted = ProtoDataStatistics.Instance.TotalEntitiesUpserted,
+            });
+        }
+
         #endregion
 
         #region Request Handlers

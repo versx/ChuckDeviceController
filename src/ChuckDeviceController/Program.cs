@@ -97,10 +97,10 @@ builder.Services.AddDistributedMemoryCache();
 // Register data contexts and factories
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContext<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped); // TODO: Was Singleton
-builder.Services.AddDbContext<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
+builder.Services.AddDbContextPool<MapDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), 5);
+builder.Services.AddDbContextPool<ControllerDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), 5);
 
 #endregion
 

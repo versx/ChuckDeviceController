@@ -30,6 +30,7 @@
     using ChuckDeviceController.Pvp;
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
+    using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
     // TODO: Create stateless DataConsumer for each entity
     // TODO: Possibly create scoped DataProcessorService for each device uuid
@@ -114,8 +115,8 @@
                     return;
                 }
 
-                //var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
-                var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
+                var workItems = await _taskQueue.DequeueBulkAsync(Strings.MaximumQueueBatchSize, stoppingToken);
+                //var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
                 if (!workItems.Any())
                 {
                     return;
@@ -315,7 +316,6 @@
         private async Task UpdateCellsAsync(IEnumerable<ulong> cells)
         //private async Task UpdateCellsAsync(MapDbContext context, IEnumerable<dynamic> cells)
         {
-            var sql = string.Empty;
             try
             {
                 var sw = new Stopwatch();
@@ -341,16 +341,8 @@
                 var ts = DateTime.UtcNow.ToTotalSeconds();
                 var cellsSql = s2cells.Select(cell => $"({cell.Id}, {cell.Level}, {cell.Latitude}, {cell.Longitude}, {ts})");
                 var args = string.Join(",", cellsSql);
-                sql = $@"
-INSERT INTO s2cell (id, level, center_lat, center_lon, updated)
-VALUES
-    {args}
-ON DUPLICATE KEY UPDATE
-    level=VALUES(level),
-    center_lat=VALUES(center_lat),
-    center_lon=VALUES(center_lon),
-    updated=VALUES(updated)
-";
+                var sql = string.Format(SqlQueries.S2Cells, args);
+
                 var result = await context.Database.ExecuteSqlRawAsync(sql);
                 // TODO: Check why result value returns double of entities amount it updated
 
@@ -376,7 +368,6 @@ ON DUPLICATE KEY UPDATE
         private async Task UpdateClientWeatherAsync(IEnumerable<ClientWeatherProto> clientWeather)
         //private async Task UpdateClientWeatherAsync(MapDbContext context, IEnumerable<ClientWeatherProto> clientWeather)
         {
-            var sql = string.Empty;
             try
             {
                 var sw = new Stopwatch();
@@ -434,26 +425,8 @@ ON DUPLICATE KEY UPDATE
                     return "(" + string.Join(",", list) + ")";
                 });
                 var args = string.Join(",", weatherSql);
-                sql = $@"
-INSERT INTO weather (id, level, latitude, longitude, gameplay_condition, cloud_level, rain_level, snow_level, fog_level, wind_level, wind_direction, warn_weather, special_effect_level, severity, updated)
-VALUES
-    {args}
-ON DUPLICATE KEY UPDATE
-    level=VALUES(level),
-    latitude=VALUES(latitude),
-    longitude=VALUES(longitude),
-    gameplay_condition=VALUES(gameplay_condition),
-    wind_direction=VALUES(wind_direction),
-    cloud_level=VALUES(cloud_level),
-    rain_level=VALUES(rain_level),
-    wind_level=VALUES(wind_level),
-    snow_level=VALUES(snow_level),
-    fog_level=VALUES(fog_level),
-    special_effect_level=VALUES(special_effect_level),
-    severity=VALUES(severity),
-    warn_weather=VALUES(warn_weather),
-    updated=VALUES(updated)
-";
+                var sql = string.Format(SqlQueries.WeatherCells, args);
+
                 var result = await context.Database.ExecuteSqlRawAsync(sql);
                 PrintBenchmarkTimes(DataLogLevel.Weather, weather, "Weather Cells", sw);
 
