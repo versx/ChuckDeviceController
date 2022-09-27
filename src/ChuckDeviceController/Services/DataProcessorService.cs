@@ -4,7 +4,6 @@
     using System.Data.Common;
     using System.Diagnostics;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Threading;
 
     using Microsoft.EntityFrameworkCore;
@@ -35,6 +34,8 @@
     // TODO: Possibly create scoped DataProcessorService for each device uuid
     // TODO: Use/benchmark Dapper Micro ORM
     // TODO: Split up/refactor class
+    // TODO: Add insert/upsertable entities into cache list to be upserted at x amount in list or if x amount of time has passed (if amount is not reached)?
+    // TODO: Make data processor timed hosted service interval configurable
 
     public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
@@ -51,7 +52,7 @@
         private readonly IMemoryCacheHostedService _memCache;
         private readonly IWebHostEnvironment _env;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private static readonly SemaphoreSlim _sem = new(0, 10);
+        private static readonly SemaphoreSlim _sem = new(1, 1);
 
         #endregion
 
@@ -121,8 +122,8 @@
                     return;
                 }
 
-                var workItems = await _taskQueue.DequeueBulkAsync(Options.Queue.Data.MaximumBatchSize, stoppingToken);
-                //var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
+                //var workItems = await _taskQueue.DequeueBulkAsync(Options.Queue.Data.MaximumBatchSize, stoppingToken);
+                var workItems = await _taskQueue.DequeueBulkAsync(25, stoppingToken);
                 if (!workItems.Any())
                 {
                     return;
@@ -1634,41 +1635,78 @@
                 return;
             }
 
-            await _grpcClientService.SendWebhookPayloadAsync(webhookType, json);
+            // Fire off gRPC request on a separate thread
+            await Task.Run(async () =>
+            {
+                await _grpcClientService.SendWebhookPayloadAsync(webhookType, json);
+                await Task.CompletedTask;
+            });
+            await Task.CompletedTask;
         }
 
         private async Task SendPokemonAsync(List<Pokemon> pokemon)
         {
-            var newPokemon = pokemon.Where(pkmn => pkmn.IsNewPokemon).ToList();
-            var newPokemonWithIV = pokemon.Where(pkmn => pkmn.IsNewPokemonWithIV).ToList();
+            var newPokemon = pokemon
+                .Where(pkmn => pkmn.IsNewPokemon)
+                .ToList();
+            var newPokemonWithIV = pokemon
+                .Where(pkmn => pkmn.IsNewPokemonWithIV)
+                .ToList();
 
-            if (newPokemon.Count > 0)
+            if (newPokemon.Any())
             {
-                // Send got Pokemon proto message
-                await _grpcClientService.SendRpcPayloadAsync(newPokemon, PayloadType.PokemonList, hasIV: false);
+                // Fire off gRPC request on a separate thread
+                await Task.Run(async () =>
+                {
+                    // Send got Pokemon proto message
+                    await _grpcClientService.SendRpcPayloadAsync(
+                        newPokemon,
+                        PayloadType.PokemonList,
+                        hasIV: false
+                    );
+                    await Task.CompletedTask;
+                });
             }
 
-            if (newPokemonWithIV.Count > 0)
+            if (newPokemonWithIV.Any())
             {
-                // Send got Pokemon IV proto message
-                await _grpcClientService.SendRpcPayloadAsync(newPokemonWithIV, PayloadType.PokemonList, hasIV: true);
+                // Fire off gRPC request on a separate thread
+                await Task.Run(async () =>
+                {
+                    // Send got Pokemon IV proto message
+                    await _grpcClientService.SendRpcPayloadAsync(
+                        newPokemonWithIV,
+                        PayloadType.PokemonList,
+                        hasIV: true
+                    );
+                    await Task.CompletedTask;
+                });
             }
+
+            await Task.CompletedTask;
         }
 
         private async Task SendGymsAsync(List<PokemonFortProto> forts, string username)
         {
-            await _grpcClientService.SendRpcPayloadAsync(forts, PayloadType.FortList, username);
+            // Fire off gRPC request on a separate thread
+            await Task.Run(async () =>
+            {
+                await _grpcClientService.SendRpcPayloadAsync(forts, PayloadType.FortList, username);
+                await Task.CompletedTask;
+            });
+            await Task.CompletedTask;
         }
 
         private async Task SendPlayerDataAsync(string username, ushort level, uint xp)
         {
-            var payload = new
+            // Fire off gRPC request on a separate thread
+            await Task.Run(async () =>
             {
-                username,
-                level,
-                xp,
-            };
-            await _grpcClientService.SendRpcPayloadAsync(payload, PayloadType.PlayerInfo, username);
+                var payload = new { username, level, xp };
+                await _grpcClientService.SendRpcPayloadAsync(payload, PayloadType.PlayerInfo, username);
+                await Task.CompletedTask;
+            });
+            await Task.CompletedTask;
         }
 
         #endregion
