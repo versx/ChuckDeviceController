@@ -36,7 +36,6 @@ var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
-
 builder.WebHost.UseConfiguration(config);
 builder.WebHost.UseUrls(config["Urls"]);
 
@@ -153,11 +152,11 @@ if (config.GetValue<bool>("ConvertMadData"))
 app.UseAuthorization();
 app.MapControllers();
 
-//Task.Run(async () =>
-//{
-//    var stopwatch = new Stopwatch();
-//    await MonitorResults(TimeSpan.FromMinutes(5), stopwatch);
-//});
+Task.Run(async () =>
+{
+    var stopwatch = new Stopwatch();
+    await MonitorResults(TimeSpan.FromMinutes(5), stopwatch);
+});
 
 app.Run();
 

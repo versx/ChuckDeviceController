@@ -38,6 +38,8 @@
 
     public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
+        private const uint SemaphoreLockWaitTimeMs = 3 * 1000;
+
         #region Variables
 
         private readonly ILogger<IDataProcessorService> _logger;
@@ -168,7 +170,7 @@
 
             ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
 
-            await _sem.WaitAsync(TimeSpan.FromSeconds(3), stoppingToken);
+            await _sem.WaitAsync(TimeSpan.FromMilliseconds(SemaphoreLockWaitTimeMs), stoppingToken);
             using var scope = _serviceScopeFactory.CreateAsyncScope();
             using var context = scope.ServiceProvider.GetRequiredService<MapDbContext>();
             //using var context = await _dbFactory.CreateDbContextAsync(stoppingToken);
@@ -1574,17 +1576,6 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
             //Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");
             return totalSeconds;
-        }
-
-        private static BulkOperation<T> GetBulkOptions<T>(Expression<Func<T, object>> keys) where T : BaseEntity
-        {
-            var options = new BulkOperation<T>
-            {
-                AllowDuplicateKeys = false,
-                UseTableLock = true,
-                OnMergeUpdateInputExpression = keys,
-            };
-            return options;
         }
 
         private async Task<TEntity?> GetEntity<TKey, TEntity>(MapDbContext context, TKey key)

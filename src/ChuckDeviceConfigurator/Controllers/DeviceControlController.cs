@@ -248,6 +248,8 @@
                 _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}'");
                 if (!IsAccountValid(account, minLevel, maxLevel))
                 {
+                    _logger.LogWarning($"[{device.Uuid}] Assigned account is no longer valid, switching accounts...");
+
                     // Current account does not meet requirements
                     await UpdateDeviceAsync(device);
 
@@ -261,6 +263,7 @@
                 // Clear pending account switch flag for device if set
                 if (device.IsPendingAccountSwitch)
                 {
+                    _logger.LogDebug($"[{device.Uuid}] Pending manual account switch, reverting flag to prevent loop.");
                     device.IsPendingAccountSwitch = false;
                     await _context.Devices.SingleMergeAsync(device, options =>
                     {

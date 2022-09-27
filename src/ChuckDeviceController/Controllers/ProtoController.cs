@@ -62,9 +62,9 @@
         }
 
         [HttpGet("/stats")]
-        public ActionResult GetStats()
+        public async Task<ActionResult> GetStats()
         {
-            return new JsonResult(new
+            var json = new JsonResult(new
             {
                 requests_per_second = ProtoDataStatistics.Instance.TotalRequestsProcessed,
                 protos_received = ProtoDataStatistics.Instance.TotalProtoPayloadsReceived,
@@ -72,6 +72,7 @@
                 entities_processed = ProtoDataStatistics.Instance.TotalEntitiesProcessed,
                 entities_upserted = ProtoDataStatistics.Instance.TotalEntitiesUpserted,
             });
+            return await Task.FromResult(json);
         }
 
         #endregion
