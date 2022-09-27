@@ -6,25 +6,46 @@
 
         #region Variables
 
-        private readonly ILogger _logger;
+        private static readonly ILogger _logger =
+            new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole()));
         private readonly CancellationTokenSource _stoppingCts = new();
         private Timer? _timer;
         private Task? _executingTask;
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the callback timer interval in milliseconds.
+        /// </summary>
         public virtual uint TimerIntervalMs { get; private set; } = DefaultIntervalMs;
 
-        public TimedHostedService(ILogger<TimedHostedService> logger)
+        #endregion
+
+        #region Constructor
+
+        public TimedHostedService()
         {
-            _logger = logger;
         }
 
+        #endregion
+
+        #region Impl Overrides
+
+        /// <summary>
+        /// Starts the callback timer of the hosted service.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
         public override Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Timed Background Service is starting.");
-
-            _timer = new Timer(InternalExecuteTask, null, TimeSpan.FromMilliseconds(TimerIntervalMs), TimeSpan.FromMilliseconds(-1));
+            _timer = new Timer(
+                InternalExecuteTask,
+                null,
+                TimeSpan.FromMilliseconds(TimerIntervalMs),
+                TimeSpan.FromMilliseconds(-1)
+            );
 
             return Task.CompletedTask;
         }
@@ -46,7 +67,10 @@
             finally
             {
                 // Wait until the task completes or the stop token triggers
-                await Task.WhenAny(_executingTask, Task.Delay(Timeout.Infinite, cancellationToken));
+                await Task.WhenAny(
+                    _executingTask,
+                    Task.Delay(Timeout.Infinite, cancellationToken)
+                );
             }
         }
 
@@ -57,17 +81,25 @@
         /// <returns>A <see cref="Task"/> that represents the long running operations.</returns>
         protected abstract Task RunJobAsync(CancellationToken stoppingToken);
 
+        #endregion
+
+        #region Private Methods
+
         private async Task ExecuteTaskAsync(CancellationToken stoppingToken)
         {
             await RunJobAsync(stoppingToken);
             _timer?.Change(TimeSpan.FromMilliseconds(TimerIntervalMs), TimeSpan.FromMilliseconds(-1));
         }
 
-        private void InternalExecuteTask(object state)
+        private void InternalExecuteTask(object? state)
         {
             _timer?.Change(Timeout.Infinite, 0);
             _executingTask = ExecuteTaskAsync(_stoppingCts.Token);
         }
+
+        #endregion
+
+        #region Dispose Implementation
 
         public override void Dispose()
         {
@@ -76,5 +108,7 @@
 
             GC.SuppressFinalize(this);
         }
+
+        #endregion
     }
 }

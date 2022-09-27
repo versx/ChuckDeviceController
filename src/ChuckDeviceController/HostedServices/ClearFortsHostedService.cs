@@ -30,7 +30,7 @@
         public ClearFortsHostedService(
             IOptions<ProcessingOptionsConfig> options,
             ILogger<IClearFortsHostedService> logger,
-            IDbContextFactory<MapDbContext> factory) : base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
+            IDbContextFactory<MapDbContext> factory)
         {
             _options = options.Value;
             _logger = logger;

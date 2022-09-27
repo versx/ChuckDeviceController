@@ -42,12 +42,13 @@
 
         private readonly ILogger<IDataProcessorService> _logger;
         private readonly IAsyncQueue<DataQueueItem> _taskQueue;
-        private readonly IDbContextFactory<MapDbContext> _dbFactory;
+        //private readonly IDbContextFactory<MapDbContext> _dbFactory;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
         private readonly IClearFortsHostedService _clearFortsService;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly IWebHostEnvironment _env;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private static readonly SemaphoreSlim _sem = new(0, 10);
 
         #endregion
@@ -68,22 +69,23 @@
             ILogger<IDataProcessorService> logger,
             IOptions<ProcessingOptionsConfig> options,
             IAsyncQueue<DataQueueItem> taskQueue,
-            IDbContextFactory<MapDbContext> factory,
+            //IDbContextFactory<MapDbContext> factory,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
             IClearFortsHostedService clearFortsService,
             IMemoryCacheHostedService memCache,
-            IWebHostEnvironment env)
-            : base(new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole())))
+            IWebHostEnvironment env,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
             _taskQueue = taskQueue;
-            _dbFactory = factory;
+            //_dbFactory = factory;
             _diskCache = diskCache;
             _grpcClientService = grpcClientService;
             _clearFortsService = clearFortsService;
             _memCache = memCache;
             _env = env;
+            _serviceScopeFactory = serviceScopeFactory;
 
             Options = options.Value;
         }
@@ -167,7 +169,9 @@
             ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
 
             await _sem.WaitAsync(TimeSpan.FromSeconds(3), stoppingToken);
-            using var context = await _dbFactory.CreateDbContextAsync(stoppingToken);
+            using var scope = _serviceScopeFactory.CreateAsyncScope();
+            using var context = scope.ServiceProvider.GetRequiredService<MapDbContext>();
+            //using var context = await _dbFactory.CreateDbContextAsync(stoppingToken);
 
             /*
             var playerData = data.Where(x => x.type == ProtoDataType.PlayerData)
