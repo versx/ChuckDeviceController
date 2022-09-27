@@ -2,6 +2,8 @@
 {
     public abstract class TimedHostedService : BackgroundService, IDisposable
     {
+        private const uint DefaultIntervalMs = 3 * 1000; // 3 seconds
+
         #region Variables
 
         private readonly ILogger _logger;
@@ -11,7 +13,7 @@
 
         #endregion
 
-        public virtual uint TimerIntervalMs { get; private set; } = 3 * 1000;
+        public virtual uint TimerIntervalMs { get; private set; } = DefaultIntervalMs;
 
         public TimedHostedService(ILogger<TimedHostedService> logger)
         {
