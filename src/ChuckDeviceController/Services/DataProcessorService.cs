@@ -17,9 +17,11 @@
 
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Utilities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Extensions.Json;
@@ -42,6 +44,12 @@
         private const uint SemaphoreLockWaitTimeMs = 3 * 1000;
 
         #region Variables
+
+        private static readonly Dictionary<List<Pokemon>, BulkOperation<Pokemon>> _pokemonToUpsert = new();
+        private static readonly Dictionary<List<Pokestop>, BulkOperation<Pokestop>> _pokestopsToUpsert = new();
+        private static readonly Dictionary<List<Gym>, BulkOperation<Gym>> _gymsToUpsert = new();
+        private static readonly Dictionary<List<Incident>, BulkOperation<Incident>> _incidentsToUpsert = new();
+        private static readonly Dictionary<List<Spawnpoint>, BulkOperation<Spawnpoint>> _spawnpointsToUpsert = new();
 
         private readonly ILogger<IDataProcessorService> _logger;
         private readonly IAsyncQueue<DataQueueItem> _taskQueue;
@@ -1281,33 +1289,32 @@
 
                 if (pokemonToUpsert.Count > 0)
                 {
-                    await context.Pokemon.BulkMergeAsync(pokemonToUpsert, options =>
+                    _pokemonToUpsert.Add(pokemonToUpsert, MySqlBulkUtils.GetBulkOptions<Pokemon>(p => new
                     {
-                        options.UseTableLock = true;
-                        // Only update IV specific columns
-                        options.OnMergeUpdateInputExpression = p => new
-                        {
-                            p.Id,
-                            p.PokemonId,
-                            p.Form,
-                            p.Costume,
-                            p.Gender,
-                            p.AttackIV,
-                            p.DefenseIV,
-                            p.StaminaIV,
-                            p.CP,
-                            p.Level,
-                            p.Size,
-                            p.Weight,
-                            p.Move1,
-                            p.Move2,
-                            p.Weather,
-                            p.PvpRankings,
-                        };
-                    });
+                        p.Id,
+                        p.PokemonId,
+                        p.Form,
+                        p.Costume,
+                        p.Gender,
+                        p.AttackIV,
+                        p.DefenseIV,
+                        p.StaminaIV,
+                        p.CP,
+                        p.Level,
+                        p.Size,
+                        p.Weight,
+                        p.Move1,
+                        p.Move2,
+                        p.Weather,
+                        p.PvpRankings,
+                    },
+                        allowDuplicateKeys: false,
+                        useTableLock: true
+                    ));
 
                     PrintBenchmarkTimes(DataLogLevel.PokemonEncounters, pokemonToUpsert, "Pokemon Encounters", sw);
 
+                    // TODO: Send gRPC in upsert method
                     await SendPokemonAsync(pokemonToUpsert);
                 }
 
@@ -1614,6 +1621,33 @@
                     : string.Empty;
             }
             _logger.LogInformation($"{nameof(DataProcessorService)} upserted {entities.Count:N0} {text}{time}");
+        }
+
+        private async Task ConsumeCache()
+        {
+            /*
+            using var scope = _serviceScopeFactory.CreateAsyncScope();
+            using var context = scope.ServiceProvider.GetRequiredService<MapDbContext>();
+            // TODO: Lock _pokemonToUpsert cache list and the rest
+            foreach (var (pokemon, options) in _pokemonToUpsert)
+            {
+                await context.Pokemon.BulkMergeAsync(pokemon, options);
+            }
+            // TODO: Combine dictionaries by bulk options
+            foreach (var (pokestop, options) in _pokestopsToUpsert)
+            {
+                await context.Pokestops.BulkMergeAsync(pokestop, options);
+            }
+            foreach (var (gym, options) in _gymsToUpsert)
+            {
+                await context.Gyms.BulkMergeAsync(gym, options);
+            }
+            foreach (var (spawnpoint, options) in _spawnpointsToUpsert)
+            {
+                await context.Spawnpoints.BulkMergeAsync(spawnpoint, options);
+            }
+            */
+            await Task.CompletedTask;
         }
 
         #endregion

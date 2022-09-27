@@ -8,8 +8,11 @@
 
     public static class MySqlBulkUtils
     {
-        public static BulkOperation<T> GetBulkOptions<T>(Expression<Func<T, object>> onMergeUpdateInputExpression, bool allowDuplicateKeys = false, bool useTableLock = true)
-            where T : BaseEntity
+        public static BulkOperation<T> GetBulkOptions<T>(
+            Expression<Func<T, object>> onMergeUpdateInputExpression,
+            bool allowDuplicateKeys = false,
+            bool useTableLock = true
+        ) where T : BaseEntity
         {
             var options = new BulkOperation<T>
             {
