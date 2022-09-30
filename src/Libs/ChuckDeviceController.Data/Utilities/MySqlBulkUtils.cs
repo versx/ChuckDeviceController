@@ -9,8 +9,9 @@
     public static class MySqlBulkUtils
     {
         public static BulkOperation<T> GetBulkOptions<T>(
-            Expression<Func<T, object>> onMergeUpdateInputExpression,
-            bool allowDuplicateKeys = false,
+            Expression<Func<T, object>>? onMergeUpdateInputExpression = null,
+            Expression<Func<T, object>>? ignoreOnMergeUpdateExpression = null,
+            bool allowDuplicateKeys = true,
             bool useTableLock = true
         ) where T : BaseEntity
         {
@@ -19,6 +20,7 @@
                 AllowDuplicateKeys = allowDuplicateKeys,
                 UseTableLock = useTableLock,
                 OnMergeUpdateInputExpression = onMergeUpdateInputExpression,
+                IgnoreOnMergeUpdateExpression = ignoreOnMergeUpdateExpression,
             };
             return options;
         }
