@@ -66,11 +66,17 @@
         {
             var json = new JsonResult(new
             {
-                requests_per_second = ProtoDataStatistics.Instance.TotalRequestsProcessed,
+                total_requests = ProtoDataStatistics.Instance.TotalRequestsProcessed,
                 protos_received = ProtoDataStatistics.Instance.TotalProtoPayloadsReceived,
                 protos_processed = ProtoDataStatistics.Instance.TotalProtosProcessed,
                 entities_processed = ProtoDataStatistics.Instance.TotalEntitiesProcessed,
                 entities_upserted = ProtoDataStatistics.Instance.TotalEntitiesUpserted,
+                data_times = new
+                {
+                    average_insert_count = ProtoDataStatistics.Instance.AverageTime.Count,
+                    average_insert_seconds = ProtoDataStatistics.Instance.AverageTime.TimeS,
+                    total_collected_benchmark_times = ProtoDataStatistics.Instance.Times.Count,
+                },
             });
             return await Task.FromResult(json);
         }
