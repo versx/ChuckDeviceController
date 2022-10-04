@@ -61,7 +61,7 @@ builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>, AsyncQueue<Pro
 builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueItem>>();
 
 builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
-builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
+//builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
 builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
 builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
 {
@@ -152,11 +152,11 @@ if (config.GetValue<bool>("ConvertMadData"))
 app.UseAuthorization();
 app.MapControllers();
 
-Task.Run(async () =>
-{
-    var stopwatch = new Stopwatch();
-    await MonitorResults(TimeSpan.FromMinutes(5), stopwatch);
-});
+//Task.Run(async () =>
+//{
+//    var stopwatch = new Stopwatch();
+//    await MonitorResults(TimeSpan.FromMinutes(5), stopwatch);
+//});
 
 app.Run();
 
