@@ -176,7 +176,6 @@
                 var hasArQuestReq = rawData.HaveAr;
                 switch (method)
                 {
-                    /*
                     case Method.GetPlayer:
                         try
                         {
@@ -200,7 +199,6 @@
                             _logger.LogError($"[{uuid}] Unable to decode GetPlayerOutProto: {ex}");
                         }
                         break;
-                    */
                     case Method.GetHoloholoInventory:
                         try
                         {
@@ -698,11 +696,11 @@
         private void CheckQueueLength()
         {
             var usage = $"{_protoQueue.Count:N0}/{Options.Queue.Protos.MaximumCapacity:N0}";
-            if (_protoQueue.Count == Options.Queue.Protos.MaximumCapacity)
+            if (_protoQueue.Count >= Options.Queue.Protos.MaximumCapacity)
             {
-                _logger.LogWarning($"Proto processing queue is at maximum capacity! {usage}");
+                _logger.LogError($"Proto processing queue is at maximum capacity! {usage}");
             }
-            else if (_protoQueue.Count > Options.Queue.Protos.MaximumSizeWarning)
+            else if (_protoQueue.Count >= Options.Queue.Protos.MaximumSizeWarning)
             {
                 _logger.LogWarning($"Proto processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
