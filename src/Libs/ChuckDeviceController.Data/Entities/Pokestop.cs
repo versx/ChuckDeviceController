@@ -366,6 +366,29 @@
                     case ConditionType.WithRaidElapsedTime:
                         infoData.Add("time", Convert.ToUInt64(conditionData.WithElapsedTime.ElapsedTimeMs / 1000));
                         break;
+                    case ConditionType.WithPokemonLevel:
+                        infoData.Add("must_be_max_level", conditionData.WithPokemonLevel.MaxLevel);
+                        break;
+                    case ConditionType.WithMaxCp:
+                        infoData.Add("with_max_cp", conditionData.WithMaxCp.MaxCp);
+                        break;
+                    case ConditionType.WithGblRank:
+                        infoData.Add("with_league_rank", conditionData.WithGblRank.Rank);
+                        break;
+                    case ConditionType.WithEncounterType:
+                        if (conditionData.WithEncounterType != null)
+                        {
+                            var info = conditionData.WithEncounterType;
+                            infoData.Add("encounter_type", info.EncounterType.Select(type => Convert.ToUInt32(type)));
+                        }
+                        break;
+                    case ConditionType.WithCombatType:
+                        if (conditionData.WithCombatType != null)
+                        {
+                            var info = conditionData.WithCombatType;
+                            infoData.Add("combat_type", info.CombatType.Select(type => Convert.ToUInt32(type)));
+                        }
+                        break;
                     case ConditionType.WithWinGymBattleStatus:
                     case ConditionType.WithSuperEffectiveCharge:
                     case ConditionType.WithUniquePokestop:
@@ -380,15 +403,10 @@
                     case ConditionType.WithUniquePokemon:
                     case ConditionType.WithUniquePokemonTeam:
                     case ConditionType.WithBuddyInterestingPoi:
-                    case ConditionType.WithPokemonLevel:
                     case ConditionType.WithSingleDay:
-                    case ConditionType.WithMaxCp:
                     case ConditionType.WithLuckyPokemon:
                     case ConditionType.WithLegendaryPokemon:
-                    case ConditionType.WithGblRank:
                     case ConditionType.WithCatchesInARow:
-                    case ConditionType.WithEncounterType:
-                    case ConditionType.WithCombatType:
                     case ConditionType.WithGeotargetedPoi:
                     case ConditionType.WithFriendLevel:
                     case ConditionType.WithSticker:
@@ -467,9 +485,11 @@
                         infoData.Add("amount", rewardData.MegaResource.Amount);
                         infoData.Add("pokemon_id", Convert.ToUInt32(rewardData.MegaResource.PokemonId));
                         break;
+                    case RewardType.LevelCap:
+                        infoData.Add("level_cap", rewardData.LevelCap);
+                        break;
                     case RewardType.AvatarClothing:
                     case RewardType.Quest:
-                    case RewardType.LevelCap:
                     case RewardType.Incident:
                     case RewardType.PlayerAttribute:
                     case RewardType.Unset:
