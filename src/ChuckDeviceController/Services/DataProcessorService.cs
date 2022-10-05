@@ -63,6 +63,7 @@
         private static readonly ConcurrentDictionaryQueue<Spawnpoint> _spawnpointsToUpsert = new();
         private static readonly ConcurrentDictionaryQueue<Cell> _cellsToUpsert = new();
         private static readonly ConcurrentDictionaryQueue<Weather> _weatherToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<Account> _accountsToUpsert = new();
 
         private static readonly SemaphoreSlim _parsingSem = new(0, EntitySemMax);
         private static readonly SemaphoreSlim _upsertSem = new(0, EntitySemMax);
@@ -72,6 +73,7 @@
 
         private readonly ILogger<IDataProcessorService> _logger;
         private readonly IAsyncQueue<DataQueueItem> _taskQueue;
+        private readonly IAsyncQueue<DataConsumableQueueItem<BaseEntity>> _entityQueue;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
         private readonly IClearFortsHostedService _clearFortsService;
@@ -97,6 +99,7 @@
             ILogger<IDataProcessorService> logger,
             IOptions<ProcessingOptionsConfig> options,
             IAsyncQueue<DataQueueItem> taskQueue,
+            IAsyncQueue<DataConsumableQueueItem<BaseEntity>> entityQueue,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
             IClearFortsHostedService clearFortsService,
@@ -106,6 +109,7 @@
         {
             _logger = logger;
             _taskQueue = taskQueue;
+            _entityQueue = entityQueue;
             _diskCache = diskCache;
             _grpcClientService = grpcClientService;
             _clearFortsService = clearFortsService;
@@ -350,11 +354,34 @@
 
             try
             {
+                using var scope = _serviceScopeFactory.CreateAsyncScope();
+                using var context = scope.ServiceProvider.GetRequiredService<ControllerDbContext>();
+
                 foreach (var player in playerData)
                 {
-                    // TODO: Update related accounts
                     var username = player.username;
                     var data = (GetPlayerOutProto)player.gpr;
+                    var account = await GetAccountEntity(context, username);
+                    if (account == null)
+                    {
+                        // Failed to retrieve account by username from cache and database
+                        continue;
+                    }
+
+                    await account.UpdateAsync(context, player, _memCache);
+                    if (_accountsToUpsert.ContainsKey(BulkOptions.AccountOnMergeUpdate))
+                    {
+                        _accountsToUpsert[BulkOptions.AccountOnMergeUpdate].Add(account);
+                    }
+                    else
+                    {
+                        _accountsToUpsert.TryAdd(BulkOptions.AccountOnMergeUpdate, new() { account });
+                    }
+
+                    if (account.SendWebhook)
+                    {
+                        await SendWebhookPayloadAsync(WebhookPayloadType.Account, account);
+                    }
                 }
             }
             catch (Exception ex)
@@ -365,7 +392,6 @@
             await Task.CompletedTask;
         }
 
-        //private async Task UpdateCellsAsync(IEnumerable<ulong> cells)
         private async Task UpdateCellsAsync(MapDbContext context, IEnumerable<ulong> cells)
         {
             var sw = new Stopwatch();
@@ -453,7 +479,6 @@
             await Task.CompletedTask;
         }
 
-        //private async Task UpdateClientWeatherAsync(IEnumerable<ClientWeatherProto> clientWeather)
         private async Task UpdateClientWeatherAsync(MapDbContext context, IEnumerable<ClientWeatherProto> clientWeather)
         {
             var sw = new Stopwatch();
@@ -537,7 +562,6 @@
             }
         }
 
-        //private async Task UpdateWildPokemonAsync(IEnumerable<dynamic> wildPokemon)
         private async Task UpdateWildPokemonAsync(MapDbContext context, IEnumerable<dynamic> wildPokemon)
         {
             var sw = new Stopwatch();
@@ -555,7 +579,7 @@
                     var timestampMs = wild.timestampMs;
                     var username = wild.username;
                     var isEvent = wild.isEvent;
-                    var pokemon = new Pokemon(data, cellId, username, isEvent);
+                    var pokemon = new Pokemon(data, cellId, username, isEvent); // TODO: Get entity from cache
                     var spawnpoint = await ParseSpawnpointAsync(context, pokemon, data.TimeTillHiddenMs, timestampMs);
                     if (spawnpoint != null)
                     {
@@ -612,7 +636,6 @@
             }
         }
 
-        //private async Task UpdateNearbyPokemonAsync(IEnumerable<dynamic> nearbyPokemon)
         private async Task UpdateNearbyPokemonAsync(MapDbContext context, IEnumerable<dynamic> nearbyPokemon)
         {
             var sw = new Stopwatch();
@@ -629,7 +652,7 @@
                     var data = (NearbyPokemonProto)nearby.data;
                     var username = nearby.username;
                     var isEvent = nearby.isEvent;
-                    var pokemon = new Pokemon(context, data, cellId, username, isEvent);
+                    var pokemon = new Pokemon(context, data, cellId, username, isEvent); // TODO: Get entity from cache
                     await pokemon.UpdateAsync(context, _memCache, updateIv: false);
 
                     if (_pokemonToUpsert.ContainsKey(BulkOptions.PokemonIgnoreOnMerge))
@@ -658,7 +681,6 @@
             }
         }
 
-        //private async Task UpdateMapPokemonAsync(IEnumerable<dynamic> mapPokemon)
         private async Task UpdateMapPokemonAsync(MapDbContext context, IEnumerable<dynamic> mapPokemon)
         {
             var sw = new Stopwatch();
@@ -675,7 +697,7 @@
                     var data = (MapPokemonProto)map.data;
                     var username = map.username;
                     var isEvent = map.isEvent;
-                    var pokemon = new Pokemon(context, data, cellId, username, isEvent);
+                    var pokemon = new Pokemon(context, data, cellId, username, isEvent); // TODO: Get entity from cache
                     await pokemon.UpdateAsync(context, _memCache, updateIv: false);
 
                     // Check if we have a pending disk encounter cache
@@ -721,7 +743,6 @@
             }
         }
 
-        //private async Task UpdateFortsAsync(string? username, IEnumerable<dynamic> forts)
         private async Task UpdateFortsAsync(MapDbContext context, string? username, IEnumerable<dynamic> forts)
         {
             var sw = new Stopwatch();
@@ -860,7 +881,6 @@
             }
         }
 
-        //private async Task UpdateFortDetailsAsync(IEnumerable<dynamic> fortDetails)
         private async Task UpdateFortDetailsAsync(MapDbContext context, IEnumerable<dynamic> fortDetails)
         {
             var sw = new Stopwatch();
@@ -953,7 +973,6 @@
             }
         }
 
-        //private async Task UpdateGymInfoAsync(IEnumerable<dynamic> gymInfos)
         private async Task UpdateGymInfoAsync(MapDbContext context, IEnumerable<dynamic> gymInfos)
         {
             var sw = new Stopwatch();
@@ -1042,7 +1061,6 @@
             }
         }
 
-        //private async Task UpdateQuestsAsync(IEnumerable<dynamic> quests)
         private async Task UpdateQuestsAsync(MapDbContext context, IEnumerable<dynamic> quests)
         {
             var sw = new Stopwatch();
@@ -1096,7 +1114,6 @@
             }
         }
 
-        //private async Task UpdateEncountersAsync(IEnumerable<dynamic> encounters)
         private async Task UpdateEncountersAsync(MapDbContext context, IEnumerable<dynamic> encounters)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
@@ -1178,7 +1195,6 @@
             }
         }
 
-        //private async Task UpdateDiskEncountersAsync(IEnumerable<dynamic> diskEncounters)
         private async Task UpdateDiskEncountersAsync(MapDbContext context, IEnumerable<dynamic> diskEncounters)
         {
             var sw = new Stopwatch();
@@ -1233,6 +1249,70 @@
             {
                 sw.Stop();
             }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void CheckQueueLength()
+        {
+            var usage = $"{_taskQueue.Count:N0}/{Options.Queue.Data.MaximumCapacity:N0}";
+            if (_taskQueue.Count >= Options.Queue.Data.MaximumCapacity)
+            {
+                _logger.LogError($"Data processing queue is at maximum capacity! {usage}");
+            }
+            else if (_taskQueue.Count >= Options.Queue.Data.MaximumSizeWarning)
+            {
+                _logger.LogWarning($"Data processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
+            }
+        }
+
+        private static void SetPvpRankings(Pokemon pokemon)
+        {
+            var pokemonId = (HoloPokemonId)pokemon.PokemonId;
+            PokemonForm? formId = pokemon.Form != null && pokemon.Form != 0
+                ? (PokemonForm)(pokemon.Form ?? 0)
+                : null;
+            PokemonGender? genderId = pokemon.Gender != null && pokemon.Gender != 0
+                ? (PokemonGender)(pokemon.Gender ?? 0)
+                : null;
+            var costumeId = (PokemonCostume)(pokemon.Costume ?? 0);
+            var iv = new IV(pokemon.AttackIV ?? 0, pokemon.DefenseIV ?? 0, pokemon.StaminaIV ?? 0);
+            var level = pokemon.Level ?? 0;
+            var pvpRanks = PvpRankGenerator.Instance.GetAllPvpLeagues(
+                pokemonId,
+                formId,
+                genderId,
+                costumeId,
+                iv,
+                level
+            );
+            pokemon.PvpRankings = pvpRanks != null && pvpRanks.Count > 0
+                ? (Dictionary<string, dynamic>)pvpRanks
+                : null;
+        }
+
+        private static WebhookPayloadType ConvertWebhookType(WebhookType type)
+        {
+            return type switch
+            {
+                WebhookType.Pokemon => WebhookPayloadType.Pokemon,
+                WebhookType.Pokestops => WebhookPayloadType.Pokestop,
+                WebhookType.Lures => WebhookPayloadType.Lure,
+                WebhookType.Invasions => WebhookPayloadType.Invasion,
+                WebhookType.Quests => WebhookPayloadType.Quest,
+                WebhookType.AlternativeQuests => WebhookPayloadType.AlternativeQuest,
+                WebhookType.Gyms => WebhookPayloadType.Gym,
+                WebhookType.GymInfo => WebhookPayloadType.GymInfo,
+                WebhookType.GymDefenders => WebhookPayloadType.GymDefender,
+                WebhookType.GymTrainers => WebhookPayloadType.GymTrainer,
+                WebhookType.Eggs => WebhookPayloadType.Egg,
+                WebhookType.Raids => WebhookPayloadType.Raid,
+                WebhookType.Weather => WebhookPayloadType.Weather,
+                WebhookType.Accounts => WebhookPayloadType.Account,
+                _ => WebhookPayloadType.Pokemon,
+            };
         }
 
         private async Task<Spawnpoint?> ParseSpawnpointAsync(MapDbContext context, Pokemon pokemon, int timeTillHiddenMs, ulong timestampMs)
@@ -1316,88 +1396,22 @@
             return null;
         }
 
-        #endregion
-
-        #region Private Methods
-
-        private void CheckQueueLength()
-        {
-            var usage = $"{_taskQueue.Count:N0}/{Options.Queue.Data.MaximumCapacity:N0}";
-            if (_taskQueue.Count >= Options.Queue.Data.MaximumCapacity)
-            {
-                _logger.LogError($"Data processing queue is at maximum capacity! {usage}");
-            }
-            else if (_taskQueue.Count >= Options.Queue.Data.MaximumSizeWarning)
-            {
-                _logger.LogWarning($"Data processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
-            }
-        }
-
-        private static void SetPvpRankings(Pokemon pokemon)
-        {
-            var pokemonId = (HoloPokemonId)pokemon.PokemonId;
-            PokemonForm? formId = pokemon.Form != null && pokemon.Form != 0
-                ? (PokemonForm)(pokemon.Form ?? 0)
-                : null;
-            PokemonGender? genderId = pokemon.Gender != null && pokemon.Gender != 0
-                ? (PokemonGender)(pokemon.Gender ?? 0)
-                : null;
-            var costumeId = (PokemonCostume)(pokemon.Costume ?? 0);
-            var iv = new IV(pokemon.AttackIV ?? 0, pokemon.DefenseIV ?? 0, pokemon.StaminaIV ?? 0);
-            var level = pokemon.Level ?? 0;
-            var pvpRanks = PvpRankGenerator.Instance.GetAllPvpLeagues(
-                pokemonId,
-                formId,
-                genderId,
-                costumeId,
-                iv,
-                level
-            );
-            pokemon.PvpRankings = pvpRanks != null && pvpRanks.Count > 0
-                ? (Dictionary<string, dynamic>)pvpRanks
-                : null;
-        }
-
-        private static WebhookPayloadType ConvertWebhookType(WebhookType type)
-        {
-            return type switch
-            {
-                WebhookType.Pokemon => WebhookPayloadType.Pokemon,
-                WebhookType.Pokestops => WebhookPayloadType.Pokestop,
-                WebhookType.Lures => WebhookPayloadType.Lure,
-                WebhookType.Invasions => WebhookPayloadType.Invasion,
-                WebhookType.Quests => WebhookPayloadType.Quest,
-                WebhookType.AlternativeQuests => WebhookPayloadType.AlternativeQuest,
-                WebhookType.Gyms => WebhookPayloadType.Gym,
-                WebhookType.GymInfo => WebhookPayloadType.GymInfo,
-                WebhookType.GymDefenders => WebhookPayloadType.GymDefender,
-                WebhookType.GymTrainers => WebhookPayloadType.GymTrainer,
-                WebhookType.Eggs => WebhookPayloadType.Egg,
-                WebhookType.Raids => WebhookPayloadType.Raid,
-                WebhookType.Weather => WebhookPayloadType.Weather,
-                WebhookType.Accounts => WebhookPayloadType.Account,
-                _ => WebhookPayloadType.Pokemon,
-            };
-        }
-
-        private static double BenchmarkAction(Action action, ushort precision = 5)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            action();
-            stopwatch.Start();
-
-            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
-            //Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");
-            return totalSeconds;
-        }
-
         private async Task<TEntity?> GetEntity<TKey, TEntity>(MapDbContext context, TKey key)
         {
             var entity = _memCache.Get<TKey, TEntity>(key);
             if (entity == null)
             {
                 entity = (TEntity?)await context.FindAsync(typeof(TEntity), key);
+            }
+            return entity;
+        }
+
+        private async Task<Account?> GetAccountEntity(ControllerDbContext context, string key)
+        {
+            var entity = _memCache.Get<string, Account>(key);
+            if (entity == null)
+            {
+                entity = await context.Accounts.FindAsync(key);
             }
             return entity;
         }
@@ -1439,6 +1453,7 @@
             var pokemonToUpsert = await _pokemonToUpsert.TakeAllAsync();
             var weatherToUpsert = await _weatherToUpsert.TakeAllAsync();
             var cellsToUpsert = await _cellsToUpsert.TakeAllAsync();
+            var accountsToUpsert = await _accountsToUpsert.TakeAllAsync();
 
             var entityCount = pokestopsToUpsert.Sum(x => x.Value?.Count ?? 0) +
                 gymsToUpsert.Sum(x => x.Value?.Count ?? 0) +
@@ -1447,7 +1462,8 @@
                 spawnpointsToUpsert.Sum(x => x.Value?.Count ?? 0) +
                 pokemonToUpsert.Sum(x => x.Value?.Count ?? 0) +
                 cellsToUpsert.Sum(x => x.Value?.Count ?? 0) +
-                weatherToUpsert.Sum(x => x.Value?.Count ?? 0);
+                weatherToUpsert.Sum(x => x.Value?.Count ?? 0) +
+                accountsToUpsert.Sum(x => x.Value?.Count ?? 0);
             if (entityCount == 0)
                 return;
 
@@ -1458,7 +1474,8 @@
                 spawnpointsToUpsert.Count +
                 pokemonToUpsert.Count +
                 cellsToUpsert.Count +
-                weatherToUpsert.Count;
+                weatherToUpsert.Count +
+                accountsToUpsert.Count;
 
             _logger.LogInformation($"Preparing to upsert {entityCount:N0} entities between {batchCount:N0} batches...");
 
@@ -1594,6 +1611,22 @@
                 }
 
                 await SendPokemonAsync(pokemonToUpsert.SelectMany(x => x.Value).ToList());
+            }
+
+            if (accountsToUpsert.Any())
+            {
+                // TODO: Use ControllerDbContext
+                foreach (var (options, accounts) in accountsToUpsert)
+                {
+                    try
+                    {
+                        // TODO: await context.Accounts.BulkMergeAsync(accounts, o => o = options, stoppingToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[Account] Error: {ex.Message}");
+                    }
+                }
             }
 
             sw.Stop();
