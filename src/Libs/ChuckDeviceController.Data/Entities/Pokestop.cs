@@ -23,6 +23,15 @@
         public const ushort DefaultLureTimeS = 1800; // TODO: Make 'DefaultLureTimeS' configurable
         public const string UnknownPokestopName = "Unknown";
 
+        private static readonly List<Item> AvailableLures = new()
+        {
+            Item.TroyDisk,
+            Item.TroyDiskGlacial,
+            Item.TroyDiskMossy,
+            Item.TroyDiskMagnetic,
+            Item.TroyDiskRainy,
+        };
+
         #endregion
 
         #region Properties
@@ -189,19 +198,17 @@
             PowerUpEndTimestamp = fortPowerLevel.PowerUpEndTimestamp;
 
             var lastModifiedTimestamp = Convert.ToUInt64(fortData.LastModifiedMs / 1000);
+            LastModifiedTimestamp = lastModifiedTimestamp;
+
             if (fortData.ActiveFortModifier != null)
             {
-                if (fortData.ActiveFortModifier.Contains(Item.TroyDisk) ||
-                    fortData.ActiveFortModifier.Contains(Item.TroyDiskGlacial) ||
-                    fortData.ActiveFortModifier.Contains(Item.TroyDiskMossy) ||
-                    fortData.ActiveFortModifier.Contains(Item.TroyDiskMagnetic) ||
-                    fortData.ActiveFortModifier.Contains(Item.TroyDiskRainy))
+                if (AvailableLures.Any(lure => fortData.ActiveFortModifier.Contains(lure)))
                 {
                     LureExpireTimestamp = lastModifiedTimestamp + DefaultLureTimeS;
                     LureId = Convert.ToUInt16(fortData.ActiveFortModifier[0]);
                 }
             }
-            LastModifiedTimestamp = lastModifiedTimestamp;
+
             if (!string.IsNullOrEmpty(fortData.ImageUrl))
             {
                 Url = fortData.ImageUrl;

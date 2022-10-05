@@ -7,6 +7,32 @@
 
     public static class BulkOptions
     {
+        public static readonly BulkOperation<Account> AccountOnMergeUpdate = MySqlBulkUtils.GetBulkOptions<Account>
+        (
+            onMergeUpdateInputExpression: p => new
+            {
+                p.Level,
+                p.Spins,
+                p.Tutorial,
+                p.CreationTimestamp,
+                p.Failed,
+                p.FailedTimestamp,
+                p.FirstWarningTimestamp,
+                p.HasWarn,
+                p.IsBanned,
+                p.LastEncounterLatitude,
+                p.LastEncounterLongitude,
+                p.LastEncounterTime,
+                p.LastUsedTimestamp,
+                p.SuspendedMessageAcknowledged,
+                p.WarnExpireTimestamp,
+                p.WarnMessageAcknowledged,
+                p.WasSuspended,
+            },
+            allowDuplicateKeys: true,
+            useTableLock: true
+        );
+
         public static readonly BulkOperation<Pokemon> PokemonOnMergeUpdate = MySqlBulkUtils.GetBulkOptions<Pokemon>
         (
             ignoreOnMergeUpdateExpression: p => new

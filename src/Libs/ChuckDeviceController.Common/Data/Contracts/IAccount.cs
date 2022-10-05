@@ -26,7 +26,7 @@
 
         ulong? CreationTimestamp { get; }
 
-        bool? Warn { get; }
+        bool? HasWarn { get; }
 
         ulong? WarnExpireTimestamp { get; }
 
@@ -36,7 +36,7 @@
 
         bool? WasSuspended { get; }
 
-        bool? Banned { get; }
+        bool? IsBanned { get; }
 
         ulong? LastUsedTimestamp { get; }
 
