@@ -13,10 +13,10 @@
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
-    using Z.BulkOperations;
-
+    
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -39,47 +39,38 @@
     // TODO: Make data processor timed hosted service interval configurable
     // TODO: Create DataConsumerService class
 
+    // TODO: Group protos from ProtoProcessorService, split list in DataProcessorService to pass/parse
+
+    // TODO: var leakMonitor = new ConnectionLeakWatcher(context);
+
     public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
         #region Constants
 
         // TODO: Make DataProcessorService constants configurable
-        private const uint ProcessIntervalMs = 3 * 1000;
-        private const uint DataConsumerIntervalMs = 10 * 1000;
+        private const uint ProcessIntervalMs = 5 * 1000;
         private const uint SemaphoreLockWaitTimeMs = 3 * 1000;
         private const int EntitySemMax = 3;
-        private const int UpsertBatchSize = 1000;
+        private const ushort DefaultDecimals = 4;
+        private const ushort CellScanIntervalS = 900;
 
         #endregion
 
         #region Variables
 
-        private static readonly ConcurrentDictionaryQueue<Pokemon> _pokemonToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Pokestop> _pokestopsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Gym> _gymsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<GymDefender> _gymDefendersToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<GymTrainer> _gymTrainersToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Incident>_incidentsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Spawnpoint> _spawnpointsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Cell> _cellsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Weather> _weatherToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Account> _accountsToUpsert = new();
-
         private static readonly SemaphoreSlim _parsingSem = new(0, EntitySemMax);
-        private static readonly SemaphoreSlim _upsertSem = new(0, EntitySemMax);
         private static readonly object _cellLock = new();
-        private static readonly System.Timers.Timer _timer = new();
         private static readonly TimeSpan _semWaitTime = TimeSpan.FromMilliseconds(SemaphoreLockWaitTimeMs);
 
         private readonly ILogger<IDataProcessorService> _logger;
         private readonly IAsyncQueue<DataQueueItem> _taskQueue;
-        private readonly IAsyncQueue<DataConsumableQueueItem<BaseEntity>> _entityQueue;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClientService _grpcClientService;
         private readonly IClearFortsHostedService _clearFortsService;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly IWebHostEnvironment _env;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IDataConsumerService _dataConsumerService;
 
         #endregion
 
@@ -99,17 +90,17 @@
             ILogger<IDataProcessorService> logger,
             IOptions<ProcessingOptionsConfig> options,
             IAsyncQueue<DataQueueItem> taskQueue,
-            IAsyncQueue<DataConsumableQueueItem<BaseEntity>> entityQueue,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
             IClearFortsHostedService clearFortsService,
             IMemoryCacheHostedService memCache,
             IWebHostEnvironment env,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            IDataConsumerService dataConsumerService)
         {
             _logger = logger;
             _taskQueue = taskQueue;
-            _entityQueue = entityQueue;
+            _dataConsumerService = dataConsumerService;
             _diskCache = diskCache;
             _grpcClientService = grpcClientService;
             _clearFortsService = clearFortsService;
@@ -118,10 +109,6 @@
             _serviceScopeFactory = serviceScopeFactory;
 
             Options = options.Value;
-
-            _timer.Interval = DataConsumerIntervalMs;
-            _timer.Elapsed += async (sender, e) => await ConsumeCacheAsync(new());
-            _timer.Start();
         }
 
         #endregion
@@ -197,15 +184,16 @@
 
             CheckQueueLength();
 
+            ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
+
+            await _parsingSem.WaitAsync(_semWaitTime, stoppingToken);
+
             var sw = new Stopwatch();
             if (ShowBenchmarkTimes)
             {
                 sw.Start();
             }
 
-            ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
-
-            await _parsingSem.WaitAsync(_semWaitTime, stoppingToken);
             using var scope = _serviceScopeFactory.CreateAsyncScope();
             using var context = scope.ServiceProvider.GetRequiredService<MapDbContext>();
 
@@ -213,7 +201,7 @@
                 .Where(x => x.type == ProtoDataType.PlayerData)
                 .Select(x => x.data)
                 .ToList();
-            if (playerData.Count > 0)
+            if (playerData.Any())
             {
                 // Insert player account data
                 await UpdatePlayerDataAsync(playerData);
@@ -329,15 +317,15 @@
                 await UpdateDiskEncountersAsync(context, diskEncounters);
             }
 
-            _parsingSem.Release();
-
             if (ShowBenchmarkTimes)
             {
                 sw.Stop();
-                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-                _logger.LogInformation($"Processed {workItem.Data.Count:N0} data entities to upsert...");
-                PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
+                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, DefaultDecimals);
+                //_logger.LogInformation($"Processed {workItem.Data.Count:N0} data entities in {totalSeconds}s to upsert...");
+                //PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
             }
+
+            _parsingSem.Release();
         }
 
         #endregion
@@ -369,14 +357,7 @@
                     }
 
                     await account.UpdateAsync(context, player, _memCache);
-                    if (_accountsToUpsert.ContainsKey(BulkOptions.AccountOnMergeUpdate))
-                    {
-                        _accountsToUpsert[BulkOptions.AccountOnMergeUpdate].Add(account);
-                    }
-                    else
-                    {
-                        _accountsToUpsert.TryAdd(BulkOptions.AccountOnMergeUpdate, new() { account });
-                    }
+                    await _dataConsumerService.AddAccountAsync(BulkOptions.AccountOnMergeUpdate, account);
 
                     if (account.SendWebhook)
                     {
@@ -388,8 +369,6 @@
             {
                 _logger.LogError($"UpdatePlayerDataAsync: {ex}");
             }
-
-            await Task.CompletedTask;
         }
 
         private async Task UpdateCellsAsync(MapDbContext context, IEnumerable<ulong> cells)
@@ -404,41 +383,48 @@
             {
                 lock (_cellLock)
                 {
+                    var now = DateTime.UtcNow.ToTotalSeconds();
                     // Convert cell ids to Cell models
-                    var s2cells = cells
-                        // Filter cells not already cached, cached cells expire every 60 minutes.
-                        // Once expired they will be updated when found again.
-                        .Where(cellId => !_memCache.IsSet<ulong, Cell>(cellId))
-                        .Select(cellId => new Cell(cellId)) //var cached = _memCache.Get<ulong, Cell>(cellId); ?? new Cell(cellId)
-                        .ToList();
+                    var s2cells = new List<Cell>();
+                    foreach (var cellId in cells)
+                    {
+                        var isCached = _memCache.IsSet<ulong, Cell>(cellId);
+                        var cached = GetEntity<ulong, Cell>(context, cellId).Result;
+                        if (!isCached || cached == null)
+                        {
+                            cached = new Cell(cellId);
+                            _memCache.Set(cellId, cached);
+                        }
+                        var needsUpdate = cached.Updated > now - CellScanIntervalS;
+                        if (!needsUpdate)
+                            continue;
+
+                        s2cells.Add(cached);
+                    }
+
+                    //var s2cells = cells
+                    //    .Select(cellId => GetEntity<ulong, Cell>(context, cellId).Result ?? new Cell(cellId))
+                    //    // Filter cells not already cached, cached cells expire every 60 minutes.
+                    //    // Once expired they will be updated when found again.
+                    //    .Where(cell => !_memCache.IsSet<ulong, Cell>(cell.Id) || cell.Updated > now - CellScanIntervalS)
+                    //    .ToList();
 
                     // Check if any new/need to be updated cells, otherwise skip
                     if (!s2cells.Any())
                         return;
 
-                    //using var context = await _dbFactory.CreateDbContextAsync();
-
                     /*
                     var cellsSql = s2cells.Select(cell => $"({cell.Id}, {cell.Level}, {cell.Latitude}, {cell.Longitude}, {ts})");
                     var args = string.Join(",", cellsSql);
                     var sql = string.Format(SqlQueries.S2Cells, args);
-
                     var result = await context.Database.ExecuteSqlRawAsync(sql);
                     */
                     // TODO: Check why result value returns double of entities amount it updated
 
-                    //await _s2cellsSem.WaitAsync(_semWaitTime);
-                    if (_cellsToUpsert.ContainsKey(BulkOptions.CellOnMergeUpdate))
-                    {
-                        _cellsToUpsert[BulkOptions.CellOnMergeUpdate].AddRange(s2cells);
-                    }
-                    else
-                    {
-                        if (!_cellsToUpsert.TryAdd(BulkOptions.CellOnMergeUpdate, s2cells))
-                        {
-                            _logger.LogError($"Failed to add cells to queue");
-                        }
-                    }
+                    _dataConsumerService.AddCellsAsync(BulkOptions.CellOnMergeUpdate, s2cells)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
 
                     //PrintBenchmarkTimes(DataLogLevel.S2Cells, s2cells, "S2 Cells", sw);
 
@@ -462,13 +448,11 @@
                             _logger.LogError($"Error: {ex}");
                         }
                     }
-                    //_s2cellsSem.Release();
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"UpdateCellsAsync: {ex}");
-                //_s2cellsSem.Release();
             }
 
             if (ShowBenchmarkTimes)
@@ -504,15 +488,7 @@
                 foreach (var wcell in weather)
                 {
                     await wcell.UpdateAsync(context, _memCache);
-
-                    if (_weatherToUpsert.ContainsKey(BulkOptions.WeatherOnMergeUpdate))
-                    {
-                        _weatherToUpsert[BulkOptions.WeatherOnMergeUpdate].Add(wcell);
-                    }
-                    else
-                    {
-                        _weatherToUpsert.TryAdd(BulkOptions.WeatherOnMergeUpdate, new() { wcell });
-                    }
+                    await _dataConsumerService.AddWeatherAsync(BulkOptions.WeatherOnMergeUpdate, wcell);
 
                     // Check if 'SendWebhook' flag was triggered, if so relay webhook payload to communicator
                     if (wcell.SendWebhook)
@@ -583,26 +559,11 @@
                     var spawnpoint = await ParseSpawnpointAsync(context, pokemon, data.TimeTillHiddenMs, timestampMs);
                     if (spawnpoint != null)
                     {
-                        if (_spawnpointsToUpsert.ContainsKey(BulkOptions.SpawnpointOnMergeUpdate))
-                        {
-                            _spawnpointsToUpsert[BulkOptions.SpawnpointOnMergeUpdate].Add(spawnpoint);
-                        }
-                        else
-                        {
-                            _spawnpointsToUpsert.TryAdd(BulkOptions.SpawnpointOnMergeUpdate, new() { spawnpoint });
-                        }
+                        await _dataConsumerService.AddSpawnpointAsync(BulkOptions.SpawnpointOnMergeUpdate, spawnpoint);
                     }
 
                     await pokemon.UpdateAsync(context, _memCache, updateIv: false);
-
-                    if (_pokemonToUpsert.ContainsKey(BulkOptions.PokemonIgnoreOnMerge))
-                    {
-                        _pokemonToUpsert[BulkOptions.PokemonIgnoreOnMerge].Add(pokemon);
-                    }
-                    else
-                    {
-                        _pokemonToUpsert.TryAdd(BulkOptions.PokemonIgnoreOnMerge, new() { pokemon });
-                    }
+                    await _dataConsumerService.AddPokemonAsync(BulkOptions.PokemonIgnoreOnMerge, pokemon);
 
                     if (pokemon.SendWebhook)
                     {
@@ -653,16 +614,9 @@
                     var username = nearby.username;
                     var isEvent = nearby.isEvent;
                     var pokemon = new Pokemon(context, data, cellId, username, isEvent); // TODO: Get entity from cache
-                    await pokemon.UpdateAsync(context, _memCache, updateIv: false);
 
-                    if (_pokemonToUpsert.ContainsKey(BulkOptions.PokemonIgnoreOnMerge))
-                    {
-                        _pokemonToUpsert[BulkOptions.PokemonIgnoreOnMerge].Add(pokemon);
-                    }
-                    else
-                    {
-                        _pokemonToUpsert.TryAdd(BulkOptions.PokemonIgnoreOnMerge, new() { pokemon });
-                    }
+                    await pokemon.UpdateAsync(context, _memCache, updateIv: false);
+                    await _dataConsumerService.AddPokemonAsync(BulkOptions.PokemonIgnoreOnMerge, pokemon);
 
                     if (pokemon.SendWebhook)
                     {
@@ -717,14 +671,7 @@
                         _logger.LogWarning($"Unable to fetch cached Pokemon disk encounter with id '{displayId}' from cache");
                     }
 
-                    if (_pokemonToUpsert.ContainsKey(BulkOptions.PokemonOptions))
-                    {
-                        _pokemonToUpsert[BulkOptions.PokemonOptions].Add(pokemon);
-                    }
-                    else
-                    {
-                        _pokemonToUpsert.TryAdd(BulkOptions.PokemonOptions, new() { pokemon });
-                    }
+                    await _dataConsumerService.AddPokemonAsync(BulkOptions.PokemonOptions, pokemon);
 
                     if (pokemon.SendWebhook)
                     {
@@ -743,6 +690,7 @@
             }
         }
 
+        // TODO: Separate Pokestop & Gym fort parsing methods
         private async Task UpdateFortsAsync(MapDbContext context, string? username, IEnumerable<dynamic> forts)
         {
             var sw = new Stopwatch();
@@ -788,14 +736,7 @@
                         }
                     }
 
-                    if (_pokestopsToUpsert.ContainsKey(BulkOptions.PokestopIgnoreOnMerge))
-                    {
-                        _pokestopsToUpsert[BulkOptions.PokestopIgnoreOnMerge].Add(pokestop);
-                    }
-                    else
-                    {
-                        _pokestopsToUpsert.TryAdd(BulkOptions.PokestopIgnoreOnMerge, new() { pokestop });
-                    }
+                    await _dataConsumerService.AddPokestopAsync(BulkOptions.PokestopIgnoreOnMerge, pokestop);
 
                     try
                     {
@@ -811,14 +752,7 @@
                                 }
                             }
 
-                            if (_incidentsToUpsert.ContainsKey(BulkOptions.IncidentOptions))
-                            {
-                                _incidentsToUpsert[BulkOptions.IncidentOptions].AddRange(pokestop.Incidents);
-                            }
-                            else
-                            {
-                                _incidentsToUpsert.TryAdd(BulkOptions.IncidentOptions, pokestop.Incidents.ToList());
-                            }
+                            await _dataConsumerService.AddIncidentsAsync(BulkOptions.IncidentOptions, pokestop.Incidents);
                         }
                     }
                     catch (Exception ex)
@@ -858,14 +792,7 @@
                         }
                     }
 
-                    if (_gymsToUpsert.ContainsKey(BulkOptions.GymOptions))
-                    {
-                        _gymsToUpsert[BulkOptions.GymOptions].Add(gym);
-                    }
-                    else
-                    {
-                        _gymsToUpsert.TryAdd(BulkOptions.GymOptions, new() { gym });
-                    }
+                    await _dataConsumerService.AddGymAsync(BulkOptions.GymOptions, gym);
 
                     _clearFortsService.AddGym(cellId, data.FortId);
                 }
@@ -913,14 +840,7 @@
                     }
                     if (pokestop.HasChanges)
                     {
-                        if (_pokestopsToUpsert.ContainsKey(BulkOptions.PokestopDetailsOnMergeUpdate))
-                        {
-                            _pokestopsToUpsert[BulkOptions.PokestopDetailsOnMergeUpdate].Add(pokestop);
-                        }
-                        else
-                        {
-                            _pokestopsToUpsert.TryAdd(BulkOptions.PokestopDetailsOnMergeUpdate, new() { pokestop });
-                        }
+                        await _dataConsumerService.AddPokestopAsync(BulkOptions.PokestopDetailsOnMergeUpdate, pokestop);
                     }
                 }
             }
@@ -951,14 +871,7 @@
                     }
                     if (gym.HasChanges)
                     {
-                        if (_gymsToUpsert.ContainsKey(BulkOptions.GymDetailsOnMergeUpdate))
-                        {
-                            _gymsToUpsert[BulkOptions.GymDetailsOnMergeUpdate].Add(gym);
-                        }
-                        else
-                        {
-                            _gymsToUpsert.TryAdd(BulkOptions.GymDetailsOnMergeUpdate, new() { gym });
-                        }
+                        await _dataConsumerService.AddGymAsync(BulkOptions.GymDetailsOnMergeUpdate, gym);
                     }
                 }
             }
@@ -1001,14 +914,7 @@
                     }
                     if (gym.HasChanges)
                     {
-                        if (_gymsToUpsert.ContainsKey(BulkOptions.GymDetailsOnMergeUpdate))
-                        {
-                            _gymsToUpsert[BulkOptions.GymDetailsOnMergeUpdate].Add(gym);
-                        }
-                        else
-                        {
-                            _gymsToUpsert.TryAdd(BulkOptions.GymDetailsOnMergeUpdate, new() { gym });
-                        }
+                        await _dataConsumerService.AddGymAsync(BulkOptions.GymDetailsOnMergeUpdate, gym);
                     }
 
                     var gymDefenders = data.GymStatusAndDefenders.GymDefender;
@@ -1020,14 +926,7 @@
                         if (gymDefenderData.TrainerPublicProfile != null)
                         {
                             var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
-                            if (_gymTrainersToUpsert.ContainsKey(BulkOptions.GymTrainerOptions))
-                            {
-                                _gymTrainersToUpsert[BulkOptions.GymTrainerOptions].Add(gymTrainer);
-                            }
-                            else
-                            {
-                                _gymTrainersToUpsert.TryAdd(BulkOptions.GymTrainerOptions, new() { gymTrainer });
-                            }
+                            await _dataConsumerService.AddGymTrainerAsync(BulkOptions.GymTrainerOptions, gymTrainer);
 
                             // Send webhook
                             await SendWebhookPayloadAsync(WebhookPayloadType.GymTrainer, new GymWithTrainer(gym, gymTrainer));
@@ -1035,14 +934,7 @@
                         if (gymDefenderData.MotivatedPokemon != null)
                         {
                             var gymDefender = new GymDefender(gymDefenderData, fortId);
-                            if (_gymDefendersToUpsert.ContainsKey(BulkOptions.GymDefenderOptions))
-                            {
-                                _gymDefendersToUpsert[BulkOptions.GymDefenderOptions].Add(gymDefender);
-                            }
-                            else
-                            {
-                                _gymDefendersToUpsert.TryAdd(BulkOptions.GymDefenderOptions, new() { gymDefender });
-                            }
+                            await _dataConsumerService.AddGymDefenderAsync(BulkOptions.GymDefenderOptions, gymDefender);
 
                             // Send webhook
                             await SendWebhookPayloadAsync(WebhookPayloadType.GymDefender, new GymWithDefender(gym, gymDefender));
@@ -1092,14 +984,7 @@
 
                     if (pokestop.HasChanges && (pokestop.HasQuestChanges || pokestop.HasAlternativeQuestChanges))
                     {
-                        if (_pokestopsToUpsert.ContainsKey(BulkOptions.PokestopIgnoreOnMerge))
-                        {
-                            _pokestopsToUpsert[BulkOptions.PokestopIgnoreOnMerge].Add(pokestop);
-                        }
-                        else
-                        {
-                            _pokestopsToUpsert.TryAdd(BulkOptions.PokestopIgnoreOnMerge, new() { pokestop });
-                        }
+                        await _dataConsumerService.AddPokestopAsync(BulkOptions.PokestopIgnoreOnMerge, pokestop);
                     }
                 }
             }
@@ -1126,7 +1011,6 @@
 
             try
             {
-                //var leakMonitor = new ConnectionLeakWatcher(context);
                 foreach (var encounter in encounters)
                 {
                     try
@@ -1149,29 +1033,16 @@
                         var spawnpoint = await ParseSpawnpointAsync(context, pokemon, data.Pokemon.TimeTillHiddenMs, timestampMs);
                         if (spawnpoint != null)
                         {
-                            if (_spawnpointsToUpsert.ContainsKey(BulkOptions.SpawnpointOnMergeUpdate))
-                            {
-                                _spawnpointsToUpsert[BulkOptions.SpawnpointOnMergeUpdate].Add(spawnpoint);
-                            }
-                            else
-                            {
-                                _spawnpointsToUpsert.TryAdd(BulkOptions.SpawnpointOnMergeUpdate, new() { spawnpoint });
-                            }
+                            await _dataConsumerService.AddSpawnpointAsync(BulkOptions.SpawnpointOnMergeUpdate, spawnpoint);
                         }
 
                         if (pokemon.HasIvChanges)
                         {
                             SetPvpRankings(pokemon);
                         }
+
                         await pokemon.UpdateAsync(context, _memCache, updateIv: true);
-                        if (_pokemonToUpsert.ContainsKey(BulkOptions.PokemonOnMergeUpdate))
-                        {
-                            _pokemonToUpsert[BulkOptions.PokemonOnMergeUpdate].Add(pokemon);
-                        }
-                        else
-                        {
-                            _pokemonToUpsert.TryAdd(BulkOptions.PokemonOnMergeUpdate, new() { pokemon });
-                        }
+                        await _dataConsumerService.AddPokemonAsync(BulkOptions.PokemonOnMergeUpdate, pokemon);
 
                         if (pokemon.SendWebhook)
                         {
@@ -1224,15 +1095,9 @@
                     {
                         SetPvpRankings(pokemon);
                     }
+
                     await pokemon.UpdateAsync(context, _memCache, updateIv: true);
-                    if (_pokemonToUpsert.ContainsKey(BulkOptions.PokemonOnMergeUpdate))
-                    {
-                        _pokemonToUpsert[BulkOptions.PokemonOnMergeUpdate].Add(pokemon);
-                    }
-                    else
-                    {
-                        _pokemonToUpsert.TryAdd(BulkOptions.PokemonOnMergeUpdate, new() { pokemon });
-                    }
+                    await _dataConsumerService.AddPokemonAsync(BulkOptions.PokemonOnMergeUpdate, pokemon);
 
                     if (pokemon.SendWebhook)
                     {
@@ -1398,12 +1263,20 @@
 
         private async Task<TEntity?> GetEntity<TKey, TEntity>(MapDbContext context, TKey key)
         {
-            var entity = _memCache.Get<TKey, TEntity>(key);
-            if (entity == null)
+            try
             {
-                entity = (TEntity?)await context.FindAsync(typeof(TEntity), key);
+                var entity = _memCache.Get<TKey, TEntity>(key);
+                if (entity == null)
+                {
+                    entity = (TEntity?)await context.FindAsync(typeof(TEntity), key);
+                }
+                return entity;
             }
-            return entity;
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+                return default;
+            }
         }
 
         private async Task<Account?> GetAccountEntity(ControllerDbContext context, string key)
@@ -1441,200 +1314,6 @@
                     : string.Empty;
             }
             _logger.LogInformation($"{nameof(DataProcessorService)} upserted {entities.Count:N0} {text}{time}");
-        }
-
-        private async Task ConsumeCacheAsync(CancellationToken stoppingToken)
-        {
-            var pokestopsToUpsert = await _pokestopsToUpsert.TakeAllAsync();
-            var gymsToUpsert = await _gymsToUpsert.TakeAllAsync();
-            var gymDefendersToUpsert = await _gymDefendersToUpsert.TakeAllAsync();
-            var gymTrainersToUpsert = await _gymTrainersToUpsert.TakeAllAsync();
-            var spawnpointsToUpsert = await _spawnpointsToUpsert.TakeAllAsync();
-            var pokemonToUpsert = await _pokemonToUpsert.TakeAllAsync();
-            var weatherToUpsert = await _weatherToUpsert.TakeAllAsync();
-            var cellsToUpsert = await _cellsToUpsert.TakeAllAsync();
-            var accountsToUpsert = await _accountsToUpsert.TakeAllAsync();
-
-            var entityCount = pokestopsToUpsert.Sum(x => x.Value?.Count ?? 0) +
-                gymsToUpsert.Sum(x => x.Value?.Count ?? 0) +
-                gymDefendersToUpsert.Sum(x => x.Value?.Count ?? 0) +
-                gymTrainersToUpsert.Sum(x => x.Value?.Count ?? 0) +
-                spawnpointsToUpsert.Sum(x => x.Value?.Count ?? 0) +
-                pokemonToUpsert.Sum(x => x.Value?.Count ?? 0) +
-                cellsToUpsert.Sum(x => x.Value?.Count ?? 0) +
-                weatherToUpsert.Sum(x => x.Value?.Count ?? 0) +
-                accountsToUpsert.Sum(x => x.Value?.Count ?? 0);
-            if (entityCount == 0)
-                return;
-
-            var batchCount = pokestopsToUpsert.Count +
-                gymsToUpsert.Count +
-                gymDefendersToUpsert.Count +
-                gymTrainersToUpsert.Count +
-                spawnpointsToUpsert.Count +
-                pokemonToUpsert.Count +
-                cellsToUpsert.Count +
-                weatherToUpsert.Count +
-                accountsToUpsert.Count;
-
-            _logger.LogInformation($"Preparing to upsert {entityCount:N0} entities between {batchCount:N0} batches...");
-
-            await _upsertSem.WaitAsync(_semWaitTime, stoppingToken);
-
-            var sw = new Stopwatch();
-            sw.Start();
-
-            using var scope = _serviceScopeFactory.CreateAsyncScope();
-            using var context = scope.ServiceProvider.GetRequiredService<MapDbContext>();
-
-            if (cellsToUpsert.Any())
-            {
-                try
-                {
-                    var ts = DateTime.UtcNow.ToTotalSeconds();
-                    var cellsSql = cellsToUpsert
-                        .SelectMany(x => x.Value)
-                        .Select(cell => $"({cell.Id}, {cell.Level}, {cell.Latitude}, {cell.Longitude}, {ts})");
-                    var args = string.Join(",", cellsSql);
-                    var sql = string.Format(SqlQueries.S2Cells, args);
-                    var result = await context.Database.ExecuteSqlRawAsync(sql, stoppingToken);
-                    _logger.LogInformation($"[Cell] Raw Result: {result}");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"[Cell] Error: {ex.Message}");
-                }
-            }
-
-            if (weatherToUpsert.Any())
-            {
-                foreach (var (options, weather) in weatherToUpsert)
-                {
-                    try
-                    {
-                        await context.Weather.BulkMergeAsync(weather, o => o = options, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"[Weather] Error: {ex.Message}");
-                    }
-                }
-            }
-
-            if (pokestopsToUpsert.Any())
-            {
-                foreach (var (options, pokestops) in pokestopsToUpsert)
-                {
-                    try
-                    {
-                        await context.Pokestops.BulkMergeAsync(pokestops, o => o = options, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"[Pokestop] Error: {ex.Message}");
-                    }
-                }
-            }
-
-            if (gymsToUpsert.Any())
-            {
-                foreach (var (options, gyms) in gymsToUpsert)
-                {
-                    try
-                    {
-                        await context.Gyms.BulkMergeAsync(gyms, o => o = options, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"[Gym] Error: {ex.Message}");
-                    }
-                }
-            }
-
-            if (gymTrainersToUpsert.Any())
-            {
-                foreach (var (options, gymTrainers) in gymTrainersToUpsert)
-                {
-                    try
-                    {
-                        await context.GymTrainers.BulkMergeAsync(gymTrainers, o => o = options, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"[GymTrainer] Error: {ex.Message}");
-                    }
-                }
-            }
-
-            if (gymDefendersToUpsert.Any())
-            {
-                foreach (var (options, gymDefenders) in gymDefendersToUpsert)
-                {
-                    try
-                    {
-                        await context.GymDefenders.BulkMergeAsync(gymDefenders, o => o = options, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"[GymDefender] Error: {ex.Message}");
-                    }
-                }
-            }
-
-            if (spawnpointsToUpsert.Any())
-            {
-                foreach (var (options, spawnpoints) in spawnpointsToUpsert)
-                {
-                    try
-                    {
-                        await context.Spawnpoints.BulkMergeAsync(spawnpoints, o => o = options, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"[Spawnpoint] Error: {ex.Message}");
-                    }
-                }
-            }
-
-            if (pokemonToUpsert.Any())
-            {
-                foreach (var (options, pokemon) in pokemonToUpsert)
-                {
-                    try
-                    {
-                        await context.Pokemon.BulkMergeAsync(pokemon, o => o = options, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"[Pokemon] Error: {ex.Message}");
-                    }
-                }
-
-                await SendPokemonAsync(pokemonToUpsert.SelectMany(x => x.Value).ToList());
-            }
-
-            if (accountsToUpsert.Any())
-            {
-                // TODO: Use ControllerDbContext
-                foreach (var (options, accounts) in accountsToUpsert)
-                {
-                    try
-                    {
-                        // TODO: await context.Accounts.BulkMergeAsync(accounts, o => o = options, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"[Account] Error: {ex.Message}");
-                    }
-                }
-            }
-
-            sw.Stop();
-
-            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-            _logger.LogInformation($"Upserted {entityCount:N0} entities in {totalSeconds}s between {batchCount:N0} batches");
-
-            ProtoDataStatistics.Instance.AddTimeEntry(new(Convert.ToUInt64(entityCount), totalSeconds));
         }
 
         #endregion

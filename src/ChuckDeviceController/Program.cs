@@ -14,9 +14,9 @@ using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.HostedServices;
+using ChuckDeviceController.Pvp;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
-using ChuckDeviceController.Pvp;
 
 #region Config
 
@@ -86,6 +86,7 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     return memCache;
 });
 builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
+builder.Services.AddSingleton<IDataConsumerService, DataConsumerService>();
 
 builder.Services.AddSingleton<AuthHeadersInterceptor>();
 
