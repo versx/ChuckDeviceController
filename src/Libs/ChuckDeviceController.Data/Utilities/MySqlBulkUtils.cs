@@ -4,18 +4,18 @@
 
     using Z.BulkOperations;
 
-    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Common.Data.Contracts;
 
     public static class MySqlBulkUtils
     {
-        public static BulkOperation<T> GetBulkOptions<T>(
-            Expression<Func<T, object>>? onMergeUpdateInputExpression = null,
-            Expression<Func<T, object>>? ignoreOnMergeUpdateExpression = null,
+        public static BulkOperation<TEntity> GetBulkOptions<TEntity>(
+            Expression<Func<TEntity, object>>? onMergeUpdateInputExpression = null,
+            Expression<Func<TEntity, object>>? ignoreOnMergeUpdateExpression = null,
             bool allowDuplicateKeys = true,
             bool useTableLock = true
-        ) where T : BaseEntity
+        ) where TEntity : class, IBaseEntity
         {
-            var options = new BulkOperation<T>
+            var options = new BulkOperation<TEntity>
             {
                 AllowDuplicateKeys = allowDuplicateKeys,
                 UseTableLock = useTableLock,

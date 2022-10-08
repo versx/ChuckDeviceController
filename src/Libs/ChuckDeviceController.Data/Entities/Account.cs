@@ -18,8 +18,8 @@
     {
         #region Constants
 
-        private const uint SuspendedPeriod = 2592000;
-        private const uint WarningPeriod = 604800;
+        private const uint SuspendedPeriodS = 2592000;
+        private const uint WarningPeriodS = 604800;
         private const string FailedGprBanned = "GPR_BANNED";
         private const string FailedGprRedWarning = "GPR_RED_WARNING";
         private const string FailedSuspended = "suspended";
@@ -210,10 +210,10 @@
                     if (FirstWarningTimestamp == null)
                     {
                         FirstWarningTimestamp = warnExpireTimestamp > 0
-                            ? warnExpireTimestamp - WarningPeriod
-                            : now - WarningPeriod;
+                            ? warnExpireTimestamp - WarningPeriodS
+                            : now - WarningPeriodS;
                     }
-                    FailedTimestamp = now - WarningPeriod;
+                    FailedTimestamp = now - WarningPeriodS;
                 }
                 Console.WriteLine($"[{Username}] Account '{accountData.Player.Name}' (Username: {Username}) Has Red Warning");
             }
@@ -224,7 +224,7 @@
                 // Occurs if an account was suspended and backend was not aware. Caused
                 // by manual database manipulation or similar.
                 Failed = FailedSuspended;
-                FailedTimestamp = now - SuspendedPeriod;
+                FailedTimestamp = now - SuspendedPeriodS;
                 Console.WriteLine($"[{Username}] Account '{accountData.Player.Name}' (Username: {Username}) Was Suspended");
             }
 

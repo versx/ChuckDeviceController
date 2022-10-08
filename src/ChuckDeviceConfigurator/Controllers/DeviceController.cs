@@ -3,13 +3,13 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.AspNetCore.Mvc.Rendering;
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions.Http.Caching;
 
     [Controller]
     [Authorize(Roles = RoleConsts.DevicesRole)]
@@ -18,15 +18,18 @@
         private readonly ILogger<DeviceController> _logger;
         private readonly ControllerDbContext _context;
         private readonly IJobControllerService _jobControllerService;
+        private readonly IMemoryCacheHostedService _memCache;
 
         public DeviceController(
             ILogger<DeviceController> logger,
             ControllerDbContext context,
-            IJobControllerService jobControllerService)
+            IJobControllerService jobControllerService,
+            IMemoryCacheHostedService memCache)
         {
             _logger = logger;
             _context = context;
             _jobControllerService = jobControllerService;
+            _memCache = memCache;
         }
 
         // GET: DeviceController
@@ -95,6 +98,8 @@
                 await _context.Devices.AddAsync(device);
                 await _context.SaveChangesAsync();
 
+                _memCache.Set(device.Uuid, device);
+
                 _jobControllerService.AddDevice(device);
 
                 return RedirectToAction(nameof(Index));
@@ -162,6 +167,8 @@
                 _context.Devices.Update(device);
                 await _context.SaveChangesAsync();
 
+                _memCache.Set(device.Uuid, device);
+
                 _jobControllerService.ReloadDevice(device, id);
 
                 return RedirectToAction(nameof(Index));
@@ -204,6 +211,8 @@
                 // Delete device from database
                 _context.Devices.Remove(device);
                 await _context.SaveChangesAsync();
+
+                _memCache.Unset<string, Device>(id);
 
                 _jobControllerService.RemoveDevice(id);
 
