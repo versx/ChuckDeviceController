@@ -59,9 +59,9 @@
                 x.LastEncounterTime == null &&
                 (x.LastUsedTimestamp == null || (x.LastUsedTimestamp > 0 && now - x.LastUsedTimestamp >= LastUsedM)) &&
                 x.FirstWarningTimestamp == null &&
-                (x.Warn == null || !(x.Warn ?? false)) &&
+                (x.HasWarn == null || !(x.HasWarn ?? false)) &&
                 (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
-                x.Banned == null &&
+                x.IsBanned == null &&
                 !((accountsInUse ?? new List<string>()).Contains(x.Username.ToLower()))
             );
             return account;

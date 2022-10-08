@@ -119,46 +119,12 @@
 
             if (oldIncident == null)
             {
-                /*
-                Pokestop? pokestop = null;
-                try
-                {
-                    pokestop = await context.Pokestops.FindAsync(PokestopId);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Incident: {ex}");
-                }
-
-                if (pokestop != null)
-                {
-                    SendWebhook = true;
-                }
-                */
-
                 SendWebhook = true;
             }
             else
             {
                 if (oldIncident.Expiration < Expiration || oldIncident.Character != Character)
                 {
-                    /*
-                    Pokestop? pokestop = null;
-                    try
-                    {
-                        pokestop = await context.Pokestops.FindAsync(PokestopId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Incident: {ex}");
-                    }
-
-                    if (pokestop != null)
-                    {
-                        SentWebhook = true;
-                    }
-                    */
-
                     SendWebhook = true;
                 }
             }

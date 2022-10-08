@@ -11,8 +11,8 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
+    using ChuckDeviceController.Geometry.Extensions;
 
     [Table("weather")]
     public partial class Weather : BaseEntity, IWeather, ICoordinateEntity, IWebhookEntity

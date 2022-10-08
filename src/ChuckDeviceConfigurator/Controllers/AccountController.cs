@@ -78,8 +78,8 @@
 
             var days7 = Strings.OneDayS * 7;
             var days30 = Strings.OneDayS * 30;
-            var bannedAccounts = accounts.Where(x => x.Failed == "banned" || x.Failed == "GPR_BANNED" || (x.Banned ?? false));
-            var warnedAccounts = accounts.Where(x => x.Failed == "GPR_RED_WARNING" || (x.Warn ?? false) || x.FirstWarningTimestamp > 0);
+            var bannedAccounts = accounts.Where(x => x.Failed == "banned" || x.Failed == "GPR_BANNED" || (x.IsBanned ?? false));
+            var warnedAccounts = accounts.Where(x => x.Failed == "GPR_RED_WARNING" || (x.HasWarn ?? false) || x.FirstWarningTimestamp > 0);
             var suspendedAccounts = accounts.Where(x => x.Failed == "suspended" || (x.WasSuspended ?? false));
 
             var model = new AccountStatisticsViewModel
