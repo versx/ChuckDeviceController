@@ -89,14 +89,25 @@
                         continue;
                     }
 
-                    Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
+                    //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
+
+                    await Task.Run(() =>
+                    {
+                        new Thread(async () =>
+                        {
+                            foreach (var workItem in workItems)
+                            {
+                                await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
+                            }
+                        })
+                        { IsBackground = true }.Start();
+                    }, stoppingToken);
 
                     //await Task.Run(async () =>
                     //{
                     //    foreach (var workItem in workItems)
                     //    {
-                    //        //await Task.Factory.StartNew(async () => await workItem(stoppingToken));
-                    //        await workItem(stoppingToken);
+                    //        await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
                     //    }
                     //}, stoppingToken);
 

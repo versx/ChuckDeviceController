@@ -19,7 +19,6 @@
         #region Constants
 
         private const uint DataConsumerIntervalMs = 10 * 1000;
-        private const int EntitySemMax = 3;
         private const uint SemaphoreLockWaitTimeMs = 3 * 1000;
 
         #endregion
@@ -27,7 +26,6 @@
         #region Variables
 
         //private static readonly ConcurrentDictionaryQueue<TEntity> _queue = new();
-
         private static readonly ConcurrentDictionaryQueue<Pokemon> _pokemonToUpsert = new();
         private static readonly ConcurrentDictionaryQueue<Pokestop> _pokestopsToUpsert = new();
         private static readonly ConcurrentDictionaryQueue<Gym> _gymsToUpsert = new();
@@ -42,14 +40,13 @@
         //private static readonly SemaphoreSlim _upsertSem = new(0, EntitySemMax);
         //private static readonly object _cellLock = new();
         private static readonly System.Timers.Timer _timer = new();
-        private static readonly TimeSpan _semWaitTime = TimeSpan.FromMilliseconds(SemaphoreLockWaitTimeMs);
 
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IGrpcClientService _grpcClientService;
         private readonly IDbContextFactory<MapDbContext> _factory;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        private MapDbContext context;
+        private MapDbContext _context;
 
         #endregion
 
@@ -65,6 +62,7 @@
             _grpcClientService = grpcClientService;
             _factory = factory;
             _serviceScopeFactory = serviceScopeFactory;
+            _context = _factory.CreateDbContext();
 
             _timer.Interval = DataConsumerIntervalMs;
             _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(new());
@@ -72,6 +70,8 @@
         }
 
         #endregion
+
+        #region Public Methods
 
         public async Task AddPokemonAsync(BulkOperation<Pokemon> options, Pokemon entity)
         {
@@ -459,7 +459,11 @@
         //    await Task.CompletedTask;
         //}
 
-        public async Task ConsumeDataAsync(CancellationToken stoppingToken)
+        #endregion
+
+        #region Private Methods
+
+        private async Task ConsumeDataAsync(CancellationToken stoppingToken)
         {
             try
             {
@@ -504,10 +508,7 @@
                 //using var scope = _serviceScopeFactory.CreateAsyncScope();
                 //using var context = scope.ServiceProvider.GetRequiredService<MapDbContext>();
 
-                if (context == null)
-                {
-                    context = await _factory.CreateDbContextAsync(stoppingToken);
-                }
+                _context ??= await _factory.CreateDbContextAsync(stoppingToken);
 
                 if (cellsToUpsert.Any())
                 {
@@ -519,12 +520,12 @@
                             .Select(cell => $"({cell.Id}, {cell.Level}, {cell.Latitude}, {cell.Longitude}, {ts})");
                         var args = string.Join(",", cellsSql);
                         var sql = string.Format(SqlQueries.S2Cells, args);
-                        var result = await context.Database.ExecuteSqlRawAsync(sql, stoppingToken);
+                        var result = await _context.Database.ExecuteSqlRawAsync(sql, stoppingToken);
                         _logger.LogInformation($"[Cell] Raw Result: {result}");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[Cell] Error: {ex.Message}");
+                        _logger.LogError($"[Cell] Error: {ex.InnerException?.Message ?? ex.Message}");
                     }
                 }
 
@@ -534,11 +535,11 @@
                     {
                         try
                         {
-                            await context.Weather.BulkMergeAsync(weather, o => o = options, stoppingToken);
+                            await _context.Weather.BulkMergeAsync(weather, o => o = options, stoppingToken);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[Weather] Error: {ex.Message}");
+                            _logger.LogError($"[Weather] Error: {ex.InnerException?.Message ?? ex.Message}");
                         }
                     }
                 }
@@ -549,11 +550,11 @@
                     {
                         try
                         {
-                            await context.Pokestops.BulkMergeAsync(pokestops, o => o = options, stoppingToken);
+                            await _context.Pokestops.BulkMergeAsync(pokestops, o => o = options, stoppingToken);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[Pokestop] Error: {ex.Message}");
+                            _logger.LogError($"[Pokestop] Error: {ex.InnerException?.Message ?? ex.Message}");
                         }
                     }
                 }
@@ -564,11 +565,11 @@
                     {
                         try
                         {
-                            await context.Gyms.BulkMergeAsync(gyms, o => o = options, stoppingToken);
+                            await _context.Gyms.BulkMergeAsync(gyms, o => o = options, stoppingToken);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[Gym] Error: {ex.Message}");
+                            _logger.LogError($"[Gym] Error: {ex.InnerException?.Message ?? ex.Message}");
                         }
                     }
                 }
@@ -579,11 +580,11 @@
                     {
                         try
                         {
-                            await context.GymTrainers.BulkMergeAsync(gymTrainers, o => o = options, stoppingToken);
+                            await _context.GymTrainers.BulkMergeAsync(gymTrainers, o => o = options, stoppingToken);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[GymTrainer] Error: {ex.Message}");
+                            _logger.LogError($"[GymTrainer] Error: {ex.InnerException?.Message ?? ex.Message}");
                         }
                     }
                 }
@@ -594,11 +595,11 @@
                     {
                         try
                         {
-                            await context.GymDefenders.BulkMergeAsync(gymDefenders, o => o = options, stoppingToken);
+                            await _context.GymDefenders.BulkMergeAsync(gymDefenders, o => o = options, stoppingToken);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[GymDefender] Error: {ex.Message}");
+                            _logger.LogError($"[GymDefender] Error: {ex.InnerException?.Message ?? ex.Message}");
                         }
                     }
                 }
@@ -609,11 +610,11 @@
                     {
                         try
                         {
-                            await context.Spawnpoints.BulkMergeAsync(spawnpoints, o => o = options, stoppingToken);
+                            await _context.Spawnpoints.BulkMergeAsync(spawnpoints, o => o = options, stoppingToken);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[Spawnpoint] Error: {ex.Message}");
+                            _logger.LogError($"[Spawnpoint] Error: {ex.InnerException?.Message ?? ex.Message}");
                         }
                     }
                 }
@@ -624,11 +625,11 @@
                     {
                         try
                         {
-                            await context.Pokemon.BulkMergeAsync(pokemon, o => o = options, stoppingToken);
+                            await _context.Pokemon.BulkMergeAsync(pokemon, o => o = options, stoppingToken);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[Pokemon] Error: {ex.Message}");
+                            _logger.LogError($"[Pokemon] Error: {ex.InnerException?.Message ?? ex.Message}");
                         }
                     }
 
@@ -646,7 +647,7 @@
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[Account] Error: {ex.Message}");
+                            _logger.LogError($"[Account] Error: {ex.InnerException?.Message ?? ex.Message}");
                         }
                     }
                 }
@@ -663,7 +664,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error: {ex}");
+                _logger.LogError($"ConsumeDataAsync: {ex}");
             }
         }
 
@@ -722,5 +723,7 @@
             }
             _logger.LogInformation($"{nameof(DataConsumerService)} upserted {entityCount:N0} {text}{time}");
         }
+
+        #endregion
     }
 }

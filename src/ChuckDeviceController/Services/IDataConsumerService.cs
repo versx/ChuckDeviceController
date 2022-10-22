@@ -6,7 +6,7 @@
 
     public interface IDataConsumerService
     {
-        Task ConsumeDataAsync(CancellationToken stoppingToken);
+        //Task ConsumeDataAsync(CancellationToken stoppingToken);
 
         // TODO: Use stateless/generic processing
         //Task AddEntityAsync(BulkOperation<TEntity> options, TEntity entity);

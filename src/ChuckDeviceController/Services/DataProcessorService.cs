@@ -16,7 +16,6 @@
     
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
@@ -37,9 +36,6 @@
     // TODO: Split up/refactor class
     // TODO: Add insert/upsertable entities into cache list to be upserted at x amount in list or if x amount of time has passed (if amount is not reached)?
     // TODO: Make data processor timed hosted service interval configurable
-    // TODO: Create DataConsumerService class
-
-    // TODO: Group protos from ProtoProcessorService, split list in DataProcessorService to pass/parse
 
     // TODO: var leakMonitor = new ConnectionLeakWatcher(context);
 
@@ -141,12 +137,14 @@
             {
                 if (_taskQueue.Count == 0)
                 {
+                    Thread.Sleep(1);
                     return;
                 }
 
                 var workItems = await _taskQueue.DequeueBulkAsync(Options.Queue.Data.MaximumBatchSize, stoppingToken);
                 if (!workItems.Any())
                 {
+                    Thread.Sleep(1);
                     return;
                 }
 
@@ -155,13 +153,25 @@
 
                 ProtoDataStatistics.Instance.TotalEntitiesProcessed += (uint)workItems.Sum(x => x.Data?.Count ?? 0);
 
-                await Task.Run(async () =>
+                await Task.Run(() =>
                 {
-                    foreach (var workItem in workItems)
+                    new Thread(async () =>
                     {
-                        await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
-                    }
+                        foreach (var workItem in workItems)
+                        {
+                            await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
+                        }
+                    })
+                    { IsBackground = true }.Start();
                 }, stoppingToken);
+
+                //await Task.Run(async () =>
+                //{
+                //    foreach (var workItem in workItems)
+                //    {
+                //        await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
+                //    }
+                //}, stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -1262,21 +1272,37 @@
         }
 
         private async Task<TEntity?> GetEntity<TKey, TEntity>(MapDbContext context, TKey key)
+            where TEntity : BaseEntity
         {
-            try
+            TEntity? GetFromCache(TKey key)
             {
-                var entity = _memCache.Get<TKey, TEntity>(key);
-                if (entity == null)
+                TEntity? entity = default;
+                try
                 {
-                    entity = (TEntity?)await context.FindAsync(typeof(TEntity), key);
+                    entity = _memCache.Get<TKey, TEntity>(key);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"GetEntity: {ex.InnerException?.Message ?? ex.Message}");
                 }
                 return entity;
             }
-            catch (Exception ex)
+            async Task<TEntity?> GetFromDatabase(TKey key)
             {
-                _logger.LogError($"Error: {ex}");
-                return default;
+                TEntity? entity = default;
+                try
+                {
+                    entity = await context.FindAsync<TEntity>(key);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"GetEntity: {ex.InnerException?.Message ?? ex.Message}");
+                }
+                return entity;
             }
+
+            var entity = GetFromCache(key) ?? await GetFromDatabase(key);
+            return entity;
         }
 
         private async Task<Account?> GetAccountEntity(ControllerDbContext context, string key)

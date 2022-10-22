@@ -68,7 +68,8 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unable to send proto payload to '{_options.Configurator}: {ex.Message}'");
+                //_logger.LogWarning($"Unable to send proto payload to '{_options.Configurator}: {ex.Message}'");
+                //_logger.LogWarning($"Unable to send proto payload to '{_options.Configurator}'");
             }
         }
 
@@ -96,7 +97,8 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Unable to get trainer leveling status from '{_options.Configurator}': {ex.Message}");
+                //_logger.LogWarning($"Unable to get trainer leveling status from '{_options.Configurator}': {ex.Message}");
+                //_logger.LogWarning($"Unable to get trainer leveling status from '{_options.Configurator}'");
             }
             return null;
         }
