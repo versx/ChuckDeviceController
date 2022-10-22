@@ -53,6 +53,7 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Configuration\ChuckDeviceController.Configuration.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions.Data\ChuckDeviceController.Extensions.Data.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
@@ -64,7 +65,6 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
-    <ProjectReference Include="..\Lib\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
   </ItemGroup>
 
   <ItemGroup>

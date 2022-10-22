@@ -81,7 +81,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MemoryBenchmarkPlugin", "Pl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Authorization.Jwt", "Libs\ChuckDeviceController.Authorization.Jwt\ChuckDeviceController.Authorization.Jwt.csproj", "{C0244C20-FE13-4914-84D0-F72734DB2BEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Extensions.Http", "Lib\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj", "{8898E45F-FCB3-455B-A538-43071704CC1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Extensions.Http", "Libs\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj", "{8898E45F-FCB3-455B-A538-43071704CC1A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicrosoftAuthProviderPlugin", "Plugins\MicrosoftAuthProviderPlugin\MicrosoftAuthProviderPlugin.csproj", "{E877FF18-659C-4556-B376-8C011369E935}"
 EndProject

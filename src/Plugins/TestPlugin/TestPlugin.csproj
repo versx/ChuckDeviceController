@@ -9,13 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
     <ProjectReference Include="..\..\Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
     <ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin.Helpers\ChuckDeviceController.Plugin.Helpers.csproj" />
     <ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
 	</ProjectReference>
-    <ProjectReference Include="..\..\Lib\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
   </ItemGroup>
 
   <ItemGroup>
