@@ -5,7 +5,7 @@
 
     public static class NetUtils
     {
-        public const string DefaultUserAgent = "Mozilla/5.0";
+        public const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36";
         public const string DefaultMimeType = "application/json";
         private const uint DefaultRequestTimeoutS = 30;
 
@@ -103,8 +103,8 @@
                     RequestUri = new Uri(url),
                     Headers =
                     {
-                        { HttpRequestHeader.Accept.ToString(), DefaultMimeType },
-                        { HttpRequestHeader.ContentType.ToString(), DefaultMimeType },
+                        //{ HttpRequestHeader.Accept.ToString(), DefaultMimeType },
+                        //{ HttpRequestHeader.ContentType.ToString(), DefaultMimeType },
                         { HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent },
                     },
                     //Content = new StringContent(payload, Encoding.UTF8, DefaultMimeType),
