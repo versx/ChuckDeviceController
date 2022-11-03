@@ -5,6 +5,8 @@
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
+    using Enum = System.Enum;
+
     public static class PokemonExtensions
     {
         public static HoloPokemonId GetPokemonFromName(this string name)

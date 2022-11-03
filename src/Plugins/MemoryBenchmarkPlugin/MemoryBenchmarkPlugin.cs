@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
@@ -10,6 +11,8 @@
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class MemoryBenchmarkPlugin : IPlugin
     {
+        public const string MemoryBenchmarkRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},MemoryBenchmark";
+
         #region Variables
 
         private readonly IUiHost _uiHost;

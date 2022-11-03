@@ -13,6 +13,8 @@
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
+    using Enum = System.Enum;
+
     // Credits: https://github.com/Chuckleslove
     // Credits: https://github.com/RealDeviceMap/RealDeviceMap/blob/development/Sources/RealDeviceMapLib/Misc/PVPStatsManager.swift
     // Credits: https://github.com/WatWowMap/Chuck/blob/master/src/services/pvp.js
