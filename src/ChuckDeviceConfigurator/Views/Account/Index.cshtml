@@ -151,6 +151,49 @@
         <br />
 
         <div class="card text-center">
+            <div class="card-header"><b>Suspension Statistics</b></div>
+            <div class="card-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-3 p-1">
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <h4 class="list-group-item-heading account-suspension">@Html.DisplayFor(model => model.Suspensions.Last24Hours)</h4>
+                                    <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Suspensions.Last24Hours)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 p-1">
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <h4 class="list-group-item-heading account-suspension">@Html.DisplayFor(model => model.Suspensions.Last7Days)</h4>
+                                    <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Suspensions.Last7Days)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 p-1">
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <h4 class="list-group-item-heading account-suspension">@Html.DisplayFor(model => model.Suspensions.Last30Days)</h4>
+                                    <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Suspensions.Last30Days)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 p-1">
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <h4 class="list-group-item-heading account-suspension">@Html.DisplayFor(model => model.Suspensions.Total)</h4>
+                                    <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Suspensions.Total)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+
+        <div class="card text-center">
             <div class="card-header"><b>Warning Statistics</b></div>
             <div class="card-body">
                 <div class="container">
@@ -212,6 +255,9 @@
                         @Html.DisplayNameFor(model => model.AccountLevelStatistics[0].Banned)
                     </th>
                     <th class="text-center">
+                        @Html.DisplayNameFor(model => model.AccountLevelStatistics[0].Suspended)
+                    </th>
+                    <th class="text-center">
                         @Html.DisplayNameFor(model => model.AccountLevelStatistics[0].Warning)
                     </th>
                     <th class="text-center">
@@ -246,6 +292,9 @@
                         </td>
                         <td>
                             <span class="badge bg-danger rounded-pill">@Html.DisplayFor(model => item.Banned)</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-danger rounded-pill">@Html.DisplayFor(model => item.Suspended)</span>
                         </td>
                         <td>
                             <span class="badge bg-warning rounded-pill">@Html.DisplayFor(model => item.Warning)</span>
@@ -357,10 +406,11 @@
                 columnDefs: [
                     { responsivePriority: 0, targets: 0 },
                     { responsivePriority: 1, targets: 1 },
-                    { responsivePriority: 5, targets: 2 },
+                    { responsivePriority: 4, targets: 2 },
                     { responsivePriority: 2, targets: 3 },
                     { responsivePriority: 3, targets: 4 },
-                    { responsivePriority: 4, targets: 5 },
+                    { responsivePriority: 6, targets: 5 },
+                    { responsivePriority: 5, targets: 6 },
                 ],
                 order: [[0, 'desc']],
                 paging: false,
