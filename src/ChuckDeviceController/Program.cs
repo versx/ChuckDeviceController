@@ -71,6 +71,9 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     var memCacheConfig = memCacheOptions?.Value ?? new();
     memCacheConfig.EntityNames = new List<string>
     {
+        // Controller entities
+        nameof(Device),
+        // Map entities
         nameof(Cell),
         nameof(Gym),
         nameof(Incident),
@@ -101,10 +104,23 @@ builder.Services.AddDistributedMemoryCache();
 var poolSize = config.GetValue<int>("DbContextPoolSize", 1024);
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContextPool<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
-builder.Services.AddDbContextPool<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
+//builder.Services.AddDbContextPool<MapDbContext>(options =>
+//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
+//builder.Services.AddDbContextPool<ControllerDbContext>(options =>
+//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
+builder.Services.AddDbContext<MapDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
+builder.Services.AddDbContext<ControllerDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
+//builder.Services.AddPooledDbContextFactory<MapDbContext>(options =>
+//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName)
+//, poolSize);
+//builder.Services.AddPooledDbContextFactory<ControllerDbContext>(options =>
+//  options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName)
+//, poolSize);
+
+//builder.Services.AddScoped<ChuckScopedFactory<MapDbContext>>();
+//builder.Services.AddScoped<ChuckScopedFactory<ControllerDbContext>>();
 
 #endregion
 
@@ -147,7 +163,7 @@ if (app.Environment.IsDevelopment())
 // Convert Map-A-Droid payload data if enabled
 if (config.GetValue<bool>("ConvertMadData"))
 {
-    app.UseMadData();
+    app.UseMadDataConverter();
 }
 
 app.UseAuthorization();

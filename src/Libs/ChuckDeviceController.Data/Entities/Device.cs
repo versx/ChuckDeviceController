@@ -16,7 +16,7 @@
             Key,
             JsonPropertyName("uuid"),
         ]
-        public string Uuid { get; set; }
+        public string Uuid { get; set; } = null!;
 
         [
             DisplayName("Instance Name"),
