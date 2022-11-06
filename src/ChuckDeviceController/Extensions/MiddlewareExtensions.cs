@@ -6,7 +6,7 @@
     {
         public static void UseMadDataConverter(this IApplicationBuilder builder, params object?[] args)
         {
-            builder.MapWhen(context =>
+            builder.UseWhen(context =>
                 context.IsRawDataRequest() &&
                 context.IsPostRequest() &&
                 context.IsOriginHeaderSet(),
