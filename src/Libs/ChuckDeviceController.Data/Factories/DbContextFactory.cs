@@ -7,6 +7,20 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions.Json;
 
+    public class ChuckScopedFactory<TDbContext> : IDbContextFactory<TDbContext>
+        where TDbContext : DbContext
+    {
+        private readonly IDbContextFactory<TDbContext> _pooledFactory;
+
+        public ChuckScopedFactory(
+            IDbContextFactory<TDbContext> pooledFactory)
+        {
+            _pooledFactory = pooledFactory;
+        }
+
+        public TDbContext CreateDbContext() => _pooledFactory.CreateDbContext();
+    }
+
     public static class DbContextFactory
     {
         public static T CreateDbContext<T>(string connectionString, string? assemblyName = null, bool autoDetectChanges = false) where T : DbContext
