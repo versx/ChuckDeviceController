@@ -23,6 +23,8 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Plugin;
 
+    using Type = System.Type;
+
     // TODO: Refactor class into separate smaller classes
 
     public class JobControllerService : IJobControllerService

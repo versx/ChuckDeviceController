@@ -1,52 +1,119 @@
 ﻿namespace ChuckDeviceController.Services
 {
     using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Data;
     using System.Diagnostics;
 
+    using Dapper;
     using Microsoft.EntityFrameworkCore;
-    using Z.BulkOperations;
+    using MySqlConnector;
 
     using ChuckDeviceController.Configuration;
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data;
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Services.Rpc;
+
+    // TODO: Add method to entities to build sql query with parameters
+
+    public class SqlQueryBuilder
+    {
+        public SqlQueryBuilder()
+        {
+        }
+
+        public string BuildQuery(string sqlQuery, params object[] args)
+        {
+            var query = string.Format(sqlQuery, args);
+            return query;
+        }
+
+        /// <summary>
+        /// Returns SQL query related to provided query type.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static string GetQuery(SqlQueryType type)
+        {
+            return type switch
+            {
+                // Update IV
+                //SqlQueryType.PokemonOnMergeUpdate => SqlQueries.PokemonOnMergeUpdate,
+                // Do not update IV
+                SqlQueryType.PokemonIgnoreOnMerge => SqlQueries.PokemonIgnoreOnMerge,
+                // Insert everything
+                SqlQueryType.PokemonOptions => SqlQueries.PokemonOptions,
+                // Do not update quest properties
+                SqlQueryType.PokestopIgnoreOnMerge => SqlQueries.PokestopIgnoreOnMerge,
+                // Only update name/url/updated
+                SqlQueryType.PokestopDetailsOnMergeUpdate => SqlQueries.PokestopDetailsOnMergeUpdate,
+                SqlQueryType.IncidentOptions => SqlQueries.IncidentOnMergeUpdate,
+                SqlQueryType.GymOptions => SqlQueries.GymOptions,
+                // Only update name/url/updated
+                SqlQueryType.GymDetailsOnMergeUpdate => SqlQueries.GymDetailsOnMergeUpdate,
+                SqlQueryType.GymDefenderOptions => SqlQueries.GymDefenderOnMergeUpdate,
+                SqlQueryType.GymTrainerOptions => SqlQueries.GymTrainerOnMergeUpdate,
+                SqlQueryType.SpawnpointOnMergeUpdate => SqlQueries.SpawnpointOnMergeUpdate,
+                SqlQueryType.CellOnMergeUpdate => SqlQueries.CellOnMergeUpdate,
+                SqlQueryType.WeatherOnMergeUpdate => SqlQueries.WeatherOnMergeUpdate,
+                _ => throw new NotImplementedException(),
+            };
+        }
+    }
+
+    public enum SqlQueryType
+    {
+        PokemonOnMergeUpdate,
+        PokemonIgnoreOnMerge,
+        PokemonOptions,
+        PokestopIgnoreOnMerge,
+        PokestopDetailsOnMergeUpdate,
+        IncidentOptions,
+        GymOptions,
+        GymDetailsOnMergeUpdate,
+        GymDefenderOptions,
+        GymTrainerOptions,
+        SpawnpointOnMergeUpdate,
+        CellOnMergeUpdate,
+        WeatherOnMergeUpdate,
+    }
 
     public class DataConsumerService : IDataConsumerService
     {
         #region Constants
 
-        private const uint DataConsumerIntervalMs = 10 * 1000;
-        private const uint SemaphoreLockWaitTimeMs = 3 * 1000;
+        private const string DbNull = "NULL";
+        private const uint DataConsumerIntervalS = 10;
+        public const uint SemaphoreLockWaitTimeS = 10;//3;
+        public const int EntitySemMax = 1;
 
         #endregion
 
         #region Variables
 
         //private static readonly ConcurrentDictionaryQueue<TEntity> _queue = new();
-        private static readonly ConcurrentDictionaryQueue<Pokemon> _pokemonToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Pokestop> _pokestopsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Gym> _gymsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<GymDefender> _gymDefendersToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<GymTrainer> _gymTrainersToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Incident> _incidentsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Spawnpoint> _spawnpointsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Cell> _cellsToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Weather> _weatherToUpsert = new();
-        private static readonly ConcurrentDictionaryQueue<Account> _accountsToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<Pokemon>> _pokemonToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<Pokestop>> _pokestopsToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<Gym>> _gymsToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<GymDefender>> _gymDefendersToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<GymTrainer>> _gymTrainersToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<Incident>> _incidentsToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<Spawnpoint>> _spawnpointsToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<Cell>> _cellsToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<Weather>> _weatherToUpsert = new();
+        private static readonly ConcurrentDictionaryQueue<string, List<Account>> _accountsToUpsert = new();
 
-        //private static readonly SemaphoreSlim _upsertSem = new(0, EntitySemMax);
-        //private static readonly object _cellLock = new();
+        private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(SemaphoreLockWaitTimeS);
         private static readonly System.Timers.Timer _timer = new();
 
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IGrpcClientService _grpcClientService;
-        private readonly IDbContextFactory<MapDbContext> _factory;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
-
-        private MapDbContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly string _connectionString;
+        private readonly SqlBulk _bulk;
 
         #endregion
 
@@ -55,222 +122,236 @@
         public DataConsumerService(
             ILogger<IDataConsumerService> logger,
             IGrpcClientService grpcClientService,
-            IDbContextFactory<MapDbContext> factory,
-            IServiceScopeFactory serviceScopeFactory)
+            IConfiguration configuration)
         {
             _logger = logger;
             _grpcClientService = grpcClientService;
-            _factory = factory;
-            _serviceScopeFactory = serviceScopeFactory;
-            _context = _factory.CreateDbContext();
+            _configuration = configuration;
 
-            _timer.Interval = DataConsumerIntervalMs;
+            _timer.Interval = DataConsumerIntervalS * 1000;
             _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(new());
             _timer.Start();
+
+            _connectionString = _configuration.GetConnectionString("DefaultConnection");
+            _bulk = new SqlBulk(_connectionString);
         }
 
         #endregion
 
         #region Public Methods
 
-        public async Task AddPokemonAsync(BulkOperation<Pokemon> options, Pokemon entity)
+        public async Task AddPokemonAsync(string query, Pokemon entity)
         {
-            if (_pokemonToUpsert.ContainsKey(options))
+            if (_pokemonToUpsert.ContainsKey(query))
             {
-                _pokemonToUpsert[options].Add(entity);
+                _pokemonToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_pokemonToUpsert.TryAdd(options, new() { entity }))
+                if (!_pokemonToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add wild Pokemon to queue");
+                    // Key already exists, add entity to queue
+                    _pokemonToUpsert[query].Add(entity);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddPokestopAsync(BulkOperation<Pokestop> options, Pokestop entity)
+        public async Task AddPokestopAsync(string query, Pokestop entity)
         {
-            if (_pokestopsToUpsert.ContainsKey(options))
+            if (_pokestopsToUpsert.ContainsKey(query))
             {
-                _pokestopsToUpsert[options].Add(entity);
+                _pokestopsToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_pokestopsToUpsert.TryAdd(options, new() { entity }))
+                if (!_pokestopsToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add Pokestop to queue");
+                    // Key already exists, add entity to queue
+                    _pokestopsToUpsert[query].Add(entity);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddGymAsync(BulkOperation<Gym> options, Gym entity)
+        public async Task AddGymAsync(string query, Gym entity)
         {
-            if (_gymsToUpsert.ContainsKey(options))
+            if (_gymsToUpsert.ContainsKey(query))
             {
-                _gymsToUpsert[options].Add(entity);
+                _gymsToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_gymsToUpsert.TryAdd(options, new() { entity }))
+                if (!_gymsToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add Gym to queue");
+                    // Key already exists, add entity to queue
+                    _gymsToUpsert[query].Add(entity);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddGymDefenderAsync(BulkOperation<GymDefender> options, GymDefender entity)
+        public async Task AddGymDefenderAsync(string query, GymDefender entity)
         {
-            if (_gymDefendersToUpsert.ContainsKey(options))
+            if (_gymDefendersToUpsert.ContainsKey(query))
             {
-                _gymDefendersToUpsert[options].Add(entity);
+                _gymDefendersToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_gymDefendersToUpsert.TryAdd(options, new() { entity }))
+                if (!_gymDefendersToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add Gym Defender to queue");
+                    // Key already exists, add entity to queue
+                    _gymDefendersToUpsert[query].Add(entity);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddGymTrainerAsync(BulkOperation<GymTrainer> options, GymTrainer entity)
+        public async Task AddGymTrainerAsync(string query, GymTrainer entity)
         {
-            if (_gymTrainersToUpsert.ContainsKey(options))
+            if (_gymTrainersToUpsert.ContainsKey(query))
             {
-                _gymTrainersToUpsert[options].Add(entity);
+                _gymTrainersToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_gymTrainersToUpsert.TryAdd(options, new() { entity }))
+                if (!_gymTrainersToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add Gym Trainer to queue");
+                    // Key already exists, add entity to queue
+                    _gymTrainersToUpsert[query].Add(entity);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddIncidentAsync(BulkOperation<Incident> options, Incident entity)
+        public async Task AddIncidentAsync(string query, Incident entity)
         {
-            if (_incidentsToUpsert.ContainsKey(options))
+            if (_incidentsToUpsert.ContainsKey(query))
             {
-                _incidentsToUpsert[options].Add(entity);
+                _incidentsToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_incidentsToUpsert.TryAdd(options, new() { entity }))
+                if (!_incidentsToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add Pokestop Incident to queue");
+                    // Key already exists, add entity to queue
+                    _incidentsToUpsert[query].Add(entity);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddIncidentsAsync(BulkOperation<Incident> options, IEnumerable<Incident> entities)
+        public async Task AddIncidentsAsync(string query, IEnumerable<Incident> entities)
         {
-            if (_incidentsToUpsert.ContainsKey(options))
+            if (_incidentsToUpsert.ContainsKey(query))
             {
-                _incidentsToUpsert[options].AddRange(entities);
+                _incidentsToUpsert[query].AddRange(entities);
             }
             else
             {
-                if (!_incidentsToUpsert.TryAdd(options, entities.ToList()))
+                var list = entities.ToList();
+                if (!_incidentsToUpsert.TryAdd(query, list))
                 {
-                    _logger.LogError($"Failed to add Pokestop Incident to queue");
+                    // Key already exists, add entity to queue
+                    _incidentsToUpsert[query].AddRange(list);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddSpawnpointAsync(BulkOperation<Spawnpoint> options, Spawnpoint entity)
+        public async Task AddSpawnpointAsync(string query, Spawnpoint entity)
         {
-            if (_spawnpointsToUpsert.ContainsKey(options))
+            if (_spawnpointsToUpsert.ContainsKey(query))
             {
-                _spawnpointsToUpsert[options].Add(entity);
+                _spawnpointsToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_spawnpointsToUpsert.TryAdd(options, new() { entity }))
+                if (!_spawnpointsToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add Spawnpoint to queue");
+                    // Key already exists, add entity to queue
+                    _spawnpointsToUpsert[query].Add(entity);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddWeatherAsync(BulkOperation<Weather> options, Weather entity)
+        public async Task AddWeatherAsync(string query, Weather entity)
         {
-            if (_weatherToUpsert.ContainsKey(options))
+            if (_weatherToUpsert.ContainsKey(query))
             {
-                _weatherToUpsert[options].Add(entity);
+                _weatherToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_weatherToUpsert.TryAdd(options, new() { entity }))
+                if (!_weatherToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add Weather cell to queue");
+                    // Key already exists, add entity to queue
+                    _weatherToUpsert[query].Add(entity);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddCellAsync(BulkOperation<Cell> options, Cell entity)
+        public async Task AddCellAsync(string query, Cell entity)
         {
-            if (_cellsToUpsert.ContainsKey(options))
+            if (_cellsToUpsert.ContainsKey(query))
             {
-                _cellsToUpsert[options].Add(entity);
+                _cellsToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_cellsToUpsert.TryAdd(options, new() { entity }))
+                if (!_cellsToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add S2 cell to queue");
+                    // Key already exists, add entity to queue
+                    _cellsToUpsert[query].Add(entity);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddCellsAsync(BulkOperation<Cell> options, IEnumerable<Cell> entities)
+        public async Task AddCellsAsync(string query, IEnumerable<Cell> entities)
         {
-            if (_cellsToUpsert.ContainsKey(options))
+            if (_cellsToUpsert.ContainsKey(query))
             {
-                _cellsToUpsert[options].AddRange(entities);
+                _cellsToUpsert[query].AddRange(entities);
             }
             else
             {
-                if (!_cellsToUpsert.TryAdd(options, entities.ToList()))
+                var list = entities.ToList();
+                if (!_cellsToUpsert.TryAdd(query, list))
                 {
-                    _logger.LogError($"Failed to add S2 cell to queue");
+                    // Key already exists, add entity to queue
+                    _cellsToUpsert[query].AddRange(list);
                 }
             }
 
             await Task.CompletedTask;
         }
 
-        public async Task AddAccountAsync(BulkOperation<Account> options, Account entity)
+        public async Task AddAccountAsync(string query, Account entity)
         {
-            if (_accountsToUpsert.ContainsKey(options))
+            if (_accountsToUpsert.ContainsKey(query))
             {
-                _accountsToUpsert[options].Add(entity);
+                _accountsToUpsert[query].Add(entity);
             }
             else
             {
-                if (!_accountsToUpsert.TryAdd(options, new() { entity }))
+                if (!_accountsToUpsert.TryAdd(query, new() { entity }))
                 {
-                    _logger.LogError($"Failed to add Account to queue");
+                    // Key already exists, add entity to queue
+                    _accountsToUpsert[query].Add(entity);
                 }
             }
 
@@ -467,17 +548,19 @@
         {
             try
             {
-                var pokestopsToUpsert = await _pokestopsToUpsert.TakeAllAsync();
-                var gymsToUpsert = await _gymsToUpsert.TakeAllAsync();
-                var gymDefendersToUpsert = await _gymDefendersToUpsert.TakeAllAsync();
-                var gymTrainersToUpsert = await _gymTrainersToUpsert.TakeAllAsync();
-                var spawnpointsToUpsert = await _spawnpointsToUpsert.TakeAllAsync();
-                var pokemonToUpsert = await _pokemonToUpsert.TakeAllAsync();
-                var weatherToUpsert = await _weatherToUpsert.TakeAllAsync();
-                var cellsToUpsert = await _cellsToUpsert.TakeAllAsync();
-                var accountsToUpsert = await _accountsToUpsert.TakeAllAsync();
+                var pokestopsToUpsert = await _pokestopsToUpsert.TakeAllAsync(stoppingToken);
+                var incidentsToUpsert = await _incidentsToUpsert.TakeAllAsync(stoppingToken);
+                var gymsToUpsert = await _gymsToUpsert.TakeAllAsync(stoppingToken);
+                var gymDefendersToUpsert = await _gymDefendersToUpsert.TakeAllAsync(stoppingToken);
+                var gymTrainersToUpsert = await _gymTrainersToUpsert.TakeAllAsync(stoppingToken);
+                var spawnpointsToUpsert = await _spawnpointsToUpsert.TakeAllAsync(stoppingToken);
+                var pokemonToUpsert = await _pokemonToUpsert.TakeAllAsync(stoppingToken);
+                var weatherToUpsert = await _weatherToUpsert.TakeAllAsync(stoppingToken);
+                var cellsToUpsert = await _cellsToUpsert.TakeAllAsync(stoppingToken);
+                var accountsToUpsert = await _accountsToUpsert.TakeAllAsync(stoppingToken);
 
                 var entityCount = pokestopsToUpsert.Sum(x => x.Value?.Count ?? 0) +
+                    incidentsToUpsert.Sum(x => x.Value?.Count ?? 0) +
                     gymsToUpsert.Sum(x => x.Value?.Count ?? 0) +
                     gymDefendersToUpsert.Sum(x => x.Value?.Count ?? 0) +
                     gymTrainersToUpsert.Sum(x => x.Value?.Count ?? 0) +
@@ -489,39 +572,22 @@
                 if (entityCount == 0)
                     return;
 
-                var batchCount = pokestopsToUpsert.Count +
-                    gymsToUpsert.Count +
-                    gymDefendersToUpsert.Count +
-                    gymTrainersToUpsert.Count +
-                    spawnpointsToUpsert.Count +
-                    pokemonToUpsert.Count +
-                    cellsToUpsert.Count +
-                    weatherToUpsert.Count +
-                    accountsToUpsert.Count;
-
-                _logger.LogInformation($"Preparing to upsert {entityCount:N0} entities between {batchCount:N0} batches...");
-                //await _upsertSem.WaitAsync(_semWaitTime, stoppingToken);
-
+                var results = new List<SqlBulkResult>();
                 var sw = new Stopwatch();
                 sw.Start();
-
-                //using var scope = _serviceScopeFactory.CreateAsyncScope();
-                //using var context = scope.ServiceProvider.GetRequiredService<MapDbContext>();
-
-                _context ??= await _factory.CreateDbContextAsync(stoppingToken);
 
                 if (cellsToUpsert.Any())
                 {
                     try
                     {
-                        var ts = DateTime.UtcNow.ToTotalSeconds();
-                        var cellsSql = cellsToUpsert
-                            .SelectMany(x => x.Value)
-                            .Select(cell => $"({cell.Id}, {cell.Level}, {cell.Latitude}, {cell.Longitude}, {ts})");
-                        var args = string.Join(",", cellsSql);
-                        var sql = string.Format(SqlQueries.S2Cells, args);
-                        var result = await _context.Database.ExecuteSqlRawAsync(sql, stoppingToken);
-                        _logger.LogInformation($"[Cell] Raw Result: {result}");
+                        var cells = cellsToUpsert.SelectMany(x => x.Value);
+                        var result = await _bulk.InsertInBulkAsync(
+                            SqlQueries.CellOnMergeUpdate,
+                            SqlQueries.CellValues,
+                            cells,
+                            stoppingToken
+                        );
+                        results.Add(result);
                     }
                     catch (Exception ex)
                     {
@@ -531,31 +597,61 @@
 
                 if (weatherToUpsert.Any())
                 {
-                    foreach (var (options, weather) in weatherToUpsert)
+                    try
                     {
-                        try
-                        {
-                            await _context.Weather.BulkMergeAsync(weather, o => o = options, stoppingToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[Weather] Error: {ex.InnerException?.Message ?? ex.Message}");
-                        }
+                        var weather = weatherToUpsert.SelectMany(x => x.Value);
+                        var result = await _bulk.InsertInBulkAsync(
+                            SqlQueries.WeatherOnMergeUpdate,
+                            SqlQueries.WeatherValues,
+                            weather,
+                            stoppingToken
+                        );
+                        results.Add(result);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[Weather] Error: {ex.InnerException?.Message ?? ex.Message}");
                     }
                 }
 
+                /*
                 if (pokestopsToUpsert.Any())
                 {
-                    foreach (var (options, pokestops) in pokestopsToUpsert)
+                    try
                     {
-                        try
-                        {
-                            await _context.Pokestops.BulkMergeAsync(pokestops, o => o = options, stoppingToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[Pokestop] Error: {ex.InnerException?.Message ?? ex.Message}");
-                        }
+                        var stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+                        var pokestops = pokestopsToUpsert.SelectMany(x => x.Value).ToList();
+                        await InsertInBulk(pokestops);
+
+                        stopwatch.Stop();
+                        var seconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+                        _logger.LogInformation($"[Pokestop] Upserted {pokestops.Count:N0} pokestops in {seconds}s");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[Pokestop] Error: {ex.InnerException?.Message ?? ex.Message}");
+                    }
+                }
+
+                if (incidentsToUpsert.Any())
+                {
+                    try
+                    {
+                        var stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+                        var incidents = incidentsToUpsert.SelectMany(x => x.Value).ToList();
+                        await InsertInBulk(incidents);
+
+                        stopwatch.Stop();
+                        var seconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+                        _logger.LogInformation($"[Incident] Upserted {incidents.Count:N0} incidents in {seconds}s");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[Incident] Error: {ex.InnerException?.Message ?? ex.Message}");
                     }
                 }
 
@@ -603,22 +699,28 @@
                         }
                     }
                 }
+                */
 
                 if (spawnpointsToUpsert.Any())
                 {
-                    foreach (var (options, spawnpoints) in spawnpointsToUpsert)
+                    try
                     {
-                        try
-                        {
-                            await _context.Spawnpoints.BulkMergeAsync(spawnpoints, o => o = options, stoppingToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[Spawnpoint] Error: {ex.InnerException?.Message ?? ex.Message}");
-                        }
+                        var spawnpoints = spawnpointsToUpsert.SelectMany(x => x.Value);
+                        var result = await _bulk.InsertInBulkAsync(
+                            SqlQueries.SpawnpointOnMergeUpdate,
+                            SqlQueries.SpawnpointValues,
+                            spawnpoints,
+                            stoppingToken
+                        );
+                        results.Add(result);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[Spawnpoint] Error: {ex.InnerException?.Message ?? ex.Message}");
                     }
                 }
 
+                /*
                 if (pokemonToUpsert.Any())
                 {
                     foreach (var (options, pokemon) in pokemonToUpsert)
@@ -651,16 +753,16 @@
                         }
                     }
                 }
+                */
 
                 sw.Stop();
 
-                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-                _logger.LogInformation($"Upserted {entityCount:N0} entities in {totalSeconds}s between {batchCount:N0} batches");
-                PrintBenchmarkTimes(DataLogLevel.Summary, entityCount, "total entities", sw);
+                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
+                _logger.LogInformation($"Upserted {entityCount:N0} entities in {totalSeconds}s");
+                //_logger.LogInformation($"Upserted {entityCount:N0} entities in {totalSeconds}s between {batchCount:N0} batches");
+                //PrintBenchmarkTimes(DataLogLevel.Summary, entityCount, "total entities", sw);
 
                 ProtoDataStatistics.Instance.AddTimeEntry(new(Convert.ToUInt64(entityCount), totalSeconds));
-
-                //_upsertSem.Release();
             }
             catch (Exception ex)
             {
@@ -724,6 +826,144 @@
             _logger.LogInformation($"{nameof(DataConsumerService)} upserted {entityCount:N0} {text}{time}");
         }
 
+        private static DataTable ConvertToDataTable<T>(IEnumerable<T> data)
+        {
+            var properties = TypeDescriptor.GetProperties(typeof(T));
+            var dataTable = new DataTable();
+
+            foreach (PropertyDescriptor prop in properties)
+            {
+                dataTable.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
+            }
+
+            foreach (var item in data)
+            {
+                var row = dataTable.NewRow();
+                foreach (PropertyDescriptor prop in properties)
+                {
+                    row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
+                }
+                dataTable.Rows.Add(row);
+            }
+
+            return dataTable;
+        }
+
         #endregion
+    }
+
+    public class SqlBulkResult
+    {
+        public bool Success { get; }
+
+        public int BatchCount { get; }
+
+        public int RowsAffected { get; }
+
+        public SqlBulkResult(bool success, int batchCount, int rowsAffected)
+        {
+            Success = success;
+            BatchCount = batchCount;
+            RowsAffected = rowsAffected;
+        }
+    }
+
+    public class SqlBulk
+    {
+        private static readonly ILogger<EntityRepository> _logger =
+            new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Warning)));
+        private static readonly SemaphoreSlim _sem = new(1, 1);
+        private static MySqlConnection? _connection;
+        private readonly string _connectionString;
+
+        public SqlBulk(string connectionString)
+        {
+            _connectionString = connectionString;
+        }
+
+        public async Task<SqlBulkResult> InsertInBulkAsync<TEntity>(
+            string sqlQuery,
+            string sqlValues,
+            IEnumerable<TEntity> entities,
+            CancellationToken stoppingToken = default)
+            where TEntity : BaseEntity
+        {
+            await _sem.WaitAsync(stoppingToken); //TimeSpan.FromSeconds(DataConsumerService.SemaphoreLockWaitTimeS)
+
+            bool success;
+            var rowsAffected = 0;
+            var batchCount = 0;
+
+            try
+            {
+                //_connection = await EntityRepository.CreateConnectionAsync(_connectionString, openConnection: true, stoppingToken);
+                _connection = EntityRepository.CreateConnection(_connectionString);
+                //using var connection = new MySqlConnection(connectionString);
+
+                var sqls = GenerateSqlQueryBatches(sqlQuery, sqlValues, entities);
+                batchCount = sqls.Count();
+
+                foreach (var (sql, args) in sqls)
+                {
+                    // TODO: Use Stored Procedure for upsert queries
+                    var cmdDef = new CommandDefinition(sql, (object)args, commandTimeout: 10);
+                    rowsAffected = await _connection.ExecuteAsync(cmdDef);
+                    //await connection.ExecuteAsync(sql, (object)args);
+                }
+
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                Console.WriteLine($"Error: {ex}");
+            }
+
+            _sem.Release();
+            return new SqlBulkResult(success, batchCount, rowsAffected);
+        }
+
+        // https://stackoverflow.com/a/56250588
+        private static IEnumerable<(string, dynamic)> GenerateSqlQueryBatches<TEntity>(
+            string sqlQuery,
+            string sqlValues,
+            IEnumerable<TEntity> entities,
+            ushort batchSize = 1000) //1000
+            where TEntity : BaseEntity
+        {
+            var sqlsToExecute = new List<(string, dynamic)>();
+            var batchCount = (int)Math.Ceiling((double)entities.Count() / batchSize);
+
+            for (var i = 0; i < batchCount; i++)
+            {
+                var entityBatch = entities.Skip(i * batchSize).Take(batchSize);
+                var queryValues = string.Join(",", entityBatch.Select(x => sqlValues));
+                var query = string.Format(sqlQuery, queryValues);
+                sqlsToExecute.Add((query, entityBatch));
+            }
+
+            return sqlsToExecute;
+        }
+
+        private static IEnumerable<(string, dynamic)> GenerateSqlQueryBatchesRaw<TEntity>(
+            string sqlQuery,
+            string sqlValues,
+            IEnumerable<TEntity> entities,
+            ushort batchSize = 1000)
+            where TEntity : BaseEntity
+        {
+            var sqlsToExecute = new List<(string, dynamic)>();
+            var batchCount = (int)Math.Ceiling((double)entities.Count() / batchSize);
+
+            for (var i = 0; i < batchCount; i++)
+            {
+                var entityBatch = entities.Skip(i * batchSize).Take(batchSize);
+                var queryValues = string.Join(",", entityBatch.Select(x => sqlValues));
+                var query = string.Format(sqlQuery, queryValues);
+                sqlsToExecute.Add((query, entityBatch));
+            }
+
+            return sqlsToExecute;
+        }
     }
 }

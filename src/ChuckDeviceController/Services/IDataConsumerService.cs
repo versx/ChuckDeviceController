@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Services
 {
-    using Z.BulkOperations;
-
     using ChuckDeviceController.Data.Entities;
 
     public interface IDataConsumerService
@@ -13,28 +11,28 @@
 
         //Task AddEntitiesAsync(BulkOperation<TEntity> options, IEnumerable<TEntity> entities);
 
-        Task AddPokemonAsync(BulkOperation<Pokemon> options, Pokemon entity);
+        Task AddPokemonAsync(string query, Pokemon entity);
 
-        Task AddPokestopAsync(BulkOperation<Pokestop> options, Pokestop entity);
+        Task AddPokestopAsync(string query, Pokestop entity);
 
-        Task AddGymAsync(BulkOperation<Gym> options, Gym entity);
+        Task AddGymAsync(string query, Gym entity);
 
-        Task AddGymDefenderAsync(BulkOperation<GymDefender> options, GymDefender entity);
+        Task AddGymDefenderAsync(string query, GymDefender entity);
 
-        Task AddGymTrainerAsync(BulkOperation<GymTrainer> options, GymTrainer entity);
+        Task AddGymTrainerAsync(string query, GymTrainer entity);
 
-        Task AddIncidentAsync(BulkOperation<Incident> options, Incident entity);
+        Task AddIncidentAsync(string query, Incident entity);
 
-        Task AddIncidentsAsync(BulkOperation<Incident> options, IEnumerable<Incident> entities);
+        Task AddIncidentsAsync(string query, IEnumerable<Incident> entities);
 
-        Task AddSpawnpointAsync(BulkOperation<Spawnpoint> options, Spawnpoint entity);
+        Task AddSpawnpointAsync(string query, Spawnpoint entity);
 
-        Task AddWeatherAsync(BulkOperation<Weather> options, Weather entity);
+        Task AddWeatherAsync(string query, Weather entity);
 
-        Task AddCellAsync(BulkOperation<Cell> options, Cell entity);
+        Task AddCellAsync(string query, Cell entity);
 
-        Task AddCellsAsync(BulkOperation<Cell> options, IEnumerable<Cell> entities);
+        Task AddCellsAsync(string query, IEnumerable<Cell> entities);
 
-        Task AddAccountAsync(BulkOperation<Account> options, Account entity);
+        Task AddAccountAsync(string query, Account entity);
     }
 }
