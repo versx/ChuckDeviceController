@@ -6,6 +6,7 @@
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
 
@@ -55,33 +56,7 @@
 
         public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache, bool update = false)
         {
-            Spawnpoint? oldSpawnpoint = null;
-            try
-            {
-                // Check cache first for spawnpoint entity
-                var cached = memCache.Get<ulong, Spawnpoint>(Id);
-                if (cached != null)
-                {
-                    oldSpawnpoint = cached;
-                }
-                else
-                {
-                    oldSpawnpoint = await context.Spawnpoints.FindAsync(Id);
-                    if (oldSpawnpoint != null)
-                    {
-                        memCache.Set(Id, oldSpawnpoint);
-                    }
-                    else
-                    {
-                        memCache.Set(Id, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Spawnpoint: {ex}");
-            }
-
+            var oldSpawnpoint = await EntityRepository.GetEntityAsync<ulong, Spawnpoint, MapDbContext>(context, memCache, Id);
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
             LastSeen = now;

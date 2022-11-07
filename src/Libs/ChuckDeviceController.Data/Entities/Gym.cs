@@ -10,6 +10,7 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Extensions;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
 
@@ -208,32 +209,7 @@
         public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache)
         {
             var webhooks = new Dictionary<WebhookType, Gym>();
-            Gym? oldGym = null;
-            try
-            {
-                // Check cache first for gym entity
-                var cached = memCache.Get<string, Gym>(Id);
-                if (cached != null)
-                {
-                    oldGym = cached;
-                }
-                else
-                {
-                    oldGym = await context.Gyms.FindAsync(Id);
-                    if (oldGym != null)
-                    {
-                        memCache.Set(Id, oldGym);
-                    }
-                    else
-                    {
-                        memCache.Set(Id, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Gym: {ex}");
-            }
+            var oldGym = await EntityRepository.GetEntityAsync<string, Gym, MapDbContext>(context, memCache, Id);
 
             if (RaidIsExclusive != null && (RaidIsExclusive ?? false) && ExRaidBossId > 0)
             {

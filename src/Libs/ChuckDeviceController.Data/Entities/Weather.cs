@@ -10,6 +10,7 @@
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Geometry.Extensions;
@@ -111,33 +112,7 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
-            Weather? oldWeather = null;
-            try
-            {
-                // Check cache first for client weather entity
-                var cached = memCache.Get<long, Weather>(Id);
-                if (cached != null)
-                {
-                    oldWeather = cached;
-                }
-                else
-                {
-                    oldWeather = await context.Weather.FindAsync(Id);
-                    if (oldWeather != null)
-                    {
-                        memCache.Set(Id, oldWeather);
-                    }
-                    else
-                    {
-                        memCache.Set(Id, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Weather: {ex}");
-            }
-
+            var oldWeather = await EntityRepository.GetEntityAsync<long, Weather, MapDbContext>(context, memCache, Id);
             if (oldWeather == null)
             {
                 SendWebhook = true;

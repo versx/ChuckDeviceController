@@ -10,6 +10,7 @@
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Geometry.Extensions;
@@ -496,31 +497,7 @@
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
-            Pokemon? oldPokemon = null;
-            try
-            {
-                var cached = memCache.Get<string, Pokemon>(Id);
-                if (cached != null)
-                {
-                    oldPokemon = cached;
-                }
-                else
-                {
-                    oldPokemon = await context.Pokemon.FindAsync(Id); // IsEvent: false
-                    if (oldPokemon != null)
-                    {
-                        memCache.Set(Id, oldPokemon);
-                    }
-                    else
-                    {
-                        memCache.Set(Id, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error Pokemon.UpdateAsync: {ex}");
-            }
+            var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon, MapDbContext>(context, memCache, Id);
 
             if (IsEvent && AttackIV == null)
             {

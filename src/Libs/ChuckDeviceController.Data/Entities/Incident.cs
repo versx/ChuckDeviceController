@@ -9,6 +9,7 @@
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
 
@@ -87,33 +88,7 @@
 
         public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache)
         {
-            Incident? oldIncident = null;
-            try
-            {
-                // Check cache first for pokestop incident entity
-                var cached = memCache.Get<string, Incident>(Id);
-                if (cached != null)
-                {
-                    oldIncident = cached;
-                }
-                else
-                {
-                    oldIncident = await context.Incidents.FindAsync(Id);
-                    if (oldIncident != null)
-                    {
-                        memCache.Set(Id, oldIncident);
-                    }
-                    else
-                    {
-                        memCache.Set(Id, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Pokestop: {ex}");
-            }
-
+            var oldIncident = await EntityRepository.GetEntityAsync<string, Incident, MapDbContext>(context, memCache, Id);
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
