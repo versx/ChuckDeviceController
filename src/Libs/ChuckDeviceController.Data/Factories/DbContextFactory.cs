@@ -118,6 +118,7 @@
         }
 
         public static ValueComparer<Dictionary<TKey, TValue>> CreateValueComparer<TKey, TValue>()
+            where TKey : notnull
         {
             return new ValueComparer<Dictionary<TKey, TValue>>
             (

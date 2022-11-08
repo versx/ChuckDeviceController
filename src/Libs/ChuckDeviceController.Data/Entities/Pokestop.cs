@@ -9,7 +9,6 @@
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Repositories;
@@ -537,10 +536,10 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache, bool updateQuest = false)
+        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(IMemoryCacheHostedService memCache, bool updateQuest = false)
         {
             var webhooks = new Dictionary<WebhookType, Pokestop>();
-            var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop, MapDbContext>(context, memCache, Id);
+            var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(Id, memCache);
 
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;

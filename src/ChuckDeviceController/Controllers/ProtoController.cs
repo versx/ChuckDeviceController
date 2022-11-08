@@ -7,6 +7,7 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Repositories;
@@ -34,7 +35,7 @@
         private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly Timer _timer;
-        private readonly string _connectionString;
+        //private readonly string _connectionString;
         private readonly SqlBulk _bulk;
 
         #endregion
@@ -45,15 +46,16 @@
             ILogger<ProtoController> logger,
             ControllerDbContext context,
             IAsyncQueue<ProtoPayloadQueueItem> taskQueue,
-            IConfiguration configuration,
+            //IConfiguration configuration,
             IMemoryCacheHostedService memCache)
         {
             _logger = logger;
             _context = context;
             _taskQueue = taskQueue;
             _memCache = memCache;
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
-            _bulk = new SqlBulk(_connectionString);
+            //_connectionString = configuration.GetConnectionString("DefaultConnection");
+            //_bulk = new SqlBulk(_connectionString);
+            _bulk = new SqlBulk();
 
             _timer = new()
             {
@@ -150,7 +152,7 @@
 
         private async Task<Device> SetLastDeviceLocationAsync(ProtoPayload payload)
         {
-            var device =  await EntityRepository.GetEntityAsync<string, Device, ControllerDbContext>(_context, _memCache, payload.Uuid);
+            var device = await EntityRepository.GetEntityAsync<string, Device>(payload.Uuid, _memCache);
             if (device == null)
             {
                 device = new Device

@@ -5,18 +5,14 @@
     using System.Data;
     using System.Diagnostics;
 
-    using Dapper;
-    using Microsoft.EntityFrameworkCore;
-    using MySqlConnector;
-
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Services.Rpc;
 
     // TODO: Add method to entities to build sql query with parameters
+    // TODO: Add support for passing values sql to queues
 
     public class SqlQueryBuilder
     {
@@ -85,10 +81,7 @@
     {
         #region Constants
 
-        private const string DbNull = "NULL";
         private const uint DataConsumerIntervalS = 10;
-        public const uint SemaphoreLockWaitTimeS = 10;//3;
-        public const int EntitySemMax = 1;
 
         #endregion
 
@@ -106,13 +99,12 @@
         private static readonly ConcurrentDictionaryQueue<string, List<Weather>> _weatherToUpsert = new();
         private static readonly ConcurrentDictionaryQueue<string, List<Account>> _accountsToUpsert = new();
 
-        private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(SemaphoreLockWaitTimeS);
         private static readonly System.Timers.Timer _timer = new();
 
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IGrpcClientService _grpcClientService;
-        private readonly IConfiguration _configuration;
-        private readonly string _connectionString;
+        //private readonly IConfiguration _configuration;
+        //private readonly string _connectionString;
         private readonly SqlBulk _bulk;
 
         #endregion
@@ -121,19 +113,19 @@
 
         public DataConsumerService(
             ILogger<IDataConsumerService> logger,
-            IGrpcClientService grpcClientService,
-            IConfiguration configuration)
+            IGrpcClientService grpcClientService)
+            //IConfiguration configuration)
         {
             _logger = logger;
             _grpcClientService = grpcClientService;
-            _configuration = configuration;
+            //_configuration = configuration;
 
             _timer.Interval = DataConsumerIntervalS * 1000;
             _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(new());
             _timer.Start();
 
-            _connectionString = _configuration.GetConnectionString("DefaultConnection");
-            _bulk = new SqlBulk(_connectionString);
+            //_connectionString = _configuration.GetConnectionString("DefaultConnection");
+            _bulk = new SqlBulk();
         }
 
         #endregion
@@ -580,14 +572,16 @@
                 {
                     try
                     {
-                        var cells = cellsToUpsert.SelectMany(x => x.Value);
-                        var result = await _bulk.InsertInBulkAsync(
-                            SqlQueries.CellOnMergeUpdate,
-                            SqlQueries.CellValues,
-                            cells,
-                            stoppingToken
-                        );
-                        results.Add(result);
+                        foreach (var (sql, cells) in cellsToUpsert)
+                        {
+                            var result = await _bulk.InsertInBulkRawAsync(
+                                sql,
+                                SqlQueries.CellValuesRaw,
+                                cells,
+                                stoppingToken
+                            );
+                            results.Add(result);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -599,14 +593,16 @@
                 {
                     try
                     {
-                        var weather = weatherToUpsert.SelectMany(x => x.Value);
-                        var result = await _bulk.InsertInBulkAsync(
-                            SqlQueries.WeatherOnMergeUpdate,
-                            SqlQueries.WeatherValues,
-                            weather,
-                            stoppingToken
-                        );
-                        results.Add(result);
+                        foreach (var (sql, weather) in weatherToUpsert)
+                        {
+                            var result = await _bulk.InsertInBulkRawAsync(
+                                sql,
+                                SqlQueries.WeatherValuesRaw,
+                                weather,
+                                stoppingToken
+                            );
+                            results.Add(result);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -614,20 +610,20 @@
                     }
                 }
 
-                /*
                 if (pokestopsToUpsert.Any())
                 {
                     try
                     {
-                        var stopwatch = new Stopwatch();
-                        stopwatch.Start();
-
-                        var pokestops = pokestopsToUpsert.SelectMany(x => x.Value).ToList();
-                        await InsertInBulk(pokestops);
-
-                        stopwatch.Stop();
-                        var seconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                        _logger.LogInformation($"[Pokestop] Upserted {pokestops.Count:N0} pokestops in {seconds}s");
+                        foreach (var (sql, pokestops) in pokestopsToUpsert)
+                        {
+                            var result = await _bulk.InsertInBulkRawAsync(
+                                sql,
+                                SqlQueries.PokestopValuesRaw,
+                                pokestops,
+                                stoppingToken
+                            );
+                            results.Add(result);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -639,15 +635,16 @@
                 {
                     try
                     {
-                        var stopwatch = new Stopwatch();
-                        stopwatch.Start();
-
-                        var incidents = incidentsToUpsert.SelectMany(x => x.Value).ToList();
-                        await InsertInBulk(incidents);
-
-                        stopwatch.Stop();
-                        var seconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                        _logger.LogInformation($"[Incident] Upserted {incidents.Count:N0} incidents in {seconds}s");
+                        foreach (var (sql, incidents) in incidentsToUpsert)
+                        {
+                            var result = await _bulk.InsertInBulkRawAsync(
+                                sql,
+                                SqlQueries.IncidentValuesRaw,
+                                incidents,
+                                stoppingToken
+                            );
+                            results.Add(result);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -657,62 +654,82 @@
 
                 if (gymsToUpsert.Any())
                 {
-                    foreach (var (options, gyms) in gymsToUpsert)
+                    try
                     {
-                        try
+                        // TODO: Pass values sql when adding to queue to accommodate for gym/gym_details
+                        foreach (var (sql, gyms) in gymsToUpsert)
                         {
-                            await _context.Gyms.BulkMergeAsync(gyms, o => o = options, stoppingToken);
+                            var result = await _bulk.InsertInBulkRawAsync(
+                                sql,
+                                SqlQueries.GymValuesRaw,
+                                gyms,
+                                stoppingToken
+                            );
+                            results.Add(result);
                         }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[Gym] Error: {ex.InnerException?.Message ?? ex.Message}");
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[Gym] Error: {ex.InnerException?.Message ?? ex.Message}");
                     }
                 }
 
                 if (gymTrainersToUpsert.Any())
                 {
-                    foreach (var (options, gymTrainers) in gymTrainersToUpsert)
+                    try
                     {
-                        try
+                        foreach (var (sql, gymTrainers) in gymTrainersToUpsert)
                         {
-                            await _context.GymTrainers.BulkMergeAsync(gymTrainers, o => o = options, stoppingToken);
+                            //var result = await _bulk.InsertInBulkRawAsync(
+                            //    sql,
+                            //    SqlQueries.GymTrainerValuesRaw,
+                            //    gymTrainers,
+                            //    stoppingToken
+                            //);
+                            //results.Add(result);
                         }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[GymTrainer] Error: {ex.InnerException?.Message ?? ex.Message}");
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[GymTrainer] Error: {ex.InnerException?.Message ?? ex.Message}");
                     }
                 }
 
                 if (gymDefendersToUpsert.Any())
                 {
-                    foreach (var (options, gymDefenders) in gymDefendersToUpsert)
+                    try
                     {
-                        try
+                        foreach (var (sql, gymDefenders) in gymDefendersToUpsert)
                         {
-                            await _context.GymDefenders.BulkMergeAsync(gymDefenders, o => o = options, stoppingToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[GymDefender] Error: {ex.InnerException?.Message ?? ex.Message}");
+                            //var result = await _bulk.InsertInBulkRawAsync(
+                            //    sql,
+                            //    SqlQueries.GymDefenderValuesRaw,
+                            //    gymDefenders,
+                            //    stoppingToken
+                            //);
+                            //results.Add(result);
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[GymDefender] Error: {ex.InnerException?.Message ?? ex.Message}");
+                    }
                 }
-                */
 
                 if (spawnpointsToUpsert.Any())
                 {
                     try
                     {
-                        var spawnpoints = spawnpointsToUpsert.SelectMany(x => x.Value);
-                        var result = await _bulk.InsertInBulkAsync(
-                            SqlQueries.SpawnpointOnMergeUpdate,
-                            SqlQueries.SpawnpointValues,
-                            spawnpoints,
-                            stoppingToken
-                        );
-                        results.Add(result);
+                        foreach (var (sql, spawnpoints) in spawnpointsToUpsert)
+                        {
+                            var result = await _bulk.InsertInBulkRawAsync(
+                                sql,
+                                SqlQueries.SpawnpointValuesRaw,
+                                spawnpoints,
+                                stoppingToken
+                            );
+                            results.Add(result);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -720,19 +737,24 @@
                     }
                 }
 
-                /*
                 if (pokemonToUpsert.Any())
                 {
-                    foreach (var (options, pokemon) in pokemonToUpsert)
+                    try
                     {
-                        try
+                        foreach (var (sql, pokemon) in pokemonToUpsert)
                         {
-                            await _context.Pokemon.BulkMergeAsync(pokemon, o => o = options, stoppingToken);
+                            //var result = await _bulk.InsertInBulkRawAsync(
+                            //    sql,
+                            //    SqlQueries.PokemonValuesRaw,
+                            //    pokemon,
+                            //    stoppingToken
+                            //);
+                            //results.Add(result);
                         }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[Pokemon] Error: {ex.InnerException?.Message ?? ex.Message}");
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[Pokemon] Error: {ex.InnerException?.Message ?? ex.Message}");
                     }
 
                     await SendPokemonAsync(pokemonToUpsert.SelectMany(x => x.Value).ToList());
@@ -740,26 +762,32 @@
 
                 if (accountsToUpsert.Any())
                 {
-                    // TODO: Use ControllerDbContext
-                    foreach (var (options, accounts) in accountsToUpsert)
+                    try
                     {
-                        try
+                        foreach (var (options, accounts) in accountsToUpsert)
                         {
-                            // TODO: await context.Accounts.BulkMergeAsync(accounts, o => o = options, stoppingToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[Account] Error: {ex.InnerException?.Message ?? ex.Message}");
+                            //var result = await _bulk.InsertInBulkRawAsync(
+                            //    sql,
+                            //    SqlQueries.AccountValuesRaw,
+                            //    accounts,
+                            //    stoppingToken
+                            //);
+                            //results.Add(result);
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"[Account] Error: {ex.InnerException?.Message ?? ex.Message}");
+                    }
                 }
-                */
 
                 sw.Stop();
 
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
-                _logger.LogInformation($"Upserted {entityCount:N0} entities in {totalSeconds}s");
-                //_logger.LogInformation($"Upserted {entityCount:N0} entities in {totalSeconds}s between {batchCount:N0} batches");
+                var rowsAffected = results.Sum(x => x.RowsAffected);
+                var batchCount = results.Sum(x => x.BatchCount);
+                var expectedCount = entityCount; //results.Sum(x => x.ExpectedCount);
+                _logger.LogInformation($"Upserted {rowsAffected:N0}/{expectedCount:N0} entities in {totalSeconds}s between {batchCount:N0} batches");
                 //PrintBenchmarkTimes(DataLogLevel.Summary, entityCount, "total entities", sw);
 
                 ProtoDataStatistics.Instance.AddTimeEntry(new(Convert.ToUInt64(entityCount), totalSeconds));
@@ -782,30 +810,36 @@
             if (newPokemon.Any())
             {
                 // Fire off gRPC request on a separate thread
-                await Task.Run(async () =>
+                await Task.Run(() =>
                 {
-                    // Send got Pokemon proto message
-                    await _grpcClientService.SendRpcPayloadAsync(
-                        newPokemon,
-                        PayloadType.PokemonList,
-                        hasIV: false
-                    );
-                    await Task.CompletedTask;
+                    new Thread(async () =>
+                    {
+                        // Send got Pokemon proto message
+                        await _grpcClientService.SendRpcPayloadAsync(
+                                newPokemon,
+                                PayloadType.PokemonList,
+                                hasIV: false
+                            );
+                    })
+                    { IsBackground = true }.Start();
                 });
             }
 
             if (newPokemonWithIV.Any())
             {
                 // Fire off gRPC request on a separate thread
-                await Task.Run(async () =>
+                await Task.Run(() =>
                 {
-                    // Send got Pokemon IV proto message
-                    await _grpcClientService.SendRpcPayloadAsync(
-                        newPokemonWithIV,
-                        PayloadType.PokemonList,
-                        hasIV: true
-                    );
-                    await Task.CompletedTask;
+                    new Thread(async () =>
+                    {
+                        // Send got Pokemon IV proto message
+                        await _grpcClientService.SendRpcPayloadAsync(
+                            newPokemonWithIV,
+                            PayloadType.PokemonList,
+                            hasIV: true
+                        );
+                    })
+                    { IsBackground = true }.Start();
                 });
             }
 
@@ -850,120 +884,5 @@
         }
 
         #endregion
-    }
-
-    public class SqlBulkResult
-    {
-        public bool Success { get; }
-
-        public int BatchCount { get; }
-
-        public int RowsAffected { get; }
-
-        public SqlBulkResult(bool success, int batchCount, int rowsAffected)
-        {
-            Success = success;
-            BatchCount = batchCount;
-            RowsAffected = rowsAffected;
-        }
-    }
-
-    public class SqlBulk
-    {
-        private static readonly ILogger<EntityRepository> _logger =
-            new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Warning)));
-        private static readonly SemaphoreSlim _sem = new(1, 1);
-        private static MySqlConnection? _connection;
-        private readonly string _connectionString;
-
-        public SqlBulk(string connectionString)
-        {
-            _connectionString = connectionString;
-        }
-
-        public async Task<SqlBulkResult> InsertInBulkAsync<TEntity>(
-            string sqlQuery,
-            string sqlValues,
-            IEnumerable<TEntity> entities,
-            CancellationToken stoppingToken = default)
-            where TEntity : BaseEntity
-        {
-            await _sem.WaitAsync(stoppingToken); //TimeSpan.FromSeconds(DataConsumerService.SemaphoreLockWaitTimeS)
-
-            bool success;
-            var rowsAffected = 0;
-            var batchCount = 0;
-
-            try
-            {
-                //_connection = await EntityRepository.CreateConnectionAsync(_connectionString, openConnection: true, stoppingToken);
-                _connection = EntityRepository.CreateConnection(_connectionString);
-                //using var connection = new MySqlConnection(connectionString);
-
-                var sqls = GenerateSqlQueryBatches(sqlQuery, sqlValues, entities);
-                batchCount = sqls.Count();
-
-                foreach (var (sql, args) in sqls)
-                {
-                    // TODO: Use Stored Procedure for upsert queries
-                    var cmdDef = new CommandDefinition(sql, (object)args, commandTimeout: 10);
-                    rowsAffected = await _connection.ExecuteAsync(cmdDef);
-                    //await connection.ExecuteAsync(sql, (object)args);
-                }
-
-                success = true;
-            }
-            catch (Exception ex)
-            {
-                success = false;
-                Console.WriteLine($"Error: {ex}");
-            }
-
-            _sem.Release();
-            return new SqlBulkResult(success, batchCount, rowsAffected);
-        }
-
-        // https://stackoverflow.com/a/56250588
-        private static IEnumerable<(string, dynamic)> GenerateSqlQueryBatches<TEntity>(
-            string sqlQuery,
-            string sqlValues,
-            IEnumerable<TEntity> entities,
-            ushort batchSize = 1000) //1000
-            where TEntity : BaseEntity
-        {
-            var sqlsToExecute = new List<(string, dynamic)>();
-            var batchCount = (int)Math.Ceiling((double)entities.Count() / batchSize);
-
-            for (var i = 0; i < batchCount; i++)
-            {
-                var entityBatch = entities.Skip(i * batchSize).Take(batchSize);
-                var queryValues = string.Join(",", entityBatch.Select(x => sqlValues));
-                var query = string.Format(sqlQuery, queryValues);
-                sqlsToExecute.Add((query, entityBatch));
-            }
-
-            return sqlsToExecute;
-        }
-
-        private static IEnumerable<(string, dynamic)> GenerateSqlQueryBatchesRaw<TEntity>(
-            string sqlQuery,
-            string sqlValues,
-            IEnumerable<TEntity> entities,
-            ushort batchSize = 1000)
-            where TEntity : BaseEntity
-        {
-            var sqlsToExecute = new List<(string, dynamic)>();
-            var batchCount = (int)Math.Ceiling((double)entities.Count() / batchSize);
-
-            for (var i = 0; i < batchCount; i++)
-            {
-                var entityBatch = entities.Skip(i * batchSize).Take(batchSize);
-                var queryValues = string.Join(",", entityBatch.Select(x => sqlValues));
-                var query = string.Format(sqlQuery, queryValues);
-                sqlsToExecute.Add((query, entityBatch));
-            }
-
-            return sqlsToExecute;
-        }
     }
 }

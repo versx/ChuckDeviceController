@@ -7,7 +7,6 @@
 
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
@@ -86,9 +85,9 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache)
+        public async Task UpdateAsync(IMemoryCacheHostedService memCache)
         {
-            var oldIncident = await EntityRepository.GetEntityAsync<string, Incident, MapDbContext>(context, memCache, Id);
+            var oldIncident = await EntityRepository.GetEntityAsync<string, Incident>(Id, memCache);
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 

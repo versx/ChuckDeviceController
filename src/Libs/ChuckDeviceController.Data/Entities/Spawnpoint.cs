@@ -4,7 +4,6 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
@@ -31,11 +30,11 @@
         [Column("despawn_sec")]
         public uint? DespawnSecond { get; set; }
 
-        [Column("updated")]
-        public ulong Updated { get; set; }
-
         [Column("last_seen")]
         public ulong? LastSeen { get; set; }
+
+        [Column("updated")]
+        public ulong Updated { get; set; }
 
         [NotMapped]
         public bool HasChanges { get; set; }
@@ -54,9 +53,9 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache, bool update = false)
+        public async Task UpdateAsync(IMemoryCacheHostedService memCache, bool update = false)
         {
-            var oldSpawnpoint = await EntityRepository.GetEntityAsync<ulong, Spawnpoint, MapDbContext>(context, memCache, Id);
+            var oldSpawnpoint = await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(Id, memCache);
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
             LastSeen = now;

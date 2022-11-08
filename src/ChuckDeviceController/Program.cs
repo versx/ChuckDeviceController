@@ -10,6 +10,7 @@ using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Extensions.Http.Caching;
@@ -176,6 +177,13 @@ app.MapControllers();
 //})
 //{ IsBackground = true }.Start();
 
+// Open DB connection
+var sw = new Stopwatch();
+sw.Start();
+_ = EntityRepository.InstanceWithOptions(connectionString, openConnection: true);
+sw.Stop();
+var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+logger.LogDebug($"Opening database connection took {totalSeconds}s");
 app.Run();
 
 #endregion

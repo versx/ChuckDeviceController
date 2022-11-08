@@ -77,6 +77,7 @@
                 if (_protoQueue.Count == 0)
                 {
                     Thread.Sleep(1);
+                    //await Task.Delay(1, stoppingToken);
                     continue;
                 }
 
@@ -86,11 +87,11 @@
                     if (workItems == null)
                     {
                         Thread.Sleep(1);
+                        //await Task.Delay(1, stoppingToken);
                         continue;
                     }
 
                     //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
-
                     await Task.Run(() =>
                     {
                         new Thread(async () =>
@@ -102,19 +103,6 @@
                         })
                         { IsBackground = true }.Start();
                     }, stoppingToken);
-
-                    //await Task.Run(async () =>
-                    //{
-                    //    foreach (var workItem in workItems)
-                    //    {
-                    //        await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
-                    //    }
-                    //}, stoppingToken);
-
-                    //foreach (var workItem in workItems)
-                    //{
-                    //    await workItem(stoppingToken);
-                    //}
                 }
                 catch (OperationCanceledException)
                 {
@@ -124,24 +112,23 @@
                 {
                     _logger.LogError(ex, "Error occurred executing task work item.");
                 }
-                //await Task.Delay(TimeSpan.FromMilliseconds(50), stoppingToken);
+
                 Thread.Sleep(1);
+                //await Task.Delay(50, stoppingToken);
             }
 
-            _logger.LogError("Exited background processing...");
+            _logger.LogError("Exited ProtoProcessorService background processing...");
         }
 
-        private async Task ProcessWorkItemAsync(ProtoPayloadQueueItem payload, CancellationToken cancellationToken)
+        private async Task ProcessWorkItemAsync(ProtoPayloadQueueItem payload, CancellationToken stoppingToken)
         {
             if (payload?.Payload == null || payload?.Device == null)
                 return;
 
-            //_logger.LogInformation($"Processing {payload?.Payload?.Contents?.Count:N0} protos");
-
             CheckQueueLength();
 
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var sw = new Stopwatch();
+            sw.Start();
 
             var uuid = payload.Payload.Uuid;
             var username = payload.Payload.Username;
@@ -173,18 +160,19 @@
             //_logger.LogWarning($"[{device.Uuid}] InArea={inArea}");
 
             var processedProtos = new List<dynamic>();
-
             var contents = payload?.Payload?.Contents ?? new List<ProtoData>();
             foreach (var rawData in contents)
             {
-                if (string.IsNullOrEmpty(rawData.Data))
-                {
-                    _logger.LogWarning($"[{uuid}] Unhandled proto {rawData.Method}: Proto data is null '{rawData.Data}'");
-                    continue;
-                }
                 var data = rawData.Data;
                 var method = (Method)rawData.Method;
                 var hasArQuestReq = rawData.HaveAr;
+
+                if (string.IsNullOrEmpty(data))
+                {
+                    _logger.LogDebug($"[{uuid}] Unhandled proto {method} ({rawData.Method}): Proto data is null '{data}'");
+                    continue;
+                }
+
                 switch (method)
                 {
                     case Method.GetPlayer:
@@ -268,8 +256,6 @@
                                         ?? GetArQuestMode(uuid!, timestamp);
                                     var title = fsr.ChallengeQuest.QuestDisplay.Title;
                                     var quest = fsr.ChallengeQuest.Quest;
-                                    _logger.LogDebug($"[{uuid}] Has AR: {hasAr}");
-
                                     if (quest.QuestType == QuestType.QuestGeotargetedArScan && uuid != null)
                                     {
                                         _arQuestActualMap.Set(uuid, true, timestamp);
@@ -281,7 +267,6 @@
                                         quest,
                                         hasAr,
                                     });
-                                    //quests++;
                                 }
                             }
                             else
@@ -601,12 +586,12 @@
                     xp,
                     level,
                 };
+                // Inform frontend/configurator via RPC of trainer account XP and Level for leveling instance stats
                 await _grpcClientService.SendRpcPayloadAsync(playerInfo, PayloadType.PlayerInfo, username);
             }
 
-            stopwatch.Stop();
+            sw.Stop();
 
-            // Insert/upsert wildPokemon, nearbyPokemon, mapPokemon, forts, cells, clientWeather, etc into database
             if (!processedProtos.Any())
                 return;
 
@@ -618,7 +603,7 @@
                 return;
 
             // TODO: Make parsed protos logging configurable
-            //var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+            //var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
             //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
             ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;

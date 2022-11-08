@@ -7,7 +7,6 @@
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Repositories;
@@ -206,10 +205,10 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache)
+        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(IMemoryCacheHostedService memCache)
         {
             var webhooks = new Dictionary<WebhookType, Gym>();
-            var oldGym = await EntityRepository.GetEntityAsync<string, Gym, MapDbContext>(context, memCache, Id);
+            var oldGym = await EntityRepository.GetEntityAsync<string, Gym>(Id, memCache);
 
             if (RaidIsExclusive != null && (RaidIsExclusive ?? false) && ExRaidBossId > 0)
             {

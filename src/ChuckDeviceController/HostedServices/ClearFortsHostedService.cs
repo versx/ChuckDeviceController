@@ -89,6 +89,44 @@
             }
         }
 
+        public void ClearCells()
+        {
+            //ClearPokestops();
+            //ClearGyms();
+            lock (_stopCellLock)
+            {
+                _stopIdsPerCell.Clear();
+            }
+            lock (_gymCellLock)
+            {
+                _gymIdsPerCell.Clear();
+            }
+        }
+
+        public void ClearPokestops()
+        {
+            lock (_stopCellLock)
+            {
+                _stopIdsPerCell.Clear();
+                //_stopIdsPerCell.Keys.ToList().ForEach(cellId =>
+                //{
+                //    _stopIdsPerCell[cellId].Clear();
+                //});
+            }
+        }
+
+        public void ClearGyms()
+        {
+            lock (_gymCellLock)
+            {
+                _gymIdsPerCell.Clear();
+                //_gymIdsPerCell.Keys.ToList().ForEach(cellId =>
+                //{
+                //    _gymIdsPerCell[cellId].Clear();
+                //});
+            }
+        }
+
         /// <summary>
         /// Mark upgraded/downgraded forts as deleted that no longer exist.
         /// </summary>

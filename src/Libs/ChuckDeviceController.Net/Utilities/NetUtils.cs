@@ -7,7 +7,7 @@
     {
         public const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36";
         public const string DefaultMimeType = "application/json";
-        private const uint DefaultRequestTimeoutS = 30;
+        private const uint DefaultRequestTimeoutS = 15;
 
         public static string? Get(string url, uint timeoutS = DefaultRequestTimeoutS)
         {

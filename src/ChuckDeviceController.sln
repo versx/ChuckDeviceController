@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Pvp",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8F292B41-6BD7-4AEC-AB77-B9988E820368}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{F0C29FFE-CD55-455B-A45E-52F853116FF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests\Tests.csproj", "{F0C29FFE-CD55-455B-A45E-52F853116FF8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceCommunicator", "ChuckDeviceCommunicator\ChuckDeviceCommunicator.csproj", "{00ED1BCE-3DFA-49BE-80BA-C73A3DADAB5D}"
 EndProject
