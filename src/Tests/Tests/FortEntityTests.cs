@@ -16,6 +16,7 @@
         {
             { typeof(WeatherCondition), typeof(int) },
             { typeof(Team), typeof(int) },
+            // SeenType
         };
 
         [SetUp]
@@ -36,6 +37,14 @@
         {
             var gym = new Gym();
             _ = GetPropertyValues(gym);
+            Assert.Pass();
+        }
+
+        [TestCase]
+        public void TestPokemon()
+        {
+            var pokemon = new Pokemon();
+            _ = GetPropertyValues(pokemon);
             Assert.Pass();
         }
 

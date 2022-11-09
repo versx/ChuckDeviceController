@@ -29,11 +29,11 @@ if (config.Providers.Count() == 2)
     Environment.FailFast($"Failed to find or load configuration file, exiting...");
 }
 
-#endregion
-
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
 var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
+
+#endregion
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
@@ -102,7 +102,7 @@ builder.Services.AddDistributedMemoryCache();
 #region Database Contexts
 
 // Register data contexts, factories, and pools
-var poolSize = config.GetValue<int>("DbContextPoolSize", 1024);
+var poolSize = config.GetValue("DbContextPoolSize", 1024);
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 //builder.Services.AddDbContextPool<MapDbContext>(options =>
@@ -119,9 +119,6 @@ builder.Services.AddDbContext<ControllerDbContext>(options =>
 //builder.Services.AddPooledDbContextFactory<ControllerDbContext>(options =>
 //  options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName)
 //, poolSize);
-
-//builder.Services.AddScoped<ChuckScopedFactory<MapDbContext>>();
-//builder.Services.AddScoped<ChuckScopedFactory<ControllerDbContext>>();
 
 #endregion
 
@@ -184,6 +181,7 @@ _ = EntityRepository.InstanceWithOptions(connectionString, openConnection: true)
 sw.Stop();
 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
 logger.LogDebug($"Opening database connection took {totalSeconds}s");
+
 app.Run();
 
 #endregion

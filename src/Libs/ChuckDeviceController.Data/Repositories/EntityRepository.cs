@@ -14,12 +14,13 @@
 
     public class EntityRepository
     {
-        private const uint ConnectionWaitTimeS = 3;
+        private const uint DefaultConnectionWaitTimeS = 3;
+        private const double DefaultExpiryLimitM = 15;
 
         #region Variables
 
         private static readonly ILogger<EntityRepository> _logger =
-            new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Warning)));
+            new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Debug)));
         private static readonly SemaphoreSlim _sem = new(1);
         private static readonly IEnumerable<ConnectionState> _invalidConnectionStates = new[]
         {
@@ -75,7 +76,7 @@
             TKey key,
             IMemoryCacheHostedService memCache,
             bool setCache = true,
-            double expiryLimitM = 15)
+            double expiryLimitM = DefaultExpiryLimitM)
             where TKey : notnull //class
             where TEntity : BaseEntity
         {
@@ -120,6 +121,7 @@
             where TKey : notnull //class
             where TEntity : BaseEntity
         {
+            string sql;
             try
             {
                 var tableName = GetTableAttribute<TEntity>();
@@ -138,10 +140,10 @@
                 var columns = (includeColumns?.Any() ?? false)
                     ? string.Join(", ", includeColumns)
                     : "*";
-                var sql = $"SELECT {columns} FROM {tableName} WHERE {keyName} = '{key}'";
+                sql = $"SELECT {columns} FROM {tableName} WHERE {keyName} = '{key}'";
 
                 //await WaitForConnectionAsync();
-                //using var connection = new MySqlConnection(_connectionString);
+
                 await _sem.WaitAsync();
                 var results = await _connection.QueryFirstOrDefaultAsync<TEntity>(sql);
                 _sem.Release();
@@ -151,21 +153,63 @@
             catch (Exception ex)
             {
                 _logger.LogError($"[GetEntityAsync]: {ex.InnerException?.Message ?? ex.Message}");
+                _sem.Release();
             }
             return null;
         }
 
-        public static async Task<int> ExecuteAsync(
-            string sql,
-            object? param = null,
-            IDbTransaction? transaction = null,
-            int? commandTimeout = null,
-            CommandType? commandType = null)
+        public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = 30)
         {
+            if (_connection == null)
+            {
+                throw new Exception($"Not connected to MySQL database server!");
+            }
+
+            var rowsAffected = 0;
             await _sem.WaitAsync();
-            var result = await _connection.ExecuteAsync(sql, param, transaction, commandTimeout, commandType);
+
+            try
+            {
+                rowsAffected = await _connection.ExecuteAsync(sql, param,  commandTimeout: commandTimeoutS);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+            }
+
             _sem.Release();
-            return result;
+            return rowsAffected;
+        }
+
+        public static async Task<int> ExecuteAsync(IEnumerable<string> sqls, int? commandTimeoutS = 30, CancellationToken stoppingToken = default)
+        {
+            if (_connection == null)
+            {
+                throw new Exception($"Not connected to MySQL database server!");
+            }
+
+            var rowsAffected = 0;
+            await _sem.WaitAsync(stoppingToken);
+
+            //using var trans = await _connection.BeginTransactionAsync(stoppingToken);
+            try
+            {
+                foreach (var sql in sqls)
+                {
+                    //rowsAffected += await ExecuteAsync(sql, commandTimeoutS);
+                    //rowsAffected += await _connection.ExecuteAsync(sql, transaction: trans, commandTimeout: commandTimeoutS);
+                    rowsAffected += await _connection.ExecuteAsync(sql, commandTimeout: commandTimeoutS);
+                }
+                //await trans.CommitAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+                //await trans.RollbackAsync(stoppingToken);
+            }
+
+            _sem.Release();
+            return rowsAffected;
         }
 
         #endregion
@@ -194,7 +238,7 @@
             return _connection;
         }
 
-        private static async Task WaitForConnectionAsync(uint waitTimeS = ConnectionWaitTimeS)
+        private static async Task WaitForConnectionAsync(uint waitTimeS = DefaultConnectionWaitTimeS)
         {
             while ((_connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
             {

@@ -157,12 +157,6 @@
         [Column("display_pokemon_id")]
         public uint? DisplayPokemonId { get; set; }
 
-        [
-            Column("pvp"),
-            DefaultValue(null),
-        ]
-        public Dictionary<string, dynamic>? PvpRankings { get; set; } = null;
-
         [Column("base_height")]
         public double BaseHeight { get; set; }
 
@@ -174,6 +168,12 @@
 
         [Column("seen_type")]
         public SeenType SeenType { get; set; }
+
+        [
+            Column("pvp"),
+            DefaultValue(null),
+        ]
+        public Dictionary<string, dynamic>? PvpRankings { get; set; } = null;
 
         [NotMapped]
         public bool HasChanges { get; set; }

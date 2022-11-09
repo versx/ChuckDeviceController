@@ -1,10 +1,11 @@
 ﻿namespace ChuckDeviceController
 {
+    // TODO: Finish queries
     public static class SqlQueries
     {
         #region Gym Queries
 
-        public const string GymOptions = @"
+        public const string GymOnMergeUpdate = @"
 INSERT INTO gym (
     guarding_pokemon_id, available_slots, team_id, in_battle, ex_raid_eligible, raid_level, raid_end_timestamp,
     raid_spawn_timestamp, raid_battle_timestamp, raid_pokemon_id, raid_pokemon_move_1, raid_pokemon_move_2, 
@@ -139,7 +140,7 @@ ON DUPLICATE KEY UPDATE
 
         #region Pokestop Queries
 
-        public const string PokestopOptions = @"
+        public const string PokestopOnMergeUpdate = @"
 INSERT INTO pokestop (
     lure_id, lure_expire_timestamp, sponsor_id, ar_scan_eligible,
     quest_type, quest_template, quest_title, quest_target, quest_timestamp, quest_conditions, quest_rewards,
@@ -301,7 +302,7 @@ ON DUPLICATE KEY UPDATE
 
         #region Pokemon Queries
 
-        public const string PokemonOptions = @"
+        public const string PokemonOnMergeUpdate = @"
 INSERT INTO pokemon (
     id, pokemon_id, lat, lon, spawn_id, expire_timestamp,
     atk_iv, def_iv, sta_iv, move_1, move_2, gender,
@@ -350,7 +351,52 @@ ON DUPLICATE KEY UPDATE
     updated=VALUES(updated)
 ";
 
-        public const string PokemonOnMergeUpdate = "";
+        /// <summary>
+        /// 0 - id
+        /// 1 - pokemon_id
+        /// 2 - lat
+        /// 3 - lon
+        /// 4 - spawn_id
+        /// 5 - expire_timestamp
+        /// 6 - atk_iv
+        /// 7 - def_iv
+        /// 8 - sta_iv
+        /// 9 - move_1
+        /// 10 - move_2
+        /// 11 - gender
+        /// 12 - form
+        /// 13 - costume
+        /// 14 - cp
+        /// 15 - level
+        /// 16 - weight
+        /// 17 - size
+        /// 18 - weather
+        /// 19 - shiny
+        /// 20 - username
+        /// 21 - pokestop_id
+        /// 22 - first_seen_timestamp
+        /// 23 - updated
+        /// 24 - changed
+        /// 25 - cell_id
+        /// 26 - expire_timestamp_verified
+        /// 27 - capture_1
+        /// 28 - capture_2
+        /// 29 - capture_3
+        /// 30 - is_ditto
+        /// 31 - display_pokemon_id
+        /// 32 - base_height
+        /// 33 - base_weight
+        /// 34 - is_event
+        /// 35 - seen_type
+        /// 36 - pvp
+        /// </summary>
+        public const string PokemonValuesRaw = @"
+(
+    {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10},
+    {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20},
+    {21}, {22}, {23}, {24}, {25}, {26}, {27}, {28}, {29}, {30},
+    {31}, {32}, {33}, {34}, {35}, {36}
+)";
 
         #endregion
 
@@ -399,7 +445,11 @@ WHERE id=@Id
         #region Weather Queries
 
         public const string WeatherOnMergeUpdate = @"
-INSERT INTO weather (id, level, latitude, longitude, gameplay_condition, cloud_level, rain_level, snow_level, fog_level, wind_level, wind_direction, warn_weather, special_effect_level, severity, updated)
+INSERT INTO weather (
+    id, level, latitude, longitude, gameplay_condition, cloud_level, rain_level,
+    snow_level, fog_level, wind_level, wind_direction, warn_weather, special_effect_level,
+    severity, updated
+)
 VALUES
     {0}
 ON DUPLICATE KEY UPDATE
@@ -436,6 +486,7 @@ ON DUPLICATE KEY UPDATE
         #region Account Queries
 
         public const string AccountOnMergeUpdate = @"";
+        public const string AccountValuesRaw = @"";
 
         #endregion
     }

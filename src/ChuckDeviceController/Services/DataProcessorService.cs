@@ -17,6 +17,7 @@
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Configuration;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
@@ -29,8 +30,8 @@
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
 
-    // TODO: Create stateless DataConsumer
     // TODO: Consider creating scoped DataProcessorService for each device uuid
+    // TODO: Make stateless/generic processing
     // TODO: Split up/refactor class
 
     // TODO: var leakMonitor = new ConnectionLeakWatcher(context);
@@ -40,7 +41,7 @@
         #region Constants
 
         // TODO: Make DataProcessorService constants configurable
-        private const uint ProcessIntervalMs = 5 * 1000;
+        private const uint ProcessIntervalS = 5;
         private const ushort DefaultDecimals = 4;
         private const ushort CellScanIntervalS = 900; // REVIEW: Change to every 5 minutes vs 15 minutes
 
@@ -69,7 +70,7 @@
 
         public bool ShowBenchmarkTimes => _env?.IsDevelopment() ?? false;
 
-        public override uint TimerIntervalMs => ProcessIntervalMs;
+        public override uint TimerIntervalS => ProcessIntervalS;
 
         #endregion
 
@@ -143,16 +144,16 @@
                 //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
                 ProtoDataStatistics.Instance.TotalEntitiesProcessed += (uint)workItems.Sum(x => x.Data?.Count ?? 0);
 
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
-                    new Thread(async () =>
-                    {
+                    //new Thread(async () =>
+                    //{
                         foreach (var workItem in workItems)
                         {
                             await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
                         }
-                    })
-                    { IsBackground = true }.Start();
+                    //})
+                    //{ IsBackground = true }.Start();
                 }, stoppingToken);
             }
             catch (OperationCanceledException)
@@ -264,7 +265,7 @@
             {
                 // Insert nearby pokemon
                 await UpdateNearbyPokemonAsync(nearbyPokemon);
-             }
+            }
 
             var mapPokemon = workItem.Data
                 .Where(x => x.type == ProtoDataType.MapPokemon)
@@ -344,7 +345,7 @@
                     }
 
                     await account.UpdateAsync(player, _memCache);
-                    await _dataConsumerService.AddAccountAsync(SqlQueries.AccountOnMergeUpdate, account);
+                    await _dataConsumerService.AddEntityAsync(SqlQueryType.AccountOnMergeUpdate, account);
 
                     if (account.SendWebhook)
                     {
@@ -395,7 +396,7 @@
 
                 try
                 {
-                    await _dataConsumerService.AddCellsAsync(SqlQueries.CellOnMergeUpdate, s2cells);
+                    await _dataConsumerService.AddEntitiesAsync(SqlQueryType.CellOnMergeUpdate, s2cells);
                 }
                 catch (Exception ex)
                 {
@@ -463,9 +464,8 @@
 
                 foreach (var wcell in weather)
                 {
-                    //await wcell.UpdateAsync(context, _memCache);
                     await wcell.UpdateAsync(_memCache);
-                    await _dataConsumerService.AddWeatherAsync(SqlQueries.WeatherOnMergeUpdate, wcell);
+                    await _dataConsumerService.AddEntityAsync(SqlQueryType.WeatherOnMergeUpdate, wcell);
 
                     // Check if 'SendWebhook' flag was triggered, if so relay webhook payload to communicator
                     if (wcell.SendWebhook)
@@ -504,15 +504,15 @@
                     var timestampMs = wild.timestampMs;
                     var username = wild.username;
                     var isEvent = wild.isEvent;
-                    var pokemon = new Pokemon(data, cellId, username, isEvent); // TODO: Get entity from cache
+                    var pokemon = new Pokemon(data, cellId, username, isEvent);
                     var spawnpoint = await ParseSpawnpointAsync(pokemon, data.TimeTillHiddenMs, timestampMs);
                     if (spawnpoint != null)
                     {
-                        await _dataConsumerService.AddSpawnpointAsync(SqlQueries.SpawnpointOnMergeUpdate, spawnpoint);
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
                     }
 
                     await pokemon.UpdateAsync(_memCache, updateIv: false);
-                    await _dataConsumerService.AddPokemonAsync(SqlQueries.PokemonIgnoreOnMerge, pokemon);
+                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
 
                     if (pokemon.SendWebhook)
                     {
@@ -521,6 +521,7 @@
                 }
 
                 //PrintBenchmarkTimes(DataLogLevel.WildPokemon, pokemonToUpsert, "Wild Pokemon", sw);
+
                 // NOTE: Used for testing Pokemon database event triggers
                 //foreach (var pokemon in pokemonToUpsert)
                 //{
@@ -562,10 +563,10 @@
                     var data = (NearbyPokemonProto)nearby.data;
                     var username = nearby.username;
                     var isEvent = nearby.isEvent;
-                    var pokemon = new Pokemon(data, cellId, username, isEvent); // TODO: Get entity from cache
+                    var pokemon = new Pokemon(data, cellId, username, isEvent);
 
                     await pokemon.UpdateAsync(_memCache, updateIv: false);
-                    await _dataConsumerService.AddPokemonAsync(SqlQueries.PokemonIgnoreOnMerge, pokemon);
+                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
 
                     if (pokemon.SendWebhook)
                     {
@@ -620,7 +621,7 @@
                         _logger.LogWarning($"Unable to fetch cached Pokemon disk encounter with id '{displayId}' from cache");
                     }
 
-                    await _dataConsumerService.AddPokemonAsync(SqlQueries.PokemonOptions, pokemon);
+                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
 
                     if (pokemon.SendWebhook)
                     {
@@ -709,7 +710,7 @@
                     }
                     if (pokestop.HasChanges)
                     {
-                        await _dataConsumerService.AddPokestopAsync(SqlQueries.PokestopDetailsOnMergeUpdate, pokestop);
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopDetailsOnMergeUpdate, pokestop);
                     }
                 }
             }
@@ -739,7 +740,8 @@
                     }
                     if (gym.HasChanges)
                     {
-                        await _dataConsumerService.AddGymAsync(SqlQueries.GymDetailsOnMergeUpdate, gym);
+                        //await _dataConsumerService.AddGymAsync(SqlQueryType.GymDetailsOnMergeUpdate, gym);
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDetailsOnMergeUpdate, gym);
                     }
                 }
             }
@@ -782,7 +784,7 @@
                     }
                     if (gym.HasChanges)
                     {
-                        await _dataConsumerService.AddGymAsync(SqlQueries.GymDetailsOnMergeUpdate, gym);
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDetailsOnMergeUpdate, gym);
                     }
 
                     var gymDefenders = data.GymStatusAndDefenders.GymDefender;
@@ -794,7 +796,7 @@
                         if (gymDefenderData.TrainerPublicProfile != null)
                         {
                             var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
-                            await _dataConsumerService.AddGymTrainerAsync(SqlQueries.GymTrainerOnMergeUpdate, gymTrainer);
+                            await _dataConsumerService.AddEntityAsync(SqlQueryType.GymTrainerOnMergeUpdate, gymTrainer);
 
                             // Send webhook
                             await SendWebhookPayloadAsync(WebhookPayloadType.GymTrainer, new GymWithTrainer(gym, gymTrainer));
@@ -802,7 +804,7 @@
                         if (gymDefenderData.MotivatedPokemon != null)
                         {
                             var gymDefender = new GymDefender(gymDefenderData, fortId);
-                            await _dataConsumerService.AddGymDefenderAsync(SqlQueries.GymDefenderOnMergeUpdate, gymDefender);
+                            await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDefenderOnMergeUpdate, gymDefender);
 
                             // Send webhook
                             await SendWebhookPayloadAsync(WebhookPayloadType.GymDefender, new GymWithDefender(gym, gymDefender));
@@ -852,7 +854,7 @@
 
                     if (pokestop.HasChanges && (pokestop.HasQuestChanges || pokestop.HasAlternativeQuestChanges))
                     {
-                        await _dataConsumerService.AddPokestopAsync(SqlQueries.PokestopOptions, pokestop);
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopOnMergeUpdate, pokestop);
                     }
                 }
             }
@@ -901,7 +903,7 @@
                         var spawnpoint = await ParseSpawnpointAsync(pokemon, data.Pokemon.TimeTillHiddenMs, timestampMs);
                         if (spawnpoint != null)
                         {
-                            await _dataConsumerService.AddSpawnpointAsync(SqlQueries.SpawnpointOnMergeUpdate, spawnpoint);
+                            await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
                         }
 
                         if (pokemon.HasIvChanges)
@@ -910,7 +912,7 @@
                         }
 
                         await pokemon.UpdateAsync(_memCache, updateIv: true);
-                        await _dataConsumerService.AddPokemonAsync(SqlQueries.PokemonOnMergeUpdate, pokemon);
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
 
                         if (pokemon.SendWebhook)
                         {
@@ -965,7 +967,7 @@
                     }
 
                     await pokemon.UpdateAsync(_memCache, updateIv: true);
-                    await _dataConsumerService.AddPokemonAsync(SqlQueries.PokemonOnMergeUpdate, pokemon);
+                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
 
                     if (pokemon.SendWebhook)
                     {
@@ -1011,7 +1013,7 @@
                         }
                     }
 
-                    await _dataConsumerService.AddPokestopAsync(SqlQueries.PokestopIgnoreOnMerge, pokestop);
+                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopIgnoreOnMerge, pokestop);
 
                     await ParseIncidentsAsync(pokestop);
 
@@ -1047,7 +1049,7 @@
                         }
                     }
 
-                    await _dataConsumerService.AddGymAsync(SqlQueries.GymOptions, gym);
+                    await _dataConsumerService.AddEntityAsync(SqlQueryType.GymOnMergeUpdate, gym);
 
                     _clearFortsService.AddGym(cellId, data.FortId);
                 }
@@ -1075,7 +1077,7 @@
                     }
                 }
 
-                await _dataConsumerService.AddIncidentsAsync(SqlQueries.IncidentOnMergeUpdate, pokestop.Incidents);
+                await _dataConsumerService.AddEntitiesAsync(SqlQueryType.IncidentOnMergeUpdate, pokestop.Incidents);
             }
             catch (Exception ex)
             {
@@ -1220,15 +1222,15 @@
             return null;
         }
 
-        private static List<TEntity> FilterEntityData<TEntity>(string property, List<dynamic> data, ProtoDataType type)
-        {
-            var entities = data
-                .Where(x => x.type == type)
-                .Select(x => (TEntity)x.GetType().GetProperty(property).GetValue(x, null))
-                .Distinct()
-                .ToList();
-            return entities;
-        }
+        //private static List<TEntity> FilterEntityData<TEntity>(string property, List<dynamic> data, ProtoDataType type)
+        //{
+        //    var entities = data
+        //        .Where(x => x.type == type)
+        //        .Select(x => (TEntity)x.GetType().GetProperty(property).GetValue(x, null))
+        //        .Distinct()
+        //        .ToList();
+        //    return entities;
+        //}
 
         private void PrintBenchmarkTimes(DataLogLevel logLevel, IReadOnlyList<object> entities, string text = "total entities", Stopwatch? sw = null)
         {

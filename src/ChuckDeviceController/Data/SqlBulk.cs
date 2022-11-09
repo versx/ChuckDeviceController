@@ -6,16 +6,25 @@
     using System.Data;
     using System.Reflection;
 
-    using Dapper;
     using Team = POGOProtos.Rpc.Team;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Repositories;
+    using ChuckDeviceController.Extensions.Json;
+    using System.Diagnostics;
+
+    // TODO: Use nvarchar instead of varchar for string columns
+    // TODO: Use Stored Procedure for upsert queries
 
     public class SqlBulk
     {
+        #region Constants
+
         private const string DbNull = "NULL";
+        private const int DefaultMaxBatchSize = 1000;
+
+        #endregion
 
         #region Variables
 
@@ -32,6 +41,15 @@
 
         #region Bulk Insert
 
+        /// <summary>
+        /// Parameterized
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="sqlQuery"></param>
+        /// <param name="sqlValues"></param>
+        /// <param name="entities"></param>
+        /// <param name="stoppingToken"></param>
+        /// <returns></returns>
         public async Task<SqlBulkResult> InsertInBulkAsync<TEntity>(
             string sqlQuery,
             string sqlValues,
@@ -48,19 +66,12 @@
 
             try
             {
-                //using var connection = new MySqlConnection(connectionString);
                 var sqls = GenerateSqlQueryBatches(sqlQuery, sqlValues, entities);
                 batchCount = sqls.Count();
-
                 foreach (var (sql, args) in sqls)
                 {
-                    // TODO: Use Stored Procedure for upsert queries
-                    var cmdDef = new CommandDefinition(sql, (object)args, commandTimeout: 10);
-                    //rowsAffected += await _connection.ExecuteAsync(cmdDef);
-                    rowsAffected += await EntityRepository.ExecuteAsync(sql, (object)args, commandTimeout: 10);
-                    //await connection.ExecuteAsync(sql, (object)args);
+                    rowsAffected += await EntityRepository.ExecuteAsync(sql, (object)args, commandTimeoutS: 30);
                 }
-
                 success = true;
             }
             catch (Exception ex)
@@ -73,6 +84,15 @@
             return new SqlBulkResult(success, batchCount, rowsAffected, 0);
         }
 
+        /// <summary>
+        /// Raw
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="sqlQuery"></param>
+        /// <param name="sqlValues"></param>
+        /// <param name="entities"></param>
+        /// <param name="stoppingToken"></param>
+        /// <returns></returns>
         public async Task<SqlBulkResult> InsertInBulkRawAsync<TEntity>(
             string sqlQuery,
             string sqlValues,
@@ -90,15 +110,13 @@
 
             try
             {
-                //using var connection = new MySqlConnection(connectionString);
                 sqls = GenerateSqlQueryBatchesRaw(sqlQuery, sqlValues, entities);//, ignoredProperties: new List<string> { nameof(Cell.Updated) });
                 batchCount = sqls.Count();
-
-                foreach (var sql in sqls)
-                {
-                    //rowsAffected += await _connection.ExecuteAsync(sql);
-                    rowsAffected += await EntityRepository.ExecuteAsync(sql);
-                }
+                rowsAffected += await EntityRepository.ExecuteAsync(sqls, commandTimeoutS: 30, stoppingToken);
+                //foreach (var sql in sqls)
+                //{
+                //    rowsAffected += await EntityRepository.ExecuteAsync(sql);
+                //}
                 success = true;
             }
             catch (Exception ex)
@@ -116,11 +134,21 @@
         #region Generate SQL Query Methods
 
         // https://stackoverflow.com/a/56250588
+
+        /// <summary>
+        /// Generates a SQL query in batches using parameterized queries.
+        /// </summary>
+        /// <typeparam name="TEntity">Entity data model</typeparam>
+        /// <param name="sqlQuery">SQL query</param>
+        /// <param name="sqlValues">SQL insert query string</param>
+        /// <param name="entities">Entities to insert</param>
+        /// <param name="batchSize">Maximum number of entities per batch</param>
+        /// <returns>Returns a list of tuples containing the SQL query and the entities to pass as an argument.</returns>
         private static IEnumerable<(string, dynamic)> GenerateSqlQueryBatches<TEntity>(
             string sqlQuery,
             string sqlValues,
             IEnumerable<TEntity> entities,
-            ushort batchSize = 1000)
+            int batchSize = DefaultMaxBatchSize)
             where TEntity : BaseEntity
         {
             var sqlsToExecute = new List<(string, dynamic)>();
@@ -137,11 +165,20 @@
             return sqlsToExecute;
         }
 
+        /// <summary>
+        /// Generates a SQL query in batches using raw (possible SQL injection prone) queries.
+        /// </summary>
+        /// <typeparam name="TEntity">Entity data model</typeparam>
+        /// <param name="sqlQuery">SQL query</param>
+        /// <param name="sqlValues">SQL insert query string</param>
+        /// <param name="entities">Entities to insert</param>
+        /// <param name="batchSize">Maximum number of entities per batch</param>
+        /// <returns>Returns a list of SQL queries including the entity data.</returns>
         private static IEnumerable<string> GenerateSqlQueryBatchesRaw<TEntity>(
             string sqlQuery,
             string sqlValues,
             IEnumerable<TEntity> entities,
-            ushort batchSize = 1000,
+            int batchSize = DefaultMaxBatchSize,
             IEnumerable<string>? ignoredProperties = null)
             where TEntity : BaseEntity
         {
@@ -164,14 +201,28 @@
             return sqlQueries;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="ignoredProperties"></param>
+        /// <returns></returns>
         private static IEnumerable<object> GetPropertyValues<TEntity>(TEntity entity, IEnumerable<string>? ignoredProperties = null)
         {
+            // Include only public instance properties as well as base inherited properties
             var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
             var properties = entity!.GetType().GetProperties(flags);
             //var properties = TypeDescriptor.GetProperties(typeof(TEntity));
+
             foreach (var prop in properties)
             {
+                // Ignore any properties specified that match the entity
+                if (ignoredProperties?.Contains(prop.Name) ?? false)
+                    continue;
+
                 // Ignore any properties that are not mapped to a database table via an attribute
+                // or if the property is explicitly set to not be mapped.
                 if (prop.GetCustomAttribute<ColumnAttribute>() == null ||
                     prop.GetCustomAttribute<NotMappedAttribute>() != null)
                     continue;
@@ -181,44 +232,89 @@
                 if (generatedAttr != null && generatedAttr.DatabaseGeneratedOption == DatabaseGeneratedOption.Computed)
                     continue;
 
-                // Ignore any properties specified that match the entity
-                if (ignoredProperties?.Contains(prop.Name) ?? false)
-                    continue;
-
                 // Check if property type is an enum and check if it's an enum we want to convert to an integer
-                var value = prop.GetValue(entity) ?? null;
-                if (prop.PropertyType.IsEnum && _enumsToConvert.ContainsKey(prop.PropertyType))
-                {
-                    var enumValue = Convert.ToString(value) ?? string.Empty;
-                    var propertyDescriptor = GetPropertyDescriptor(prop);
-                    var convertedValue = Convert.ToInt32(propertyDescriptor.Converter.ConvertFromString(enumValue));
-                    yield return convertedValue;
-                }
-                else if (prop.PropertyType == typeof(string) && value != null)
-                {
-                    var strValue = Convert.ToString(value) ?? string.Empty;
-                    if (strValue.Contains('"') || strValue.Contains('\''))
-                    {
-                        strValue = $"`{strValue}`";
-                    }
-                    else
-                    {
-                        strValue = $"'{strValue}'";
-                    }
-                    yield return strValue;
-                }
-                else
-                {
-                    value ??= DbNull; //DBNull.Value;
-                    yield return value;
-                }
+                var value = prop.GetValue(entity);
+                var safeValue = SqlifyPropertyValue(prop, value);
+                yield return safeValue;
             }
+        }
+
+        private static object SqlifyPropertyValue(PropertyInfo property, object? value)
+        {
+            if (value == null)
+            {
+                return DbNull;
+            }
+
+            // Convert enums
+            if (property.PropertyType.IsEnum)
+            {
+                return SqlifyPropertyValueToString(property, value, _enumsToConvert);
+            }
+            // Convert strings
+            else if (property.PropertyType == typeof(string) && value != null)
+            {
+                return SqlifyPropertyValueToString(value);
+            }
+            // Convert generics, arrays, dictionaries, and lists
+            else if (property.PropertyType.IsArray ||
+                     (property.PropertyType.IsGenericType &&
+                         (
+                             property.PropertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>) ||
+                             property.PropertyType.GetGenericTypeDefinition() == typeof(List<>) ||
+                             property.PropertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                         )
+                     ))
+            {
+                // Convert arrays and dictionaries to json strings
+                var json = value.ToJson();
+                return $"'{json}'";
+            }
+
+            return value ?? DbNull; //DBNull.Value;
+        }
+
+        private static string SqlifyPropertyValueToString(object? value)
+        {
+            if (value == null)
+            {
+                return DbNull;
+            }
+
+            var unsafeValue = Convert.ToString(value);
+            if (string.IsNullOrEmpty(unsafeValue))
+            {
+                return DbNull;
+            }
+
+            var safeValue = unsafeValue.Contains('"') || unsafeValue.Contains('\'')
+                // String value already contains quotations, use back ticks.
+                ? $"`{unsafeValue}`"
+                // Encapsulate string value in single quotations.
+                : $"'{unsafeValue}'";
+
+            return safeValue ?? DbNull;
+        }
+
+        private static string SqlifyPropertyValueToString(PropertyInfo property, object? value, IReadOnlyDictionary<Type, Type>? enumsToConvert = null)
+        {
+            if (enumsToConvert?.ContainsKey(property.PropertyType) ?? false)
+            {
+                // Convert enumeration value from string to integer
+                var enumValue = Convert.ToString(value) ?? string.Empty;
+                var propertyDescriptor = GetPropertyDescriptor(property);
+                var convertedValue = Convert.ToInt32(propertyDescriptor.Converter.ConvertFromString(enumValue));
+                return convertedValue.ToString();
+            }
+            // Treat/wrap enumeration value string in quotations
+            return SqlifyPropertyValueToString(value);
         }
 
         #endregion
 
         #region Helper Methods
 
+        // TODO: Move to extensions class
         public static PropertyDescriptor GetPropertyDescriptor(PropertyInfo propertyInfo)
         {
             var properties = TypeDescriptor.GetProperties(propertyInfo.DeclaringType);
