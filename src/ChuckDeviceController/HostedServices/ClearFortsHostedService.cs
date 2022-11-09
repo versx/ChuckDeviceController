@@ -25,7 +25,13 @@
 
         #endregion
 
-        public override uint TimerIntervalMs => 15 * 60 * 1000; // 15 minutes
+        #region Properties
+
+        public override uint TimerIntervalS => 15 * 60; // 15 minutes
+
+        #endregion
+
+        #region Constructor
 
         public ClearFortsHostedService(
             IOptions<ProcessingOptionsConfig> options,
@@ -36,6 +42,10 @@
             _logger = logger;
             _factory = factory;
         }
+
+        #endregion
+
+        #region Add Cells
 
         public void AddCell(ulong cellId)
         {
@@ -89,6 +99,10 @@
             }
         }
 
+        #endregion
+
+        #region Clear Cells
+
         public void ClearCells()
         {
             //ClearPokestops();
@@ -127,11 +141,15 @@
             }
         }
 
+        #endregion
+
+        #region Callback Method
+
         /// <summary>
         /// Mark upgraded/downgraded forts as deleted that no longer exist.
         /// </summary>
         /// <returns></returns>
-        public async Task ClearOldFortsAsync()
+        private async Task ClearOldFortsAsync()
         {
             try
             {
@@ -215,6 +233,10 @@
             }
         }
 
+        #endregion
+
+        #region BackgroundService Impl
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.CompletedTask;
@@ -227,5 +249,7 @@
 
             await ClearOldFortsAsync();
         }
+
+        #endregion
     }
 }

@@ -2,7 +2,7 @@
 {
     public abstract class TimedHostedService : BackgroundService, IDisposable
     {
-        private const uint DefaultIntervalMs = 3 * 1000; // 3 seconds
+        private const uint DefaultIntervalS = 3; // 3 seconds
 
         #region Variables
 
@@ -17,9 +17,9 @@
         #region Properties
 
         /// <summary>
-        /// Gets or sets the callback timer interval in milliseconds.
+        /// Gets or sets the callback timer interval in seconds.
         /// </summary>
-        public virtual uint TimerIntervalMs { get; private set; } = DefaultIntervalMs;
+        public virtual uint TimerIntervalS { get; private set; } = DefaultIntervalS;
 
         #endregion
 
@@ -43,7 +43,7 @@
             _timer = new Timer(
                 InternalExecuteTask,
                 null,
-                TimeSpan.FromMilliseconds(TimerIntervalMs),
+                TimeSpan.FromSeconds(TimerIntervalS),
                 TimeSpan.FromMilliseconds(-1)
             );
 
@@ -88,7 +88,7 @@
         private async Task ExecuteTaskAsync(CancellationToken stoppingToken)
         {
             await RunJobAsync(stoppingToken);
-            _timer?.Change(TimeSpan.FromMilliseconds(TimerIntervalMs), TimeSpan.FromMilliseconds(-1));
+            _timer?.Change(TimeSpan.FromSeconds(TimerIntervalS), TimeSpan.FromMilliseconds(-1));
         }
 
         private void InternalExecuteTask(object? state)

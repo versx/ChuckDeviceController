@@ -13,7 +13,5 @@
         void ClearPokestops();
 
         void ClearGyms();
-
-        Task ClearOldFortsAsync();
     }
 }
