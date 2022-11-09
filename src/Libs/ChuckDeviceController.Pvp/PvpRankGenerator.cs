@@ -13,8 +13,6 @@
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
-    using Enum = System.Enum;
-
     // Credits: https://github.com/Chuckleslove
     // Credits: https://github.com/RealDeviceMap/RealDeviceMap/blob/development/Sources/RealDeviceMapLib/Misc/PVPStatsManager.swift
     // Credits: https://github.com/WatWowMap/Chuck/blob/master/src/services/pvp.js
@@ -57,7 +55,7 @@
 
         public PvpRankGenerator()
         {
-            _timer = new Timer(Strings.FetchMasterFileIntervalS * 1000);
+            _timer = new Timer(Strings.FetchMasterFileIntervalM * 60 * 1000);
             _timer.Elapsed += async (sender, e) => await LoadMasterFileIfNeededAsync();
         }
 
@@ -160,7 +158,7 @@
         public IReadOnlyDictionary<string, dynamic>? GetAllPvpLeagues(HoloPokemonId pokemon, PokemonForm? form, PokemonGender? gender, PokemonCostume? costume, IV iv, double level)
         {
             var pvp = new Dictionary<string, dynamic>();
-            foreach (var leagueId in Enum.GetValues(typeof(PvpLeague)))
+            foreach (var leagueId in System.Enum.GetValues(typeof(PvpLeague)))
             {
                 var league = (PvpLeague)leagueId;
                 var leagueName = league.ToString().ToLower();

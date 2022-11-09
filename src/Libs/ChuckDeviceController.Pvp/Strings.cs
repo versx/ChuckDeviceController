@@ -2,7 +2,7 @@
 {
     internal static class Strings
     {
-        internal const ushort FetchMasterFileIntervalS = 1;
+        internal const ushort FetchMasterFileIntervalM = 60;
         internal const string MasterFileEndpoint = "https://raw.githubusercontent.com/PokeMiners/game_masters/master/latest/latest.json";
         internal const string NoEvolveForm = "noevolve";
 
