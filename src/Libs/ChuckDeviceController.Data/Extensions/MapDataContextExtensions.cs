@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Extensions
 {
-
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Contexts;
@@ -47,32 +46,35 @@
                 pokestop.AlternativeQuestTitle = null;
                 pokestop.AlternativeQuestType = null;
             });
-            await context.Pokestops.BulkUpdateAsync(pokestops, options =>
-            {
-                options.TemporaryTableUseTableLock = true;
-                options.UseTableLock = true;
-                options.ColumnPrimaryKeyExpression = p => p.Id;
-                options.ColumnInputExpression = p => new
-                {
-                    p.Id,
 
-                    p.QuestConditions,
-                    p.QuestRewards,
-                    p.QuestTarget,
-                    p.QuestTemplate,
-                    p.QuestTimestamp,
-                    p.QuestTitle,
-                    p.QuestType,
+            context.Pokestops.UpdateRange(pokestops);
+            await context.SaveChangesAsync();
+            //await context.Pokestops.BulkUpdateAsync(pokestops, options =>
+            //{
+            //    options.TemporaryTableUseTableLock = true;
+            //    options.UseTableLock = true;
+            //    options.ColumnPrimaryKeyExpression = p => p.Id;
+            //    options.ColumnInputExpression = p => new
+            //    {
+            //        p.Id,
 
-                    p.AlternativeQuestConditions,
-                    p.AlternativeQuestRewards,
-                    p.AlternativeQuestTarget,
-                    p.AlternativeQuestTemplate,
-                    p.AlternativeQuestTimestamp,
-                    p.AlternativeQuestTitle,
-                    p.AlternativeQuestType,
-                };
-            });
+            //        p.QuestConditions,
+            //        p.QuestRewards,
+            //        p.QuestTarget,
+            //        p.QuestTemplate,
+            //        p.QuestTimestamp,
+            //        p.QuestTitle,
+            //        p.QuestType,
+
+            //        p.AlternativeQuestConditions,
+            //        p.AlternativeQuestRewards,
+            //        p.AlternativeQuestTarget,
+            //        p.AlternativeQuestTemplate,
+            //        p.AlternativeQuestTimestamp,
+            //        p.AlternativeQuestTitle,
+            //        p.AlternativeQuestType,
+            //    };
+            //});
         }
 
         /// <summary>

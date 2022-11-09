@@ -22,6 +22,8 @@
     {
         private const int DevicesUpdateIntervalS = 10;
 
+        // TODO: Remove ControllerDbContext, use EntityRepository
+
         #region Variables
 
         private static readonly ConcurrentBag<Device> _devicesToUpdate = new();

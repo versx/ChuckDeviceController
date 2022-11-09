@@ -103,9 +103,10 @@
 
             // If stat exists (updating) the row entry, only update the 'Count' column,
             // otherwise insert all of the entity's properties.
-            await _context.SingleMergeAsync(pokemonStat, options =>
-                options.OnMergeUpdateInputExpression = p => new { p.Count }
-            , cancellationToken);
+            // TODO: Implement Dapper alternative for pokemon_stats upsert
+            //await _context.SingleMergeAsync(pokemonStat, options =>
+            //    options.OnMergeUpdateInputExpression = p => new { p.Count }
+            //, cancellationToken);
         }
 
         private static double GetIV(ushort atkIv, ushort defIv, ushort staIv)
