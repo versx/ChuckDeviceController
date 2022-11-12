@@ -12,6 +12,7 @@
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
+    using ChuckDeviceController.Data.Repositories;
 
     [Table("account")]
     public class Account : BaseEntity, IAccount, IWebhookEntity
@@ -178,7 +179,7 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(ControllerDbContext context, GetPlayerOutProto accountData, IMemoryCacheHostedService memCache)
+        public async Task UpdateAsync(GetPlayerOutProto accountData, IMemoryCacheHostedService memCache)
         {
             CreationTimestamp = Convert.ToUInt32(accountData.Player.CreationTimeMs / 1000);
             HasWarn = accountData.Warn;
@@ -235,33 +236,7 @@
                 Console.WriteLine($"[{Username}] Account '{accountData.Player.Name}' (Username: {Username}) Banned");
             }
 
-            Account? oldAccount = null;
-            try
-            {
-                // Check cache first for account entity
-                var cached = memCache.Get<string, Account>(Username);
-                if (cached != null)
-                {
-                    oldAccount = cached;
-                }
-                else
-                {
-                    oldAccount = await context.Accounts.FindAsync(Username);
-                    if (oldAccount != null)
-                    {
-                        memCache.Set(Username, oldAccount);
-                    }
-                    else
-                    {
-                        memCache.Set(Username, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Account: {ex}");
-            }
-
+            var oldAccount = await EntityRepository.GetEntityAsync<string, Account>(Username, memCache);
             if (oldAccount == null)
             {
                 SendWebhook = true;
