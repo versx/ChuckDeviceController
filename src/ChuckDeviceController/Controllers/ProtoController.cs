@@ -8,7 +8,6 @@
 
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Data;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
@@ -22,8 +21,6 @@
     {
         private const int DevicesUpdateIntervalS = 10;
 
-        // TODO: Remove ControllerDbContext, use EntityRepository
-
         #region Variables
 
         private static readonly ConcurrentBag<Device> _devicesToUpdate = new();
@@ -33,11 +30,9 @@
         private static readonly object _levelCacheLock = new();
 
         private readonly ILogger<ProtoController> _logger;
-        private readonly ControllerDbContext _context;
         private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly Timer _timer;
-        //private readonly string _connectionString;
         private readonly SqlBulk _bulk;
 
         #endregion
@@ -46,17 +41,12 @@
 
         public ProtoController(
             ILogger<ProtoController> logger,
-            ControllerDbContext context,
             IAsyncQueue<ProtoPayloadQueueItem> taskQueue,
-            //IConfiguration configuration,
             IMemoryCacheHostedService memCache)
         {
             _logger = logger;
-            _context = context;
             _taskQueue = taskQueue;
             _memCache = memCache;
-            //_connectionString = configuration.GetConnectionString("DefaultConnection");
-            //_bulk = new SqlBulk(_connectionString);
             _bulk = new SqlBulk();
 
             _timer = new()
@@ -137,7 +127,7 @@
             var device = await SetLastDeviceLocationAsync(payload);
 
             // Queue proto payload for processing
-            _taskQueue.Enqueue(new ProtoPayloadQueueItem
+            await _taskQueue.EnqueueAsync(new ProtoPayloadQueueItem
             {
                 Payload = payload,
                 Device = device,
@@ -210,7 +200,7 @@
 
             try
             {
-                await _bulk.InsertInBulkAsync(
+                await _bulk.InsertBulkAsync(
                     SqlQueries.DeviceOnMergeUpdate,
                     SqlQueries.DeviceValues,
                     devices
@@ -249,11 +239,11 @@
                 }
 
                 // Update account level if account exists
-                var account = await _context.Accounts.FindAsync(username);
+                var account = await EntityRepository.GetEntityAsync<string, Account>(username);
                 if (account != null)
                 {
                     account.Level = level;
-                    await _context.SaveChangesAsync();
+                    await _bulk.UpdateAsync(SqlQueries.AccountLevelUpdate, account);
 
                     _logger.LogInformation($"[{uuid}] Account {username} on {uuid} from {oldLevel} to {level} with {trainerXp}");
                 }
