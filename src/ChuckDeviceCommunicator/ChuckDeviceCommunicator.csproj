@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
+    <IsMacOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsMacOS>
+    <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
+    <BaseOutputPath>bin</BaseOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsWindows)'=='true'">
+    <DefineConstants>Windows</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IsMacOS)'=='true'">
+    <DefineConstants>macOS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(IsLinux)'=='true'">
+    <DefineConstants>Linux</DefineConstants>
+  </PropertyGroup>
+	
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.49.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Authorization.Jwt\ChuckDeviceController.Authorization.Jwt.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Configuration\ChuckDeviceController.Configuration.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\WebhookEndpoint.proto" GrpcServices="Client" />
+    <Protobuf Include="..\Libs\ChuckDeviceController.Protos\Server\WebhookPayload.proto" GrpcServices="Server" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
+    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
+    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin.Helpers\ChuckDeviceController.Plugin.Helpers.csproj" />
+    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+	</ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;../../../scripts/copy.bat&quot; &quot;$(TargetPath)&quot; &quot;$(ProjectName)&quot; &quot;$(TargetFileName)&quot; &quot;$(TargetDir)&quot; &quot;$(SolutionDir)&quot;" />
+  </Target>
+</Project>

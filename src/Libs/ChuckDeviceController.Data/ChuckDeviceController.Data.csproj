@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper.StrongName" Version="2.0.123" />
+    <PackageReference Include="EntityFrameworkCore.Triggered" Version="3.2.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="POGOProtos.Core" Version="2.57.4" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
+  </ItemGroup>
+
+</Project>

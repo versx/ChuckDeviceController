@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj">
+		<Private>false</Private>
+		<ExcludeAssets>runtime</ExcludeAssets>
+	</ProjectReference>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;../../../scripts/copy.bat&quot; &quot;$(TargetPath)&quot; &quot;$(ProjectName)&quot; &quot;$(TargetFileName)&quot; &quot;$(TargetDir)&quot; &quot;$(SolutionDir)&quot;" />
+  </Target>
+
+</Project>

@@ -1,0 +1,139 @@
+﻿@model IvQueueViewModel
+@{
+    ViewData["Title"] = "IV Queue " + Model?.Name;
+    var confirmText = "Are you sure you want to clear all pending Pokemon encounters from the IV queue?";
+    var clearAllText = "Clears all pending Pokemon encounters in the IV queue.";
+    var removeEncounterText = "Removes the pending Pokemon encounter from the IV queue.";
+}
+
+<h1>IV Queue - @Model?.Name</h1>
+<br />
+
+<p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
+
+<div class="pb-5">
+    <div class="form-group float-start">
+        <a class="btn btn-danger btn-sm" title="@(clearAllText)" href="@Model?.Name/Clear" onclick="return confirm('@(confirmText)')">
+            <i class="fa-solid fa-trash-can"></i>&nbsp;Clear Queue
+        </a>
+    </div>
+    <div class="checkbox float-end">
+        <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
+    </div>
+</div>
+
+<table id="table-ivqueue" class="table table-striped table-bordered dt-responsive nowrap">
+    <thead class="table-dark">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].Index)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].Image)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].PokemonName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].PokemonId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].PokemonForm)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].PokemonCostume)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].EncounterId)
+            </th>
+            <th>
+                Location
+            </th>
+            <th width="5%">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    @{
+        var index = 1;
+        foreach (var item in Model?.Queue ?? new())
+        {
+            <tr>
+                <th scope="row">
+                    @index
+                </th>
+                <td>
+                    @Html.Raw(Utils.GetPokemonIcon(item.PokemonId, item.PokemonFormId, item.PokemonGender, item.PokemonCostumeId, width: "32", height: "32", html: true))
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonForm)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PokemonCostume)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EncounterId)
+                </td>
+                <td>
+                    @Html.Raw(Utils.GetGoogleMapsLink(item.Latitude, item.Longitude, html: true))
+                </td>
+                <td>
+                    <a class="btn btn-danger btn-sm" href="@Model?.Name/Remove/@item.EncounterId" title="@(removeEncounterText)">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </a>
+                </td>
+            </tr>
+            index++;
+        }
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            $('#table-ivqueue').DataTable({
+                columnDefs: [
+                    // # Image Name ID Form Costume EncounterID Location Action
+                    // 0 1     2    3  4    5       6           7        8
+                    // 0 2     3    4  5    6       7           8        1
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 2, targets: 1 },
+                    { responsivePriority: 3, targets: 2 },
+                    { responsivePriority: 4, targets: 3 },
+                    { responsivePriority: 5, targets: 4 },
+                    { responsivePriority: 6, targets: 5 },
+                    { responsivePriority: 7, targets: 6 },
+                    { responsivePriority: 8, targets: 7 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
+                ],
+                order: [[0, 'asc']],
+                stateSave: true,
+                searching: true,
+                paging: true,
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, 'All']],
+                pageLength: 100,
+                colReorder: true,
+                fixedHeader: {
+                    header: true,
+                },
+                responsive: true,
+                info: true,
+            });
+        });
+        const handleAutoRefresh = (e) => {
+            const isChecked = $(e).is(':checked');
+            if (isChecked) {
+                location.href = '@Url.Action("IvQueue", new { name = Model?.Name, autoRefresh = true })';
+            } else {
+                location.href = '@Url.Action("IvQueue", new { name = Model?.Name, autoRefresh = false })';
+            }
+        };
+    </script>
+}

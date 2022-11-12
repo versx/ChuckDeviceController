@@ -1,0 +1,178 @@
+﻿@using POGOProtos.Rpc
+@using static POGOProtos.Rpc.EnumWrapper.Types
+@using static POGOProtos.Rpc.GameplayWeatherProto.Types
+@model Webhook
+@{
+    ViewData["Title"] = "Edit Webhook " + Model?.Name;
+}
+
+<h1>Edit Webhook</h1>
+
+<p>@Html.ValidationMessage("Webhook", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Webhook", ControllerText = "Webhooks", CurrentPage = "Edit Webhook" })
+
+<h4>Webhook '@(Model?.Name)'</h4>
+<hr />
+
+<form asp-action="Edit">
+    <div class="row">
+        <div class="col-md-6">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-floating mb-3">
+                <input asp-for="Name" class="form-control" placeholder="Webhook name" readonly />
+                <label asp-for="Name"></label>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Url" class="form-control" placeholder="Webhook url endpoint" />
+                <label asp-for="Url"></label>
+                <span asp-validation-for="Url" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Delay" class="form-control" min="0" max="3600" placeholder="Webhook delay" />
+                <label asp-for="Delay"></label> <small class="text-muted"><i>(in seconds)</i></small>
+                <span asp-validation-for="Delay" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Types"></label>
+                <select asp-for="Types" class="form-control" asp-items="Html.GetEnumSelectList<WebhookType>()" placeholder="Webhook type">
+                    <option value="" disabled>Please select one or more</option>
+                </select>
+                <span asp-validation-for="Types" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Geofences"></label>
+                <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))" placeholder="Webhook geofences">
+                    @if (Model?.Geofences?.Any() ?? false)
+                    {
+                        <option value="">Please select one or more</option>
+                    }
+                    else
+                    {
+                        <option value="" selected>Please select one or more</option>
+                    }
+                </select>
+                <span asp-validation-for="Geofences" class="text-danger"></span>
+            </div>
+            <div class="checkbox mb-3">
+                <label><input type="checkbox" asp-for="Enabled"> Enable Webhook Endpoint</label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Blacklisted Data</div>
+                <div class="card-body">
+                    <div class="form-group mb-3 pokemon">
+                        <label asp-for="Data.PokemonIds"></label> <small class="text-muted"><i>(i.e. 1_f123_c11_g1)</i></small>
+                        <textarea id="Data.PokemonIds" name="Data.PokemonIds" class="form-control">@(string.Join("\n", Model?.Data?.PokemonIds ?? new()))</textarea>
+                        <span asp-validation-for="Data.PokemonIds" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3 pokestops">
+                        <label asp-for="Data.PokestopIds"></label>
+                        <textarea id="Data.PokestopIds" name="Data.PokestopIds" class="form-control">@(string.Join("\n", Model?.Data?.PokestopIds ?? new()))</textarea>
+                        <span asp-validation-for="Data.PokestopIds" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3 raids">
+                        <label asp-for="Data.RaidPokemonIds"></label> <small class="text-muted"><i>(i.e. 150_f123_c11_g1)</i></small>
+                        <textarea id="Data.RaidPokemonIds" name="Data.RaidPokemonIds" class="form-control">@(string.Join("\n", Model?.Data?.RaidPokemonIds ?? new()))</textarea>
+                        <span asp-validation-for="Data.RaidPokemonIds" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3 eggs">
+                        <label asp-for="Data.EggLevels"></label>
+                        <select asp-for="Data.EggLevels" class="form-control" multiple>
+                            <option value="">Please select one or more</option>
+                            @for (var i = 1; i < 9; i++)
+                            {
+                                <option value="@i">Level @i</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Data.EggLevels" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3 lures">
+                        <label asp-for="Data.LureIds"></label>
+                        <select asp-for="Data.LureIds" class="form-control" multiple>
+                            <option value="">Please select one or more</option>
+                            <option value="501">Normal</option>
+                            <option value="502">Glacial</option>
+                            <option value="503">Mossy</option>
+                            <option value="504">Magnetic</option>
+                            <option value="505">Rainy</option>
+                        </select>
+                        <span asp-validation-for="Data.LureIds" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3 invasions">
+                        <label asp-for="Data.InvasionIds"></label>
+                        <select asp-for="Data.InvasionIds" class="form-control" asp-items="Html.GetEnumSelectList<InvasionCharacter>()" multiple>
+                            <option value="">Please select one or more</option>
+                        </select>
+                        <span asp-validation-for="Data.InvasionIds" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3 gyms">
+                        <label asp-for="Data.GymTeamIds"></label>
+                        <select asp-for="Data.GymTeamIds" class="form-control" asp-items="Html.GetEnumSelectList<Team>()" multiple>
+                            <option value="">Please select one or more</option>
+                        </select>
+                        <span asp-validation-for="Data.GymTeamIds" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3 gyminfo">
+                        <label asp-for="Data.GymIds"></label>
+                        <textarea id="Data.GymIds" name="Data.GymIds" class="form-control">@(string.Join("\n", Model?.Data?.GymIds ?? new()))</textarea>
+                        <span asp-validation-for="Data.GymIds" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3 weather">
+                        <label asp-for="Data.WeatherConditionIds"></label>
+                        <select asp-for="Data.WeatherConditionIds" class="form-control" asp-items="Html.GetEnumSelectList<WeatherCondition>()" multiple>
+                            <option value="">Please select one or more</option>
+                        </select>
+                        <span asp-validation-for="Data.WeatherConditionIds" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const types = [
+            'pokemon',
+            'pokestops',
+            'lures',
+            'invasions',
+            'quests',
+            'alternative_quests',
+            'gyms',
+            'gyminfo',
+            'gym_defenders',
+            'gym_trainers',
+            'eggs',
+            'raids',
+            'weather',
+            'accounts',
+        ];
+        toggleElements();
+
+        $('#Types').change(() => toggleElements());
+
+        function toggleElements() {
+            const selected = $('#Types').val().map(type => types[type]);
+            for (const type of types) {
+                const show = selected.includes(type);
+                hideElements(type, show);
+            }
+        }
+
+        function hideElements(className, show) {
+            const elements = document.getElementsByClassName(className);
+            for (const element of elements) {
+                element.style.display = show ? 'block' : 'none';
+            }
+        }
+    </script>
+}

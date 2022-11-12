@@ -1,0 +1,226 @@
+﻿@using ChuckDeviceConfigurator.Extensions
+@using ChuckDeviceController.Extensions.Json
+@using ChuckDeviceController.Plugin
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+
+    var data = Html.RenderAction("GetTiles", "Helper");
+    var dashboardTiles = Convert.ToString(data)?.FromJson<List<DashboardTile>>();
+}
+
+<h1 class="display-4 text-center">Dashboard</h1>
+<div class="w-75" style="float: none; margin: 0 auto;">
+    <div class="card text-center">
+        <div class="card-header text-center"><b>General</b></div>
+        <div class="card-body">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="Plugin" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-puzzle-piece"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Plugins)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Plugins)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="Device" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-mobile-alt"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Devices)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Devices)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="DeviceGroup" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-layer-group"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.DeviceGroups)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.DeviceGroups)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="Instance" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-cubes-stacked"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Instances)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Instances)</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-md-4 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="Account" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-user"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Accounts)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Accounts)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="Assignment" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-cog"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Assignments)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Assignments)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="AssignmentGroup" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-cogs"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.AssignmentGroups)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.AssignmentGroups)</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="Geofence" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-map-marked"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Geofences)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Geofences)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" href="/dashboard/ivlists">
+                                <h3 class="pull-right"><i class="fas fa-list"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.IvLists)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.IvLists)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="Webhook" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-circle-nodes"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Webhooks)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Webhooks)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="User" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-users"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Users)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Users)</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                @if (dashboardTiles != null)
+                {
+                    <div class="row justify-content-center">
+                    @foreach (var tile in dashboardTiles)
+                    {
+                        <div class="col-md-3 p-1">
+                            <div class="list-group">
+                                <a class="list-group-item" asp-controller="@tile.ControllerName" asp-action="@tile.ActionName">
+                                    <h3 class="pull-right"><i class="@tile.Icon"></i></h3>
+                                    <h4 class="list-group-item-heading">@tile.Value</h4>
+                                    <p class="list-group-item-text">@tile.Text</p>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="card text-center">
+        <div class="card-header text-center"><b>Statistics</b></div>
+        <div class="card-body">
+            <div class="container">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Pokemon)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Pokemon)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Gyms)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Gyms)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.GymDefenders)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.GymDefenders)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.GymTrainers)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.GymTrainers)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Raids)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Raids)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Pokestops)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Pokestops)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Lures)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Lures)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Incidents)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Incidents)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Quests)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Quests)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Spawnpoints)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Spawnpoints)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Cells)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Cells)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        @Html.DisplayNameFor(model => model.Weather)
+                        <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Weather)</span>
+                    </li>
+                    @foreach (var statsItem in Model.PluginDashboardStats)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            @(statsItem.IsHtml ? Html.Raw(statsItem.Name) : statsItem.Name)
+                            <span class="badge rounded-pill bg-primary">
+                                @(statsItem.IsHtml ? Html.Raw(statsItem.Value) : @statsItem.Value)
+                            </span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <dl class="row">
+        <dt class = "col-sm-4">
+            @Html.DisplayNameFor(model => model.Started)
+        </dt>
+        <dd class = "col-sm-8">
+            @Html.DisplayFor(model => model.Started)
+        </dd>
+        <dt class="col-sm-4">
+            @Html.DisplayNameFor(model => model.Uptime)
+        </dt>
+        <dd class="col-sm-8">
+            @Html.DisplayFor(model => model.Uptime)
+        </dd>
+    </dl>
+</div>

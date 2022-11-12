@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ChuckDeviceCommunicator": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:48724",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

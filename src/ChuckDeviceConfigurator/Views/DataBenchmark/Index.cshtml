@@ -1,0 +1,73 @@
+﻿@using ChuckDeviceConfigurator.Controllers
+@model ProtoDataStatistics
+@{
+    ViewData["Title"] = "Data Entity Benchmarks";
+}
+
+<h1>Data Entity Benchmarks</h1>
+<br />
+
+<p>
+    <a class="btn btn-danger btn-sm" asp-action="Reset">Reset</a>
+</p>
+
+<b>Average Time: </b>@Model.AverageTime.TimeS seconds<br />
+<b>Average Count: </b>@Model.AverageTime.Count.ToString("N0") entities
+
+<table id="table-data-benchmarks" class="table table-striped table-bordered dt-responsive nowrap">
+    <thead class="table-dark">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Times[0].TimeS)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Times[0].Count)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Times)
+        {
+            <tr>
+                <th scope="row">
+                    @Html.Raw(Utils.FormatBenchmarkTime(item.TimeS, isHtml: true))
+                </th>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Count)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#table-data-benchmarks').DataTable({
+                columnDefs: [
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 1, targets: 1 },
+                    //{ responsivePriority: 2, targets: -1, orderable: false },
+                ],
+                order: [[0, 'asc']],
+                stateSave: true,
+                searching: true,
+                paging: true,
+                lengthMenu: [[25, 50, 100, 250, 500, -1], [25, 50, 100, 250, 500, 'All']],
+                pagingType: 'full_numbers',
+                colReorder: {
+                    enable: true,
+                    fixedColumnsLeft: 1,
+                },
+                fixedHeader: {
+                    header: true,
+                },
+                responsive: {
+                    //breakpoints: '',
+                    details: true,
+                },
+                info: true,
+            });
+        });
+    </script>
+}

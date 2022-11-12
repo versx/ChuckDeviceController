@@ -1,0 +1,60 @@
+﻿table.dataTable tbody td {
+    vertical-align: middle;
+}
+
+.theme-dark,
+.theme-dark body,
+.theme-dark th,
+.theme-dark tr,
+.theme-dark td,
+.theme-dark .list-group-item,
+/* Table search text input */
+.theme-dark input.form-control,
+/* Pagination buttons */
+.theme-dark ul.pagination,
+.theme-dark li.paginate_button a,
+.theme-dark li.paginate_button.disabled a,
+/* Html elements */
+.theme-dark select,
+.theme-dark select:focus,
+.theme-dark textarea,
+.theme-dark textarea:focus,
+.theme-dark textarea:read-only,
+/*.theme-dark .card-header,*/
+.theme-dark .card-body,
+.theme-dark .card-footer,
+.theme-dark .modal-dialog,
+.theme-dark .modal-content,
+.theme-dark .modal-header,
+.theme-dark .modal-title,
+.theme-dark .modal-body,
+.theme-dark .modal-footer {
+    background-color: rgb(41, 41, 41);
+    color: white;
+}
+
+.theme-dark .card-header,
+.theme-dark thead > tr > th {
+    /*background-color: rgb(21, 21, 21);*/
+    background-color: #6d7fcc;
+    color: white;
+}
+
+.theme-dark input.form-control[type="text"]:read-only {
+    /*background-color: rgb(33, 37, 31);*/
+    background-color: rgb(21, 21, 21);
+    color: white;
+}
+
+.theme-dark .modal-header > .btn-close {
+    background-color: white;
+    color: rgb(21, 21, 21);
+}
+
+.theme-dark .list-group-item {
+    border-color: white;
+}
+
+.modal-backdrop {
+    z-index: -1;
+}

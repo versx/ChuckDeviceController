@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="POGOProtos.Core" Version="2.57.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,53 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using ChuckDeviceConfigurator.Data
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item" style="align-self: center;">
+        @if (UserManager.GetUserAsync(User)?.Result?.ProfilePicture != null)
+        {
+            <img style="width:40px;height:40px; object-fit:cover; border-radius:30px" src="data:image/*;base64,@(Convert.ToBase64String(UserManager.GetUserAsync(User).Result.ProfilePicture))">
+        }
+    </li>
+    <li class="nav-item">
+        <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#userSubmenu" aria-expanded="false" class="dropdown-toggle collpased">
+            <i class="fas fa-user-circle"></i>
+            &nbsp;@User.Identity?.Name
+        </a>
+        <ul class="collapse list-unstyled" id="userSubmenu">
+            <li>
+                <a class="dropdown-item account-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage Account">
+                    <i class="fa-solid fa-fw fa-address-card"></i>
+                    Account
+                </a>
+            </li>
+            <li>
+                <form class="form-inline dropdown-item" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="btn btn-sm account-link" title="Logout">
+                        <i class="fa-solid fa-fw fa-arrow-right-from-bracket"></i>
+                        Logout
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
+            <i class="fa-solid fa-fw fa-circle-plus"></i>
+            Register
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+            <i class="fa-solid fa-fw fa-arrow-right-to-bracket"></i>
+            Login
+        </a>
+    </li>
+}
+</ul>

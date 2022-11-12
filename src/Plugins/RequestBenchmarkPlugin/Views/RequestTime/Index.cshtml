@@ -1,0 +1,138 @@
+﻿@model List<RequestTime>
+@{
+    ViewData["Title"] = "Request Benchmarks";
+    var totalRequests = Model?.Sum(x => x.Requests) ?? 0;
+    var totalTime = Utils.FormatTime(Model?.Sum(x => x.Total) ?? 0);
+}
+
+<h1>Request Benchmarks</h1>
+<br />
+
+<p>
+    <a class="btn btn-danger btn-sm float-end" asp-action="Clear">Clear All</a>
+</p>
+<br />
+
+<div class="card text-center">
+    <div class="card-header text-center"><b>Overview</b></div>
+    <div class="card-body">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 p-3">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h3 class="pull-right"><i class="fa-solid fa-globe"></i></h3>
+                            <h4 class="list-group-item-heading">Total Requests</h4>
+                            <p class="list-group-item-text">@totalRequests.ToString("N0")</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 p-3">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h3 class="pull-right"><i class="fa-solid fa-clock"></i></h3>
+                            <h4 class="list-group-item-heading">Total Time</h4>
+                            <p class="list-group-item-text">@totalTime</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+
+<table id="table-benchmarks" class="table table-striped table-bordered nowrap">
+    <thead class="table-dark">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Route)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Requests)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Fastest)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Slowest)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Average)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Total)
+            </th>
+            <th width="5%">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model ?? new())
+        {
+            <tr>
+                <th scope="row">
+                    @Html.DisplayFor(modelItem => item.Route)
+                </th>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Requests)
+                </td>
+                <td>
+                    @Html.Raw(Utils.FormatTime(item.Fastest, isHtml: true))
+                </td>
+                <td>
+                    @Html.Raw(Utils.FormatTime(item.Slowest, isHtml: true))
+                </td>
+                <td>
+                    @Html.Raw(Utils.FormatTime(item.Average, isHtml: true))
+                </td>
+                <td>
+                    @Html.Raw(Utils.FormatTime(item.Total, 4))
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownGroup" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
+                            <li><a class="dropdown-item" asp-action="Details" asp-route-route="@item.Route"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Details</a></li>
+                            <li><a class="dropdown-item" asp-action="Delete" asp-route-route="@item.Route" onclick="confirmDelete();"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        const confirmDelete = () => {
+            const result = confirm('Are you sure that you want to delete this routes request benchmark?');
+            return result;
+        };
+
+        $(document).ready(function() {
+            $('#table-benchmarks').DataTable({
+                columnDefs: [
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 1, targets: 1 },
+                    { responsivePriority: 2, targets: 2 },
+                    { responsivePriority: 3, targets: 3 },
+                    { responsivePriority: 4, targets: 4 },
+                    { responsivePriority: 5, targets: 5 },
+                ],
+                order: [[0, 'asc']],
+                stateSave: true,
+                searching: true,
+                paging: true,
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, 'All']],
+                colReorder: true,
+                fixedHeader: {
+                    header: true,
+                },
+                responsive: true,
+                info: true,
+            });
+        });
+    </script>
+}

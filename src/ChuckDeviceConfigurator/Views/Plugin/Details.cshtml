@@ -1,0 +1,69 @@
+﻿@using ChuckDeviceController.PluginManager
+@using ChuckDeviceController.Plugin
+@model IPluginHost
+@{
+    ViewData["Title"] = "Plugin Details " + Model?.Plugin.Name;
+    var isEnabled = Model?.State == PluginState.Running;
+}
+
+<h1>Plugin Details</h1>
+
+<p>@Html.ValidationMessage("Plugin", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Plugin", ControllerText = "Plugins", CurrentPage = "Plugin Details" })
+
+<div>
+    <h4>Plugin '@Model?.Plugin.Name'</h4>
+    <div>
+        <a asp-action="Manage" asp-route-id="@Model?.Plugin.Name" asp-route-enabled="@(!isEnabled)" class="btn btn-@(isEnabled ? "danger" : "success")">
+            <i class="fa-solid @(isEnabled ? "fa-stop" : "fa-play")"></i>&nbsp; @(isEnabled ? "Disable" : "Enable")
+        </a>
+        <a asp-action="Reload" asp-route-id="@Model?.Plugin.Name" class="btn btn-primary">
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Reload
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model?.Plugin.Name" class="btn btn-danger">
+            <i class="fa-solid fa-trash"></i>&nbsp;Delete
+        </a>
+    </div>
+</div>
+
+<hr />
+<dl class="row">
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Plugin.Name)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.DisplayFor(model => model.Plugin.Name)
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Plugin.Description)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.DisplayFor(model => model.Plugin.Description)
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Plugin.Author)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.DisplayFor(model => model.Plugin.Author)
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.ApiKey.Scope)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.Raw(string.Join("<br>", Model?.ApiKey?.Scope ?? new()))
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Plugin.Version)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.DisplayFor(model => model.Plugin.Version)
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.State)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.Raw(Utils.GetPluginStateColor(Model?.State ?? PluginState.Unset))
+    </dd>
+</dl>

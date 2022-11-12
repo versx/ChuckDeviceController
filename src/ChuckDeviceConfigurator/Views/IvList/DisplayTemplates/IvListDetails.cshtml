@@ -1,0 +1,39 @@
+﻿@using ChuckDeviceConfigurator.Localization
+@model IvList
+
+<dl class="row">
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.Name)
+    </dt>
+    <dd class = "col-sm-10">
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+    <dt class = "col-sm-2">
+        @Html.DisplayNameFor(model => model.PokemonIds)
+    </dt>
+    <dd class = "col-sm-10">
+        @if ((Model?.PokemonIds?.Count ?? 0) > 0)
+        {
+            <ul class="list-group">
+                @* TODO: Limit Pokemon ids to 25ish *@
+                @foreach (var pokemonId in Model?.PokemonIds ?? new())
+                {
+                    var split = pokemonId.Split(new[] { "_f" }, StringSplitOptions.RemoveEmptyEntries);
+                    var pokeId = Convert.ToUInt32(split[0]);
+                    var formId = split.Length > 1 ? Convert.ToUInt32(split[1]) : 0;
+                    var icon = Utils.GetPokemonIcon(pokeId, formId, 0, 0, "32", "32", html: true);
+                    var pkmnName = Translator.Instance.GetPokemonName(pokeId);
+                    var pkmnForm = Translator.Instance.GetFormName(formId);
+                    var name = string.IsNullOrEmpty(pkmnForm)
+                        ? pkmnName
+                        : $"{pkmnName} - {pkmnForm}";
+                    <li class="list-group-item">@Html.Raw($"{icon}&nbsp;{name} (#{pokeId})")</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>None</p>
+        }
+    </dd>
+</dl>

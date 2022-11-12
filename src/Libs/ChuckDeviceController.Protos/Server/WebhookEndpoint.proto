@@ -1,0 +1,22 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "ChuckDeviceController.Protos";
+
+package webhookEndpoint;
+
+service WebhookEndpoint {
+    rpc ReceivedWebhookEndpoint (WebhookEndpointRequest) returns (WebhookEndpointResponse);
+}
+
+enum WebhookEndpointStatus {
+	Ok = 0;
+	Error = 1;
+}
+
+message WebhookEndpointRequest {
+}
+
+message WebhookEndpointResponse {
+    WebhookEndpointStatus status = 1;
+    string payload = 2;
+}

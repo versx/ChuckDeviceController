@@ -1,0 +1,142 @@
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+
+.btn-google:hover {
+    background: #b22222;
+    color: #fff;
+}
+
+.btn-facebook:hover {
+    background: #2b4db1;
+    color: #fff;
+}
+
+.btn-twitter:hover {
+    background: #007bb6;
+    color: #fff;
+}
+
+.btn-microsoft:hover {
+    background: #00618E;
+    color: #fff;
+}
+
+.btn-github:hover {
+    background: #303030;
+    color: #fff; /*#d6d6d6;*/
+}
+
+.btn-discord:hover {
+    background: #4654f0;
+    color: #fff;
+}
+
+.btn-discord {
+    background: #5865F2;
+    color: #fff;
+}
+
+.btn-github {
+    background: #000000;
+    color: #fff;
+}
+
+.btn-facebook {
+    background: #305c99;
+    color: #fff;
+}
+
+.btn-twitter {
+    background: #00cdff;
+    color: #fff;
+}
+
+.btn-google {
+    background: #d24228;
+    color: #fff;
+}
+
+.btn-linkedin {
+    background: #007bb6;
+    color: #fff;
+}
+
+.btn-microsoft {
+    background: #007bb6;
+    color: #fff;
+}
+
+/* Remove hyperlink color from footer About link */
+/*
+footer > div > a {
+    color: inherit;
+    text-decoration: none !important;
+}
+*/
+
+.account-warning, .account-suspended,
+.account-cooldown, .account-spinlimit {
+    color: orange;
+}
+
+.account-banned {
+    color: red;
+}
+
+.account-good {
+    color: limegreen;
+}
+
+.account-inuse {
+    color: teal;
+}
+
+.account-new {
+    color: dodgerblue;
+}
+
+.account-level-header {
+    position: center;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.assignment-enabled,
+.pokestop-enabled,
+.webhook-enabled {
+    color: green;
+}
+
+.assignment-disabled,
+.pokestop-disabled,
+.webhook-disabled {
+    color: red;
+}
+
+/* Breadcrumbs */
+nav > ol > li > a {
+    text-decoration: none;
+}
+
+.card-header {
+    background-color: #212529;
+    color: #fff;
+}
+
+.card,
+.card-body {
+    border: 1px solid rgba(0, 0, 0, 0.500);
+}

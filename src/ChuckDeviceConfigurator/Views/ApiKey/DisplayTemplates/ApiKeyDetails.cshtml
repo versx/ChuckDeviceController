@@ -1,0 +1,65 @@
+﻿@using ChuckDeviceController.Extensions
+@using ChuckDeviceController.PluginManager
+@model ManageApiKeyViewModel
+@* TODO: Conseal API key, add toggle to reveal *@
+
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Id)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Id)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Name)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Key)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Key)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Expiration)
+    </dt>
+    <dd class="col-sm-10">
+        @(Model?.Expiration == 0 ? "Never" : Model?.Expiration.FromSeconds().ToLocalTime())
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Scope)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(string.Join("<br>", (Model?.Scope ?? new()).Select(scope => scope.Scope)))
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.IsEnabled)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(Utils.FormatBoolean(Model?.IsEnabled ?? false, html: true))
+    </dd>
+    <dt class="col-sm-2">
+        Plugins
+    </dt>
+    <dd class="col-sm-10">
+        @if (Model?.Plugins?.Any() ?? false)
+        {
+            <ul class="list-group">
+            @foreach (var plugin in Model?.Plugins ?? new List<IPluginHost>())
+            {
+                <li class="list-group-item">
+                    <a asp-controller="Plugin" asp-action="Details" asp-route-id="@plugin.Plugin.Name" style="text-decoration: none; color: inherit;">
+                        @Html.DisplayFor(model => plugin.Plugin.Name)
+                    </a>
+                </li>
+            }
+            </ul>
+        }
+        else
+        {
+            <p>None</p>
+        }
+    </dd>
+</dl>

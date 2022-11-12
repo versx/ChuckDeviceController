@@ -1,0 +1,305 @@
+﻿@model ManageInstanceViewModel
+@{
+    ViewData["Title"] = "Create Instance";
+}
+
+<h1>Create Instance</h1>
+
+<p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = "Instances", CurrentPage = "Create Instance" })
+
+<h4>Instance</h4>
+<hr />
+
+<form asp-action="Create">
+    <div class="row">
+        <div class="col-md-6">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-floating mb-3">
+                <input asp-for="Name" class="form-control" placeholder="Instance name" />
+                <label asp-for="Name"></label>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()" placeholder="Instance type">
+                    <option value="" disabled selected>Please select one</option>
+                </select>
+                <label asp-for="Type"></label>
+                <span asp-validation-for="Type" class="text-danger"></span>
+                <p id="instance-type-description" class="text-muted"></p>
+            </div>
+            <div class="form-floating mb-3 custom">
+                <select asp-for="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes))" placeholder="Custom instance type">
+                    <option value="" disabled selected>Please select one</option>
+                </select>
+                <label asp-for="Data.CustomInstanceType"></label>
+                <span asp-validation-for="Data.CustomInstanceType" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3 circle_route">
+                <select asp-for="Data.CircleRouteType" class="form-control" asp-items="Html.GetEnumSelectList<CircleInstanceRouteType>()" placeholder="Instance circle route type">
+                    <option value="" disabled selected>Please select one</option>
+                </select>
+                <label asp-for="Data.CircleRouteType"></label>
+                <span asp-validation-for="Data.CircleRouteType" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm col-lg-6">
+                        <div class="form-floating mb-3">
+                            <input asp-for="MinimumLevel" class="form-control" min="0" max="50" placeholder="Instance minimum level" required />
+                            <label asp-for="MinimumLevel"></label>
+                            <span asp-validation-for="MinimumLevel" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-sm col-lg-6">
+                        <div class="form-floating mb-3">
+                            <input asp-for="MaximumLevel" class="form-control" min="0" max="50" placeholder="Instance maximum level" required />
+                            <label asp-for="MaximumLevel"></label>
+                            <span asp-validation-for="MaximumLevel" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="Geofences"></label>
+                <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))" placeholder="Instance geofences">
+                    <option value="" disabled selected>Please select one or more</option>
+                </select>
+                <span asp-validation-for="Geofences" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3 pokemon_iv">
+                <select asp-for="Data.IvList" class="form-control" asp-items="@(new SelectList(ViewBag.IvLists, "Name", "Name"))" placeholder="Instance IV list">
+                    <option value="" disabled selected>Please select one</option>
+                </select>
+                <label asp-for="Data.IvList"></label>
+                <span asp-validation-for="Data.IvList" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3 pokemon_iv">
+                <input asp-for="Data.IvQueueLimit" class="form-control" min="1" max="1000" step="1" value="100" placeholder="Instance IV queue limit" />
+                <label asp-for="Data.IvQueueLimit"></label>
+                <span asp-validation-for="Data.IvQueueLimit" class="text-danger"></span>
+            </div>
+            <div class="checkbox lure_encounters mb-3">
+                <label><input type="checkbox" asp-for="Data.EnableLureEncounters"> Enable Lure Encounters</label>
+            </div>
+            <div class="form-floating mb-3 bootstrap">
+                <select asp-for="Data.BootstrapCompleteInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Bootstrap instance name">
+                    <option value="" disabled selected>Please select one</option>
+                </select>
+                <label asp-for="Data.BootstrapCompleteInstanceName"></label>
+                <span asp-validation-for="Data.BootstrapCompleteInstanceName" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3 bootstrap">
+                <input asp-for="Data.CircleSize" class="form-control" min="5" max="1000" step="1" placeholder="Instance circle size" />
+                <label asp-for="Data.CircleSize"></label> <small class="text-muted"><i>(meters i.e: `70, 500, 750, etc`)</i></small>
+                <span asp-validation-for="Data.CircleSize" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3 quests">
+                <select asp-for="Data.QuestMode" class="form-control" asp-items="Html.GetEnumSelectList<QuestMode>()" placeholder="Instance quest mode">
+                    <option value="" disabled selected>Please select one</option>
+                </select>
+                <label asp-for="Data.QuestMode"></label>
+                <span asp-validation-for="Data.QuestMode" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3 quests">
+                <input asp-for="Data.SpinLimit" class="form-control" min="1" max="10000" value="10000" placeholder="Maximum spin limit">
+                <label asp-for="Data.SpinLimit"></label>
+                <span asp-validation-for="Data.SpinLimit" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3 quests">
+                <input asp-for="Data.MaximumSpinAttempts" class="form-control" min="1" max="255" value="5" placeholder="Instance maximum spin attempts">
+                <label asp-for="Data.MaximumSpinAttempts"></label>
+                <span asp-validation-for="Data.MaximumSpinAttempts" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3 quests">
+                <input asp-for="Data.LogoutDelay" class="form-control" min="1" max="65535" value="900" placeholder="Instance logout delay">
+                <label asp-for="Data.LogoutDelay"></label>
+                <span asp-validation-for="Data.LogoutDelay" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3 quests">
+                <select asp-for="Data.TimeZone" class="form-control" asp-items="@(new SelectList(ViewBag.TimeZones, "Name", "Name"))" placeholder="Instance time zone">
+                    <option value="" disabled selected>Please select one</option>
+                </select>
+                <label asp-for="Data.TimeZone"></label>
+                <span asp-validation-for="Data.TimeZone" class="text-danger"></span>
+            </div>
+            <div class="checkbox quests mb-3">
+                <label><input type="checkbox" asp-for="Data.EnableDst"> Enable Daylight Savings Time</label>
+            </div>
+            <div class="checkbox quests mb-3">
+                <label><input type="checkbox" asp-for="Data.UseWarningAccounts"> Use Warning Accounts</label>
+            </div>
+            <div class="checkbox quests mb-3">
+                <label><input type="checkbox" asp-for="Data.IgnoreS2CellBootstrap"> Ignore S2 Cell Bootstrapping</label>
+            </div>
+            <div class="checkbox bootstrap mb-3">
+                <label><input type="checkbox" asp-for="Data.FastBootstrapMode"> Enable Fast Bootstrapping (5s vs 10s load time)</label>
+            </div>
+            <div class="checkbox bootstrap mb-3">
+                <label><input type="checkbox" asp-for="Data.OptimizeBootstrapRoute"> Optimize Bootstrap Route</label>
+            </div>
+            <div class="checkbox spawnpoints mb-3">
+                <label><input type="checkbox" asp-for="Data.OptimizeSpawnpointsRoute"> Optimize Spawnpoints Route</label>
+            </div>
+            <div class="checkbox spawnpoints mb-3">
+                <label><input type="checkbox" asp-for="Data.OnlyUnknownSpawnpoints"> Only Unknown Spawnpoints</label>
+            </div>
+            <div class="checkbox dynamic mb-3">
+                <label><input type="checkbox" asp-for="Data.OptimizeDynamicRoute"> Optimize Dynamic Route</label>
+            </div>
+            <div class="form-floating mb-3 leveling">
+                <input asp-for="Data.LevelingRadius" class="form-control" min="1" max="100000" placeholder="Instance leveling radius">
+                <label asp-for="Data.LevelingRadius"></label>
+                <span asp-validation-for="Data.LevelingRadius" class="text-danger"></span>
+            </div>
+            <div class="checkbox leveling mb-3">
+                <label><input type="checkbox" asp-for="Data.StoreLevelingData"> Save Leveling Data</label>
+            </div>
+            <div class="form-floating mb-3 leveling">
+                <input asp-for="Data.StartingCoordinate" class="form-control" placeholder="Instance starting coordinate">
+                <label asp-for="Data.StartingCoordinate"></label> <small class="text-muted"><i>(Leave blank to use first in route)</i></small>
+                <span asp-validation-for="Data.StartingCoordinate" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Data.AccountGroup" class="form-control" maxlength="50" placeholder="Instance account group name">
+                <label asp-for="Data.AccountGroup"></label>
+                <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
+            </div>
+            <div class="checkbox mb-3">
+                <label><input type="checkbox" asp-for="Data.IsEvent"> Is Unique Event</label>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label asp-for="AssignedDevices"></label> <small class="text-muted"><i>(optional)</i></small>
+                <select asp-for="AssignedDevices" class="form-control" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))" placeholder="Instance assigned devices">
+                    <option value="" disabled selected>Please select one</option>
+                </select>
+                <span asp-validation-for="AssignedDevices" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<script>
+// TODO: Move all reusable methods to wwwroot/js/*
+const types = [
+    'bootstrap',
+    'circles',
+    'pokemon_iv',
+    'quests',
+    'spawnpoints',
+    'dynamic',
+    'lure_encounters',
+    'circle_route',
+    'leveling',
+    'custom',
+];
+for (const type of types) {
+    hideElements(type, false);
+}
+
+$('#Type').change(function() {
+    const instanceTypeId = this.value;
+    hideAllElements(instanceTypeId);
+    handleInstanceTypeChanged(instanceTypeId);
+
+    setInstanceDescription(parseInt(instanceTypeId));
+});
+
+function hideAllElements(instanceTypeId) {
+    const isQuest = instanceTypeId == @((int)InstanceType.AutoQuest);
+    const isBootstrap = instanceTypeId == @((int)InstanceType.Bootstrap);
+    const isPokemonIV = instanceTypeId == @((int)InstanceType.PokemonIV);
+    const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
+        instanceTypeId == @((int)InstanceType.CircleRaid);
+    const isSpawnpoint = instanceTypeId == @((int)InstanceType.FindTth);
+    const isDynamic = instanceTypeId == @((int)InstanceType.DynamicRoute);
+    const isLeveling = instanceTypeId == @((int)InstanceType.Leveling);
+    const isCustom = instanceTypeId == @((int)InstanceType.Custom);
+    hideElements('bootstrap', isBootstrap);
+    hideElements('pokemon_iv', isPokemonIV);
+    hideElements('circles', isCircle);
+    hideElements('quests', isQuest);
+    hideElements('spawnpoints', isSpawnpoint);
+    hideElements('dynamic', isDynamic);
+    hideElements('lure_encounters', isCircle || isDynamic || isPokemonIV);
+    hideElements('circle_route', isCircle || isDynamic || isBootstrap);
+    hideElements('leveling', isLeveling);
+    hideElements('custom', isCustom);
+}
+
+function hideElements(className, show) {
+    const elements = document.getElementsByClassName(className);
+    for (const element of elements) {
+        element.style.display = show ? 'block' : 'none';
+    }
+}
+
+function handleInstanceTypeChanged(instanceTypeId) {
+    // Hide geofences (geofence/circle) depending on instance type selected
+    const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
+        instanceTypeId == @((int)InstanceType.CircleRaid);
+
+    // Keep track of already selected geofences to reselect if type matches instance type
+    const selectedGeofences = $('#Geofences').val();
+    // Parse all available geofences
+    const availableGeofences = parseGeofencesJson();
+    // Clear all existing geofences in the list
+    $('#Geofences').empty();
+    $('#Geofences').append(new Option('Please select one or more', ''));
+    // Loop all available geofences and add them back to the select element if they match
+    // the selected instance type
+    for (const geofence of availableGeofences) {
+        // Check if selected instance type matches geofence type
+        if (isCircle && geofence.Type === 'Circle' ||
+            !isCircle && geofence.Type === 'Geofence' ||
+            instanceTypeId == @((int)InstanceType.Custom)) {
+            // Create new select option for valid geofence
+            const option = new Option(geofence.Name, geofence.Name);
+            // Add select option to geofences multi select element
+            $('#Geofences').append(option);
+        }
+    }
+}
+
+function parseGeofencesJson() { // TODO: Pass geofencesJson as param when moved to separate file
+    try {
+        const geofencesJson = `@(ViewBag.GeofencesJson)`.replace(/&quot;/g, '"');;
+        const geofences = JSON.parse(geofencesJson);
+        return geofences;
+    } catch (e) {
+        console.error('Failed to parse geofences list:', e);
+        return null;
+    }
+}
+
+function setInstanceDescription(instanceTypeId) {
+    let description = '';
+    switch (instanceTypeId) {
+        case 0: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.CirclePokemon]"; break;
+        case 1: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.DynamicRoute]"; break;
+        case 2: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.CircleRaid]"; break;
+        case 3: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.SmartRaid]"; break;
+        case 4: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.AutoQuest]"; break;
+        case 5: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.PokemonIV]"; break;
+        case 6: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.Bootstrap]"; break;
+        case 7: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.Leveling]"; break;
+        case 8: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.FindTth]"; break;
+        case 9: description = "@InstanceDescriptors.TypeDescriptions[InstanceType.Custom]"; break;
+    }
+    $('#instance-type-description').text(description);
+}
+</script>
+}

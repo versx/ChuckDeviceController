@@ -1,0 +1,46 @@
+﻿@{
+    var pokemon = (IEnumerable<dynamic>)(ViewData["Pokemon"] ?? new List<dynamic>());
+}
+
+<link rel="stylesheet" href="~/css/pokemon-list.css" />
+
+<div class="form-group">
+    <div class="form-group">
+        Search
+        <input type="text" class="form-control" id="search" placeholder="i.e Pikachu or 25" onkeyup="onPokemonSearch()" data-toggle="tooltip" data-html="true" title="Search by pokemon name and pokedex id.">
+    </div>
+    Pokemon
+    <div id="pokemon-list" name="pokemon-list" class="pokemon-list">
+        @foreach (var pkmn in pokemon)
+        {
+            <div class="pokemon-icon-sprite item @(pkmn.selected ? "active" : "")" style="@(pkmn.selected ? "background-color: dodgerblue;" : "")" id="@pkmn.id" name="@pkmn.name" data-value="@pkmn.id" onclick="onPokemonClicked(this)">
+                <img src="@pkmn.image" width="48" height="48" />
+                <span class="caption">#@pkmn.pokemonId</span>
+            </div>
+        }
+    </div>
+    <br>
+    <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(true);">Select All</button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(false);">Select None</button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="invertSelection();">Invert Selection</button>
+    <div class="btn-group">
+        <button type="button" class="btn btn-warning btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            Select Generation
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(1);">Select Gen1</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(2);">Select Gen2</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(3);">Select Gen3</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(4);">Select Gen4</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(5);">Select Gen5</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(6);">Select Gen6</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(7);">Select Gen7</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(8);">Select Gen8</a></li>
+        </ul>
+    </div>
+    <button id="select_rare" type="button" class="btn btn-success btn-sm">Select Rare</button>
+    <button id="select_ultra" type="button" class="btn btn-danger btn-sm">Select Ultra Rare</button>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/js/pokemon-list.js"></script>

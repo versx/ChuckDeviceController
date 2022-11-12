@@ -1,0 +1,84 @@
+﻿@{
+    ViewData["Title"] = "Utilities - Truncate Data";
+}
+
+<h1>Utilities</h1>
+
+<p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
+
+<h4>Truncate Data</h4>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Truncate Data" })
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="Utilities" asp-action="TruncateData">
+            <div class="row">
+                <span>
+                    <label><b>Total Pokemon:</b></label>
+                    @ViewBag.PokemonCount
+                </span>
+                <br />
+                <span>
+                    <label><b>Total Invasions:</b></label>
+                    @ViewBag.IncidentsCount
+                </span>
+            </div>
+            <br />
+
+            <div class="form-floating mb-3">
+                <input id="TimeSpan" type="number" name="TimeSpan" class="form-control" min="0" max="720" value="24" required />
+                <label for="TimeSpan">Time Span (hours - older than)</label>
+                <span validation-for="TimeSpan" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <select id="DataType" name="DataType" class="form-control" asp-items="@(new SelectList(ViewBag.DataTypes))" required>
+                    <option value="">Please select a data type</option>
+                </select>
+                <label for="DataType">Data Type</label>
+                <span validation-for="DataType" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <input type="submit" value="Truncate" class="btn btn-danger" />
+            </div>
+        </form>
+        <div id="count-response">
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $('#TimeSpan').on('change', function(e) {
+            const timeSpan = this.value;
+            const dataType = $('#DataType').val();
+            showAmountDeletable(timeSpan, dataType);
+        });
+        $('#DataType').on('change', function(e) {
+            const timeSpan = $('#TimeSpan').val();
+            const dataType = this.value;
+            showAmountDeletable(timeSpan, dataType);
+        });
+
+        const showAmountDeletable = (timeSpan, dataType) => {
+            if (!timeSpan || !dataType) {
+                return;
+            }
+
+            const url = `/Utilities/TruncateData?${timeSpan}&dataType=${dataType}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(response => {
+                    console.log('response:', response);
+                    const message = `${response} ${dataType} can be deleted in the selected time frame.`;
+                    $('#count-response').html(`<p>${message}</p>`);
+                })
+                .catch(err => {
+                    console.error('error:', err);
+                });
+        };
+    </script>
+}

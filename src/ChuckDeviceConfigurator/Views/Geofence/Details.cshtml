@@ -1,0 +1,44 @@
+﻿@model Geofence
+@{
+    ViewData["Title"] = "Geofence Details " + Model?.Name;
+}
+
+<h1>Geofence Details</h1>
+
+<p>@Html.ValidationMessage("Geofence", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Geofence", ControllerText = "Geofences", CurrentPage = "Geofence Details" })
+
+<div>
+    <h4>Geofence '@Model?.Name'</h4>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger">
+            <i class="fa-solid fa-trash"></i>&nbsp;Delete
+        </a>
+    </div>
+</div>
+
+<hr />
+@Html.DisplayForModel("GeofenceDetails")
+
+@await Html.PartialAsync("_ViewOnlyGeofenceRoutePartial", new { MapConfig = ViewData["MapConfig"] })
+
+<script>
+    const type = "@Model?.Type";
+    let area = ("@ViewData["GeofenceData"]" || '').replace(/&#xD;/g, '').replace(/&#xA;/g, '\n'); // <- TODO: Fix
+    if (type === 'Circle' && area) {
+        // Circles
+        if (!(area.includes('[') && area.includes(']'))) {
+            area = `[{@Model?.Name}]\n${area}`;
+        }
+        loadCircles(area);
+    } else {
+        // Geofences
+        setReturnGeofenceType(true);
+        loadGeofence(area, true);
+    }
+</script>

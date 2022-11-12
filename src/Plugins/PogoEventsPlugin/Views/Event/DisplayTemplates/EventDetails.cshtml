@@ -1,0 +1,160 @@
+﻿@model ActiveEvent
+@{
+    var baseImageUrl = "https://raw.githubusercontent.com/WatWowMap/wwm-uicons/main/pokemon/";
+}
+
+<dl class="row">
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Name)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Type)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.DisplayFor(model => model.Type)
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Start)
+    </dt>
+    <dd class="col-sm-8">
+        @(string.IsNullOrEmpty(Model?.Start) ? "--" : Html.DisplayFor(model => model.Start))
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.End)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.DisplayFor(model => model.End)
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.IsActive)
+    </dt>
+    <dd class="col-sm-8">
+        @Html.Raw(Utils.FormatBoolean(Model?.IsActive ?? false))
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Spawns)
+    </dt>
+    <dd class="col-sm-8">
+    @if (Model?.Spawns?.Any() ?? false)
+    {
+        var index = 0;
+        foreach (var spawn in Model!.Spawns)
+        {
+            index++;
+            @Html.Raw($"<img src='{baseImageUrl}{spawn.Id}.png' width='32' height='32' />&nbsp;");
+            if (index % 10 == 0 && index != 0)
+            {
+                @Html.Raw("<br>");
+            }
+        }
+    }
+    else
+    {
+        <p>None Specified</p>
+    }
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Eggs)
+    </dt>
+    <dd class="col-sm-8">
+    @if (Model?.Eggs?.Any() ?? false)
+    {
+        var index = 0;
+        foreach (var egg in Model!.Eggs)
+        {
+            index++;
+            @Html.Raw($"<img src='{baseImageUrl}{egg.Id}.png' width='32' height='32' />&nbsp;");
+            if (index % 10 == 0 && index != 0)
+            {
+                @Html.Raw("<br>");
+            }
+        }
+    }
+    else
+    {
+        <p>None Specified</p>
+    }
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Raids)
+    </dt>
+    <dd class="col-sm-8">
+    @if (Model?.Raids?.Any() ?? false)
+    {
+        var index = 0;
+        foreach (var raid in Model!.Raids)
+        {
+            index++;
+            var imageName = $"{(raid.Form > 0 ? $"{raid.Id}_f{raid.Form}" : raid.Id)}.png";
+            @Html.Raw($"<img src='{baseImageUrl}{imageName}.png' width='32' height='32' />&nbsp;");
+            if (index % 10 == 0 && index != 0)
+            {
+                @Html.Raw("<br>");
+            }
+        }
+    }
+    else
+    {
+        <p>None Specified</p>
+    }
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Shinies)
+    </dt>
+    <dd class="col-sm-8">
+        @if (Model?.Shinies?.Any() ?? false)
+        {
+            @Html.Raw(Utils.FormatEventItems(Model?.Shinies ?? new List<EventItem>()));
+        }
+        else
+        {
+            <p>None Specified</p>
+        }
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Bonuses)
+    </dt>
+    <dd class="col-sm-8">
+        @if (Model?.Bonuses?.Any() ?? false)
+        {
+            <ul>
+            @foreach (var bonus in Model!.Bonuses)
+            {
+                <li>@bonus.Text</li>
+            }
+            </ul>
+        }
+        else
+        {
+            <p>None Specified</p>
+        }
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.Features)
+    </dt>
+    <dd class="col-sm-8">
+        @if (Model?.Features?.Any() ?? false)
+        {
+            @Html.Raw(string.Join("<br>", Model?.Features ?? new List<string>()));
+        }
+        else
+        {
+            <p>None Specified</p>
+        }
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.HasQuests)
+    </dt>
+    <dd class="col-sm-8">
+        @(Model?.HasQuests ?? false ? "Yes" : "No")
+    </dd>
+    <dt class="col-sm-4">
+        @Html.DisplayNameFor(model => model.HasSpawnpoints)
+    </dt>
+    <dd class="col-sm-8">
+        @(Model?.HasSpawnpoints ?? false ? "Yes" : "No")
+    </dd>
+</dl>

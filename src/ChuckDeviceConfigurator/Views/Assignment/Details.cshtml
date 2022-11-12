@@ -1,0 +1,39 @@
+﻿@model Assignment
+@{
+    ViewData["Title"] = "Assignment Details " + Model?.Id;
+}
+
+<h1>Assignment Details</h1>
+
+<p>@Html.ValidationMessage("Assignment", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Assignment", ControllerText = "Assignments", CurrentPage = "Assignment Details" })
+
+<div>
+    <h4>Assignment '@Model?.Id'</h4>
+    <div>
+        <a asp-action="Start" asp-route-id="@Model?.Id" class="btn btn-success @(Model?.Enabled ?? false ? "" : "disabled")">
+            <i class="fa-solid fa-play"></i>&nbsp;Start
+        </a>
+        @if (ViewBag?.IsQuest ?? false)
+        {
+            <a asp-action="ReQuest" asp-route-id="@Model?.Id" class="btn btn-warning @(Model?.Enabled ?? false ? "" : "disabled")">
+                <i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest
+            </a>
+        }
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-danger">
+            <i class="fa-solid fa-trash"></i>&nbsp;Delete
+        </a>
+    </div>
+</div>
+@if (!(Model?.Enabled ?? false))
+{
+    <i class="text-muted">Assignments cannot be started or re-quested if <u>disabled</u>.</i>
+}
+
+<hr />
+@Html.DisplayForModel("AssignmentDetails")

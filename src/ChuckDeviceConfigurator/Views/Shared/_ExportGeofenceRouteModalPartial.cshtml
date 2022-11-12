@@ -1,0 +1,36 @@
+﻿@model GeofenceRouteViewModal
+
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog model-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Model?.Title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Format"></label>
+                    <div class="input-group">
+                        <div class="form-check form-check-inline float-start">
+                            <input class="form-check-input" type="radio" asp-for="Format" value="json" onchange="@Model?.FormatChangedMethod" checked>
+                            <label class="form-check-label" for="Format">GeoJSON</label>
+                        </div>
+                        <div class="form-check form-check-inline float-end">
+                            <input class="form-check-input" type="radio" asp-for="Format" value="ini" onchange="@Model?.FormatChangedMethod">
+                            <label class="form-check-label" for="Format">INI</label>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="form-group">
+                    <label class="form-label" asp-for="Geofence"></label>
+                    <textarea asp-for="Geofence" class="form-control" rows="15">@Model?.Geofence</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="@Model?.SubmitButtonMethod">@Model?.SubmitButtonText</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,181 @@
+﻿@model ConvertFortsViewModel
+@{
+    ViewData["Title"] = "Utilities - Convert Forts";
+}
+
+<h1>Utilities</h1>
+
+<p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
+
+<h4>Convert Forts</h4>
+
+<p>
+    Pokestops and Gyms are constantly changing in-game, this page will allow you to convert any that have been upgraded or downgraded to their new fort type.
+</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Convert Forts" })
+
+<hr />
+<div class="row">
+    <div class="col">
+        <form asp-controller="Utilities" asp-action="ConvertForts">
+            <div class="pb-5">
+                <h4 class="float-start">Pokestops -> Gyms</h4>
+                <a class="btn btn-primary float-end" asp-action="ConvertPokestops">Convert Pokestops</a>
+            </div>
+            <table id="table-pokestops" class="table table-striped table-bordered dt-responsive nowrap display">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">
+                            Image
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.PokestopsToGyms[0].Id)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.PokestopsToGyms[0].Name)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.PokestopsToGyms[0].Updated)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.PokestopsToGyms[0].IsEnabled)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.PokestopsToGyms[0].IsDeleted)
+                        </th>
+                        <th width="5%">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.PokestopsToGyms)
+                    {
+                        <tr>
+                            <th scope="row">
+                                <img src="@item.Url" height="48" width="48" />
+                            </th>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Id)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td>
+                                @Html.Raw(Utils.GetLastUpdatedStatus(item.Updated, html: true))
+                            </td>
+                            <td>
+                                @Html.Raw(Utils.FormatBoolean(item.IsEnabled, html: true)) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
+                            </td>
+                            <td>
+                                @Utils.FormatBoolean(item.IsDeleted)
+                            </td>
+                            <td>
+                                <a class="btn btn-primary btn-sm" asp-action="ConvertPokestop" asp-route-id="@item.Id" title="Convert Pokestop to Gym"><i class="fas fa-exchange"></i></a>
+                                <a class="btn btn-danger btn-sm" asp-action="DeletePokestop" asp-route-id="@item.Id" title="Delete Pokestop" onclick="return confirm('You are about to delete Pokestop \'@(item.Name ?? item.Id)\', are you sure this is what you want to do?');"><i class="fa-solid fa-trash-can"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <hr />
+
+            <div class="pb-5">
+                <h4 class="float-start">Gyms -> Pokestops</h4>
+                <a class="btn btn-primary float-end" asp-action="ConvertGyms">Convert Gyms</a>
+            </div>
+            <table id="table-gyms" class="table table-striped table-bordered dt-responsive nowrap display">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">
+                            Image
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.GymsToPokestops[0].Id)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.GymsToPokestops[0].Name)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.GymsToPokestops[0].Updated)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.GymsToPokestops[0].IsEnabled)
+                        </th>
+                        <th scope="col">
+                            @Html.DisplayNameFor(model => model.GymsToPokestops[0].IsDeleted)
+                        </th>
+                        <th width="5%">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.GymsToPokestops)
+                    {
+                        <tr>
+                            <th scope="row">
+                                <img src="@item.Url" height="48" width="48" />
+                            </th>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Id)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td>
+                                @Utils.GetLastUpdatedStatus(item.Updated)
+                            </td>
+                            <td>
+                                @Html.Raw(Utils.FormatBoolean(item.IsEnabled, html: true)) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
+                            </td>
+                            <td>
+                                @Utils.FormatBoolean(item.IsDeleted)
+                            </td>
+                            <td>
+                                <a class="btn btn-primary btn-sm" asp-action="ConvertGym" asp-route-id="@item.Id" title="Convert Gym to Pokestop"><i class="fas fa-exchange"></i></a>
+                                <a class="btn btn-danger btn-sm" asp-action="DeleteGym" asp-route-id="@item.Id" title="Delete Gym" onclick="return confirm('You are about to delete Gym '@(item.Name ?? item.Id)', are you sure this is what you want to do?');"><i class="fa-solid fa-trash-can"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="form-group">
+                <input type="submit" value="Convert All" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            $('table.display').DataTable({
+                columnDefs: [
+                    // Image Id Name LastUpdated Enabled Deleted Action
+                    // 0     1  2    3           4       5       6
+                    // 0     5  2    10          3       4       1
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 5, targets: 1 },
+                    { responsivePriority: 2, targets: 2, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 10, targets: 3 },
+                    { responsivePriority: 3, targets: 4 },
+                    { responsivePriority: 4, targets: 5 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
+                ],
+                order: [[0, 'asc']],
+                stateSave: true,
+                searching: true,
+                paging: true,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+                colReorder: true,
+                fixedHeader: {
+                    header: true,
+                },
+                responsive: true,
+                info: true,
+            });
+        });
+    </script>
+}

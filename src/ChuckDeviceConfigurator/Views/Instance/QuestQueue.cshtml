@@ -1,0 +1,116 @@
+﻿@model QuestQueueViewModel
+@{
+    ViewData["Title"] = "Quest Queue " + Model?.Name;
+    var confirmText = "Are you sure you want to clear all pending Pokestops from the Quest queue?";
+    var clearAllText = "Clears all pending Pokestops in the Quest queue.";
+    var removePokestopText = "Removes the pending Pokestops from the Quest queue.";
+}
+
+<h1>Quest Queue - @Model?.Name</h1>
+<br />
+
+<p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
+
+<div class="pb-5">
+    <div class="form-group float-start">
+        <a class="btn btn-danger btn-sm" title="@(clearAllText)" href="@Model?.Name/Clear" onclick="return confirm('@(confirmText)')">
+            <i class="fa-solid fa-trash-can"></i>&nbsp;Clear Queue
+        </a>
+    </div>
+    <div class="checkbox float-end">
+        <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
+    </div>
+</div>
+
+<table id="table-quest-queue" class="table table-striped table-bordered dt-responsive nowrap">
+    <thead class="table-dark">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].Image)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Queue[0].IsAlternative)
+            </th>
+            <th>
+                Location
+            </th>
+            <th width="5%">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    @{
+        foreach (var item in Model?.Queue ?? new())
+        {
+            <tr>
+                <td>
+                    @Html.Raw(item.Image)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Utils.FormatBoolean(item.IsAlternative)
+                </td>
+                <td>
+                    @Html.Raw(Utils.GetGoogleMapsLink(item.Latitude, item.Longitude, html: true))
+                </td>
+                <td>
+                    <a class="btn btn-danger btn-sm" href="@Model?.Name/Remove/@item.Id" title="@(removePokestopText)">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            $('#table-quest-queue').DataTable({
+                columnDefs: [
+                    // Image ID Name IsAlternative Location Action
+                    // 0     1  2    3             4        5
+                    // 0     5  2    4             3        1
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 5, targets: 1 },
+                    { responsivePriority: 2, targets: 2, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 4, targets: 3 },
+                    { responsivePriority: 3, targets: 4 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
+                ],
+                order: [[2, 'asc']],
+                stateSave: true,
+                searching: true,
+                paging: true,
+                lengthMenu: [[50, 100, 250, 500, 1000, -1], [50, 100, 250, 500, 1000, 'All']],
+                pageLength: 100,
+                colReorder: true,
+                fixedHeader: {
+                    header: true,
+                },
+                responsive: true,
+                info: true,
+            });
+        });
+        const handleAutoRefresh = (e) => {
+            const isChecked = $(e).is(':checked');
+            if (isChecked) {
+                location.href = '@Url.Action("QuestQueue", new { name = Model?.Name, autoRefresh = true })';
+            } else {
+                location.href = '@Url.Action("QuestQueue", new { name = Model?.Name, autoRefresh = false })';
+            }
+        };
+    </script>
+}

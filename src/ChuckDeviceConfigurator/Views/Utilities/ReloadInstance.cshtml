@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Utilities - Reload Instance";
+}
+
+<h1>Utilities</h1>
+
+<p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
+
+<h4>Reload Instance</h4>
+
+<p>
+    Reloading an instance will reset all variables, caches, stats, etc for the job controller instance as if it was just started.
+</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Reload Instance" })
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="Utilities" asp-action="ReloadInstance">
+            <div class="form-floating mb-3">
+                <select id="InstanceName" name="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))">
+                    <option value="">Please select an instance</option>
+                </select>
+                <label for="InstanceName">Instance</label>
+                <span validation-for="InstanceName" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <input type="submit" value="Reload Instance" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,26 @@
+﻿@model Account
+@{
+    ViewData["Title"] = "Account Details " + Model?.Username;
+}
+
+<h1>Account Details</h1>
+
+<p>@Html.ValidationMessage("Account", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Account", ControllerText = "Accounts", CurrentPage = "Account Details" })
+
+<div>
+    <h4>Account '@Model?.Username'</h4>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model?.Username" class="btn btn-primary">
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
+        </a>
+        <a asp-action="Delete" asp-route-id="@Model?.Username" class="btn btn-danger">
+            <i class="fa-solid fa-trash"></i>&nbsp;Delete
+        </a>
+    </div>
+</div>
+
+<hr />
+@Html.DisplayForModel("AccountDetails")
