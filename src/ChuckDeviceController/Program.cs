@@ -19,8 +19,6 @@ using ChuckDeviceController.Pvp;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
 
-// TODO: MySQL parse SeenType to lower and snake case
-// TODO: Add description to plugin interface contract
 
 #region Config
 

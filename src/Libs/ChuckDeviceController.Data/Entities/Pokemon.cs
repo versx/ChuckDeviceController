@@ -892,7 +892,7 @@
                 SeenType.NearbyCell => "nearby_cell",
                 SeenType.LureWild => "lure_wild",
                 SeenType.LureEncounter => "lure_encounter",
-                _ => type.ToString(),
+                _ => type.ToString().ToLower(),
             };
         }
 

@@ -7,6 +7,8 @@
     using Team = POGOProtos.Rpc.Team;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
 
     public static class PropertyInfoExtensions
@@ -19,10 +21,11 @@
 
         #region Variables
 
-        private static readonly IReadOnlyDictionary<Type, Type> _enumsToConvert = new Dictionary<Type, Type>
+        private static readonly IReadOnlyDictionary<Type, Func<object, object>> _enumsToConvert = new Dictionary<Type, Func<object, object>>
         {
-            { typeof(WeatherCondition), typeof(int) },
-            { typeof(Team), typeof(int) },
+            { typeof(WeatherCondition), x => Convert.ToInt32(x) },
+            { typeof(Team), x => Convert.ToInt32(x) },
+            { typeof(SeenType), x => Pokemon.SeenTypeToString((SeenType)x) },
         };
         private static readonly IEnumerable<Type> _typesToConvert = new[]
         {
@@ -68,7 +71,7 @@
                     // Ignore any properties that are not mapped to a database table via an attribute
                     // or if the property is explicitly set to not be mapped.
                     if (prop.GetCustomAttribute<ColumnAttribute>() == null)// ||
-                                                                           //prop.GetCustomAttribute<NotMappedAttribute>() != null)
+                        //prop.GetCustomAttribute<NotMappedAttribute>() != null)
                         continue;
 
                     // Ignore any virtual/database generated properties marked via attribute
@@ -90,9 +93,7 @@
         /// <param name="property"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static object SqlifyPropertyValue(
-            this PropertyInfo property,
-            object? value)
+        public static object SqlifyPropertyValue(this PropertyInfo property, object? value)
         {
             if (value == null)
             {
@@ -102,7 +103,7 @@
             // Convert enums
             if (property.PropertyType.IsEnum)
             {
-                return SqlifyPropertyValueToString(property, value, _enumsToConvert);
+                return SqlifyPropertyValueToString(property, value);
             }
             // Convert strings
             else if (property.PropertyType == typeof(string) && value != null)
@@ -156,21 +157,22 @@
         /// <param name="value"></param>
         /// <param name="enumsToConvert"></param>
         /// <returns></returns>
-        public static string SqlifyPropertyValueToString(
-            this PropertyInfo property,
-            object? value,
-            IReadOnlyDictionary<Type, Type>? enumsToConvert = null)
+        public static string SqlifyPropertyValueToString(this PropertyInfo property, object? value)
         {
-            if (enumsToConvert?.ContainsKey(property.PropertyType) ?? false)
+            if (!(_enumsToConvert?.ContainsKey(property.PropertyType) ?? false))
             {
-                // Convert enumeration value from string to integer
-                var enumValue = Convert.ToString(value) ?? string.Empty;
-                var propertyDescriptor = property.GetPropertyDescriptor();
-                var convertedValue = Convert.ToInt32(propertyDescriptor.Converter.ConvertFromString(enumValue));
-                return convertedValue.ToString();
+                // Treat/wrap enumeration value string in quotations
+                return SqlifyPropertyValueToString(value);
             }
-            // Treat/wrap enumeration value string in quotations
-            return SqlifyPropertyValueToString(value);
+
+            // Convert enumeration value from string to specific type
+            // using converter function
+            var enumValue = Convert.ToString(value) ?? string.Empty;
+            var propertyDescriptor = property.GetPropertyDescriptor();
+            var converted = propertyDescriptor.Converter.ConvertFromString(enumValue);
+            var convertedValue = _enumsToConvert[property.PropertyType](converted);
+            var result = SqlifyPropertyValueToString(convertedValue);
+            return result;
         }
 
         /// <summary>
