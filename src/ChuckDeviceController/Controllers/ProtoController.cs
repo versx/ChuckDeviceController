@@ -97,6 +97,7 @@
                     average_insert_count = ProtoDataStatistics.Instance.AverageTime.Count,
                     average_insert_seconds = ProtoDataStatistics.Instance.AverageTime.TimeS,
                     total_collected_benchmark_times = ProtoDataStatistics.Instance.Times.Count,
+                    total_benchmark_times = ProtoDataStatistics.Instance.Times,
                 },
             });
             return await Task.FromResult(json);
