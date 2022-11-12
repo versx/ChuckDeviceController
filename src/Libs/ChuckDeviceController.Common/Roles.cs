@@ -35,6 +35,8 @@
         /// </summary>
         AssignmentGroups,
 
+        Benchmarks,
+
         /// <summary>
         /// Access to Devices management pages.
         /// </summary>

@@ -19,6 +19,8 @@
 
         public const string AssignmentGroupsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.AssignmentGroups)}";
 
+        public const string BenchmarksRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Benchmarks)}";
+
         public const string DevicesRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.Devices)}";
 
         public const string DeviceGroupsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{nameof(Roles.DeviceGroups)}";
