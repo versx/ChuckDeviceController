@@ -85,7 +85,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Exten
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftAuthProviderPlugin", "Plugins\MicrosoftAuthProviderPlugin\MicrosoftAuthProviderPlugin.csproj", "{E877FF18-659C-4556-B376-8C011369E935}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapper.Tests", "Tests\Dapper.Tests\Dapper.Tests.csproj", "{D860BD03-6321-4677-A868-F8C9C287BCF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dapper.Tests", "Tests\Dapper.Tests\Dapper.Tests.csproj", "{D860BD03-6321-4677-A868-F8C9C287BCF6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

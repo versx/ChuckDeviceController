@@ -91,8 +91,16 @@
                     };
 
                     // Handle the response of the request
-                    var response = await client.ReceivedTrainerInfoAsync(request);
-                    return response;
+                    // TODO: Fix issue with GetTrainerLevelingStatusAsync
+                    //var response = await client.ReceivedTrainerInfoAsync(request);
+                    //return response;
+                    return new TrainerInfoResponse
+                    {
+                        IsLeveling = false,
+                        Status = TrainerInfoStatus.Ok,
+                        StoreLevelingData = false,
+                        Username = username,
+                    };
                 }
             }
             catch (Exception ex)

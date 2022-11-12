@@ -11,8 +11,14 @@
         public async Task<List<KeyValuePair<TKey, TEntity>>> TakeAllAsync(CancellationToken stoppingToken = default)
         {
             await _sem.WaitAsync(stoppingToken);
-            var results = new List<KeyValuePair<TKey, TEntity>>(this);
+
+            var results = new List<KeyValuePair<TKey, TEntity>>(this)
+            {
+                // TODO: Review set capacity
+                Capacity = int.MaxValue / 4,
+            };
             Clear();
+
             _sem.Release();
             return results;
         }

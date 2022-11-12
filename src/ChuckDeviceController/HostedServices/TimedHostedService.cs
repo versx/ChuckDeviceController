@@ -9,7 +9,8 @@
         private static readonly ILogger _logger =
             new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole()));
         private readonly CancellationTokenSource _stoppingCts = new();
-        private Timer? _timer;
+        //private Timer? _timer;
+        private System.Timers.Timer _timer;
         private Task? _executingTask;
 
         #endregion
@@ -40,12 +41,15 @@
         public override Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Timed Background Service is starting.");
-            _timer = new Timer(
-                InternalExecuteTask,
-                null,
-                TimeSpan.FromSeconds(TimerIntervalS),
-                TimeSpan.FromMilliseconds(-1)
-            );
+            //_timer = new Timer(
+            //    InternalExecuteTask,
+            //    null,
+            //    TimeSpan.FromSeconds(TimerIntervalS),
+            //    TimeSpan.FromMilliseconds(-1)
+            //);
+            _timer = new System.Timers.Timer(TimerIntervalS * 1000);
+            _timer.Elapsed += (sender, e) => InternalExecuteTask(null);
+            _timer.Start();
 
             return Task.CompletedTask;
         }
@@ -53,7 +57,11 @@
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Timed Background Service is stopping.");
-            _timer?.Change(Timeout.Infinite, 0);
+            //_timer?.Change(Timeout.Infinite, 0);
+            if (_timer?.Enabled ?? false)
+            {
+                _timer.Stop();
+            }
 
             // Stop called without start
             if (_executingTask == null)
@@ -88,12 +96,12 @@
         private async Task ExecuteTaskAsync(CancellationToken stoppingToken)
         {
             await RunJobAsync(stoppingToken);
-            _timer?.Change(TimeSpan.FromSeconds(TimerIntervalS), TimeSpan.FromMilliseconds(-1));
+            //_timer?.Change(TimeSpan.FromSeconds(TimerIntervalS), TimeSpan.FromMilliseconds(-1));
         }
 
         private void InternalExecuteTask(object? state)
         {
-            _timer?.Change(Timeout.Infinite, 0);
+            //_timer?.Change(Timeout.Infinite, 0);
             _executingTask = ExecuteTaskAsync(_stoppingCts.Token);
         }
 
