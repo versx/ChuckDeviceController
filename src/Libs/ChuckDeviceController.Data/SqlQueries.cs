@@ -1,6 +1,9 @@
-﻿namespace ChuckDeviceController
+﻿namespace ChuckDeviceController.Data
 {
-    // TODO: Finish queries
+    // TODO: Finish Account queries
+    // TODO: Finish GymDefender queries
+    // TODO: Finish GymTrainer queries
+
     public static class SqlQueries
     {
         #region Gym Queries
