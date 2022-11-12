@@ -35,7 +35,6 @@ using ChuckDeviceController.Plugin.EventBus;
 using ChuckDeviceController.Plugin.EventBus.Observer;
 using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
-using Z.EntityFramework.Plus;
 
 
 // TODO: Modularize everything, add as many services as possible as plugins
@@ -97,8 +96,10 @@ builder.WebHost.ConfigureLogging(configure => configure.AddSimpleConsole(options
 builder.Services.AddDbContext<UserIdentityContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Transient);
 
+var identityConfig = GetDefaultIdentityOptions();
+config.GetSection("UserAccounts").Bind(identityConfig);
 builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole>(options => GetDefaultIdentityOptions())
+    .AddIdentity<ApplicationUser, IdentityRole>(options => options = identityConfig)
     .AddDefaultUI()
     .AddEntityFrameworkStores<UserIdentityContext>()
     .AddDefaultTokenProviders();
@@ -437,20 +438,21 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
                 await serviceProvider.MigrateDatabaseAsync<ControllerDbContext>();
             }
 
-            // TODO: Add database meta or something to determine if default entities have been seeded
+            // TODO: Add database meta, local file, or something to determine if default entities have been seeded
 
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-            var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
-
-            // Start assignment controller service
-            assignmentController.Start();
 
             // Seed default user roles
             await UserIdentityContextSeed.SeedRolesAsync(roleManager);
 
             // Seed default SuperAdmin user
             await UserIdentityContextSeed.SeedSuperAdminAsync(userManager);
+
+            var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
+
+            // Start assignment controller service
+            assignmentController.Start();
         }
         catch (Exception ex)
         {
@@ -482,11 +484,14 @@ IdentityOptions GetDefaultIdentityOptions()
         {
             RequireConfirmedAccount = true,
             RequireConfirmedEmail = true,
-            //RequireConfirmedPhoneNumber = true,
+            RequireConfirmedPhoneNumber = false,
         },
-        //options.User.RequireUniqueEmail = true;
+        User = new UserOptions
+        {
+            AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+",
+            RequireUniqueEmail = true,
+        },
         //options.Stores.ProtectPersonalData = true;
-        //options.ClaimsIdentity.EmailClaimType
     };
     return options;
 }
