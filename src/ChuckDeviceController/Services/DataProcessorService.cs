@@ -339,7 +339,7 @@
                         continue;
                     }
 
-                    await account.UpdateAsync(player, _memCache);
+                    await account.UpdateAsync(data, _memCache);
                     await _dataConsumerService.AddEntityAsync(SqlQueryType.AccountOnMergeUpdate, account);
 
                     if (account.SendWebhook)
