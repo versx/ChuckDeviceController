@@ -314,6 +314,26 @@ INSERT INTO pokemon (
 )
 VALUES
     {0}
+ON DUPLICATE KEY UPDATE
+    spawn_id=VALUES(spawn_id),
+    expire_timestamp=VALUES(expire_timestamp),
+    shiny=VALUES(shiny),
+    username=VALUES(username),
+    pokestop_id=VALUES(pokestop_id),
+    first_seen_timestamp=VALUES(first_seen_timestamp),
+    updated=VALUES(updated),
+    changed=VALUES(changed),
+    cell_id=VALUES(cell_id),
+    expire_timestamp_verified=VALUES(expire_timestamp_verified),
+    capture_1=VALUES(capture_1),
+    capture_2=VALUES(capture_2),
+    capture_3=VALUES(capture_3),
+    is_ditto=VALUES(is_ditto),
+    display_pokemon_id=VALUES(display_pokemon_id),
+    base_height=VALUES(base_height),
+    base_weight=VALUES(base_weight),
+    is_event=VALUES(is_event),
+    seen_type=VALUES(seen_type)
 ";
 
         public const string PokemonIgnoreOnMerge = @"
@@ -347,8 +367,7 @@ ON DUPLICATE KEY UPDATE
     base_height=VALUES(base_height),
     base_weight=VALUES(base_weight),
     is_event=VALUES(is_event),
-    seen_type=VALUES(seen_type),
-    updated=VALUES(updated)
+    seen_type=VALUES(seen_type)
 ";
 
         /// <summary>
@@ -487,6 +506,12 @@ ON DUPLICATE KEY UPDATE
 
         public const string AccountOnMergeUpdate = @"";
         public const string AccountValuesRaw = @"";
+
+        public const string AccountLevelUpdate = @"
+UPDATE account
+SET level = @Level
+WHERE username = @Username
+";
 
         #endregion
     }

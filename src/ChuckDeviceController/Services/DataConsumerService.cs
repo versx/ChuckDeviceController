@@ -4,6 +4,8 @@
     using System.Data;
     using System.Diagnostics;
 
+    using Microsoft.Extensions.Options;
+
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
@@ -14,7 +16,8 @@
     {
         #region Constants
 
-        private const uint DataConsumerIntervalS = 10;
+        private const uint DataConsumerIntervalS = 3; //10;
+        private const int DefaultMaxBatchSize = 1000;
 
         #endregion
 
@@ -27,19 +30,29 @@
         private readonly IGrpcClientService _grpcClientService;
         private readonly SqlBulk _bulk;
         private readonly Dictionary<SqlQueryType, (string, string)> _sqlCache = new();
+        private readonly IEnumerable<SqlQueryType> _fortDetailTypes = new[]
+        {
+            SqlQueryType.PokestopDetailsOnMergeUpdate,
+            SqlQueryType.GymDetailsOnMergeUpdate,
+        };
 
         #endregion
+
+        public DataConsumerOptionsConfig Options { get; }
 
         #region Constructor
 
         public DataConsumerService(
             ILogger<IDataConsumerService> logger,
-            IGrpcClientService grpcClientService)
+            IGrpcClientService grpcClientService,
+            IOptions<DataConsumerOptionsConfig> options)
         {
             _logger = logger;
             _grpcClientService = grpcClientService;
 
-            _timer.Interval = DataConsumerIntervalS * 1000;
+            Options = options.Value;
+
+            _timer.Interval = Options.IntervalS * 1000;
             _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(new());
             _timer.Start();
 
@@ -55,14 +68,13 @@
             if (_queue.ContainsKey(query))
             {
                 _queue[query].Add(entity);
+                return;
             }
-            else
+
+            if (!_queue.TryAdd(query, new() { entity }))
             {
-                if (!_queue.TryAdd(query, new() { entity }))
-                {
-                    // Key already exists, add entity to queue
-                    _queue[query].Add(entity);
-                }
+                // Key already exists, add entity to queue
+                _queue[query].Add(entity);
             }
 
             await Task.CompletedTask;
@@ -70,18 +82,26 @@
 
         public async Task AddEntitiesAsync(SqlQueryType query, IEnumerable<BaseEntity> entities)
         {
-            if (_queue.ContainsKey(query))
+            try
             {
-                _queue[query].AddRange(entities);
-            }
-            else
-            {
-                var list = entities.ToList();
-                if (!_queue.TryAdd(query, list))
+                if (_queue.ContainsKey(query))
                 {
-                    // Key already exists, add entity to queue
+                    // TODO: Look into index outside of bounds exception. (list too big?)
                     _queue[query].AddRange(entities);
                 }
+                else
+                {
+                    var list = entities.ToList();
+                    if (!_queue.TryAdd(query, list))
+                    {
+                        // Key already exists, add entity to queue
+                        _queue[query].AddRange(entities);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
             }
 
             await Task.CompletedTask;
@@ -93,6 +113,11 @@
 
         private async Task ConsumeDataAsync(CancellationToken stoppingToken)
         {
+            if (!_queue.Any())
+            {
+                return;
+            }
+
             try
             {
                 var entitiesToUpsert = await _queue.TakeAllAsync(stoppingToken);
@@ -106,6 +131,20 @@
 
                 foreach (var (sqlType, entities) in entitiesToUpsert)
                 {
+                    //if (sqlType != SqlQueryType.CellOnMergeUpdate)
+                    //    continue;
+
+                    //var cells = entities.Select(x => (Cell)x);
+                    //var result = await EntityRepository.ExecuteBulkAsync(tableName: "s2cell",  cells, new DataUpdater<Cell>
+                    //{
+                    //    { "id", x => x.Id },
+                    //    { "center_lat", x => x.Latitude },
+                    //    { "center_lon", x => x.Longitude },
+                    //    { "level", x => x.Level },
+                    //    { "updated", x => x.Updated },
+                    //}, stoppingToken);
+                    //results.Add(new SqlBulkResult(success: true, 1, result, cells.Count()));
+
                     string sqlQuery;
                     string sqlValues;
                     if (_sqlCache.ContainsKey(sqlType))
@@ -117,12 +156,24 @@
                         (sqlQuery, sqlValues) = SqlQueryBuilder.GetQuery(sqlType);
                         _sqlCache.Add(sqlType, (sqlQuery, sqlValues));
                     }
-                    var result = await _bulk.InsertInBulkRawAsync(
+
+                    var includedProperties = _fortDetailTypes.Contains(sqlType)
+                        ? new[] { "id", "name", "url" }
+                        : null;
+                    var result = await _bulk.InsertBulkRawAsync(
                         sqlQuery,
                         sqlValues,
                         entities,
+                        batchSize: Options?.MaximumBatchSize ?? DefaultMaxBatchSize,
+                        includedProperties,
+                        null,
                         stoppingToken
                     );
+                    if (!result.Success)
+                    {
+                        _logger.LogError($"Failed to insert {entities.Count:N0} entities");
+                        continue;
+                    }
                     results.Add(result);
                 }
 
@@ -142,8 +193,7 @@
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                 var rowsAffected = results.Sum(x => x.RowsAffected);
                 var batchCount = results.Sum(x => x.BatchCount);
-                var expectedCount = entityCount; //results.Sum(x => x.ExpectedCount);
-                //_logger.LogInformation($"Upserted {rowsAffected:N0}/{expectedCount:N0} entities in {totalSeconds}s between {batchCount:N0} batches");
+                var expectedCount = results.Sum(x => x.ExpectedCount);
 
                 PrintBenchmarkResults(
                     DataLogLevel.Summary,
@@ -208,7 +258,6 @@
             await Task.CompletedTask;
         }
 
-        //private void PrintBenchmarkTimes(DataLogLevel logLevel, int rowsAffected, int entityCount, int batchCount, string text = "total entities", Stopwatch? sw = null)
         private void PrintBenchmarkResults(DataLogLevel logLevel, BenchmarkResults results)
         {
             //var time = string.Empty;

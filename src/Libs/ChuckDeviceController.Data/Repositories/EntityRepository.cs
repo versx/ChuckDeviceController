@@ -10,24 +10,33 @@
     using MySqlConnector;
 
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
+
+    // TODO: Create new MySQL connection instance for each method
 
     public class EntityRepository
     {
         private const uint DefaultConnectionWaitTimeS = 3;
+        private const int DefaultCommandTimeoutS = 30;
         private const double DefaultExpiryLimitM = 15;
 
         #region Variables
 
         private static readonly ILogger<EntityRepository> _logger =
             new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Debug)));
+        //private static readonly SemaphoreSlim _sem = new(3, 3);
         private static readonly SemaphoreSlim _sem = new(1);
+        //private static readonly SemaphoreSlim _entitySem = new(1, 3);
+        private static readonly SemaphoreSlim _entitySem = new(1);
+        //private static readonly SemaphoreSlim _sem = new(1, 1);
         private static readonly IEnumerable<ConnectionState> _invalidConnectionStates = new[]
         {
             ConnectionState.Broken,
             ConnectionState.Closed,
         };
         private static MySqlConnection? _connection;
+        private static string ConnectionString;
         private readonly string _connectionString;
         private readonly bool _openConnection;
 
@@ -43,14 +52,12 @@
 
         public static EntityRepository InstanceWithOptions(string connectionString, bool openConnection = true)
         {
+            ConnectionString = connectionString;
             if (_instance == null)
             {
                 lock (_mutex)
                 {
-                    if (_instance == null)
-                    {
-                        _instance = new EntityRepository(connectionString, openConnection);
-                    }
+                    _instance ??= new EntityRepository(connectionString, openConnection);
                 }
             }
             return _instance;
@@ -70,7 +77,7 @@
 
         #endregion
 
-        #region Public Methods
+        #region GetEntity Methods
 
         public static async Task<TEntity?> GetEntityAsync<TKey, TEntity>(
             TKey key,
@@ -80,6 +87,8 @@
             where TKey : notnull //class
             where TEntity : BaseEntity
         {
+            await _entitySem.WaitAsync();
+
             var defaultExpiry = TimeSpan.FromMinutes(expiryLimitM);
             TEntity? GetFromCache(TKey key)
             {
@@ -95,25 +104,36 @@
                 return entity;
             }
 
-            async Task<TEntity?> GetFromDatabase(TKey key)
-            {
-                TEntity? entity = default;
-                try
-                {
-                    entity = await GetEntityAsync<TKey, TEntity>(key);
-                    if (setCache)
-                    {
-                        memCache.Set(key, entity, defaultExpiry);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"[GetEntityAsync] GetFromDatabase: {ex.InnerException?.Message ?? ex.Message}");
-                }
-                return entity;
-            }
+            //async Task<TEntity?> GetFromDatabase(TKey key)
+            //{
+            //    TEntity? entity = default;
+            //    try
+            //    {
+            //        entity = await GetEntityAsync<TKey, TEntity>(key);
+            //        if (setCache)
+            //        {
+            //            memCache.Set(key, entity, defaultExpiry);
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.LogError($"[GetEntityAsync] GetFromDatabase: {ex.InnerException?.Message ?? ex.Message}");
+            //    }
+            //    return entity;
+            //}
 
-            var entity = GetFromCache(key) ?? await GetFromDatabase(key);
+            //var entity = GetFromCache(key) ?? await GetFromDatabase(key);
+            var entity = GetFromCache(key);
+            if (entity == null)
+            {
+                entity = await GetEntityAsync<TKey, TEntity>(key);
+                if (setCache)
+                {
+                    memCache.Set(key, entity, defaultExpiry);
+                }
+            }
+            _entitySem.Release();
+
             return entity;
         }
 
@@ -122,6 +142,7 @@
             where TEntity : BaseEntity
         {
             string sql;
+            TEntity? entity = default;
             try
             {
                 var tableName = GetTableAttribute<TEntity>();
@@ -142,23 +163,33 @@
                     : "*";
                 sql = $"SELECT {columns} FROM {tableName} WHERE {keyName} = '{key}'";
 
-                //await WaitForConnectionAsync();
-
-                await _sem.WaitAsync();
-                var results = await _connection.QueryFirstOrDefaultAsync<TEntity>(sql);
-                _sem.Release();
-
-                return results;
+                // TODO: await _sem.WaitAsync();
+                using var connection = new MySqlConnection(ConnectionString);
+                await connection.OpenAsync();
+                entity = await connection.QueryFirstOrDefaultAsync<TEntity>(sql);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"[GetEntityAsync]: {ex.InnerException?.Message ?? ex.Message}");
-                _sem.Release();
             }
-            return null;
+            // TODO: _sem.Release();
+
+            return entity;
         }
 
-        public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = 30)
+        #endregion
+
+        #region Execute Methods
+
+        /// <summary>
+        /// Execute parameterized SQL query.
+        /// </summary>
+        /// <param name="sql">SQL query to execute.</param>
+        /// <param name="param">Parameter for SQL query.</param>
+        /// <param name="commandTimeoutS">SQL command timeout in seconds.</param>
+        /// <returns>Returns the number of rows affected by the query.</returns>
+        /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
+        public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = DefaultCommandTimeoutS)
         {
             if (_connection == null)
             {
@@ -170,7 +201,7 @@
 
             try
             {
-                rowsAffected = await _connection.ExecuteAsync(sql, param,  commandTimeout: commandTimeoutS);
+                rowsAffected = await _connection.ExecuteAsync(sql, param, commandTimeout: commandTimeoutS);
             }
             catch (Exception ex)
             {
@@ -181,7 +212,15 @@
             return rowsAffected;
         }
 
-        public static async Task<int> ExecuteAsync(IEnumerable<string> sqls, int? commandTimeoutS = 30, CancellationToken stoppingToken = default)
+        /// <summary>
+        /// Execute raw SQL query.
+        /// </summary>
+        /// <param name="sqls">List of SQL queries to execute.</param>
+        /// <param name="commandTimeoutS">SQL command timeout in seconds.</param>
+        /// <param name="stoppingToken">Cancellation token to signal exit.</param>
+        /// <returns>Returns the number of rows affected by the query.</returns>
+        /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
+        public static async Task<int> ExecuteAsync(IEnumerable<string> sqls, int? commandTimeoutS = DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
         {
             if (_connection == null)
             {
@@ -191,21 +230,58 @@
             var rowsAffected = 0;
             await _sem.WaitAsync(stoppingToken);
 
-            //using var trans = await _connection.BeginTransactionAsync(stoppingToken);
+            // TODO: _connection
+            using var connection = new MySqlConnection(ConnectionString);
+            await connection.OpenAsync();
+            using var trans = await connection.BeginTransactionAsync(stoppingToken);
             try
             {
                 foreach (var sql in sqls)
                 {
-                    //rowsAffected += await ExecuteAsync(sql, commandTimeoutS);
-                    //rowsAffected += await _connection.ExecuteAsync(sql, transaction: trans, commandTimeout: commandTimeoutS);
-                    rowsAffected += await _connection.ExecuteAsync(sql, commandTimeout: commandTimeoutS);
+                    rowsAffected += await connection.ExecuteAsync(sql, transaction: trans, commandTimeout: commandTimeoutS);
                 }
-                //await trans.CommitAsync(stoppingToken);
+                await trans.CommitAsync(stoppingToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error: {ex}");
-                //await trans.RollbackAsync(stoppingToken);
+                await trans.RollbackAsync(stoppingToken);
+            }
+
+            _sem.Release();
+            return rowsAffected;
+        }
+
+        /// <summary>
+        /// Execute parameterized SQL query.
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="tableName">Name of SQL table.</param>
+        /// <param name="entities">List of data entities to include.</param>
+        /// <param name="dataFunc">Function to determine what columns to include.</param>
+        /// <param name="stoppingToken">Cancellation token to signal exit.</param>
+        /// <returns>Returns the number of rows affected by the query.</returns>
+        /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
+        public static async Task<int> ExecuteBulkAsync<TEntity>(string tableName, IEnumerable<TEntity> entities, DataUpdater<TEntity> dataFunc, CancellationToken stoppingToken = default)
+        {
+            if (_connection == null)
+            {
+                throw new Exception($"Not connected to MySQL database server!");
+            }
+
+            var rowsAffected = 0;
+            await _sem.WaitAsync(stoppingToken);
+
+            using var trans = await _connection.BeginTransactionAsync();
+            try
+            {
+                rowsAffected += await _connection.BulkInsertAsync(tableName, entities, dataFunc, trans, includeOnDuplicateQuery: true);
+                await trans.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+                await trans.RollbackAsync();   
             }
 
             _sem.Release();
@@ -231,7 +307,6 @@
                 if (_openConnection)
                 {
                     await _connection.OpenAsync(stoppingToken);
-
                     await WaitForConnectionAsync();
                 }
             }

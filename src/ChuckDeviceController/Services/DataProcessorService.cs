@@ -30,17 +30,13 @@
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
 
-    // TODO: Consider creating scoped DataProcessorService for each device uuid
-    // TODO: Make stateless/generic processing
     // TODO: Split up/refactor class
-
     // TODO: var leakMonitor = new ConnectionLeakWatcher(context);
 
     public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
         #region Constants
 
-        // TODO: Make DataProcessorService constants configurable
         private const uint ProcessIntervalS = 5;
         private const ushort DefaultDecimals = 4;
         private const ushort CellScanIntervalS = 900; // REVIEW: Change to every 5 minutes vs 15 minutes
@@ -49,7 +45,7 @@
 
         #region Variables
 
-        private static readonly SemaphoreSlim _parsingSem = new(1, 1);
+        //private static readonly SemaphoreSlim _parsingSem = new(5, 5); //new(1, 1);
         private static readonly object _cellLock = new();
 
         private readonly ILogger<IDataProcessorService> _logger;
@@ -66,11 +62,11 @@
 
         #region Properties
 
-        public ProcessingOptionsConfig Options { get; }
+        public DataProcessorOptionsConfig Options { get; }
 
         public bool ShowBenchmarkTimes => _env?.IsDevelopment() ?? false;
 
-        public override uint TimerIntervalS => ProcessIntervalS;
+        public override uint TimerIntervalS => Options?.IntervalS ?? ProcessIntervalS;
 
         #endregion
 
@@ -78,7 +74,7 @@
 
         public DataProcessorService(
             ILogger<IDataProcessorService> logger,
-            IOptions<ProcessingOptionsConfig> options,
+            IOptions<DataProcessorOptionsConfig> options,
             IAsyncQueue<DataQueueItem> taskQueue,
             IMemoryCache diskCache,
             IGrpcClientService grpcClientService,
@@ -132,7 +128,7 @@
                     return;
                 }
 
-                var workItems = await _taskQueue.DequeueBulkAsync(Options.Queue.Data.MaximumBatchSize, stoppingToken);
+                var workItems = await _taskQueue.DequeueBulkAsync(Options.Queue.MaximumBatchSize, stoppingToken);
                 if (!workItems.Any())
                 {
                     Thread.Sleep(1);
@@ -144,16 +140,16 @@
                 //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
                 ProtoDataStatistics.Instance.TotalEntitiesProcessed += (uint)workItems.Sum(x => x.Data?.Count ?? 0);
 
-                await Task.Run(async () =>
+                await Task.Run(() =>
                 {
-                    //new Thread(async () =>
-                    //{
+                    new Thread(async () =>
+                    {
                         foreach (var workItem in workItems)
                         {
                             await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
                         }
-                    //})
-                    //{ IsBackground = true }.Start();
+                    })
+                    { IsBackground = true }.Start();
                 }, stoppingToken);
             }
             catch (OperationCanceledException)
@@ -180,7 +176,7 @@
 
             ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
 
-            await _parsingSem.WaitAsync(stoppingToken);
+            //await _parsingSem.WaitAsync(stoppingToken);
 
             var sw = new Stopwatch();
             if (ShowBenchmarkTimes)
@@ -190,7 +186,6 @@
 
             var playerData = workItem.Data
                 .Where(x => x.type == ProtoDataType.PlayerData)
-                .Select(x => x.data)
                 .ToList();
             if (playerData.Any())
             {
@@ -316,7 +311,7 @@
                 //PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
             }
 
-            _parsingSem.Release();
+            //_parsingSem.Release();
         }
 
         #endregion
@@ -340,7 +335,7 @@
                     var account = await EntityRepository.GetEntityAsync<string, Account>(username, _memCache);
                     if (account == null)
                     {
-                        // Failed to retrieve account by username from cache and database
+                        _logger.LogWarning($"Failed to retrieve account with username '{username}' from cache and database");
                         continue;
                     }
 
@@ -740,7 +735,6 @@
                     }
                     if (gym.HasChanges)
                     {
-                        //await _dataConsumerService.AddGymAsync(SqlQueryType.GymDetailsOnMergeUpdate, gym);
                         await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDetailsOnMergeUpdate, gym);
                     }
                 }
@@ -879,55 +873,48 @@
                 sw.Start();
             }
 
-            try
+            foreach (var encounter in encounters)
             {
-                foreach (var encounter in encounters)
+                try
                 {
-                    try
+                    var data = (EncounterOutProto)encounter.data;
+                    var username = encounter.username;
+                    var isEvent = encounter.isEvent;
+                    var encounterId = data.Pokemon.EncounterId.ToString();
+                    var pokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(encounterId, _memCache);
+                    if (pokemon == null)
                     {
-                        var data = (EncounterOutProto)encounter.data;
-                        var username = encounter.username;
-                        var isEvent = encounter.isEvent;
-                        var encounterId = data.Pokemon.EncounterId.ToString();
-                        var pokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(encounterId, _memCache);
-                        if (pokemon == null)
-                        {
-                            // New Pokemon
-                            var cellId = S2CellExtensions.S2CellIdFromLatLng(data.Pokemon.Latitude, data.Pokemon.Longitude);
-                            await UpdateCellsAsync(new[] { cellId.Id });
+                        // New Pokemon
+                        var cellId = S2CellExtensions.S2CellIdFromLatLng(data.Pokemon.Latitude, data.Pokemon.Longitude);
+                        await UpdateCellsAsync(new[] { cellId.Id });
 
-                            pokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
-                        }
-                        await pokemon.AddEncounterAsync(data, username);
-
-                        var spawnpoint = await ParseSpawnpointAsync(pokemon, data.Pokemon.TimeTillHiddenMs, timestampMs);
-                        if (spawnpoint != null)
-                        {
-                            await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
-                        }
-
-                        if (pokemon.HasIvChanges)
-                        {
-                            SetPvpRankings(pokemon);
-                        }
-
-                        await pokemon.UpdateAsync(_memCache, updateIv: true);
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
-
-                        if (pokemon.SendWebhook)
-                        {
-                            await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
-                        }
+                        pokemon = new Pokemon(data.Pokemon, cellId.Id, username, isEvent);
                     }
-                    catch (Exception ex)
+                    await pokemon.AddEncounterAsync(data, username);
+
+                    var spawnpoint = await ParseSpawnpointAsync(pokemon, data.Pokemon.TimeTillHiddenMs, timestampMs);
+                    if (spawnpoint != null)
                     {
-                        _logger.LogError($"Error: {ex}");
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
+                    }
+
+                    if (pokemon.HasIvChanges)
+                    {
+                        SetPvpRankings(pokemon);
+                    }
+
+                    await pokemon.UpdateAsync(_memCache, updateIv: true);
+                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
+
+                    if (pokemon.SendWebhook)
+                    {
+                        await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UpdateEncountersAsync: {ex.InnerException?.Message ?? ex.Message}");
+                catch (Exception ex)
+                {
+                    _logger.LogError($"UpdateEncountersAsync: {ex}");
+                }
             }
 
             if (ShowBenchmarkTimes)
@@ -1091,12 +1078,12 @@
 
         private void CheckQueueLength()
         {
-            var usage = $"{_taskQueue.Count:N0}/{Options.Queue.Data.MaximumCapacity:N0}";
-            if (_taskQueue.Count >= Options.Queue.Data.MaximumCapacity)
+            var usage = $"{_taskQueue.Count:N0}/{Options.Queue.MaximumCapacity:N0}";
+            if (_taskQueue.Count >= Options.Queue.MaximumCapacity)
             {
                 _logger.LogError($"Data processing queue is at maximum capacity! {usage}");
             }
-            else if (_taskQueue.Count >= Options.Queue.Data.MaximumSizeWarning)
+            else if (_taskQueue.Count >= Options.Queue.MaximumSizeWarning)
             {
                 _logger.LogWarning($"Data processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
@@ -1234,8 +1221,9 @@
 
         private void PrintBenchmarkTimes(DataLogLevel logLevel, IReadOnlyList<object> entities, string text = "total entities", Stopwatch? sw = null)
         {
-            if (!Options.IsEnabled(logLevel))
-                return;
+            // TODO: Implement log filtering again
+            //if (!Options.Data.IsEnabled(logLevel))
+            //    return;
 
             var time = string.Empty;
             if (ShowBenchmarkTimes)

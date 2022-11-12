@@ -56,7 +56,10 @@ builder.WebHost.ConfigureLogging(configure =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
 builder.Services.Configure<GrpcEndpointsConfig>(builder.Configuration.GetSection("Grpc"));
-builder.Services.Configure<ProcessingOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions"));
+//builder.Services.Configure<ProcessingOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions"));
+builder.Services.Configure<ProtoProcessorOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Protos"));
+builder.Services.Configure<DataProcessorOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Data"));
+builder.Services.Configure<DataConsumerOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Consumer"));
 
 builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>, AsyncQueue<ProtoPayloadQueueItem>>();
 builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueItem>>();
@@ -73,6 +76,7 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     memCacheConfig.EntityNames = new List<string>
     {
         // Controller entities
+        nameof(Account),
         nameof(Device),
         // Map entities
         nameof(Cell),

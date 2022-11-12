@@ -35,7 +35,7 @@
 
         #region Properties
 
-        public ProcessingOptionsConfig Options { get; }
+        public ProtoProcessorOptionsConfig Options { get; }
 
         #endregion
 
@@ -43,7 +43,7 @@
 
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
-            IOptions<ProcessingOptionsConfig> options,
+            IOptions<ProtoProcessorOptionsConfig> options,
             IAsyncQueue<ProtoPayloadQueueItem> protoQueue,
             IAsyncQueue<DataQueueItem> dataQueue,
             IGrpcClientService grpcClientService)
@@ -83,7 +83,7 @@
 
                 try
                 {
-                    var workItems = await _protoQueue.DequeueBulkAsync(Options.Queue.Protos.MaximumBatchSize, stoppingToken);
+                    var workItems = await _protoQueue.DequeueBulkAsync(Options.Queue.MaximumBatchSize, stoppingToken);
                     if (workItems == null)
                     {
                         Thread.Sleep(1);
@@ -607,7 +607,7 @@
             //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
             ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;
-            _dataQueue.Enqueue(new DataQueueItem
+            await _dataQueue.EnqueueAsync(new DataQueueItem
             {
                 Username = username,
                 Data = processedProtos,
@@ -659,6 +659,10 @@
                 {
                     return _canStoreData[username];
                 }
+                //else if (!_canStoreData.Any())
+                //{
+                //    return true;
+                //}
             }
 
             // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
@@ -691,12 +695,12 @@
 
         private void CheckQueueLength()
         {
-            var usage = $"{_protoQueue.Count:N0}/{Options.Queue.Protos.MaximumCapacity:N0}";
-            if (_protoQueue.Count >= Options.Queue.Protos.MaximumCapacity)
+            var usage = $"{_protoQueue.Count:N0}/{Options.Queue.MaximumCapacity:N0}";
+            if (_protoQueue.Count >= Options.Queue.MaximumCapacity)
             {
                 _logger.LogError($"Proto processing queue is at maximum capacity! {usage}");
             }
-            else if (_protoQueue.Count >= Options.Queue.Protos.MaximumSizeWarning)
+            else if (_protoQueue.Count >= Options.Queue.MaximumSizeWarning)
             {
                 _logger.LogWarning($"Proto processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
