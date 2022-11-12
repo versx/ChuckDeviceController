@@ -11,6 +11,18 @@
 
     public static partial class Utils
     {
+        public static string FormatBenchmarkTime(double timeS, bool isHtml = false)
+        {
+            var color = timeS <= 3
+                ? "green"
+                : timeS > 3 && timeS < 10
+                    ? "orange"
+                    : "red";
+            return isHtml
+                ? $"<span style='color: {color}'>{timeS}</span>"
+                : timeS.ToString();
+        }
+
         public static string FormatAssignmentTime(uint timeS)
         {
             var times = TimeSpan.FromSeconds(timeS);

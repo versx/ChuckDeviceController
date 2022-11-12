@@ -305,6 +305,10 @@ pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
 // call OnLoad callback and register with 'IPluginManager' cache
 await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, apiKeys);
 
+// Start the job controller service after all plugins have loaded. (TODO: Add PluginsLoadedComplete event?)
+// This is so all custom IJobController's provided via plugins have been registered.
+jobControllerService.Start();
+
 #endregion
 
 #region App Builder
@@ -421,7 +425,6 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
     using (var scope = serviceProvider.CreateScope())
     {
         var services = scope.ServiceProvider;
-        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
         try
         {
             // Migrate database to latest migration automatically if enabled
@@ -438,15 +441,10 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
 
             var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-            var jobController = services.GetRequiredService<IJobControllerService>();
             var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
 
             // Start assignment controller service
             assignmentController.Start();
-
-            // Start the job controller service after all plugins have loaded. (TODO: Add PluginsLoadedComplete event?)
-            // This is so all custom IJobController's provided via plugins have been registered.
-            jobController.Start();
 
             // Seed default user roles
             await UserIdentityContextSeed.SeedRolesAsync(roleManager);
@@ -546,9 +544,8 @@ async Task AddOrUpdatePluginState(IPluginHost pluginHost)
                 dbPlugin.State = pluginHost.State;
 
                 // Update plugin host state
-                await context.Plugins
-                    .Where(plugin => plugin.Name == dbPlugin.Name)
-                    .UpdateAsync(plugin => dbPlugin);
+                context.Plugins.Update(dbPlugin);
+                await context.SaveChangesAsync();
             }
         }
     }

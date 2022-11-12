@@ -57,10 +57,10 @@
         public Guid Id { get; }
 
         [JsonPropertyName("count")]
-        public ulong Count { get; set; }
+        public ulong Count { get; }
 
         [JsonPropertyName("time_s")]
-        public double TimeS { get; set; }
+        public double TimeS { get; }
 
         public DataEntityTime()
         {

@@ -107,10 +107,7 @@
             using (var context = _deviceFactory.CreateDbContext())
             {
                 var devices = context.Devices.ToList();
-                foreach (var device in devices)
-                {
-                    AddDevice(device);
-                }
+                devices.ForEach(AddDevice);
             }
         }
 
@@ -119,7 +116,7 @@
             using (var context = _deviceFactory.CreateDbContext())
             {
                 var instances = context.Instances.ToList();
-                var devices = context.Devices.ToList();
+                var devices = _devices.Values; //context.Devices.ToList();
 
                 foreach (var instance in instances)
                 {

@@ -10,6 +10,7 @@
 
         public ushort EntityExpiryLimitM { get; set; } = 15;
 
+        // TODO: Rename from EntityName to EntityTypeNames
         public IReadOnlyList<string> EntityNames { get; set; } = new List<string>();
     }
 }

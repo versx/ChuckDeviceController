@@ -91,6 +91,8 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    <Content Update="Views\**\*.*">
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

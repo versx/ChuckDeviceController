@@ -4,7 +4,6 @@
 
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Plugin;

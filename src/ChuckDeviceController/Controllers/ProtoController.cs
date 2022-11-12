@@ -62,8 +62,10 @@
         #region Routes
 
         // Test route for debugging, TODO: remove in production
+#if DEBUG
         [HttpGet("/raw")]
         public string Get() => ":D";
+#endif
 
         // Handle incoming raw proto data
         [
@@ -79,28 +81,6 @@
 
             var response = await HandleProtoRequest(payload).ConfigureAwait(false);
             return response;
-        }
-
-        [HttpGet("/stats")]
-        public async Task<ActionResult> GetStatsAsync()
-        {
-            // TODO: Add entity time stats
-            var json = new JsonResult(new
-            {
-                total_requests = ProtoDataStatistics.Instance.TotalRequestsProcessed,
-                protos_received = ProtoDataStatistics.Instance.TotalProtoPayloadsReceived,
-                protos_processed = ProtoDataStatistics.Instance.TotalProtosProcessed,
-                entities_processed = ProtoDataStatistics.Instance.TotalEntitiesProcessed,
-                entities_upserted = ProtoDataStatistics.Instance.TotalEntitiesUpserted,
-                data_times = new
-                {
-                    average_insert_count = ProtoDataStatistics.Instance.AverageTime.Count,
-                    average_insert_seconds = ProtoDataStatistics.Instance.AverageTime.TimeS,
-                    total_collected_benchmark_times = ProtoDataStatistics.Instance.Times.Count,
-                    total_benchmark_times = ProtoDataStatistics.Instance.Times,
-                },
-            });
-            return await Task.FromResult(json);
         }
 
         #endregion
@@ -246,8 +226,7 @@
                 {
                     account.Level = level;
                     await _bulk.UpdateAsync(SqlQueries.AccountLevelUpdate, account);
-
-                    _logger.LogInformation($"[{uuid}] Account {username} on {uuid} from {oldLevel} to {level} with {trainerXp}");
+                    _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' went from level {oldLevel} to {level} with {trainerXp:N0} XP");
                 }
             }
             catch (Exception ex)
