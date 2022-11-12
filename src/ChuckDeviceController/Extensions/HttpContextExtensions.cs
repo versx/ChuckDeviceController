@@ -10,29 +10,18 @@
     {
         private const string OriginHeader = "Origin";
         private const string JsonContentType = "application/json";
+        private const string DefaultMadUsername = "PogoDroid";
+        private const string RawDataEndpoint = "/raw";
+        private const string PostMethod = "POST";
 
-        public static bool IsMadDeviceRequest(this HttpContext context, string rawDataEndpoint)
-        {
-            // We only care about 'POST' requests
-            if (context.Request.Method.ToUpper() != "POST")
-                return false;
-
-            // Check if request is to '/raw' endpoint
-            var path = context.Request.Path.ToString().ToLower();
-            if (path != rawDataEndpoint)
-                return false;
-
-            // Check if 'Origin' header is set, which MAD sets as device id
-            var isMad = context.Request.Headers.ContainsKey(OriginHeader);
-            return isMad;
-        }
-
-        public static async Task ConvertPayloadDataAsync(this HttpContext context, string username)
+        public static async Task ConvertPayloadDataAsync(this HttpContext context)
         {
             // TODO: Add TryCatch
-            // At this point this should be a MAD device sending the request.
-            // Read the request's post body.
+            // At this point this should be a MAD device sending the request,
+            // retrieve the account username from the Origin HTTP header.
             var uuid = context.Request.Headers[OriginHeader];
+
+            // Read the request's post body as a string.
             var data = await context.Request.ReadBodyAsStringAsync();
             if (string.IsNullOrEmpty(data))
                 return;
@@ -41,7 +30,7 @@
             var payload = new ProtoPayload
             {
                 Contents = contents,
-                Username = username,
+                Username = DefaultMadUsername,
                 Uuid = uuid,
             };
 
@@ -52,6 +41,21 @@
             var content = new StringContent(json, Encoding.UTF8, JsonContentType);
             context.Request.Body = await content.ReadAsStreamAsync();
             context.Request.ContentLength = context.Request.Body.Length;
+        }
+
+        public static bool IsPostRequest(this HttpContext context)
+        {
+            return context.Request.Method.ToUpper() == PostMethod;
+        }
+
+        public static bool IsRawDataRequest(this HttpContext context)
+        {
+            return context.Request.Path.StartsWithSegments(RawDataEndpoint);
+        }
+
+        public static bool IsOriginHeaderSet(this HttpContext context)
+        {
+            return context.Request.Headers.ContainsKey(OriginHeader);
         }
     }
 }

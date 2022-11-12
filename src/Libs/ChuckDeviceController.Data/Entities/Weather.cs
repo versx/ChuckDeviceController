@@ -8,8 +8,8 @@
 
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Geometry.Extensions;
@@ -38,17 +38,11 @@
         [Column("gameplay_condition")]
         public WeatherCondition GameplayCondition { get; set; }
 
-        [Column("wind_direction")]
-        public ushort WindDirection { get; set; }
-
         [Column("cloud_level")]
         public ushort CloudLevel { get; set; }
 
         [Column("rain_level")]
         public ushort RainLevel { get; set; }
-
-        [Column("wind_level")]
-        public ushort WindLevel { get; set; }
 
         [Column("snow_level")]
         public ushort SnowLevel { get; set; }
@@ -56,14 +50,20 @@
         [Column("fog_level")]
         public ushort FogLevel { get; set; }
 
+        [Column("wind_level")]
+        public ushort WindLevel { get; set; }
+
+        [Column("wind_direction")]
+        public ushort WindDirection { get; set; }
+
+        [Column("warn_weather")]
+        public bool? WarnWeather { get; set; }
+
         [Column("special_effect_level")]
         public ushort SpecialEffectLevel { get; set; }
 
         [Column("severity")]
         public ushort? Severity { get; set; }
-
-        [Column("warn_weather")]
-        public bool? WarnWeather { get; set; }
 
         [Column("updated")]
         public ulong Updated { get; set; }
@@ -106,38 +106,12 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache)
+        public async Task UpdateAsync(IMemoryCacheHostedService memCache)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
-            Weather? oldWeather = null;
-            try
-            {
-                // Check cache first for client weather entity
-                var cached = memCache.Get<long, Weather>(Id);
-                if (cached != null)
-                {
-                    oldWeather = cached;
-                }
-                else
-                {
-                    oldWeather = await context.Weather.FindAsync(Id);
-                    if (oldWeather != null)
-                    {
-                        memCache.Set(Id, oldWeather);
-                    }
-                    else
-                    {
-                        memCache.Set(Id, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Weather: {ex}");
-            }
-
+            var oldWeather = await EntityRepository.GetEntityAsync<long, Weather>(Id, memCache);
             if (oldWeather == null)
             {
                 SendWebhook = true;

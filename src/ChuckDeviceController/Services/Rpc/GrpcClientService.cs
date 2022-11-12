@@ -91,8 +91,16 @@
                     };
 
                     // Handle the response of the request
-                    var response = await client.ReceivedTrainerInfoAsync(request);
-                    return response;
+                    // TODO: Fix issue with GetTrainerLevelingStatusAsync
+                    //var response = await client.ReceivedTrainerInfoAsync(request);
+                    //return response;
+                    return new TrainerInfoResponse
+                    {
+                        IsLeveling = false,
+                        Status = TrainerInfoStatus.Ok,
+                        StoreLevelingData = false,
+                        Username = username,
+                    };
                 }
             }
             catch (Exception ex)
@@ -139,10 +147,18 @@
             return null;
         }
 
-        private (GrpcChannel, CallInvoker) CreateClient(string url)
+        private (GrpcChannel, CallInvoker) CreateClient(string url, uint timeoutS = 3)
         {
+            // Create gRPC channel options
+            var options = new GrpcChannelOptions
+            {
+                HttpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(timeoutS),
+                },
+            };
             // Create gRPC channel for receiving gRPC server address
-            var channel = GrpcChannel.ForAddress(url);
+            var channel = GrpcChannel.ForAddress(url, options);
             // Create gRPC channel interceptor to invoke gRPC client
             var invoker = channel.Intercept(_authHeadersInterceptor);
             return (channel, invoker);

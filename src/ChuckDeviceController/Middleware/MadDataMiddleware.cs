@@ -4,9 +4,6 @@
 
     public sealed class MadDataMiddleware
     {
-        private const string RawDataEndpoint = "/raw";
-        private const string DefaultMadUsername = "PogoDroid";
-
         private readonly RequestDelegate _next;
 
         public MadDataMiddleware(RequestDelegate next)
@@ -18,11 +15,7 @@
         {
             try
             {
-                var isMad = context.IsMadDeviceRequest(RawDataEndpoint);
-                if (isMad)
-                {
-                    await context.ConvertPayloadDataAsync(DefaultMadUsername);
-                }
+                await context.ConvertPayloadDataAsync();
             }
             catch (Exception ex)
             {

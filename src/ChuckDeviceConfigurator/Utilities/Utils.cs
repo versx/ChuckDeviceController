@@ -128,11 +128,11 @@
                     cssClass = "account-good";
                     break;
                 case "Banned":
+                case "Suspended":
                     cssClass = "account-banned";
                     break;
                 case "Warning":
                 case "Invalid":
-                case "Suspended":
                     cssClass = "account-warning";
                     break;
             }

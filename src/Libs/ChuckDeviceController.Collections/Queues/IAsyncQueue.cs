@@ -5,11 +5,11 @@
         uint Count { get; }
 
 
-        void Enqueue(T item);
+        Task EnqueueAsync(T item);
 
-        void EnqueueRange(IEnumerable<T> items);
+        Task EnqueueRangeAsync(IEnumerable<T> items);
 
-        Task<T> DequeueAsync(CancellationToken cancellationToken);
+        Task<T?> DequeueAsync(CancellationToken cancellationToken);
 
         Task<IEnumerable<T>> DequeueBulkAsync(
             uint maxBatchSize,

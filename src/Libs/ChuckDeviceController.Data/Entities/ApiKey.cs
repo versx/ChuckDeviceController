@@ -12,6 +12,7 @@
     public class ApiKey : BaseEntity, IApiKey
     {
         [
+            DatabaseGenerated(DatabaseGeneratedOption.Identity),
             JsonPropertyName("id"),
             DisplayName("ID"),
             Column("id"),

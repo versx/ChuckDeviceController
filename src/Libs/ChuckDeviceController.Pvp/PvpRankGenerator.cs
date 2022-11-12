@@ -55,7 +55,7 @@
 
         public PvpRankGenerator()
         {
-            _timer = new Timer(Strings.FetchMasterFileIntervalS * 1000);
+            _timer = new Timer(Strings.FetchMasterFileIntervalM * 60 * 1000);
             _timer.Elapsed += async (sender, e) => await LoadMasterFileIfNeededAsync();
         }
 
@@ -158,7 +158,7 @@
         public IReadOnlyDictionary<string, dynamic>? GetAllPvpLeagues(HoloPokemonId pokemon, PokemonForm? form, PokemonGender? gender, PokemonCostume? costume, IV iv, double level)
         {
             var pvp = new Dictionary<string, dynamic>();
-            foreach (var leagueId in Enum.GetValues(typeof(PvpLeague)))
+            foreach (var leagueId in System.Enum.GetValues(typeof(PvpLeague)))
             {
                 var league = (PvpLeague)leagueId;
                 var leagueName = league.ToString().ToLower();
@@ -369,12 +369,7 @@
         private static async Task<string?> GetETag(string url)
         {
             var request = await NetUtils.HeadAsync(url);
-            if (request == null)
-            {
-                Console.WriteLine($"Failed to get eTag for game master file");
-                return null;
-            }
-            var newETag = request.Headers.ETag?.Tag;
+            var newETag = request?.Headers?.ETag?.Tag;
             return newETag;
         }
 
@@ -394,14 +389,14 @@
                 return;
             }
 
-            if (newETag != _lastETag)
-            {
-                Console.WriteLine($"Game master file changed, downloading new version...");
-                await LoadMasterFileAsync();
-            }
+            if (newETag == _lastETag)
+                return;
+
+            Console.WriteLine($"Game master file changed, downloading new version...");
+            await LoadMasterFileAsync(newETag);
         }
 
-        public async Task LoadMasterFileAsync()
+        public async Task LoadMasterFileAsync(string? eTag = null)
         {
             if (_loading)
                 return;
@@ -409,7 +404,7 @@
             _loading = true;
             Console.WriteLine($"Checking if game master file needs to be downloaded...");
 
-            var newETag = await GetETag(Strings.MasterFileEndpoint);
+            var newETag = eTag ?? await GetETag(Strings.MasterFileEndpoint);
             if (string.IsNullOrEmpty(newETag))
             {
                 Console.WriteLine($"Failed to get HTTP header ETag from game master file request");

@@ -15,7 +15,6 @@
 
         private readonly ILogger<IClearFortsHostedService> _logger;
         private readonly IDbContextFactory<MapDbContext> _factory;
-        private readonly ProcessingOptionsConfig _options;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
@@ -25,21 +24,34 @@
 
         #endregion
 
-        public override uint TimerIntervalMs => 15 * 60 * 1000; // 15 minutes
+        #region Properties
+
+        public DataProcessorOptionsConfig Options { get; }
+
+        public override uint TimerIntervalS => 15 * 60; // 15 minutes
+
+        #endregion
+
+        #region Constructor
 
         public ClearFortsHostedService(
-            IOptions<ProcessingOptionsConfig> options,
             ILogger<IClearFortsHostedService> logger,
-            IDbContextFactory<MapDbContext> factory)
+            IDbContextFactory<MapDbContext> factory,
+            IOptions<DataProcessorOptionsConfig> options)
         {
-            _options = options.Value;
             _logger = logger;
             _factory = factory;
+
+            Options = options.Value;
         }
+
+        #endregion
+
+        #region Add Cells
 
         public void AddCell(ulong cellId)
         {
-            if (!_options.ClearOldForts)
+            if (!Options.ClearOldForts)
                 return;
 
             lock (_gymCellLock)
@@ -61,7 +73,7 @@
 
         public void AddGym(ulong cellId, string gymId)
         {
-            if (!_options.ClearOldForts)
+            if (!Options.ClearOldForts)
                 return;
 
             lock (_gymCellLock)
@@ -76,7 +88,7 @@
 
         public void AddPokestop(ulong cellId, string pokestopId)
         {
-            if (!_options.ClearOldForts)
+            if (!Options.ClearOldForts)
                 return;
 
             lock (_stopCellLock)
@@ -89,11 +101,57 @@
             }
         }
 
+        #endregion
+
+        #region Clear Cells
+
+        public void ClearCells()
+        {
+            //ClearPokestops();
+            //ClearGyms();
+            lock (_stopCellLock)
+            {
+                _stopIdsPerCell.Clear();
+            }
+            lock (_gymCellLock)
+            {
+                _gymIdsPerCell.Clear();
+            }
+        }
+
+        public void ClearPokestops()
+        {
+            lock (_stopCellLock)
+            {
+                _stopIdsPerCell.Clear();
+                //_stopIdsPerCell.Keys.ToList().ForEach(cellId =>
+                //{
+                //    _stopIdsPerCell[cellId].Clear();
+                //});
+            }
+        }
+
+        public void ClearGyms()
+        {
+            lock (_gymCellLock)
+            {
+                _gymIdsPerCell.Clear();
+                //_gymIdsPerCell.Keys.ToList().ForEach(cellId =>
+                //{
+                //    _gymIdsPerCell[cellId].Clear();
+                //});
+            }
+        }
+
+        #endregion
+
+        #region Callback Method
+
         /// <summary>
         /// Mark upgraded/downgraded forts as deleted that no longer exist.
         /// </summary>
         /// <returns></returns>
-        public async Task ClearOldFortsAsync()
+        private async Task ClearOldFortsAsync()
         {
             try
             {
@@ -177,6 +235,10 @@
             }
         }
 
+        #endregion
+
+        #region BackgroundService Impl
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.CompletedTask;
@@ -184,10 +246,12 @@
 
         protected override async Task RunJobAsync(CancellationToken stoppingToken)
         {
-            if (!_options.ClearOldForts)
+            if (!Options.ClearOldForts)
                 return;
 
             await ClearOldFortsAsync();
         }
+
+        #endregion
     }
 }

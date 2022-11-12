@@ -1,8 +1,6 @@
 ﻿namespace ChuckDeviceController.Extensions
 {
     using System.Diagnostics;
-    using System.Reflection;
-    using System.Runtime.Serialization;
     using System.Security.Cryptography;
 
     public static class GenericsExtensions

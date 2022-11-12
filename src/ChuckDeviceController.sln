@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Pvp",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8F292B41-6BD7-4AEC-AB77-B9988E820368}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{F0C29FFE-CD55-455B-A45E-52F853116FF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests\Tests.csproj", "{F0C29FFE-CD55-455B-A45E-52F853116FF8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceCommunicator", "ChuckDeviceCommunicator\ChuckDeviceCommunicator.csproj", "{00ED1BCE-3DFA-49BE-80BA-C73A3DADAB5D}"
 EndProject
@@ -83,7 +83,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Autho
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Extensions.Http", "Libs\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj", "{8898E45F-FCB3-455B-A538-43071704CC1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicrosoftAuthProviderPlugin", "Plugins\MicrosoftAuthProviderPlugin\MicrosoftAuthProviderPlugin.csproj", "{E877FF18-659C-4556-B376-8C011369E935}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftAuthProviderPlugin", "Plugins\MicrosoftAuthProviderPlugin\MicrosoftAuthProviderPlugin.csproj", "{E877FF18-659C-4556-B376-8C011369E935}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dapper.Tests", "Tests\Dapper.Tests\Dapper.Tests.csproj", "{D860BD03-6321-4677-A868-F8C9C287BCF6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -239,6 +241,10 @@ Global
 		{E877FF18-659C-4556-B376-8C011369E935}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E877FF18-659C-4556-B376-8C011369E935}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E877FF18-659C-4556-B376-8C011369E935}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D860BD03-6321-4677-A868-F8C9C287BCF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D860BD03-6321-4677-A868-F8C9C287BCF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D860BD03-6321-4677-A868-F8C9C287BCF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D860BD03-6321-4677-A868-F8C9C287BCF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -278,6 +284,7 @@ Global
 		{C0244C20-FE13-4914-84D0-F72734DB2BEC} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 		{8898E45F-FCB3-455B-A538-43071704CC1A} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 		{E877FF18-659C-4556-B376-8C011369E935} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
+		{D860BD03-6321-4677-A868-F8C9C287BCF6} = {8F292B41-6BD7-4AEC-AB77-B9988E820368}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {826A78C7-B0DA-4D44-AF8E-BDDBFCE8F569}

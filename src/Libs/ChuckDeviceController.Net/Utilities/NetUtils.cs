@@ -7,19 +7,20 @@
     {
         public const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36";
         public const string DefaultMimeType = "application/json";
-        private const uint DefaultRequestTimeoutS = 30;
+        private const uint DefaultRequestTimeoutS = 15;
 
-        public static string? Get(string url)
+        public static string? Get(string url, uint timeoutS = DefaultRequestTimeoutS)
         {
-            return GetAsync(url).Result;
+            return GetAsync(url, timeoutS).Result;
         }
 
         /// <summary>
         /// Sends a HTTP GET request to the specified url.
         /// </summary>
         /// <param name="url">Url to send the request to.</param>
+        /// <param name="timeoutS">Maximum time to wait for request before aborting.</param>
         /// <returns>Returns the response string of the HTTP GET request.</returns>
-        public static async Task<string?> GetAsync(string url)
+        public static async Task<string?> GetAsync(string url, uint timeoutS = DefaultRequestTimeoutS)
         {
             try
             {
@@ -28,7 +29,7 @@
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), DefaultMimeType);
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.ContentType.ToString(), DefaultMimeType);
-                client.Timeout = TimeSpan.FromSeconds(DefaultRequestTimeoutS);
+                client.Timeout = TimeSpan.FromSeconds(timeoutS);
                 return await client.GetStringAsync(url);
             }
             catch (Exception ex)
@@ -48,6 +49,8 @@
         /// </summary>
         /// <param name="url">Url to send the request to.</param>
         /// <param name="payload">JSON payload that will be sent in the request.</param>
+        /// <param name="timeoutS"></param>
+        /// <param name="userAgent"></param>
         /// <returns>Returns the response string of the HTTP POST request.</returns>
         public static async Task<(HttpStatusCode, string?)> PostAsync(string url, string? payload = null, uint timeoutS = DefaultRequestTimeoutS, string userAgent = DefaultUserAgent)
         {
@@ -84,19 +87,19 @@
             return (HttpStatusCode.BadRequest, null);
         }
 
-        public static HttpResponseMessage? Head(string url)
+        public static HttpResponseMessage? Head(string url, uint timeoutS = DefaultRequestTimeoutS)
         {
-            return HeadAsync(url).Result;
+            return HeadAsync(url, timeoutS).Result;
         }
 
-        public static async Task<HttpResponseMessage?> HeadAsync(string url)
+        public static async Task<HttpResponseMessage?> HeadAsync(string url, uint timeoutS = DefaultRequestTimeoutS)
         {
             try
             {
                 SetDefaultSecurityProtocol();
 
                 using var client = new HttpClient();
-                client.Timeout = TimeSpan.FromSeconds(DefaultRequestTimeoutS);
+                client.Timeout = TimeSpan.FromSeconds(timeoutS);
                 var requestMessage = new HttpRequestMessage
                 {
                     Method = HttpMethod.Head,

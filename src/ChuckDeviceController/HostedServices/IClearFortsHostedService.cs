@@ -8,6 +8,10 @@
 
         void AddGym(ulong cellId, string gymId);
 
-        Task ClearOldFortsAsync();
+        void ClearCells();
+
+        void ClearPokestops();
+
+        void ClearGyms();
     }
 }

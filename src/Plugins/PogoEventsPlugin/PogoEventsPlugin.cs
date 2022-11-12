@@ -3,6 +3,7 @@ namespace PogoEventsPlugin
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
@@ -15,6 +16,8 @@ namespace PogoEventsPlugin
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class PogoEventsPlugin : IPlugin
     {
+        public const string EventsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},Events";
+
         #region Variables
 
         private readonly IUiHost _uiHost;

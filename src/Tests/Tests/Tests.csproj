@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Libs\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
-    <ProjectReference Include="..\Libs\ChuckDeviceController.Pvp\ChuckDeviceController.Pvp.csproj" />
+    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
+    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Pvp\ChuckDeviceController.Pvp.csproj" />
   </ItemGroup>
 
 </Project>

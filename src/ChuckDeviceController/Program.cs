@@ -10,6 +10,7 @@ using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Extensions.Http.Caching;
@@ -28,11 +29,11 @@ if (config.Providers.Count() == 2)
     Environment.FailFast($"Failed to find or load configuration file, exiting...");
 }
 
-#endregion
-
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
 var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
+
+#endregion
 
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
@@ -55,7 +56,10 @@ builder.WebHost.ConfigureLogging(configure =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
 builder.Services.Configure<GrpcEndpointsConfig>(builder.Configuration.GetSection("Grpc"));
-builder.Services.Configure<ProcessingOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions"));
+//builder.Services.Configure<ProcessingOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions"));
+builder.Services.Configure<ProtoProcessorOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Protos"));
+builder.Services.Configure<DataProcessorOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Data"));
+builder.Services.Configure<DataConsumerOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Consumer"));
 
 builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>, AsyncQueue<ProtoPayloadQueueItem>>();
 builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueItem>>();
@@ -71,6 +75,10 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     var memCacheConfig = memCacheOptions?.Value ?? new();
     memCacheConfig.EntityNames = new List<string>
     {
+        // Controller entities
+        nameof(Account),
+        nameof(Device),
+        // Map entities
         nameof(Cell),
         nameof(Gym),
         nameof(Incident),
@@ -98,13 +106,23 @@ builder.Services.AddDistributedMemoryCache();
 #region Database Contexts
 
 // Register data contexts, factories, and pools
-var poolSize = config.GetValue<int>("DbContextPoolSize", 1024);
+var poolSize = config.GetValue("DbContextPoolSize", 1024);
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContextPool<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
-builder.Services.AddDbContextPool<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
+//builder.Services.AddDbContextPool<MapDbContext>(options =>
+//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
+//builder.Services.AddDbContextPool<ControllerDbContext>(options =>
+//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
+builder.Services.AddDbContext<MapDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
+builder.Services.AddDbContext<ControllerDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
+//builder.Services.AddPooledDbContextFactory<MapDbContext>(options =>
+//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName)
+//, poolSize);
+//builder.Services.AddPooledDbContextFactory<ControllerDbContext>(options =>
+//  options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName)
+//, poolSize);
 
 #endregion
 
@@ -147,7 +165,7 @@ if (app.Environment.IsDevelopment())
 // Convert Map-A-Droid payload data if enabled
 if (config.GetValue<bool>("ConvertMadData"))
 {
-    app.UseMadData();
+    app.UseMadDataConverter();
 }
 
 app.UseAuthorization();
@@ -159,6 +177,14 @@ app.MapControllers();
 //    await MonitorResults(TimeSpan.FromMinutes(5), stopwatch);
 //})
 //{ IsBackground = true }.Start();
+
+// Open DB connection
+var sw = new Stopwatch();
+sw.Start();
+_ = EntityRepository.InstanceWithOptions(connectionString, openConnection: true);
+sw.Stop();
+var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+logger.LogDebug($"Opening database connection took {totalSeconds}s");
 
 app.Run();
 
