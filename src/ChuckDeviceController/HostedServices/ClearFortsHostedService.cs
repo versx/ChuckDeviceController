@@ -8,6 +8,8 @@
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
+    using ChuckDeviceController.Data.Repositories;
 
     public class ClearFortsHostedService : TimedHostedService, IClearFortsHostedService
     {
@@ -205,28 +207,23 @@
 
                 if (stopsToDelete.Count > 0)
                 {
-                    _logger.LogInformation($"Marking {stopsToDelete.Count:N0} Pokestops as deleted since they seem to no longer exist.");
-                    await context.Pokestops.BulkMergeAsync(stopsToDelete, options =>
+                    _logger.LogInformation($"Marking {stopsToDelete.Count:N0} Pokestops as deleted since they no longer seem to exist.");
+
+                    var result = await EntityRepository.ExecuteBulkAsync("pokestop", stopsToDelete, new DataUpdater<Pokestop>
                     {
-                        options.UseTableLock = true;
-                        options.OnMergeUpdateInputExpression = p => new
-                        {
-                            p.IsDeleted,
-                        };
+                        { "deleted", x => x.IsDeleted },
                     });
+                    _logger.LogInformation($"{result:N0} Pokestops have been marked as deleted.");
                 }
 
                 if (gymsToDelete.Count > 0)
                 {
-                    _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they seem to no longer exist.");
-                    await context.Gyms.BulkMergeAsync(gymsToDelete, options =>
+                    _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they no longer seem to exist.");
+                    var result = await EntityRepository.ExecuteBulkAsync("gym", gymsToDelete, new DataUpdater<Gym>
                     {
-                        options.UseTableLock = true;
-                        options.OnMergeUpdateInputExpression = p => new
-                        {
-                            p.IsDeleted,
-                        };
+                        { "deleted", x => x.IsDeleted },
                     });
+                    _logger.LogInformation($"{result:N0} Gyms have been marked as deleted.");
                 }
             }
             catch (Exception ex)
