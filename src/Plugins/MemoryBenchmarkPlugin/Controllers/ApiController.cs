@@ -33,6 +33,7 @@
 
         #endregion
 
+        #region Public Methods
 
         [HttpGet("collect")]
         public IActionResult GetCollect()
@@ -102,5 +103,7 @@
 
             return new ObjectResult(diagnostics);
         }
+
+        #endregion
     }
 }

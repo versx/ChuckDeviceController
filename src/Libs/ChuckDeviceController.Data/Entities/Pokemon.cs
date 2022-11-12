@@ -8,8 +8,8 @@
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Geometry.Extensions;
@@ -157,12 +157,6 @@
         [Column("display_pokemon_id")]
         public uint? DisplayPokemonId { get; set; }
 
-        [
-            Column("pvp"),
-            DefaultValue(null),
-        ]
-        public Dictionary<string, dynamic>? PvpRankings { get; set; } = null;
-
         [Column("base_height")]
         public double BaseHeight { get; set; }
 
@@ -174,6 +168,12 @@
 
         [Column("seen_type")]
         public SeenType SeenType { get; set; }
+
+        [
+            Column("pvp"),
+            DefaultValue(null),
+        ]
+        public Dictionary<string, dynamic>? PvpRankings { get; set; } = null;
 
         [NotMapped]
         public bool HasChanges { get; set; }
@@ -229,7 +229,7 @@
             SeenType = SeenType.Wild;
         }
 
-        public Pokemon(MapDbContext context, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
+        public Pokemon(NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
         {
             Id = Convert.ToString(nearbyPokemon.EncounterId);
 
@@ -250,8 +250,7 @@
             }
             else
             {
-                // TODO: Get from cache
-                var pokestop = context.Pokestops.FindAsync(nearbyPokemon.FortId).Result;
+                var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(nearbyPokemon.FortId).Result;
                 if (pokestop == null)
                 {
                     Console.WriteLine($"Failed to fetch Pokestop for nearby Pokemon '{Id}' to find location, skipping");
@@ -281,7 +280,7 @@
             IsExpireTimestampVerified = false;
         }
 
-        public Pokemon(MapDbContext context, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
+        public Pokemon(MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
         {
             var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
             Id = encounterId.ToString();
@@ -289,7 +288,7 @@
 
             var spawnpointId = mapPokemon.SpawnpointId;
             // Get Pokestop via spawnpoint id
-            var pokestop = context.Pokestops.FindAsync(spawnpointId).Result;
+            var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(spawnpointId).Result;
             if (pokestop == null)
             {
                 Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{Id}' to find location, skipping");
@@ -489,38 +488,14 @@
             Changed = Updated;
         }
 
-        public async Task UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache, bool updateIv = false)
+        public async Task UpdateAsync(IMemoryCacheHostedService memCache, bool updateIv = false)
         {
             var updateIV = updateIv;
             var setIvForWeather = false;
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
-            Pokemon? oldPokemon = null;
-            try
-            {
-                var cached = memCache.Get<string, Pokemon>(Id);
-                if (cached != null)
-                {
-                    oldPokemon = cached;
-                }
-                else
-                {
-                    oldPokemon = await context.Pokemon.FindAsync(Id); // IsEvent: false
-                    if (oldPokemon != null)
-                    {
-                        memCache.Set(Id, oldPokemon);
-                    }
-                    else
-                    {
-                        memCache.Set(Id, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error Pokemon.UpdateAsync: {ex}");
-            }
+            var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(Id, memCache);
 
             if (IsEvent && AttackIV == null)
             {
@@ -534,7 +509,7 @@
                     }
                     else
                     {
-                        oldPokemonNoEvent = await context.Pokemon.FindAsync(Id); // IsEvent: false
+                        oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(Id); // IsEvent: false
                         if (oldPokemonNoEvent != null)
                         {
                             memCache.Set(Id, oldPokemonNoEvent);
@@ -577,7 +552,7 @@
                     }
                     else
                     {
-                        oldPokemonNoEvent = await context.Pokemon.FindAsync(Id); // IsEvent: false
+                        oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(Id); // IsEvent: false
                         if (oldPokemonNoEvent != null)
                         {
                             memCache.Set(Id, oldPokemonNoEvent);

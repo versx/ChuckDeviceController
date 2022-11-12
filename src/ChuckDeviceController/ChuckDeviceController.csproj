@@ -29,22 +29,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Dapper.StrongName" Version="2.0.123" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.48.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.8" />
-    <PackageReference Include="POGOProtos.Core" Version="2.56.9" />
+    <PackageReference Include="MySql.Data" Version="8.0.31" />
+    <PackageReference Include="POGOProtos.Core" Version="2.57.2.1" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="6.14.4" />
+    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="6.15.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -78,12 +79,8 @@
   </ItemGroup>
 
   <Target Name="SetSourceRevisionId" BeforeTargets="InitializeSourceControlInformation">
-    <Exec
-      Command="git describe --long --always --dirty --exclude=* --abbrev=40"
-      ConsoleToMSBuild="True"
-      IgnoreExitCode="False"
-    >
-      <Output PropertyName="SourceRevisionId" TaskParameter="ConsoleOutput"/>
+    <Exec Command="git describe --long --always --dirty --exclude=* --abbrev=40" ConsoleToMSBuild="True" IgnoreExitCode="False">
+      <Output PropertyName="SourceRevisionId" TaskParameter="ConsoleOutput" />
     </Exec>
   </Target>
 

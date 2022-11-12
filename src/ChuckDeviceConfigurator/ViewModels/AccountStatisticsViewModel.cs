@@ -67,7 +67,7 @@
 
         public AccountWarningsBansViewModel Warnings { get; set; } = new();
 
-        public AccountWarningsBansViewModel Suspended { get; set; } = new();
+        public AccountWarningsBansViewModel Suspensions { get; set; } = new();
 
         public List<AccountLevelStatisticsViewModel> AccountLevelStatistics { get; set; } = new();
     }

@@ -1,9 +1,11 @@
 ﻿namespace PogoEventsPlugin.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
     using Services;
 
+    [Authorize(Roles = PogoEventsPlugin.EventsRole)]
     public class EventController : Controller
     {
         private readonly ILogger<EventController> _logger;

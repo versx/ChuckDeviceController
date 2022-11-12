@@ -35,6 +35,7 @@ using ChuckDeviceController.Plugin.EventBus;
 using ChuckDeviceController.Plugin.EventBus.Observer;
 using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
+using Z.EntityFramework.Plus;
 
 
 // TODO: Modularize everything, add as many services as possible as plugins
@@ -252,6 +253,9 @@ builder.Services.AddScoped<IPublisher, PluginPublisher>();
 // TODO: Do not build service provider from collection manually, leave it up to DI - https://andrewlock.net/access-services-inside-options-and-startup-using-configureoptions/
 var serviceProvider = builder.Services.BuildServiceProvider();
 
+// Seed default user and roles
+await SeedDefaultDataAsync(serviceProvider);
+
 var routeHost = serviceProvider.GetService<IRoutingHost>();
 var jobControllerService = serviceProvider.GetService<IJobControllerService>();
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
@@ -306,9 +310,6 @@ await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, apiK
 #region App Builder
 
 var app = builder.Build();
-
-// Seed default user and roles
-await SeedDefaultDataAsync(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -423,11 +424,6 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
         var loggerFactory = services.GetRequiredService<ILoggerFactory>();
         try
         {
-            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-            var jobController = services.GetRequiredService<IJobControllerService>();
-            var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
-
             // Migrate database to latest migration automatically if enabled
             if (config.GetValue<bool>("AutomaticMigrations"))
             {
@@ -439,6 +435,11 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
             }
 
             // TODO: Add database meta or something to determine if default entities have been seeded
+
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var jobController = services.GetRequiredService<IJobControllerService>();
+            var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
 
             // Start assignment controller service
             assignmentController.Start();
@@ -521,11 +522,21 @@ async Task AddOrUpdatePluginState(IPluginHost pluginHost)
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ControllerDbContext>();
-        var pluginsToUpsert = new List<Plugin>();
 
         // Get cached plugin state from database
         var dbPlugin = await context.Plugins.FindAsync(pluginHost.Plugin.Name);
-        if (dbPlugin != null)
+        if (dbPlugin == null)
+        {
+            // Plugin host is not cached in database. Set current state to plugin
+            // host and add insert into database
+            await context.Plugins.AddAsync(new Plugin
+            {
+                Name = pluginHost.Plugin.Name,
+                State = pluginHost.State,
+            });
+            await context.SaveChangesAsync();
+        }
+        else
         {
             // Plugin host is cached in database, set previous plugin state,
             // otherwise set state from param
@@ -533,33 +544,12 @@ async Task AddOrUpdatePluginState(IPluginHost pluginHost)
             {
                 //e.PluginHost.SetState(dbPlugin.State);
                 dbPlugin.State = pluginHost.State;
-                pluginsToUpsert.Add(dbPlugin);
-            }
-        }
-        else
-        {
-            // Plugin host is not cached in database. Set current state to plugin
-            // host and add insert into database
-            dbPlugin = new Plugin
-            {
-                Name = pluginHost.Plugin.Name,
-                State = pluginHost.State,
-            };
-            pluginsToUpsert.Add(dbPlugin);
-        }
 
-        if (pluginsToUpsert.Any())
-        {
-            // Save/update plugin host state
-            await context.Plugins.BulkUpdateAsync(pluginsToUpsert, options =>
-            {
-                options.AllowDuplicateKeys = false;
-                options.UseTableLock = true;
-                options.OnMergeUpdateInputExpression = p => new
-                {
-                    p.State,
-                };
-            });
+                // Update plugin host state
+                await context.Plugins
+                    .Where(plugin => plugin.Name == dbPlugin.Name)
+                    .UpdateAsync(plugin => dbPlugin);
+            }
         }
     }
 }

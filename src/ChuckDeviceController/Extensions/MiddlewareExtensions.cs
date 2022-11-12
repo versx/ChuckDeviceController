@@ -4,9 +4,16 @@
 
     public static class MiddlewareExtensions
     {
-        public static void UseMadData(this IApplicationBuilder builder, params object?[] args)
+        public static void UseMadDataConverter(this IApplicationBuilder builder, params object?[] args)
         {
-            builder.UseMiddleware<MadDataMiddleware>(args);
+            builder.UseWhen(context =>
+                context.IsRawDataRequest() &&
+                context.IsPostRequest() &&
+                context.IsOriginHeaderSet(),
+                appBuilder =>
+            {
+                appBuilder.UseMiddleware<MadDataMiddleware>(args);
+            });
         }
     }
 }

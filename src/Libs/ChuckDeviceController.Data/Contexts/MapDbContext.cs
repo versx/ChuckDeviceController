@@ -277,6 +277,7 @@
                 entity.HasIndex(p => p.PokemonId);
                 entity.HasIndex(p => p.Level);
                 entity.HasIndex(p => p.ExpireTimestamp);
+                entity.HasIndex(p => p.FirstSeenTimestamp);
                 entity.HasIndex(p => p.CellId);
                 entity.HasIndex(p => p.PokestopId);
                 entity.HasIndex(p => p.SpawnId);

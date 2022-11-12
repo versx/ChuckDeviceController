@@ -4,44 +4,49 @@
 
     public class AsyncQueue<T> : IAsyncQueue<T>
     {
-        private readonly SemaphoreSlim _sem;
+        private readonly SemaphoreSlim _sem = new(1, 1);
         private readonly ConcurrentQueue<T> _queue;
 
         public uint Count => Convert.ToUInt32(_queue?.Count ?? 0);
 
         public AsyncQueue()
         {
-            _sem = new SemaphoreSlim(0);
             _queue = new ConcurrentQueue<T>();
         }
 
-        public void Enqueue(T item)
+        public async Task EnqueueAsync(T item)
         {
+            await _sem.WaitAsync();
             _queue.Enqueue(item);
             _sem.Release();
         }
 
-        public void EnqueueRange(IEnumerable<T> items)
+        public async Task EnqueueRangeAsync(IEnumerable<T> items)
         {
-            var index = 0;
+            await _sem.WaitAsync();
+            //var index = 0;
             foreach (var item in items)
             {
                 _queue.Enqueue(item);
-                index++;
+                //index++;
             }
-            _sem.Release(index);
+            //_sem.Release(index);
+            _sem.Release();
         }
 
-        public async Task<T> DequeueAsync(CancellationToken cancellationToken = default)
+        public async Task<T?> DequeueAsync(CancellationToken cancellationToken = default)
         {
+            await _sem.WaitAsync(cancellationToken);
             for (; ; )
             {
-                await _sem.WaitAsync(cancellationToken);
-
-                if (_queue.TryDequeue(out T? item))
+                if (!_queue.TryDequeue(out T? item))
                 {
-                    return item;
+                    Console.WriteLine($"Failed to dequeue item");
+                    _sem.Release();
+                    continue;
                 }
+                _sem.Release();
+                return item;
             }
         }
 
@@ -62,6 +67,8 @@
                         result.Add(item);
                     }
                 }
+
+                _sem.Release();
                 return result;
             }
         }

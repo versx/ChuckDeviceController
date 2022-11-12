@@ -88,18 +88,18 @@
             @Utils.GetLastUpdatedStatus(Model?.FirstWarningTimestamp ?? 0)
         </dd>
         <dt class="col-sm-4">
-            @Html.DisplayNameFor(model => model.Banned)
+            @Html.DisplayNameFor(model => model.IsBanned)
         </dt>
         <dd class="col-sm-8">
-            @Utils.FormatBoolean(Model?.Banned ?? false)
+            @Utils.FormatBoolean(Model?.IsBanned ?? false)
         </dd>
-        @if (Model?.Warn ?? false)
+        @if (Model?.HasWarn ?? false)
         {
             <dt class="col-sm-4">
-                @Html.DisplayNameFor(model => model.Warn)
+                @Html.DisplayNameFor(model => model.HasWarn)
             </dt>
             <dd class="col-sm-8">
-                @Html.Raw(Utils.FormatBoolean(!(Model?.Warn ?? false), html: true))
+                @Html.Raw(Utils.FormatBoolean(!(Model?.HasWarn ?? false), html: true))
             </dd>
             <dt class="col-sm-4">
                 @Html.DisplayNameFor(model => model.WarnExpireTimestamp)

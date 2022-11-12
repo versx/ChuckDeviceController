@@ -457,10 +457,10 @@
                 switch (dataType)
                 {
                     case "Pokemon":
-                        count = _mapContext.Pokemon.Count(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time);
+                        count = _mapContext.Pokemon.Count(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) >= time);
                         break;
                     case "Incidents":
-                        count = _mapContext.Incidents.Count(incident => Math.Abs((decimal)now - incident.Expiration) > time);
+                        count = _mapContext.Incidents.Count(incident => Math.Abs((decimal)now - incident.Expiration) >= time);
                         break;
                     default:
                         _logger.LogWarning($"Unknown data type provided '{dataType}', unable to truncate.");

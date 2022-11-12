@@ -9,9 +9,9 @@
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Extensions;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
 
@@ -22,6 +22,15 @@
 
         public const ushort DefaultLureTimeS = 1800; // TODO: Make 'DefaultLureTimeS' configurable
         public const string UnknownPokestopName = "Unknown";
+
+        private static readonly List<Item> AvailableLures = new()
+        {
+            Item.TroyDisk,
+            Item.TroyDiskGlacial,
+            Item.TroyDiskMossy,
+            Item.TroyDiskMagnetic,
+            Item.TroyDiskRainy,
+        };
 
         #endregion
 
@@ -189,19 +198,17 @@
             PowerUpEndTimestamp = fortPowerLevel.PowerUpEndTimestamp;
 
             var lastModifiedTimestamp = Convert.ToUInt64(fortData.LastModifiedMs / 1000);
+            LastModifiedTimestamp = lastModifiedTimestamp;
+
             if (fortData.ActiveFortModifier != null)
             {
-                if (fortData.ActiveFortModifier.Contains(Item.TroyDisk) ||
-                    fortData.ActiveFortModifier.Contains(Item.TroyDiskGlacial) ||
-                    fortData.ActiveFortModifier.Contains(Item.TroyDiskMossy) ||
-                    fortData.ActiveFortModifier.Contains(Item.TroyDiskMagnetic) ||
-                    fortData.ActiveFortModifier.Contains(Item.TroyDiskRainy))
+                if (AvailableLures.Any(lure => fortData.ActiveFortModifier.Contains(lure)))
                 {
                     LureExpireTimestamp = lastModifiedTimestamp + DefaultLureTimeS;
                     LureId = Convert.ToUInt16(fortData.ActiveFortModifier[0]);
                 }
             }
-            LastModifiedTimestamp = lastModifiedTimestamp;
+
             if (!string.IsNullOrEmpty(fortData.ImageUrl))
             {
                 Url = fortData.ImageUrl;
@@ -366,6 +373,29 @@
                     case ConditionType.WithRaidElapsedTime:
                         infoData.Add("time", Convert.ToUInt64(conditionData.WithElapsedTime.ElapsedTimeMs / 1000));
                         break;
+                    case ConditionType.WithPokemonLevel:
+                        infoData.Add("must_be_max_level", conditionData.WithPokemonLevel.MaxLevel);
+                        break;
+                    case ConditionType.WithMaxCp:
+                        infoData.Add("with_max_cp", conditionData.WithMaxCp.MaxCp);
+                        break;
+                    case ConditionType.WithGblRank:
+                        infoData.Add("with_league_rank", conditionData.WithGblRank.Rank);
+                        break;
+                    case ConditionType.WithEncounterType:
+                        if (conditionData.WithEncounterType != null)
+                        {
+                            var info = conditionData.WithEncounterType;
+                            infoData.Add("encounter_type", info.EncounterType.Select(type => Convert.ToUInt32(type)));
+                        }
+                        break;
+                    case ConditionType.WithCombatType:
+                        if (conditionData.WithCombatType != null)
+                        {
+                            var info = conditionData.WithCombatType;
+                            infoData.Add("combat_type", info.CombatType.Select(type => Convert.ToUInt32(type)));
+                        }
+                        break;
                     case ConditionType.WithWinGymBattleStatus:
                     case ConditionType.WithSuperEffectiveCharge:
                     case ConditionType.WithUniquePokestop:
@@ -380,15 +410,10 @@
                     case ConditionType.WithUniquePokemon:
                     case ConditionType.WithUniquePokemonTeam:
                     case ConditionType.WithBuddyInterestingPoi:
-                    case ConditionType.WithPokemonLevel:
                     case ConditionType.WithSingleDay:
-                    case ConditionType.WithMaxCp:
                     case ConditionType.WithLuckyPokemon:
                     case ConditionType.WithLegendaryPokemon:
-                    case ConditionType.WithGblRank:
                     case ConditionType.WithCatchesInARow:
-                    case ConditionType.WithEncounterType:
-                    case ConditionType.WithCombatType:
                     case ConditionType.WithGeotargetedPoi:
                     case ConditionType.WithFriendLevel:
                     case ConditionType.WithSticker:
@@ -467,9 +492,11 @@
                         infoData.Add("amount", rewardData.MegaResource.Amount);
                         infoData.Add("pokemon_id", Convert.ToUInt32(rewardData.MegaResource.PokemonId));
                         break;
+                    case RewardType.LevelCap:
+                        infoData.Add("level_cap", rewardData.LevelCap);
+                        break;
                     case RewardType.AvatarClothing:
                     case RewardType.Quest:
-                    case RewardType.LevelCap:
                     case RewardType.Incident:
                     case RewardType.PlayerAttribute:
                     case RewardType.Unset:
@@ -509,35 +536,10 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(MapDbContext context, IMemoryCacheHostedService memCache, bool updateQuest = false)
+        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(IMemoryCacheHostedService memCache, bool updateQuest = false)
         {
             var webhooks = new Dictionary<WebhookType, Pokestop>();
-            Pokestop? oldPokestop = null;
-            try
-            {
-                // Check cache first for pokestop entity
-                var cached = memCache.Get<string, Pokestop>(Id);
-                if (cached != null)
-                {
-                    oldPokestop = cached;
-                }
-                else
-                {
-                    oldPokestop = await context.Pokestops.FindAsync(Id);
-                    if (oldPokestop != null)
-                    {
-                        memCache.Set(Id, oldPokestop);
-                    }
-                    else
-                    {
-                        memCache.Set(Id, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Pokestop: {ex}");
-            }
+            var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(Id, memCache);
 
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
