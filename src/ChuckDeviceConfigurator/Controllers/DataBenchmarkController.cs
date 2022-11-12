@@ -17,6 +17,7 @@
         // GET: DataBenchmarkController
         public async Task<ActionResult> Index()
         {
+            // TODO: Add controller endpoint to config
             var data = await NetUtils.GetAsync("http://localhost:8882/api/Statistics");
             var model = data?.FromJson<ProtoDataStatistics>() ?? new();
             return View(model);
