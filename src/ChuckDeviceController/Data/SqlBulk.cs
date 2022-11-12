@@ -210,7 +210,9 @@
                     var result = string.Format(sqlValues, propValues.ToArray());
                     return result;
                 }));
-                var query = string.Format(sqlQuery, queryValues);
+                var query = string.IsNullOrEmpty(queryValues)
+                    ? sqlQuery
+                    : string.Format(sqlQuery, queryValues);
                 sqlQueries.Add(query);
             }
 
