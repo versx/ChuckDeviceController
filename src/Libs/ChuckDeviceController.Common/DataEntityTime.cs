@@ -1,29 +1,26 @@
 ﻿namespace ChuckDeviceController.Common
 {
     using System.ComponentModel;
+    using System.ComponentModel.DataAnnotations;
     using System.Text.Json.Serialization;
 
     public class DataEntityTime : IComparable<DataEntityTime>
     {
         [JsonPropertyName("id")]
-        public Guid Id { get; }
+        public Guid Id { get; set; }
 
         [JsonPropertyName("count")]
         [DisplayName("Count")]
-        public ulong Count { get; }
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public ulong Count { get; set; }
 
         [JsonPropertyName("time_s")]
         [DisplayName("Time (sec)")]
-        public double TimeS { get; }
-
-        public DataEntityTime()
-        {
-            Id = Guid.NewGuid();
-        }
+        public double TimeS { get; set; }
 
         public DataEntityTime(ulong count, double timeS)
-            : this()
         {
+            Id = Guid.NewGuid();
             Count = count;
             TimeS = timeS;
         }

@@ -7,6 +7,7 @@
     public class ProtoDataStatistics
     {
         private readonly List<DataEntityTime> _entityTimes = new();
+        private readonly object _lock = new();
 
         #region Singleton
 
@@ -14,6 +15,8 @@
         public static ProtoDataStatistics Instance => _instance ??= new();
 
         #endregion
+
+        #region Properties
 
         [JsonPropertyName("total_requests")]
         public ulong TotalRequestsProcessed { get; internal set; }
@@ -38,22 +41,48 @@
         {
             get
             {
-                if (!(Times?.Any() ?? false))
+                lock (_lock)
                 {
-                    return default;
+                    if (!(_entityTimes?.Any() ?? false))
+                    {
+                        return default;
+                    }
+                    var count = _entityTimes.Average(time => (double)time.Count);
+                    var time = Math.Round(_entityTimes.Average(time => (double)time.TimeS), 5);
+                    return new(Convert.ToUInt64(count), time);
                 }
-                var count = _entityTimes.Average(time => (decimal)time.Count);
-                var time = _entityTimes.Average(time => (decimal)time.TimeS);
-                return new(Convert.ToUInt64(count), Convert.ToUInt64(time));
             }
         }
 
+        #endregion
+
+        #region Internal Methods
+
         internal void AddTimeEntry(DataEntityTime entity)
         {
-            if (!_entityTimes.Contains(entity))
+            lock (_lock)
             {
-                _entityTimes.Add(entity);
+                if (!_entityTimes.Contains(entity))
+                {
+                    _entityTimes.Add(entity);
+                }
             }
         }
+
+        internal void Reset()
+        {
+            TotalRequestsProcessed = 0;
+            TotalProtoPayloadsReceived = 0;
+            TotalProtosProcessed = 0;
+            TotalEntitiesProcessed = 0;
+            TotalEntitiesUpserted = 0;
+
+            lock (_lock)
+            {
+                _entityTimes.Clear();
+            }
+        }
+
+        #endregion
     }
 }

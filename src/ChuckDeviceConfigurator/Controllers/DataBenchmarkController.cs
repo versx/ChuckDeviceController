@@ -13,13 +13,22 @@
     [Authorize(Roles = RoleConsts.BenchmarksRole)]
     public class DataBenchmarkController : Controller
     {
+        // TODO: Add controller endpoint to config
+        private const string StatsEndpoint = "http://localhost:8882/api/Statistics";
+
         // GET: DataBenchmarkController
         public async Task<ActionResult> Index()
         {
-            // TODO: Add controller endpoint to config
-            var data = await NetUtils.GetAsync("http://localhost:8882/api/Statistics");
+            var data = await NetUtils.GetAsync(StatsEndpoint);
             var model = data?.FromJson<ProtoDataStatistics>() ?? new();
             return View(model);
+        }
+
+        // GET: DataBenchmarkController/Clear
+        public async Task<ActionResult> Reset()
+        {
+            _ = await NetUtils.GetAsync(StatsEndpoint + "/Reset");
+            return RedirectToAction(nameof(Index));
         }
     }
 
@@ -45,6 +54,6 @@
         public IReadOnlyList<DataEntityTime> Times { get; set; } = Array.Empty<DataEntityTime>();
 
         [JsonPropertyName("avg_benchmark_time")]
-        public DataEntityTime AverageTime { get; set; } = new();
+        public DataEntityTime? AverageTime { get; set; }
     }
 }

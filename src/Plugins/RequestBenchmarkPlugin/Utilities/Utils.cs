@@ -35,7 +35,9 @@
             );
 
             var result = $"{formatted.TrimEnd(' ')}";
-            return result;
+            return string.IsNullOrEmpty(result)
+                ? "0"
+                : result;
         }
     }
 }

@@ -22,5 +22,12 @@
             });
             return await Task.FromResult(json);
         }
+
+        [HttpGet("Reset")]
+        public ActionResult ResetStatistics()
+        {
+            ProtoDataStatistics.Instance.Reset();
+            return Ok();
+        }
     }
 }
