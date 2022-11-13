@@ -60,6 +60,17 @@
             base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            // Ensure all lat/lon properties have a maximum precision of 6 decimal places
+            configurationBuilder
+                .Properties<double>()
+                .HavePrecision(18, 6);
+            configurationBuilder
+                .Properties<double>()
+                .HavePrecision(18, 6);
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseTriggers(triggerOptions =>

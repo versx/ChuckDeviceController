@@ -913,6 +913,8 @@
 
         #endregion
 
+        #region Comparison Methods
+
         public bool Equals(Pokemon? other)
         {
             if (other == null)
@@ -943,6 +945,24 @@
                 Longitude == other.Longitude;
             return result;
         }
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as Pokemon);
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)PokemonId ^
+                (Form ?? -1) ^
+                (Costume ?? -1) ^
+                (Gender ?? -1) ^
+                (AttackIV ?? -1) ^
+                (DefenseIV ?? -1) ^
+                (StaminaIV ?? -1);
+        }
+
+        #endregion
     }
 
     /*
