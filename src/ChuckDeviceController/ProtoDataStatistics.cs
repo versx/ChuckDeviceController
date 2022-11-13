@@ -2,6 +2,8 @@
 {
     using System.Text.Json.Serialization;
 
+    using ChuckDeviceController.Common;
+
     public class ProtoDataStatistics
     {
         private readonly List<DataEntityTime> _entityTimes = new();
@@ -32,10 +34,14 @@
         public IReadOnlyList<DataEntityTime> Times => _entityTimes;
 
         [JsonPropertyName("avg_time")]
-        public DataEntityTime AverageTime
+        public DataEntityTime? AverageTime
         {
             get
             {
+                if (!(Times?.Any() ?? false))
+                {
+                    return default;
+                }
                 var count = _entityTimes.Average(time => (decimal)time.Count);
                 var time = _entityTimes.Average(time => (decimal)time.TimeS);
                 return new(Convert.ToUInt64(count), Convert.ToUInt64(time));
@@ -48,41 +54,6 @@
             {
                 _entityTimes.Add(entity);
             }
-        }
-    }
-
-    public class DataEntityTime : IComparable<DataEntityTime>
-    {
-        [JsonPropertyName("id")]
-        public Guid Id { get; }
-
-        [JsonPropertyName("count")]
-        public ulong Count { get; }
-
-        [JsonPropertyName("time_s")]
-        public double TimeS { get; }
-
-        public DataEntityTime()
-        {
-            Id = Guid.NewGuid();
-        }
-
-        public DataEntityTime(ulong count, double timeS)
-            : this()
-        {
-            Count = count;
-            TimeS = timeS;
-        }
-
-        public int CompareTo(DataEntityTime? other)
-        {
-            if (other == null)
-                return -1;
-
-            if (other.Id != Id)
-                return -1;
-
-            return 0;
         }
     }
 }

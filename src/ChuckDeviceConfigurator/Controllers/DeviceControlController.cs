@@ -6,6 +6,7 @@
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.Tasks;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -46,12 +47,14 @@
 
         #region Routes
 
+#if DEBUG
         [
             Route("/controler"),
             Route("/controller"),
-            HttpGet,
+            HttpGet(),
         ]
         public string GetAsync() => ":)";
+#endif
 
         [
             Route("/controler"),
@@ -118,7 +121,7 @@
 
         private async Task<DeviceResponse> HandleInitializeRequestAsync(string uuid, Device? device = null)
         {
-            var gitsha = GetGitHash();
+            var gitsha = GitHub.GetGitHash(Assembly.GetExecutingAssembly());
             if (device is null)
             {
                 // Register new device
@@ -557,23 +560,6 @@
             var entity = _memCache.Get<TKey, TEntity>(key);
             entity ??= (TEntity?)await context.FindAsync(typeof(TEntity), key);
             return entity;
-        }
-
-        /// <summary>
-        /// Gets the git hash value from the assembly or '--' if it cannot be found.
-        /// </summary>
-        /// <credits>https://stackoverflow.com/a/45248069</credits>
-        private static string GetGitHash(string defaultValue = "--")
-        {
-            // TODO: Move to reusable project lib
-            var assembly = Assembly.GetExecutingAssembly();
-            var attr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-            var split = attr?.InformationalVersion?.Split('+');
-            if (split?.Length == 2)
-            {
-                return split.Last();
-            }
-            return defaultValue;
         }
 
         private async Task UpdateDeviceAsync(Device device, string? username = null)

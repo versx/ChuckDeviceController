@@ -219,7 +219,7 @@
                 //new("API Keys", "ApiKey", displayIndex: 2, icon: "fa-solid fa-fw fa-key"),
                 new("Benchmarks", displayIndex: 2, icon: "fa-solid fa-fw fa-clock", isDropdown: true, dropdownItems: new List<SidebarItem>
                 {
-                    new("Data", "DataBenchmark", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-mobile-alt"),
+                    new("Data", "DataBenchmark", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-database"),
                 }),
                 new("Devices", displayIndex: 2, icon: "fa-solid fa-fw fa-mobile-alt", isDropdown: true, dropdownItems: new List<SidebarItem>
                 {

@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
-    using System.ComponentModel;
     using System.Text.Json.Serialization;
 
     using Microsoft.AspNetCore.Authorization;
@@ -47,30 +46,5 @@
 
         [JsonPropertyName("avg_benchmark_time")]
         public DataEntityTime AverageTime { get; set; } = new();
-    }
-
-    public class DataEntityTime : IComparable<DataEntityTime>
-    {
-        [JsonPropertyName("id")]
-        public Guid Id { get; set; }
-
-        [JsonPropertyName("count")]
-        [DisplayName("Count")]
-        public ulong Count { get; set; }
-
-        [JsonPropertyName("time_s")]
-        [DisplayName("Time (sec)")]
-        public double TimeS { get; set; }
-
-        public int CompareTo(DataEntityTime? other)
-        {
-            if (other == null)
-                return -1;
-
-            if (other.Id != Id)
-                return -1;
-
-            return 0;
-        }
     }
 }

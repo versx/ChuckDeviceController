@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceCommunicator.Services
 {
+    using System.Net;
     using System.Text;
     using System.Timers;
 
@@ -16,7 +17,6 @@
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Net.Utilities;
     using ChuckDeviceController.Protos;
-    using ChuckDeviceController.Common.Data.Contracts;
 
     // TODO: Use SemaphoreSlim 
 
@@ -111,9 +111,7 @@
             _requestTimer = new Timer(RequestWebhookIntervalS * 1000);
             _requestTimer.Elapsed += async (sender, e) => await SendWebhookEndpointsRequestAsync();
 
-            StartAsync().ConfigureAwait(false)
-                        .GetAwaiter()
-                        .GetResult();
+            Task.Run(async () => await StartAsync()).Wait();
         }
 
         #endregion
@@ -751,7 +749,7 @@
             // Send webhook payloads to endpoint
             var (statusCode, result) = await NetUtils.PostAsync(url, json, Options.RequestTimeout);
             // If the request failed, attempt it again in 3 seconds
-            if (statusCode != System.Net.HttpStatusCode.OK)
+            if (statusCode != HttpStatusCode.OK)
             {
                 _logger.LogError($"Webhook endpoint {url} did not return an 'OK' status code, {statusCode} with response: {result}");
 

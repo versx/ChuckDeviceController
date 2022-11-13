@@ -11,8 +11,8 @@
     <a class="btn btn-danger btn-sm" asp-action="Reset">Reset</a>
 </p>
 
-<b>Average Time: </b>@Model.AverageTime.TimeS seconds<br />
-<b>Average Count: </b>@Model.AverageTime.Count.ToString("N0") entities
+<b>Average Time: </b>@(Model.AverageTime?.TimeS ?? 0) seconds<br />
+<b>Average Count: </b>@((Model.AverageTime?.Count ?? 0).ToString("N0")) entities
 
 <table id="table-data-benchmarks" class="table table-striped table-bordered dt-responsive nowrap">
     <thead class="table-dark">
