@@ -17,7 +17,7 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
 
-    // TODO: Use select for Event Group
+    // TODO: Use select element for Event Group
 
     [Authorize(Roles = RoleConsts.InstancesRole)]
     public class InstanceController : Controller
@@ -114,7 +114,12 @@
                 Data = PopulateViewModelFromInstanceData(),
             };
 
+            var accountGroups = _context.Accounts
+                .Select(x => x.GroupName)
+                .Distinct()
+                .ToList();
             var geofences = _context.Geofences.ToList();
+            ViewBag.AccountGroups = accountGroups;
             ViewBag.CustomInstanceTypes = _jobControllerService.CustomInstanceTypes;
             ViewBag.Devices = _context.Devices.ToList();
             ViewBag.Geofences = geofences;
@@ -196,7 +201,12 @@
                 AssignedDevices = assignedDevices,
             };
 
+            var accountGroups = _context.Accounts
+                .Select(x => x.GroupName)
+                .Distinct()
+                .ToList();
             var geofences = _context.Geofences.ToList();
+            ViewBag.AccountGroups = accountGroups;
             ViewBag.CustomInstanceTypes = _jobControllerService.CustomInstanceTypes;
             ViewBag.Devices = _context.Devices.ToList();
             ViewBag.Geofences = geofences;

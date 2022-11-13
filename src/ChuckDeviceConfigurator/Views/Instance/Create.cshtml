@@ -163,7 +163,9 @@
                 <span asp-validation-for="Data.StartingCoordinate" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
-                <input asp-for="Data.AccountGroup" class="form-control" maxlength="50" placeholder="Instance account group name">
+                <select asp-for="Data.AccountGroup" class="form-control" asp-items="@(new SelectList(ViewBag.AccountGroups))" placeholder="Available account group name">
+                    <option value="" disabled selected>Please select one</option>
+                </select>
                 <label asp-for="Data.AccountGroup"></label>
                 <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
             </div>
