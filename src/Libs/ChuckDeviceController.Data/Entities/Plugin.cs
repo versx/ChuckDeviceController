@@ -13,13 +13,10 @@
             Key,
             DatabaseGenerated(DatabaseGeneratedOption.None),
         ]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         [Column("state")]
         public PluginState State { get; set; }
-
-        // TODO: RequestedPermissions
-        // TODO: AllowedPermissions
 
         #region Helper Methods
 

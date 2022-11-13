@@ -9,7 +9,6 @@
         [HttpGet]
         public async Task<ActionResult> Get()
         {
-            // TODO: Add entity time stats
             var json = new JsonResult(new
             {
                 total_requests = ProtoDataStatistics.Instance.TotalRequestsProcessed,

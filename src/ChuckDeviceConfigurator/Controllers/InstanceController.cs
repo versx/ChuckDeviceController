@@ -47,8 +47,9 @@
 
             foreach (var instance in instances)
             {
-                var devicesAssigned = devices.Where(device => device.InstanceName == instance.Name)
-                                             .ToList();
+                var devicesAssigned = devices
+                    .Where(device => device.InstanceName == instance.Name)
+                    .ToList();
                 var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
                 var devicesOffline = devicesAssigned.Count - devicesOnline;
                 instance.DeviceCount = $"{devicesOnline}/{devicesAssigned.Count}|{devicesOffline}";
@@ -186,9 +187,10 @@
                 return View();
             }
 
-            var assignedDevices = _context.Devices.Where(device => device.InstanceName == instance.Name)
-                                                  .Select(device => device.Uuid)
-                                                  .ToList();
+            var assignedDevices = _context.Devices
+                .Where(device => device.InstanceName == instance.Name)
+                .Select(device => device.Uuid)
+                .ToList();
 
             var model = new ManageInstanceViewModel
             {
@@ -286,8 +288,9 @@
             instance.Status = await _jobControllerService.GetStatusAsync(instance);
 
             // Get devices assigned to instance
-            var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
-                                                  .ToList();
+            var devicesAssigned = _context.Devices
+                .Where(device => device.InstanceName == instance.Name)
+                .ToList();
             var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
             var devicesOffline = devicesAssigned.Count - devicesOnline;
             var status = await _jobControllerService.GetStatusAsync(instance);

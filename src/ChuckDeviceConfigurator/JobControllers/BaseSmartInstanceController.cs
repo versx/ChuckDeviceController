@@ -249,8 +249,6 @@
                     return null;
                 }
 
-                // TODO: This looks like some wizardry which could possibly be optimized,
-                // and potentially calculated better. :thinking:
                 var dist = 10 * distanceToNextDevice * numLiveDevices + 5;
                 if (dist < 10 * Coordinates.Count)
                 {

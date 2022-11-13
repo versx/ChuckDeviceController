@@ -25,11 +25,8 @@
 
         private static readonly ILogger<EntityRepository> _logger =
             new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Debug)));
-        //private static readonly SemaphoreSlim _sem = new(3, 3);
         private static readonly SemaphoreSlim _sem = new(1);
-        //private static readonly SemaphoreSlim _entitySem = new(1, 3);
         private static readonly SemaphoreSlim _entitySem = new(1);
-        //private static readonly SemaphoreSlim _sem = new(1, 1);
         private static readonly IEnumerable<ConnectionState> _invalidConnectionStates = new[]
         {
             ConnectionState.Broken,
@@ -232,7 +229,7 @@
 
             // TODO: _connection
             using var connection = new MySqlConnection(ConnectionString);
-            await connection.OpenAsync();
+            await connection.OpenAsync(stoppingToken);
             using var trans = await connection.BeginTransactionAsync(stoppingToken);
             try
             {

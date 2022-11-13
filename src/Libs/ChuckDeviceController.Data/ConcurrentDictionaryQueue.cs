@@ -14,7 +14,6 @@
 
             var results = new List<KeyValuePair<TKey, TEntity>>(this)
             {
-                // TODO: Review set capacity
                 Capacity = int.MaxValue / 4,
             };
             Clear();

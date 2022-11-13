@@ -136,7 +136,6 @@
                     return;
                 }
 
-                // TODO: Filter data entities here and push to separate methods
                 //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
                 ProtoDataStatistics.Instance.TotalEntitiesProcessed += (uint)workItems.Sum(x => x.Data?.Count ?? 0);
 
@@ -596,7 +595,7 @@
                     var data = (MapPokemonProto)map.data;
                     var username = map.username;
                     var isEvent = map.isEvent;
-                    var pokemon = new Pokemon(data, cellId, username, isEvent); // TODO: Get entity from cache
+                    var pokemon = new Pokemon(data, cellId, username, isEvent);
                     await pokemon.UpdateAsync(_memCache, updateIv: false);
 
                     // Check if we have a pending disk encounter cache

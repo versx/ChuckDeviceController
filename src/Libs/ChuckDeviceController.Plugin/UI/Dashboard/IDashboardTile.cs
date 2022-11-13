@@ -1,7 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugin
 {
     /// <summary>
-    /// 
+    /// Dashboard tile interface contract.
     /// </summary>
     public interface IDashboardTile
     {

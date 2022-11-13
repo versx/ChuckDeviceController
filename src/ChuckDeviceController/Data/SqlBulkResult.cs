@@ -8,7 +8,7 @@
 
         public int RowsAffected { get; }
 
-        public int ExpectedCount { get; } // TODO: Remove?
+        public int ExpectedCount { get; }
 
         public SqlBulkResult(bool success, int batchCount, int rowsAffected, int expectedCount)
         {
