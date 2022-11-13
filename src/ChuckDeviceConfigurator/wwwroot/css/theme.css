@@ -20,6 +20,8 @@
 .theme-dark textarea,
 .theme-dark textarea:focus,
 .theme-dark textarea:read-only,
+/* Table row group header */
+.theme-dark .dtrg-group.dtrg-level-0 th,
 /*.theme-dark .card-header,*/
 .theme-dark .card-body,
 .theme-dark .card-footer,
@@ -57,4 +59,11 @@
 
 .modal-backdrop {
     z-index: -1;
+}
+
+/* Table row group header */
+.theme-dark .dtrg-group.dtrg-level-0 th {
+    background-color: rgb(64, 64, 64);
+    color: white;
+    text-align: center;
 }

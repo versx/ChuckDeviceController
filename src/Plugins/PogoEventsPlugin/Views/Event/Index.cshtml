@@ -16,7 +16,7 @@
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-globe"></i></h3>
                             <h4 class="list-group-item-heading">Active Events</h4>
-                            <p class="list-group-item-text">@Model?.Count(evt => evt.IsActive).ToString("N0")</p>
+                            <p class="list-group-item-text fw-bold">@Model?.Count(evt => evt.IsActive).ToString("N0")</p>
                         </div>
                     </div>
                 </div>
@@ -25,7 +25,7 @@
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-clock"></i></h3>
                             <h4 class="list-group-item-heading">Upcoming Events</h4>
-                            <p class="list-group-item-text">@Model?.Count(evt => !evt.IsActive).ToString("N0")</p>
+                            <p class="list-group-item-text fw-bold">@Model?.Count(evt => !evt.IsActive).ToString("N0")</p>
                         </div>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model ?? new())
         {
             <tr>
                 <th scope="row">
@@ -110,6 +110,13 @@
                 colReorder: {
                     enable: true,
                     fixedColumnsLeft: 1,
+                },
+                rowGroup: {
+                    dataSrc: function (row) {
+                        return row[4].includes('Yes')
+                            ? 'Active Events'
+                            : 'Upcoming Events';
+                    }
                 },
                 fixedHeader: {
                     header: true,
