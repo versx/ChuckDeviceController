@@ -5,72 +5,104 @@
     public class AsyncQueue<T> : IAsyncQueue<T>
     {
         private readonly SemaphoreSlim _sem = new(1, 1);
-        private readonly ConcurrentQueue<T> _queue;
+        private readonly BlockingCollection<T> _queue;
 
         public uint Count => Convert.ToUInt32(_queue?.Count ?? 0);
 
         public AsyncQueue()
         {
-            _queue = new ConcurrentQueue<T>();
+            _queue = new BlockingCollection<T>();
         }
 
-        public async Task EnqueueAsync(T item)
+        public async Task EnqueueAsync(T item, CancellationToken stoppingToken = default)
         {
-            await _sem.WaitAsync();
-            _queue.Enqueue(item);
+            await _sem.WaitAsync(stoppingToken);
+            if (!_queue.TryAdd(item))
+            {
+                Console.WriteLine($"Failed to enqueue item: {item}");
+            }
             _sem.Release();
+
+            await Task.CompletedTask;
         }
 
-        public async Task EnqueueRangeAsync(IEnumerable<T> items)
+        public async Task EnqueueRangeAsync(IEnumerable<T> items, CancellationToken stoppingToken = default)
         {
-            await _sem.WaitAsync();
-            //var index = 0;
+            await _sem.WaitAsync(stoppingToken);
+
             foreach (var item in items)
             {
-                _queue.Enqueue(item);
-                //index++;
+                if (!_queue.TryAdd(item))
+                {
+                    Console.WriteLine($"Failed to enqueue item: {item}");
+                }
             }
-            //_sem.Release(index);
             _sem.Release();
+
+            await Task.CompletedTask;
         }
 
-        public async Task<T?> DequeueAsync(CancellationToken cancellationToken = default)
+        public async Task<T?> DequeueAsync(CancellationToken stoppingToken = default)
         {
-            await _sem.WaitAsync(cancellationToken);
-            for (; ; )
+            await _sem.WaitAsync(stoppingToken);
+            if (!_queue.TryTake(out T? item))
             {
-                if (!_queue.TryDequeue(out T? item))
+                Console.WriteLine($"Failed to dequeue item: {item}");
+            }
+            _sem.Release();
+            return item;
+        }
+
+        public async Task<IEnumerable<T>> DequeueBulkAsync(uint maxBatchSize, CancellationToken stoppingToken = default)
+        {
+            if (!_queue.Any())
+            {
+                return null;
+            }
+
+            await _sem.WaitAsync(stoppingToken);
+
+            var result = new List<T>();
+            for (var i = 0; i < maxBatchSize; i++)
+            {
+                if (!_queue.Any())
+                    break;
+
+                if (!_queue.TryTake(out T? item))
                 {
-                    Console.WriteLine($"Failed to dequeue item");
-                    _sem.Release();
+                    Console.WriteLine($"Failed to dequeue item: {item}");
                     continue;
                 }
-                _sem.Release();
-                return item;
+
+                result.Add(item);
             }
-        }
 
-        public async Task<IEnumerable<T>> DequeueBulkAsync(uint maxBatchSize, CancellationToken cancellationToken = default)
-        {
-            for (; ; )
-            {
-                await _sem.WaitAsync(cancellationToken);
+            _sem.Release();
+            return result;
 
-                var result = new List<T>();
-                for (var i = 0; i < maxBatchSize; i++)
-                {
-                    if (_queue.IsEmpty)
-                        break;
+            //for (; ; )
+            //{
+            //    await _sem.WaitAsync(stoppingToken);
 
-                    if (_queue.TryDequeue(out T? item))
-                    {
-                        result.Add(item);
-                    }
-                }
+            //    if (_queue.IsEmpty)
+            //    {
+            //        _sem.Release();
+            //        return null;
+            //    }
 
-                _sem.Release();
-                return result;
-            }
+            //    var result = new List<T>();
+            //    T? item;
+            //    for (var i = 0; i < maxBatchSize; i++)
+            //    {
+            //        if (_queue.TryDequeue(out item))
+            //        {
+            //            result.Add(item);
+            //        }
+            //    }
+
+            //    _sem.Release();
+            //    return result;
+            //}
         }
     }
 }

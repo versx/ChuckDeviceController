@@ -5,14 +5,14 @@
         uint Count { get; }
 
 
-        Task EnqueueAsync(T item);
+        Task EnqueueAsync(T item, CancellationToken stoppingToken = default);
 
-        Task EnqueueRangeAsync(IEnumerable<T> items);
+        Task EnqueueRangeAsync(IEnumerable<T> items, CancellationToken stoppingToken = default);
 
-        Task<T?> DequeueAsync(CancellationToken cancellationToken);
+        Task<T?> DequeueAsync(CancellationToken stoppingToken = default);
 
         Task<IEnumerable<T>> DequeueBulkAsync(
             uint maxBatchSize,
-            CancellationToken cancellationToken = default);
+            CancellationToken stoppingToken = default);
     }
 }
