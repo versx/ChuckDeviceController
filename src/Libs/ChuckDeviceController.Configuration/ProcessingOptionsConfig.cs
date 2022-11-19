@@ -43,6 +43,26 @@
         public ProcessingQueueConfig Queue { get; set; } = new();
 
         public ushort IntervalS { get; set; } = 5;
+
+        public bool ProcessPlayerData { get; set; } = false;
+
+        public bool ProcessCells { get; set; } = true;
+
+        public bool ProcessWeather { get; set; } = true;
+
+        public bool ProcessForts { get; set; } = false;
+
+        public bool ProcessFortDetails { get; set; } = true;
+
+        public bool ProcessGymInfo { get; set; } = true;
+
+        public bool ProcessPokemon { get; set; } = true;
+
+        public bool ProcessQuests { get; set; } = true;
+
+        public bool ProcessEncounters { get; set; } = false;
+
+        public bool ProcessDiskEncounters { get; set; } = true;
     }
 
     public class DataConsumerOptionsConfig : DataLogLevelOptionsConfig

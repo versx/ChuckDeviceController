@@ -80,9 +80,9 @@
                 var (channel, invoker) = CreateClient(_options.Configurator);
                 using (channel)
                 {
-                    // Create new gRPC client for gRPC channel for address
-                    //var client = new Leveling.LevelingClient(channel);
-                    var client = new Leveling.LevelingClient(invoker);
+                   // Create new gRPC client for gRPC channel for address
+                   //var client = new Leveling.LevelingClient(channel);
+                   var client = new Leveling.LevelingClient(invoker);
 
                     // Create gRPC payload request
                     var request = new TrainerInfoRequest
@@ -92,15 +92,8 @@
 
                     // Handle the response of the request
                     // TODO: Fix issue with GetTrainerLevelingStatusAsync
-                    //var response = await client.ReceivedTrainerInfoAsync(request);
-                    //return response;
-                    return new TrainerInfoResponse
-                    {
-                        IsLeveling = false,
-                        Status = TrainerInfoStatus.Ok,
-                        StoreLevelingData = false,
-                        Username = username,
-                    };
+                    var response = await client.ReceivedTrainerInfoAsync(request);
+                    return response;
                 }
             }
             catch (Exception ex)
