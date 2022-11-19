@@ -47,7 +47,7 @@
             {
                 try
                 {
-                    rowsAffected += await connection.ExecuteAsync(sql, args, transaction: trans, commandTimeout: MaxCommandTimeoutS);
+                    rowsAffected += await connection.ExecuteAsync(sql, args, transaction: trans, commandTimeout: MaxCommandTimeoutS, commandType: CommandType.Text);
                 }
                 catch (Exception ex)
                 {

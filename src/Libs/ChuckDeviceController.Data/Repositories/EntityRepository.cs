@@ -1,7 +1,7 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
-    using System.ComponentModel.DataAnnotations.Schema;
     using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
     using System.Data;
     using System.Reflection;
 
@@ -9,15 +9,17 @@
     using Microsoft.Extensions.Logging;
     using MySqlConnector;
 
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
+    using ChuckDeviceController.Extensions.Json;
 
     // TODO: Create new MySQL connection instance for each method
 
     public class EntityRepository
     {
-        private const uint DefaultConnectionWaitTimeS = 3;
+        private const uint DefaultConnectionWaitTimeS = 5;
         private const int DefaultCommandTimeoutS = 30;
         private const double DefaultExpiryLimitM = 15;
 
@@ -26,7 +28,8 @@
         private static readonly ILogger<EntityRepository> _logger =
             new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Debug)));
         private static readonly SemaphoreSlim _sem = new(1);
-        private static readonly SemaphoreSlim _entitySem = new(1);
+        private static readonly SemaphoreSlim _entitySem = new(5);
+        private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(15);
         private static readonly IEnumerable<ConnectionState> _invalidConnectionStates = new[]
         {
             ConnectionState.Broken,
@@ -69,6 +72,8 @@
             _connectionString = connectionString;
             _openConnection = openConnection;
 
+            AddTypeMappers();
+
             Task.Run(async () => _connection = await CreateConnectionAsync()).ConfigureAwait(false);
         }
 
@@ -77,101 +82,71 @@
         #region GetEntity Methods
 
         public static async Task<TEntity?> GetEntityAsync<TKey, TEntity>(
+            MySqlConnection connection2,
             TKey key,
             IMemoryCacheHostedService memCache,
+            bool skipCache = false,
             bool setCache = true,
             double expiryLimitM = DefaultExpiryLimitM)
             where TKey : notnull //class
             where TEntity : BaseEntity
         {
-            await _entitySem.WaitAsync();
-
-            var defaultExpiry = TimeSpan.FromMinutes(expiryLimitM);
-            TEntity? GetFromCache(TKey key)
-            {
-                TEntity? entity = default;
-                try
-                {
-                    entity = memCache.Get<TKey, TEntity>(key);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"[GetEntityAsync] GetFromCache: {ex.InnerException?.Message ?? ex.Message}");
-                }
-                return entity;
-            }
-
-            //async Task<TEntity?> GetFromDatabase(TKey key)
-            //{
-            //    TEntity? entity = default;
-            //    try
-            //    {
-            //        entity = await GetEntityAsync<TKey, TEntity>(key);
-            //        if (setCache)
-            //        {
-            //            memCache.Set(key, entity, defaultExpiry);
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _logger.LogError($"[GetEntityAsync] GetFromDatabase: {ex.InnerException?.Message ?? ex.Message}");
-            //    }
-            //    return entity;
-            //}
-
-            //var entity = GetFromCache(key) ?? await GetFromDatabase(key);
-            var entity = GetFromCache(key);
-            if (entity == null)
-            {
-                entity = await GetEntityAsync<TKey, TEntity>(key);
-                if (setCache)
-                {
-                    memCache.Set(key, entity, defaultExpiry);
-                }
-            }
-            _entitySem.Release();
-
-            return entity;
-        }
-
-        public static async Task<TEntity?> GetEntityAsync<TKey, TEntity>(TKey key, IEnumerable<string>? includeColumns = null)
-            where TKey : notnull //class
-            where TEntity : BaseEntity
-        {
-            string sql;
-            TEntity? entity = default;
             try
             {
+                await _entitySem.WaitAsync(_semWaitTime);
+                //var entity = GetFromCache(key) ?? await GetFromDatabase(key);
+
+                TEntity? entity = null;
+                if (!skipCache)
+                {
+                    entity = memCache.Get<TKey, TEntity>(key);
+                    if (entity != null)
+                    {
+                        _entitySem.Release();
+                        return entity;
+                    }
+                }
+
+                //entity ??= await GetEntityAsync<TKey, TEntity>(key);
                 var tableName = GetTableAttribute<TEntity>();
                 if (string.IsNullOrEmpty(tableName))
                 {
-                    // TODO: Fallback to name of entity?
+                    _entitySem.Release();
                     return null;
                 }
                 var keyName = GetKeyAttribute<TEntity>();
                 if (string.IsNullOrEmpty(keyName))
                 {
-                    // TODO: Fallback to `id`?
+                    _entitySem.Release();
                     return null;
                 }
 
-                var columns = (includeColumns?.Any() ?? false)
-                    ? string.Join(", ", includeColumns)
-                    : "*";
-                sql = $"SELECT {columns} FROM {tableName} WHERE {keyName} = '{key}'";
-
-                // TODO: await _sem.WaitAsync();
                 using var connection = new MySqlConnection(ConnectionString);
-                await connection.OpenAsync();
-                entity = await connection.QueryFirstOrDefaultAsync<TEntity>(sql);
+                if (connection.State != ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                    await WaitForConnectionAsync(connection);
+                }
+
+                var sql = $"SELECT * FROM {tableName} WHERE {keyName} = '{key}'";
+                //entity = await _connection.QueryFirstOrDefaultAsync<TEntity>(sql, commandTimeout: DefaultCommandTimeoutS, commandType: CommandType.Text);
+                entity = await connection.QueryFirstOrDefaultAsync<TEntity>(sql, commandTimeout: DefaultCommandTimeoutS, commandType: CommandType.Text);
+                if (setCache && entity != null)
+                {
+                    var defaultExpiry = TimeSpan.FromMinutes(expiryLimitM);
+                    memCache.Set(key, entity, defaultExpiry);
+                }
+
+                _entitySem.Release();
+                return entity;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[GetEntityAsync]: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"Error: {ex}");
+                _entitySem.Release();
             }
-            // TODO: _sem.Release();
 
-            return entity;
+            return null;
         }
 
         #endregion
@@ -198,7 +173,7 @@
 
             try
             {
-                rowsAffected = await _connection.ExecuteAsync(sql, param, commandTimeout: commandTimeoutS);
+                rowsAffected = await _connection.ExecuteAsync(sql, param, commandTimeout: commandTimeoutS, commandType: CommandType.Text);
             }
             catch (Exception ex)
             {
@@ -235,7 +210,8 @@
             {
                 foreach (var sql in sqls)
                 {
-                    rowsAffected += await connection.ExecuteAsync(sql, transaction: trans, commandTimeout: commandTimeoutS);
+                    rowsAffected += await connection.ExecuteAsync(sql, transaction: trans, commandTimeout: commandTimeoutS, commandType: CommandType.Text);
+                    //rowsAffected += await connection.ExecuteAsync(sql, commandTimeout: commandTimeoutS, commandType: CommandType.Text);
                 }
                 await trans.CommitAsync(stoppingToken);
             }
@@ -269,16 +245,16 @@
             var rowsAffected = 0;
             await _sem.WaitAsync(stoppingToken);
 
-            using var trans = await _connection.BeginTransactionAsync();
+            using var trans = await _connection.BeginTransactionAsync(stoppingToken);
             try
             {
                 rowsAffected += await _connection.BulkInsertAsync(tableName, entities, dataFunc, trans, includeOnDuplicateQuery: true);
-                await trans.CommitAsync();
+                await trans.CommitAsync(stoppingToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error: {ex}");
-                await trans.RollbackAsync();   
+                await trans.RollbackAsync(stoppingToken);   
             }
 
             _sem.Release();
@@ -289,30 +265,23 @@
 
         #region Private Methods
 
-        private async Task<MySqlConnection?> CreateConnectionAsync(CancellationToken stoppingToken = default)
+        public static async Task<MySqlConnection?> CreateConnectionAsync(bool openConnection = true, CancellationToken stoppingToken = default)
         {
-            //using var connection = new MySqlConnection(connectionString);
-            if (_connection == null ||
-                _invalidConnectionStates.Contains(_connection?.State ?? ConnectionState.Closed))
+            var connection = new MySqlConnection(ConnectionString);
+            if (openConnection)
             {
-                if (_connection != null)
+                await connection.OpenAsync(stoppingToken);
+                while ((connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
                 {
-                    await _connection.DisposeAsync().ConfigureAwait(false);
-                }
-
-                _connection ??= new MySqlConnection(_connectionString);
-                if (_openConnection)
-                {
-                    await _connection.OpenAsync(stoppingToken);
-                    await WaitForConnectionAsync();
+                    await Task.Delay(TimeSpan.FromSeconds(DefaultConnectionWaitTimeS), stoppingToken);
                 }
             }
-            return _connection;
+            return connection;
         }
 
-        private static async Task WaitForConnectionAsync(uint waitTimeS = DefaultConnectionWaitTimeS)
+        private static async Task WaitForConnectionAsync(MySqlConnection connection, uint waitTimeS = DefaultConnectionWaitTimeS)
         {
-            while ((_connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
+            while ((connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
             {
                 await Task.Delay(TimeSpan.FromSeconds(waitTimeS));
             }
@@ -339,5 +308,74 @@
         }
 
         #endregion
+
+        private static void AddTypeMappers()
+        {
+            SetTypeMap<Account>();
+            SetTypeMap<Device>();
+            SetTypeMap<Pokestop>();
+            SetTypeMap<Pokemon>();
+            SetTypeMap<Gym>();
+            SetTypeMap<GymDefender>();
+            SetTypeMap<GymTrainer>();
+            SetTypeMap<Incident>();
+            SetTypeMap<Cell>();
+            SetTypeMap<Weather>();
+            SetTypeMap<Spawnpoint>();
+
+            SqlMapper.AddTypeHandler(new JsonTypeHandler<List<Dictionary<string, dynamic>>>());
+            SqlMapper.AddTypeHandler(new JsonTypeHandler<Dictionary<string, dynamic>>());
+            SqlMapper.AddTypeHandler(new SeenTypeTypeHandler());
+            //GymDefender.Gender
+            //GymTrainer.Team
+            //Weather.WeatherCondition
+        }
+
+        private static void SetTypeMap<TEntity>()
+        {
+            SqlMapper.SetTypeMap(
+                typeof(TEntity),
+                new CustomPropertyTypeMap(
+                    typeof(TEntity),
+                    (type, columnName) =>
+                        type.GetProperties().FirstOrDefault(prop =>
+                            prop.GetCustomAttributes(false)
+                                .OfType<ColumnAttribute>()
+                                .Any(attr => attr.Name == columnName))));
+        }
+    }
+
+    public class JsonTypeHandler<T> : SqlMapper.TypeHandler<T>
+    {
+        public override T Parse(object value)
+        {
+            var json = value.ToString();
+            if (string.IsNullOrEmpty(json))
+            {
+                return default;
+            }
+            var obj = json.FromJson<T>();
+            return obj ?? default;
+        }
+
+        public override void SetValue(IDbDataParameter parameter, T value)
+        {
+            var json = value?.ToJson();
+            parameter.Value = json ?? null;
+        }
+    }
+
+    public class SeenTypeTypeHandler : SqlMapper.TypeHandler<SeenType>
+    {
+        public override SeenType Parse(object value)
+        {
+            return Pokemon.StringToSeenType(value?.ToString() ?? string.Empty);
+        }
+
+        public override void SetValue(IDbDataParameter parameter, SeenType value)
+        {
+            var val = "'" + Pokemon.SeenTypeToString(value) + "'";
+            parameter.Value = val;
+        }
     }
 }
