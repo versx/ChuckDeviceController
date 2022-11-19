@@ -1,15 +1,13 @@
 ﻿namespace ChuckDeviceController.Controllers
 {
     using System.Collections.Concurrent;
-    using System.Timers;
 
     using Microsoft.AspNetCore.Mvc;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Collections.Queues;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Net.Models.Responses;
@@ -23,7 +21,7 @@
 
         #region Variables
 
-        private static readonly ConcurrentBag<Device> _devicesToUpdate = new();
+        private readonly ConcurrentBag<Device> _devicesToUpdate = new();
         private static readonly object _devicesLock = new();
 
         private static readonly Dictionary<string, ushort> _levelCache = new();
@@ -32,8 +30,7 @@
         private readonly ILogger<ProtoController> _logger;
         private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
         private readonly IMemoryCacheHostedService _memCache;
-        private readonly Timer _timer;
-        private readonly SqlBulk _bulk;
+        private readonly ControllerDbContext _context;
 
         #endregion
 
@@ -42,19 +39,13 @@
         public ProtoController(
             ILogger<ProtoController> logger,
             IAsyncQueue<ProtoPayloadQueueItem> taskQueue,
-            IMemoryCacheHostedService memCache)
+            IMemoryCacheHostedService memCache,
+            ControllerDbContext context)
         {
             _logger = logger;
             _taskQueue = taskQueue;
             _memCache = memCache;
-            _bulk = new SqlBulk();
-
-            _timer = new()
-            {
-                Interval = DevicesUpdateIntervalS * 1000,
-            };
-            _timer.Elapsed += async (sender, e) => await UpdateDevicesAsync();
-            _timer.Start();
+            _context = context;
         }
 
         #endregion
@@ -126,7 +117,8 @@
 
         private async Task<Device> SetLastDeviceLocationAsync(ProtoPayload payload)
         {
-            var device = await EntityRepository.GetEntityAsync<string, Device>(payload.Uuid, _memCache);
+            var isNew = false;
+            var device = await _context.Devices.FindAsync(payload.Uuid);
             if (device == null)
             {
                 device = new Device
@@ -134,6 +126,7 @@
                     Uuid = payload.Uuid,
                     AccountUsername = payload.Username,
                 };
+                isNew = true;
             }
             else
             {
@@ -155,43 +148,17 @@
             device.LastLongitude = payload.LongitudeTarget;
             device.LastSeen = now;
 
-            lock (_devicesLock)
+            if (isNew)
             {
-                _devicesToUpdate.Add(device);
+                await _context.Devices.AddAsync(device);
             }
+            else
+            {
+                _context.Devices.Update(device);
+            }
+            await _context.SaveChangesAsync();
 
             return device;
-        }
-
-        private async Task UpdateDevicesAsync()
-        {
-            List<Device> devices;
-            lock (_devicesLock)
-            {
-                if (_devicesToUpdate.Any())
-                    return;
-
-                devices = new List<Device>(_devicesToUpdate);
-                _devicesToUpdate.Clear();
-            }
-
-            if (!(devices?.Any() ?? false))
-            {
-                return;
-            }
-
-            try
-            {
-                await _bulk.InsertBulkAsync(
-                    SqlQueries.DeviceOnMergeUpdate,
-                    SqlQueries.DeviceValues,
-                    devices
-                );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error: {ex}");
-            }
         }
 
         private async Task SetAccountLevelAsync(string uuid, string? username, ushort level, ulong trainerXp = 0)
@@ -221,11 +188,12 @@
                 }
 
                 // Update account level if account exists
-                var account = await EntityRepository.GetEntityAsync<string, Account>(username);
+                var account = await _context.Accounts.FindAsync(username);
                 if (account != null)
                 {
                     account.Level = level;
-                    await _bulk.UpdateAsync(SqlQueries.AccountLevelUpdate, account);
+                    _context.Accounts.Update(account);
+                    await _context.SaveChangesAsync();
                     _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' went from level {oldLevel} to {level} with {trainerXp:N0} XP");
                 }
             }
