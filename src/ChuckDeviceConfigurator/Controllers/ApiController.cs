@@ -89,18 +89,5 @@
             };
             return new JsonResult(obj);
         }
-
-        [HttpPost("api/devices")]
-        [Produces(MediaTypeNames.Application.Json)]
-        public async Task<JsonResult> GetDevicesAsync()
-        {
-            var devices = await _controllerContext.Devices.ToListAsync();
-            var obj = new
-            {
-                devices,
-            };
-            var json = new JsonResult(obj);
-            return json;
-        }
     }
 }

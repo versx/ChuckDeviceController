@@ -56,7 +56,17 @@
 
         public bool ProcessGymInfo { get; set; } = true;
 
+        // TODO: ProcessGymDefenders
+
+        // TODO: ProcessGymTrainers
+
         public bool ProcessPokemon { get; set; } = true;
+
+        // TODO: ProcessWildPokemon
+
+        // TODO: ProcessNearbyPokemon
+
+        // TODO: ProcessMapPokemon
 
         public bool ProcessQuests { get; set; } = true;
 

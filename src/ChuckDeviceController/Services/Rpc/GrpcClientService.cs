@@ -66,7 +66,7 @@
                     //Console.WriteLine($"Response: {reply?.Status}");
                 }
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 //_logger.LogWarning($"Unable to send proto payload to '{_options.Configurator}: {ex.Message}'");
                 //_logger.LogWarning($"Unable to send proto payload to '{_options.Configurator}'");
@@ -96,7 +96,7 @@
                     return response;
                 }
             }
-            catch (Exception ex)
+            catch //(Exception ex)
             {
                 //_logger.LogWarning($"Unable to get trainer leveling status from '{_options.Configurator}': {ex.Message}");
                 //_logger.LogWarning($"Unable to get trainer leveling status from '{_options.Configurator}'");
