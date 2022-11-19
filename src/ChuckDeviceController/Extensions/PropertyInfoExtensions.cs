@@ -36,6 +36,39 @@
 
         #endregion
 
+        public static IEnumerable<string> GetPropertyNames<TEntity>(
+            this TEntity entity,
+            IEnumerable<string>? includedProperties = null,
+            IEnumerable<string>? ignoredProperties = null)
+        {
+            // Include only public instance properties as well as base inherited properties
+            var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+            var properties = entity!.GetType().GetProperties(flags);
+            //var properties = TypeDescriptor.GetProperties(typeof(TEntity));
+
+            foreach (var prop in properties)
+            {
+                // Ignore any properties specified that match the entity
+                if (ignoredProperties?.Contains(prop.Name) ?? false ||
+                    !(includedProperties?.Contains(prop.Name) ?? true))
+                    continue;
+
+                // Ignore any properties that are not mapped to a database table via an attribute
+                // or if the property is explicitly set to not be mapped.
+                var columnAttr = prop.GetCustomAttribute<ColumnAttribute>();
+                if (columnAttr == null)// ||
+                    //prop.GetCustomAttribute<NotMappedAttribute>() != null)
+                    continue;
+
+                // Ignore any virtual/database generated properties marked via attribute
+                var generatedAttr = prop.GetCustomAttribute<DatabaseGeneratedAttribute>();
+                if (generatedAttr != null && generatedAttr.DatabaseGeneratedOption == DatabaseGeneratedOption.Computed)
+                    continue;
+
+                yield return $"{columnAttr.Name} AS {prop.Name}";
+            }
+        }
+
         /// <summary>
         /// Get all public property values of an object.
         /// </summary>
@@ -64,7 +97,7 @@
                 foreach (var prop in properties)
                 {
                     // Ignore any properties specified that match the entity
-                    if (ignoredProperties?.Contains(prop.Name) ?? false ||
+                    if ((ignoredProperties?.Contains(prop.Name) ?? false) ||
                         !(includedProperties?.Contains(prop.Name) ?? true))
                         continue;
 
