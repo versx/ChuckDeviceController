@@ -55,12 +55,17 @@ builder.WebHost.ConfigureLogging(configure =>
 #region Services
 
 builder.Services.AddHttpContextAccessor();
+
+#region Configuration
+
 builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
 builder.Services.Configure<GrpcEndpointsConfig>(builder.Configuration.GetSection("Grpc"));
 //builder.Services.Configure<ProcessingOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions"));
 builder.Services.Configure<ProtoProcessorOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Protos"));
 builder.Services.Configure<DataProcessorOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Data"));
 builder.Services.Configure<DataConsumerOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Consumer"));
+
+#endregion
 
 builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>, AsyncQueue<ProtoPayloadQueueItem>>();
 builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueItem>>();
@@ -107,7 +112,7 @@ builder.Services.AddDistributedMemoryCache();
 #region Database Contexts
 
 // Register data contexts, factories, and pools
-var poolSize = config.GetValue("DbContextPoolSize", 1024);
+//var poolSize = config.GetValue("DbContextPoolSize", 1024);
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
 //builder.Services.AddDbContextPool<MapDbContext>(options =>
