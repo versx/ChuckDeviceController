@@ -8,8 +8,9 @@
 
         private static readonly MemoryCacheOptions _defaultMemCacheOptions = new()
         {
+            // Default size limit of 200 MB (200 * 1024 * 1024) (Reference: https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Caching.Memory/src/MemoryDistributedCacheOptions.cs)
+            // SizeLimit = 1024 * 1024, // 1,048,576 (1 Mb)
             // Reference: https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Caching.Memory/src/MemoryCacheOptions.cs
-            //SizeLimit = 1024 * 1024, // 1,048,576 (1 Mb)
             ExpirationScanFrequency = TimeSpan.FromMinutes(5), // default: 1 minute
             CompactionPercentage = 0.05, // default: 0.05
         };

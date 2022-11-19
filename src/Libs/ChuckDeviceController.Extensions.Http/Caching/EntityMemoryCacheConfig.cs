@@ -6,6 +6,7 @@
 
         public ushort ExpirationScanFrequencyM { get; set; } = 5;
 
+        // Default size limit of 200 MB (200 * 1024 * 1024)
         public uint SizeLimit { get; set; } = 10240;
 
         public ushort EntityExpiryLimitM { get; set; } = 15;
