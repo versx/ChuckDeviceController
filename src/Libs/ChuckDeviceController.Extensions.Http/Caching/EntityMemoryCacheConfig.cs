@@ -1,17 +1,26 @@
 ﻿namespace ChuckDeviceController.Extensions.Http.Caching
 {
-    public class EntityMemoryCacheConfig
+    using Microsoft.Extensions.Caching.Memory;
+
+    public class EntityMemoryCacheConfig : MemoryCacheOptions
     {
-        public double CompactionPercentage { get; set; } = 0.25;
+        public ushort EntityExpiryLimitM { get; set; }
 
-        public ushort ExpirationScanFrequencyM { get; set; } = 5;
+        public IReadOnlyList<string> EntityTypeNames { get; set; }
 
-        // Default size limit of 200 MB (200 * 1024 * 1024)
-        public uint SizeLimit { get; set; } = 10240;
-
-        public ushort EntityExpiryLimitM { get; set; } = 15;
-
-        // TODO: Rename from EntityName to EntityTypeNames
-        public IReadOnlyList<string> EntityNames { get; set; } = new List<string>();
+        public EntityMemoryCacheConfig()
+        {
+            // Default: 0.05
+            CompactionPercentage = 0.25;
+            EntityExpiryLimitM = 15;
+            EntityTypeNames = new List<string>();
+            // Default: 1 minute
+            ExpirationScanFrequency = TimeSpan.FromMinutes(1);
+            // Default: 1 MB (1 * 1024 * 1024)
+            // Default: 200 MB (200 * 1024 * 1024)
+            // Reference: https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Caching.Memory/src/MemoryCacheOptions.cs
+            // Reference: https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Caching.Memory/src/MemoryDistributedCacheOptions.cs
+            SizeLimit = 10240;
+        }
     }
 }

@@ -12,6 +12,7 @@
         private readonly ILogger<IMemoryCacheHostedService> _logger;
         private readonly Dictionary<string, IMemoryCache> _memCache = new();
         private readonly EntityMemoryCacheConfig _options;
+        private readonly TimeSpan _defaultEntityExpiry;
 
         #endregion
 
@@ -23,8 +24,9 @@
         {
             _logger = logger;
             _options = options?.Value ?? new EntityMemoryCacheConfig();
+            _defaultEntityExpiry = TimeSpan.FromMinutes(_options.EntityExpiryLimitM);
 
-            LoadCaches(_options.EntityNames);
+            LoadCaches(_options.EntityTypeNames);
         }
 
         #endregion
@@ -46,13 +48,17 @@
 
         public void Set<TKey, TEntity>(TKey key, TEntity obj, TimeSpan? expiry = null)
         {
-            var defaultExpiry = TimeSpan.FromMinutes(_options.EntityExpiryLimitM);
             var name = typeof(TEntity).Name;
 
             if (_memCache.ContainsKey(name))
             {
                 var memCache = _memCache[name];
-                memCache.Set(key, obj, expiry ?? defaultExpiry);
+                memCache.Set(key, obj, new MemoryCacheEntryOptions
+                {
+                    Size = 1,
+                    AbsoluteExpirationRelativeToNow = expiry ?? _defaultEntityExpiry,
+                });
+                //memCache.Set(key, obj, expiry ?? _defaultEntityExpiry);
             }
         }
 

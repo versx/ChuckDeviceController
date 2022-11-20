@@ -189,7 +189,7 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     var serviceProvider = scope.ServiceProvider;
     var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
     var memCacheConfig = memCacheOptions?.Value ?? new();
-    memCacheConfig.EntityNames = new List<string>
+    memCacheConfig.EntityTypeNames = new List<string>
     {
         nameof(Account),
         nameof(Device),
@@ -332,7 +332,7 @@ else
     app.UseHsts();
 }
 
-app.UseMiddleware<UnhandledExceptionMiddleware>();
+// TODO: app.UseMiddleware<UnhandledExceptionMiddleware>();
 if (jwtAuthEnabled)
 {
     app.UseMiddleware<JwtValidatorMiddleware>();
