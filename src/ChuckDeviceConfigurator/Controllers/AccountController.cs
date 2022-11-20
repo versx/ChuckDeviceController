@@ -106,21 +106,21 @@
                 FreshAccounts = (ulong)cleanAccounts.LongCount(x => x.IsNewAccount),
                 Level40OrHigher = (ulong)accounts!.LongCount(x => x.IsLevel40OrHigher),
                 Level30OrHigher = (ulong)accounts!.LongCount(x => x.IsLevel30OrHigher),
-                Bans = new AccountWarningsBansViewModel
+                Bans = new AccountPunishmentsViewModel
                 {
                     Last24Hours = (ulong)bannedAccounts.LongCount(x => now - x.FailedTimestamp < Strings.OneDayS),
                     Last7Days = (ulong)bannedAccounts.LongCount(x => now - x.FailedTimestamp < days7),
                     Last30Days = (ulong)bannedAccounts.LongCount(x => now - x.FailedTimestamp < days30),
                     Total = (ulong)bannedAccounts.LongCount(),
                 },
-                Warnings = new AccountWarningsBansViewModel
+                Warnings = new AccountPunishmentsViewModel
                 {
                     Last24Hours = (ulong)warnedAccounts.LongCount(x => now - x.FirstWarningTimestamp < Strings.OneDayS || now - x.WarnExpireTimestamp < Strings.OneDayS),
                     Last7Days = (ulong)warnedAccounts.LongCount(x => now - x.FirstWarningTimestamp < days7 || now - x.WarnExpireTimestamp < days7),
                     Last30Days = (ulong)warnedAccounts.LongCount(x => now - x.FirstWarningTimestamp < days30 || now - x.WarnExpireTimestamp < days30),
                     Total = (ulong)warnedAccounts.LongCount(),
                 },
-                Suspensions = new AccountWarningsBansViewModel
+                Suspensions = new AccountPunishmentsViewModel
                 {
                     Last24Hours = (ulong)suspendedAccounts.LongCount(x => now - x.FailedTimestamp < Strings.OneDayS || now - x.FailedTimestamp < Strings.OneDayS),
                     Last7Days = (ulong)suspendedAccounts.LongCount(x => now - x.FailedTimestamp < days7 || now - x.FailedTimestamp < days7),

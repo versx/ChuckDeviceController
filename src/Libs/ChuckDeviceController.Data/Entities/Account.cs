@@ -4,11 +4,11 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using MySqlConnector;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
@@ -21,9 +21,20 @@
 
         private const uint SuspendedPeriodS = 2592000;
         private const uint WarningPeriodS = 604800;
+        private const uint CooldownS = 7200;
         private const string FailedGprBanned = "GPR_BANNED";
         private const string FailedGprRedWarning = "GPR_RED_WARNING";
         private const string FailedSuspended = "suspended";
+        private const string FailedInvalidCredentials = "invalid_credentials";
+
+        public static readonly IEnumerable<string> FailedReasons = new List<string>
+        {
+            "banned",
+            "suspended",
+            "invalid_credentials",
+            "GPR_RED_WARNING",
+            "GPR_BANNED",
+        };
 
         #endregion
 
@@ -34,14 +45,14 @@
             Column("username"),
             Key,
         ]
-        public string Username { get; set; }
+        public string Username { get; set; } = null!;
 
         [
             DisplayName("Password"),
             Column("password"),
             Required,
         ]
-        public string Password { get; set; }
+        public string Password { get; set; } = null!;
 
         [
             DisplayName("First Warning Time"),
@@ -175,11 +186,43 @@
         [NotMapped]
         public bool SendWebhook { get; set; }
 
+        [NotMapped]
+        public bool IsAccountClean => string.IsNullOrEmpty(Failed) && !IsAccountInCooldown && Spins < 3500;
+
+        [NotMapped]
+        public bool IsAccountBanned => Failed == "banned" || Failed == FailedGprBanned || (IsBanned ?? false);
+
+        [NotMapped]
+        public bool IsAccountWarned =>
+            (Failed == FailedGprRedWarning && FailedTimestamp >= DateTime.UtcNow.ToTotalSeconds() - WarningPeriodS) ||
+            (FirstWarningTimestamp > 0 && FirstWarningTimestamp >= DateTime.UtcNow.ToTotalSeconds() - WarningPeriodS) ||
+            (HasWarn ?? false && WarnExpireTimestamp >= DateTime.UtcNow.ToTotalSeconds() - WarningPeriodS);
+
+        [NotMapped]
+        public bool IsAccountSuspended => 
+            (Failed == FailedSuspended || (WasSuspended ?? false)) &&
+            FailedTimestamp >= DateTime.UtcNow.ToTotalSeconds() - SuspendedPeriodS;
+
+        [NotMapped]
+        public bool IsAccountInvalidCredentials => Failed == FailedInvalidCredentials;
+
+        [NotMapped]
+        public bool IsAccountInCooldown => LastEncounterTime > 0 && CooldownS >= DateTime.UtcNow.ToTotalSeconds() - LastEncounterTime;
+
+        [NotMapped]
+        public bool IsLevel40OrHigher => Level >= 40;
+
+        [NotMapped]
+        public bool IsLevel30OrHigher => Level >= 30 && Level < 40;
+
+        [NotMapped]
+        public bool IsNewAccount => Level == 0;
+
         #endregion
 
         #region Public Methods
 
-        public async Task UpdateAsync(GetPlayerOutProto accountData, IMemoryCacheHostedService memCache)
+        public async Task UpdateAsync(MySqlConnection connection, GetPlayerOutProto accountData, IMemoryCacheHostedService memCache)
         {
             CreationTimestamp = Convert.ToUInt32(accountData.Player.CreationTimeMs / 1000);
             HasWarn = accountData.Warn;
@@ -236,7 +279,7 @@
                 Console.WriteLine($"[{Username}] Account '{accountData.Player.Name}' (Username: {Username}) Banned");
             }
 
-            var oldAccount = await EntityRepository.GetEntityAsync<string, Account>(Username, memCache);
+            var oldAccount = await EntityRepository.GetEntityAsync<string, Account>(connection, Username, memCache);
             if (oldAccount == null)
             {
                 SendWebhook = true;

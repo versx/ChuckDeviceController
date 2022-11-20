@@ -75,16 +75,16 @@
         ]
         public ulong OverSpinLimit { get; set; }
 
-        public AccountWarningsBansViewModel Bans { get; set; } = new();
+        public AccountPunishmentsViewModel Bans { get; set; } = new();
 
-        public AccountWarningsBansViewModel Warnings { get; set; } = new();
+        public AccountPunishmentsViewModel Warnings { get; set; } = new();
 
-        public AccountWarningsBansViewModel Suspensions { get; set; } = new();
+        public AccountPunishmentsViewModel Suspensions { get; set; } = new();
 
         public List<AccountLevelStatisticsViewModel> AccountLevelStatistics { get; set; } = new();
     }
 
-    public class AccountWarningsBansViewModel
+    public class AccountPunishmentsViewModel
     {
         [
             DisplayName("Last 24 Hours"),

@@ -3,6 +3,7 @@ using System;
 using ChuckDeviceController.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChuckDeviceConfigurator.Migrations
 {
     [DbContext(typeof(ControllerDbContext))]
-    partial class DeviceControllerContextModelSnapshot : ModelSnapshot
+    [Migration("20221120004347_AddAccountIndexes")]
+    partial class AddAccountIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -106,19 +108,9 @@ namespace ChuckDeviceConfigurator.Migrations
 
                     b.HasIndex("Failed");
 
-                    b.HasIndex("FailedTimestamp");
-
-                    b.HasIndex("FirstWarningTimestamp");
-
                     b.HasIndex("GroupName");
 
-                    b.HasIndex("HasWarn");
-
                     b.HasIndex("Level");
-
-                    b.HasIndex("WarnExpireTimestamp");
-
-                    b.HasIndex("WasSuspended");
 
                     b.ToTable("account");
                 });

@@ -46,6 +46,19 @@
         {
             //modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
 
+            modelBuilder.Entity<Account>(entity =>
+            {
+                entity.HasIndex(p => p.GroupName);
+                entity.HasIndex(p => p.Level);
+                entity.HasIndex(p => p.Failed);
+                entity.HasIndex(p => p.FailedTimestamp);
+                entity.HasIndex(p => p.FirstWarningTimestamp);
+                entity.HasIndex(p => p.HasWarn);
+                entity.HasIndex(p => p.WarnExpireTimestamp);
+                entity.HasIndex(p => p.HasWarn);
+                entity.HasIndex(p => p.WasSuspended);
+            });
+
             // TODO: Add indexes for device controller db context entities
             modelBuilder.Entity<ApiKey>(entity =>
             {
