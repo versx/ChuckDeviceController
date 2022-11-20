@@ -48,6 +48,40 @@
 
         uint TotalSpawnpointsProcessed { get; }
 
+
+         uint TotalPlayerDataReceived { get; }
+
+         uint TotalS2CellsReceived { get; }
+
+         uint TotalClientWeatherCellsReceived { get; }
+
+         uint TotalFortsReceived { get; }
+
+         uint TotalFortDetailsReceived { get; }
+
+         uint TotalGymInfoReceived { get; }
+
+         uint TotalGymDefendersReceived { get; }
+
+         uint TotalGymTrainersReceived { get; }
+
+         uint TotalIncidentsReceived { get; }
+
+         uint TotalWildPokemonReceived { get; }
+
+         uint TotalNearbyPokemonReceived { get; }
+
+         uint TotalMapPokemonReceived { get; }
+
+         uint TotalQuestsReceived { get; }
+
+         uint TotalPokemonEncountersReceived { get; }
+
+         uint TotalPokemonDiskEncountersReceived { get; }
+
+         uint TotalSpawnpointsReceived { get; }
+
+
         IReadOnlyList<DataEntityTime> Times { get; }
 
         DataEntityTime? AverageTime { get; }
@@ -159,6 +193,90 @@
         [DisplayName("Spawnpoints Processed")]
         [DisplayFormat(DataFormatString = "{0:N0}")]
         public virtual uint TotalSpawnpointsProcessed { get; set; }
+
+        [JsonPropertyName("player_data_received")]
+        [DisplayName("Player Data Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalPlayerDataReceived { get; set; }
+
+        [JsonPropertyName("s2_cells_received")]
+        [DisplayName("S2 Cells Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalS2CellsReceived { get; set; }
+
+        [JsonPropertyName("weather_cells_received")]
+        [DisplayName("Weather Cells Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalClientWeatherCellsReceived { get; set; }
+
+        [JsonPropertyName("forts_received")]
+        [DisplayName("Forts Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalFortsReceived { get; set; }
+
+        [JsonPropertyName("fort_details_received")]
+        [DisplayName("Fort Details Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalFortDetailsReceived { get; set; }
+
+        [JsonPropertyName("gym_info_received")]
+        [DisplayName("Gym Info Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalGymInfoReceived { get; set; }
+
+        [JsonPropertyName("gym_defenders_received")]
+        [DisplayName("Gym Defenders Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalGymDefendersReceived { get; set; }
+
+        [JsonPropertyName("gym_trainers_received")]
+        [DisplayName("Gym Trainers Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalGymTrainersReceived { get; set; }
+
+        [JsonPropertyName("incidents_received")]
+        [DisplayName("Incidents Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalIncidentsReceived { get; set; }
+
+        [JsonPropertyName("wild_pokemon_received")]
+        [DisplayName("Wild Pokemon Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalWildPokemonReceived { get; set; }
+
+        [JsonPropertyName("nearby_pokemon_received")]
+        [DisplayName("Nearby Pokemon Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalNearbyPokemonReceived { get; set; }
+
+        [JsonPropertyName("map_pokemon_received")]
+        [DisplayName("Map Pokemon Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalMapPokemonReceived { get; set; }
+
+        [JsonPropertyName("quests_received")]
+        [DisplayName("Quests Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalQuestsReceived { get; set; }
+
+        [JsonPropertyName("pokemon_encounters_received")]
+        [DisplayName("Pokemon Encounters Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalPokemonEncountersReceived { get; set; }
+
+        [JsonPropertyName("pokemon_disk_encounters_received")]
+        [DisplayName("Pokemon Disk Encounters Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalPokemonDiskEncountersReceived { get; set; }
+
+        [JsonPropertyName("spawnpoints_received")]
+        [DisplayName("Spawnpoints Received")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual uint TotalSpawnpointsReceived { get; set; }
+
+
+
+
 
         [JsonPropertyName("data_times")]
         [DisplayName("Benchmark Times")]
