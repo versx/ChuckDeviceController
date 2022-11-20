@@ -23,22 +23,18 @@
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(httpContext, ex);
+                //await HandleExceptionAsync(httpContext, ex);
+                httpContext.Response.ContentType = "application/json";
+                httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+                _logger.LogCritical($"Unhandled Error: {ex}");
+
+                await httpContext.Response.WriteAsync(new ErrorDetails
+                {
+                    StatusCode = httpContext.Response.StatusCode,
+                    Message = "Internal Server Error from the custom middleware.",
+                }.ToString());
             }
-        }
-
-        private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
-        {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-            _logger.LogCritical($"Unhandled Error: {exception}");
-
-            await context.Response.WriteAsync(new ErrorDetails
-            {
-                StatusCode = context.Response.StatusCode,
-                Message = "Internal Server Error from the custom middleware.",
-            }.ToString());
         }
     }
 
