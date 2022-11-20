@@ -11,19 +11,13 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Services.Rpc;
 
-    public class DataConsumerService : IDataConsumerService
+    public class DataConsumerService : IDataConsumerService // TODO: TimedHostedService
     {
-        #region Constants
-
-        private const int MaxBatchSize = 1000;
-        private const int MaxCapacity = 1024 * 1024;
-        private static readonly int ConcurrencyLevel = Environment.ProcessorCount * 4;
-
-        #endregion
-
         #region Variables
 
-        private readonly ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> _queue = new(ConcurrencyLevel, MaxCapacity);
+        private readonly ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> _queue;// = new(
+        //private readonly SemaphoreSlim _sem = new(1, 1);
+        private readonly SemaphoreSlim _semQueue = new(1, 1);
         private readonly System.Timers.Timer _timer = new();
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IWebHostEnvironment _env;
@@ -48,6 +42,7 @@
 
         public DataConsumerOptionsConfig Options { get; }
 
+        // TODO: Add 'ShowBenchmarkTimes' to config
         public bool ShowBenchmarkTimes => _env?.IsDevelopment() ?? false;
 
         #endregion
@@ -66,6 +61,11 @@
 
             Options = options.Value;
 
+            _queue = new ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>>(
+                Options.QueueConcurrencyLevelMultiplier,
+                Options.QueueCapacity
+            );
+
             _timer.Interval = Options.IntervalS * 1000;
             _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(new());
             _timer.Start();
@@ -75,20 +75,55 @@
 
         #region Public Methods
 
-        public async Task AddEntityAsync(SqlQueryType query, BaseEntity entity)
+        public async Task AddEntityAsync(SqlQueryType type, BaseEntity entity)
         {
-            if (_queue.ContainsKey(query))
-            {
-                _queue[query].Add(entity);
-                return;
-            }
+            await _semQueue.WaitAsync();
 
-            if (!_queue.TryAdd(query, new() { entity }))
+            _queue.AddOrUpdate(type, new ConcurrentBag<BaseEntity>(new[] { entity }), (key, bag) =>
             {
-                // Key already exists, add entity to queue
-                _queue[query].Add(entity);
-            }
+                bag.Add(entity);
+                return bag;
+            });
 
+            //if (_queue.ContainsKey(type))
+            //{
+            //    _queue[type].Add(entity);
+            //    _semQueue.Release();
+            //    return;
+            //}
+
+            //if (!_queue.TryAdd(type, new() { entity }))
+            //{
+            //    // Key already exists, add entity to queue
+            //    _queue[type].Add(entity);
+            //}
+
+            _semQueue.Release();
+            await Task.CompletedTask;
+        }
+
+        public async Task AddEntitiesAsync(SqlQueryType type, IEnumerable<BaseEntity> entities)
+        {
+            await _semQueue.WaitAsync();
+
+            _queue.AddOrUpdate(type, new ConcurrentBag<BaseEntity>(entities), (key, bag) =>
+            {
+                bag = new(_queue[type].Union(entities));
+                return bag;
+            });
+
+            //if (_queue.ContainsKey(type))
+            //{
+            //    _queue[type] = new(_queue[type].Union(entities));
+            //    return;
+            //}
+
+            //if (!_queue.TryAdd(type, new(entities)))
+            //{
+            //    _queue[type] = new(_queue[type].Union(entities));
+            //}
+
+            _semQueue.Release();
             await Task.CompletedTask;
         }
 
@@ -98,16 +133,26 @@
 
         private async Task ConsumeDataAsync(CancellationToken stoppingToken)
         {
+            //await _sem.WaitAsync(stoppingToken);
+
             if (!_queue.Any())
+            {
+                //_sem.Release();
                 return;
+            }
 
             try
             {
                 var entitiesToUpsert = await _queue.TakeAllAsync(stoppingToken);
                 var entityCount = entitiesToUpsert.Sum(x => x.Value?.Count ?? 0);
                 if (entityCount == 0)
+                {
+                    //_sem.Release();
                     return;
+                }
 
+                //_logger.LogInformation($"Preparing {entityCount:N0} for upsert...");
+                _logger.LogInformation($"{nameof(DataConsumerService)} is preparing {entityCount:N0} data entities for MySQL database upsert...");
                 var results = new List<SqlBulkResult>();
                 var sw = new Stopwatch();
                 sw.Start();
@@ -147,7 +192,7 @@
                         sqlQuery,
                         sqlValues,
                         entities,
-                        batchSize: Options?.MaximumBatchSize ?? MaxBatchSize,
+                        batchSize: Options?.MaximumBatchSize ?? DataConsumerOptionsConfig.DefaultMaxBatchSize,
                         includedProperties,
                         null,
                         stoppingToken
@@ -180,6 +225,8 @@
             {
                 _logger.LogError($"ConsumeDataAsync: {ex.InnerException?.Message ?? ex.Message}");
             }
+
+            //_sem.Release();
         }
 
         private void PrintBenchmarkResults(DataLogLevel logLevel, BenchmarkResults results)

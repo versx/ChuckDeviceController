@@ -15,8 +15,6 @@
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Extensions.Json;
 
-    // TODO: Create new MySQL connection instance for each method
-
     public class EntityRepository
     {
         private const uint DefaultConnectionWaitTimeS = 5;
@@ -28,7 +26,9 @@
         private static readonly ILogger<EntityRepository> _logger =
             new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Debug)));
         private static readonly SemaphoreSlim _sem = new(1);
-        private static readonly SemaphoreSlim _entitySem = new(5);
+        //private static readonly SemaphoreSlim _entitySem = new(15);
+        private static readonly SemaphoreSlim _entitySem = new(25);
+        //private static readonly SemaphoreSlim _entitySem = new(1);
         private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(15);
         private static readonly IEnumerable<ConnectionState> _invalidConnectionStates = new[]
         {

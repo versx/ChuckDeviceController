@@ -5,6 +5,8 @@
 
     public interface IDataConsumerService
     {
-        Task AddEntityAsync(SqlQueryType query, BaseEntity entity);
+        Task AddEntityAsync(SqlQueryType type, BaseEntity entity);
+
+        Task AddEntitiesAsync(SqlQueryType type, IEnumerable<BaseEntity> entities);
     }
 }
