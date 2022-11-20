@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Controllers
 {
-    using System.Collections.Concurrent;
-
     using Microsoft.AspNetCore.Mvc;
     using POGOProtos.Rpc;
 
@@ -17,13 +15,9 @@
     [ApiController]
     public class ProtoController : ControllerBase
     {
-        private const int DevicesUpdateIntervalS = 10;
-
         #region Variables
 
-        private readonly ConcurrentBag<Device> _devicesToUpdate = new();
-        private static readonly object _devicesLock = new();
-
+        private static readonly SemaphoreSlim _semDevices = new(1);
         private static readonly Dictionary<string, ushort> _levelCache = new();
         private static readonly object _levelCacheLock = new();
 
@@ -115,50 +109,59 @@
 
         #region Private Methods
 
-        private async Task<Device> SetLastDeviceLocationAsync(ProtoPayload payload)
+        private async Task<Device?> SetLastDeviceLocationAsync(ProtoPayload payload)
         {
-            var isNew = false;
-            var device = await _context.Devices.FindAsync(payload.Uuid);
-            if (device == null)
+            await _semDevices.WaitAsync();
+
+            try
             {
-                device = new Device
+                var now = DateTime.UtcNow.ToTotalSeconds();
+                var device = await _context.Devices.FindAsync(payload.Uuid);
+                if (device == null)
                 {
-                    Uuid = payload.Uuid,
-                    AccountUsername = payload.Username,
-                };
-                isNew = true;
-            }
-            else
-            {
-                var deviceLat = Math.Round(device.LastLatitude ?? 0, 5);
-                var deviceLon = Math.Round(device.LastLongitude ?? 0, 5);
-                var payloadLat = Math.Round(payload.LatitudeTarget, 5);
-                var payloadLon = Math.Round(payload.LongitudeTarget, 5);
-                if (deviceLat == payloadLat &&
-                    deviceLon == payloadLon)
-                {
-                    // At same location, no need to update
-                    // TODO: Should update last_seen (maybe)
-                    return device;
+                    device = new Device
+                    {
+                        Uuid = payload.Uuid,
+                        AccountUsername = payload.Username,
+                        LastLatitude = payload.LatitudeTarget,
+                        LastLongitude = payload.LongitudeTarget,
+                        LastSeen = now,
+                    };
+                    await _context.Devices.AddAsync(device);
                 }
+                else
+                {
+                    var deviceLat = Math.Round(device.LastLatitude ?? 0, 5);
+                    var deviceLon = Math.Round(device.LastLongitude ?? 0, 5);
+                    var payloadLat = Math.Round(payload.LatitudeTarget, 5);
+                    var payloadLon = Math.Round(payload.LongitudeTarget, 5);
+                    if (deviceLat == payloadLat &&
+                        deviceLon == payloadLon)
+                    {
+                        // At same location, no need to update
+                        // TODO: Should update last_seen (maybe)
+                        _semDevices.Release();
+                        return device;
+                    }
+
+                    device.LastLatitude = payload.LatitudeTarget;
+                    device.LastLongitude = payload.LongitudeTarget;
+                    device.LastSeen = now;
+                    _context.Devices.Update(device);
+                }
+
+                await _context.SaveChangesAsync();
+
+                _semDevices.Release();
+                return device;
             }
-
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            device.LastLatitude = payload.LatitudeTarget;
-            device.LastLongitude = payload.LongitudeTarget;
-            device.LastSeen = now;
-
-            if (isNew)
+            catch (Exception ex)
             {
-                await _context.Devices.AddAsync(device);
+                _logger.LogError($"SetLastDeviceLocationAsync: {ex}");
             }
-            else
-            {
-                _context.Devices.Update(device);
-            }
-            await _context.SaveChangesAsync();
 
-            return device;
+            _semDevices.Release();
+            return null;
         }
 
         private async Task SetAccountLevelAsync(string uuid, string? username, ushort level, ulong trainerXp = 0)
