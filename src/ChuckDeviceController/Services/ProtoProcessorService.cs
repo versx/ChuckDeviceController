@@ -84,7 +84,7 @@
                 try
                 {
                     var workItems = await _protoQueue.DequeueBulkAsync(Options.Queue.MaximumBatchSize, stoppingToken);
-                    if (workItems == null)
+                    if (!(workItems?.Any() ?? false))
                     {
                         Thread.Sleep(1);
                         //await Task.Delay(1, stoppingToken);
@@ -142,21 +142,21 @@
             //var isInvalidGmo = true;
             //var containsGmo = false;
 
-            Coordinate? targetCoord = null;
-            var inArea = false;
-            if (payload.Payload.LatitudeTarget != 0 && payload.Payload.LongitudeTarget != 0)
-            {
-                targetCoord = new Coordinate(payload.Payload.LatitudeTarget, payload.Payload.LongitudeTarget);
-            }
-            var targetKnown = false;
-            S2CellId targetCellId = default;
-            if (targetCoord != null)
-            {
-                // Check target is within cell id instead of checking geofences
-                targetKnown = true;
-                targetCellId = targetCoord.S2CellIdFromCoordinate();
-                //_logger.LogDebug($"[{uuid}] Data received within target area {targetCoord} and target distance {payload.TargetMaxDistance}");
-            }
+            //Coordinate? targetCoord = null;
+            //var inArea = false;
+            //if (payload.Payload.LatitudeTarget != 0 && payload.Payload.LongitudeTarget != 0)
+            //{
+            //    targetCoord = new Coordinate(payload.Payload.LatitudeTarget, payload.Payload.LongitudeTarget);
+            //}
+            //var targetKnown = false;
+            //S2CellId targetCellId = default;
+            //if (targetCoord != null)
+            //{
+            //    // Check target is within cell id instead of checking geofences
+            //    targetKnown = true;
+            //    targetCellId = targetCoord.S2CellIdFromCoordinate();
+            //    //_logger.LogDebug($"[{uuid}] Data received within target area {targetCoord} and target distance {payload.TargetMaxDistance}");
+            //}
             //_logger.LogWarning($"[{device.Uuid}] InArea={inArea}");
 
             var processedProtos = new List<dynamic>();
@@ -358,164 +358,10 @@
                         }
                         break;
                     case Method.GetMapObjects:
-                        try
+                        var gmo = ParseGetMapObjectsProto(uuid!, username!, data);
+                        if (gmo.Any())
                         {
-                            //containsGmo = true;
-                            var gmo = GetMapObjectsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (gmo != null)
-                            {
-                                //isInvalidGmo = false;
-                                var gmoMapCells = gmo.MapCell;
-                                var newWildPokemon = new List<dynamic>();
-                                var newNearbyPokemon = new List<dynamic>();
-                                var newMapPokemon = new List<dynamic>();
-                                var newClientWeather = new List<dynamic>();
-                                var newForts = new List<dynamic>();
-                                var newCells = new List<dynamic>();
-
-                                if (gmoMapCells.Count == 0)
-                                {
-                                    _logger.LogDebug($"[{uuid}] Map cells are empty");
-                                    continue;
-                                }
-
-                                // Check if we're within the same cell, if so then we are within the target distance
-                                if (!inArea && targetKnown && gmoMapCells.Select(x => x.S2CellId).Contains(targetCellId.Id))
-                                {
-                                    inArea = true;
-                                }
-
-                                foreach (var mapCell in gmoMapCells)
-                                {
-                                    var timestampMs = Convert.ToUInt64(mapCell.AsOfTimeMs);
-                                    foreach (var wild in mapCell.WildPokemon)
-                                    {
-                                        newWildPokemon.Add(new
-                                        {
-                                            type = ProtoDataType.WildPokemon,
-                                            cell = mapCell.S2CellId,
-                                            data = wild,
-                                            timestampMs,
-                                            username,
-                                            isEvent = false, // TODO: IsEvent
-                                        });
-                                    }
-
-                                    foreach (var nearby in mapCell.NearbyPokemon)
-                                    {
-                                        newNearbyPokemon.Add(new
-                                        {
-                                            type = ProtoDataType.NearbyPokemon,
-                                            cell = mapCell.S2CellId,
-                                            data = nearby,
-                                            username,
-                                            isEvent = false,
-                                        });
-                                    }
-
-                                    foreach (var fort in mapCell.Fort)
-                                    {
-                                        newForts.Add(new
-                                        {
-                                            type = ProtoDataType.Fort,
-                                            cell = mapCell.S2CellId,
-                                            data = fort,
-                                            username,
-                                        });
-                                        if (Options.ProcessMapPokemon && fort.ActivePokemon != null)
-                                        {
-                                            newMapPokemon.Add(new
-                                            {
-                                                type = ProtoDataType.MapPokemon,
-                                                cell = mapCell.S2CellId,
-                                                data = fort.ActivePokemon,
-                                                username,
-                                                isEvent = false,
-                                            });
-                                        }
-                                    }
-
-                                    newCells.Add(new
-                                    {
-                                        type = ProtoDataType.Cell,
-                                        cell = mapCell.S2CellId,
-                                    });
-                                }
-
-                                foreach (var weatherCell in gmo.ClientWeather)
-                                {
-                                    newClientWeather.Add(new
-                                    {
-                                        type = ProtoDataType.ClientWeather,
-                                        cell = weatherCell.S2CellId,
-                                        data = weatherCell,
-                                    });
-                                }
-
-                                if (newWildPokemon.Count == 0 && newNearbyPokemon.Count == 0 && newForts.Count == 0)
-                                {
-                                    foreach (var cell in newCells)
-                                    {
-                                        var cellId = cell.cell;
-                                        lock (_emptyCells)
-                                        {
-                                            if (!_emptyCells.ContainsKey(cellId))
-                                            {
-                                                _emptyCells.Add(cellId, 1);
-                                            }
-                                            else
-                                            {
-                                                _emptyCells[cellId]++;
-                                            }
-                                        }
-
-                                        var count = _emptyCells[cellId];
-                                        if (count == 3)
-                                        {
-                                            _logger.LogWarning($"[{uuid}] Cell {cellId} was empty 3 times in a row. Assuming empty.");
-                                            processedProtos.Add(cell);
-                                        }
-                                    }
-
-                                    //isEmptyGmo = true;
-                                    _logger.LogDebug($"[{uuid}] GMO is empty.");
-                                }
-                                else
-                                {
-                                    foreach (var cell in newCells)
-                                    {
-                                        lock (_emptyCells)
-                                        {
-                                            var cellId = cell.cell;
-                                            if (_emptyCells.ContainsKey(cellId))
-                                            {
-                                                _emptyCells[cellId] = 0;
-                                            }
-                                            else
-                                            {
-                                                _emptyCells.Add(cellId, 0);
-                                            }
-                                        }
-                                    }
-
-                                    //isEmptyGmo = false;
-                                }
-
-                                processedProtos.AddRange(newCells);
-                                processedProtos.AddRange(newClientWeather);
-                                processedProtos.AddRange(newForts);
-                                processedProtos.AddRange(newWildPokemon);
-                                processedProtos.AddRange(newNearbyPokemon);
-                                processedProtos.AddRange(newMapPokemon);
-                            }
-                            else
-                            {
-                                _logger.LogError($"[{uuid}] Malformed GetMapObjectsOutProto");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[{uuid}] Unable to decode GetMapObjectsOutProto: {ex}");
+                            processedProtos.AddRange(gmo);
                         }
                         break;
                     case Method.GymGetInfo:
@@ -611,7 +457,7 @@
             {
                 Username = username,
                 Data = processedProtos,
-            });
+            }, stoppingToken);
         }
 
         #endregion
@@ -645,6 +491,167 @@
                 return false;
             }
             return actualMode;
+        }
+
+        #endregion
+
+        #region Proto Parsing Methods
+
+        private IEnumerable<dynamic> ParseGetMapObjectsProto(string uuid, string username, string payload)
+        {
+            var results = new List<dynamic>();
+            try
+            {
+                //containsGmo = true;
+                var gmo = GetMapObjectsOutProto.Parser.ParseFrom(Convert.FromBase64String(payload));
+                if (gmo == null)
+                {
+                    return results;
+                }
+
+                //isInvalidGmo = false;
+                var gmoMapCells = gmo.MapCell;
+                var newWildPokemon = new List<dynamic>();
+                var newNearbyPokemon = new List<dynamic>();
+                var newMapPokemon = new List<dynamic>();
+                var newClientWeather = new List<dynamic>();
+                var newForts = new List<dynamic>();
+                var newCells = new List<dynamic>();
+
+                if (gmoMapCells.Count == 0)
+                {
+                    _logger.LogDebug($"[{uuid}] Map cells are empty");
+                    return results;
+                }
+
+                foreach (var mapCell in gmoMapCells)
+                {
+                    var timestampMs = Convert.ToUInt64(mapCell.AsOfTimeMs);
+                    foreach (var wild in mapCell.WildPokemon)
+                    {
+                        newWildPokemon.Add(new
+                        {
+                            type = ProtoDataType.WildPokemon,
+                            cell = mapCell.S2CellId,
+                            data = wild,
+                            timestampMs,
+                            username,
+                            isEvent = false, // TODO: IsEvent
+                        });
+                    }
+
+                    foreach (var nearby in mapCell.NearbyPokemon)
+                    {
+                        newNearbyPokemon.Add(new
+                        {
+                            type = ProtoDataType.NearbyPokemon,
+                            cell = mapCell.S2CellId,
+                            data = nearby,
+                            username,
+                            isEvent = false,
+                        });
+                    }
+
+                    foreach (var fort in mapCell.Fort)
+                    {
+                        newForts.Add(new
+                        {
+                            type = ProtoDataType.Fort,
+                            cell = mapCell.S2CellId,
+                            data = fort,
+                            username,
+                        });
+                        if (Options.ProcessMapPokemon && fort.ActivePokemon != null)
+                        {
+                            newMapPokemon.Add(new
+                            {
+                                type = ProtoDataType.MapPokemon,
+                                cell = mapCell.S2CellId,
+                                data = fort.ActivePokemon,
+                                username,
+                                isEvent = false,
+                            });
+                        }
+                    }
+
+                    newCells.Add(new
+                    {
+                        type = ProtoDataType.Cell,
+                        cell = mapCell.S2CellId,
+                    });
+                }
+
+                foreach (var weatherCell in gmo.ClientWeather)
+                {
+                    newClientWeather.Add(new
+                    {
+                        type = ProtoDataType.ClientWeather,
+                        cell = weatherCell.S2CellId,
+                        data = weatherCell,
+                    });
+                }
+
+                if (newWildPokemon.Count == 0 && newNearbyPokemon.Count == 0 && newForts.Count == 0)
+                {
+                    foreach (var cell in newCells)
+                    {
+                        var cellId = cell.cell;
+                        lock (_emptyCells)
+                        {
+                            if (!_emptyCells.ContainsKey(cellId))
+                            {
+                                _emptyCells.Add(cellId, 1);
+                            }
+                            else
+                            {
+                                _emptyCells[cellId]++;
+                            }
+                        }
+
+                        var count = _emptyCells[cellId];
+                        if (count == 3)
+                        {
+                            _logger.LogWarning($"[{uuid}] Cell {cellId} was empty 3 times in a row. Assuming empty.");
+                            results.Add(cell);
+                        }
+                    }
+
+                    //isEmptyGmo = true;
+                    _logger.LogDebug($"[{uuid}] GMO is empty.");
+                }
+                else
+                {
+                    foreach (var cell in newCells)
+                    {
+                        lock (_emptyCells)
+                        {
+                            var cellId = cell.cell;
+                            if (_emptyCells.ContainsKey(cellId))
+                            {
+                                _emptyCells[cellId] = 0;
+                            }
+                            else
+                            {
+                                _emptyCells.Add(cellId, 0);
+                            }
+                        }
+                    }
+
+                    //isEmptyGmo = false;
+                }
+
+                results.AddRange(newCells);
+                results.AddRange(newClientWeather);
+                results.AddRange(newForts);
+                results.AddRange(newWildPokemon);
+                results.AddRange(newNearbyPokemon);
+                results.AddRange(newMapPokemon);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"[{uuid}] Unable to decode GetMapObjectsOutProto: {ex}");
+            }
+            return results;
         }
 
         #endregion
