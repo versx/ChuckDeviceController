@@ -21,7 +21,7 @@
 
         private const uint SuspendedPeriodS = 2592000;
         private const uint WarningPeriodS = 604800;
-        private const uint CooldownS = 7200;
+        private const uint CooldownPeriodS = 7200;
         private const string FailedGprBanned = "GPR_BANNED";
         private const string FailedGprRedWarning = "GPR_RED_WARNING";
         private const string FailedSuspended = "suspended";
@@ -207,7 +207,7 @@
         public bool IsAccountInvalidCredentials => Failed == FailedInvalidCredentials;
 
         [NotMapped]
-        public bool IsAccountInCooldown => LastEncounterTime > 0 && CooldownS >= DateTime.UtcNow.ToTotalSeconds() - LastEncounterTime;
+        public bool IsAccountInCooldown => LastEncounterTime > 0 && CooldownPeriodS >= DateTime.UtcNow.ToTotalSeconds() - LastEncounterTime;
 
         [NotMapped]
         public bool IsLevel40OrHigher => Level >= 40;

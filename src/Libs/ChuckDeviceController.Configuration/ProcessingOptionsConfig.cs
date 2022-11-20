@@ -38,11 +38,13 @@
 
     public class DataProcessorOptionsConfig : DataLogLevelOptionsConfig
     {
+        public const int DefaultIntervalS = 5;
+
         public bool ClearOldForts { get; set; } = true;
 
         public ProcessingQueueConfig Queue { get; set; } = new();
 
-        public ushort IntervalS { get; set; } = 5;
+        public ushort IntervalS { get; set; } = DefaultIntervalS;
 
         public bool ProcessPlayerData { get; set; } = false;
 
@@ -60,8 +62,6 @@
 
         public bool ProcessGymTrainers { get; set; } = true;
 
-        public bool ProcessPokemon { get; set; } = true;
-
         public bool ProcessWildPokemon { get; set; } = true;
 
         public bool ProcessNearbyPokemon { get; set; } = true;
@@ -77,8 +77,17 @@
 
     public class DataConsumerOptionsConfig : DataLogLevelOptionsConfig
     {
-        public int MaximumBatchSize { get; set; } = 1000;
+        public static readonly ushort DefaultQueueConcurrencyLevelMultiplier = Convert.ToUInt16(Environment.ProcessorCount * 4);
+        public const int DefaultMaxBatchSize = 1000;
+        public const int DefaultIntervalS = 3;
+        public const int DefaultQueueCapacity = 1024 * 1024;
 
-        public ushort IntervalS { get; set; } = 3;
+        public int MaximumBatchSize { get; set; } = DefaultMaxBatchSize;
+
+        public ushort IntervalS { get; set; } = DefaultIntervalS;
+
+        public ushort QueueConcurrencyLevelMultiplier { get; set; } = DefaultQueueConcurrencyLevelMultiplier;
+
+        public int QueueCapacity { get; set; } = DefaultQueueCapacity;
     }
 }

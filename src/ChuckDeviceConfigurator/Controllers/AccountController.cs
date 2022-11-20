@@ -66,6 +66,12 @@
                                            .Where(x => !string.IsNullOrEmpty(x))
                                            .ToList();
 
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogDebug($"Account stats took {totalSeconds}s");
+            sw.Reset();
+            sw.Start();
+
             var total = accounts.Count;
             var cleanAccounts = accounts.Where(x => x.IsAccountClean);
             var accountLevelStatistics = accounts.GroupBy(account => account.Level, (level, levelAccounts) => new AccountLevelStatisticsViewModel
@@ -83,6 +89,12 @@
                 // error_26, etc
                 //Other = (ulong)levelAccounts.LongCount(acc => !string.IsNullOrEmpty(acc.Failed) && !Account.FailedReasons.Contains(acc.Failed)),
             }).ToList();
+
+            sw.Stop();
+            totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogDebug($"Account stats took {totalSeconds}s");
+            sw.Reset();
+            sw.Start();
 
             var days7 = Strings.OneDayS * 7;
             var days30 = Strings.OneDayS * 30;
@@ -130,9 +142,10 @@
             };
 
             sw.Stop();
-            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
             _logger.LogDebug($"Account stats took {totalSeconds}s");
             // Time: 0.1302 - So it's not the query, it's Razor being slow in the frontend :(
+            // TODO: No, it's definitely the query as well
 
             ViewBag.AccountGroups = accountGroups;
             ViewBag.SelectedGroup = accountGroup;
