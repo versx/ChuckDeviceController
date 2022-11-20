@@ -37,64 +37,75 @@
         */
 
         // GET: AccountController
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(string? accountGroup = null)
         {
             // NOTE: Speed up query
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
-            var accounts = await _context.Accounts.ToListAsync();
+            var onlyGroups = accountGroup == "all_groups";
+            var onlyNoGroups = accountGroup == "no_groups";
+            var allAccounts = await _context.Accounts.ToListAsync();
+            var accounts = allAccounts.Where(x =>
+                // All accounts with and without groups
+                (!onlyGroups && !onlyNoGroups && string.IsNullOrEmpty(accountGroup)) ||
+                // Only accounts with a group
+                (onlyGroups && x.GroupName != null) ||
+                // Only accounts without a group
+                (onlyNoGroups && x.GroupName == null) ||
+                // All matching accounts with a group
+                (!string.IsNullOrEmpty(x.GroupName) && accountGroup == x.GroupName)
+            ).ToList();
             var devices = await _context.Devices.ToListAsync();
 
             var accountsInUse = devices.Where(device => device.AccountUsername != null)
                                        .Select(device => device.AccountUsername)
                                        .ToList();
+            var accountGroups = allAccounts.DistinctBy(x => x.GroupName)
+                                           .Select(x => x.GroupName)
+                                           .Where(x => !string.IsNullOrEmpty(x))
+                                           .ToList();
 
             var total = accounts.Count;
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var banExpireTime = Strings.OneDayS * 7;
-            var failedList = new List<string> { "banned", "suspended", "invalid_credentials", "GPR_RED_WARNING", "GPR_BANNED" };
-            var cleanAccounts = accounts.Where(x => string.IsNullOrEmpty(x.Failed) &&
-                                                    x.FailedTimestamp == null &&
-                                                    x.FirstWarningTimestamp == null &&
-                                                    x.LastEncounterLatitude == null &&
-                                                    x.LastEncounterLongitude == null &&
-                                                    x.LastEncounterTime == null &&
-                                                    x.Spins == 0);
+            var cleanAccounts = accounts.Where(x => x.IsAccountClean);
             var accountLevelStatistics = accounts.GroupBy(account => account.Level, (level, levelAccounts) => new AccountLevelStatisticsViewModel
             {
                 Level = level,
                 Total = (ulong)accounts.LongCount(acc => acc.Level == level),
-                InUse = (ulong)accounts.LongCount(acc => devices.Any(dev => string.Compare(dev.AccountUsername, acc.Username) == 0 && acc.Level == level)),
-                Good = (ulong)levelAccounts.LongCount(acc => string.IsNullOrEmpty(acc.Failed) && acc.FailedTimestamp == null && acc.FirstWarningTimestamp == null),
-                Banned = (ulong)levelAccounts.LongCount(acc => (acc.Failed == "banned" || acc.Failed == "GPR_BANNED") && now - acc.FailedTimestamp < banExpireTime),
-                Warning = (ulong)levelAccounts.LongCount(acc => acc.FirstWarningTimestamp > 0),
-                Suspended = (ulong)levelAccounts.LongCount(acc => acc.Failed == "suspended" && now - acc.FailedTimestamp < banExpireTime),
-                Invalid = (ulong)levelAccounts.LongCount(acc => acc.Failed == "invalid_credentials"),
-                Cooldown = (ulong)levelAccounts.LongCount(acc => acc.LastEncounterTime != null && now - acc.LastEncounterTime < 7200),
+                InUse = (ulong)accounts.LongCount(acc => devices.Any(dev => string.Compare(dev.AccountUsername, acc.Username, true) == 0 && acc.Level == level)),
+                Good = (ulong)levelAccounts.LongCount(acc => acc.IsAccountClean),
+                Banned = (ulong)levelAccounts.LongCount(acc => acc.IsAccountBanned),
+                Warning = (ulong)levelAccounts.LongCount(acc => acc.IsAccountWarned),
+                Suspended = (ulong)levelAccounts.LongCount(acc => acc.IsAccountSuspended),
+                Invalid = (ulong)levelAccounts.LongCount(acc => acc.IsAccountInvalidCredentials),
+                Cooldown = (ulong)levelAccounts.LongCount(acc => acc.IsAccountInCooldown),
                 SpinLimit = (ulong)levelAccounts.LongCount(acc => acc.Spins >= Strings.DefaultSpinLimit),
-                Other = (ulong)levelAccounts.LongCount(acc => !string.IsNullOrEmpty(acc.Failed) && !failedList.Contains(acc.Failed)),
+                // error_26, etc
+                //Other = (ulong)levelAccounts.LongCount(acc => !string.IsNullOrEmpty(acc.Failed) && !Account.FailedReasons.Contains(acc.Failed)),
             }).ToList();
 
             var days7 = Strings.OneDayS * 7;
             var days30 = Strings.OneDayS * 30;
-            var bannedAccounts = accounts.Where(x => x.Failed == "banned" || x.Failed == "GPR_BANNED" || (x.IsBanned ?? false));
-            var warnedAccounts = accounts.Where(x => x.Failed == "GPR_RED_WARNING" || (x.HasWarn ?? false) || x.FirstWarningTimestamp > 0);
-            var suspendedAccounts = accounts.Where(x => x.Failed == "suspended" || (x.WasSuspended ?? false));
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var bannedAccounts = accounts.Where(x => x.IsAccountBanned);
+            var warnedAccounts = accounts.Where(x => x.IsAccountWarned);
+            var suspendedAccounts = accounts.Where(x => x.IsAccountSuspended);
 
             var model = new AccountStatisticsViewModel
             {
                 Accounts = accounts ?? new(),
                 AccountLevelStatistics = accountLevelStatistics,
                 TotalAccounts = (ulong)total,
-                InCooldown = (ulong)accounts!.LongCount(x => x.LastEncounterTime > 0 && now - x.LastEncounterTime < Strings.CooldownLimitS),
+                InCooldown = (ulong)accounts!.LongCount(x => x.IsAccountInCooldown),
                 AccountsInUse = (ulong)accountsInUse.Count,
                 OverSpinLimit = (ulong)accounts!.LongCount(x => x.Spins >= Strings.DefaultSpinLimit),
-                CleanLevel30s = (ulong)cleanAccounts.LongCount(x => x.Level >= 30),
+                CleanLevel40s = (ulong)cleanAccounts.LongCount(x => x.IsLevel40OrHigher),
+                CleanLevel30s = (ulong)cleanAccounts.LongCount(x => x.IsLevel30OrHigher),
                 SuspendedAccounts = (ulong)suspendedAccounts.LongCount(),
                 CleanAccounts = (ulong)cleanAccounts.LongCount(),
-                FreshAccounts = (ulong)cleanAccounts.LongCount(x => x.Level == 0),
-                OverLevel30 = (ulong)accounts!.LongCount(x => x.Level >= 30),
+                FreshAccounts = (ulong)cleanAccounts.LongCount(x => x.IsNewAccount),
+                Level40OrHigher = (ulong)accounts!.LongCount(x => x.IsLevel40OrHigher),
+                Level30OrHigher = (ulong)accounts!.LongCount(x => x.IsLevel30OrHigher),
                 Bans = new AccountWarningsBansViewModel
                 {
                     Last24Hours = (ulong)bannedAccounts.LongCount(x => now - x.FailedTimestamp < Strings.OneDayS),
@@ -123,6 +134,8 @@
             _logger.LogDebug($"Account stats took {totalSeconds}s");
             // Time: 0.1302 - So it's not the query, it's Razor being slow in the frontend :(
 
+            ViewBag.AccountGroups = accountGroups;
+            ViewBag.SelectedGroup = accountGroup;
             return View(model);
         }
 

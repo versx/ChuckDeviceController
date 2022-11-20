@@ -28,16 +28,28 @@
         public ulong AccountsInUse { get; set; }
 
         [
+            DisplayName("Clean Level 40"),
+            DisplayFormat(DataFormatString = "{0:N0}"),
+        ]
+        public ulong CleanLevel40s { get; set; }
+
+        [
             DisplayName("Clean Level 30"),
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]
         public ulong CleanLevel30s { get; set; }
 
         [
+            DisplayName("Level 40+"),
+            DisplayFormat(DataFormatString = "{0:N0}"),
+        ]
+        public ulong Level40OrHigher { get; set; }
+
+        [
             DisplayName("Level 30+"),
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]
-        public ulong OverLevel30 { get; set; }
+        public ulong Level30OrHigher { get; set; }
 
         [
             DisplayName("Suspended"),
