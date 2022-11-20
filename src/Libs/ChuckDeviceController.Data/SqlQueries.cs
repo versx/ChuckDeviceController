@@ -21,8 +21,8 @@ VALUES {0}
 ON DUPLICATE KEY UPDATE
     lat=VALUES(lat),
     lon=VALUES(lon),
-    name=VALUES(name),
-    url=VALUES(url),
+    name=COALESCE(VALUES(name), name),
+    url=COALESCE(VALUES(url), url),
     enabled=VALUES(enabled),
     deleted=VALUES(deleted),
     cell_id=VALUES(cell_id),
@@ -203,8 +203,8 @@ VALUES
 ON DUPLICATE KEY UPDATE
     lat=VALUES(lat),
     lon=VALUES(lon),
-    name=VALUES(name),
-    url=VALUES(url),
+    name=COALESCE(VALUES(name), name),
+    url=COALESCE(VALUES(url), url),
     enabled=VALUES(enabled),
     deleted=VALUES(deleted),
     cell_id=VALUES(cell_id),
