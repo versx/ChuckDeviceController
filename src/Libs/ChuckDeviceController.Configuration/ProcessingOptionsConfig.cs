@@ -50,27 +50,27 @@
 
         public bool ProcessWeather { get; set; } = true;
 
-        public bool ProcessForts { get; set; } = false;
+        public bool ProcessForts { get; set; } = true;
 
         public bool ProcessFortDetails { get; set; } = true;
 
         public bool ProcessGymInfo { get; set; } = true;
 
-        // TODO: ProcessGymDefenders
+        public bool ProcessGymDefenders { get; set; } = true;
 
-        // TODO: ProcessGymTrainers
+        public bool ProcessGymTrainers { get; set; } = true;
 
         public bool ProcessPokemon { get; set; } = true;
 
-        // TODO: ProcessWildPokemon
+        public bool ProcessWildPokemon { get; set; } = true;
 
-        // TODO: ProcessNearbyPokemon
+        public bool ProcessNearbyPokemon { get; set; } = true;
 
-        // TODO: ProcessMapPokemon
+        public bool ProcessMapPokemon { get; set; } = true;
 
         public bool ProcessQuests { get; set; } = true;
 
-        public bool ProcessEncounters { get; set; } = false;
+        public bool ProcessEncounters { get; set; } = true;
 
         public bool ProcessDiskEncounters { get; set; } = true;
     }
