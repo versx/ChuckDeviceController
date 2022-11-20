@@ -1,5 +1,5 @@
-﻿@using ChuckDeviceConfigurator.Controllers
-@model ProtoDataStatistics
+﻿@using ChuckDeviceController.Common
+@model ProtoDataStatisticsViewModel
 @{
     ViewData["Title"] = "Data Entity Benchmarks";
 }
@@ -22,7 +22,7 @@
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-gauge-simple"></i></h3>
                             <h4 class="list-group-item-heading">Average Count</h4>
-                            <p class="list-group-item-text">@((Model.AverageTime?.Count ?? 0).ToString("N0")) entities</p>
+                            <p class="list-group-item-text">@((Model?.AverageTime?.Count ?? 0).ToString("N0")) entities</p>
                         </div>
                     </div>
                 </div>
@@ -30,8 +30,8 @@
                     <div class="list-group">
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-clock"></i></h3>
-                            <h4 class="list-group-item-heading">Average Time</h4>
-                            <p class="list-group-item-text">@(Model.AverageTime?.TimeS ?? 0)s</p>
+                            <h4 class="list-group-item-heading">Average Time(sec)</h4>
+                            <p class="list-group-item-text">@(Model?.AverageTime?.TimeS ?? 0)s</p>
                         </div>
                     </div>
                 </div>
@@ -41,8 +41,8 @@
                     <div class="list-group">
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-gauge-simple"></i></h3>
-                            <h4 class="list-group-item-heading">Protos Received</h4>
-                            <p class="list-group-item-text">@(Model.TotalProtoPayloadsReceived.ToString("N0"))</p>
+                            <h4 class="list-group-item-heading">@Html.DisplayNameFor(model => model.TotalProtoPayloadsReceived)</h4>
+                            <p class="list-group-item-text">@Html.DisplayFor(model => model.TotalProtoPayloadsReceived)</p>
                         </div>
                     </div>
                 </div>
@@ -50,8 +50,8 @@
                     <div class="list-group">
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-clock"></i></h3>
-                            <h4 class="list-group-item-heading">Protos Processed</h4>
-                            <p class="list-group-item-text">@(Model.TotalProtosProcessed.ToString("N0"))</p>
+                            <h4 class="list-group-item-heading">@Html.DisplayNameFor(model => model.TotalProtosProcessed)</h4>
+                            <p class="list-group-item-text">@Html.DisplayFor(model => model.TotalProtosProcessed)</p>
                         </div>
                     </div>
                 </div>
@@ -61,8 +61,8 @@
                     <div class="list-group">
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-gauge-simple"></i></h3>
-                            <h4 class="list-group-item-heading">Entities Processed</h4>
-                            <p class="list-group-item-text">@(Model.TotalEntitiesProcessed.ToString("N0"))</p>
+                            <h4 class="list-group-item-heading">@Html.DisplayNameFor(model => model.TotalEntitiesProcessed)</h4>
+                            <p class="list-group-item-text">@Html.DisplayFor(model => model.TotalEntitiesProcessed)</p>
                         </div>
                     </div>
                 </div>
@@ -70,8 +70,8 @@
                     <div class="list-group">
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-clock"></i></h3>
-                            <h4 class="list-group-item-heading">Entities Upserted</h4>
-                            <p class="list-group-item-text">@(Model.TotalEntitiesUpserted.ToString("N0"))</p>
+                            <h4 class="list-group-item-heading">@Html.DisplayNameFor(model => model.TotalEntitiesUpserted)</h4>
+                            <p class="list-group-item-text">@Html.DisplayFor(model => model.TotalEntitiesUpserted)</p>
                         </div>
                     </div>
                 </div>
@@ -80,6 +80,45 @@
     </div>
 </div>
 <br>
+
+<dl class="row">
+    <div class="col">
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalS2CellsProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalS2CellsProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalClientWeatherCellsProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalClientWeatherCellsProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalFortsProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalFortsProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalFortDetailsProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalFortDetailsProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalGymInfoProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalGymInfoProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalGymDefendersProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalGymDefendersProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalGymTrainersProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalGymTrainersProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalIncidentsProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalIncidentsProcessed)</dd>
+    </div>
+    <div class="col">
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalWildPokemonProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalWildPokemonProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalNearbyPokemonProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalNearbyPokemonProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalMapPokemonProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalMapPokemonProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalQuestsProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalQuestsProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalPokemonEncountersProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalPokemonEncountersProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalPokemonDiskEncountersProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalPokemonDiskEncountersProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalSpawnpointsProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalSpawnpointsProcessed)</dd>
+        <dt class="col-sm-8">@Html.DisplayNameFor(model => model.TotalPlayerDataProcessed)</dt>
+        <dd class="col-sm-4">@Html.DisplayFor(model => model.TotalPlayerDataProcessed)</dd>
+    </div>
+</dl>
 
 <table id="table-data-benchmarks" class="table table-striped table-bordered dt-responsive nowrap">
     <thead class="table-dark">
@@ -93,7 +132,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.Times)
+        @foreach (var item in Model?.Times ?? new List<DataEntityTime>())
         {
             <tr>
                 <th scope="row">

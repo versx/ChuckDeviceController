@@ -10,7 +10,7 @@
 
     using ChuckDeviceController.Data.Entities;
 
-    internal class FortEntityTests
+	internal class FortEntityTests
     {
         private static readonly IReadOnlyDictionary<Type, Type> _enumsToConvert = new Dictionary<Type, Type>
         {

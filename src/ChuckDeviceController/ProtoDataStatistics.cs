@@ -1,13 +1,15 @@
 ﻿namespace ChuckDeviceController
 {
-    using System.Text.Json.Serialization;
-
     using ChuckDeviceController.Common;
 
-    public class ProtoDataStatistics
+    public class ProtoDataStatistics : BaseProtoDataStatistics
     {
+        #region Variables
+
         private readonly List<DataEntityTime> _entityTimes = new();
         private readonly object _lock = new();
+
+        #endregion
 
         #region Singleton
 
@@ -18,26 +20,9 @@
 
         #region Properties
 
-        [JsonPropertyName("total_requests")]
-        public ulong TotalRequestsProcessed { get; internal set; }
+        public override IReadOnlyList<DataEntityTime> Times => _entityTimes; // Data consumer times
 
-        [JsonPropertyName("protos_received")]
-        public uint TotalProtoPayloadsReceived { get; internal set; }
-
-        [JsonPropertyName("protos_processed")]
-        public uint TotalProtosProcessed { get; internal set; }
-
-        [JsonPropertyName("entities_processed")]
-        public uint TotalEntitiesProcessed { get; internal set; }
-
-        [JsonPropertyName("entities_upserted")]
-        public uint TotalEntitiesUpserted { get; internal set; }
-
-        [JsonPropertyName("data_times")]
-        public IReadOnlyList<DataEntityTime> Times => _entityTimes;
-
-        [JsonPropertyName("avg_time")]
-        public DataEntityTime? AverageTime
+        public override DataEntityTime? AverageTime
         {
             get
             {
