@@ -3,6 +3,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using MySqlConnector;
     using POGOProtos.Rpc;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
@@ -106,12 +107,14 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(IMemoryCacheHostedService memCache)
+        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipOldLookup = false)
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
-            var oldWeather = await EntityRepository.GetEntityAsync<long, Weather>(Id, memCache);
+            var oldWeather = skipOldLookup
+                ? null
+                : await EntityRepository.GetEntityAsync<long, Weather>(connection, Id, memCache);
             if (oldWeather == null)
             {
                 SendWebhook = true;

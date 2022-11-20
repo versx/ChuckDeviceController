@@ -3,6 +3,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using MySqlConnector;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Common;
@@ -85,21 +86,25 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(IMemoryCacheHostedService memCache)
+        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipOldLookup = false)
         {
-            var oldIncident = await EntityRepository.GetEntityAsync<string, Incident>(Id, memCache);
+            var oldIncident = skipOldLookup
+                ? null
+                : await EntityRepository.GetEntityAsync<string, Incident>(connection, Id, memCache);
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
             if (oldIncident == null)
             {
                 SendWebhook = true;
+                HasChanges = true;
             }
             else
             {
                 if (oldIncident.Expiration < Expiration || oldIncident.Character != Character)
                 {
                     SendWebhook = true;
+                    HasChanges = true;
                 }
             }
 

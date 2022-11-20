@@ -3,6 +3,8 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using MySqlConnector;
+
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Repositories;
@@ -53,9 +55,11 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(IMemoryCacheHostedService memCache, bool update = false)
+        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool update = false, bool skipOldLookup = false)
         {
-            var oldSpawnpoint = await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(Id, memCache);
+            var oldSpawnpoint = skipOldLookup
+                ? null
+                : await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(connection, Id, memCache);
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
             LastSeen = now;
@@ -78,6 +82,8 @@
 
             // Cache spawnpoint entity by id
             memCache.Set(Id, this);
+
+            await Task.CompletedTask;
         }
 
         #endregion

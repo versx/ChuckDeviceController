@@ -2,6 +2,7 @@
 {
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using MySqlConnector;
     using POGOProtos.Rpc;
     using ConditionType = POGOProtos.Rpc.QuestConditionProto.Types.ConditionType;
     using RewardType = POGOProtos.Rpc.QuestRewardProto.Types.Type;
@@ -170,13 +171,6 @@
         public Pokestop()
         {
             Id = string.Empty;
-        }
-
-        public Pokestop(dynamic data)
-        {
-            Id = data.Id;
-            Name = data.Name;
-            Url = data.Url;
         }
 
         public Pokestop(PokemonFortProto fortData, ulong s2cellId)
@@ -536,10 +530,12 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(IMemoryCacheHostedService memCache, bool updateQuest = false)
+        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool updateQuest = false, bool skipOldLookup = false)
         {
             var webhooks = new Dictionary<WebhookType, Pokestop>();
-            var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(Id, memCache);
+            var oldPokestop = skipOldLookup
+                ? null
+                : await EntityRepository.GetEntityAsync<string, Pokestop>(connection, Id, memCache);
 
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;

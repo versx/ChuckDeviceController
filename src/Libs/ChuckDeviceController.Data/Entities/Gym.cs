@@ -2,6 +2,7 @@
 {
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using MySqlConnector;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Common;
@@ -205,10 +206,12 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(IMemoryCacheHostedService memCache)
+        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipOldLookup = false)
         {
             var webhooks = new Dictionary<WebhookType, Gym>();
-            var oldGym = await EntityRepository.GetEntityAsync<string, Gym>(Id, memCache);
+            var oldGym = skipOldLookup
+                ? null
+                : await EntityRepository.GetEntityAsync<string, Gym>(connection, Id, memCache);
 
             if (RaidIsExclusive != null && (RaidIsExclusive ?? false) && ExRaidBossId > 0)
             {
