@@ -4,6 +4,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using MySqlConnector;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Common.Data;
@@ -229,7 +230,7 @@
             SeenType = SeenType.Wild;
         }
 
-        public Pokemon(NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
+        public Pokemon(MySqlConnection connection, IMemoryCacheHostedService memCache, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
         {
             Id = Convert.ToString(nearbyPokemon.EncounterId);
 
@@ -250,7 +251,7 @@
             }
             else
             {
-                var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(nearbyPokemon.FortId).Result;
+                var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(connection, nearbyPokemon.FortId, memCache).Result;
                 if (pokestop == null)
                 {
                     Console.WriteLine($"Failed to fetch Pokestop for nearby Pokemon '{Id}' to find location, skipping");
@@ -280,7 +281,7 @@
             IsExpireTimestampVerified = false;
         }
 
-        public Pokemon(MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
+        public Pokemon(MySqlConnection connection, IMemoryCacheHostedService memCache, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
         {
             var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
             Id = encounterId.ToString();
@@ -288,7 +289,7 @@
 
             var spawnpointId = mapPokemon.SpawnpointId;
             // Get Pokestop via spawnpoint id
-            var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(spawnpointId).Result;
+            var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(connection, spawnpointId, memCache).Result;
             if (pokestop == null)
             {
                 Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{Id}' to find location, skipping");
@@ -488,38 +489,21 @@
             Changed = Updated;
         }
 
-        public async Task UpdateAsync(IMemoryCacheHostedService memCache, bool updateIv = false)
+        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool updateIv = false, bool skipOldLookup = false)
         {
             var updateIV = updateIv;
             var setIvForWeather = false;
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
-            var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(Id, memCache);
-
+            var oldPokemon = skipOldLookup 
+                ? null
+                : await EntityRepository.GetEntityAsync<string, Pokemon>(connection, Id, memCache);
             if (IsEvent && AttackIV == null)
             {
-                Pokemon? oldPokemonNoEvent = null;
-                try
-                {
-                    var cached = memCache.Get<string, Pokemon>(Id);
-                    if (cached != null)
-                    {
-                        oldPokemonNoEvent = cached;
-                    }
-                    else
-                    {
-                        oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(Id); // IsEvent: false
-                        if (oldPokemonNoEvent != null)
-                        {
-                            memCache.Set(Id, oldPokemonNoEvent);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error Pokemon.UpdateAsync: {ex}");
-                }
+                var oldPokemonNoEvent = skipOldLookup
+                    ? null
+                    : await EntityRepository.GetEntityAsync<string, Pokemon>(connection, Id, memCache); // IsEvent: false;
                 if (oldPokemonNoEvent != null && oldPokemonNoEvent.AttackIV != null &&
                     (((Weather == 0 || Weather == null) && (oldPokemonNoEvent.Weather == 0 || oldPokemonNoEvent.Weather == null)) ||
                     (Weather != 0 && oldPokemonNoEvent.Weather != 0)))
@@ -537,32 +521,14 @@
                     Capture2 = null;
                     Capture3 = null;
                     updateIV = true;
-                    //CalculatePvpRankings();
+                    // TODO: SetPvpRankings();
                 }
             }
             if (IsEvent && !IsExpireTimestampVerified)
             {
-                Pokemon? oldPokemonNoEvent = null;
-                try
-                {
-                    var cached = memCache.Get<string, Pokemon>(Id);
-                    if (cached != null)
-                    {
-                        oldPokemonNoEvent = cached;
-                    }
-                    else
-                    {
-                        oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(Id); // IsEvent: false
-                        if (oldPokemonNoEvent != null)
-                        {
-                            memCache.Set(Id, oldPokemonNoEvent);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error Pokemon.UpdateAsync: {ex}");
-                }
+                var oldPokemonNoEvent = skipOldLookup
+                    ? null
+                    : await EntityRepository.GetEntityAsync<string, Pokemon>(connection, Id, memCache); // IsEvent: false;
                 if (oldPokemonNoEvent != null && oldPokemonNoEvent.IsExpireTimestampVerified)
                 {
                     ExpireTimestamp = oldPokemonNoEvent.ExpireTimestamp;
@@ -750,6 +716,79 @@
             memCache.Set(Id, this);
         }
 
+        public async Task<Spawnpoint?> ParseSpawnpointAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, int timeTillHiddenMs, ulong timestampMs)
+        {
+            var spawnId = SpawnId ?? 0;
+            if (spawnId == 0)
+            {
+                return null;
+            }
+
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (timeTillHiddenMs <= 90000 && timeTillHiddenMs > 0)
+            {
+                ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(timeTillHiddenMs)) / 1000);
+                IsExpireTimestampVerified = true;
+                var date = timestampMs.FromMilliseconds();
+                var secondOfHour = date.Second + (date.Minute * 60);
+
+                var spawnpoint = new Spawnpoint
+                {
+                    Id = spawnId,
+                    Latitude = Latitude,
+                    Longitude = Longitude,
+                    DespawnSecond = Convert.ToUInt16(secondOfHour),
+                    LastSeen = SaveSpawnpointLastSeen ? now : null,
+                    Updated = now,
+                };
+                await spawnpoint.UpdateAsync(connection, memCache, update: true, skipOldLookup: true);
+                return spawnpoint;
+            }
+
+            IsExpireTimestampVerified = false;
+
+            if (!IsExpireTimestampVerified && spawnId > 0)
+            {
+                var oldSpawnpoint = await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(connection, SpawnId ?? 0, memCache);
+                if (oldSpawnpoint != null && oldSpawnpoint.DespawnSecond != null)
+                {
+                    var despawnSecond = oldSpawnpoint.DespawnSecond;
+                    var timestampS = timestampMs / 1000;
+                    var date = timestampS.FromMilliseconds();
+                    var secondOfHour = date.Second + (date.Minute * 60);
+                    var despawnOffset = despawnSecond - secondOfHour;
+                    if (despawnSecond < secondOfHour)
+                        despawnOffset += 3600;
+
+                    // Update spawnpoint last_seen if enabled
+                    if (SaveSpawnpointLastSeen)
+                    {
+                        oldSpawnpoint.LastSeen = now;
+                    }
+
+                    ExpireTimestamp = timestampS + (ulong)despawnOffset;
+                    IsExpireTimestampVerified = true;
+                    return oldSpawnpoint;
+                }
+                else
+                {
+                    var newSpawnpoint = new Spawnpoint
+                    {
+                        Id = spawnId,
+                        Latitude = Latitude,
+                        Longitude = Longitude,
+                        DespawnSecond = null,
+                        LastSeen = SaveSpawnpointLastSeen ? now : null,
+                        Updated = now,
+                    };
+                    await newSpawnpoint.UpdateAsync(connection, memCache, update: true, skipOldLookup: true);
+                    return newSpawnpoint;
+                }
+            }
+
+            return null;
+        }
+
         public dynamic? GetWebhookData(string type)
         {
             switch (type.ToLower())
@@ -898,7 +937,7 @@
 
         public static SeenType StringToSeenType(string seenType)
         {
-            return seenType.ToLower() switch
+            return seenType?.ToLower() switch
             {
                 "unset" => SeenType.Unset,
                 "encounter" => SeenType.Encounter,
