@@ -25,7 +25,7 @@
 
         private static readonly ILogger<EntityRepository> _logger =
             new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Debug)));
-        private static readonly SemaphoreSlim _sem = new(1);
+        private static readonly SemaphoreSlim _sem = new(5);
         //private static readonly SemaphoreSlim _entitySem = new(15);
         private static readonly SemaphoreSlim _entitySem = new(25);
         //private static readonly SemaphoreSlim _entitySem = new(1);
@@ -200,7 +200,7 @@
             }
 
             var rowsAffected = 0;
-            await _sem.WaitAsync(stoppingToken);
+            //await _sem.WaitAsync(stoppingToken);
 
             // TODO: _connection
             using var connection = new MySqlConnection(ConnectionString);
@@ -221,7 +221,7 @@
                 await trans.RollbackAsync(stoppingToken);
             }
 
-            _sem.Release();
+            //_sem.Release();
             return rowsAffected;
         }
 
