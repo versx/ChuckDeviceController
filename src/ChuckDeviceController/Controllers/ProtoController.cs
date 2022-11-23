@@ -8,8 +8,8 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
-    using ChuckDeviceController.Net.Models.Responses;
     using ChuckDeviceController.Net.Models.Requests;
+    using ChuckDeviceController.Net.Models.Responses;
     using ChuckDeviceController.Services;
 
     [ApiController]
