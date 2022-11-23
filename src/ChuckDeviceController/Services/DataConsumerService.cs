@@ -15,9 +15,9 @@
     {
         #region Variables
 
-        private readonly ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> _queue;// = new(
+        private readonly ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> _queue;
         //private readonly SemaphoreSlim _sem = new(1, 1);
-        private readonly SemaphoreSlim _semQueue = new(1, 1);
+        //private readonly SemaphoreSlim _semQueue = new(1, 1);
         private readonly System.Timers.Timer _timer = new();
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IWebHostEnvironment _env;
@@ -77,53 +77,59 @@
 
         public async Task AddEntityAsync(SqlQueryType type, BaseEntity entity)
         {
-            await _semQueue.WaitAsync();
+            var partial = _queue.GetOrAdd(type, _ => new());
+            lock (partial) partial.Add(entity); // Lock for thread safety
 
-            _queue.AddOrUpdate(type, new ConcurrentBag<BaseEntity>(new[] { entity }), (key, bag) =>
-            {
-                bag.Add(entity);
-                return bag;
-            });
+            //await _semQueue.WaitAsync();
 
-            //if (_queue.ContainsKey(type))
+            //_queue.AddOrUpdate(type, new ConcurrentBag<BaseEntity>(new[] { entity }), (key, bag) =>
             //{
-            //    _queue[type].Add(entity);
-            //    _semQueue.Release();
-            //    return;
-            //}
+            //    bag.Add(entity);
+            //    return bag;
+            //});
 
-            //if (!_queue.TryAdd(type, new() { entity }))
-            //{
-            //    // Key already exists, add entity to queue
-            //    _queue[type].Add(entity);
-            //}
+            ////if (_queue.ContainsKey(type))
+            ////{
+            ////    _queue[type].Add(entity);
+            ////    _semQueue.Release();
+            ////    return;
+            ////}
 
-            _semQueue.Release();
+            ////if (!_queue.TryAdd(type, new() { entity }))
+            ////{
+            ////    // Key already exists, add entity to queue
+            ////    _queue[type].Add(entity);
+            ////}
+
+            //_semQueue.Release();
             await Task.CompletedTask;
         }
 
         public async Task AddEntitiesAsync(SqlQueryType type, IEnumerable<BaseEntity> entities)
         {
-            await _semQueue.WaitAsync();
+            var partial = _queue.GetOrAdd(type, _ => new());
+            lock (partial) entities.ToList().ForEach(entity => partial.Add(entity)); // Lock for thread safety
 
-            _queue.AddOrUpdate(type, new ConcurrentBag<BaseEntity>(entities), (key, bag) =>
-            {
-                bag = new(_queue[type].Union(entities));
-                return bag;
-            });
+            //await _semQueue.WaitAsync();
 
-            //if (_queue.ContainsKey(type))
+            //_queue.AddOrUpdate(type, new ConcurrentBag<BaseEntity>(entities), (key, bag) =>
             //{
-            //    _queue[type] = new(_queue[type].Union(entities));
-            //    return;
-            //}
+            //    bag = new(_queue[type].Union(entities));
+            //    return bag;
+            //});
 
-            //if (!_queue.TryAdd(type, new(entities)))
-            //{
-            //    _queue[type] = new(_queue[type].Union(entities));
-            //}
+            ////if (_queue.ContainsKey(type))
+            ////{
+            ////    _queue[type] = new(_queue[type].Union(entities));
+            ////    return;
+            ////}
 
-            _semQueue.Release();
+            ////if (!_queue.TryAdd(type, new(entities)))
+            ////{
+            ////    _queue[type] = new(_queue[type].Union(entities));
+            ////}
+
+            //_semQueue.Release();
             await Task.CompletedTask;
         }
 
