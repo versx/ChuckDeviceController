@@ -7,7 +7,6 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Options;
     using MySqlConnector;
@@ -31,6 +30,7 @@
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.Rpc;
 
+    // TODO: Add webhook sender service - add webhook items to queue
     // TODO: Split up/refactor class
     // TODO: var leakMonitor = new ConnectionLeakWatcher(context);
 
@@ -1578,43 +1578,42 @@
     /// <credits>https://stackoverflow.com/a/15002420</credits>
     public class ConnectionLeakWatcher : IDisposable
     {
+        private const uint ConnectionTimeoutS = 10;
+
         private static int _idCounter = 0;
         private readonly int _connectionId = ++_idCounter;
         private readonly Timer? _timer;
         //Store reference to connection so we can unsubscribe from state change events
-        //private SqlConnection? _connection;
         private DbConnection? _connection;
 
         public string StackTrace { get; set; }
 
-        //public ConnectionLeakWatcher(SqlConnection connection)
-        //public ConnectionLeakWatcher(System.Data.Common.DbConnection connection)
-        public ConnectionLeakWatcher(DbContext context)
+        public ConnectionLeakWatcher(MySqlConnection connection)
         {
-            //_connection = connection;
-            _connection = context.Database.GetDbConnection();
+            _connection = connection;
+            _connection.StateChange += ConnectionOnStateChange;
             StackTrace = Environment.StackTrace;
 
-            _connection.StateChange += ConnectionOnStateChange;
             Debug.WriteLine($"Connection opened {_connectionId}");
 
             _timer = new Timer(_ =>
             {
-                //The timeout expired without the connection being closed. Write to debug output the stack trace of the connection creation to assist in pinpointing the problem
+                // The timeout expired without the connection being closed. Write to debug output the stack trace of the connection creation to
+                // assist in pinpointing the problem
                 Debug.WriteLine("Suspected connection leak with origin: {0}{1}{0}Connection id: {2}", Environment.NewLine, StackTrace, _connectionId);
-                //That's it - we're done. Clean up by calling Dispose.
+                // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
-            }, null, 10000, Timeout.Infinite);
+            }, null, ConnectionTimeoutS * 1000, Timeout.Infinite);
         }
 
         private void ConnectionOnStateChange(object sender, StateChangeEventArgs stateChangeEventArgs)
         {
-            //Connection state changed. Was it closed?
+            // Connection state changed. Was it closed?
             if (stateChangeEventArgs.CurrentState == ConnectionState.Closed)
             {
-                //The connection was closed within the timeout
+                // The connection was closed within the timeout
                 Debug.WriteLine($"Connection closed {_connectionId}");
-                //That's it - we're done. Clean up by calling Dispose.
+                // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
             }
         }
@@ -1626,7 +1625,7 @@
         {
             if (_isDisposed) return;
 
-            _timer.Dispose();
+            _timer?.Dispose();
 
             if (_connection != null)
             {
