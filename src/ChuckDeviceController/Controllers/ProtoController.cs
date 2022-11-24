@@ -186,6 +186,9 @@
                     if (oldLevel == level)
                         return;
 
+                    if (level < oldLevel)
+                        return;
+
                     // Account level has changed, update cache
                     _levelCache[username] = level;
                 }

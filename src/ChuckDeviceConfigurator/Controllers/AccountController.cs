@@ -39,10 +39,6 @@
         // GET: AccountController
         public async Task<ActionResult> Index(string? accountGroup = null)
         {
-            // NOTE: Speed up query
-            var sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-
             var onlyGroups = accountGroup == "all_groups";
             var onlyNoGroups = accountGroup == "no_groups";
             var allAccounts = await _context.Accounts.ToListAsync();
@@ -66,10 +62,8 @@
                                            .Where(x => !string.IsNullOrEmpty(x))
                                            .ToList();
 
-            sw.Stop();
-            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-            _logger.LogDebug($"Account stats took {totalSeconds}s");
-            sw.Reset();
+            // NOTE: Speed up accounts grouped by level query
+            var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
             var total = accounts.Count;
@@ -77,8 +71,8 @@
             var accountLevelStatistics = accounts.GroupBy(account => account.Level, (level, levelAccounts) => new AccountLevelStatisticsViewModel
             {
                 Level = level,
-                Total = (ulong)accounts.LongCount(acc => acc.Level == level),
-                InUse = (ulong)accounts.LongCount(acc => devices.Any(dev => string.Compare(dev.AccountUsername, acc.Username, true) == 0 && acc.Level == level)),
+                Total = (ulong)levelAccounts.LongCount(),
+                InUse = (ulong)levelAccounts.LongCount(acc => devices.Any(dev => dev.AccountUsername == acc.Username && acc.Level == level)),
                 Good = (ulong)levelAccounts.LongCount(acc => acc.IsAccountClean),
                 Banned = (ulong)levelAccounts.LongCount(acc => acc.IsAccountBanned),
                 Warning = (ulong)levelAccounts.LongCount(acc => acc.IsAccountWarned),
@@ -89,12 +83,6 @@
                 // error_26, etc
                 //Other = (ulong)levelAccounts.LongCount(acc => !string.IsNullOrEmpty(acc.Failed) && !Account.FailedReasons.Contains(acc.Failed)),
             }).ToList();
-
-            sw.Stop();
-            totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-            _logger.LogDebug($"Account stats took {totalSeconds}s");
-            sw.Reset();
-            sw.Start();
 
             var days7 = Strings.OneDayS * 7;
             var days30 = Strings.OneDayS * 30;
@@ -142,7 +130,7 @@
             };
 
             sw.Stop();
-            totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
             _logger.LogDebug($"Account stats took {totalSeconds}s");
             // Time: 0.1302 - So it's not the query, it's Razor being slow in the frontend :(
             // TODO: No, it's definitely the query as well
