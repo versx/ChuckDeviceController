@@ -6,32 +6,34 @@
     using Dapper;
     using MySqlConnector;
 
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.TypeHandlers;
     using ChuckDeviceController.Common.Data;
-
-    public interface IEntityDataRepository
-    {
-        Task<TEntity?> GetByIdAsync<TKey, TEntity>(TKey key, CancellationToken stoppingToken = default)
-            where TKey : notnull
-            where TEntity : BaseEntity;
-
-        Task<IEnumerable<TEntity>?> GetAllAsync<TEntity>(CancellationToken stoppingToken = default)
-            where TEntity : BaseEntity;
-    }
+    using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
+    using ChuckDeviceController.Data.TypeHandlers;
 
     public class EntityDataRepository : IEntityDataRepository
     {
+        #region Constants
+
         private const uint DefaultConnectionWaitTimeS = 3;
         private const int DefaultCommandTimeoutS = 30;
+
+        #endregion
+
+        #region Variables
 
         private readonly SemaphoreSlim _sem = new(1);
         private readonly string _connectionString;
         private MySqlConnection? _connection;
 
+        #endregion
+
+        #region Constructor
+
         public EntityDataRepository(string connectionString)
         {
-            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            _connectionString = connectionString
+                ?? throw new ArgumentNullException(nameof(connectionString), $"{nameof(connectionString)} cannot be null!");
 
             AddTypeMappers();
             OpenConnection();
@@ -39,6 +41,8 @@
             var csb = MySqlConnectorFactory.Instance.CreateConnectionStringBuilder();
             csb.ConnectionString = _connectionString;
         }
+
+        #endregion
 
         #region Public Methods
 
@@ -51,10 +55,10 @@
             TEntity? result = null;
             try
             {
-                EnsureConnectionIsOpen();
+                EnsureConnectionIsOpen(attemptReopen: true);
 
-                var tableName = EntityRepository.GetTableAttribute<TEntity>();
-                var keyName = EntityRepository.GetKeyAttribute<TEntity>();
+                var tableName = typeof(TEntity).GetTableAttribute();
+                var keyName = typeof(TEntity).GetKeyAttribute();
                 var sql = $"SELECT * FROM {tableName} WHERE {keyName} = '{key}'";
                 result = await _connection.QueryFirstOrDefaultAsync<TEntity>(
                     sql,
@@ -79,9 +83,9 @@
             IEnumerable<TEntity>? result = null;
             try
             {
-                EnsureConnectionIsOpen();
+                EnsureConnectionIsOpen(attemptReopen: true);
 
-                var tableName = EntityRepository.GetTableAttribute<TEntity>();
+                var tableName = typeof(TEntity).GetTableAttribute();
                 var sql = $"SELECT * FROM {tableName}";
                 result = await _connection.QueryAsync<TEntity>(
                     sql,
@@ -135,15 +139,22 @@
             }
         }
 
-        private void EnsureConnectionIsOpen()
+        private void EnsureConnectionIsOpen(bool attemptReopen)
         {
             if (_connection == null || (_connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
             {
-                throw new Exception($"Not connected to MySQL database server!");
+                if (!attemptReopen)
+                {
+                    throw new Exception($"Not connected to MySQL database server!");
+                }
+
+                OpenConnection();
             }
         }
 
         #endregion
+
+        #region Dapper Type Mappings
 
         public static void AddTypeMappers()
         {
@@ -167,17 +178,21 @@
             //Weather.WeatherCondition
         }
 
-        public static void SetTypeMap<TEntity>()
+        public static void SetTypeMap<TEntity>() => SetTypeMap(typeof(TEntity));
+
+        public static void SetTypeMap(Type type)
         {
             SqlMapper.SetTypeMap(
-                typeof(TEntity),
+                type,
                 new CustomPropertyTypeMap(
-                    typeof(TEntity),
+                    type,
                     (type, columnName) =>
                         type.GetProperties().FirstOrDefault(prop =>
                             prop.GetCustomAttributes(false)
                                 .OfType<ColumnAttribute>()
                                 .Any(attr => attr.Name == columnName))));
         }
+
+        #endregion
     }
 }

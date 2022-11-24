@@ -7,6 +7,7 @@
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Data.TypeHandlers;
 
@@ -27,8 +28,8 @@
         [TestCase("10792928927461492653")] // nearby_cell
         public async Task TestPokemon(string id)
         {
-            var tableName = EntityRepository.GetTableAttribute<Pokemon>();
-            var keyName = EntityRepository.GetKeyAttribute<Pokemon>();
+            var tableName = typeof(Pokemon).GetTableAttribute();
+            var keyName = typeof(Pokemon).GetKeyAttribute();
 
             EntityDataRepository.SetTypeMap<Pokemon>();
 

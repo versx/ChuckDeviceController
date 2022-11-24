@@ -428,11 +428,11 @@
                 var tasks = entitiesToUpsert.Select(pair => UpsertEntitiesAsync(pair.Key, pair.Value, stoppingToken));
                 Task.WaitAll(tasks.ToArray(), stoppingToken);
 
-                    //if (!result.Success)
-                    //{
-                    //    _logger.LogError($"Failed to insert {entityCount:N0} entities");
-                    //}
-                    //results.Add(result);
+                //if (!result.Success)
+                //{
+                //    _logger.LogError($"Failed to insert {entityCount:N0} entities");
+                //}
+                //results.Add(result);
 
                 //foreach (var (sqlType, entities) in entitiesToUpsert)
                 //{

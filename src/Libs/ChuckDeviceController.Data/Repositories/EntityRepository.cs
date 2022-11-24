@@ -1,9 +1,6 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
     using System.Data;
-    using System.Reflection;
 
     using Dapper;
     using MySqlConnector;
@@ -317,33 +314,6 @@
             {
                 await Task.Delay(TimeSpan.FromSeconds(waitTimeS));
             }
-        }
-
-        #endregion
-
-        #region Attribute Helpers
-
-        // TODO: Move to separate class or lib
-
-        public static string? GetTableAttribute(Type type)
-        {
-            var attr = type.GetCustomAttribute<TableAttribute>();
-            var table = attr?.Name;
-            return table;
-        }
-
-        public static string? GetTableAttribute<TEntity>()
-        {
-            return GetTableAttribute(typeof(TEntity));
-        }
-
-        public static string? GetKeyAttribute<TEntity>()
-        {
-            var type = typeof(TEntity);
-            var properties = type.GetProperties();
-            var attr = properties.FirstOrDefault(prop => prop.GetCustomAttribute<KeyAttribute>() != null);
-            var key = attr?.Name;
-            return key;
         }
 
         #endregion
