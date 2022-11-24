@@ -27,10 +27,15 @@
             { typeof(Team), x => Convert.ToInt32(x) },
             { typeof(SeenType), x => Pokemon.SeenTypeToString((SeenType)x) },
         };
-        private static readonly IEnumerable<Type> _typesToConvert = new[]
+        private static readonly IEnumerable<Type> _typesToConvertJson = new[]
         {
             typeof(Dictionary<,>),
             typeof(List<>),
+            typeof(IReadOnlyDictionary<,>),
+            typeof(IReadOnlyList<>),
+            typeof(IReadOnlyCollection<>),
+            typeof(IDictionary<,>),
+            typeof(IList<>),
             typeof(IEnumerable<>),
         };
 
@@ -143,10 +148,14 @@
             {
                 return SqlifyPropertyValueToString(value);
             }
+            else if (property.PropertyType == typeof(SeenType))
+            {
+                return SqlifyPropertyValueToString(value);
+            }
             // Convert generics, arrays, dictionaries, and lists
             else if (property.PropertyType.IsArray ||
                      (property.PropertyType.IsGenericType &&
-                     _typesToConvert.Contains(property.PropertyType.GetGenericTypeDefinition())))
+                     _typesToConvertJson.Contains(property.PropertyType.GetGenericTypeDefinition())))
             {
                 // Convert arrays and dictionaries to json strings
                 var json = value.ToJson();

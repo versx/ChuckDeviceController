@@ -18,7 +18,7 @@
             this MySqlConnection connection,
             string tableName,
             IEnumerable<TEntity> entities,
-            DataUpdater<TEntity> dataFunc,
+            ColumnDataExpression<TEntity> dataFunc,
             IDbTransaction trans,
             bool includeOnDuplicateQuery)
         {
@@ -60,7 +60,7 @@
 
         private static Tuple<IEnumerable<string>, DynamicParameters> GetQueries<TEntity>(
             IEnumerable<TEntity> dataToInsert,
-            DataUpdater<TEntity> dataFunc)
+            ColumnDataExpression<TEntity> dataFunc)
         {
             var parameters = new DynamicParameters();
 
@@ -72,7 +72,7 @@
         private static IEnumerable<string> GenerateQueryAndParameters<TEntity>(
             TEntity entity,
             DynamicParameters parameters,
-            DataUpdater<TEntity> dataFunc)
+            ColumnDataExpression<TEntity> dataFunc)
         {
             var paramTemplateFunc = new Func<Guid, string>(guid => $"@p{guid.ToString().Replace("-", "")}");
             var paramList = new List<string>();
@@ -98,7 +98,7 @@
         }
     }
 
-    public class DataUpdater<TEntity> : Dictionary<string, Func<TEntity, object>>
+    public class ColumnDataExpression<TEntity> : Dictionary<string, Func<TEntity, object>>
     {
     }
 }

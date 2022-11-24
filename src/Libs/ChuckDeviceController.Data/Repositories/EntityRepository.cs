@@ -177,7 +177,8 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error: {ex}");
+                //_logger.LogError($"Error: {ex}");
+                Console.WriteLine($"[ExecuteAsync] Error: {ex}");
             }
 
             _sem.Release();
@@ -217,7 +218,8 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error: {ex}");
+                //_logger.LogError($"Error: {ex}");
+                Console.WriteLine($"[ExecuteAsync] Error: {ex}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -253,7 +255,8 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error: {ex}");
+                //_logger.LogError($"Error: {ex}");
+                Console.WriteLine($"[ExecuteBulkAsync] Error: {ex}");
                 await trans.RollbackAsync(stoppingToken);   
             }
 
@@ -291,11 +294,18 @@
 
         #region Attribute Helpers
 
-        public static string? GetTableAttribute<TEntity>()
+        // TODO: Move to separate class or lib
+
+        public static string? GetTableAttribute(Type type)
         {
-            var attr = typeof(TEntity).GetCustomAttribute<TableAttribute>();
+            var attr = type.GetCustomAttribute<TableAttribute>();
             var table = attr?.Name;
             return table;
+        }
+
+        public static string? GetTableAttribute<TEntity>()
+        {
+            return GetTableAttribute(typeof(TEntity));
         }
 
         public static string? GetKeyAttribute<TEntity>()

@@ -41,7 +41,7 @@
             Key,
             DatabaseGenerated(DatabaseGeneratedOption.None),
         ]
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
 
         [Column("pokemon_id")]
         public uint PokemonId { get; set; }
@@ -119,7 +119,7 @@
             DefaultValue(null),
             ForeignKey("pokestop_id"),
         ]
-        public string? PokestopId { get; set; } = null;
+        public string? PokestopId { get; set; } = null!;
 
         public virtual Pokestop? Pokestop { get; set; }
 
@@ -174,7 +174,7 @@
             Column("pvp"),
             DefaultValue(null),
         ]
-        public Dictionary<string, dynamic>? PvpRankings { get; set; } = null;
+        public Dictionary<string, dynamic>? PvpRankings { get; set; } = null!;
 
         [NotMapped]
         public bool HasChanges { get; set; }
@@ -205,8 +205,6 @@
 
         public Pokemon()
         {
-            Id = string.Empty;
-            PokestopId = null;
         }
 
         public Pokemon(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
@@ -914,40 +912,6 @@
             }
 
             return false;
-        }
-
-        #endregion
-
-        #region Helper Methods
-
-        public static string SeenTypeToString(SeenType type)
-        {
-            return type switch
-            {
-                SeenType.Unset => "unset",
-                SeenType.Encounter => "encounter",
-                SeenType.Wild => "wild",
-                SeenType.NearbyStop => "nearby_stop",
-                SeenType.NearbyCell => "nearby_cell",
-                SeenType.LureWild => "lure_wild",
-                SeenType.LureEncounter => "lure_encounter",
-                _ => type.ToString().ToLower(),
-            };
-        }
-
-        public static SeenType StringToSeenType(string seenType)
-        {
-            return seenType?.ToLower() switch
-            {
-                "unset" => SeenType.Unset,
-                "encounter" => SeenType.Encounter,
-                "wild" => SeenType.Wild,
-                "nearby_stop" => SeenType.NearbyStop,
-                "nearby_cell" => SeenType.NearbyCell,
-                "lure_wild" => SeenType.LureWild,
-                "lure_encounter" => SeenType.LureEncounter,
-                _ => SeenType.Unset,
-            };
         }
 
         #endregion
