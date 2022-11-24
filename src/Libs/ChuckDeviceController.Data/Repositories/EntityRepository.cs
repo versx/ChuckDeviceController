@@ -17,26 +17,29 @@
 
     public class EntityRepository
     {
+        #region Constants
+
         private const uint DefaultConnectionWaitTimeS = 5;
         private const int DefaultCommandTimeoutS = 30;
         private const double DefaultExpiryLimitM = 15;
 
+        #endregion
+
         #region Variables
 
-        private static readonly ILogger<EntityRepository> _logger =
-            new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Debug)));
+        //private static readonly ILogger<EntityRepository> _logger =
+        //    new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Trace)));
         private static readonly SemaphoreSlim _sem = new(5);
-        //private static readonly SemaphoreSlim _entitySem = new(15);
-        private static readonly SemaphoreSlim _entitySem = new(25);
+        private static readonly SemaphoreSlim _entitySem = new(25); // TODO: Make entity fetching concurrency level configurable
         //private static readonly SemaphoreSlim _entitySem = new(1);
-        private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(15); // TODO: Make entity fetch lock wait time configurable
         private static readonly IEnumerable<ConnectionState> _invalidConnectionStates = new[]
         {
             ConnectionState.Broken,
             ConnectionState.Closed,
         };
         private static MySqlConnection? _connection;
-        private static string ConnectionString;
+        public static string ConnectionString;
         private readonly string _connectionString;
         private readonly bool _openConnection;
 
@@ -237,7 +240,7 @@
         /// <param name="stoppingToken">Cancellation token to signal exit.</param>
         /// <returns>Returns the number of rows affected by the query.</returns>
         /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
-        public static async Task<int> ExecuteBulkAsync<TEntity>(string tableName, IEnumerable<TEntity> entities, DataUpdater<TEntity> dataFunc, CancellationToken stoppingToken = default)
+        public static async Task<int> ExecuteBulkAsync<TEntity>(string tableName, IEnumerable<TEntity> entities, ColumnDataExpression<TEntity> dataFunc, CancellationToken stoppingToken = default)
         {
             if (_connection == null)
             {

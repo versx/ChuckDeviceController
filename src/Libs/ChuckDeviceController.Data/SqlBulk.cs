@@ -107,7 +107,8 @@
 
             try
             {
-                sqls = GenerateSqlQueryBatchesRaw(sqlQuery, sqlValues, entities, batchSize, includedProperties, ignoredProperties);
+                var useComma = !string.IsNullOrEmpty(sqlValues);
+                sqls = GenerateSqlQueryBatchesRaw(sqlQuery, sqlValues, entities, batchSize, includedProperties, ignoredProperties, useCommaInsteadOfEndingStatement: useComma);
                 batchCount = sqls.Count();
                 rowsAffected += await EntityRepository.ExecuteAsync(sqls, commandTimeoutS: 30, stoppingToken);
                 success = true;
@@ -197,16 +198,20 @@
             IEnumerable<TEntity> entities,
             int batchSize = DefaultBatchSize,
             IEnumerable<string>? includedProperties = null,
-            IEnumerable<string>? ignoredProperties = null)
+            IEnumerable<string>? ignoredProperties = null,
+            bool useCommaInsteadOfEndingStatement = true)
             where TEntity : BaseEntity
         {
             var batchCount = (int)Math.Ceiling((double)entities.Count() / batchSize);
             var sqlQueries = new List<string>();
+            var endingStatement = useCommaInsteadOfEndingStatement
+                ? ','
+                : ';';
 
             for (var i = 0; i < batchCount; i++)
             {
                 var entityBatch = entities.Skip(i * batchSize).Take(batchSize);
-                var queryValues = string.Join(',', entityBatch.Select(entity =>
+                var queryValues = string.Join(endingStatement, entityBatch.Select(entity =>
                 {
                     var propValues = entity!.GetPropertyValues(includedProperties, ignoredProperties);
                     var result = string.IsNullOrEmpty(sqlValues)

@@ -209,7 +209,7 @@
                 {
                     _logger.LogInformation($"Marking {stopsToDelete.Count:N0} Pokestops as deleted since they no longer seem to exist.");
 
-                    var result = await EntityRepository.ExecuteBulkAsync("pokestop", stopsToDelete, new DataUpdater<Pokestop>
+                    var result = await EntityRepository.ExecuteBulkAsync("pokestop", stopsToDelete, new ColumnDataExpression<Pokestop>
                     {
                         { "deleted", x => x.IsDeleted },
                     });
@@ -219,7 +219,7 @@
                 if (gymsToDelete.Count > 0)
                 {
                     _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they no longer seem to exist.");
-                    var result = await EntityRepository.ExecuteBulkAsync("gym", gymsToDelete, new DataUpdater<Gym>
+                    var result = await EntityRepository.ExecuteBulkAsync("gym", gymsToDelete, new ColumnDataExpression<Gym>
                     {
                         { "deleted", x => x.IsDeleted },
                     });

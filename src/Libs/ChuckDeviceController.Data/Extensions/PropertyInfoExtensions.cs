@@ -8,7 +8,6 @@
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
 
     public static class PropertyInfoExtensions
@@ -25,7 +24,6 @@
         {
             { typeof(WeatherCondition), x => Convert.ToInt32(x) },
             { typeof(Team), x => Convert.ToInt32(x) },
-            { typeof(SeenType), x => Pokemon.SeenTypeToString((SeenType)x) },
         };
         private static readonly IEnumerable<Type> _typesToConvertJson = new[]
         {
@@ -183,13 +181,17 @@
                 return DbNull;
             }
 
-            var safeValue = unsafeValue.Contains('"') || unsafeValue.Contains('\'')
-                // String value already contains quotations, use back ticks.
-                ? $"`{unsafeValue}`"
-                // Encapsulate string value in single quotations.
-                : $"'{unsafeValue}'";
+            if (unsafeValue.Contains('\''))
+            {
+                unsafeValue = unsafeValue.Replace("'", @"\'");
+            }
+            if (unsafeValue.Contains('"'))
+            {
+                unsafeValue = unsafeValue.Replace('"', '\"');
+            }
 
-            return safeValue ?? DbNull;
+            var safeValue = $"'{unsafeValue}'";
+            return safeValue;
         }
 
         /// <summary>

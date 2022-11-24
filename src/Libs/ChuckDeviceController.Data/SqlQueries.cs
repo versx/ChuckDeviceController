@@ -103,10 +103,10 @@ ON DUPLICATE KEY UPDATE
         public const string GymDetailsOnMergeUpdate = @"
 UPDATE gym
 SET
-    name=`{1}`,
-    url=`{2}`,
+    name={1},
+    url={2},
     updated=UNIX_TIMESTAMP()
-WHERE id='{0}'
+WHERE id={0}
 ";
 
         public const string GymTrainerOnMergeUpdate = @"";
@@ -223,10 +223,10 @@ ON DUPLICATE KEY UPDATE
         public const string PokestopDetailsOnMergeUpdate = @"
 UPDATE pokestop
 SET
-    name=`{1}`,
-    url=`{2}`,
+    name={1},
+    url={2},
     updated=UNIX_TIMESTAMP()
-WHERE id='{0}'
+WHERE id={0}
 ";
 
         /// <summary>
