@@ -5,10 +5,12 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Threading;
+    using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Options;
+    using MySqlConnector;
     using POGOProtos.Rpc;
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
@@ -22,7 +24,6 @@
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
-    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Protos;
@@ -55,7 +56,6 @@
         private readonly IClearFortsHostedService _clearFortsService;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly IWebHostEnvironment _env;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IDataConsumerService _dataConsumerService;
         //private readonly ThreadManager _threadManager = new(maxThreadCount: 25);
 
@@ -82,7 +82,6 @@
             IClearFortsHostedService clearFortsService,
             IMemoryCacheHostedService memCache,
             IWebHostEnvironment env,
-            IServiceScopeFactory serviceScopeFactory,
             IDataConsumerService dataConsumerService)
         {
             _logger = logger;
@@ -93,7 +92,6 @@
             _clearFortsService = clearFortsService;
             _memCache = memCache;
             _env = env;
-            _serviceScopeFactory = serviceScopeFactory;
 
             //connection = EntityRepository.CreateConnectionAsync().Result;
 
@@ -127,7 +125,6 @@
                 if (_taskQueue.Count == 0)
                 {
                     Thread.Sleep(1);
-                    //await Task.Delay(1, stoppingToken);
                     return;
                 }
 
@@ -135,7 +132,6 @@
                 if (!(workItems?.Any() ?? false))
                 {
                     Thread.Sleep(1);
-                    //await Task.Delay(1, stoppingToken);
                     return;
                 }
 
@@ -143,10 +139,6 @@
                 await ProcessWorkItemAsync(items, stoppingToken);
                 //new Thread(async () => await ProcessWorkItemAsync(items, stoppingToken))
                 //{ IsBackground = true }.Start();
-                        }
-                    })
-                    { IsBackground = true }.Start();
-                }, stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -158,18 +150,14 @@
             }
 
             Thread.Sleep(1);
-            //await Task.Delay(50, stoppingToken);
         }
 
         private async Task ProcessWorkItemAsync(DataItems workItem, CancellationToken stoppingToken = default)
         {
             if (workItem == null)
                 return;
-            }
 
             CheckQueueLength();
-
-            ProtoDataStatistics.Instance.TotalEntitiesUpserted += (uint)workItem.Data.Count;
 
             //await _parsingSem.WaitAsync(stoppingToken);
             MySqlConnection connection = null;
@@ -201,68 +189,69 @@
 
             try
             {
+                var tasks = new List<Task>();
                 var guid = Guid.NewGuid().ToString()[..8];
                 _logger.LogInformation($"[{guid}] Parsing {workItem.Count:N0} data entities");
 
                 if (Options.ProcessPlayerData && workItem.PlayerData.Any())
                 {
                     _logger.LogInformation($"[{guid}] Parsing {workItem.PlayerData.Count():N0} player data");
-                // Insert player account data
+                    // Insert player account data
                     //await UpdatePlayerDataAsync(connection, workItem.PlayerData);
                     new Thread(async () => await UpdatePlayerDataAsync(connection, workItem.PlayerData))
                     { IsBackground = true }.Start();
                     //tasks.Add(UpdatePlayerDataAsync(workItem.PlayerData));
-            }
+                }
 
                 if (Options.ProcessCells && workItem.Cells.Any())
-            {
+                {
                     _logger.LogInformation($"[{guid}] Parsing {workItem.Cells.Count():N0} s2 cells");
-                // Insert S2 cells
+                    // Insert S2 cells
                     //await UpdateCellsAsync(workItem.Cells);
                     new Thread(async () => await UpdateCellsAsync(workItem.Cells))
                     { IsBackground = true }.Start();
                     //tasks.Add(UpdateCellsAsync(workItem.Cells));
-            }
+                }
 
                 if (Options.ProcessWeather && workItem.Weather.Any())
-            {
+                {
                     _logger.LogInformation($"[{guid}] Parsing {workItem.Weather.Count():N0} weather cells");
-                // Insert weather cells
+                    // Insert weather cells
                     //await UpdateClientWeatherAsync(connection, workItem.Weather);
                     new Thread(async () => await UpdateClientWeatherAsync(connection, workItem.Weather))
                     { IsBackground = true }.Start();
                     //tasks.Add(UpdateClientWeatherAsync(connection, workItem.Weather));
-            }
+                }
 
                 if (Options.ProcessForts && workItem.Forts.Any())
-            {
+                {
                     _logger.LogInformation($"[{guid}] Parsing {workItem.Forts.Count():N0} forts");
-                // Insert Pokestop and Gym forts
+                    // Insert Pokestop and Gym forts
                     //await UpdateFortsAsync(connection, workItem.Forts, "");
                     new Thread(async () => await UpdateFortsAsync(connection, workItem.Forts, ""))
                     { IsBackground = true }.Start();
                     //tasks.Add(UpdateFortsAsync(connection, workItem.Forts, ""));
-            }
+                }
 
                 if (Options.ProcessFortDetails && workItem.FortDetails.Any())
-            {
+                {
                     _logger.LogInformation($"[{guid}] Parsing {workItem.FortDetails.Count():N0} fort details");
-                // Insert Fort Details
+                    // Insert Fort Details
                     //await UpdateFortDetailsAsync(connection, workItem.FortDetails);
                     new Thread(async () => await UpdateFortDetailsAsync(connection, workItem.FortDetails))
                     { IsBackground = true }.Start();
                     //tasks.Add(UpdateFortDetailsAsync(connection, workItem.FortDetails));
-            }
+                }
 
                 if (Options.ProcessGymInfo && workItem.GymInfo.Any())
-            {
+                {
                     _logger.LogInformation($"[{guid}] Parsing {workItem.GymInfo.Count():N0} gym infos");
-                // Insert gym info
+                    // Insert gym info
                     //await UpdateGymInfoAsync(connection, workItem.GymInfo);
                     new Thread(async () => await UpdateGymInfoAsync(connection, workItem.GymInfo))
                     { IsBackground = true }.Start();
                     //tasks.Add(UpdateGymInfoAsync(connection, workItem.GymInfo));
-            }
+                }
 
                 //if (Options.ProcessPokemon && workItem.PokemonCount > 0)
                 if ((Options.ProcessWildPokemon ||
@@ -270,7 +259,7 @@
                      Options.ProcessMapPokemon ||
                      Options.ProcessEncounters ||
                      Options.ProcessDiskEncounters) && workItem.PokemonCount > 0)
-            {
+                {
                     _logger.LogInformation($"[{guid}] Parsing {workItem.PokemonCount:N0} pokemon");
                     // Insert wild, nearby, and map pokemon
                     //await UpdatePokemonAsync(guid, connection,
@@ -289,25 +278,20 @@
                     ))
                     { IsBackground = true }.Start();
                     //tasks.Add(UpdatePokemonAsync(connection, workItem.WildPokemon, workItem.NearbyPokemon, workItem.MapPokemon));
-            }
+                }
 
                 if (Options.ProcessQuests && workItem.Quests.Any())
-            {
+                {
                     _logger.LogInformation($"[{guid}] Parsing {workItem.Quests.Count():N0} quests");
-                // Insert quests
+                    // Insert quests
                     //await UpdateQuestsAsync(connection, workItem.Quests);
                     new Thread(async () => await UpdateQuestsAsync(connection, workItem.Quests))
                     { IsBackground = true }.Start();
                     //tasks.Add(UpdateQuestsAsync(connection, workItem.Quests));
-            }
+                }
 
-            var encounters = workItem.Data
-                .Where(x => x.type == ProtoDataType.Encounter)
-                .ToList();
-            if (encounters.Any())
-            {
-                // Insert Pokemon encounters
-                await UpdateEncountersAsync(encounters);
+                Parallel.ForEach(tasks, async (task, token) => await task.ConfigureAwait(false));
+                ProtoDataStatistics.Instance.TotalEntitiesProcessed += (uint)workItem.Count;
             }
             catch (Exception ex)
             {
@@ -335,10 +319,8 @@
         {
             var webhooks = new List<Account>();
 
-            try
+            foreach (var player in playerData)
             {
-                foreach (var player in playerData)
-                {
                 try
                 {
                     var username = player.username;
@@ -359,26 +341,24 @@
                         webhooks.Add(account);
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"UpdatePlayerDataAsync: {ex}");
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UpdatePlayerDataAsync: {ex}");
-            }
-        }
 
             foreach (var account in webhooks)
-        {
+            {
                 await SendWebhookPayloadAsync(WebhookPayloadType.Account, account);
             }
         }
 
         private async Task UpdateCellsAsync(IEnumerable<ulong> cells)
+        {
+            // Convert cell ids to Cell models
+            var s2cells = new List<Cell>();
+            foreach (var cellId in cells)
             {
-                var now = DateTime.UtcNow.ToTotalSeconds();
-                // Convert cell ids to Cell models
-                var s2cells = new List<Cell>();
-                foreach (var cellId in cells)
-                {
                 try
                 {
                     var cached = _memCache.Get<ulong, Cell>(cellId);
@@ -396,15 +376,6 @@
                         continue;
 
                     s2cells.Add(cached);
-                }
-
-                // Check if any new/need to be updated cells, otherwise skip
-                if (!s2cells.Any())
-                    return;
-
-                try
-                {
-                    await _dataConsumerService.AddEntitiesAsync(SqlQueryType.CellOnMergeUpdate, s2cells);
                 }
                 catch (Exception ex)
                 {
@@ -435,9 +406,9 @@
         }
 
         private async Task UpdateCellAsync(ulong cellId)
-                {
-                    try
-                    {
+        {
+            try
+            {
                 var cached = _memCache.Get<ulong, Cell>(cellId);
                 if (cached == null)
                 {
@@ -454,22 +425,12 @@
 
                 await _dataConsumerService.AddEntityAsync(SqlQueryType.CellOnMergeUpdate, cached);
                 ProtoDataStatistics.Instance.TotalS2CellsProcessed++;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"Error: {ex}");
-                    }
-                }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"UpdateCellsAsync: {ex}");
             }
-
-            if (ShowBenchmarkTimes)
-            {
-                sw.Stop();
-            }
+        }
 
         private async Task UpdateClientWeatherAsync(MySqlConnection connection, IEnumerable<ClientWeatherProto> clientWeather)
         {
@@ -480,7 +441,6 @@
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 // Convert weather protos to Weather models
                 var weather = clientWeather
-                    // Filter cells not already cached or updated recently
                     .Where(wcell =>
                     {
                         // Filter cells not already cached or updated recently
@@ -506,8 +466,6 @@
                         webhooks.Add(wcell);
                     }
                 }
-
-                //PrintBenchmarkTimes(DataLogLevel.Weather, weather, "Weather Cells", sw);
             }
             catch (Exception ex)
             {
@@ -519,8 +477,8 @@
                 foreach (var weather in webhooks)
                 {
                     await SendWebhookPayloadAsync(WebhookPayloadType.Weather, weather);
+                }
             }
-        }
         }
 
         private async Task UpdatePokemonAsync(string requestId, MySqlConnection connection,
@@ -538,119 +496,97 @@
                 {
                     try
                     {
-                    var cellId = wild.cell;
-                    var data = (WildPokemonProto)wild.data;
-                    var timestampMs = wild.timestampMs;
-                    var username = wild.username;
-                    var isEvent = wild.isEvent;
-                    var pokemon = new Pokemon(data, cellId, username, isEvent);
+                        var cellId = wild.cell;
+                        var data = (WildPokemonProto)wild.data;
+                        var timestampMs = wild.timestampMs;
+                        var username = wild.username;
+                        var isEvent = wild.isEvent;
+                        var pokemon = new Pokemon(data, cellId, username, isEvent);
                         var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.TimeTillHiddenMs, timestampMs);
-                    if (spawnpoint != null)
-                    {
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
+                        if (spawnpoint != null)
+                        {
+                            await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
                             ProtoDataStatistics.Instance.TotalSpawnpointsProcessed++;
-                    }
+                        }
 
                         await pokemon.UpdateAsync(connection, _memCache, updateIv: false, skipOldLookup: false);
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                         ProtoDataStatistics.Instance.TotalWildPokemonProcessed++;
 
-                    if (pokemon.SendWebhook)
-                    {
+                        if (pokemon.SendWebhook)
+                        {
                             webhooks.Add(pokemon);
+                        }
+
+                        // NOTE: Used for testing Pokemon database event triggers
+                        //foreach (var pokemon in pokemonToUpsert)
+                        //{
+                        //    if (context.Pokemon.Any(pkmn => pkmn.Id == pokemon.Id))
+                        //    {
+                        //        context.Update(pokemon);
+                        //    }
+                        //    else
+                        //    {
+                        //        await context.AddAsync(pokemon);
+                        //    }
+                        //}
+                        //await context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"UpdateWildPokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
                     }
                 }
-
-                //PrintBenchmarkTimes(DataLogLevel.WildPokemon, pokemonToUpsert, "Wild Pokemon", sw);
-
-                // NOTE: Used for testing Pokemon database event triggers
-                //foreach (var pokemon in pokemonToUpsert)
-                //{
-                //    if (context.Pokemon.Any(pkmn => pkmn.Id == pokemon.Id))
-                //    {
-                //        context.Update(pokemon);
-                //    }
-                //    else
-                //    {
-                //        await context.AddAsync(pokemon);
-                //    }
-                //}
-                //await context.SaveChangesAsync();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UpdateWildPokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
-            }
-
-            if (ShowBenchmarkTimes)
-            {
-                sw.Stop();
-            }
-        }
 
             if (Options.ProcessNearbyPokemon)
-        {
+            {
                 _logger.LogInformation($"[{requestId}] Parsing {nearbyPokemon.Count()} nearby pokemon");
                 foreach (var nearby in nearbyPokemon)
-            {
-                sw.Start();
-            }
-
-            try
-            {
-                foreach (var nearby in nearbyPokemon)
                 {
-                    var cellId = nearby.cell;
-                    var data = (NearbyPokemonProto)nearby.data;
-                    var username = nearby.username;
-                    var isEvent = nearby.isEvent;
+                    try
+                    {
+                        var cellId = nearby.cell;
+                        var data = (NearbyPokemonProto)nearby.data;
+                        var username = nearby.username;
+                        var isEvent = nearby.isEvent;
                         var pokemon = new Pokemon(connection, _memCache, data, cellId, username, isEvent);
 
                         await pokemon.UpdateAsync(connection, _memCache, updateIv: false, skipOldLookup: false);
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                         ProtoDataStatistics.Instance.TotalNearbyPokemonProcessed++;
 
-                    if (pokemon.SendWebhook)
-                    {
+                        if (pokemon.SendWebhook)
+                        {
                             webhooks.Add(pokemon);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"UpdateNearbyPokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UpdateNearbyPokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
-            }
-
-            if (ShowBenchmarkTimes)
-            {
-                sw.Stop();
-            }
-        }
 
             if (Options.ProcessMapPokemon)
-        {
-            var sw = new Stopwatch();
-            if (ShowBenchmarkTimes)
             {
-                sw.Start();
-            }
-
-            try
-            {
+                _logger.LogInformation($"[{requestId}] Parsing {mapPokemon.Count()} map pokemon");
                 foreach (var map in mapPokemon)
                 {
-                    var cellId = map.cell;
-                    var data = (MapPokemonProto)map.data;
-                    var username = map.username;
-                    var isEvent = map.isEvent;
+                    try
+                    {
+                        var cellId = map.cell;
+                        var data = (MapPokemonProto)map.data;
+                        var username = map.username;
+                        var isEvent = map.isEvent;
                         var pokemon = new Pokemon(connection, _memCache, data, cellId, username, isEvent);
                         await pokemon.UpdateAsync(connection, _memCache, updateIv: false, skipOldLookup: false);
 
-                    // Check if we have a pending disk encounter cache
-                    var displayId = data.PokemonDisplay.DisplayId;
-                    var cachedDiskEncounter = _diskCache.Get<DiskEncounterOutProto>(displayId);
+                        // Check if we have a pending disk encounter cache
+                        var displayId = data.PokemonDisplay.DisplayId;
+                        var cachedDiskEncounter = _diskCache.Get<DiskEncounterOutProto>(displayId);
                         if (cachedDiskEncounter == null)
-                    {
+                        {
                             // Failed to get DiskEncounter from cache
                             _logger.LogWarning($"Unable to fetch cached Pokemon disk encounter with id '{displayId}' from cache");
                             continue;
@@ -667,7 +603,7 @@
                         if (pokemon.SendWebhook)
                         {
                             webhooks.Add(pokemon);
-                    }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -713,18 +649,18 @@
                         }
 
                         await pokemon.UpdateAsync(connection, _memCache, updateIv: true, skipOldLookup: isNew);
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
+                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
                         ProtoDataStatistics.Instance.TotalPokemonEncountersProcessed++;
 
-                    if (pokemon.SendWebhook)
-                    {
+                        if (pokemon.SendWebhook)
+                        {
                             webhooks.Add(pokemon);
+                        }
                     }
-                }
                     catch (Exception ex)
                     {
                         _logger.LogError($"UpdateEncountersAsync: {ex}");
-            }
+                    }
                 }
             }
 
@@ -762,10 +698,10 @@
                             webhooks.Add(pokemon);
                         }
                     }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UpdateMapPokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
-            }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"UpdateDiskEncountersAsync: {ex.InnerException?.Message ?? ex.Message}");
+                    }
                 }
             }
 
@@ -776,11 +712,11 @@
                 foreach (var pokemon in webhooks)
                 {
                     await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
-            }
+                }
 
                 // Send pokemon to Configurator endpoint for IV stats
                 await SendPokemonAsync(webhooks);
-        }
+            }
         }
 
         private async Task UpdateFortsAsync(MySqlConnection connection, IEnumerable<dynamic> forts, string? username)
@@ -813,7 +749,7 @@
                                     if (webhooks.ContainsKey(key))
                                     {
                                         webhooks[key].Add(value);
-            }
+                                    }
                                     else
                                     {
                                         webhooks.Add(key, new() { value });
@@ -833,13 +769,13 @@
                             _clearFortsService.AddGym(cellId, data.FortId);
 
                             if (gymWebhooks.Any())
-            {
+                            {
                                 foreach (var (key, value) in gymWebhooks)
                                 {
                                     if (webhooks.ContainsKey(key))
                                     {
                                         webhooks[key].Add(value);
-            }
+                                    }
                                     else
                                     {
                                         webhooks.Add(key, new() { value });
@@ -864,7 +800,7 @@
                     foreach (var pokestop in pokestops)
                     {
                         await SendWebhookPayloadAsync(type, pokestop);
-            }
+                    }
                 }
             }
 
@@ -881,28 +817,15 @@
             {
                 await SendGymsAsync(lvlForts, username);
             }
-
-            if (ShowBenchmarkTimes)
-            {
-                sw.Stop();
-            }
         }
 
         private async Task UpdateFortDetailsAsync(MySqlConnection connection, IEnumerable<dynamic> fortDetails)
         {
-            var sw = new Stopwatch();
-            if (ShowBenchmarkTimes)
+            var fortDetailsPokestops = fortDetails
+                .Where(fort => fort.data.FortType == FortType.Checkpoint);
+            // Convert fort details protos to Pokestop models
+            foreach (var fort in fortDetailsPokestops)
             {
-                sw.Start();
-            }
-
-            try
-            {
-                var fortDetailsPokestops = fortDetails
-                    .Where(fort => fort.data.FortType == FortType.Checkpoint);
-                // Convert fort details protos to Pokestop models
-                foreach (var fort in fortDetailsPokestops)
-                {
                 try
                 {
                     var data = (FortDetailsOutProto)fort.data;
@@ -924,25 +847,18 @@
                         var type = ConvertWebhookType(webhook.Key);
                         await SendWebhookPayloadAsync(type, pokestop);
                     }
-                    if (pokestop.HasChanges)
-                    {
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopDetailsOnMergeUpdate, pokestop);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"UpdateFortDetailsAsync[Pokestop]: {ex.InnerException?.Message ?? ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UpdateFortDetailsAsync[Pokestop]: {ex.InnerException?.Message ?? ex.Message}");
-            }
-            }
 
-            try
+            var fortDetailsGyms = fortDetails
+                .Where(fort => fort.data.FortType == FortType.Gym);
+            // Convert fort details protos to Gym models
+            foreach (var fort in fortDetailsGyms)
             {
-                var fortDetailsGyms = fortDetails
-                    .Where(fort => fort.data.FortType == FortType.Gym);
-                // Convert fort details protos to Gym models
-                foreach (var fort in fortDetailsGyms)
-                {
                 try
                 {
                     var data = (FortDetailsOutProto)fort.data;
@@ -963,20 +879,11 @@
                         var type = ConvertWebhookType(webhook.Key);
                         await SendWebhookPayloadAsync(type, gym);
                     }
-                    if (gym.HasChanges)
-                    {
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDetailsOnMergeUpdate, gym);
-                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UpdateFortDetailsAsync[Gym]: {ex.InnerException?.Message ?? ex.Message}");
-            }
-
-            if (ShowBenchmarkTimes)
-            {
-                sw.Stop();
+                catch (Exception ex)
+                {
+                    _logger.LogError($"UpdateFortDetailsAsync[Gym]: {ex.InnerException?.Message ?? ex.Message}");
+                }
             }
         }
 
@@ -984,11 +891,9 @@
         {
             var webhooks = new Dictionary<WebhookType, List<BaseEntity>>();
 
-            try
+            // Convert gym info protos to Gym models
+            foreach (var gymInfo in gymInfos)
             {
-                // Convert gym info protos to Gym models
-                foreach (var gymInfo in gymInfos)
-                {
                 try
                 {
                     var data = (GymGetInfoOutProto)gymInfo.data;
@@ -1020,73 +925,68 @@
 
                     if (Options.ProcessGymDefenders || Options.ProcessGymTrainers)
                     {
-                    var gymDefenders = data.GymStatusAndDefenders.GymDefender;
-                    if (gymDefenders == null)
-                        continue;
+                        var gymDefenders = data.GymStatusAndDefenders.GymDefender;
+                        if (gymDefenders == null)
+                            continue;
 
-                    foreach (var gymDefenderData in gymDefenders)
-                    {
-                            if (Options.ProcessGymTrainers && gymDefenderData.TrainerPublicProfile != null)
+                        foreach (var gymDefenderData in gymDefenders)
                         {
-                            var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
-                            await _dataConsumerService.AddEntityAsync(SqlQueryType.GymTrainerOnMergeUpdate, gymTrainer);
+                            if (Options.ProcessGymTrainers && gymDefenderData.TrainerPublicProfile != null)
+                            {
+                                var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
+                                await _dataConsumerService.AddEntityAsync(SqlQueryType.GymTrainerOnMergeUpdate, gymTrainer);
                                 ProtoDataStatistics.Instance.TotalGymTrainersProcessed++;
 
                                 if (webhooks.ContainsKey(WebhookType.GymTrainers))
                                 {
                                     webhooks[WebhookType.GymTrainers].Add(gymTrainer);
-                        }
+                                }
                                 else
                                 {
                                     webhooks.Add(WebhookType.GymTrainers, new() { gymTrainer });
                                 }
                             }
                             if (Options.ProcessGymDefenders && gymDefenderData.MotivatedPokemon != null)
-                        {
-                            var gymDefender = new GymDefender(gymDefenderData, fortId);
-                            await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDefenderOnMergeUpdate, gymDefender);
+                            {
+                                var gymDefender = new GymDefender(gymDefenderData, fortId);
+                                await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDefenderOnMergeUpdate, gymDefender);
                                 ProtoDataStatistics.Instance.TotalGymDefendersProcessed++;
 
                                 if (webhooks.ContainsKey(WebhookType.GymDefenders))
                                 {
                                     webhooks[WebhookType.GymDefenders].Add(gymDefender);
-                        }
+                                }
                                 else
                                 {
                                     webhooks.Add(WebhookType.GymDefenders, new() { gymDefender });
                                 }
                             }
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"UpdateGymInfoAsync: {ex.InnerException?.Message ?? ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UpdateGymInfoAsync: {ex.InnerException?.Message ?? ex.Message}");
-            }
-
-            if (ShowBenchmarkTimes)
-            {
-                sw.Stop();
-            }
-        }
 
             if (webhooks.Any())
-        {
-                foreach (var (key, value) in webhooks)
             {
+                foreach (var (key, value) in webhooks)
+                {
                     var type = ConvertWebhookType(key);
                     await SendWebhookPayloadAsync(type, value);
-            }
+                }
             }
         }
 
         private async Task UpdateQuestsAsync(MySqlConnection connection, IEnumerable<dynamic> quests)
-            {
-                // Convert quest protos to Pokestop models
+        {
+            // Convert quest protos to Pokestop models
             var webhooks = new Dictionary<WebhookType, List<Pokestop>>();
 
-                foreach (var quest in quests)
-                {
+            foreach (var quest in quests)
+            {
                 try
                 {
                     var data = (QuestProto)quest.quest;
@@ -1105,44 +1005,20 @@
                         await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopOnMergeUpdate, pokestop);
                         ProtoDataStatistics.Instance.TotalQuestsProcessed++;
                     }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"UpdateQuestsAsync: {ex.InnerException?.Message ?? ex.Message}");
-            }
 
                     if (questWebhooks.Any())
-            {
+                    {
                         foreach (var (key, value) in questWebhooks)
-        {
+                        {
                             if (webhooks.ContainsKey(key))
-            {
+                            {
                                 webhooks[key].Add(value);
-            }
+                            }
                             else
-            {
+                            {
                                 webhooks.Add(key, new() { value });
-                    }
-                    await pokemon.AddEncounterAsync(data, username);
-
-                    var spawnpoint = await ParseSpawnpointAsync(pokemon, data.Pokemon.TimeTillHiddenMs, timestampMs);
-                    if (spawnpoint != null)
-                    {
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
-                    }
-
-                    if (pokemon.HasIvChanges)
-                    {
-                        SetPvpRankings(pokemon);
-                    }
-
-                    await pokemon.UpdateAsync(_memCache, updateIv: true);
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
-
-                    if (pokemon.SendWebhook)
-                    {
-                        await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -1154,34 +1030,14 @@
             if (webhooks.Any())
             {
                 foreach (var (key, pokestopQuests) in webhooks)
-        {
+                {
                     var type = ConvertWebhookType(key);
                     foreach (var quest in pokestopQuests)
-            {
+                    {
                         await SendWebhookPayloadAsync(type, quest);
+                    }
+                }
             }
-
-            try
-            {
-                foreach (var diskEncounter in diskEncounters)
-                {
-                    var data = (DiskEncounterOutProto)diskEncounter.data;
-                    var username = diskEncounter.username;
-                    var isEvent = diskEncounter.isEvent;
-                    var displayId = Convert.ToString(data.Pokemon.PokemonDisplay.DisplayId);
-                    var pokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(displayId, _memCache);
-                    if (pokemon == null)
-                    {
-                        _diskCache.Set(displayId, data, TimeSpan.FromMinutes(30));
-                        _logger.LogInformation($"Disk encounter with id '{displayId}' added to cache");
-                        continue;
-                    }
-
-                    pokemon.AddDiskEncounter(data, username);
-                    if (pokemon.HasIvChanges)
-                    {
-                        SetPvpRankings(pokemon);
-                    }
         }
 
         //private async Task UpdateEncountersAsync(MySqlConnection connection, IEnumerable<dynamic> encounters)
@@ -1303,7 +1159,7 @@
         #region Parsing Methods
 
         private async Task ParseIncidentsAsync(MySqlConnection connection, Pokestop pokestop)
-            {
+        {
             if (!(pokestop.Incidents?.Any() ?? false))
                 return;
 
@@ -1311,12 +1167,12 @@
 
             // Loop incidents
             foreach (var incident in pokestop.Incidents)
-        {
-            try
             {
+                try
+                {
                     // TODO: await incident.UpdateAsync(connection, _memCache, skipOldLookup: false);
                     // TODO: if (incident.HasChanges)
-                {
+                    {
                         await _dataConsumerService.AddEntityAsync(SqlQueryType.IncidentOnMergeUpdate, incident);
                         ProtoDataStatistics.Instance.TotalIncidentsProcessed++;
                     }
@@ -1324,33 +1180,20 @@
                     if (incident.SendWebhook)
                     {
                         webhooks.Add(new PokestopWithIncident(pokestop, incident));
-                        }
                     }
-
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.GymOnMergeUpdate, gym);
-
-                    _clearFortsService.AddGym(cellId, data.FortId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"ParseIncidentsAsync: {ex.InnerException?.Message ?? ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                    _logger.LogError($"ParseIncidentsAsync: {ex.InnerException?.Message ?? ex.Message}");
-            }
-        }
 
             if (webhooks.Any())
-        {
+            {
                 foreach (var incident in webhooks)
-            {
+                {
                     await SendWebhookPayloadAsync(WebhookPayloadType.Invasion, incident);
-                    }
                 }
-
-                await _dataConsumerService.AddEntitiesAsync(SqlQueryType.IncidentOnMergeUpdate, pokestop.Incidents);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"ParseIncidentsAsync: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
@@ -1416,79 +1259,6 @@
                 WebhookType.Accounts => WebhookPayloadType.Account,
                 _ => WebhookPayloadType.Pokemon,
             };
-        }
-
-        private async Task<Spawnpoint?> ParseSpawnpointAsync(Pokemon pokemon, int timeTillHiddenMs, ulong timestampMs)
-        {
-            var spawnId = pokemon.SpawnId ?? 0;
-            if (spawnId == 0)
-            {
-                return null;
-            }
-
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            if (timeTillHiddenMs <= 90000 && timeTillHiddenMs > 0)
-            {
-                pokemon.ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(timeTillHiddenMs)) / 1000);
-                pokemon.IsExpireTimestampVerified = true;
-                var date = timestampMs.FromMilliseconds();
-                var secondOfHour = date.Second + (date.Minute * 60);
-
-                var spawnpoint = new Spawnpoint
-                {
-                    Id = spawnId,
-                    Latitude = pokemon.Latitude,
-                    Longitude = pokemon.Longitude,
-                    DespawnSecond = Convert.ToUInt16(secondOfHour),
-                    LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
-                    Updated = now,
-                };
-                await spawnpoint.UpdateAsync(_memCache, update: true);
-                return spawnpoint;
-            }
-
-            pokemon.IsExpireTimestampVerified = false;
-
-            if (!pokemon.IsExpireTimestampVerified && spawnId > 0)
-            {
-                var spawnpoint = await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(pokemon.SpawnId ?? 0, _memCache);
-                if (spawnpoint != null && spawnpoint.DespawnSecond != null)
-                {
-                    var despawnSecond = spawnpoint.DespawnSecond;
-                    var timestampS = timestampMs / 1000;
-                    var date = timestampS.FromMilliseconds();
-                    var secondOfHour = date.Second + (date.Minute * 60);
-                    var despawnOffset = despawnSecond - secondOfHour;
-                    if (despawnSecond < secondOfHour)
-                        despawnOffset += 3600;
-
-                    // Update spawnpoint last_seen if enabled
-                    if (Pokemon.SaveSpawnpointLastSeen)
-                    {
-                        spawnpoint.LastSeen = now;
-                    }
-
-                    pokemon.ExpireTimestamp = timestampS + (ulong)despawnOffset;
-                    pokemon.IsExpireTimestampVerified = true;
-                    return spawnpoint;
-                }
-                else
-                {
-                    var newSpawnpoint = new Spawnpoint
-                    {
-                        Id = spawnId,
-                        Latitude = pokemon.Latitude,
-                        Longitude = pokemon.Longitude,
-                        DespawnSecond = null,
-                        LastSeen = Pokemon.SaveSpawnpointLastSeen ? now : null,
-                        Updated = now,
-                    };
-                    await newSpawnpoint.UpdateAsync(_memCache, update: true);
-                    return newSpawnpoint;
-                }
-            }
-
-            return null;
         }
 
         //private static List<TEntity> FilterEntityData<TEntity>(string property, List<dynamic> data, ProtoDataType type)
@@ -1600,8 +1370,8 @@
         }
 
         private async Task SendGymsAsync(List<PokemonFortProto> forts, string username)
-            {
-                // Fire off gRPC request on a separate thread
+        {
+            // Fire off gRPC request on a separate thread
             //await Task.Run(() =>
             //{
             //    new Thread(async () =>
@@ -1611,13 +1381,12 @@
             //    { IsBackground = true }.Start();
             //});
 
-                    await Task.CompletedTask;
-                });
-            }
+            await Task.CompletedTask;
+        }
 
         private async Task SendPlayerDataAsync(string username, ushort level, uint xp)
-            {
-                // Fire off gRPC request on a separate thread
+        {
+            // Fire off gRPC request on a separate thread
             //await Task.Run(() =>
             //{
             //    new Thread(async () =>
@@ -1628,15 +1397,14 @@
             //    { IsBackground = true }.Start();
             //});
 
-                    await Task.CompletedTask;
-                });
-            }
-
-        #endregion
+            await Task.CompletedTask;
         }
 
+        #endregion
+    }
+
     public class DataItems
-        {
+    {
         public IEnumerable<dynamic> PlayerData { get; internal set; } = Array.Empty<dynamic>();
 
         public IEnumerable<ulong> Cells { get; internal set; } = Array.Empty<ulong>();
@@ -1695,7 +1463,7 @@
             IEnumerable<dynamic> quests,
             IEnumerable<dynamic> encounters,
             IEnumerable<dynamic> diskEncounters)
-            {
+        {
             PlayerData = playerData;
             Cells = cells;
             Weather = weather;
@@ -1711,7 +1479,7 @@
         }
 
         public static DataItems ParseWorkItems(IEnumerable<DataQueueItem> workItems)
-                {
+        {
             var items = workItems.SelectMany(x => x.Data!);
             var playerData = items
                 .Where(x => x.type == ProtoDataType.PlayerData)
@@ -1761,7 +1529,7 @@
                 wildPokemon, nearbyPokemon, mapPokemon,
                 quests, encounters, diskEncounters);
         }
-        }
+    }
 
     public class ThreadManager
     {
@@ -1778,9 +1546,9 @@
         }
 
         public void TakeThread()
-            {
+        {
             if (_threadsUsed < _maxThreadCount)
-                {
+            {
                 Interlocked.Increment(ref _threadsUsed);
             }
         }
