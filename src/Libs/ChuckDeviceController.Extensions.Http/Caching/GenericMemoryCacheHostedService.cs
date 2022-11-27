@@ -5,6 +5,8 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
+    // TODO: Clear method
+
     public class GenericMemoryCacheHostedService : BackgroundService, IMemoryCacheHostedService
     {
         #region Variables
@@ -95,9 +97,9 @@
 
         #region Private Methods
 
-        private void LoadCaches(IReadOnlyList<string> typeNames)
+        private void LoadCaches(IEnumerable<string> typeNames)
         {
-            _logger.LogInformation($"Initializing {typeNames.Count:N0} memory caches...");
+            _logger.LogInformation($"Initializing {typeNames.Count():N0} memory caches...");
 
             foreach (var typeName in typeNames)
             {

@@ -9,7 +9,6 @@ using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
 using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
-using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
@@ -79,20 +78,6 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     var serviceProvider = scope.ServiceProvider;
     var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
     var memCacheConfig = memCacheOptions?.Value ?? new();
-    memCacheConfig.EntityTypeNames = new List<string>
-    {
-        // Controller entities
-        nameof(Account),
-        nameof(Device),
-        // Map entities
-        nameof(Cell),
-        nameof(Gym),
-        nameof(Incident),
-        nameof(Pokemon),
-        nameof(Pokestop),
-        nameof(Spawnpoint),
-        nameof(Weather),
-    };
     var memCache = new GenericMemoryCacheHostedService(
         new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole())),
         Options.Create(memCacheConfig)

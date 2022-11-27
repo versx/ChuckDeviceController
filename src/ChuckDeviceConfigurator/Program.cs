@@ -189,11 +189,6 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     var serviceProvider = scope.ServiceProvider;
     var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
     var memCacheConfig = memCacheOptions?.Value ?? new();
-    memCacheConfig.EntityTypeNames = new List<string>
-    {
-        nameof(Account),
-        nameof(Device),
-    };
     var memCache = new GenericMemoryCacheHostedService(
         new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole())),
         Options.Create(memCacheConfig)

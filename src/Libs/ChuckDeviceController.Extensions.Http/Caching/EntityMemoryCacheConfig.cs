@@ -6,7 +6,7 @@
     {
         public ushort EntityExpiryLimitM { get; set; }
 
-        public IReadOnlyList<string> EntityTypeNames { get; set; }
+        public List<string> EntityTypeNames { get; internal set; }
 
         public EntityMemoryCacheConfig()
         {
