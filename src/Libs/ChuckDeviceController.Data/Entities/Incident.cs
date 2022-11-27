@@ -86,13 +86,13 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipOldLookup = false)
+        //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipLookup = false)
+        public async Task UpdateAsync(Incident? oldIncident, IMemoryCacheHostedService memCache)
         {
-            var oldIncident = skipOldLookup
-                ? null
-                : await EntityRepository.GetEntityAsync<string, Incident>(connection, Id, memCache);
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            Updated = now;
+            //var oldIncident = skipLookup
+            //    ? null
+            //    : await EntityRepository.GetEntityAsync<string, Incident>(connection, Id, memCache);
+            Updated = DateTime.UtcNow.ToTotalSeconds();
 
             if (oldIncident == null)
             {
@@ -110,6 +110,8 @@
 
             // Cache pokestop incident entity by id
             memCache.Set(Id, this);
+
+            await Task.CompletedTask;
         }
 
         public dynamic? GetWebhookData(string type)

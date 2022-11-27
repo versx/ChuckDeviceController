@@ -530,13 +530,9 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool updateQuest = false, bool skipOldLookup = false)
+        public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(Pokestop? oldPokestop, IMemoryCacheHostedService memCache, bool updateQuest = false)
         {
             var webhooks = new Dictionary<WebhookType, Pokestop>();
-            var oldPokestop = skipOldLookup
-                ? null
-                : await EntityRepository.GetEntityAsync<string, Pokestop>(connection, Id, memCache);
-
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
@@ -625,8 +621,106 @@
             // Cache pokestop entity by id
             memCache.Set(Id, this);
 
-            return webhooks;
+            return await Task.FromResult(webhooks);
         }
+
+        //public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool updateQuest = false, bool skipLookup = false)
+        //{
+        //    var webhooks = new Dictionary<WebhookType, Pokestop>();
+        //    var oldPokestop = skipLookup
+        //        ? null
+        //        : await EntityRepository.GetEntityAsync<string, Pokestop>(connection, Id, memCache);
+
+        //    var now = DateTime.UtcNow.ToTotalSeconds();
+        //    Updated = now;
+
+        //    if (oldPokestop == null)
+        //    {
+        //        // Brand new Pokestop to insert, set first_seen_timestamp
+        //        FirstSeenTimestamp = now;
+
+        //        webhooks.Add(WebhookType.Pokestops, this);
+        //        if (LureExpireTimestamp > 0)
+        //        {
+        //            webhooks.Add(WebhookType.Lures, this);
+        //        }
+        //        if (QuestTimestamp > 0)
+        //        {
+        //            webhooks.Add(WebhookType.Quests, this);
+        //        }
+        //        if (AlternativeQuestTimestamp > 0)
+        //        {
+        //            webhooks.Add(WebhookType.AlternativeQuests, this);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // Pokestop already exists, compare against this instance to see if anything needs
+        //        // to be updated
+
+        //        if (oldPokestop.CellId > 0 && CellId == 0)
+        //        {
+        //            CellId = oldPokestop.CellId;
+        //        }
+        //        if (oldPokestop.Name != null && Name == null)
+        //        {
+        //            Name = oldPokestop.Name;
+        //        }
+        //        if (oldPokestop.Url != null && Url == null)
+        //        {
+        //            Url = oldPokestop.Url;
+        //        }
+        //        if (updateQuest && oldPokestop.QuestType != null && QuestType == null)
+        //        {
+        //            QuestType = oldPokestop.QuestType;
+        //            QuestTarget = oldPokestop.QuestTarget;
+        //            QuestConditions = oldPokestop.QuestConditions;
+        //            QuestRewards = oldPokestop.QuestRewards;
+        //            QuestTimestamp = oldPokestop.QuestTimestamp;
+        //            QuestTemplate = oldPokestop.QuestTemplate;
+        //            QuestTitle = oldPokestop.QuestTitle;
+        //        }
+        //        if (updateQuest && oldPokestop.AlternativeQuestType != null && AlternativeQuestType == null)
+        //        {
+        //            AlternativeQuestType = oldPokestop.AlternativeQuestType;
+        //            AlternativeQuestTarget = oldPokestop.AlternativeQuestTarget;
+        //            AlternativeQuestConditions = oldPokestop.AlternativeQuestConditions;
+        //            AlternativeQuestRewards = oldPokestop.AlternativeQuestRewards;
+        //            AlternativeQuestTimestamp = oldPokestop.AlternativeQuestTimestamp;
+        //            AlternativeQuestTemplate = oldPokestop.AlternativeQuestTemplate;
+        //            AlternativeQuestTitle = oldPokestop.AlternativeQuestTitle;
+        //        }
+        //        if (oldPokestop.LureId > 0 && LureId == 0)
+        //        {
+        //            LureId = oldPokestop.LureId;
+        //        }
+        //        if ((oldPokestop.LureExpireTimestamp != null || oldPokestop.LureExpireTimestamp > 0) &&
+        //            (LureExpireTimestamp == null || LureExpireTimestamp == 0))
+        //        {
+        //            LureExpireTimestamp = oldPokestop.LureExpireTimestamp;
+        //        }
+
+        //        if (oldPokestop.LureExpireTimestamp < LureExpireTimestamp)
+        //        {
+        //            webhooks.Add(WebhookType.Lures, this);
+        //        }
+        //        if (updateQuest && (HasQuestChanges || QuestTimestamp > oldPokestop.QuestTimestamp))
+        //        {
+        //            //HasQuestChanges = false;
+        //            webhooks.Add(WebhookType.Quests, this);
+        //        }
+        //        if (updateQuest && (HasAlternativeQuestChanges || AlternativeQuestTimestamp > oldPokestop.AlternativeQuestTimestamp))
+        //        {
+        //            //HasAlternativeQuestChanges = false;
+        //            webhooks.Add(WebhookType.AlternativeQuests, this);
+        //        }
+        //    }
+
+        //    // Cache pokestop entity by id
+        //    memCache.Set(Id, this);
+
+        //    return webhooks;
+        //}
 
         public dynamic? GetWebhookData(string type)
         {

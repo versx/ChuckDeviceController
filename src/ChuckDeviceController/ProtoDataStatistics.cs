@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController
 {
     using ChuckDeviceController.Common;
+    using ChuckDeviceController.Data.Repositories;
 
     public class ProtoDataStatistics : BaseProtoDataStatistics
     {
@@ -19,6 +20,8 @@
         #endregion
 
         #region Properties
+
+        public override ulong TotalDatabaseConnectionsCreated => EntityRepository.InstanceCount;
 
         public override IReadOnlyList<DataEntityTime> Times => _entityTimes; // Data consumer times
 

@@ -222,7 +222,7 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MySqlConnection connection, GetPlayerOutProto accountData, IMemoryCacheHostedService memCache)
+        public async Task UpdateAsync(MySqlConnection connection, GetPlayerOutProto accountData, IMemoryCacheHostedService memCache, bool skipLookup = false)
         {
             CreationTimestamp = Convert.ToUInt32(accountData.Player.CreationTimeMs / 1000);
             HasWarn = accountData.Warn;
@@ -279,7 +279,9 @@
                 Console.WriteLine($"[{Username}] Account '{accountData.Player.Name}' (Username: {Username}) Banned");
             }
 
-            var oldAccount = await EntityRepository.GetEntityAsync<string, Account>(connection, Username, memCache);
+            var oldAccount = skipLookup
+                ? null
+                : await EntityRepository.GetEntityAsync<string, Account>(connection, Username, memCache);
             if (oldAccount == null)
             {
                 SendWebhook = true;

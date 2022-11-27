@@ -55,9 +55,9 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool update = false, bool skipOldLookup = false)
+        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool update = false, bool skipLookup = false)
         {
-            var oldSpawnpoint = skipOldLookup
+            var oldSpawnpoint = skipLookup
                 ? null
                 : await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(connection, Id, memCache);
             var now = DateTime.UtcNow.ToTotalSeconds();

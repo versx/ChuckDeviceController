@@ -207,119 +207,256 @@
         {
         }
 
-        public Pokemon(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
+        public static Pokemon ParsePokemonFromWild(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
         {
-            IsEvent = isEvent;
-            Id = wildPokemon.EncounterId.ToString();
-            PokemonId = Convert.ToUInt16(wildPokemon.Pokemon.PokemonId);
-            Latitude = wildPokemon.Latitude;
-            Longitude = wildPokemon.Longitude;
             var spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
-            Gender = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay.Gender);
-            Form = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay.Form);
-            if (wildPokemon.Pokemon.PokemonDisplay != null)
+            var hasDisplay = wildPokemon.Pokemon.PokemonDisplay != null;
+            var pokemon = new Pokemon
             {
-                Costume = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay.Costume);
-                Weather = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay.WeatherBoostedCondition);
-            }
-            Username = username;
-            SpawnId = spawnId;
-            CellId = cellId;
-            SeenType = SeenType.Wild;
+                Id = wildPokemon.EncounterId.ToString(),
+                PokemonId = Convert.ToUInt16(wildPokemon.Pokemon.PokemonId),
+                Latitude = wildPokemon.Latitude,
+                Longitude = wildPokemon.Longitude,
+                Gender = hasDisplay 
+                    ? Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay?.Gender ?? PokemonDisplayProto.Types.Gender.Unset)
+                    : (ushort)0,
+                Form = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay?.Form ?? PokemonDisplayProto.Types.Form.Unset),
+                Costume = hasDisplay
+                    ? Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay?.Costume ?? PokemonDisplayProto.Types.Costume.Unset)
+                    : (ushort)0,
+                Weather = hasDisplay
+                    ? Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay?.WeatherBoostedCondition ?? GameplayWeatherProto.Types.WeatherCondition.None)
+                    : (ushort)0,
+                SpawnId = spawnId,
+                IsEvent = isEvent,
+                Username = username,
+                CellId = cellId,
+                SeenType = SeenType.Wild,
+            };
+            return pokemon;
         }
 
-        public Pokemon(MySqlConnection connection, IMemoryCacheHostedService memCache, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
+        public static async Task<Pokemon> ParsePokemonFromNearby(MySqlConnection connection, IMemoryCacheHostedService memCache, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
         {
-            Id = Convert.ToString(nearbyPokemon.EncounterId);
+            var hasDisplay = nearbyPokemon.PokemonDisplay != null;
+            var pokestopId = string.IsNullOrEmpty(nearbyPokemon.FortId)
+                ? null
+                : nearbyPokemon.FortId;
+            var pokemon = new Pokemon
+            {
+                Id = Convert.ToString(nearbyPokemon.EncounterId),
+                PokemonId = Convert.ToUInt16(nearbyPokemon.PokedexNumber),
+                Form = hasDisplay
+                    ? Convert.ToUInt16(nearbyPokemon.PokemonDisplay?.Form ?? PokemonDisplayProto.Types.Form.Unset)
+                    : (ushort)0,
+                Costume = hasDisplay
+                    ? Convert.ToUInt16(nearbyPokemon.PokemonDisplay?.Costume ?? PokemonDisplayProto.Types.Costume.Unset)
+                    : (ushort)0,
+                Weather = hasDisplay
+                    ? Convert.ToUInt16(nearbyPokemon.PokemonDisplay?.WeatherBoostedCondition ?? GameplayWeatherProto.Types.WeatherCondition.None)
+                    : (ushort)0,
+                Gender = hasDisplay
+                    ? Convert.ToUInt16(nearbyPokemon.PokemonDisplay?.Gender ?? PokemonDisplayProto.Types.Gender.Unset)
+                    : (ushort)0,
+                PokestopId = pokestopId,
+                IsEvent = isEvent,
+                Username = username,
+                CellId = cellId,
+                IsExpireTimestampVerified = false,
+            };
 
             // Figure out where the Pokemon is
             double lat;
             double lon;
-            if (string.IsNullOrEmpty(PokestopId))
+            if (string.IsNullOrEmpty(pokestopId))
             {
                 if (!CellPokemonEnabled)
                 {
-                    return;
+                    return null;
                 }
                 // Set Pokemon location to S2 cell coordinate as an approximation
                 var latlng = cellId.ToCoordinate();
                 lat = latlng.Latitude;
                 lon = latlng.Longitude;
-                SeenType = SeenType.NearbyCell;
+                pokemon.SeenType = SeenType.NearbyCell;
             }
             else
             {
-                var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(connection, nearbyPokemon.FortId, memCache).Result;
+                var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, nearbyPokemon.FortId, memCache);
                 if (pokestop == null)
                 {
-                    Console.WriteLine($"Failed to fetch Pokestop for nearby Pokemon '{Id}' to find location, skipping");
-                    return;
+                    Console.WriteLine($"Failed to fetch Pokestop for nearby Pokemon '{pokemon.Id}' to find location, skipping");
+                    return null;
                 }
                 lat = pokestop.Latitude;
                 lon = pokestop.Longitude;
-                SeenType = SeenType.NearbyStop;
+                pokemon.SeenType = SeenType.NearbyStop;
             }
 
-            Latitude = lat;
-            Longitude = lon;
-            PokemonId = Convert.ToUInt16(nearbyPokemon.PokedexNumber);
-            PokestopId = string.IsNullOrEmpty(nearbyPokemon.FortId)
-                ? null
-                : nearbyPokemon.FortId;
-            if (nearbyPokemon.PokemonDisplay != null)
-            {
-                Form = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Form);
-                Costume = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Costume);
-                Weather = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.WeatherBoostedCondition);
-                Gender = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Gender);
-            }
-            IsEvent = isEvent;
-            Username = username;
-            CellId = cellId;
-            IsExpireTimestampVerified = false;
+            pokemon.Latitude = lat;
+            pokemon.Longitude = lon;
+
+            return pokemon;
         }
 
-        public Pokemon(MySqlConnection connection, IMemoryCacheHostedService memCache, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
+        public static async Task<Pokemon> ParsePokemonFromMap(MySqlConnection connection, IMemoryCacheHostedService memCache, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
         {
+            var hasDisplay = mapPokemon.PokemonDisplay != null;
             var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
-            Id = encounterId.ToString();
-            PokemonId = Convert.ToUInt32(mapPokemon.PokedexTypeId);
-
             var spawnpointId = mapPokemon.SpawnpointId;
+            var pokemon = new Pokemon
+            {
+                Id = encounterId.ToString(),
+                PokemonId = Convert.ToUInt32(mapPokemon.PokedexTypeId),
+                Gender = hasDisplay
+                    ? Convert.ToUInt16(mapPokemon.PokemonDisplay?.Gender ?? PokemonDisplayProto.Types.Gender.Unset)
+                    : (ushort)0,
+                Form = Convert.ToUInt16(mapPokemon.PokemonDisplay?.Form ?? PokemonDisplayProto.Types.Form.Unset),
+                Costume = Convert.ToUInt16(mapPokemon.PokemonDisplay?.Costume ?? PokemonDisplayProto.Types.Costume.Unset),
+                Weather = Convert.ToUInt16(mapPokemon.PokemonDisplay?.WeatherBoostedCondition ?? GameplayWeatherProto.Types.WeatherCondition.None),
+                IsEvent = isEvent,
+                Username = username,
+                CellId = cellId,
+                SeenType = SeenType.LureWild,
+            };
+            
             // Get Pokestop via spawnpoint id
-            var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(connection, spawnpointId, memCache).Result;
+            var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, spawnpointId, memCache);
             if (pokestop == null)
             {
-                Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{Id}' to find location, skipping");
-                return;
+                Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{pokemon.Id}' to find location, skipping");
+                return null;
             }
-            PokestopId = pokestop.Id;
-            Latitude = pokestop.Latitude;
-            Longitude = pokestop.Longitude;
+            pokemon.PokestopId = pokestop.Id;
+            pokemon.Latitude = pokestop.Latitude;
+            pokemon.Longitude = pokestop.Longitude;
 
-            if (mapPokemon.PokemonDisplay != null)
-            {
-                Gender = Convert.ToUInt16(mapPokemon.PokemonDisplay.Gender);
-                Form = Convert.ToUInt16(mapPokemon.PokemonDisplay.Form);
-                Costume = Convert.ToUInt16(mapPokemon.PokemonDisplay.Costume);
-                Weather = Convert.ToUInt16(mapPokemon.PokemonDisplay.WeatherBoostedCondition);
-            }
-
-            Username = username;
             if (mapPokemon.ExpirationTimeMs > 0)
             {
-                ExpireTimestamp = Convert.ToUInt64((0 + Convert.ToUInt64(mapPokemon.ExpirationTimeMs)) / 1000);
-                IsExpireTimestampVerified = true;
+                pokemon.ExpireTimestamp = Convert.ToUInt64((0 + Convert.ToUInt64(mapPokemon.ExpirationTimeMs)) / 1000);
+                pokemon.IsExpireTimestampVerified = true;
             }
             else
             {
-                IsExpireTimestampVerified = false;
+                pokemon.IsExpireTimestampVerified = false;
             }
 
-            IsEvent = isEvent;
-            SeenType = SeenType.LureWild;
-            CellId = cellId;
+            return pokemon;
         }
+
+        //public Pokemon(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
+        //{
+        //    IsEvent = isEvent;
+        //    Id = wildPokemon.EncounterId.ToString();
+        //    PokemonId = Convert.ToUInt16(wildPokemon.Pokemon.PokemonId);
+        //    Latitude = wildPokemon.Latitude;
+        //    Longitude = wildPokemon.Longitude;
+        //    var spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
+        //    Gender = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay.Gender);
+        //    Form = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay.Form);
+        //    if (wildPokemon.Pokemon.PokemonDisplay != null)
+        //    {
+        //        Costume = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay.Costume);
+        //        Weather = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay.WeatherBoostedCondition);
+        //    }
+        //    Username = username;
+        //    SpawnId = spawnId;
+        //    CellId = cellId;
+        //    SeenType = SeenType.Wild;
+        //}
+
+        //public Pokemon(MySqlConnection connection, IMemoryCacheHostedService memCache, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
+        //{
+        //    Id = Convert.ToString(nearbyPokemon.EncounterId);
+
+        //    // Figure out where the Pokemon is
+        //    double lat;
+        //    double lon;
+        //    if (string.IsNullOrEmpty(PokestopId))
+        //    {
+        //        if (!CellPokemonEnabled)
+        //        {
+        //            return;
+        //        }
+        //        // Set Pokemon location to S2 cell coordinate as an approximation
+        //        var latlng = cellId.ToCoordinate();
+        //        lat = latlng.Latitude;
+        //        lon = latlng.Longitude;
+        //        SeenType = SeenType.NearbyCell;
+        //    }
+        //    else
+        //    {
+        //        var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(connection, nearbyPokemon.FortId, memCache).Result;
+        //        if (pokestop == null)
+        //        {
+        //            Console.WriteLine($"Failed to fetch Pokestop for nearby Pokemon '{Id}' to find location, skipping");
+        //            return;
+        //        }
+        //        lat = pokestop.Latitude;
+        //        lon = pokestop.Longitude;
+        //        SeenType = SeenType.NearbyStop;
+        //    }
+
+        //    Latitude = lat;
+        //    Longitude = lon;
+        //    PokemonId = Convert.ToUInt16(nearbyPokemon.PokedexNumber);
+        //    PokestopId = string.IsNullOrEmpty(nearbyPokemon.FortId)
+        //        ? null
+        //        : nearbyPokemon.FortId;
+        //    if (nearbyPokemon.PokemonDisplay != null)
+        //    {
+        //        Form = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Form);
+        //        Costume = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Costume);
+        //        Weather = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.WeatherBoostedCondition);
+        //        Gender = Convert.ToUInt16(nearbyPokemon.PokemonDisplay.Gender);
+        //    }
+        //    IsEvent = isEvent;
+        //    Username = username;
+        //    CellId = cellId;
+        //    IsExpireTimestampVerified = false;
+        //}
+
+        //public Pokemon(MySqlConnection connection, IMemoryCacheHostedService memCache, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
+        //{
+        //    var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
+        //    Id = encounterId.ToString();
+        //    PokemonId = Convert.ToUInt32(mapPokemon.PokedexTypeId);
+
+        //    var spawnpointId = mapPokemon.SpawnpointId;
+        //    // Get Pokestop via spawnpoint id
+        //    var pokestop = EntityRepository.GetEntityAsync<string, Pokestop>(connection, spawnpointId, memCache).Result;
+        //    if (pokestop == null)
+        //    {
+        //        Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{Id}' to find location, skipping");
+        //        return;
+        //    }
+        //    PokestopId = pokestop.Id;
+        //    Latitude = pokestop.Latitude;
+        //    Longitude = pokestop.Longitude;
+
+        //    if (mapPokemon.PokemonDisplay != null)
+        //    {
+        //        Gender = Convert.ToUInt16(mapPokemon.PokemonDisplay.Gender);
+        //        Form = Convert.ToUInt16(mapPokemon.PokemonDisplay.Form);
+        //        Costume = Convert.ToUInt16(mapPokemon.PokemonDisplay.Costume);
+        //        Weather = Convert.ToUInt16(mapPokemon.PokemonDisplay.WeatherBoostedCondition);
+        //    }
+
+        //    Username = username;
+        //    if (mapPokemon.ExpirationTimeMs > 0)
+        //    {
+        //        ExpireTimestamp = Convert.ToUInt64((0 + Convert.ToUInt64(mapPokemon.ExpirationTimeMs)) / 1000);
+        //        IsExpireTimestampVerified = true;
+        //    }
+        //    else
+        //    {
+        //        IsExpireTimestampVerified = false;
+        //    }
+
+        //    IsEvent = isEvent;
+        //    SeenType = SeenType.LureWild;
+        //    CellId = cellId;
+        //}
 
         #endregion
 
@@ -487,21 +624,18 @@
             Changed = Updated;
         }
 
-        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool updateIv = false, bool skipOldLookup = false)
+        //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool updateIv = false, bool skipLookup = false)
+        public async Task UpdateAsync(Pokemon? oldPokemon, IMemoryCacheHostedService memCache, bool updateIv = false)
         {
             var updateIV = updateIv;
             var setIvForWeather = false;
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
 
-            var oldPokemon = skipOldLookup 
-                ? null
-                : await EntityRepository.GetEntityAsync<string, Pokemon>(connection, Id, memCache);
             if (IsEvent && AttackIV == null)
             {
-                var oldPokemonNoEvent = skipOldLookup
-                    ? null
-                    : await EntityRepository.GetEntityAsync<string, Pokemon>(connection, Id, memCache); // IsEvent: false;
+                //Pokemon? oldPokemonNoEvent = null;
+                var oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(null, Id, memCache); // IsEvent: false;
                 if (oldPokemonNoEvent != null && oldPokemonNoEvent.AttackIV != null &&
                     (((Weather == 0 || Weather == null) && (oldPokemonNoEvent.Weather == 0 || oldPokemonNoEvent.Weather == null)) ||
                     (Weather != 0 && oldPokemonNoEvent.Weather != 0)))
@@ -524,9 +658,8 @@
             }
             if (IsEvent && !IsExpireTimestampVerified)
             {
-                var oldPokemonNoEvent = skipOldLookup
-                    ? null
-                    : await EntityRepository.GetEntityAsync<string, Pokemon>(connection, Id, memCache); // IsEvent: false;
+                //Pokemon? oldPokemonNoEvent = null;
+                var oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(null, Id, memCache); // IsEvent: false;
                 if (oldPokemonNoEvent != null && oldPokemonNoEvent.IsExpireTimestampVerified)
                 {
                     ExpireTimestamp = oldPokemonNoEvent.ExpireTimestamp;
@@ -538,10 +671,9 @@
             {
                 setIvForWeather = false;
 
-                if (ExpireTimestamp == 0)
-                {
-                    ExpireTimestamp = now + DefaultTimeUnseenS;
-                }
+                ExpireTimestamp = ExpireTimestamp == 0
+                    ? now + DefaultTimeUnseenS
+                    : ExpireTimestamp;
                 FirstSeenTimestamp = now;
                 Updated = now;
                 Changed = now;
@@ -711,7 +843,9 @@
             }
 
             // Cache pokemon entity by id
-            memCache.Set(Id, this);
+            // TODO: memCache.Set(Id, this);
+
+            await Task.CompletedTask;
         }
 
         public async Task<Spawnpoint?> ParseSpawnpointAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, int timeTillHiddenMs, ulong timestampMs)
@@ -739,7 +873,7 @@
                     LastSeen = SaveSpawnpointLastSeen ? now : null,
                     Updated = now,
                 };
-                await spawnpoint.UpdateAsync(connection, memCache, update: true, skipOldLookup: true);
+                await spawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
                 return spawnpoint;
             }
 
@@ -779,7 +913,7 @@
                         LastSeen = SaveSpawnpointLastSeen ? now : null,
                         Updated = now,
                     };
-                    await newSpawnpoint.UpdateAsync(connection, memCache, update: true, skipOldLookup: true);
+                    await newSpawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
                     return newSpawnpoint;
                 }
             }
@@ -913,6 +1047,14 @@
 
             return false;
         }
+
+        #endregion
+
+        #region Helper Methods
+
+        public static string SeenTypeToString(SeenType type) => type.ToString();
+
+        public static SeenType StringToSeenType(string seenType) => (SeenType)seenType;
 
         #endregion
 

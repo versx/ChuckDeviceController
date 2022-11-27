@@ -3,14 +3,12 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    using MySqlConnector;
     using POGOProtos.Rpc;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
-    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Geometry.Extensions;
@@ -69,8 +67,12 @@
         [Column("updated")]
         public ulong Updated { get; set; }
 
+        // TODO: Just use one condition for changes
         [NotMapped]
         public bool SendWebhook { get; set; }
+
+        [NotMapped]
+        public bool HasChanges { get; set; }
 
         #endregion
 
@@ -107,26 +109,32 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipOldLookup = false)
+        //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipLookup = false)
+        public async Task UpdateAsync(Weather? oldWeather, IMemoryCacheHostedService memCache)
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            Updated = now;
+            Updated = DateTime.UtcNow.ToTotalSeconds();
 
-            var oldWeather = skipOldLookup
-                ? null
-                : await EntityRepository.GetEntityAsync<long, Weather>(connection, Id, memCache);
+            //var oldWeather = skipLookup
+            //    ? null
+            //    : await EntityRepository.GetEntityAsync<long, Weather>(connection, Id, memCache);
             if (oldWeather == null)
             {
                 SendWebhook = true;
+                HasChanges = true;
             }
             else if (oldWeather.GameplayCondition != GameplayCondition || 
-                     oldWeather.WarnWeather != WarnWeather)
+                     oldWeather.WarnWeather != WarnWeather ||
+                     oldWeather.Severity != Severity ||
+                     oldWeather.SpecialEffectLevel != SpecialEffectLevel)
             {
                 SendWebhook = true;
+                HasChanges = true;
             }
 
             // Cache weather cell entity by id
             memCache.Set(Id, this);
+
+            await Task.CompletedTask;
         }
 
         public dynamic? GetWebhookData(string type)

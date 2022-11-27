@@ -206,12 +206,9 @@
             }
         }
 
-        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipOldLookup = false)
+        public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(Gym? oldGym, IMemoryCacheHostedService memCache)
         {
             var webhooks = new Dictionary<WebhookType, Gym>();
-            var oldGym = skipOldLookup
-                ? null
-                : await EntityRepository.GetEntityAsync<string, Gym>(connection, Id, memCache);
 
             if (RaidIsExclusive != null && (RaidIsExclusive ?? false) && ExRaidBossId > 0)
             {
@@ -341,8 +338,146 @@
             // Cache gym entity by id
             memCache.Set(Id, this);
 
-            return webhooks;
+            return await Task.FromResult(webhooks);
         }
+
+        //public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipLookup = false)
+        //{
+        //    var webhooks = new Dictionary<WebhookType, Gym>();
+        //    var oldGym = skipLookup
+        //        ? null
+        //        : await EntityRepository.GetEntityAsync<string, Gym>(connection, Id, memCache);
+
+        //    if (RaidIsExclusive != null && (RaidIsExclusive ?? false) && ExRaidBossId > 0)
+        //    {
+        //        // Set exclusive raid details
+        //        RaidPokemonId = ExRaidBossId;
+        //        RaidPokemonForm = ExRaidBossFormId;
+        //    }
+
+        //    var now = DateTime.UtcNow.ToTotalSeconds();
+        //    Updated = now;
+
+        //    if (oldGym == null)
+        //    {
+        //        // Brand new Gym to insert, set first_seen_timestamp
+        //        FirstSeenTimestamp = now;
+
+        //        webhooks.Add(WebhookType.Gyms, this);
+        //        webhooks.Add(WebhookType.GymInfo, this);
+
+        //        var raidBattleTime = RaidBattleTimestamp ?? 0;
+        //        var raidEndTime = RaidEndTimestamp ?? 0;
+        //        var ts = DateTime.UtcNow.ToTotalSeconds();
+        //        if (raidBattleTime > ts && RaidLevel != 0)
+        //        {
+        //            webhooks.Add(WebhookType.Eggs, this);
+        //        }
+        //        else if (raidEndTime > ts && RaidPokemonId != 0)
+        //        {
+        //            webhooks.Add(WebhookType.Raids, this);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // Gym already exists, compare against this instance to see if anything needs
+        //        // to be updated
+
+        //        if (oldGym.CellId > 0 && CellId == 0)
+        //        {
+        //            CellId = oldGym.CellId;
+        //        }
+        //        if (oldGym.Name != null && Name == null)
+        //        {
+        //            Name = oldGym.Name;
+        //        }
+        //        if (oldGym.Url != null && Url == null)
+        //        {
+        //            Url = oldGym.Url;
+        //        }
+        //        if (oldGym.RaidIsExclusive != null && RaidIsExclusive == null)
+        //        {
+        //            RaidIsExclusive = oldGym.RaidIsExclusive;
+        //        }
+        //        if (RaidEndTimestamp == null && oldGym.RaidEndTimestamp != null)
+        //        {
+        //            RaidEndTimestamp = oldGym.RaidEndTimestamp;
+        //        }
+        //        if (RaidBattleTimestamp == null && oldGym.RaidBattleTimestamp != null)
+        //        {
+        //            RaidBattleTimestamp = oldGym.RaidBattleTimestamp;
+        //        }
+        //        if (RaidSpawnTimestamp == null && oldGym.RaidSpawnTimestamp != null)
+        //        {
+        //            RaidSpawnTimestamp = oldGym.RaidSpawnTimestamp;
+        //        }
+        //        if (RaidLevel == null && oldGym.RaidLevel != null)
+        //        {
+        //            RaidLevel = oldGym.RaidLevel;
+        //        }
+        //        if (RaidPokemonId == null && oldGym.RaidPokemonId != null)
+        //        {
+        //            RaidPokemonId = oldGym.RaidPokemonId;
+        //        }
+        //        if (RaidPokemonForm == null && oldGym.RaidPokemonForm != null)
+        //        {
+        //            RaidPokemonForm = oldGym.RaidPokemonForm;
+        //        }
+        //        if (RaidPokemonCostume == null && oldGym.RaidPokemonCostume != null)
+        //        {
+        //            RaidPokemonCostume = oldGym.RaidPokemonCostume;
+        //        }
+        //        if (RaidPokemonGender == null && oldGym.RaidPokemonGender != null)
+        //        {
+        //            RaidPokemonGender = oldGym.RaidPokemonGender;
+        //        }
+        //        if (RaidPokemonEvolution == null && oldGym.RaidPokemonEvolution != null)
+        //        {
+        //            RaidPokemonEvolution = oldGym.RaidPokemonEvolution;
+        //        }
+        //        if (PowerUpEndTimestamp == null && oldGym.PowerUpEndTimestamp != null)
+        //        {
+        //            PowerUpEndTimestamp = oldGym.PowerUpEndTimestamp;
+        //        }
+        //        if (PowerUpLevel == null && oldGym.PowerUpLevel != null)
+        //        {
+        //            PowerUpLevel = oldGym.PowerUpLevel;
+        //        }
+        //        if (PowerUpPoints == null && oldGym.PowerUpPoints != null)
+        //        {
+        //            PowerUpPoints = oldGym.PowerUpPoints;
+        //        }
+
+        //        if (RaidSpawnTimestamp > 0 && (
+        //            oldGym.RaidLevel != RaidLevel ||
+        //            oldGym.RaidPokemonId != RaidPokemonId ||
+        //            oldGym.RaidSpawnTimestamp != RaidSpawnTimestamp))
+        //        {
+        //            var raidBattleTime = RaidBattleTimestamp ?? 0;
+        //            var raidEndTime = RaidEndTimestamp ?? 0;
+        //            var ts = DateTime.UtcNow.ToTotalSeconds();
+        //            if (raidBattleTime > ts && RaidLevel != 0)
+        //            {
+        //                webhooks.Add(WebhookType.Eggs, this);
+        //            }
+        //            else if (raidEndTime > ts && RaidPokemonId != 0)
+        //            {
+        //                webhooks.Add(WebhookType.Raids, this);
+        //            }
+        //        }
+        //        if (oldGym.AvailableSlots != AvailableSlots ||
+        //            oldGym.Team != Team ||
+        //            oldGym.InBattle != InBattle)
+        //        {
+        //            webhooks.Add(WebhookType.GymInfo, this);
+        //        }
+        //    }
+
+        //    // Cache gym entity by id
+        //    memCache.Set(Id, this);
+
+        //    return webhooks;
+        //}
 
         public dynamic? GetWebhookData(string type)
         {

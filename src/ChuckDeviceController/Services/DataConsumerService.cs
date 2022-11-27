@@ -416,8 +416,9 @@
                     return;
                 }
 
-                using var connection = new MySqlConnection(EntityRepository.ConnectionString);
-                await connection.OpenAsync(stoppingToken);
+                //using var connection = new MySqlConnection(EntityRepository.ConnectionString);
+                //var leakMonitor = new ConnectionLeakWatcher(connection);
+                //await connection.OpenAsync(stoppingToken);
 
                 //_logger.LogInformation($"Preparing {entityCount:N0} for upsert...");
                 _logger.LogInformation($"{nameof(DataConsumerService)} is preparing {entityCount:N0} data entities for MySQL database upsert...");
@@ -425,24 +426,18 @@
                 var sw = new Stopwatch();
                 sw.Start();
 
-                var tasks = entitiesToUpsert.Select(pair => UpsertEntitiesAsync(pair.Key, pair.Value, stoppingToken));
-                Task.WaitAll(tasks.ToArray(), stoppingToken);
+                //var tasks = entitiesToUpsert.Select(pair => UpsertEntitiesAsync(pair.Key, pair.Value, stoppingToken));
+                //Task.WaitAll(tasks.ToArray(), stoppingToken);
 
-                //if (!result.Success)
-                //{
-                //    _logger.LogError($"Failed to insert {entityCount:N0} entities");
-                //}
-                //results.Add(result);
-
-                //foreach (var (sqlType, entities) in entitiesToUpsert)
-                //{
-                //    var result = await UpsertEntitiesAsync(sqlType, entities, stoppingToken);
-                //    if (!result.Success)
-                //    {
-                //        _logger.LogError($"Failed to insert {entityCount:N0} entities");
-                //    }
-                //    results.Add(result);
-                //}
+                foreach (var (sqlType, entities) in entitiesToUpsert)
+                {
+                    var result = await UpsertEntitiesAsync(sqlType, entities, stoppingToken);
+                    if (!result.Success)
+                    {
+                        _logger.LogError($"Failed to insert {entityCount:N0} entities");
+                    }
+                    results.Add(result);
+                }
 
                 sw.Stop();
 
@@ -538,6 +533,7 @@
             //_logger.LogInformation($"{nameof(DataConsumerService)} upserted {results.RowsAffected:N0}/{results.EntityCount:N0} {results.Text} between {results.BatchCount:N0} batches{time}");
             var grouped = entities.Select(pair => $"{pair.Key}: {pair.Value.Count:N0}");
             var sb = new StringBuilder();
+            sb.AppendLine();
             sb.Append(nameof(DataConsumerService));
             sb.Append(' ');
             sb.Append("upserted");
@@ -559,6 +555,7 @@
             sb.Append('[');
             sb.Append(string.Join(", ", grouped));
             sb.Append(']');
+            sb.AppendLine();
             var message = sb.ToString();
             _logger.LogInformation(message);
         }
