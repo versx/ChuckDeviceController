@@ -61,7 +61,7 @@
                 batchCount = sqls.Count();
                 foreach (var (sql, args) in sqls)
                 {
-                    rowsAffected += await EntityRepository.ExecuteAsync(sql, (object)args, commandTimeoutS: DefaultCommandTimeoutS);
+                    rowsAffected += await EntityRepository.ExecuteAsync(sql, (object)args, commandTimeoutS: DefaultCommandTimeoutS, stoppingToken);
                 }
                 success = true;
             }
@@ -110,7 +110,7 @@
                 var useComma = !string.IsNullOrEmpty(sqlValues);
                 sqls = GenerateSqlQueryBatchesRaw(sqlQuery, sqlValues, entities, batchSize, includedProperties, ignoredProperties, useCommaInsteadOfEndingStatement: useComma);
                 batchCount = sqls.Count();
-                rowsAffected += await EntityRepository.ExecuteAsync(sqls, commandTimeoutS: 30, stoppingToken);
+                rowsAffected += await EntityRepository.ExecuteAsync(sqls, commandTimeoutS: DefaultCommandTimeoutS, stoppingToken);
                 success = true;
             }
             catch (Exception ex)

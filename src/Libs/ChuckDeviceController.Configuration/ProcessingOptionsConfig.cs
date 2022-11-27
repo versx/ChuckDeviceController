@@ -38,7 +38,7 @@
 
     public class DataProcessorOptionsConfig : DataLogLevelOptionsConfig
     {
-        public const int DefaultIntervalS = 5;
+        public const int DefaultIntervalS = 3;
 
         public bool ClearOldForts { get; set; } = true;
 
@@ -79,7 +79,7 @@
     {
         public static readonly ushort DefaultQueueConcurrencyLevelMultiplier = Convert.ToUInt16(Environment.ProcessorCount * 4);
         public const int DefaultMaxBatchSize = 1000;
-        public const int DefaultIntervalS = 3;
+        public const int DefaultIntervalS = 10;
         public const int DefaultQueueCapacity = 1024 * 1024;
 
         public int MaximumBatchSize { get; set; } = DefaultMaxBatchSize;

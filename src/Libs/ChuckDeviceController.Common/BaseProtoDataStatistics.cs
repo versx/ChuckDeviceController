@@ -49,37 +49,40 @@
         uint TotalSpawnpointsProcessed { get; }
 
 
-         uint TotalPlayerDataReceived { get; }
+        uint TotalPlayerDataReceived { get; }
 
-         uint TotalS2CellsReceived { get; }
+        uint TotalS2CellsReceived { get; }
 
-         uint TotalClientWeatherCellsReceived { get; }
+        uint TotalClientWeatherCellsReceived { get; }
 
-         uint TotalFortsReceived { get; }
+        uint TotalFortsReceived { get; }
 
-         uint TotalFortDetailsReceived { get; }
+        uint TotalFortDetailsReceived { get; }
 
-         uint TotalGymInfoReceived { get; }
+        uint TotalGymInfoReceived { get; }
 
-         uint TotalGymDefendersReceived { get; }
+        uint TotalGymDefendersReceived { get; }
 
-         uint TotalGymTrainersReceived { get; }
+        uint TotalGymTrainersReceived { get; }
 
-         uint TotalIncidentsReceived { get; }
+        uint TotalIncidentsReceived { get; }
 
-         uint TotalWildPokemonReceived { get; }
+        uint TotalWildPokemonReceived { get; }
 
-         uint TotalNearbyPokemonReceived { get; }
+        uint TotalNearbyPokemonReceived { get; }
 
-         uint TotalMapPokemonReceived { get; }
+        uint TotalMapPokemonReceived { get; }
 
-         uint TotalQuestsReceived { get; }
+        uint TotalQuestsReceived { get; }
 
-         uint TotalPokemonEncountersReceived { get; }
+        uint TotalPokemonEncountersReceived { get; }
 
-         uint TotalPokemonDiskEncountersReceived { get; }
+        uint TotalPokemonDiskEncountersReceived { get; }
 
-         uint TotalSpawnpointsReceived { get; }
+        uint TotalSpawnpointsReceived { get; }
+
+
+        ulong TotalDatabaseConnectionsCreated { get; }
 
 
         IReadOnlyList<DataEntityTime> Times { get; }
@@ -274,9 +277,10 @@
         [DisplayFormat(DataFormatString = "{0:N0}")]
         public virtual uint TotalSpawnpointsReceived { get; set; }
 
-
-
-
+        [JsonPropertyName("connections_created")]
+        [DisplayName("Database Connections Created")]
+        [DisplayFormat(DataFormatString = "{0:N0}")]
+        public virtual ulong TotalDatabaseConnectionsCreated { get; set; }
 
         [JsonPropertyName("data_times")]
         [DisplayName("Benchmark Times")]

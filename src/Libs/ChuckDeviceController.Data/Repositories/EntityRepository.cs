@@ -11,6 +11,8 @@
 
     public class EntityRepository
     {
+        public static ulong InstanceCount;
+
         #region Constants
 
         private const uint DefaultConnectionWaitTimeS = 5;
@@ -82,7 +84,7 @@
         #region GetEntity Methods
 
         public static async Task<TEntity?> GetEntityAsync<TKey, TEntity>(
-            MySqlConnection _, // connection
+            MySqlConnection connection,
             TKey key,
             IMemoryCacheHostedService memCache,
             bool skipCache = false,
@@ -102,7 +104,8 @@
                 }
             }
 
-            entity = await _entityRepository.GetByIdAsync<TKey, TEntity>(key);
+            //entity = await _entityRepository.GetByIdAsync<TKey, TEntity>(connection, key);
+            entity = await _entityRepository.GetByIdAsync<TKey, TEntity>(connection, key);
 
             if (setCache && entity != null)
             {
@@ -185,15 +188,17 @@
         /// <param name="commandTimeoutS">SQL command timeout in seconds.</param>
         /// <returns>Returns the number of rows affected by the query.</returns>
         /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
-        public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = DefaultCommandTimeoutS)
+        public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
         {
+            //var result = await _entityRepository.ExecuteAsync(sql, param, commandTimeoutS);
+            //return result;
             if (_connection == null)
             {
                 throw new Exception($"Not connected to MySQL database server!");
             }
 
             var rowsAffected = 0;
-            await _sem.WaitAsync();
+            await _sem.WaitAsync(stoppingToken);
 
             try
             {
@@ -219,16 +224,20 @@
         /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
         public static async Task<int> ExecuteAsync(IEnumerable<string> sqls, int? commandTimeoutS = DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
         {
-            if (_connection == null)
-            {
-                throw new Exception($"Not connected to MySQL database server!");
-            }
+            //var result = await _entityRepository.ExecuteAsync(sqls, commandTimeoutS, stoppingToken: stoppingToken);
+            //return result;
+            //if (_connection == null)
+            //{
+            //    throw new Exception($"Not connected to MySQL database server!");
+            //}
 
             var rowsAffected = 0;
             //await _sem.WaitAsync(stoppingToken);
 
             // TODO: _connection
             using var connection = new MySqlConnection(ConnectionString);
+            //var leakMonitor = new ConnectionLeakWatcher(connection);
+
             await connection.OpenAsync(stoppingToken);
             using var trans = await connection.BeginTransactionAsync(stoppingToken);
             try
@@ -236,7 +245,6 @@
                 foreach (var sql in sqls)
                 {
                     rowsAffected += await connection.ExecuteAsync(sql, transaction: trans, commandTimeout: commandTimeoutS, commandType: CommandType.Text);
-                    //rowsAffected += await connection.ExecuteAsync(sql, commandTimeout: commandTimeoutS, commandType: CommandType.Text);
                 }
                 await trans.CommitAsync(stoppingToken);
             }
@@ -262,11 +270,14 @@
         /// <returns>Returns the number of rows affected by the query.</returns>
         /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
         public static async Task<int> ExecuteBulkAsync<TEntity>(string tableName, IEnumerable<TEntity> entities, ColumnDataExpression<TEntity> dataFunc, CancellationToken stoppingToken = default)
+            where TEntity : BaseEntity
         {
-            if (_connection == null)
-            {
-                throw new Exception($"Not connected to MySQL database server!");
-            }
+            //var result = await _entityRepository.ExecuteBulkAsync(tableName, entities, dataFunc, stoppingToken);
+            //return result;
+            //if (_connection == null)
+            //{
+            //    throw new Exception($"Not connected to MySQL database server!");
+            //}
 
             var rowsAffected = 0;
             await _sem.WaitAsync(stoppingToken);
@@ -283,7 +294,7 @@
             {
                 //_logger.LogError($"Error: {ex}");
                 Console.WriteLine($"[ExecuteBulkAsync] Error: {ex}");
-                await trans.RollbackAsync(stoppingToken);   
+                await trans.RollbackAsync(stoppingToken);
             }
 
             _sem.Release();
@@ -305,6 +316,8 @@
                     await Task.Delay(TimeSpan.FromSeconds(DefaultConnectionWaitTimeS), stoppingToken);
                 }
             }
+
+            Interlocked.Increment(ref InstanceCount);
             return connection;
         }
 
