@@ -40,6 +40,9 @@
         // Reference: https://stackoverflow.com/a/70099900
         public async Task SendRpcPayloadAsync<T>(T data, PayloadType payloadType, string? username = null, bool hasIV = false)
         {
+            if (string.IsNullOrEmpty(_options.Configurator))
+                return;
+
             try
             {
                 var (channel, invoker) = CreateClient(_options.Configurator);
@@ -75,6 +78,9 @@
 
         public async Task<TrainerInfoResponse?> GetTrainerLevelingStatusAsync(string username)
         {
+            if (string.IsNullOrEmpty(_options.Configurator))
+                return null;
+
             try
             {
                 var (channel, invoker) = CreateClient(_options.Configurator);
