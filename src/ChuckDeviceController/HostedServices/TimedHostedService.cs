@@ -6,28 +6,25 @@
 
         #region Variables
 
-        private static readonly ILogger _logger =
-            new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole()));
+        //private static readonly ILogger _logger =
+        //    new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole()));
+        private readonly ILogger _logger;
         private readonly CancellationTokenSource _stoppingCts = new();
-        //private Timer? _timer;
-        private System.Timers.Timer _timer;
+        private readonly System.Timers.Timer _timer;
         private Task? _executingTask;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets the callback timer interval in seconds.
-        /// </summary>
-        public virtual uint TimerIntervalS { get; private set; } = DefaultIntervalS;
 
         #endregion
 
         #region Constructor
 
-        public TimedHostedService()
+        public TimedHostedService(
+            ILogger logger,
+            uint timerIntervalS = DefaultIntervalS
+            )
         {
+            _logger = logger;
+            _timer = new System.Timers.Timer(timerIntervalS * 1000);
+            _timer.Elapsed += (sender, e) => InternalExecuteTask(null);
         }
 
         #endregion
@@ -41,15 +38,10 @@
         public override Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Timed Background Service is starting.");
-            //_timer = new Timer(
-            //    InternalExecuteTask,
-            //    null,
-            //    TimeSpan.FromSeconds(TimerIntervalS),
-            //    TimeSpan.FromMilliseconds(-1)
-            //);
-            _timer = new System.Timers.Timer(TimerIntervalS * 1000);
-            _timer.Elapsed += (sender, e) => InternalExecuteTask(null);
-            _timer.Start();
+            if (!_timer.Enabled)
+            {
+                _timer.Start();
+            }
 
             return Task.CompletedTask;
         }
@@ -57,8 +49,7 @@
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Timed Background Service is stopping.");
-            //_timer?.Change(Timeout.Infinite, 0);
-            if (_timer?.Enabled ?? false)
+            if (_timer.Enabled)
             {
                 _timer.Stop();
             }

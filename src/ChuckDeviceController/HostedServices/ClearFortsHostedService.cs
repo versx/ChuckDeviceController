@@ -2,21 +2,20 @@
 {
     using System.Threading;
 
-    using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Options;
 
     using ChuckDeviceController.Configuration;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Repositories;
 
     public class ClearFortsHostedService : TimedHostedService, IClearFortsHostedService
     {
+        private const uint TimerIntervalS = 15 * 60; // 15 minutes
+
         #region Variables
 
         private readonly ILogger<IClearFortsHostedService> _logger;
-        private readonly IDbContextFactory<MapDbContext> _factory;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
         private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
@@ -30,19 +29,16 @@
 
         public DataProcessorOptionsConfig Options { get; }
 
-        public override uint TimerIntervalS => 15 * 60; // 15 minutes
-
         #endregion
 
         #region Constructor
 
         public ClearFortsHostedService(
             ILogger<IClearFortsHostedService> logger,
-            IDbContextFactory<MapDbContext> factory,
             IOptions<DataProcessorOptionsConfig> options)
+            : base(logger, TimerIntervalS)
         {
             _logger = logger;
-            _factory = factory;
 
             Options = options.Value;
         }
@@ -157,7 +153,8 @@
         {
             try
             {
-                using var context = await _factory.CreateDbContextAsync();
+                // TODO: Get pokestops and gyms via Dapper
+                //using var context = await _factory.CreateDbContextAsync();
 
                 var stopsToDelete = new List<Pokestop>();
                 var stopIdKeys = _stopIdsPerCell.Keys.ToList();
@@ -170,16 +167,16 @@
 
                     // Get pokestops within S2 cell and not marked deleted
                     // Filter pokestops that have not been seen within S2 cell by devices
-                    var pokestops = context.Pokestops
-                        .Where(stop => stop.CellId == cellId && !stop.IsDeleted)
-                        .Where(stop => !pokestopIds.Contains(stop.Id))
-                        .ToList();
-                    if (pokestops.Any())
-                    {
-                        // Mark gyms as deleted
-                        pokestops.ForEach(stop => stop.IsDeleted = true);
-                        stopsToDelete.AddRange(pokestops);
-                    }
+                    //var pokestops = context.Pokestops
+                    //    .Where(stop => stop.CellId == cellId && !stop.IsDeleted)
+                    //    .Where(stop => !pokestopIds.Contains(stop.Id))
+                    //    .ToList();
+                    //if (pokestops.Any())
+                    //{
+                    //    // Mark gyms as deleted
+                    //    pokestops.ForEach(stop => stop.IsDeleted = true);
+                    //    stopsToDelete.AddRange(pokestops);
+                    //}
                 }
 
                 var gymsToDelete = new List<Gym>();
@@ -193,16 +190,16 @@
 
                     // Get gyms within S2 cell and not marked deleted
                     // Filter gyms that have not been seen within S2 cell by devices
-                    var gyms = context.Gyms
-                        .Where(gym => gym.CellId == cellId && !gym.IsDeleted)
-                        .Where(gym => !gymIds.Contains(gym.Id))
-                        .ToList();
-                    if (gyms.Any())
-                    {
-                        // Mark gyms as deleted
-                        gyms.ForEach(gym => gym.IsDeleted = true);
-                        gymsToDelete.AddRange(gyms);
-                    }
+                    //var gyms = context.Gyms
+                    //    .Where(gym => gym.CellId == cellId && !gym.IsDeleted)
+                    //    .Where(gym => !gymIds.Contains(gym.Id))
+                    //    .ToList();
+                    //if (gyms.Any())
+                    //{
+                    //    // Mark gyms as deleted
+                    //    gyms.ForEach(gym => gym.IsDeleted = true);
+                    //    gymsToDelete.AddRange(gyms);
+                    //}
                 }
 
                 if (stopsToDelete.Count > 0)

@@ -57,6 +57,7 @@
         private readonly IMemoryCacheHostedService _memCache;
         private readonly IWebHostEnvironment _env;
         private readonly IDataConsumerService _dataConsumerService;
+        private readonly TimeSpan _diskCacheExpiry = TimeSpan.FromMinutes(30);
         //private readonly ThreadManager _threadManager = new(maxThreadCount: 25);
 
         #endregion
@@ -83,6 +84,7 @@
             IMemoryCacheHostedService memCache,
             IWebHostEnvironment env,
             IDataConsumerService dataConsumerService)
+            : base(logger, options?.Value?.IntervalS ?? DataProcessorOptionsConfig.DefaultIntervalS)
         {
             _logger = logger;
             _taskQueue = taskQueue;
@@ -95,7 +97,7 @@
 
             //connection = EntityRepository.CreateConnectionAsync().Result;
 
-            Options = options.Value;
+            Options = options?.Value ?? new();
         }
 
         #endregion
