@@ -7,13 +7,13 @@
 
     public static class GeofenceService
     {
-        public static bool InMultiPolygon(List<IMultiPolygon> multiPolygons, Coordinate point)
+        public static bool InMultiPolygon(IReadOnlyList<IMultiPolygon> multiPolygons, Coordinate point)
         {
             var result = InMultiPolygon(multiPolygons, point.Latitude, point.Longitude);
             return result;
         }
 
-        public static bool InMultiPolygon(List<IMultiPolygon> multiPolygons, double latitude, double longitude)
+        public static bool InMultiPolygon(IReadOnlyList<IMultiPolygon> multiPolygons, double latitude, double longitude)
         {
             var result = multiPolygons.Any(multiPolygon => InPolygon(multiPolygon, latitude, longitude));
             return result;
@@ -50,7 +50,7 @@
         }
 
         // Credits: http://codereview.stackexchange.com/a/108903
-        public static bool IsPointInPolygon<T>(Coordinate point, List<T> polygon) where T : ICoordinate
+        public static bool IsPointInPolygon<T>(Coordinate point, IReadOnlyList<T> polygon) where T : ICoordinate
         {
             int polygonLength = polygon.Count, i = 0;
             var inside = false;
@@ -76,7 +76,7 @@
             return inside;
         }
 
-        public static bool IsPointInPolygon(Coordinate point, List<List<Coordinate>>? multiPolygons)
+        public static bool IsPointInPolygon(Coordinate point, IReadOnlyList<IReadOnlyList<Coordinate>>? multiPolygons)
         {
             if (!(multiPolygons?.Any() ?? false))
                 return true;
