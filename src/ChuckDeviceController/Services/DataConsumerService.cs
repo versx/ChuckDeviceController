@@ -6,13 +6,11 @@
     using System.Text;
 
     using Microsoft.Extensions.Options;
-    using MySqlConnector;
 
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
-    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Services.Rpc;
 
     public class DataConsumerService : IDataConsumerService // TODO: TimedHostedService
@@ -21,7 +19,6 @@
 
         private readonly ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> _queue;
         //private readonly SemaphoreSlim _sem = new(1, 1);
-        //private readonly SemaphoreSlim _semQueue = new(1, 1);
         private readonly System.Timers.Timer _timer = new();
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IWebHostEnvironment _env;
@@ -339,28 +336,6 @@
             var partial = _queue.GetOrAdd(type, _ => new());
             lock (partial) partial.Add(entity); // Lock for thread safety
 
-            //await _semQueue.WaitAsync();
-
-            //_queue.AddOrUpdate(type, new ConcurrentBag<BaseEntity>(new[] { entity }), (key, bag) =>
-            //{
-            //    bag.Add(entity);
-            //    return bag;
-            //});
-
-            ////if (_queue.ContainsKey(type))
-            ////{
-            ////    _queue[type].Add(entity);
-            ////    _semQueue.Release();
-            ////    return;
-            ////}
-
-            ////if (!_queue.TryAdd(type, new() { entity }))
-            ////{
-            ////    // Key already exists, add entity to queue
-            ////    _queue[type].Add(entity);
-            ////}
-
-            //_semQueue.Release();
             await Task.CompletedTask;
         }
 
@@ -369,26 +344,6 @@
             var partial = _queue.GetOrAdd(type, _ => new());
             lock (partial) entities.ToList().ForEach(entity => partial.Add(entity)); // Lock for thread safety
 
-            //await _semQueue.WaitAsync();
-
-            //_queue.AddOrUpdate(type, new ConcurrentBag<BaseEntity>(entities), (key, bag) =>
-            //{
-            //    bag = new(_queue[type].Union(entities));
-            //    return bag;
-            //});
-
-            ////if (_queue.ContainsKey(type))
-            ////{
-            ////    _queue[type] = new(_queue[type].Union(entities));
-            ////    return;
-            ////}
-
-            ////if (!_queue.TryAdd(type, new(entities)))
-            ////{
-            ////    _queue[type] = new(_queue[type].Union(entities));
-            ////}
-
-            //_semQueue.Release();
             await Task.CompletedTask;
         }
 
@@ -426,9 +381,6 @@
                 var sw = new Stopwatch();
                 sw.Start();
 
-                //var tasks = entitiesToUpsert.Select(pair => UpsertEntitiesAsync(pair.Key, pair.Value, stoppingToken));
-                //Task.WaitAll(tasks.ToArray(), stoppingToken);
-
                 foreach (var (sqlType, entities) in entitiesToUpsert)
                 {
                     var result = await UpsertEntitiesAsync(sqlType, entities, stoppingToken);
@@ -444,7 +396,7 @@
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
                 var rowsAffected = results.Sum(x => x.RowsAffected);
                 var batchCount = results.Sum(x => x.BatchCount);
-                var expectedCount = entityCount;//results.Sum(x => x.ExpectedCount);
+                var expectedCount = results.Sum(x => x.ExpectedCount);
 
                 PrintBenchmarkResults(DataLogLevel.Summary,
                     new BenchmarkResults(

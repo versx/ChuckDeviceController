@@ -25,7 +25,7 @@
 
         //private static readonly ILogger<EntityRepository> _logger =
         //    new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Trace)));
-        private static readonly SemaphoreSlim _sem = new(5);
+        private static readonly SemaphoreSlim _sem = new(1);
         private static readonly SemaphoreSlim _entitySem = new(25); // TODO: Make entity fetching concurrency level configurable
         //private static readonly SemaphoreSlim _entitySem = new(1);
         private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(15); // TODO: Make entity fetch lock wait time configurable
@@ -231,13 +231,13 @@
             //    throw new Exception($"Not connected to MySQL database server!");
             //}
 
-            var rowsAffected = 0;
-            //await _sem.WaitAsync(stoppingToken);
+            await _sem.WaitAsync(stoppingToken);
 
             // TODO: _connection
             using var connection = new MySqlConnection(ConnectionString);
-            //var leakMonitor = new ConnectionLeakWatcher(connection);
+            var leakMonitor = new ConnectionLeakWatcher(connection);
 
+            var rowsAffected = 0;
             await connection.OpenAsync(stoppingToken);
             using var trans = await connection.BeginTransactionAsync(stoppingToken);
             try
@@ -255,7 +255,7 @@
                 await trans.RollbackAsync(stoppingToken);
             }
 
-            //_sem.Release();
+            _sem.Release();
             return rowsAffected;
         }
 
