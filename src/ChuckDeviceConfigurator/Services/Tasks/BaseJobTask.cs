@@ -7,7 +7,7 @@
     public class BaseJobTask : ITask
     {
         [JsonPropertyName("action")]
-        public string Action { get; set; }
+        public string Action { get; set; } = null!;
 
         [JsonPropertyName("lat")]
         public double Latitude { get; set; }

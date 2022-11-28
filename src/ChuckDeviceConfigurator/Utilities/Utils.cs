@@ -140,10 +140,10 @@
                     cssClass = "account-good";
                     break;
                 case "Banned":
-                case "Suspended":
                     cssClass = "account-banned";
                     break;
                 case "Warning":
+                case "Suspended":
                 case "Invalid":
                     cssClass = "account-warning";
                     break;

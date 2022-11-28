@@ -3,9 +3,14 @@
     using System.Threading.Tasks;
 
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
+    using ChuckDeviceController.Geometry;
+    using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Plugin;
+
+    // TODO: Retrieve geofence by name
 
     public class GeofenceServiceHost : IGeofenceServiceHost
     {
@@ -40,6 +45,7 @@
                     },
                 };
 
+                // TODO: Use Dapper or vanilla EfCore
                 await context.SingleMergeAsync(geofence, options =>
                 {
                     options.UseTableLock = true;
@@ -50,6 +56,30 @@
                     };
                 });
             }
+        }
+
+        public bool IsPointInMultiPolygons(ICoordinate coord, IEnumerable<IMultiPolygon> multiPolygons)
+        {
+            return GeofenceService.InMultiPolygon(
+                multiPolygons.ToList(),
+                new Coordinate(coord.Latitude, coord.Longitude)
+            );
+        }
+
+        public bool IsPointInMultiPolygon(ICoordinate coord, IMultiPolygon multiPolygon)
+        {
+            return GeofenceService.InPolygon(
+                multiPolygon,
+                new Coordinate(coord.Latitude, coord.Longitude)
+            );
+        }
+
+        public bool IsPointInPolygon(ICoordinate coord, IEnumerable<ICoordinate> coordinates)
+        {
+            return GeofenceService.IsPointInPolygon(
+                new Coordinate(coord.Latitude, coord.Longitude),
+                coordinates.ToList()
+            );
         }
     }
 }

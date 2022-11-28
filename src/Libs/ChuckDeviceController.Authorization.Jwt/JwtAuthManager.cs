@@ -128,9 +128,9 @@
                 var result = !string.IsNullOrEmpty(identifier) && identifier == DefaultInternalServiceIdentifier;
                 return result;
             }
-            catch //(Exception ex)
+            catch (Exception ex)
             {
-                _logger.LogError($"Failed to validate the JWT token for gRPC service request.");
+                _logger.LogError($"Failed to validate the JWT token for gRPC service request: {ex}");
             }
             return false;
         }

@@ -365,7 +365,7 @@
                         PokemonFormId = item.Form ?? 0,
                         PokemonCostume = costume,
                         PokemonCostumeId = item.Costume ?? 0,
-                        PokemonGender = (Gender)item.Gender,
+                        PokemonGender = (Gender)(item.Gender ?? 0),
                         Latitude = lat,
                         Longitude = lon,
                     };
