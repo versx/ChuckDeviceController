@@ -320,6 +320,19 @@ VALUES
 ON DUPLICATE KEY UPDATE
     spawn_id=VALUES(spawn_id),
     expire_timestamp=VALUES(expire_timestamp),
+    atk_iv=COALESCE(VALUES(atk_iv), atk_iv),
+    def_iv=COALESCE(VALUES(def_iv), def_iv),
+    sta_iv=COALESCE(VALUES(sta_iv), sta_iv),
+    move_1=COALESCE(VALUES(move_1), move_1),
+    move_2=COALESCE(VALUES(move_2), move_2),
+    gender=COALESCE(VALUES(gender), gender),
+    form=COALESCE(VALUES(form), form),
+    costume=COALESCE(VALUES(costume), costume),
+    cp=COALESCE(VALUES(cp), cp),
+    level=COALESCE(VALUES(level), level),
+    weight=COALESCE(VALUES(weight), weight),
+    size=COALESCE(VALUES(size), size),
+    weather=COALESCE(VALUES(weather), weather),
     shiny=VALUES(shiny),
     username=VALUES(username),
     pokestop_id=VALUES(pokestop_id),
@@ -336,7 +349,8 @@ ON DUPLICATE KEY UPDATE
     base_height=VALUES(base_height),
     base_weight=VALUES(base_weight),
     is_event=VALUES(is_event),
-    seen_type=VALUES(seen_type)
+    seen_type=VALUES(seen_type),
+    pvp=COALESCE(VALUES(pvp), pvp)
 ";
 
         public const string PokemonIgnoreOnMerge = @"
@@ -354,6 +368,19 @@ VALUES
 ON DUPLICATE KEY UPDATE
     spawn_id=VALUES(spawn_id),
     expire_timestamp=VALUES(expire_timestamp),
+    atk_iv=COALESCE(VALUES(atk_iv), atk_iv),
+    def_iv=COALESCE(VALUES(def_iv), def_iv),
+    sta_iv=COALESCE(VALUES(sta_iv), sta_iv),
+    move_1=COALESCE(VALUES(move_1), move_1),
+    move_2=COALESCE(VALUES(move_2), move_2),
+    gender=COALESCE(VALUES(gender), gender),
+    form=COALESCE(VALUES(form), form),
+    costume=COALESCE(VALUES(costume), costume),
+    cp=COALESCE(VALUES(cp), cp),
+    level=COALESCE(VALUES(level), level),
+    weight=COALESCE(VALUES(weight), weight),
+    size=COALESCE(VALUES(size), size),
+    weather=COALESCE(VALUES(weather), weather),
     shiny=VALUES(shiny),
     username=VALUES(username),
     pokestop_id=VALUES(pokestop_id),
@@ -370,7 +397,8 @@ ON DUPLICATE KEY UPDATE
     base_height=VALUES(base_height),
     base_weight=VALUES(base_weight),
     is_event=VALUES(is_event),
-    seen_type=VALUES(seen_type)
+    seen_type=VALUES(seen_type),
+    pvp=COALESCE(VALUES(pvp), pvp)
 ";
 
         /// <summary>
