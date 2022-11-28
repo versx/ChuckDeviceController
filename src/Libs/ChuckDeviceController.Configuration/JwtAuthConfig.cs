@@ -4,12 +4,12 @@
     {
         public bool Enabled { get; set; }
 
-        public uint TokenValidityM { get; set; } = 30; // minutes
+        public uint TokenValidityM { get; set; } = 43200; // 30 days in minutes
 
-        public string Issuer { get; set; }
+        public string Issuer { get; set; } = null!;
 
-        public string Audience { get; set; }
+        public string Audience { get; set; } = null!;
 
-        public string Key { get; set; }
+        public string Key { get; set; } = null!;
     }
 }
