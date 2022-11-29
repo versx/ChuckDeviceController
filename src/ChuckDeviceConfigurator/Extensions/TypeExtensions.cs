@@ -4,14 +4,27 @@
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.PluginManager;
+    using ChuckDeviceController.PluginManager.Mvc.Extensions;
 
     public static class TypeExtensions
     {
-        public static object[]? GetJobControllerConstructorArgs(this Type jobControllerType, IInstance instance, IReadOnlyList<Geofence> geofences)
+        public static object[]? GetJobControllerConstructorArgs(
+            this Type jobControllerType,
+            IInstance instance,
+            IReadOnlyList<Geofence> geofences,
+            IReadOnlyDictionary<Type, object> sharedServices)
         {
+            var dict = new Dictionary<Type, object>(sharedServices)
+            {
+                { typeof(IInstance), instance },
+                { typeof(IReadOnlyList<IGeofence>), geofences }
+            };
+
             var attributes = jobControllerType.GetCustomAttributes(typeof(GeofenceTypeAttribute), false);
             if (!(attributes?.Any() ?? false))
             {
@@ -19,20 +32,51 @@
                 return null;
             }
 
-            object[]? args = null;
-            var attr = attributes!.FirstOrDefault() as GeofenceTypeAttribute;
+            var ctors = jobControllerType.GetPluginConstructors();
+            if (!(ctors?.Any() ?? false))
+            {
+                // No matching constructors found
+                return null;
+            }
 
+            var constructorInfo = ctors.First();
+            var parameters = constructorInfo.GetParameters();
+            var list = new List<object>(parameters.Length);
+
+            // TODO: Remove GeofenceTypeAttribute requirement
+            if (attributes!.FirstOrDefault() is not GeofenceTypeAttribute attr)
+            {
+                // Failed to find 'GeofenceTypeAttribute' for job controller
+                return null;
+            }
             switch (attr?.Type)
             {
                 case GeofenceType.Circle:
                     var circles = geofences.ConvertToCoordinates();
-                    args = new object[] { instance, circles };
+                    dict.Add(typeof(List<ICoordinate>), circles);
                     break;
                 case GeofenceType.Geofence:
-                    var (_, polyCoords) = geofences.ConvertToMultiPolygons();
-                    args = new object[] { instance, polyCoords };
+                    var (multiPolygons, polyCoords) = geofences.ConvertToMultiPolygons();
+                    var coords = polyCoords
+                        .Select(c => c.Select(coord => (ICoordinate)coord).ToList())
+                        .ToList();
+                    dict.Add(typeof(List<List<ICoordinate>>), coords);
+                    dict.Add(typeof(List<IMultiPolygon>), multiPolygons);
                     break;
             }
+
+            // Loop the sonstructor's parameters to see which host type handlers
+            // to provide it when we instantiate a new instance.
+            foreach (var param in parameters)
+            {
+                if (!dict.ContainsKey(param.ParameterType))
+                    continue;
+
+                var hostHandler = dict[param.ParameterType];
+                list.Add(hostHandler);
+            }
+
+            var args = list.ToArray();
             return args;
         }
 
@@ -42,7 +86,7 @@
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>List&lt;Type&gt;</returns>
-        public static IEnumerable<Type> GetTypes<T>(IEnumerable<ChuckDeviceController.PluginManager.IPluginHost> plugins)
+        public static IEnumerable<Type> GetTypes<T>(IEnumerable<IPluginHost> plugins)
         {
             var results = new List<Type>();
             foreach (var plugin in plugins)

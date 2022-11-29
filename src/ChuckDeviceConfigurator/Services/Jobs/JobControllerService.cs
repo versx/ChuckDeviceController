@@ -22,6 +22,7 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.PluginManager;
 
     using Type = System.Type;
 
@@ -160,6 +161,10 @@
 
         #region Plugin Host
 
+        /// <summary>
+        /// Creates a new instance provided by a plugin.
+        /// </summary>
+        /// <param name="options">Instance option used when creating the instance.</param>
         public async Task CreateInstanceAsync(IInstance options)
         {
             // Allow plugins to create instances to link with job controllers, that way they are easily used via the UI
@@ -201,6 +206,11 @@
             await AddInstanceAsync(instance);
         }
 
+        /// <summary>
+        /// Registers any custom job controller instance types provided by plugins.
+        /// </summary>
+        /// <typeparam name="T">New job controller instance type to register.</typeparam>
+        /// <param name="customInstanceType">Name describing the new job controller instance type.</param>
         public async Task RegisterJobControllerAsync<T>(string customInstanceType)
             where T : IJobController
         {
@@ -222,8 +232,14 @@
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Assigns a device to the specified instance by name.
+        /// </summary>
+        /// <param name="device">Device to assign the instance to.</param>
+        /// <param name="instanceName">Instance name that will be assigned to the device.</param>
         public async Task AssignDeviceToJobControllerAsync(IDevice device, string instanceName)
         {
+            // Ensure our specified device has already been registered by the job controller service.
             if (!_devices.ContainsKey(device.Uuid))
             {
                 _logger.LogError($"Device with name '{device.Uuid}' does not exist, unable to assign job controller instance");
@@ -708,6 +724,7 @@
             var date = e.DateReached.FromSeconds()
                                     .ToLocalTime();
             _logger.LogInformation($"Account {e.Username} has reached level {e.Level} at {date} with a total of {e.XP} XP!");
+            // TODO: Update account level via database/ProtoProcessorService
         }
 
         #endregion
@@ -858,7 +875,10 @@
             try
             {
                 // TODO: Add support for adding more arguments to pass to job controller constructor
-                var args = jobControllerType.GetJobControllerConstructorArgs(instance, geofences);
+                var args = jobControllerType.GetJobControllerConstructorArgs(
+                    instance,
+                    geofences,
+                    PluginManager.Instance.Options.SharedServiceHosts);
                 if (args?.Any() ?? false)
                 {
                     jobControllerInstance = Activator.CreateInstance(jobControllerType, args);

@@ -8,6 +8,10 @@
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
     using ChuckDeviceController.PluginManager.Services.Loader;
 
+    /// <summary>
+    /// Searches assemblies for plugin interface contract type.
+    /// </summary>
+    /// <typeparam name="TPlugin">Plugin interface contract type.</typeparam>
     public class PluginFinder<TPlugin> where TPlugin : class
     {
         private readonly ILogger<PluginFinder<TPlugin>> _logger =
@@ -127,12 +131,9 @@
 
         private static IEnumerable<Type> GetPluginTypesFromAssembly(string assemblyFullPath)
         {
-            IEnumerable<Type>? types;
-            using (var context = new PluginMetadataLoadContext(assemblyFullPath))
-            {
-                var assemblyShim = context.LoadFromAssemblyPath(assemblyFullPath);
-                types = GetPluginTypesFromAssembly(assemblyShim);
-            }
+            using var context = new PluginMetadataLoadContext(assemblyFullPath);
+            var assemblyShim = context.LoadFromAssemblyPath(assemblyFullPath);
+            var types = GetPluginTypesFromAssembly(assemblyShim);
             return types;
         }
 
@@ -145,9 +146,10 @@
         private static IEnumerable<Type> GetPluginTypes(IEnumerable<Type> assemblyTypes)
         {
             var pluginType = typeof(TPlugin);
-            var types = assemblyTypes.Where(t => t.IsClass && !t.IsAbstract)
-                                     .Where(t => t.GetInterfaces().Any(it => it.Name == pluginType.Name))
-                                     .ToList();
+            var types = assemblyTypes
+                .Where(t => t.IsClass && !t.IsAbstract)
+                .Where(t => t.GetInterfaces().Any(it => it.Name == pluginType.Name))
+                .ToList();
             return types;
         }
 

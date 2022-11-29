@@ -78,6 +78,7 @@
                 }
 
                 // Initialize any fields or properties marked as plugin service types
+                // TODO: Set/init fields/properties for all types with attribute in plugin assembly, not just plugin class
                 pluginInstance.SetPluginServiceFields(sharedServiceHosts);
                 pluginInstance.SetPluginServiceProperties(sharedServiceHosts);
 
@@ -90,6 +91,7 @@
                     continue;
                 }
 
+                // TODO: Load/fetch current/last plugin state/status
                 var pluginHost = new PluginHost(
                     plugin,
                     match,
