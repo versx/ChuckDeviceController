@@ -262,6 +262,20 @@
                            DbContextFactory.CreateValueComparer<string, dynamic>()
                        );
 
+                // Ensure properties are clamped to a maximum precision of 2 decimal places
+                entity.Property(p => p.Weight)
+                      .HasPrecision(18, 2);
+                entity.Property(p => p.Size)
+                      .HasPrecision(18, 2);
+                entity.Property(p => p.Capture1)
+                      .HasPrecision(18, 2);
+                entity.Property(p => p.Capture2)
+                      .HasPrecision(18, 2);
+                entity.Property(p => p.Capture3)
+                      .HasPrecision(18, 2);
+                entity.Property(p => p.IV)
+                      .HasPrecision(18, 2);
+
                 /*
                 entity.HasOne(p => p.Cell)
                       .WithMany(c => c.Pokemon)
