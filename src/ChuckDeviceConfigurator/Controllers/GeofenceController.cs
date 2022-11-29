@@ -143,6 +143,7 @@
                 return View();
             }
 
+            geofence.Data ??= new();
             var data = geofence.Data.Area;
             // Convert geofence area data to plain text to display
             dynamic area = geofence.Type == GeofenceType.Circle
@@ -180,10 +181,7 @@
 
                 geofence.Name = name;
                 geofence.Type = type;
-                if (geofence.Data == null)
-                {
-                    geofence.Data = new GeofenceData();
-                }
+                geofence.Data ??= new();
                 geofence.Data.Area = area;
 
                 // Update geofence in database
@@ -193,8 +191,10 @@
                 _geofenceService.Edit(geofence, id);
 
                 // Get list of instances that have geofence
-                var instancesWithGeofence = _context.Instances.Where(instance => instance.Geofences.Contains(geofence.Name))
-                                                              .ToList();
+                var instancesWithGeofence = _context.Instances
+                    .AsEnumerable()
+                    .Where(instance => instance.Geofences.Contains(geofence.Name))
+                    .ToList();
                 foreach (var instance in instancesWithGeofence)
                 {
                     // Reload instance so updated geofence is applied
@@ -203,9 +203,9 @@
 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                ModelState.AddModelError("Geofence", $"Unknown error occurred while editing geofence '{id}'.");
+                ModelState.AddModelError("Geofence", $"Unknown error occurred while editing geofence '{id}': {ex.Message}");
                 return View();
             }
         }
