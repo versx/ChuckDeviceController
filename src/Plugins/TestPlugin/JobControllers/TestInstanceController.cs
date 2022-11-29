@@ -18,6 +18,8 @@
      * IEventInstanceController - Enables event specific Pokemon re-encountering (IJobController already inherits from this)
      */
 
+    // GeofenceType attribute determines what type of geofence to provide.
+    // (i.e. plotted circle coordinates or geofence coordinates)
     [GeofenceType(GeofenceType.Circle)]
     public class TestInstanceController : IJobController, IJobControllerCoordinates, IScanNextInstanceController
     {
@@ -49,8 +51,6 @@
 
         #region Constructor
 
-        //public TestInstanceController(string name, ushort minLevel, ushort maxLevel,
-        //    List<Coordinate> coords, string? groupName = null, bool isEvent = false)
         public TestInstanceController(IInstance instance, List<ICoordinate> coords)
         {
             Name = instance.Name;

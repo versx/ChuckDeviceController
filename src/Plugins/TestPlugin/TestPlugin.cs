@@ -519,7 +519,7 @@
             try
             {
                 // Retrieve database entities 
-                var device = await _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE");
+                var device = await _databaseHost.FindAsync<IDevice, string>("SGV7SE");
                 _loggingHost.LogInformation($"Device: {device?.Uuid}");
                 //var devices = await _databaseHost.GetListAsync<IDevice>();
                 //_loggingHost.LogMessage($"Devices: {devices.Count}");
@@ -532,6 +532,25 @@
                 //_loggingHost.LogMessage($"Accounts: {accounts.Count}");
                 //var pokestop = await _databaseHost.GetByIdAsync<IPokestop, string>("0192086043834f1c9c577a54a7890b32.16");
                 //_loggingHost.LogMessage($"Pokestop: {pokestop.Name}");
+
+                //var spawnpoints = await _databaseHost.GetAllAsync<ISpawnpoint>();
+                //_loggingHost.LogDebug($"Spawnpoints: {spawnpoints.Count:N0}");
+
+                //spawnpoints = await _databaseHost.FindAsync<ISpawnpoint, ulong>(
+                //    spawnpoint => spawnpoint.DespawnSecond == null,
+                //    spawnpoint => spawnpoint.Id,
+                //    SortOrderDirection.Asc,
+                //    50
+                //);
+                //_loggingHost.LogDebug($"Spawnpoints Exp: {spawnpoints?.Count:N0}");
+
+                //var bannedAccounts = await _databaseHost.FindAsync<IAccount, string>(
+                //    account => account.Failed == "suspended",
+                //    account => account.Username,
+                //    SortOrderDirection.Desc,
+                //    10000
+                //);
+                //_loggingHost.LogInformation($"Banned Accounts: {bannedAccounts?.Count:N0}");
             }
             catch (Exception ex)
             {
@@ -574,7 +593,7 @@
         {
             // Assign device to new instance using custom job controller
             var uuid = "RH2SE"; //"SGV7SE";
-            var device = await _databaseHost.GetByIdAsync<IDevice, string>(uuid);
+            var device = await _databaseHost.FindAsync<IDevice, string>(uuid);
             if (device == null)
             {
                 _loggingHost.LogError($"Failed to get device from database with UUID '{uuid}'");

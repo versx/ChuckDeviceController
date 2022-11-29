@@ -256,8 +256,11 @@
                         .FilterBy(predicate as Expression<Func<IWebhook, bool>>);
                 }
 
-                ordered = filtered.OrderBy(order, sortDirection);
-                results = await (ordered ?? filtered).ToListAsync();
+                if (filtered != null)
+                {
+                    ordered = filtered.Order(order, sortDirection);
+                    results = await (ordered ?? filtered).ToListAsync();
+                }
             }
             else if (_mapEntityTypes.Contains(typeof(TEntity)))
             {
@@ -326,8 +329,11 @@
                         .FilterBy(predicate as Expression<Func<IWeather, bool>>);
                 }
 
-                ordered = filtered.OrderBy(order, sortDirection);
-                results = await (ordered ?? filtered).ToListAsync();
+                if (filtered != null)
+                {
+                    ordered = filtered.Order(order, sortDirection);
+                    results = await (ordered ?? filtered).ToListAsync();
+                }
             }
             return results?.Take(limit).ToList();
         }

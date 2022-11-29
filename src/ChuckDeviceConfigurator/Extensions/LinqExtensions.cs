@@ -14,7 +14,7 @@
             return filtered;
         }
 
-        public static IOrderedQueryable<TEntity> OrderBy<TEntity, TKey>(
+        public static IOrderedQueryable<TEntity> Order<TEntity, TKey>(
             this IQueryable<TEntity> query,
             Expression<Func<TEntity, TKey>>? order = null,
             SortOrderDirection sortDirection = SortOrderDirection.Asc)
