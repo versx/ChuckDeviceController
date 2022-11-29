@@ -36,6 +36,11 @@
         public ActionResult Index()
         {
             var devices = _context.Devices.ToList();
+            var accountLevels = _context.Accounts
+                .AsEnumerable()
+                .Where(account => devices.Any(device => device.AccountUsername == account.Username))
+                .ToDictionary(x => x.Username, y => y.Level);
+            devices.ForEach(device => device.AccountLevel = accountLevels[device.AccountUsername!]);
             var model = new ViewModelsModel<Device>
             {
                 Items = devices,

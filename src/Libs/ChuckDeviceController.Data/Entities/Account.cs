@@ -10,9 +10,9 @@
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
-    using ChuckDeviceController.Data.Repositories;
 
     [Table("account")]
     public class Account : BaseEntity, IAccount, IWebhookEntity
@@ -243,20 +243,14 @@
                 Failed = FailedGprRedWarning;
                 if (warnExpireTimestamp > now)
                 {
-                    if (FirstWarningTimestamp == null)
-                    {
-                        FirstWarningTimestamp = now;
-                    }
+                    FirstWarningTimestamp ??= now;
                     FailedTimestamp = now;
                 }
                 else
                 {
-                    if (FirstWarningTimestamp == null)
-                    {
-                        FirstWarningTimestamp = warnExpireTimestamp > 0
-                            ? warnExpireTimestamp - WarningPeriodS
-                            : now - WarningPeriodS;
-                    }
+                    FirstWarningTimestamp ??= warnExpireTimestamp > 0
+                        ? warnExpireTimestamp - WarningPeriodS
+                        : now - WarningPeriodS;
                     FailedTimestamp = now - WarningPeriodS;
                 }
                 Console.WriteLine($"[{Username}] Account '{accountData.Player.Name}' (Username: {Username}) Has Red Warning");

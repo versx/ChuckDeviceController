@@ -57,6 +57,11 @@
                 entity.HasIndex(p => p.WarnExpireTimestamp);
                 entity.HasIndex(p => p.HasWarn);
                 entity.HasIndex(p => p.WasSuspended);
+
+                //entity.HasOne(a => a.Device)
+                //      .WithOne(d => d.Account)
+                //      .HasForeignKey(nameof(Account.Username))
+                //      .OnDelete(DeleteBehavior.SetNull);
             });
 
             // TODO: Add indexes for device controller db context entities
@@ -97,6 +102,17 @@
                            DbContextFactory.CreateJsonValueConverter<List<uint>>(),
                            DbContextFactory.CreateValueComparer<uint>()
                        );
+            });
+
+            modelBuilder.Entity<Device>(entity =>
+            {
+                entity.HasIndex(p => p.AccountUsername);
+                entity.HasIndex(p => p.InstanceName);
+                entity.HasIndex(p => p.LastSeen);
+
+                entity.HasOne(d => d.Account);
+                      //.WithOne(a => a.Username)
+                      //.HasForeignKey(nameof(Device.AccountUsername));
             });
 
             modelBuilder.Entity<DeviceGroup>(entity =>

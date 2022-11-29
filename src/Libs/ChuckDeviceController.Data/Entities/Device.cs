@@ -21,6 +21,7 @@
         [
             DisplayName("Instance Name"),
             Column("instance_name"),
+            ForeignKey("instance_name"),
             JsonPropertyName("instance_name"),
         ]
         public string? InstanceName { get; set; }
@@ -28,9 +29,20 @@
         [
             DisplayName("Account Username"),
             Column("account_username"),
+            ForeignKey("account_username"),
             JsonPropertyName("account_username"),
         ]
         public string? AccountUsername { get; set; }
+
+        [JsonIgnore]
+        public virtual Account? Account { get; set; }
+
+        [
+            DisplayName("Level"),
+            NotMapped,
+            JsonPropertyName("account_level"),
+        ]
+        public ushort AccountLevel { get; set; }
 
         [
             DisplayName("Last Host"),

@@ -43,7 +43,7 @@
         private void OnClockTimerElapsed()
         {
             var time = DateTime.Now.ToLongTimeString();
-            Console.WriteLine($"Time: {time}");
+            //Console.WriteLine($"Time: {time}");
             _uiHost.UpdateDashboardStatisticAsync(new DashboardStatsItem("Current Time", time));
         }
     }
