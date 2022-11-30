@@ -16,6 +16,7 @@
 
         #region Constants
 
+        private const uint DefaultConnectionLeakTimeoutS = 120;
         private const uint DefaultConnectionWaitTimeS = 5;
         private const int DefaultCommandTimeoutS = 30;
         private const double DefaultExpiryLimitM = 15;
@@ -35,7 +36,7 @@
             ConnectionState.Broken,
             ConnectionState.Closed,
         };
-        private static MySqlConnection? _connection;
+        //private static MySqlConnection? _connection;
         private static string? _connectionString;
         private readonly bool _openConnection;
         private static EntityDataRepository _entityRepository;
@@ -75,7 +76,7 @@
 
             _entityRepository = new EntityDataRepository(connectionString);
 
-            Task.Run(async () => _connection = await CreateConnectionAsync()).Wait();
+            //Task.Run(async () => _connection = await CreateConnectionAsync()).Wait();
         }
 
         #endregion
@@ -189,18 +190,20 @@
         /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
         public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
         {
-            if (_connection == null)
-            {
-                throw new Exception($"Not connected to MySQL database server!");
-            }
-
             var rowsAffected = 0;
             await _sem.WaitAsync(stoppingToken);
 
-            using var trans = await _connection.BeginTransactionAsync(stoppingToken);
+            // TODO: _connection
+            using var connection = await CreateConnectionAsync(stoppingToken: stoppingToken);
+            if (connection == null)
+            {
+                Console.WriteLine("[ExecuteAsync} Error: Not connected to MySQL database server!");
+                return rowsAffected;
+            }
+            using var trans = await connection.BeginTransactionAsync(stoppingToken);
             try
             {
-                rowsAffected = await _connection.ExecuteAsync(sql, param, commandTimeout: commandTimeoutS, commandType: CommandType.Text);
+                rowsAffected = await connection.ExecuteAsync(sql, param, commandTimeout: commandTimeoutS, commandType: CommandType.Text);
                 await trans.CommitAsync(stoppingToken);
             }
             catch (Exception ex)
@@ -321,7 +324,7 @@
 
             if (runLeakWatcher)
             {
-                _ = new ConnectionLeakWatcher(connection);
+                _ = new ConnectionLeakWatcher(connection, DefaultConnectionLeakTimeoutS);
             }
             return connection;
         }
