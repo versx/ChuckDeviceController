@@ -22,7 +22,6 @@
 
         #region Variables
 
-        //private readonly ConnectionLeakWatcher _leakMonitor;
         private readonly SemaphoreSlim _sem = new(1, 1);
         private readonly string _connectionString;
         private MySqlConnection? _connection;
@@ -38,8 +37,6 @@
 
             AddTypeMappers();
             OpenConnection();
-
-            //_leakMonitor = new ConnectionLeakWatcher(_connection);
 
             //var csb = MySqlConnectorFactory.Instance.CreateConnectionStringBuilder();
             //csb.ConnectionString = _connectionString;
@@ -71,11 +68,7 @@
                 var tableName = typeof(TEntity).GetTableAttribute();
                 var keyName = typeof(TEntity).GetKeyAttribute();
                 var sql = $"SELECT * FROM {tableName} WHERE {keyName} = '{key}'";
-                //using var connection = new MySqlConnection(_connectionString);
-                //var leakMonitor = new ConnectionLeakWatcher(connection);
-                //await connection.OpenAsync(stoppingToken);
 
-                //result = await _connection.QueryFirstOrDefaultAsync<TEntity>(
                 result = await connection.QueryFirstOrDefaultAsync<TEntity>(
                     sql,
                     commandTimeout: DefaultCommandTimeoutS,
@@ -181,8 +174,8 @@
                 throw new Exception($"Not connected to MySQL database server!");
             }
 
-            using var trans = await _connection.BeginTransactionAsync(stoppingToken);
             var rowsAffected = 0;
+            using var trans = await _connection.BeginTransactionAsync(stoppingToken);
             try
             {
                 foreach (var sql in sqls)
@@ -254,31 +247,12 @@
             {
                 _connection.Dispose();
                 _connection = null;
-
-                //_leakMonitor?.Dispose();
-                //_leakMonitor = null;
             }
 
-            _connection = new MySqlConnection(_connectionString);
-            //_leakMonitor = new ConnectionLeakWatcher(_connection);
-
-            await _connection.OpenAsync(stoppingToken);
-            await WaitForConnectionAsync(stoppingToken);
-        }
-
-        private async Task WaitForConnectionAsync(CancellationToken stoppingToken = default)
-        {
-            var maxAttempts = 3;
-            var attempts = 0;
-
-            while ((_connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
-            {
-                if (attempts >= maxAttempts)
-                    break;
-
-                attempts++;
-                await Task.Delay(TimeSpan.FromSeconds(DefaultConnectionWaitTimeS), stoppingToken);
-            }
+            //_connection = new MySqlConnection(_connectionString);
+            //await _connection.OpenAsync(stoppingToken);
+            //await WaitForConnectionAsync(stoppingToken);
+            _connection = await EntityRepository.CreateConnectionAsync(stoppingToken: stoppingToken);
         }
 
         private void EnsureConnectionIsOpen(bool attemptReopen)

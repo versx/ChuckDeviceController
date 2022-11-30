@@ -34,7 +34,7 @@
         {
             _databaseHost = databaseHost;
 
-            var device = _databaseHost.GetByIdAsync<IDevice, string>("SGV7SE").ConfigureAwait(false).GetAwaiter().GetResult();
+            var device = _databaseHost.FindAsync<IDevice, string>("SGV7SE").Result;
             Console.WriteLine($"Device: {device}");
         }
 

@@ -3,11 +3,11 @@
     using System.Threading.Tasks;
 
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Factories;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
 
     // TODO: Retrieve geofence by name

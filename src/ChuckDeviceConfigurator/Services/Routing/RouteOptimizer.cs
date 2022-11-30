@@ -4,13 +4,13 @@
 
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public class RouteOptimizer : IRouteOptimizer
     {

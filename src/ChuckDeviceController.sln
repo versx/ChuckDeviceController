@@ -87,6 +87,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftAuthProviderPlugin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dapper.Tests", "Tests\Dapper.Tests\Dapper.Tests.csproj", "{D860BD03-6321-4677-A868-F8C9C287BCF6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindyJumpyPlugin", "Plugins\FindyJumpyPlugin\FindyJumpyPlugin.csproj", "{84FCF182-DBBB-4CDF-BF4C-D167BFC08424}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Geometry.Models", "Libs\ChuckDeviceController.Geometry.Models\ChuckDeviceController.Geometry.Models.csproj", "{95ED1091-166A-412F-B391-D05D13416E80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -245,6 +249,14 @@ Global
 		{D860BD03-6321-4677-A868-F8C9C287BCF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D860BD03-6321-4677-A868-F8C9C287BCF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D860BD03-6321-4677-A868-F8C9C287BCF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84FCF182-DBBB-4CDF-BF4C-D167BFC08424}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84FCF182-DBBB-4CDF-BF4C-D167BFC08424}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84FCF182-DBBB-4CDF-BF4C-D167BFC08424}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84FCF182-DBBB-4CDF-BF4C-D167BFC08424}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95ED1091-166A-412F-B391-D05D13416E80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95ED1091-166A-412F-B391-D05D13416E80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95ED1091-166A-412F-B391-D05D13416E80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95ED1091-166A-412F-B391-D05D13416E80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -285,6 +297,8 @@ Global
 		{8898E45F-FCB3-455B-A538-43071704CC1A} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 		{E877FF18-659C-4556-B376-8C011369E935} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
 		{D860BD03-6321-4677-A868-F8C9C287BCF6} = {8F292B41-6BD7-4AEC-AB77-B9988E820368}
+		{84FCF182-DBBB-4CDF-BF4C-D167BFC08424} = {12D874BB-7F7B-4D2E-AB42-2630710A8577}
+		{95ED1091-166A-412F-B391-D05D13416E80} = {D1B4D6CD-F73D-4216-AA3F-7A5B79CBB047}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {826A78C7-B0DA-4D44-AF8E-BDDBFCE8F569}

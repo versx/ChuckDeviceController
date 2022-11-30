@@ -13,6 +13,8 @@
 
     public class AssignmentControllerService : IAssignmentControllerService
     {
+        private const ushort CheckAssignmentsIntervalS = 5;
+
         #region Variables
 
         private readonly IDbContextFactory<ControllerDbContext> _controllerFactory;
@@ -58,7 +60,7 @@
 
             _lastUpdated = -2;
             _assignments = new List<Assignment>();
-            _timer = new System.Timers.Timer(5 * 1000); // 5 second interval
+            _timer = new System.Timers.Timer(CheckAssignmentsIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckAssignmentsAsync();
             _mapFactory = mapFactory;
             _geofenceService = geofenceService;
@@ -118,8 +120,9 @@
         {
             lock (_assignmentsLock)
             {
-                _assignments = _assignments.Where(x => x.Id != id)
-                                           .ToList();
+                _assignments = _assignments
+                    .Where(x => x.Id != id)
+                    .ToList();
             }
         }
 
@@ -194,23 +197,27 @@
 
         public async Task ReQuestAssignmentsAsync(IEnumerable<uint> assignmentIds)
         {
-            var assignments = assignmentIds.Select(id => _assignments.FirstOrDefault(a => a.Id == id))
-                                           .Where(assignment => assignment!.Enabled)
-                                           .ToList();
+            var assignments = assignmentIds
+                .Select(id => _assignments.FirstOrDefault(a => a.Id == id))
+                .Where(assignment => assignment!.Enabled)
+                .ToList();
+
             using var context = _controllerFactory.CreateDbContext();
             var instances = context.Instances
-                                   .Where(instance => instance.Type == InstanceType.AutoQuest)
-                                   .ToList();
+                .Where(instance => instance.Type == InstanceType.AutoQuest)
+                .ToList();
 
-            var geofenceNames = instances.SelectMany(x => x.Geofences)
-                                         .ToList();
+            var geofenceNames = instances
+                .SelectMany(x => x.Geofences)
+                .ToList();
             var geofences = _geofenceService.GetByNames(geofenceNames);
             var instancesToClear = new List<Instance>();
             foreach (var assignment in assignments)
             {
                 var affectedInstanceNames = ResolveAssignmentChain(assignment!);
-                var affectedInstances = instances.Where(x => affectedInstanceNames.Contains(x.Name))
-                                                 .ToList();
+                var affectedInstances = instances
+                    .Where(x => affectedInstanceNames.Contains(x.Name))
+                    .ToList();
                 var affectedInstanceNotAdded = affectedInstances.Where(x => !instancesToClear.Contains(x));
                 foreach (var instance in affectedInstanceNotAdded)
                 {
@@ -257,8 +264,9 @@
         public async Task ClearQuestsAsync(IEnumerable<uint> assignmentIds)
         {
             // Clear quests for assignments
-            var assignments = GetAssignments().Where(x => assignmentIds.Contains(x.Id))
-                                              .ToList();
+            var assignments = GetAssignments()
+                .Where(x => assignmentIds.Contains(x.Id))
+                .ToList();
             await ClearQuestsAsync(assignments);
         }
 
@@ -303,8 +311,9 @@
             lock (_assignmentsLock)
             {
                 // Only trigger enabled on-complete assignments
-                assignments = _assignments.Where(x => x.Enabled && x.Time == 0)
-                                          .ToList();
+                assignments = _assignments
+                    .Where(x => x.Enabled && x.Time == 0)
+                    .ToList();
             }
             foreach (var assignment in assignments)
             {
@@ -456,8 +465,9 @@
                         if ((deviceGroup?.DeviceUuids?.Count ?? 0) > 0)
                         {
                             // Get device entities from uuids.
-                            var devicesInGroup = context.Devices.Where(d => deviceGroup!.DeviceUuids.Contains(d.Uuid))
-                                                                .ToList();
+                            var devicesInGroup = context.Devices
+                                .Where(d => deviceGroup!.DeviceUuids.Contains(d.Uuid))
+                                .ToList();
                             if (devicesInGroup != null && devicesInGroup?.Count > 0)
                             {
                                 devices.AddRange(devicesInGroup);
@@ -490,11 +500,9 @@
 
         private List<Assignment> GetAssignments()
         {
-            using (var context = _controllerFactory.CreateDbContext())
-            {
-                var assignments = context.Assignments.ToList();
-                return assignments;
-            }
+            using var context = _controllerFactory.CreateDbContext();
+            var assignments = context.Assignments.ToList();
+            return assignments;
         }
 
         #endregion

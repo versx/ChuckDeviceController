@@ -8,6 +8,8 @@
 
     public static class MapDataContextExtensions
     {
+        private const double MaxBatchCount = 10000;
+
         #region Clear Quests
 
         /// <summary>
@@ -49,32 +51,6 @@
 
             context.Pokestops.UpdateRange(pokestops);
             await context.SaveChangesAsync();
-            //await context.Pokestops.BulkUpdateAsync(pokestops, options =>
-            //{
-            //    options.TemporaryTableUseTableLock = true;
-            //    options.UseTableLock = true;
-            //    options.ColumnPrimaryKeyExpression = p => p.Id;
-            //    options.ColumnInputExpression = p => new
-            //    {
-            //        p.Id,
-
-            //        p.QuestConditions,
-            //        p.QuestRewards,
-            //        p.QuestTarget,
-            //        p.QuestTemplate,
-            //        p.QuestTimestamp,
-            //        p.QuestTitle,
-            //        p.QuestType,
-
-            //        p.AlternativeQuestConditions,
-            //        p.AlternativeQuestRewards,
-            //        p.AlternativeQuestTarget,
-            //        p.AlternativeQuestTemplate,
-            //        p.AlternativeQuestTimestamp,
-            //        p.AlternativeQuestTitle,
-            //        p.AlternativeQuestType,
-            //    };
-            //});
         }
 
         /// <summary>
@@ -127,12 +103,13 @@
         /// <param name="bbox"></param>
         public static async Task ClearQuestsAsync(this MapDbContext context, IBoundingBox bbox)
         {
-            var pokestopIds = context.Pokestops.Where(stop =>
-                stop.Latitude >= bbox.MinimumLatitude &&
-                stop.Longitude >= bbox.MinimumLongitude &&
-                stop.Latitude <= bbox.MaximumLatitude &&
-                stop.Longitude <= bbox.MaximumLongitude
-            )
+            var pokestopIds = context.Pokestops
+                .Where(stop =>
+                    stop.Latitude >= bbox.MinimumLatitude &&
+                    stop.Longitude >= bbox.MinimumLongitude &&
+                    stop.Latitude <= bbox.MaximumLatitude &&
+                    stop.Longitude <= bbox.MaximumLongitude
+                )
                 .Select(stop => stop.Id)
                 .ToList();
             await ClearQuestsAsync(context, pokestopIds);
@@ -156,15 +133,15 @@
 
         public static async Task<ulong> GetPokestopQuestCountAsync(this MapDbContext context, List<string> pokestopIds, QuestMode mode)
         {
-            if (pokestopIds.Count > 10000)
+            if (pokestopIds.Count > MaxBatchCount)
             {
                 // TODO: Benchmark if manual batching is necessary with Z.EntityFramework library (which already has it's own batching options/logic)
                 var result = 0ul;
-                var batchSize = Convert.ToInt64(Math.Ceiling(Convert.ToDouble(pokestopIds.Count) / 10000.0));
+                var batchSize = Convert.ToInt64(Math.Ceiling(Convert.ToDouble(pokestopIds.Count) / MaxBatchCount));
                 for (var i = 0; i < batchSize; i++)
                 {
-                    var start = 10000 * i;
-                    var end = Math.Max(10000 * i, pokestopIds.Count - 1);
+                    var start = MaxBatchCount * i;
+                    var end = Math.Max(MaxBatchCount * i, pokestopIds.Count - 1);
                     var splice = pokestopIds.GetRange(start, end);
                     var spliceResult = await GetPokestopQuestCountAsync(context, splice, mode);
                     result += spliceResult;
@@ -179,24 +156,26 @@
 
         public static async Task<List<Pokestop>> GetPokestopsInBoundsAsync(this MapDbContext context, IBoundingBox bbox, bool isEnabled = true)
         {
-            var pokestops = context.Pokestops.Where(stop =>
-                stop.Latitude >= bbox.MinimumLatitude &&
-                stop.Longitude >= bbox.MinimumLongitude &&
-                stop.Latitude <= bbox.MaximumLatitude &&
-                stop.Longitude <= bbox.MaximumLongitude &&
-                isEnabled == stop.IsEnabled &&
-                !stop.IsDeleted
-            ).ToList();
+            var pokestops = context.Pokestops
+                .Where(stop =>
+                    stop.Latitude >= bbox.MinimumLatitude &&
+                    stop.Longitude >= bbox.MinimumLongitude &&
+                    stop.Latitude <= bbox.MaximumLatitude &&
+                    stop.Longitude <= bbox.MaximumLongitude &&
+                    isEnabled == stop.IsEnabled &&
+                    !stop.IsDeleted
+                )
+                .ToList();
             return await Task.FromResult(pokestops);
         }
 
         public static List<Pokestop> GetPokestopsByIds(this MapDbContext context, IEnumerable<string> pokestopIds, bool isEnabled = true, bool isDeleted = false)
         {
             var pokestops = context.Pokestops
-                                   .Where(pokestop => pokestopIds.Contains(pokestop.Id))
-                                   .Where(pokestop => isEnabled == pokestop.IsEnabled)
-                                   .Where(pokestop => isDeleted == pokestop.IsDeleted)
-                                   .ToList();
+                .Where(pokestop => pokestopIds.Contains(pokestop.Id))
+                .Where(pokestop => isEnabled == pokestop.IsEnabled)
+                .Where(pokestop => isDeleted == pokestop.IsDeleted)
+                .ToList();
             return pokestops;
         }
 
@@ -221,12 +200,14 @@
         /// <param name="bbox"></param>
         public static async Task<List<Cell>> GetS2CellsAsync(this MapDbContext context, IBoundingBox bbox)
         {
-            var cells = context.Cells.Where(cell =>
-                cell.Latitude >= bbox.MinimumLatitude &&
-                cell.Longitude >= bbox.MinimumLongitude &&
-                cell.Latitude <= bbox.MaximumLatitude &&
-                cell.Longitude <= bbox.MaximumLongitude
-            ).ToList();
+            var cells = context.Cells
+                .Where(cell =>
+                    cell.Latitude >= bbox.MinimumLatitude &&
+                    cell.Longitude >= bbox.MinimumLongitude &&
+                    cell.Latitude <= bbox.MaximumLatitude &&
+                    cell.Longitude <= bbox.MaximumLongitude
+                )
+                .ToList();
             return await Task.FromResult(cells);
         }
 
@@ -242,8 +223,9 @@
             // Get S2 cells within geofence bounding box
             var bboxCells = await GetS2CellsAsync(context, bbox);
             // Filter S2 cells outside of geofence polygon
-            var cellsInArea = bboxCells.Where(cell => GeofenceService.InPolygon(multiPolygon, cell.ToCoordinate()))
-                                       .ToList();
+            var cellsInArea = bboxCells
+                .Where(cell => GeofenceService.InPolygon(multiPolygon, cell.ToCoordinate()))
+                .ToList();
             return cellsInArea;
         }
 
@@ -255,12 +237,12 @@
         /// <returns></returns>
         public static async Task<List<Cell>> GetS2CellsAsync(this MapDbContext context, IEnumerable<IMultiPolygon> multiPolygons)
         {
-            var cells = new List<Cell>();
-            foreach (var multiPolygon in multiPolygons)
-            {
-                var list = await GetS2CellsAsync(context, multiPolygon);
-                cells.AddRange(list);
-            }
+            var cells = multiPolygons.SelectMany(multiPolygon => GetS2CellsAsync(context, multiPolygon).Result).ToList();
+            //foreach (var multiPolygon in multiPolygons)
+            //{
+            //    var list = await GetS2CellsAsync(context, multiPolygon);
+            //    cells.AddRange(list);
+            //}
             return cells;
         }
 

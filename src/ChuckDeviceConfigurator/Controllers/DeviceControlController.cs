@@ -62,8 +62,10 @@
             HttpPost,
         ]
         public async Task<DeviceResponse> PostAsync(DevicePayload payload)
+        //public async Task<JsonResult> PostAsync(DevicePayload payload)
         {
             var response = await HandleControllerRequestAsync(payload);
+            //var responseJson = new JsonResult(response);
             return response;
         }
 
@@ -403,10 +405,7 @@
                     //}
                     break;
                 case "account_warning":
-                    if (account.FirstWarningTimestamp == null)
-                    {
-                        account.FirstWarningTimestamp = now;
-                    }
+                    account.FirstWarningTimestamp ??= now;
                     break;
                 case "account_invalid_credentials":
                     if (account.FirstWarningTimestamp == null || string.IsNullOrEmpty(account.Failed))
@@ -551,6 +550,7 @@
         #endregion
 
         private async Task<TEntity?> GetEntity<TKey, TEntity>(ControllerDbContext context, TKey? key)
+            where TEntity : class
         {
             if (key == null)
             {
@@ -558,7 +558,7 @@
             }
 
             var entity = _memCache.Get<TKey, TEntity>(key);
-            entity ??= (TEntity?)await context.FindAsync(typeof(TEntity), key);
+            entity ??= await context.Set<TEntity>().FindAsync(key);
             return entity;
         }
 

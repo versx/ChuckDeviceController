@@ -1,7 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing
 {
     using ChuckDeviceConfigurator.Utilities;
-    using ChuckDeviceController.Common.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public class RouteCalculator : IRouteCalculator
     {

@@ -96,7 +96,7 @@
             });
         }
 
-        // GET: TestApi/Stats
+        [HttpGet("api/stats")]
         public JsonResult Stats()
         {
             return new JsonResult(new

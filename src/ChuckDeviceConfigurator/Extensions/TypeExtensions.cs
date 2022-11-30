@@ -4,9 +4,9 @@
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
+    using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
