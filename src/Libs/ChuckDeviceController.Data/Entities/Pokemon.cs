@@ -954,7 +954,6 @@
                             weight = Weight,
                             height = Size,
                             weather = Weather,
-                            // TODO: Remove capture rates eventually
                             capture_1 = Capture1,
                             capture_2 = Capture2,
                             capture_3 = Capture3,

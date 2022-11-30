@@ -4,6 +4,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using Microsoft.EntityFrameworkCore;
     using MySqlConnector;
     using POGOProtos.Rpc;
 
@@ -87,12 +88,14 @@
         [
             DisplayName("Last Encounter Latitude"),
             Column("last_encounter_lat"),
+            Precision(18, 6),
         ]
         public double? LastEncounterLatitude { get; set; }
 
         [
             DisplayName("Last Encounter Longitude"),
             Column("last_encounter_lon"),
+            Precision(18, 6),
         ]
         public double? LastEncounterLongitude { get; set; }
 
@@ -372,27 +375,17 @@
 
         public string GetStatus()
         {
-            // TODO: Check against ban/warn times
-            if (string.Compare(Failed, "banned", true) == 0)
+            if (IsAccountBanned)
                 return "Banned";
-            if (string.Compare(Failed, "GPR_BANNED", true) == 0)
-                return "Banned";
-            if (IsBanned ?? false)
-                return "Banned";
-            if (FirstWarningTimestamp > 0)
+            if (IsAccountWarned)
                 return "Warning";
-            if (string.Compare(Failed, "GPR_RED_WARNING", true) == 0)
-                return "Warning";
-            if (HasWarn ?? false)
-                return "Warning";
-            if (WasSuspended ?? false)
-                return "Warning";
-            if (string.Compare(Failed, "suspended", true) == 0)
+            if (IsAccountSuspended)
                 return "Suspended";
-            if (string.Compare(Failed, "invalid_credentials", true) == 0)
+            if (IsAccountInvalidCredentials)
                 return "Invalid";
-            // TODO: Cooldown?
-            // TODO: InUse?
+            if (IsAccountInCooldown)
+                return "Cooldown";
+
             return "Good";
         }
 

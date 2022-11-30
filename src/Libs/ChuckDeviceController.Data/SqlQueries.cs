@@ -188,7 +188,6 @@ ON DUPLICATE KEY UPDATE
     alternative_quest_rewards=VALUES(alternative_quest_rewards)
 ";
 
-        // TODO: Only update name/url in ON DUP section if not null
         public const string PokestopIgnoreOnMerge = @"
 INSERT INTO pokestop (
     lure_id, lure_expire_timestamp, sponsor_id, ar_scan_eligible,

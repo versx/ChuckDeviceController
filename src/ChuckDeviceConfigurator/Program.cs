@@ -40,6 +40,8 @@ using ChuckDeviceController.PluginManager.Mvc.Extensions;
 // TODO: Modularize everything, add as many services as possible as plugins
 // TODO: Consolidate benchmark/profiling/diagnostic plugins into one? (i.e. RequestBenchmarkPlugin, MemoryBenchmarkPlugin, MiniProfilerPlugin)
 // TODO: Add HealthChecksPlugin
+// TODO: Load/read plugin state upon loading (SQLite?)
+// TODO: Load each plugin in its own thread
 
 #region Config
 

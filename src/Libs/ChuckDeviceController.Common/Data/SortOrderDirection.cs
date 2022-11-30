@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Common.Data
 {
-    // TODO: Move to CDC.Common
-
     /// <summary>
     /// Sort ordering direction.
     /// </summary>

@@ -17,8 +17,6 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
 
-    // TODO: Use select element for Event Group
-
     [Authorize(Roles = RoleConsts.InstancesRole)]
     public class InstanceController : Controller
     {
