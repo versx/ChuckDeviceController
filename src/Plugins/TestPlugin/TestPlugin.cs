@@ -574,13 +574,13 @@
                 await _jobControllerHost.RegisterJobControllerAsync<TestInstanceController>(customInstanceType);
 
                 // Create geofence entity
-                var geofence = CreateGeofence();
-                await _geofenceServiceHost.CreateGeofenceAsync(geofence);
+                //var geofence = CreateGeofence();
+                //await _geofenceServiceHost.CreateGeofenceAsync(geofence);
 
-                var instance = CreateInstance(customInstanceType, new() { geofence.Name });
-                await _instanceServiceHost.CreateInstanceAsync(instance);
+                //var instance = CreateInstance(customInstanceType, new() { geofence.Name });
+                //await _instanceServiceHost.CreateInstanceAsync(instance);
 
-                TestAssignDevice(instance.Name);
+                //TestAssignDevice(instance.Name);
             }
             catch (Exception ex)
             {

@@ -149,18 +149,6 @@
                 });
 
                 _memCache.Set(uuid, device);
-
-                return new DeviceResponse
-                {
-                    Status = "ok",
-                    Data = new DeviceAssignmentResponse
-                    {
-                        Assigned = false,
-                        Version = Strings.AssemblyVersion,
-                        Commit = gitsha,
-                        Provider = Strings.AssemblyName,
-                    },
-                };
             }
 
             // Device is already registered

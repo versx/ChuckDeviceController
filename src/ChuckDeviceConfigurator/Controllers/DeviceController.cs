@@ -40,7 +40,12 @@
                 .AsEnumerable()
                 .Where(account => devices.Any(device => device.AccountUsername == account.Username))
                 .ToDictionary(x => x.Username, y => y.Level);
-            devices.ForEach(device => device.AccountLevel = accountLevels[device.AccountUsername!]);
+            devices.ForEach(device =>
+            {
+                device.AccountLevel = device.AccountUsername != null
+                    ? accountLevels[device.AccountUsername]
+                    : (ushort)0;
+            });
             var model = new ViewModelsModel<Device>
             {
                 Items = devices,
