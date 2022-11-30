@@ -75,7 +75,7 @@
 
             _entityRepository = new EntityDataRepository(connectionString);
 
-            Task.Run(async () => _connection = await CreateConnectionAsync()).ConfigureAwait(false);
+            Task.Run(async () => _connection = await CreateConnectionAsync()).Wait();
         }
 
         #endregion

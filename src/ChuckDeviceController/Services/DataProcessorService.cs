@@ -139,7 +139,11 @@
                 new Thread(async () =>
                 {
                     using var connection = await EntityRepository.CreateConnectionAsync(stoppingToken: stoppingToken);
-                    _ = new ConnectionLeakWatcher(connection, connectionTimeoutS: 60);
+                    if (connection == null)
+                    {
+                        _logger.LogError($"Failed to connect to MySQL database server!");
+                        return;
+                    }
                     await ProcessWorkItemAsync(connection, items, stoppingToken);
                 })
                 { IsBackground = true }.Start();

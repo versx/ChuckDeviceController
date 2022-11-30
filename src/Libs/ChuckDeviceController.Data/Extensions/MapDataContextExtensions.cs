@@ -8,7 +8,7 @@
 
     public static class MapDataContextExtensions
     {
-        private const double MaxBatchCount = 10000;
+        private const int MaxBatchCount = 10000;
 
         #region Clear Quests
 
