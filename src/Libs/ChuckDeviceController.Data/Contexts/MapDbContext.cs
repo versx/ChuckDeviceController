@@ -15,41 +15,39 @@
         #region Properties
 
         // Map entities
-        public DbSet<Gym> Gyms { get; set; }
+        public DbSet<Gym> Gyms { get; set; } = null!;
 
-        public DbSet<GymDefender> GymDefenders { get; set; }
+        public DbSet<GymDefender> GymDefenders { get; set; } = null!;
 
-        public DbSet<GymTrainer> GymTrainers { get; set; }
+        public DbSet<GymTrainer> GymTrainers { get; set; } = null!;
 
-        public DbSet<Pokemon> Pokemon { get; set; }
+        public DbSet<Pokemon> Pokemon { get; set; } = null!;
 
-        public DbSet<Pokestop> Pokestops { get; set; }
+        public DbSet<Pokestop> Pokestops { get; set; } = null!;
 
-        public DbSet<Incident> Incidents { get; set; }
+        public DbSet<Incident> Incidents { get; set; } = null!;
 
-        public DbSet<Cell> Cells { get; set; }
+        public DbSet<Cell> Cells { get; set; } = null!;
 
-        public DbSet<Spawnpoint> Spawnpoints { get; set; }
+        public DbSet<Spawnpoint> Spawnpoints { get; set; } = null!;
 
-        public DbSet<Weather> Weather { get; set; }
+        public DbSet<Weather> Weather { get; set; } = null!;
 
         #region Pokemon Statistics
 
-        public DbSet<PokemonStats> PokemonStats { get; set; }
+        public DbSet<PokemonStats> PokemonStats { get; set; } = null!;
 
-        public DbSet<PokemonIvStats> PokemonIvStats { get; set; }
+        public DbSet<PokemonIvStats> PokemonIvStats { get; set; } = null!;
 
-        public DbSet<PokemonHundoStats> PokemonHundoStats { get; set; }
+        public DbSet<PokemonHundoStats> PokemonHundoStats { get; set; } = null!;
 
-        public DbSet<PokemonShinyStats> PokemonShinyStats { get; set; }
-
-        #endregion
+        public DbSet<PokemonShinyStats> PokemonShinyStats { get; set; } = null!;
 
         #endregion
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        #endregion
+
         public MapDbContext(DbContextOptions<MapDbContext> options)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {
             Interlocked.Increment(ref InstanceCount);
@@ -86,8 +84,7 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
-
+            modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
             
             modelBuilder.Entity<Cell>(entity =>
             {
@@ -335,6 +332,8 @@
             modelBuilder.Entity<PokemonIvStats>(entity =>
             {
                 entity.HasKey(p => new { p.Date, p.PokemonId, p.FormId, p.IV });
+                entity.Property(p => p.IV)
+                      .HasPrecision(18, 2);
             });
 
             modelBuilder.Entity<PokemonHundoStats>(entity =>

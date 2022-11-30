@@ -16,7 +16,6 @@
 
         #region Constants
 
-        private const uint DefaultConnectionLeakTimeoutS = 120;
         private const uint DefaultConnectionWaitTimeS = 5;
         private const int DefaultCommandTimeoutS = 30;
         private const double DefaultExpiryLimitM = 15;
@@ -324,7 +323,7 @@
 
             if (runLeakWatcher)
             {
-                _ = new ConnectionLeakWatcher(connection, DefaultConnectionLeakTimeoutS);
+                _ = new ConnectionLeakWatcher(connection);
             }
             return connection;
         }

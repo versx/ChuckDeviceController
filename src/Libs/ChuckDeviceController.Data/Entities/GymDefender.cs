@@ -11,6 +11,7 @@
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
+    using Microsoft.EntityFrameworkCore;
 
     [Table("gym_defender")]
     public class GymDefender : BaseEntity, IGymDefender, IWebhookEntity
@@ -57,7 +58,10 @@
         [Column("battles_lost")]
         public uint BattlesLost { get; set; }
 
-        [Column("berry_value")]
+        [
+            Column("berry_value"),
+            Precision(18, 2),
+        ]
         public double BerryValue { get; set; }
 
         [Column("times_fed")]
@@ -145,10 +149,16 @@
         [Column("npc_combat_total")]
         public uint NpcCombatTotal { get; set; }
 
-        [Column("height_m")]
+        [
+            Column("height_m"),
+            Precision(18, 2),
+        ]
         public double HeightM { get; set; }
 
-        [Column("weight_kg")]
+        [
+            Column("weight_kg"),
+            Precision(18, 2),
+        ]
         public double WeightKg { get; set; }
 
         [Column("updated")]

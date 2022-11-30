@@ -4,6 +4,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using Microsoft.EntityFrameworkCore;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Common;
@@ -31,7 +32,10 @@
         [Column("battles_won")]
         public uint BattlesWon { get; set; }
 
-        [Column("km_walked")]
+        [
+            Column("km_walked"),
+            Precision(18, 2),
+        ]
         public double KmWalked { get; set; }
 
         [Column("pokemon_caught")]

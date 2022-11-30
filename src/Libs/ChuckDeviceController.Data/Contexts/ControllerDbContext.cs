@@ -8,43 +8,42 @@
 
     public class ControllerDbContext : DbContext
     {
-        public static ulong InstanceCount;
+        private static ulong _instanceCount;
+        public static ulong InstanceCount => _instanceCount;
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public ControllerDbContext(DbContextOptions<ControllerDbContext> options)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             : base(options)
         {
-            Interlocked.Increment(ref InstanceCount);
+            Interlocked.Increment(ref _instanceCount);
 
             base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
-        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Account> Accounts { get; set; } = null!;
 
-        public DbSet<ApiKey> ApiKeys { get; set; }
+        public DbSet<ApiKey> ApiKeys { get; set; } = null!;
 
-        public DbSet<Assignment> Assignments { get; set; }
+        public DbSet<Assignment> Assignments { get; set; } = null!;
 
-        public DbSet<AssignmentGroup> AssignmentGroups { get; set; }
+        public DbSet<AssignmentGroup> AssignmentGroups { get; set; } = null!;
 
-        public DbSet<Device> Devices { get; set; }
+        public DbSet<Device> Devices { get; set; } = null!;
 
-        public DbSet<DeviceGroup> DeviceGroups { get; set; }
+        public DbSet<DeviceGroup> DeviceGroups { get; set; } = null!;
 
-        public DbSet<Geofence> Geofences { get; set; }
+        public DbSet<Geofence> Geofences { get; set; } = null!;
 
-        public DbSet<Instance> Instances { get; set; }
+        public DbSet<Instance> Instances { get; set; } = null!;
 
-        public DbSet<IvList> IvLists { get; set; }
+        public DbSet<IvList> IvLists { get; set; } = null!;
 
-        public DbSet<Plugin> Plugins { get; set; }
+        public DbSet<Plugin> Plugins { get; set; } = null!;
 
-        public DbSet<Webhook> Webhooks { get; set; }
+        public DbSet<Webhook> Webhooks { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
+            modelBuilder.HasCharSet("utf8mb4", DelegationModes.ApplyToAll);
 
             modelBuilder.Entity<Account>(entity =>
             {
@@ -58,21 +57,25 @@
                 entity.HasIndex(p => p.HasWarn);
                 entity.HasIndex(p => p.WasSuspended);
 
+                entity.Property(p => p.LastEncounterLatitude)
+                      .HasPrecision(18, 6);
+                entity.Property(p => p.LastEncounterLongitude)
+                      .HasPrecision(18, 6);
+
                 //entity.HasOne(a => a.Device)
                 //      .WithOne(d => d.Account)
                 //      .HasForeignKey(nameof(Account.Username))
                 //      .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // TODO: Add indexes for device controller db context entities
             modelBuilder.Entity<ApiKey>(entity =>
             {
                 entity.HasIndex(p => p.ExpirationTimestamp);
                 entity.Property(p => p.Scope)
                       .HasConversion(
-                          DbContextFactory.CreateJsonValueConverter<List<PluginApiKeyScope>?>(),
-                          DbContextFactory.CreateValueComparer<PluginApiKeyScope>()
-                      );
+                           DbContextFactory.CreateJsonValueConverter<List<PluginApiKeyScope>?>(),
+                           DbContextFactory.CreateValueComparer<PluginApiKeyScope>()
+                       );
             });
 
             modelBuilder.Entity<Assignment>(entity =>
@@ -110,6 +113,11 @@
                 entity.HasIndex(p => p.InstanceName);
                 entity.HasIndex(p => p.LastSeen);
 
+                entity.Property(p => p.LastLatitude)
+                      .HasPrecision(18, 6);
+                entity.Property(p => p.LastLongitude)
+                      .HasPrecision(18, 6);
+
                 entity.HasOne(d => d.Account);
                       //.WithOne(a => a.Username)
                       //.HasForeignKey(nameof(Device.AccountUsername));
@@ -127,7 +135,10 @@
             modelBuilder.Entity<Geofence>(entity =>
             {
                 entity.Property(p => p.Type)
-                      .HasConversion(x => Geofence.GeofenceTypeToString(x), x => Geofence.StringToGeofenceType(x));
+                      .HasConversion(
+                           x => Geofence.GeofenceTypeToString(x),
+                           x => Geofence.StringToGeofenceType(x)
+                       );
                 entity.Property(p => p.Data)
                       .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData?>());
             });
@@ -135,7 +146,10 @@
             modelBuilder.Entity<Instance>(entity =>
             {
                 entity.Property(p => p.Type)
-                      .HasConversion(x => Instance.InstanceTypeToString(x), x => Instance.StringToInstanceType(x));
+                      .HasConversion(
+                           x => Instance.InstanceTypeToString(x),
+                           x => Instance.StringToInstanceType(x)
+                       );
                 entity.Property(p => p.Data)
                       .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData?>());
                 entity.Property(p => p.Geofences)
@@ -157,13 +171,18 @@
             modelBuilder.Entity<Plugin>(entity =>
             {
                 entity.Property(p => p.State)
-                      .HasConversion(x => Plugin.PluginStateToString(x), x => Plugin.StringToPluginState(x));
+                      .HasConversion(
+                           x => Plugin.PluginStateToString(x),
+                           x => Plugin.StringToPluginState(x)
+                       );
             });
 
             modelBuilder.Entity<Webhook>(entity =>
             {
                 entity.Property(p => p.Types)
-                      .HasConversion(x => Webhook.WebhookTypeToString(x), x => Webhook.StringToWebhookTypes(x),
+                      .HasConversion(
+                           x => Webhook.WebhookTypeToString(x),
+                           x => Webhook.StringToWebhookTypes(x),
                            DbContextFactory.CreateValueComparer<WebhookType>()
                        );
                 entity.Property(p => p.Data)

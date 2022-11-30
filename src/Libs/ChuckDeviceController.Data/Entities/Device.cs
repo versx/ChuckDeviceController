@@ -5,6 +5,8 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Text.Json.Serialization;
 
+    using Microsoft.EntityFrameworkCore;
+
     using ChuckDeviceController.Common.Data.Contracts;
 
     [Table("device")]
@@ -54,6 +56,7 @@
         [
             DisplayName("Last Latitude"),
             Column("last_lat"),
+            Precision(18, 6),
             JsonPropertyName("last_lat"),
         ]
         public double? LastLatitude { get; set; }
@@ -61,6 +64,7 @@
         [
             DisplayName("Last Longitude"),
             Column("last_lon"),
+            Precision(18, 6),
             JsonPropertyName("last_lon"),
         ]
         public double? LastLongitude { get; set; }
