@@ -1,10 +1,10 @@
 ﻿namespace ChuckDeviceController.Data.Extensions
 {
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public static class GeofenceExtensions
     {

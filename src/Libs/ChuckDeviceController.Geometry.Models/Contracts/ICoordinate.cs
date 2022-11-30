@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Common.Geometry
+﻿namespace ChuckDeviceController.Geometry.Models.Contracts
 {
     public interface ICoordinate : IComparable
     {

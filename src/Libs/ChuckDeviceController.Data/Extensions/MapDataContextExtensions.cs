@@ -1,10 +1,10 @@
 ﻿namespace ChuckDeviceController.Data.Extensions
 {
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public static class MapDataContextExtensions
     {

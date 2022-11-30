@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Plugin
 {
-    using ChuckDeviceController.Common.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     /// <summary>
     /// Routing generation options

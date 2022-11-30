@@ -1,7 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugin
 {
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Common.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     /// <summary>
     /// 

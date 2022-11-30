@@ -2,8 +2,8 @@
 {
     using System.Linq;
 
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public static class GeofenceService
     {
@@ -38,8 +38,7 @@
                                        * (longitude - lngs[node])
                                        / (lngs[altNode] - lngs[node]))
                                        + lats[node]
-                )
-            )
+                ))
                 {
                     polygonContainsPoint = !polygonContainsPoint;
                 }
@@ -50,7 +49,8 @@
         }
 
         // Credits: http://codereview.stackexchange.com/a/108903
-        public static bool IsPointInPolygon<T>(Coordinate point, IReadOnlyList<T> polygon) where T : ICoordinate
+        public static bool IsPointInPolygon<T>(Coordinate point, IReadOnlyList<T> polygon)
+            where T : ICoordinate
         {
             int polygonLength = polygon.Count, i = 0;
             var inside = false;

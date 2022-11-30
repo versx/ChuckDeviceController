@@ -2,11 +2,40 @@
 {
     using Google.Common.Geometry;
 
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public static class S2CellExtensions
     {
+        /// <summary>
+        /// Gets the S2 cells within the current multi polygon
+        /// </summary>
+        /// <param name="multiPolygon"></param>
+        /// <param name="minLevel">Minimum S2 cell level to meet</param>
+        /// <param name="maxLevel">Maximum S2 cell level to meet</param>
+        /// <param name="maxCells">Maximum S2 cells to return</param>
+        /// <returns>Returns a list of <seealso cref="S2CellId"/> objects</returns>
+        public static IReadOnlyList<ulong> GetS2CellIds(this IMultiPolygon multiPolygon, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = ushort.MaxValue)
+        {
+            var bbox = multiPolygon.GetBoundingBox();
+            var result = new List<ulong>();
+            var coverage = bbox.GetS2CellCoverage(minLevel, maxLevel, maxCells);
+            foreach (var cellId in coverage)
+            {
+                var cell = new S2Cell(cellId);
+                for (var i = 0; i <= 3; i++)
+                {
+                    var vertex = cell.GetVertex(i);
+                    var coord = vertex.ToCoordinate();
+                    if (!GeofenceService.InPolygon(multiPolygon, coord))
+                        continue;
+
+                    result.Add(cellId.Id);
+                }
+            }
+            return result;
+        }
+
         public static S2CellId S2CellIdFromCoordinate(this Coordinate coord) =>
             S2CellIdFromLatLng(coord.Latitude, coord.Longitude);
 

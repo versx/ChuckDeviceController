@@ -1,8 +1,6 @@
 ﻿namespace ChuckDeviceController.Geometry.Models
 {
-    using System.Collections.Generic;
-
-    using ChuckDeviceController.Common.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public class Polygon : List<double>, IPolygon
     {
@@ -11,7 +9,7 @@
             AddRange(new[] { lat, lon });
         }
 
-        public Coordinate ToCoordinate()
+        public ICoordinate ToCoordinate()
         {
             return new Coordinate(this.FirstOrDefault(), this.LastOrDefault());
         }

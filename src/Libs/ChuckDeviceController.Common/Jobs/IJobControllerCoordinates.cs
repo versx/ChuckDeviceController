@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Common.Jobs
 {
-    using ChuckDeviceController.Common.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public interface IJobControllerCoordinates
     {

@@ -2,15 +2,21 @@
 {
     using System.Text.Json.Serialization;
 
-    using ChuckDeviceController.Common.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public class Coordinate : ICoordinate
     {
+        #region Properties
+
         [JsonPropertyName("lat")]
         public double Latitude { get; set; }
 
         [JsonPropertyName("lon")]
         public double Longitude { get; set; }
+
+        #endregion
+
+        #region Constructor
 
         public Coordinate()
         {
@@ -21,6 +27,10 @@
             Latitude = latitude;
             Longitude = longitude;
         }
+
+        #endregion
+
+        #region Public Methods
 
         public int CompareTo(object? obj)
         {
@@ -48,5 +58,7 @@
         {
             return $"{Latitude},{Longitude}";
         }
+
+        #endregion
     }
 }
