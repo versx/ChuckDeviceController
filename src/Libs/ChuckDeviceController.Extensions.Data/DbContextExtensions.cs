@@ -33,10 +33,15 @@
             }
         }
 
-        public static DbContextOptionsBuilder GetDbContextOptions(this DbContextOptionsBuilder options, string connectionString, ServerVersion serverVersion, string assemblyName)
+        public static DbContextOptionsBuilder GetDbContextOptions(
+            this DbContextOptionsBuilder options,
+            string connectionString,
+            ServerVersion serverVersion,
+            string assemblyName,
+            MySqlResiliencyOptions resiliencyOptions)
         {
             options.EnableDetailedErrors(detailedErrorsEnabled: true);
-            options.UseMySql(connectionString, serverVersion, opt => opt.GetMySqlOptions(assemblyName));
+            options.UseMySql(connectionString, serverVersion, opt => opt.GetMySqlOptions(assemblyName, resiliencyOptions));
             //options.UseLoggerFactory(ContextLoggerFactory);
             //options.LogTo(message =>
             //{

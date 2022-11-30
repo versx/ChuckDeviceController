@@ -4,16 +4,15 @@
 
     public static class DbContextOptionsBuilderExtensions
     {
-        private const int MaxDatabaseRetry = 10; // TODO: Make 'MaxDatabaseRetry' configurable
-        private const int DatabaseRetryIntervalS = 15; // TODO: Make 'DatabaseRetryIntervalS' configurable
-        private const int DatabaseCommandTimeoutS = 120; // TODO: Make 'DatabaseCommandTimeout' configurable
-
-        public static MySqlDbContextOptionsBuilder GetMySqlOptions(this MySqlDbContextOptionsBuilder options, string assemblyName, int maxRetries = MaxDatabaseRetry, int retryIntervalS = DatabaseRetryIntervalS)
+        public static MySqlDbContextOptionsBuilder GetMySqlOptions(
+            this MySqlDbContextOptionsBuilder options,
+            string assemblyName,
+            MySqlResiliencyOptions resiliencyOptions)
         {
             // TODO: options.MigrationsHistoryTable("");
-            options.CommandTimeout(DatabaseCommandTimeoutS);
+            options.CommandTimeout(resiliencyOptions.CommandTimeoutS);
             options.EnableIndexOptimizedBooleanColumns(true);
-            options.EnableRetryOnFailure(maxRetries, TimeSpan.FromSeconds(retryIntervalS), null);
+            options.EnableRetryOnFailure(resiliencyOptions.MaxRetryCount, TimeSpan.FromSeconds(resiliencyOptions.RetryIntervalS), null);
             options.MigrationsAssembly(assemblyName);
             return options;
         }

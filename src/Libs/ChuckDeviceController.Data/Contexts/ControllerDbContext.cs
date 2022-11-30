@@ -11,13 +11,7 @@
         private static ulong _instanceCount;
         public static ulong InstanceCount => _instanceCount;
 
-        public ControllerDbContext(DbContextOptions<ControllerDbContext> options)
-            : base(options)
-        {
-            Interlocked.Increment(ref _instanceCount);
-
-            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        }
+        #region DataSets
 
         public DbSet<Account> Accounts { get; set; } = null!;
 
@@ -40,6 +34,22 @@
         public DbSet<Plugin> Plugins { get; set; } = null!;
 
         public DbSet<Webhook> Webhooks { get; set; } = null!;
+
+        #endregion
+
+        #region Constructor
+
+        public ControllerDbContext(DbContextOptions<ControllerDbContext> options)
+            : base(options)
+        {
+            Interlocked.Increment(ref _instanceCount);
+
+            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        }
+
+        #endregion
+
+        #region Override Methods
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -196,5 +206,7 @@
 
             base.OnModelCreating(modelBuilder);
         }
+
+        #endregion
     }
 }

@@ -10,11 +10,11 @@
 
     public class MapDbContext : DbContext
     {
-        public static ulong InstanceCount;
+        private static ulong _instanceCount;
+        public static ulong InstanceCount => _instanceCount;
 
-        #region Properties
+        #region DataSets
 
-        // Map entities
         public DbSet<Gym> Gyms { get; set; } = null!;
 
         public DbSet<GymDefender> GymDefenders { get; set; } = null!;
@@ -47,16 +47,22 @@
 
         #endregion
 
+        #region Constructor
+
         public MapDbContext(DbContextOptions<MapDbContext> options)
             : base(options)
         {
-            Interlocked.Increment(ref InstanceCount);
+            Interlocked.Increment(ref _instanceCount);
 
             // Disable entity tracking for map entities for multiple reasons:
             // - It would be useful, but it's not worth the overhead and issues it could potentially introduce.
             // - Most data entities are consumable only for a certain time span.
             base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
+
+        #endregion
+
+        #region Override Methods
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {
@@ -348,5 +354,7 @@
 
             base.OnModelCreating(modelBuilder);
         }
+
+        #endregion
     }
 }

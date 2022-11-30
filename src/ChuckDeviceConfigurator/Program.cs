@@ -83,6 +83,10 @@ var jwtAuthEnabled = config.GetSection("Jwt").GetValue<bool>("Enabled");
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
 
+var resiliencyOptions = new MySqlResiliencyOptions();
+config.Bind("Database", resiliencyOptions);
+resiliencyOptions ??= new();
+
 #region Logger Filtering
 
 var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
@@ -94,7 +98,7 @@ builder.WebHost.ConfigureLogging(configure => configure.AddSimpleConsole(options
 
 // https://codewithmukesh.com/blog/user-management-in-aspnet-core-mvc/
 builder.Services.AddDbContext<UserIdentityContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Transient);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), ServiceLifetime.Transient);
 
 var identityConfig = GetDefaultIdentityOptions();
 config.GetSection("UserAccounts").Bind(identityConfig);
@@ -156,26 +160,31 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo { Title = Strings.AssemblyName, Version = "v1" });
 });
 
-#region Database Contexts
-
-// Register data contexts, factories, and pools
-var poolSize = config.GetValue<int>("DbContextPoolSize", 1024);
-builder.Services.AddDbContextFactory<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
-builder.Services.AddDbContextPool<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
-builder.Services.AddDbContextPool<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
-
-#endregion
-
-#region Services
+#region Configuration
 
 builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
 builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
 builder.Services.Configure<LeafletMapConfig>(builder.Configuration.GetSection("Map"));
+builder.Services.Configure<MySqlResiliencyOptions>(builder.Configuration.GetSection("Database"));
+
+#endregion
+
+#region Database Contexts
+
+// Register data contexts, factories, and pools
+var poolSize = config.GetValue("DbContextPoolSize", 1024);
+builder.Services.AddDbContextFactory<ControllerDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<MapDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), ServiceLifetime.Singleton);
+builder.Services.AddDbContextPool<ControllerDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), poolSize);
+builder.Services.AddDbContextPool<MapDbContext>(options =>
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), poolSize);
+
+#endregion
+
+#region Services
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages(); // <- Required for plugins to render Razor pages

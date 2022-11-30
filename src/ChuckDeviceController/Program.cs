@@ -53,10 +53,6 @@ builder.WebHost.ConfigureLogging(configure =>
 
 #endregion
 
-#region Services
-
-builder.Services.AddHttpContextAccessor();
-
 #region Configuration
 
 builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
@@ -68,6 +64,9 @@ builder.Services.Configure<DataConsumerOptionsConfig>(builder.Configuration.GetS
 
 #endregion
 
+#region Services
+
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>, AsyncQueue<ProtoPayloadQueueItem>>();
 builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueItem>>();
 
@@ -101,15 +100,15 @@ builder.Services.AddDistributedMemoryCache();
 // Register data contexts, factories, and pools
 //var poolSize = config.GetValue("DbContextPoolSize", 1024);
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Singleton);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, new()), ServiceLifetime.Singleton);
 //builder.Services.AddDbContextPool<MapDbContext>(options =>
 //    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
 //builder.Services.AddDbContextPool<ControllerDbContext>(options =>
 //    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
 builder.Services.AddDbContext<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, new()), ServiceLifetime.Scoped);
 builder.Services.AddDbContext<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), ServiceLifetime.Scoped);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, new()), ServiceLifetime.Scoped);
 //builder.Services.AddPooledDbContextFactory<MapDbContext>(options =>
 //    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName)
 //, poolSize);
