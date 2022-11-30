@@ -1,13 +1,12 @@
 ﻿namespace TestPlugin
 {
     using System.Collections.Generic;
-    using System.Text.Json.Serialization;
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Plugin.EventBus;
     using ChuckDeviceController.Plugin.EventBus.Events;
@@ -644,62 +643,6 @@
         }
 
         #endregion
-    }
-
-    /// <summary>
-    ///     Default implementation of <seealso cref="ICoordinate"/> contract.
-    /// </summary>
-    public class Coordinate : ICoordinate
-    {
-        /// <summary>
-        ///     Gets or sets the geocoordinate latitude.
-        /// </summary>
-        [JsonPropertyName("lat")]
-        public double Latitude { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the geocoordinate longitude.
-        /// </summary>
-        [JsonPropertyName("lon")]
-        public double Longitude { get; set; }
-
-        /// <summary>
-        ///     Instantiates a new coordinate instance.
-        /// </summary>
-        /// <param name="latitude">Geocoordinate latitude.</param>
-        /// <param name="longitude">Geocoordinate longitude.</param>
-        public Coordinate(double latitude, double longitude)
-        {
-            Latitude = latitude;
-            Longitude = longitude;
-        }
-
-        public override string ToString()
-        {
-            return $"{Latitude},{Longitude}";
-        }
-
-        public int CompareTo(object? obj)
-        {
-            if (obj == null)
-                return -1;
-
-            var other = (Coordinate)obj;
-
-            var latResult = Latitude.CompareTo(other.Latitude);
-            if (latResult != 0)
-            {
-                return latResult;
-            }
-
-            var lonResult = Longitude.CompareTo(other.Longitude);
-            if (lonResult != 0)
-            {
-                return lonResult;
-            }
-
-            return 0;
-        }
     }
 
     // Mock {file}.deps.json configuration file model classes.

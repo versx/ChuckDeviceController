@@ -17,7 +17,12 @@
         {
             _uiHost = uiHost;
             _timer = new Timer(ClockUpdateInterval);
-            _timer.Elapsed += (sender, e) => OnClockTimerElapsed();
+            _timer.Elapsed += (sender, e) =>
+            {
+                var time = DateTime.Now.ToLongTimeString();
+                //Console.WriteLine($"Time: {time}");
+                _uiHost.UpdateDashboardStatisticAsync(new DashboardStatsItem("Current Time", time));
+            };
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -38,13 +43,6 @@
                 _timer.Stop();
             }
             await Task.CompletedTask;
-        }
-
-        private void OnClockTimerElapsed()
-        {
-            var time = DateTime.Now.ToLongTimeString();
-            //Console.WriteLine($"Time: {time}");
-            _uiHost.UpdateDashboardStatisticAsync(new DashboardStatsItem("Current Time", time));
         }
     }
 }

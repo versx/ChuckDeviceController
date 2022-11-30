@@ -14,6 +14,8 @@
         /// </summary>
         void OnLoad();
 
+        // TODO: OnUnload()
+
         /// <summary>
         /// Called when the plugin has been reloaded
         /// by the host application.

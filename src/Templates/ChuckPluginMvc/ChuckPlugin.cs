@@ -217,6 +217,7 @@
         /// </summary>
         public void OnLoad()
         {
+            // Call any UI additions to add to the host here
             _loggingHost.LogInformation($"{Name} v{Version} by {Author} initialized!");
         }
 

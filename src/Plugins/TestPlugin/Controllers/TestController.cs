@@ -48,8 +48,8 @@
             return View();
         }
 
-        // GET: TestController/Details/test
-        public ActionResult Details()
+        // GET: Test/Details/test
+        public ActionResult Details(string name)
         {
             return View();
         }
