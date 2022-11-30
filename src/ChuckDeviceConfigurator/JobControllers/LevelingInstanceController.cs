@@ -11,7 +11,6 @@
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -19,6 +18,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public class LevelingInstanceController : IJobController
     {

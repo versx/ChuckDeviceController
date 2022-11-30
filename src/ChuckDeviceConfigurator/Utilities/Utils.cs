@@ -4,9 +4,9 @@
 
     using ChuckDeviceConfigurator.Services.Icons;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
 
     public static partial class Utils

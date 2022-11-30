@@ -15,12 +15,12 @@
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager;
 

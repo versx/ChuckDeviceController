@@ -2,8 +2,8 @@
 {
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
 
     // TODO: Calculate proper status for DynamicRoute job controller instance

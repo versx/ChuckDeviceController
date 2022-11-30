@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing
 {
-    using ChuckDeviceController.Common.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     /// <summary>
     /// Route calculator to find the shortest routing path in order

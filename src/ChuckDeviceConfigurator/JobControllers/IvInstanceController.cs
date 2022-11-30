@@ -8,7 +8,6 @@
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -16,6 +15,7 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public class IvInstanceController : IJobController, ILureInstanceController, IScanNextInstanceController
     {

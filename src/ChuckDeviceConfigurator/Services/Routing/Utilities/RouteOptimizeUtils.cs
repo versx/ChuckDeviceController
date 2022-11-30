@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Routing.Utilities
 {
-    using ChuckDeviceController.Common.Geometry;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public static class RouteOptimizeUtil
     {

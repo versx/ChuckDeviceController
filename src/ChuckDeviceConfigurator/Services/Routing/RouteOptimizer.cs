@@ -85,7 +85,7 @@
             foreach (var multiPolygon in MultiPolygons)
             {
                 //var newCircle, currentLatLng, point;
-                var coords = multiPolygon.ConvertToCoordinates();
+                var coords = multiPolygon.ToCoordinates();
                 var bbox = multiPolygon.GetBoundingBox();
                 /*
                 var centerCoord = new Coordinate

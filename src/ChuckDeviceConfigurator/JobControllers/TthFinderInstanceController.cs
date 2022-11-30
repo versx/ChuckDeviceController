@@ -7,7 +7,6 @@
     using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -16,6 +15,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     /*
      * TODO: TthFinder logic
@@ -189,7 +189,7 @@
             {
                 var bbox = multiPolygon.GetBoundingBox();
                 var spawnpointCoords = GetSpawnpointCoordinates(bbox, OnlyUnknownSpawnpoints);
-                var polygon = multiPolygon.ConvertToCoordinates();
+                var polygon = multiPolygon.ToCoordinates();
                 // Filter spawnpoint coordinates that are within the geofence
                 var coordsInArea = spawnpointCoords.Where(coord => GeofenceService.IsPointInPolygon(coord, polygon))
                                                    .ToList();

@@ -6,12 +6,12 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Utilities;
-    using ChuckDeviceController.Common.Geometry;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
 
     // TODO: Find clusters to use with dynamic route
@@ -96,7 +96,7 @@
             var yMod = Math.Sqrt(0.568);
             var points = new List<Coordinate>();
 
-            var polygon = multiPolygon.ConvertToCoordinates();
+            var polygon = multiPolygon.ToCoordinates();
             var bbox = polygon.GetBoundingBox();
             //var line = geometryFactory.CreateLineString(polygon);
             var minLine = new Coordinate(bbox.MinimumLatitude, bbox.MinimumLongitude);
@@ -149,7 +149,7 @@
 
         private List<Coordinate> GenerateRandomRoute(IMultiPolygon multiPolgyon, uint maxPoints = 500, double circleSize = DefaultCircleSize)
         {
-            var coordinates = multiPolgyon.ConvertToCoordinates();
+            var coordinates = multiPolgyon.ToCoordinates();
             var routeCoords = Calculate(coordinates, maxPoints, circleSize);
             return routeCoords;
         }
@@ -167,7 +167,7 @@
 
         private List<Coordinate> GenerateOptimizedRoute(IMultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
         {
-            var polygon = multiPolygon.ConvertToCoordinates();
+            var polygon = multiPolygon.ToCoordinates();
             var bbox = polygon.GetBoundingBox();
             var minLat = bbox.MinimumLatitude;
             var minLon = bbox.MinimumLongitude;
@@ -271,7 +271,7 @@
         /// <param name="maxPoints">Maximum amount of coordinate points to generate.</param>
         /// <param name="circleSize">The distance or spacing in meters between the previous and next coordinate generated.</param>
         /// <returns></returns>
-        private static List<Coordinate> Calculate(List<ICoordinate> coords, uint maxPoints = 3000, double circleSize = 70)
+        private static List<Coordinate> Calculate(IReadOnlyList<ICoordinate> coords, uint maxPoints = 3000, double circleSize = 70)
         {
             var bbox = coords.GetBoundingBox();
             var minLat = bbox.MinimumLatitude;

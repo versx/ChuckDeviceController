@@ -35,8 +35,13 @@
 
         public string StackTrace { get; set; }
 
-        public ConnectionLeakWatcher(MySqlConnection connection, uint connectionTimeoutS = DefaultConnectionTimeoutS)
+        public ConnectionLeakWatcher(MySqlConnection? connection, uint connectionTimeoutS = DefaultConnectionTimeoutS)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException(nameof(connection));
+            }
+
             _connection = connection;
             _connection.StateChange += ConnectionOnStateChange;
             _connectionTimeoutS = connectionTimeoutS;

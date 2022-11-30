@@ -85,7 +85,7 @@
             var config = _configurations[jsonFilePath];
             if (string.IsNullOrEmpty(sectionName))
             {
-                return config.GetValue<T>(name, defaultValue!);
+                return config.GetValue(name, defaultValue!);
             }
 
             var section = config.GetSection(sectionName);
