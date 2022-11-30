@@ -20,6 +20,8 @@
     [ApiController]
     public class DeviceControlController : ControllerBase
     {
+        private const string ContentTypeJson = "application/json";
+
         #region Variables
 
         private readonly ILogger<DeviceControlController> _logger;
@@ -59,13 +61,19 @@
         [
             Route("/controler"),
             Route("/controller"),
-            HttpPost,
+            HttpPost(),
+            Produces(ContentTypeJson),
         ]
         public async Task<DeviceResponse> PostAsync(DevicePayload payload)
-        //public async Task<JsonResult> PostAsync(DevicePayload payload)
         {
+            //{"type":"init","uuid":"iPhone","username":"0011223344","timestamp":1669798714537}
+            //{"type":"get_account","uuid":"iPhone","username":"0011223344","timestamp":1669799065184,"min_level":30,"max_level":36}
+            //{"type":"get_job","uuid":"iPhone","username":"0011223344","timestamp":1669798714537}
+
+            Response.Headers["Accept"] = ContentTypeJson;
+            Response.Headers["Content-Type"] = ContentTypeJson;
+
             var response = await HandleControllerRequestAsync(payload);
-            //var responseJson = new JsonResult(response);
             return response;
         }
 
@@ -82,7 +90,7 @@
             }
 
             //var device = await _context.Devices.FindAsync(payload.Uuid);
-            var device = await GetEntity<string, Device>(_context, payload.Uuid);
+            var device = await GetEntityAsync<string, Device>(_context, payload.Uuid);
             /*
             if (device == null && payload.Type != "init")
             {
@@ -128,9 +136,11 @@
             {
                 // Register new device
                 _logger.LogInformation($"[{uuid}] Registering new device...");
+                var ipAddr = Request.GetIPAddress();
                 device = new Device
                 {
                     Uuid = uuid,
+                    LastHost = ipAddr ?? null,
                 };
                 await _context.Devices.SingleInsertAsync(device, options =>
                 {
@@ -175,25 +185,31 @@
 
         private async Task<DeviceResponse> HandleHeartbeatRequestAsync(Device? device)
         {
-            if (device != null)
+            var response = new DeviceResponse
             {
-                var ipAddr = Request.GetIPAddress();
-                if (device.LastHost != ipAddr)
-                {
-                    device.LastHost = ipAddr;
-                    await _context.Devices.SingleMergeAsync(device, options =>
-                    {
-                        options.AllowDuplicateKeys = false;
-                        options.UseTableLock = true;
-                        options.OnMergeUpdateInputExpression = p => new
-                        {
-                            p.LastHost,
-                        };
-                    });
-                }
-
-                _memCache.Set(device.Uuid, device);
+                Status = "ok",
+            };
+            if (device is null)
+            {
+                return response;
             }
+
+            var ipAddr = Request.GetIPAddress();
+            if (device.LastHost != ipAddr)
+            {
+                device.LastHost = ipAddr;
+                await _context.Devices.SingleMergeAsync(device, options =>
+                {
+                    options.AllowDuplicateKeys = false;
+                    options.UseTableLock = true;
+                    options.OnMergeUpdateInputExpression = p => new
+                    {
+                        p.LastHost,
+                    };
+                });
+            }
+
+            _memCache.Set(device.Uuid, device);
             return new DeviceResponse
             {
                 Status = "ok",
@@ -202,7 +218,7 @@
 
         private async Task<DeviceResponse> HandleGetAccountAsync(Device? device)
         {
-            if (device == null)
+            if (device is null)
             {
                 return CreateErrorResponse($"Failed to get account, provided device was null");
             }
@@ -243,7 +259,7 @@
             else
             {
                 //account = await _context.Accounts.FindAsync(device.AccountUsername);
-                account = await GetEntity<string, Account>(_context, device.AccountUsername);
+                account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
                 if (account == null)
                 {
                     // Failed to get account
@@ -332,12 +348,12 @@
             {
                 // Get account by username from request payload
                 //account = await _context.Accounts.FindAsync(username);
-                account = await GetEntity<string, Account>(_context, username);
+                account = await GetEntityAsync<string, Account>(_context, username);
                 if (account == null)
                 {
                     // Unable to find account based on payload username, look for device's assigned account username instead
                     //account = await _context.Accounts.FindAsync(device.AccountUsername);
-                    account = await GetEntity<string, Account>(_context, device.AccountUsername);
+                    account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
                     if (account == null)
                     {
                         _logger.LogError($"[{device.Uuid}] Failed to lookup account {username} and {device.AccountUsername} in database, switching accounts...");
@@ -382,7 +398,7 @@
 
             var now = DateTime.UtcNow.ToTotalSeconds();
             //var account = await _context.Accounts.FindAsync(device.AccountUsername);
-            var account = await GetEntity<string, Account>(_context, username);
+            var account = await GetEntityAsync<string, Account>(_context, username);
             if (account == null)
             {
                 return CreateErrorResponse($"Failed to retrieve account with username '{username}'");
@@ -445,7 +461,7 @@
         private async Task<DeviceResponse> HandleTutorialStatusAsync(string? username)
         {
             //var account = await _context.Accounts.FindAsync(username);
-            var account = await GetEntity<string, Account>(_context, username);
+            var account = await GetEntityAsync<string, Account>(_context, username);
             if (string.IsNullOrEmpty(username) || account == null)
             {
                 return CreateErrorResponse("Failed to get account.");
@@ -549,7 +565,7 @@
 
         #endregion
 
-        private async Task<TEntity?> GetEntity<TKey, TEntity>(ControllerDbContext context, TKey? key)
+        private async Task<TEntity?> GetEntityAsync<TKey, TEntity>(ControllerDbContext context, TKey? key)
             where TEntity : class
         {
             if (key == null)

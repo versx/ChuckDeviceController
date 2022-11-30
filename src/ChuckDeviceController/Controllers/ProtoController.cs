@@ -15,6 +15,8 @@
     [ApiController]
     public class ProtoController : ControllerBase
     {
+        private const string ContentTypeJson = "application/json";
+
         #region Variables
 
         private static readonly SemaphoreSlim _semDevices = new(1);
@@ -55,12 +57,12 @@
         // Handle incoming raw proto data
         [
             HttpPost("/raw"),
-            Produces("application/json"),
+            Produces(ContentTypeJson),
         ]
         public async Task<ProtoResponse?> PostAsync(ProtoPayload payload)
         {
-            Response.Headers["Accept"] = "application/json";
-            Response.Headers["Content-Type"] = "application/json";
+            Response.Headers["Accept"] = ContentTypeJson;
+            Response.Headers["Content-Type"] = ContentTypeJson;
 
             ProtoDataStatistics.Instance.TotalRequestsProcessed++;
 

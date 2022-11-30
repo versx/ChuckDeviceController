@@ -12,5 +12,8 @@
 
         [JsonPropertyName("username")]
         public string? Username { get; set; }
+
+        [JsonPropertyName("timestamp")]
+        public ulong Timestamp { get; set; }
     }
 }
