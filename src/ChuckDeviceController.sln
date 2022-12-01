@@ -87,9 +87,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicrosoftAuthProviderPlugin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dapper.Tests", "Tests\Dapper.Tests\Dapper.Tests.csproj", "{D860BD03-6321-4677-A868-F8C9C287BCF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindyJumpyPlugin", "Plugins\FindyJumpyPlugin\FindyJumpyPlugin.csproj", "{84FCF182-DBBB-4CDF-BF4C-D167BFC08424}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FindyJumpyPlugin", "Plugins\FindyJumpyPlugin\FindyJumpyPlugin.csproj", "{84FCF182-DBBB-4CDF-BF4C-D167BFC08424}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Geometry.Models", "Libs\ChuckDeviceController.Geometry.Models\ChuckDeviceController.Geometry.Models.csproj", "{95ED1091-166A-412F-B391-D05D13416E80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Geometry.Models", "Libs\ChuckDeviceController.Geometry.Models\ChuckDeviceController.Geometry.Models.csproj", "{95ED1091-166A-412F-B391-D05D13416E80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

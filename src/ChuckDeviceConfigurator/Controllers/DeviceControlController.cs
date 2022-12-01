@@ -89,15 +89,7 @@
                 return CreateErrorResponse($"Device UUID is not set in payload.");
             }
 
-            //var device = await _context.Devices.FindAsync(payload.Uuid);
             var device = await GetEntityAsync<string, Device>(_context, payload.Uuid);
-            /*
-            if (device == null && payload.Type != "init")
-            {
-                _logger.LogError($"Failed to retrieve device '{payload.Uuid}', skipping...");
-                return null;
-            }
-            */
 
             switch (payload!.Type!.ToLower())
             {
@@ -142,12 +134,9 @@
                     Uuid = uuid,
                     LastHost = ipAddr ?? null,
                 };
-                await _context.Devices.SingleInsertAsync(device, options =>
-                {
-                    options.AllowDuplicateKeys = false;
-                    options.UseTableLock = true;
-                });
 
+                await _context.Devices.AddAsync(device);
+                await _context.SaveChangesAsync();
                 _memCache.Set(uuid, device);
             }
 
@@ -173,31 +162,15 @@
 
         private async Task<DeviceResponse> HandleHeartbeatRequestAsync(Device? device)
         {
-            var response = new DeviceResponse
+            if (device is not null)
             {
-                Status = "ok",
-            };
-            if (device is null)
-            {
-                return response;
-            }
-
-            var ipAddr = Request.GetIPAddress();
-            if (device.LastHost != ipAddr)
-            {
-                device.LastHost = ipAddr;
-                await _context.Devices.SingleMergeAsync(device, options =>
+                var ipAddr = Request.GetIPAddress();
+                if (device.LastHost != ipAddr)
                 {
-                    options.AllowDuplicateKeys = false;
-                    options.UseTableLock = true;
-                    options.OnMergeUpdateInputExpression = p => new
-                    {
-                        p.LastHost,
-                    };
-                });
+                    device.LastHost = ipAddr;
+                    await SetEntityAsync(device.Uuid, device);
+                }
             }
-
-            _memCache.Set(device.Uuid, device);
             return new DeviceResponse
             {
                 Status = "ok",
@@ -242,11 +215,11 @@
                     return CreateErrorResponse($"[{device.Uuid}] Failed to get account, are you sure you have enough acounts?");
                 }
 
-                await UpdateDeviceAsync(device, account.Username);
+                device.AccountUsername = account.Username;
+                await SetEntityAsync(device.Uuid, device);
             }
             else
             {
-                //account = await _context.Accounts.FindAsync(device.AccountUsername);
                 account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
                 if (account == null)
                 {
@@ -260,7 +233,8 @@
                     _logger.LogWarning($"[{device.Uuid}] Assigned account is no longer valid, switching accounts...");
 
                     // Current account does not meet requirements
-                    await UpdateDeviceAsync(device);
+                    device.AccountUsername = null;
+                    await SetEntityAsync(device.Uuid, device);
 
                     // Remove account from cache
                     _memCache.Unset<string, Account>(account.Username);
@@ -273,18 +247,9 @@
                 if (device.IsPendingAccountSwitch)
                 {
                     _logger.LogDebug($"[{device.Uuid}] Pending manual account switch, reverting flag to prevent loop.");
-                    device.IsPendingAccountSwitch = false;
-                    await _context.Devices.SingleMergeAsync(device, options =>
-                    {
-                        options.AllowDuplicateKeys = false;
-                        options.UseTableLock = true;
-                        options.OnMergeUpdateInputExpression = p => new
-                        {
-                            p.IsPendingAccountSwitch,
-                        };
-                    });
 
-                    _memCache.Set(device.Uuid, device);
+                    device.IsPendingAccountSwitch = false;
+                    await SetEntityAsync(device.Uuid, device, skipCache: false);
                 }
             }
 
@@ -335,12 +300,10 @@
             if (!string.IsNullOrEmpty(username))
             {
                 // Get account by username from request payload
-                //account = await _context.Accounts.FindAsync(username);
                 account = await GetEntityAsync<string, Account>(_context, username);
                 if (account == null)
                 {
                     // Unable to find account based on payload username, look for device's assigned account username instead
-                    //account = await _context.Accounts.FindAsync(device.AccountUsername);
                     account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
                     if (account == null)
                     {
@@ -385,7 +348,6 @@
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-            //var account = await _context.Accounts.FindAsync(device.AccountUsername);
             var account = await GetEntityAsync<string, Account>(_context, username);
             if (account == null)
             {
@@ -426,19 +388,8 @@
                     }
                     break;
             }
-            await _context.Accounts.SingleMergeAsync(account, options =>
-            {
-                options.AllowDuplicateKeys = false;
-                options.UseTableLock = true;
-                options.OnMergeUpdateInputExpression = p => new
-                {
-                    p.Failed,
-                    p.FailedTimestamp,
-                    p.FirstWarningTimestamp,
-                };
-            });
 
-            _memCache.Set(account.Username, account);
+            await SetEntityAsync(account.Username, account, skipCache: false);
 
             return new DeviceResponse
             {
@@ -448,7 +399,6 @@
 
         private async Task<DeviceResponse> HandleTutorialStatusAsync(string? username)
         {
-            //var account = await _context.Accounts.FindAsync(username);
             var account = await GetEntityAsync<string, Account>(_context, username);
             if (string.IsNullOrEmpty(username) || account == null)
             {
@@ -460,18 +410,7 @@
             }
             account.Tutorial = 1;
 
-            await _context.Accounts.SingleMergeAsync(account, options =>
-            {
-                options.AllowDuplicateKeys = false;
-                options.UseTableLock = true;
-                options.OnMergeUpdateInputExpression = p => new
-                {
-                    p.Level,
-                    p.Tutorial,
-                };
-            });
-
-            _memCache?.Set(username, account);
+            await SetEntityAsync(account.Username, account, skipCache: false);
 
             return new DeviceResponse
             {
@@ -505,10 +444,8 @@
             // otherwise this will lead to a continuous loop
             if (!device.IsPendingAccountSwitch)
             {
-                await UpdateDeviceAsync(device);
+                await SetEntityAsync(device.Uuid, device, skipCache: false);
             }
-
-            _memCache.Set(device.Uuid, device);
 
             return new DeviceResponse
             {
@@ -553,6 +490,8 @@
 
         #endregion
 
+        #region Helper Methods
+
         private async Task<TEntity?> GetEntityAsync<TKey, TEntity>(ControllerDbContext context, TKey? key)
             where TEntity : class
         {
@@ -566,21 +505,17 @@
             return entity;
         }
 
-        private async Task UpdateDeviceAsync(Device device, string? username = null)
+        private async Task SetEntityAsync<TKey, TEntity>(TKey key, TEntity entity, bool skipCache = true)
+            where TEntity : class
         {
-            device.AccountUsername = username;
-            await _context.Devices.SingleMergeAsync(device, options =>
-            {
-                options.AllowDuplicateKeys = false;
-                options.UseTableLock = true;
-                options.OnMergeUpdateInputExpression = p => new
-                {
-                    p.AccountUsername,
-                };
-            });
+            _context.Set<TEntity>().Update(entity);
+            await _context.SaveChangesAsync();
 
-            // Update device in cache
-            _memCache.Set(device.Uuid, device);
+            if (!skipCache)
+            {
+                // Update entity in cache
+                _memCache.Set(key, entity);
+            }
         }
 
         private static bool IsAccountValid(Account? account, ushort minLevel, ushort maxLevel)
@@ -595,5 +530,7 @@
                 (account.FailedTimestamp ?? 0) == 0;
             return isValid;
         }
+
+        #endregion
     }
 }

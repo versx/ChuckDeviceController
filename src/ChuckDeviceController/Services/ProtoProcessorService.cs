@@ -2,7 +2,6 @@
 {
     using System.Diagnostics;
 
-    using Google.Common.Geometry;
     using Microsoft.Extensions.Options;
     using POGOProtos.Rpc;
 
@@ -10,8 +9,6 @@
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry.Extensions;
-    using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Services.Rpc;
