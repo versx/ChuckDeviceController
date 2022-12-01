@@ -74,13 +74,13 @@
             Column("last_seen"),
             JsonPropertyName("last_seen"),
         ]
-        public ulong? LastSeen { get; set; } = 0; // Last job request requested
+        public ulong? LastSeen { get; set; } // Last job request requested
 
         [
             DisplayName("Is Pending Account Switch"),
             Column("pending_account_switch"),
             JsonPropertyName("pending_account_switch"),
         ]
-        public bool IsPendingAccountSwitch { get; set; } // used internally
+        public bool IsPendingAccountSwitch { get; set; } // Used internally
     }
 }

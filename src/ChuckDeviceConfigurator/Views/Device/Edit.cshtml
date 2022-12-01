@@ -23,14 +23,14 @@
             </div>
             <div class="form-floating mb-3">
                 <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Device instance name">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="InstanceName"></label>
                 <span asp-validation-for="InstanceName" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <select asp-for="AccountUsername" class="form-control" asp-items="@(new SelectList(ViewBag.Accounts, "Username", "Username"))" placeholder="Account username">
-                    <option value="" disabled>Please select one</option>
+                    <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="AccountUsername"></label>
                 <span asp-validation-for="AccountUsername" class="text-danger"></span>

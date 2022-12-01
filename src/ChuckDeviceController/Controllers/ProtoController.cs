@@ -19,9 +19,9 @@
 
         #region Variables
 
-        private static readonly SemaphoreSlim _semDevices = new(1);
+        private readonly SemaphoreSlim _semDevices = new(1); // REVIEW: static access modifier
+        private readonly SemaphoreSlim _semLevel = new(1);
         private static readonly Dictionary<string, ushort> _levelCache = new();
-        private static readonly object _levelCacheLock = new();
 
         private readonly ILogger<ProtoController> _logger;
         private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
@@ -133,10 +133,10 @@
                 }
                 else
                 {
-                    var deviceLat = Math.Round(device.LastLatitude ?? 0, 5);
-                    var deviceLon = Math.Round(device.LastLongitude ?? 0, 5);
-                    var payloadLat = Math.Round(payload.LatitudeTarget, 5);
-                    var payloadLon = Math.Round(payload.LongitudeTarget, 5);
+                    var deviceLat = Math.Round(device.LastLatitude ?? 0, 6);
+                    var deviceLon = Math.Round(device.LastLongitude ?? 0, 6);
+                    var payloadLat = Math.Round(payload.LatitudeTarget, 6);
+                    var payloadLon = Math.Round(payload.LongitudeTarget, 6);
                     if (deviceLat == payloadLat &&
                         deviceLon == payloadLon)
                     {
@@ -168,32 +168,37 @@
 
         private async Task SetAccountLevelAsync(string uuid, string? username, ushort level, ulong trainerXp = 0)
         {
+            await _semLevel.WaitAsync();
+
             try
             {
                 if (string.IsNullOrEmpty(username) || level <= 0)
+                {
+                    _semLevel.Release();
                     return;
+                }
 
                 ushort oldLevel;
-                lock (_levelCacheLock)
+
+                // Check if account level has already been cached
+                if (!_levelCache.ContainsKey(username))
                 {
-                    // Check if account level has already been cached
-                    if (!_levelCache.ContainsKey(username))
-                    {
-                        _levelCache.Add(username, level);
-                        return;
-                    }
-
-                    // Check if cached level is same as current level
-                    oldLevel = _levelCache[username];
-                    if (oldLevel == level)
-                        return;
-
-                    if (level < oldLevel)
-                        return;
-
-                    // Account level has changed, update cache
-                    _levelCache[username] = level;
+                    _levelCache.Add(username, level);
+                    _semLevel.Release();
+                    return;
                 }
+
+                // Check if cached level is same as current level
+                // or if higher than current
+                oldLevel = _levelCache[username];
+                if (oldLevel == level || oldLevel > level)
+                {
+                    _semLevel.Release();
+                    return;
+                }
+
+                // Account level has changed, update cache
+                _levelCache[username] = level;
 
                 // Update account level if account exists
                 var account = await _context.Accounts.FindAsync(username);
@@ -202,6 +207,7 @@
                     account.Level = level;
                     _context.Accounts.Update(account);
                     await _context.SaveChangesAsync();
+
                     _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' went from level {oldLevel} to {level} with {trainerXp:N0} XP");
                 }
             }
@@ -209,6 +215,7 @@
             {
                 _logger.LogError($"[{uuid}] Error: {ex}");
             }
+            _semLevel.Release();
         }
 
         private static ProtoResponse BuildProtoResponse(ProtoPayload payload)

@@ -14,6 +14,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Extensions.Http.Caching;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
 
@@ -64,14 +65,18 @@
             HttpPost(),
             Produces(ContentTypeJson),
         ]
-        public async Task<DeviceResponse> PostAsync(DevicePayload payload)
+        public async Task<DeviceResponse> PostAsync(DevicePayload payload)//object body)
         {
             //{"type":"init","uuid":"iPhone","username":"0011223344","timestamp":1669798714537}
             //{"type":"get_account","uuid":"iPhone","username":"0011223344","timestamp":1669799065184,"min_level":30,"max_level":36}
             //{"type":"get_job","uuid":"iPhone","username":"0011223344","timestamp":1669798714537}
+            //{"type":"get_job","uuid":"atv08","trainerlvl":5,"trainerexp":12210,"username":"0W3EiL8Ihgq"}
 
             Response.Headers["Accept"] = ContentTypeJson;
             Response.Headers["Content-Type"] = ContentTypeJson;
+
+            //_logger.LogInformation($"CDC: {body}");
+            //var payload = body.ToString().FromJson<DevicePayload>();
 
             var response = await HandleControllerRequestAsync(payload);
             return response;
@@ -132,7 +137,7 @@
                 device = new Device
                 {
                     Uuid = uuid,
-                    LastHost = ipAddr ?? null,
+                    LastHost = ipAddr,
                 };
 
                 await _context.Devices.AddAsync(device);
