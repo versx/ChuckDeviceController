@@ -29,8 +29,8 @@
             new Logger<IPluginManager>(LoggerFactory.Create(x => x.AddConsole()));
         private static IPluginManager? _instance;
         private static readonly Dictionary<string, IPluginHost> _plugins = new();
-        private IServiceCollection _services;
-        private IWebHostEnvironment _webHostEnv;
+        private IServiceCollection _services = null!;
+        private IWebHostEnvironment _webHostEnv = null!;
         //private IReadOnlyList<IApiKey> _apiKeys;
 
         #endregion
@@ -51,16 +51,13 @@
             IServiceCollection? services = null,
             IReadOnlyDictionary<Type, object>? sharedServiceHosts = null)
         {
-            if (_instance == null)
+            _instance ??= new PluginManager(options ?? new PluginManagerOptions
             {
-                _instance = new PluginManager(options ?? new PluginManagerOptions
-                {
-                    RootPluginsDirectory = DefaultPluginsFolder,
-                    Configuration = configuration,
-                    Services = services,
-                    SharedServiceHosts = sharedServiceHosts,
-                });
-            }
+                RootPluginsDirectory = DefaultPluginsFolder,
+                Configuration = configuration,
+                Services = services,
+                SharedServiceHosts = sharedServiceHosts ?? new Dictionary<Type, object>(),
+            });
             return _instance;
         }
 

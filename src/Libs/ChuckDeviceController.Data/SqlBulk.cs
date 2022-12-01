@@ -127,7 +127,7 @@
         {
             //await _sem.WaitAsync(stoppingToken);
 
-            bool success;
+            var success = false;
             var rowsAffected = 0;
             var batchCount = 0;
             var expectedCount = 1;
@@ -139,7 +139,6 @@
             }
             catch (Exception ex)
             {
-                success = false;
                 _logger.LogError($"Error: {ex}");
             }
 

@@ -5,13 +5,13 @@
 
     public class PluginManagerOptions : IPluginManagerOptions
     {
-        public string RootPluginsDirectory { get; set; }
+        public string RootPluginsDirectory { get; set; } = null!;
 
-        public IConfiguration Configuration { get; set; }
+        public IConfiguration? Configuration { get; set; }
 
-        public IReadOnlyDictionary<Type, object> SharedServiceHosts { get; set; }
-        
-        public IServiceCollection Services { get; set; }
+        public IReadOnlyDictionary<Type, object> SharedServiceHosts { get; set; } = null!;
+
+        public IServiceCollection? Services { get; set; }
 
         public PluginManagerOptions()
         {

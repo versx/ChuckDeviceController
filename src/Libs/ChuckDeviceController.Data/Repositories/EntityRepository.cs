@@ -38,7 +38,7 @@
         //private static MySqlConnection? _connection;
         private static string? _connectionString;
         private readonly bool _openConnection;
-        private static EntityDataRepository _entityRepository;
+        private static EntityDataRepository _entityRepository = default!;
 
         #endregion
 

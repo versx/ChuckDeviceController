@@ -634,7 +634,7 @@
 
             if (IsEvent && AttackIV == null)
             {
-                //Pokemon? oldPokemonNoEvent = null;
+                // TODO: Pokemon? oldPokemonNoEvent = null;
                 var oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(null, Id, memCache); // IsEvent: false;
                 if (oldPokemonNoEvent != null && oldPokemonNoEvent.AttackIV != null &&
                     (((Weather == 0 || Weather == null) && (oldPokemonNoEvent.Weather == 0 || oldPokemonNoEvent.Weather == null)) ||
@@ -658,7 +658,7 @@
             }
             if (IsEvent && !IsExpireTimestampVerified)
             {
-                //Pokemon? oldPokemonNoEvent = null;
+                // TODO: Pokemon? oldPokemonNoEvent = null;
                 var oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(null, Id, memCache); // IsEvent: false;
                 if (oldPokemonNoEvent != null && oldPokemonNoEvent.IsExpireTimestampVerified)
                 {

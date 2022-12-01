@@ -60,7 +60,7 @@
         // When decorated with the 'PluginBootstrapperService' attribute, the
         // property will be initalized by the host's service implementation.
         [PluginBootstrapperService(typeof(IDatabaseHost))]
-        private readonly IDatabaseHost _databaseHost;
+        private readonly IDatabaseHost _databaseHost = null!;
 
         // Translate text based on the set locale in the host application.
         private readonly ILocalizationHost _localeHost;
@@ -71,7 +71,7 @@
         // When decorated with the 'PluginBootstrapperService' attribute, the
         // property will be initalized by the host's service implementation.
         [PluginBootstrapperService(typeof(IUiHost))]
-        private readonly IUiHost _uiHost;
+        private readonly IUiHost _uiHost = null!;
 
         // Manage files local to your plugin's folder using saving and loading
         // implementations.
@@ -79,10 +79,10 @@
         // When decorated with the 'PluginBootstrapperService' attribute, the
         // property will be initalized by the host's service implementation.
         [PluginBootstrapperService(typeof(IFileStorageHost))]
-        private readonly IFileStorageHost _fileStorageHost;
+        private readonly IFileStorageHost _fileStorageHost = null!;
 
         [PluginBootstrapperService(typeof(IConfigurationHost))]
-        private readonly IConfigurationHost _configurationHost;
+        private readonly IConfigurationHost _configurationHost = null!;
 
         private readonly IGeofenceServiceHost _geofenceServiceHost;
 
@@ -128,7 +128,7 @@
         ///     property will be initalized by the host's service implementation.
         /// </remarks>
         [PluginBootstrapperService(typeof(IUiHost))]
-        public IUiHost UiHost { get; set; }
+        public IUiHost UiHost { get; set; } = null!;
 
         #endregion
 
@@ -206,7 +206,7 @@
                 var routeValues = httpContext.Request.RouteValues;
                 var name = Convert.ToString(routeValues["name"]);
                 Console.WriteLine($"Name: {name}");
-                await httpContext.Response.WriteAsync(name);
+                await httpContext.Response.WriteAsync(name!);
             });
             appBuilder.MapGet("example", () => "Hi :)");
             appBuilder.MapPost("example", async (httpContext) =>
@@ -675,7 +675,7 @@
 
     public class Instance : IInstance
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         public InstanceType Type => InstanceType.Custom;
 
@@ -683,14 +683,9 @@
 
         public ushort MaximumLevel { get; set; }
 
-        public List<string> Geofences { get; set; }
+        public List<string> Geofences { get; set; } = new();
 
-        public IInstanceData Data { get; set; }
-
-        public Instance()
-        {
-            Data = new InstanceData();
-        }
+        public IInstanceData Data { get; set; } = new InstanceData();
     }
 
     public class InstanceData : Dictionary<string, object>, IInstanceData
@@ -704,11 +699,11 @@
 
     public class Geofence : IGeofence
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         public GeofenceType Type { get; set; }
 
-        public IGeofenceData Data { get; set; }
+        public IGeofenceData Data { get; set; } = new GeofenceData();
     }
 
     public class GeofenceData : IGeofenceData

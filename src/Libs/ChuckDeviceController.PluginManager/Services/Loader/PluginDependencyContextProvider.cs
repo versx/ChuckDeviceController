@@ -192,7 +192,7 @@
             var runtimeId = GetCorrectRuntimeIdentifier();
             var dependencyGraph = DependencyContext.Default.RuntimeGraph.FirstOrDefault(graph => graph.Runtime == runtimeId);
             // List of supported runtimes, includes the default runtime and the fallbacks for this dependency context
-            var runtimes = new List<string> { dependencyGraph?.Runtime };
+            var runtimes = new List<string> { dependencyGraph!.Runtime };
             if (dependencyGraph != null)
             {
                 runtimes.AddRange(dependencyGraph.Fallbacks);
@@ -263,7 +263,7 @@
             var runtimeId = GetCorrectRuntimeIdentifier();
             var dependencyGraph = DependencyContext.Default.RuntimeGraph.FirstOrDefault(graph => graph.Runtime == runtimeId);
             // List of supported runtimes, includes the default runtime and the fallbacks for this dependency context
-            var runtimes = new List<string> { dependencyGraph?.Runtime };
+            var runtimes = new List<string> { dependencyGraph!.Runtime };
             if (dependencyGraph != null)
             {
                 runtimes.AddRange(dependencyGraph.Fallbacks);

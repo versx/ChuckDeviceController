@@ -121,7 +121,7 @@
             {
                 Console.WriteLine($"Error: {ex}");
             }
-            return null;
+            return null!;
         }
 
         public async Task<string> GetStatusAsync()
@@ -182,7 +182,7 @@
     public class TestTask : ITask
     {
         [JsonPropertyName("action")]
-        public string Action { get; set; }
+        public string Action { get; set; } = null!;
 
         [JsonPropertyName("lat")]
         public double Latitude { get; set; }

@@ -7,9 +7,9 @@
     {
         string RootPluginsDirectory { get; }
 
-        IConfiguration Configuration { get; }
+        IConfiguration? Configuration { get; }
 
-        IServiceCollection Services { get; }
+        IServiceCollection? Services { get; }
 
         IReadOnlyDictionary<Type, object> SharedServiceHosts { get; }
     }

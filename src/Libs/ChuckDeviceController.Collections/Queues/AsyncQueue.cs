@@ -57,7 +57,7 @@
         {
             if (!_queue.Any())
             {
-                return null;
+                return null!;
             }
 
             await _sem.WaitAsync(stoppingToken);

@@ -29,7 +29,7 @@
         [TestCase("bb5005c44b4e4419b211d9eda729c84e.16")]
         public async Task TestPokestop(string pokestopId)
         {
-            Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+            DefaultTypeMap.MatchNamesWithUnderscores = true;
 
             //var map = new CustomPropertyTypeMap(typeof(Pokestop), (type, columnName) =>
             //{
@@ -39,13 +39,13 @@
             //});
             //Dapper.SqlMapper.SetTypeMap(typeof(Pokestop), map);
             SetTypeMap<Pokestop>();
-            Dapper.SqlMapper.AddTypeHandler(new CustomTypeHandler<List<Dictionary<string, dynamic>>>());
+            SqlMapper.AddTypeHandler(new CustomTypeHandler<List<Dictionary<string, dynamic>>>());
 
             //var pokestop = await _connection.QuerySingleOrDefaultAsync(sql, commandTimeout: 30);
             //var pokestop = await _connection.QueryFirstOrDefaultAsync<Pokestop>(GetPokestopById, new { id = pokestopId }, commandTimeout: 30);
             //Assert.That(pokestop, Is.Not.Null);
 
-            var instance = (Pokestop)Activator.CreateInstance(typeof(Pokestop));
+            var instance = Activator.CreateInstance(typeof(Pokestop)) as Pokestop;
             var columnNames = GetPropertyNames(instance);//typeof(Pokestop));
             var columnNamesSql = string.Join(", ", columnNames);
             //var sql = $"SELECT {columnNamesSql} FROM pokestop WHERE id = '{pokestopId}'";
@@ -69,13 +69,13 @@
 
         private static string GetColumnFromAttribute(MemberInfo member)
         {
-            if (member == null) return null;
+            if (member == null) return null!;
 
-            var attrib = (ColumnAttribute)Attribute.GetCustomAttribute(member, typeof(ColumnAttribute), false);
+            var attrib = Attribute.GetCustomAttribute(member, typeof(ColumnAttribute), false) as ColumnAttribute;
             return (attrib?.Name ?? member.Name).ToLower();
         }
 
-        public static IEnumerable<string> GetPropertyNames<TEntity>(
+        private static IEnumerable<string> GetPropertyNames<TEntity>(
             TEntity entity,
             IEnumerable<string>? includedProperties = null,
             IEnumerable<string>? ignoredProperties = null)
@@ -117,10 +117,10 @@
             var json = value.ToString();
             if (string.IsNullOrEmpty(json))
             {
-                return default;
+                return default!;
             }
             var obj = json.FromJson<T>();
-            return obj ?? default;
+            return obj ?? default!;
         }
 
         public override void SetValue(IDbDataParameter parameter, T value)

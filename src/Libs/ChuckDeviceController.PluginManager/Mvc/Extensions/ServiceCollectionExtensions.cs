@@ -102,7 +102,8 @@
                     fileProvider = new ManifestEmbeddedFileProvider(assembly, path);
                     break;
                 case StaticFilesLocation.External:
-                    var fullPath = Path.Combine(Path.GetDirectoryName(assembly.Location), path);
+                    var assemblyFolder = Path.GetDirectoryName(assembly.Location)!;
+                    var fullPath = Path.Combine(assemblyFolder, path);
                     if (!Directory.Exists(fullPath))
                     {
                         //var pluginName = assembly.GetName().Name;
@@ -158,7 +159,7 @@
                         break;
                 }
                 var serviceLifetime = attr.Lifetime;
-                var serviceDescriptor = new ServiceDescriptor(serviceType, implementation, serviceLifetime);
+                var serviceDescriptor = new ServiceDescriptor(serviceType, implementation!, serviceLifetime);
                 services.Add(serviceDescriptor);
             }
             return services;
@@ -355,11 +356,11 @@
             else if (sd.ImplementationType != null)
             {
                 var args = GetInstancesConstructorParameters(services, sd.ImplementationType);
-                result = (T?)Activator.CreateInstance(sd.ImplementationType, args);
+                result = Activator.CreateInstance(sd.ImplementationType, args) as T;
 
                 if (sd.Lifetime == ServiceLifetime.Singleton)
                 {
-                    var replacementServiceDescriptor = new ServiceDescriptor(sd.ServiceType, result);
+                    var replacementServiceDescriptor = new ServiceDescriptor(sd.ServiceType, result!);
 
                     services.Remove(sd);
                     services.Add(replacementServiceDescriptor);
@@ -367,7 +368,7 @@
             }
             else if (sd.ImplementationFactory != null)
             {
-                result = sd.ImplementationFactory.Invoke(null) as T;
+                result = sd.ImplementationFactory.Invoke(null!) as T;
             }
 
             return result;

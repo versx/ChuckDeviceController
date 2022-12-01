@@ -56,7 +56,7 @@
                         var defaultValue = setting.Type == SettingsPropertyType.CheckBox
                             ? false
                             : setting.Value ?? setting.DefaultValue;
-                        settings.Add(key, defaultValue);
+                        settings.Add(key, defaultValue!);
                         continue;
                     }
 

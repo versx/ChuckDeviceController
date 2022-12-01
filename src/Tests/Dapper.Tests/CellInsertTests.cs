@@ -212,7 +212,7 @@ ON DUPLICATE KEY UPDATE
             return sqlQueries;
         }
 
-        private IList<string> GetSqlsInBatches(List<Cell> entities, int batchSize = 1000)
+        private static IList<string> GetSqlsInBatches(List<Cell> entities, int batchSize = 1000)
         {
             var insertSql = "INSERT INTO s2cell (id, level, center_lat, center_lon, updated) VALUES ";
             var valuesSql = "('{0}', '{1}', '{2}', '{3}', '{4}')";
@@ -485,7 +485,7 @@ ON DUPLICATE KEY UPDATE
                 // Convert enumeration value from string to integer
                 var enumValue = Convert.ToString(value) ?? string.Empty;
                 var propertyDescriptor = property.GetPropertyDescriptor();
-                var convertedValue = Convert.ToInt32(propertyDescriptor.Converter.ConvertFromString(enumValue));
+                var convertedValue = Convert.ToInt32(propertyDescriptor!.Converter.ConvertFromString(enumValue));
                 return convertedValue.ToString();
             }
             // Treat/wrap enumeration value string in quotations
@@ -502,7 +502,7 @@ ON DUPLICATE KEY UPDATE
             if (propertyInfo == null)
                 return null;
 
-            var properties = TypeDescriptor.GetProperties(propertyInfo.DeclaringType);
+            var properties = TypeDescriptor.GetProperties(propertyInfo.DeclaringType!);
             var propertyDescriptor = properties[propertyInfo.Name];
             return propertyDescriptor;
         }

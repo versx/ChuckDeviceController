@@ -39,7 +39,7 @@
         private readonly ITimeZoneService _timeZoneService;
         private readonly IGeofenceControllerService _geofenceService;
         private readonly IIvListControllerService _ivListService;
-        private readonly IAssignmentControllerService _assignmentService;
+        private readonly IAssignmentControllerService _assignmentService = null!;
         private readonly IRoutingHost _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
 
