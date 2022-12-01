@@ -5,13 +5,11 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     using Microsoft.EntityFrameworkCore;
-    using MySqlConnector;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
-    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
 
@@ -225,23 +223,43 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MySqlConnection connection, GetPlayerOutProto accountData, IMemoryCacheHostedService memCache, bool skipLookup = false)
+        public async Task UpdateAsync(GetPlayerOutProto playerData, IMemoryCacheHostedService memCache)
         {
-            CreationTimestamp = Convert.ToUInt32(accountData.Player.CreationTimeMs / 1000);
-            HasWarn = accountData.Warn;
-            var warnExpireTimestamp = Convert.ToUInt32(accountData.WarnExpireMs / 1000);
-            if (warnExpireTimestamp > 0)
+            CreationTimestamp = Convert.ToUInt32(playerData.Player.CreationTimeMs / 1000);
+            if (playerData.Warn != HasWarn)
+            {
+                HasWarn = playerData.Warn;
+                SendWebhook = true;
+            }
+            var warnExpireTimestamp = Convert.ToUInt32(playerData.WarnExpireMs / 1000);
+            if (WarnExpireTimestamp != warnExpireTimestamp)
             {
                 WarnExpireTimestamp = warnExpireTimestamp;
+                SendWebhook = true;
             }
-            WarnMessageAcknowledged = accountData.WarnMessageAcknowledged;
-            SuspendedMessageAcknowledged = accountData.SuspendedMessageAcknowledged;
-            WasSuspended = accountData.WasSuspended;
-            IsBanned = accountData.Banned;
+            if (WarnMessageAcknowledged != playerData.WarnMessageAcknowledged)
+            {
+                WarnMessageAcknowledged = playerData.WarnMessageAcknowledged;
+                SendWebhook = true;
+            }
+            if (SuspendedMessageAcknowledged != playerData.SuspendedMessageAcknowledged)
+            {
+                SuspendedMessageAcknowledged = playerData.SuspendedMessageAcknowledged;
+                SendWebhook = true;
+            }
+            if (WasSuspended != playerData.WasSuspended)
+            {
+                WasSuspended = playerData.WasSuspended;
+                SendWebhook = true;
+            }
+            if (IsBanned != playerData.Banned)
+            {
+                IsBanned = playerData.Banned;
+                SendWebhook = true;
+            }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-
-            if ((accountData.Warn || accountData.WarnMessageAcknowledged) && string.IsNullOrEmpty(Failed))
+            if ((playerData.Warn || playerData.WarnMessageAcknowledged) && string.IsNullOrEmpty(Failed))
             {
                 Failed = FailedGprRedWarning;
                 if (warnExpireTimestamp > now)
@@ -256,101 +274,30 @@
                         : now - WarningPeriodS;
                     FailedTimestamp = now - WarningPeriodS;
                 }
-                Console.WriteLine($"[{Username}] Account '{accountData.Player.Name}' (Username: {Username}) Has Red Warning");
+                SendWebhook = true;
+                Console.WriteLine($"[{Username}] Account '{playerData.Player.Name}' (Username: {Username}) Has Red Warning");
             }
 
-            if ((accountData.WasSuspended || accountData.SuspendedMessageAcknowledged) &&
-                    (string.IsNullOrEmpty(Failed) || Failed == FailedGprRedWarning))
+            if ((playerData.WasSuspended || playerData.SuspendedMessageAcknowledged) &&
+                (string.IsNullOrEmpty(Failed) || Failed == FailedGprRedWarning))
             {
                 // Occurs if an account was suspended and backend was not aware. Caused
                 // by manual database manipulation or similar.
                 Failed = FailedSuspended;
                 FailedTimestamp = now - SuspendedPeriodS;
-                Console.WriteLine($"[{Username}] Account '{accountData.Player.Name}' (Username: {Username}) Was Suspended");
+                SendWebhook = true;
+                Console.WriteLine($"[{Username}] Account '{playerData.Player.Name}' (Username: {Username}) Was Suspended");
             }
 
-            if (accountData.Banned)
+            if (playerData.Banned)
             {
                 Failed = FailedGprBanned;
                 FailedTimestamp = now;
-                Console.WriteLine($"[{Username}] Account '{accountData.Player.Name}' (Username: {Username}) Banned");
-            }
-
-            var oldAccount = skipLookup
-                ? null
-                : await EntityRepository.GetEntityAsync<string, Account>(connection, Username, memCache);
-            if (oldAccount == null)
-            {
                 SendWebhook = true;
+                Console.WriteLine($"[{Username}] Account '{playerData.Player.Name}' (Username: {Username}) Banned");
             }
-            else
-            {
-                if (LastEncounterLatitude == null && oldAccount.LastEncounterLatitude != null)
-                {
-                    LastEncounterLatitude = oldAccount.LastEncounterLatitude;
-                }
-                if (LastEncounterLongitude == null && oldAccount.LastEncounterLongitude != null)
-                {
-                    LastEncounterLongitude = oldAccount.LastEncounterLongitude;
-                }
-                if (LastEncounterTime == null && oldAccount.LastEncounterTime != null)
-                {
-                    LastEncounterTime = oldAccount.LastEncounterTime;
-                }
-                if (string.IsNullOrEmpty(Failed) && !string.IsNullOrEmpty(oldAccount.Failed))
-                {
-                    Failed = oldAccount.Failed;
-                }
-                if (FirstWarningTimestamp == null && oldAccount.FirstWarningTimestamp != null)
-                {
-                    FirstWarningTimestamp = oldAccount.FirstWarningTimestamp;
-                }
-                if (FailedTimestamp == null && oldAccount.FailedTimestamp != null)
-                {
-                    FailedTimestamp = oldAccount.FailedTimestamp;
-                }
-                if (Spins < oldAccount.Spins)
-                {
-                    Spins = oldAccount.Spins;
-                }
-                if (CreationTimestamp == null && oldAccount.CreationTimestamp != null)
-                {
-                    CreationTimestamp = oldAccount.CreationTimestamp;
-                }
-                if (HasWarn == null && oldAccount.HasWarn != null)
-                {
-                    HasWarn = oldAccount.HasWarn;
-                }
-                if (WarnExpireTimestamp == null && oldAccount.WarnExpireTimestamp != null)
-                {
-                    WarnExpireTimestamp = oldAccount.WarnExpireTimestamp;
-                }
-                if (WarnMessageAcknowledged == null && oldAccount.WarnMessageAcknowledged != null)
-                {
-                    WarnMessageAcknowledged = oldAccount.WarnMessageAcknowledged;
-                }
-                if (SuspendedMessageAcknowledged == null && oldAccount.SuspendedMessageAcknowledged != null)
-                {
-                    SuspendedMessageAcknowledged = oldAccount.SuspendedMessageAcknowledged;
-                }
-                if (WasSuspended == null && oldAccount.WasSuspended != null)
-                {
-                    WasSuspended = oldAccount.WasSuspended;
-                }
-                if (IsBanned == null && oldAccount.IsBanned != null)
-                {
-                    IsBanned = oldAccount.IsBanned;
-                }
-                if (LastUsedTimestamp == null && oldAccount.LastUsedTimestamp != null)
-                {
-                    LastUsedTimestamp = oldAccount.LastUsedTimestamp;
-                }
 
-                SendWebhook = Level != oldAccount.Level ||
-                    Failed != oldAccount.Failed ||
-                    HasWarn != oldAccount.HasWarn ||
-                    IsBanned != oldAccount.IsBanned;
-            }
+            LastUsedTimestamp ??= now;
 
             // Cache account entity by username
             memCache.Set(Username, this);

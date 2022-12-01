@@ -340,7 +340,7 @@
                         continue;
                     }
 
-                    await account.UpdateAsync(connection, data, _memCache);
+                    await account.UpdateAsync(data, _memCache);
                     await _dataConsumerService.AddEntityAsync(SqlQueryType.AccountOnMergeUpdate, account);
                     ProtoDataStatistics.Instance.TotalPlayerDataProcessed++;
 
@@ -357,9 +357,12 @@
 
             _logger.LogInformation($"[{requestId}] {count:N0} player accounts parsed");
 
-            foreach (var account in webhooks)
+            if (webhooks.Any())
             {
-                await SendWebhookPayloadAsync(WebhookPayloadType.Account, account);
+                foreach (var account in webhooks)
+                {
+                    await SendWebhookPayloadAsync(WebhookPayloadType.Account, account);
+                }
             }
         }
 
