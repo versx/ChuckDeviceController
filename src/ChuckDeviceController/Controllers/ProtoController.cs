@@ -24,8 +24,6 @@
 
         private static readonly ConcurrentDictionary<string, ushort> _levelCache = new();
         private readonly SemaphoreSlim _semDevices = new(1); // REVIEW: static access modifier
-        private readonly SemaphoreSlim _semLevel = new(1);
-        private static readonly Dictionary<string, ushort> _levelCache = new();
 
         private readonly ILogger<ProtoController> _logger;
         private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
@@ -118,6 +116,7 @@
         private async Task<Device?> SetLastDeviceLocationAsync(ProtoPayload payload)
         {
             await _semDevices.WaitAsync();
+            Device? device = null;
 
             try
             {
@@ -131,6 +130,7 @@
                     {
                         Uuid = payload.Uuid,
                         AccountUsername = payload.Username,
+                        LastHost = ipAddr,
                         LastLatitude = payload.LatitudeTarget,
                         LastLongitude = payload.LongitudeTarget,
                         LastSeen = now,
@@ -143,25 +143,17 @@
                     var deviceLon = Math.Round(device.LastLongitude ?? 0, 6);
                     var payloadLat = Math.Round(payload.LatitudeTarget, 6);
                     var payloadLon = Math.Round(payload.LongitudeTarget, 6);
-                    if (deviceLat == payloadLat &&
-                        deviceLon == payloadLon)
+                    if (deviceLat != payloadLat || deviceLon != payloadLon)
                     {
-                        // At same location, no need to update
-                        // TODO: Should update last_seen (maybe)
-                        _semDevices.Release();
-                        return device;
+                        device.LastLatitude = payloadLat;
+                        device.LastLongitude = payloadLon;
                     }
-
-                    device.LastLatitude = payload.LatitudeTarget;
-                    device.LastLongitude = payload.LongitudeTarget;
+                    device.LastHost = ipAddr;
                     device.LastSeen = now;
                     _context.Devices.Update(device);
                 }
 
                 await _context.SaveChangesAsync();
-
-                _semDevices.Release();
-                return device;
             }
             catch (Exception ex)
             {
@@ -169,37 +161,27 @@
             }
 
             _semDevices.Release();
-            return null;
+            return device;
         }
 
         private async Task SetAccountLevelAsync(string uuid, string? username, ushort level, ulong trainerXp = 0)
         {
-            await _semLevel.WaitAsync();
-
             try
             {
                 if (string.IsNullOrEmpty(username) || level <= 0)
                 {
-                    _semLevel.Release();
                     return;
                 }
 
                 // Attempt to get cached level, if it exists
                 if (_levelCache.TryGetValue(username, out var oldLevel))
                 {
-                    _levelCache.Add(username, level);
-                    _semLevel.Release();
-                    return;
-                }
-
-                // Check if cached level is same as current level
-                // or if higher than current
-                oldLevel = _levelCache[username];
-                if (oldLevel == level || oldLevel > level)
-                {
-                    _semLevel.Release();
-                    return;
-                }
+                    // Check if cached level is same as current level
+                    // or if higher than current
+                    if (oldLevel == level || oldLevel > level)
+                    {
+                        return;
+                    }
                 }
 
                 // Attempt to add account level to cache, otherwise if it exists
@@ -216,15 +198,14 @@
 
                     if (oldLevel > 0)
                     {
-                    _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' went from level {oldLevel} to {level} with {trainerXp:N0} XP");
+                        _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' went from level {oldLevel} to {level} with {trainerXp:N0} XP");
+                    }
                 }
-            }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"[{uuid}] Error: {ex}");
             }
-            _semLevel.Release();
         }
 
         private static ProtoResponse BuildProtoResponse(ProtoPayload payload)
