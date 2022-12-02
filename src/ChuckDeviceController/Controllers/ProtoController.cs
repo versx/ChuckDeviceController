@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.Controllers
 {
+    using System.Collections.Concurrent;
+
     using Microsoft.AspNetCore.Mvc;
     using POGOProtos.Rpc;
 
@@ -7,6 +9,7 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
@@ -19,6 +22,7 @@
 
         #region Variables
 
+        private static readonly ConcurrentDictionary<string, ushort> _levelCache = new();
         private readonly SemaphoreSlim _semDevices = new(1); // REVIEW: static access modifier
         private readonly SemaphoreSlim _semLevel = new(1);
         private static readonly Dictionary<string, ushort> _levelCache = new();
@@ -118,7 +122,9 @@
             try
             {
                 var now = DateTime.UtcNow.ToTotalSeconds();
-                var device = await _context.Devices.FindAsync(payload.Uuid);
+                var ipAddr = Request.GetIPAddress(defaultValue: null);
+
+                device = await _context.Devices.FindAsync(payload.Uuid);
                 if (device == null)
                 {
                     device = new Device
@@ -178,10 +184,8 @@
                     return;
                 }
 
-                ushort oldLevel;
-
-                // Check if account level has already been cached
-                if (!_levelCache.ContainsKey(username))
+                // Attempt to get cached level, if it exists
+                if (_levelCache.TryGetValue(username, out var oldLevel))
                 {
                     _levelCache.Add(username, level);
                     _semLevel.Release();
@@ -196,9 +200,11 @@
                     _semLevel.Release();
                     return;
                 }
+                }
 
-                // Account level has changed, update cache
-                _levelCache[username] = level;
+                // Attempt to add account level to cache, otherwise if it exists
+                // update the value
+                _levelCache.AddOrUpdate(username, level, (key, oldValue) => level);
 
                 // Update account level if account exists
                 var account = await _context.Accounts.FindAsync(username);
@@ -208,8 +214,11 @@
                     _context.Accounts.Update(account);
                     await _context.SaveChangesAsync();
 
+                    if (oldLevel > 0)
+                    {
                     _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' went from level {oldLevel} to {level} with {trainerXp:N0} XP");
                 }
+            }
             }
             catch (Exception ex)
             {
