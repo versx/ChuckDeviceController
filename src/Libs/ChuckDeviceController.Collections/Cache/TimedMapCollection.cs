@@ -27,12 +27,12 @@
         {
             lock (_lock )
             {
-                if (_entries[key] != null)
+                if (_entries.ContainsKey(key))
                 {
                     var lastIndex = _entries[key]?.FindLastIndex(value => value.Time >= time);
-                    if (lastIndex != null)
+                    if (lastIndex > -1)
                     {
-                        _entries[key].Insert(lastIndex ?? 0, new TimedMapEntry<TValue>(time, value));
+                        _entries[key].Insert(lastIndex ?? 0, new(time, value));
                     }
                     else
                     {
@@ -45,19 +45,19 @@
                 }
                 else
                 {
-                    _entries[key] = new List<TimedMapEntry<TValue>> { new TimedMapEntry<TValue>(time, value) };
+                    _entries.Add(key, new() { new(time, value) });
                 }
             }
         }
 
         public TValue? GetValueAt(TKey key, ulong time)
         {
-            TValue? value = default;
+            TValue? value = null;
             lock (_lock )
             {
-                if (_entries[key] != null)
+                if (_entries.ContainsKey(key))
                 {
-                    value = _entries[key].FindLast(x => x.Time >= time).Value;
+                    value = _entries[key].FindLast(x => x.Time >= time)?.Value;
                 }
             }
             return value;

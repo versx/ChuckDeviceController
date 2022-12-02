@@ -122,6 +122,7 @@
             {
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 var ipAddr = Request.GetIPAddress(defaultValue: null);
+                //\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b
 
                 device = await _context.Devices.FindAsync(payload.Uuid);
                 if (device == null)

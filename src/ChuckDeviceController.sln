@@ -91,6 +91,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FindyJumpyPlugin", "Plugins
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Geometry.Models", "Libs\ChuckDeviceController.Geometry.Models\ChuckDeviceController.Geometry.Models.csproj", "{95ED1091-166A-412F-B391-D05D13416E80}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckProxy", "ChuckProxy\ChuckProxy.csproj", "{50E79380-B33C-4661-BA7F-F8717672E70F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -257,6 +259,10 @@ Global
 		{95ED1091-166A-412F-B391-D05D13416E80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95ED1091-166A-412F-B391-D05D13416E80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95ED1091-166A-412F-B391-D05D13416E80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50E79380-B33C-4661-BA7F-F8717672E70F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50E79380-B33C-4661-BA7F-F8717672E70F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50E79380-B33C-4661-BA7F-F8717672E70F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50E79380-B33C-4661-BA7F-F8717672E70F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
