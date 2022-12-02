@@ -45,7 +45,7 @@
                 : userAgent;
         }
 
-        public static string GetIPAddress(this HttpRequest request, string defaultValue = "0.0.0.0")
+        public static string? GetIPAddress(this HttpRequest request, string? defaultValue = "0.0.0.0")
         {
             var cfHeader = request.Headers["cf-connecting-ip"].ToString();
             var forwardedfor = request.Headers["x-forwarded-for"].ToString()?.Split(',').FirstOrDefault();

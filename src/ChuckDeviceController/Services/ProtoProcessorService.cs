@@ -15,6 +15,8 @@
 
     public class ProtoProcessorService : BackgroundService, IProtoProcessorService
     {
+        private const ushort DefaultMaxEmptyCellsCount = 3;
+
         #region Variables
 
         private readonly ILogger<IProtoProcessorService> _logger;
@@ -23,8 +25,8 @@
         private readonly IGrpcClientService _grpcClientService;
 
         private static readonly Dictionary<ulong, int> _emptyCells = new();
-        private static readonly TimedMap<bool> _arQuestActualMap = new();
-        private static readonly TimedMap<bool> _arQuestTargetMap = new();
+        private static readonly TimedMapCollection<string, bool> _arQuestActualMap = new(1000);
+        private static readonly TimedMapCollection<string, bool> _arQuestTargetMap = new(1000);
         private static readonly Dictionary<string, bool> _canStoreData = new();
         private static readonly object _storeDataLock = new();
 
@@ -228,7 +230,7 @@
                                         if (quest.QuestContext == QuestProto.Types.Context.ChallengeQuest &&
                                             quest.QuestType == QuestType.QuestGeotargetedArScan)
                                         {
-                                            _arQuestActualMap.Set(uuid, true, timestamp);
+                                            _arQuestActualMap.SetValue(uuid, value: true, timestamp);
                                         }
                                     }
                                 }
@@ -255,7 +257,7 @@
                                     var quest = fsr.ChallengeQuest.Quest;
                                     if (quest.QuestType == QuestType.QuestGeotargetedArScan && uuid != null)
                                     {
-                                        _arQuestActualMap.Set(uuid, true, timestamp);
+                                        _arQuestActualMap.SetValue(uuid, value: true, timestamp);
                                     }
                                     processedProtos.Add(new
                                     {
@@ -463,30 +465,26 @@
 
         public static void SetArQuestTarget(string uuid, ulong timestamp, bool isAr)
         {
-            _arQuestTargetMap.Set(uuid, isAr, timestamp);
+            _arQuestTargetMap.SetValue(uuid, isAr, timestamp);
             if (isAr)
             {
                 // AR mode is sent to client -> client will clear ar quest
-                _arQuestActualMap.Set(uuid, false, timestamp);
+                _arQuestActualMap.SetValue(uuid, false, timestamp);
             }
         }
 
         private static bool GetArQuestMode(string uuid, ulong timestamp)
         {
             if (string.IsNullOrEmpty(uuid))
-            {
                 return true;
-            }
-            var targetMode = _arQuestTargetMap.Get(uuid, timestamp);
-            var actualMode = _arQuestActualMap.Get(uuid, timestamp);
-            if (!targetMode)
-            {
+
+            var actualMode = _arQuestActualMap.GetValueAt(uuid, timestamp) ?? false;
+            var targetMode = _arQuestTargetMap.GetValueAt(uuid, timestamp);
+            if (targetMode == null)
                 return true;
-            }
-            else if (targetMode)
-            {
+            else if (targetMode ?? false)
                 return false;
-            }
+
             return actualMode;
         }
 
@@ -606,7 +604,7 @@
                         }
 
                         var count = _emptyCells[cellId];
-                        if (count == 3)
+                        if (count == DefaultMaxEmptyCellsCount)
                         {
                             _logger.LogWarning($"[{uuid}] Cell {cellId} was empty 3 times in a row. Assuming empty.");
                             results.Add(cell);
@@ -663,10 +661,6 @@
                 {
                     return _canStoreData[username];
                 }
-                //else if (!_canStoreData.Any())
-                //{
-                //    return true;
-                //}
             }
 
             // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
