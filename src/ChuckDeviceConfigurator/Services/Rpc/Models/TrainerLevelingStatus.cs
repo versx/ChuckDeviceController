@@ -2,17 +2,10 @@
 {
     public class TrainerLevelingStatus
     {
-        public string? Username { get; }
+        public string? Username { get; internal set; }
 
-        public bool StoreLevelingData { get; }
+        public bool StoreLevelingData { get; internal set; } = true;
 
-        public bool IsTrainerLeveling { get; }
-
-        public TrainerLevelingStatus(string? username, bool storeLevelingData = false, bool isTrainerLeveling = false)
-        {
-            StoreLevelingData = storeLevelingData;
-            IsTrainerLeveling = isTrainerLeveling;
-            Username = username;
-        }
+        public bool IsTrainerLeveling { get; internal set; }
     }
 }

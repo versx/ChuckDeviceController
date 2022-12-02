@@ -221,7 +221,6 @@
                     var xpReceived = Convert.ToDouble((double)xpCurrent - xpStart);
                     var xpRemaining = Convert.ToDouble((double)xpTarget - xpStart);
                     var xpPercentage = xpReceived / xpRemaining  * 100;
-
                     var startXp = 0ul;
                     var startTime = DateTime.UtcNow.ToTotalSeconds();
 

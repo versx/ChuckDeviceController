@@ -548,6 +548,8 @@
 
         #region Receivers
 
+        // TODO: Move to separate class, expose as property in JobControllerService
+
         public void GotPokemon(Pokemon pokemon, bool hasIv)
         {
             lock (_instancesLock)
@@ -592,7 +594,7 @@
 
         public TrainerLevelingStatus GetTrainerLevelingStatus(string username)
         {
-            var storeLevelingData = false;
+            var storeLevelingData = true;
             var isTrainerLeveling = false;
 
             lock (_instancesLock)
@@ -613,11 +615,11 @@
             }
 
             return new TrainerLevelingStatus
-            (
-                username,
-                isTrainerLeveling,
-                storeLevelingData
-            );
+            {
+                Username = username,
+                StoreLevelingData = storeLevelingData,
+                IsTrainerLeveling = isTrainerLeveling,
+            };
         }
 
         #endregion

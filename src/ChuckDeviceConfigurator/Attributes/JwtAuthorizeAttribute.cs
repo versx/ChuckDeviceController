@@ -3,6 +3,10 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Filters;
 
+    /// <summary>
+    /// Class and method attribute decoration restricting access
+    /// to JWT authorized gRPC requests.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
     {

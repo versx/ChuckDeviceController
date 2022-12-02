@@ -9,14 +9,8 @@
     [JwtAuthorize]
     public class TrainerInfoServerService : Leveling.LevelingBase
     {
-        #region Variables
-
         private readonly ILogger<TrainerInfoServerService> _logger;
         private readonly IJobControllerService _jobControllerService;
-
-        #endregion
-
-        #region Constructor
 
         public TrainerInfoServerService(
             ILogger<TrainerInfoServerService> logger,
@@ -26,40 +20,46 @@
             _jobControllerService = jobControllerService;
         }
 
-        #endregion
-
         public override async Task<TrainerInfoResponse> ReceivedTrainerInfo(TrainerInfoRequest request, ServerCallContext context)
         {
             _logger.LogDebug($"Received {request.Username} request for trainer info");
-
             var username = request.Username;
+            var errorResponse = Task.FromResult(new TrainerInfoResponse
+            {
+                Status = TrainerInfoStatus.Error,
+                Username = username,
+                StoreLevelingData = true,
+                IsLeveling = false,
+            });
+
             if (string.IsNullOrEmpty(username))
             {
                 _logger.LogWarning($"Trainer username was null, unable to fetch trainer info.");
-                return await Task.FromResult(new TrainerInfoResponse
-                {
-                    Status = TrainerInfoStatus.Error,
-                });
+                return await errorResponse;
             }
 
-            var result = _jobControllerService.GetTrainerLevelingStatus(username);
-            if (result == null)
+            try
             {
-                _logger.LogWarning($"Trainer leveling status for username '{username}' from job controller service returned null, unable to fetch trainer info.");
+                var result = _jobControllerService.GetTrainerLevelingStatus(username);
+                if (result == null)
+                {
+                    _logger.LogWarning($"Trainer leveling status for username '{username}' from job controller service returned null, unable to fetch trainer info.");
+                    return await errorResponse;
+                }
+
                 return await Task.FromResult(new TrainerInfoResponse
                 {
-                    Status = TrainerInfoStatus.Error,
+                    Status = TrainerInfoStatus.Ok,
                     Username = username,
+                    StoreLevelingData = result.StoreLevelingData,
+                    IsLeveling = result.IsTrainerLeveling,
                 });
             }
-
-            return await Task.FromResult(new TrainerInfoResponse
+            catch (Exception ex)
             {
-                Status = TrainerInfoStatus.Ok,
-                Username = username,
-                StoreLevelingData = result.StoreLevelingData,
-                IsLeveling = result.IsTrainerLeveling,
-            });
+                _logger.LogError($"Error: {ex}");
+            }
+            return await errorResponse;
         }
     }
 }

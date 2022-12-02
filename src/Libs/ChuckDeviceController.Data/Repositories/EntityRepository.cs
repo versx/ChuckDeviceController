@@ -294,7 +294,7 @@
 
         #endregion
 
-        #region CreateConnection Method
+        #region CreateConnection Methods
 
         public static MySqlConnection? CreateConnection(
             bool openConnection = true,
