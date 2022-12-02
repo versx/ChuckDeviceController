@@ -1,0 +1,66 @@
+﻿namespace ChuckDeviceController.Collections.Cache
+{
+    public record TimedMapEntry<TValue>(ulong Time, TValue Value);
+
+    public class TimedMapCollection<TKey, TValue>
+        where TKey : IEquatable<TKey>
+        where TValue : struct
+    {
+        private readonly Dictionary<TKey, List<TimedMapEntry<TValue>>> _entries;
+        private readonly object _lock = new();
+        private readonly uint _length;
+
+        public uint Count => _length;
+
+        public TimedMapCollection(uint length)
+        {
+            _length = length;
+            _entries = new Dictionary<TKey, List<TimedMapEntry<TValue>>>();
+        }
+
+        public void SetValue(TKey key, TimedMapEntry<TValue> entry)
+        {
+            SetValue(key, entry.Value, entry.Time);
+        }
+
+        public void SetValue(TKey key, TValue value, ulong time)
+        {
+            lock (_lock )
+            {
+                if (_entries[key] != null)
+                {
+                    var lastIndex = _entries[key]?.FindLastIndex(value => value.Time >= time);
+                    if (lastIndex != null)
+                    {
+                        _entries[key].Insert(lastIndex ?? 0, new TimedMapEntry<TValue>(time, value));
+                    }
+                    else
+                    {
+                        _entries[key].Add(new(time, value));
+                    }
+                    if (_entries[key].Count > _length)
+                    {
+                        _entries[key].RemoveAt(0);
+                    }
+                }
+                else
+                {
+                    _entries[key] = new List<TimedMapEntry<TValue>> { new TimedMapEntry<TValue>(time, value) };
+                }
+            }
+        }
+
+        public TValue? GetValueAt(TKey key, ulong time)
+        {
+            TValue? value = default;
+            lock (_lock )
+            {
+                if (_entries[key] != null)
+                {
+                    value = _entries[key].FindLast(x => x.Time >= time).Value;
+                }
+            }
+            return value;
+        }
+    }
+}
