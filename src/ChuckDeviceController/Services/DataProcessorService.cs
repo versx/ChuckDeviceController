@@ -51,7 +51,8 @@
         private readonly ILogger<IDataProcessorService> _logger;
         private readonly IAsyncQueue<DataQueueItem> _taskQueue;
         private readonly IMemoryCache _diskCache;
-        private readonly IGrpcClientService _grpcClientService;
+        private readonly IGrpcProtoClient _grpcProtoClient;
+        private readonly IGrpcWebhookClient _grpcWebhookClient;
         private readonly IClearFortsHostedService _clearFortsService;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly IWebHostEnvironment _env;
@@ -75,7 +76,8 @@
             IOptions<DataProcessorOptionsConfig> options,
             IAsyncQueue<DataQueueItem> taskQueue,
             IMemoryCache diskCache,
-            IGrpcClientService grpcClientService,
+            IGrpcProtoClient grpcProtoClient,
+            IGrpcWebhookClient grpcWebhookClient,
             IClearFortsHostedService clearFortsService,
             IMemoryCacheHostedService memCache,
             IWebHostEnvironment env,
@@ -86,7 +88,8 @@
             _taskQueue = taskQueue;
             _dataConsumerService = dataConsumerService;
             _diskCache = diskCache;
-            _grpcClientService = grpcClientService;
+            _grpcProtoClient = grpcProtoClient;
+            _grpcWebhookClient = grpcWebhookClient;
             _clearFortsService = clearFortsService;
             _memCache = memCache;
             _env = env;

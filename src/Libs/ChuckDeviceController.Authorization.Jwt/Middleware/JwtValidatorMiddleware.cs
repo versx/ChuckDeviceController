@@ -8,8 +8,8 @@
 
     public class JwtValidatorMiddleware
     {
-        private const string DefaultContentType = "application/grpc";
-        private const string IgnoreJwtValidationHeader = "IgnoreJwtValidation";
+        public const string DefaultContentType = "application/grpc";
+        public const string IgnoreJwtValidationHeader = "IgnoreJwtValidation";
 
         private readonly RequestDelegate _next;
         private readonly JwtAuthConfig _jwtConfig;
@@ -27,32 +27,28 @@
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
-            // Only validate 'Authorization' header JWT if gRPC request.
-            if (httpContext.Request.ContentType == DefaultContentType)
+            // Extract 'IgnoreJwtValidation' header value from request,
+            // which indicates it's for the JwtAuth endpoint. If so, 
+            // allow it to proceed otherwise validate JWT.
+            var ignoreValidationHeader = httpContext.Request.GetHeader(IgnoreJwtValidationHeader);
+            if (ignoreValidationHeader == "1")
             {
-                // Extract 'IgnoreJwtValidation' header value from request,
-                // which indicates it's for the JwtAuth endpoint. If so, 
-                // allow it to proceed otherwise validate JWT.
-                var ignoreValidationHeader = httpContext.Request.GetHeader(IgnoreJwtValidationHeader);
-                if (string.IsNullOrEmpty(ignoreValidationHeader))
-                {
-                    // Extract 'Authorization' header value from request
-                    var token = httpContext.Request.GetAuthorizationHeader();
-                    if (string.IsNullOrEmpty(token))
-                    {
-                        // No 'Authorization' header set but required, ignore request
-                        return;
-                    }
-
-                    // Validate JWT token from 'Authorization' header
-                    var result = JwtAuthManager.Instance.Validate(token, _jwtConfig);
-                    if (!result)
-                    {
-                        // Ignore request if validation failed
-                        return;
-                    }
-                }
+                await _next(httpContext);
+                return;
             }
+
+            // Extract 'Authorization' header value from request
+            var token = httpContext.Request.GetAuthorizationHeader();
+            if (string.IsNullOrEmpty(token))
+            {
+                // No 'Authorization' header set but required, ignore request
+                return;
+            }
+
+            // Validate JWT token from 'Authorization' header
+            var result = JwtAuthManager.Instance.Validate(token, _jwtConfig);
+            if (!result)
+                return;
 
             // Allow request to continue
             await _next(httpContext);

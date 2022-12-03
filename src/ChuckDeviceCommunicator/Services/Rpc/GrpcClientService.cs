@@ -9,8 +9,12 @@
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Protos;
 
+    // TODO: Register/configure via DI
+
     public class GrpcClientService : IGrpcClientService
     {
+        public const ushort DefaultTimeoutS = 30;
+
         private readonly ILogger<IGrpcClientService> _logger;
         private readonly GrpcEndpointsConfig _options;
         private readonly AuthHeadersInterceptor _authHeadersInterceptor;
@@ -35,16 +39,33 @@
         ///     Sends a gRPC request to retrieve the latest available webhook endpoints
         ///     from the configurator.
         /// </summary>
+        /// <param name="timeoutS">
+        ///     Default request timeout in seconds before aborting.
+        /// </param>
         /// <returns>
         ///     Returns the webhook endpoint response containing the available
         ///     webhook endpoints.
         /// </returns>
-        public async Task<WebhookEndpointResponse?> GetWebhookEndpointsAsync()
+        public async Task<WebhookEndpointResponse?> GetWebhookEndpointsAsync(uint timeoutS = DefaultTimeoutS)
         {
             try
             {
+                var options = new GrpcChannelOptions
+                {
+                    //HttpClient = new HttpClient
+                    //{
+                    //    Timeout = TimeSpan.FromSeconds(timeoutS),
+                    //},
+                    HttpHandler = new SocketsHttpHandler
+                    {
+                        EnableMultipleHttp2Connections = true,
+                        ConnectTimeout = TimeSpan.FromSeconds(timeoutS),
+                        ResponseDrainTimeout = TimeSpan.FromSeconds(timeoutS),
+                    },
+                };
+
                 // Create gRPC channel for receiving gRPC server address
-                using var channel = GrpcChannel.ForAddress(_options.Configurator);
+                using var channel = GrpcChannel.ForAddress(_options.Configurator, options);
 
                 var invoker = channel.Intercept(_authHeadersInterceptor);
 

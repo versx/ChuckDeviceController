@@ -22,7 +22,6 @@
         private readonly System.Timers.Timer _timer = new();
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IWebHostEnvironment _env;
-        private readonly IGrpcClientService _grpcClientService;
         private readonly SqlBulk _bulk = new();
         private readonly Dictionary<SqlQueryType, (string, string)> _sqlCache = new();
         private readonly IEnumerable<SqlQueryType> _fortDetailTypes = new[]
@@ -308,12 +307,10 @@
         public DataConsumerService(
             ILogger<IDataConsumerService> logger,
             IWebHostEnvironment env,
-            IGrpcClientService grpcClientService,
             IOptions<DataConsumerOptionsConfig> options)
         {
             _logger = logger;
             _env = env;
-            _grpcClientService = grpcClientService;
 
             Options = options.Value;
 

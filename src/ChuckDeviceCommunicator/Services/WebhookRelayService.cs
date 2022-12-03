@@ -27,6 +27,7 @@
         public const ushort WebhookRelayIntervalS = 5; // 5 seconds
         public const ushort RequestWebhookIntervalS = 60; // 60 seconds
         public const ushort RequestFailedRetryDelayS = 3; // 3 seconds
+        public const uint DefaultEndpointsTimeoutS = 15; // 15 seconds
 
         #endregion
 
@@ -777,7 +778,7 @@
 
             try
             {
-                var response = await _grpcClientService.GetWebhookEndpointsAsync();
+                var response = await _grpcClientService.GetWebhookEndpointsAsync(DefaultEndpointsTimeoutS);
                 if (response?.Status != WebhookEndpointStatus.Ok)
                 {
                     _logger.LogError($"Failed to retrieve webhook endpoints!");

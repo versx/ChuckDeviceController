@@ -23,7 +23,7 @@
         public override async Task<TrainerInfoResponse> ReceivedTrainerInfo(TrainerInfoRequest request, ServerCallContext context)
         {
             _logger.LogDebug($"Received {request.Username} request for trainer info");
-            var username = request.Username;
+            var username = request?.Username;
             var errorResponse = Task.FromResult(new TrainerInfoResponse
             {
                 Status = TrainerInfoStatus.Error,

@@ -14,6 +14,7 @@ using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.HostedServices;
+using ChuckDeviceController.Protos;
 using ChuckDeviceController.Pvp;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
@@ -72,7 +73,11 @@ builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueIt
 
 builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
-builder.Services.AddSingleton<IGrpcClientService, GrpcClientService>();
+
+builder.Services.AddSingleton<IGrpcProtoClient, GrpcProtoClient>();
+builder.Services.AddSingleton<IGrpcLevelingClient, GrpcLevelingClient>();
+builder.Services.AddSingleton<IGrpcWebhookClient, GrpcWebhookClient>();
+
 builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
 {
     using var scope = factory.CreateScope();
@@ -132,6 +137,27 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var grpcConfig = new GrpcEndpointsConfig();
+config.Bind("Grpc", grpcConfig);
+
+builder.Services
+    .AddGrpcClient<Payload.PayloadClient>(options => options.Address = new Uri(grpcConfig.Configurator))
+    .AddInterceptor<AuthHeadersInterceptor>();
+builder.Services
+    .AddGrpcClient<Leveling.LevelingClient>(options => options.Address = new Uri(grpcConfig.Configurator))
+    .AddInterceptor<AuthHeadersInterceptor>();
+builder.Services
+    .AddGrpcClient<WebhookPayload.WebhookPayloadClient>(options => options.Address = new Uri(grpcConfig.Communicator))
+    // TODO: Add gRPC JWT auth token retrieval to client registration
+    //.AddCallCredentials(async (context, metadata, serviceProvider) =>
+    //{
+    //    var provider = serviceProvider.GetRequiredService<ITokenProvider>();
+    //    var token = await provider.GetJwtTokenAsync();
+    //    metadata.Add("Authorization", $"Bearer {token}");
+    //    //return await Task.CompletedTask;
+    //})
+    .AddInterceptor<AuthHeadersInterceptor>();
 
 // Instantiate PvpRankGenerator singleton immediately before protos are received
 await PvpRankGenerator.Instance.InitializeAsync();

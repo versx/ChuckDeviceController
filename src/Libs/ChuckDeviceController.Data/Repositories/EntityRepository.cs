@@ -11,13 +11,8 @@
 
     public class EntityRepository
     {
-        private static ulong _instanceCount;
-        public static ulong InstanceCount => _instanceCount;
-
         #region Constants
 
-        private const uint DefaultConnectionWaitTimeS = 5;
-        private const int DefaultCommandTimeoutS = 30;
         private const double DefaultExpiryLimitM = 15;
 
         #endregion
@@ -39,6 +34,13 @@
         private static string? _connectionString;
         private readonly bool _openConnection;
         private static EntityDataRepository _entityRepository = default!;
+
+        #endregion
+
+        #region Properties
+
+        private static ulong _instanceCount;
+        public static ulong InstanceCount => _instanceCount;
 
         #endregion
 
@@ -98,12 +100,10 @@
                 entity = memCache.Get<TKey, TEntity>(key);
                 if (entity != null)
                 {
-                    //_entitySem.Release();
                     return entity;
                 }
             }
 
-            //entity = await _entityRepository.GetByIdAsync<TKey, TEntity>(connection, key);
             entity = await _entityRepository.GetByIdAsync<TKey, TEntity>(connection, key);
 
             if (setCache && entity != null)
@@ -115,7 +115,6 @@
             return entity;
 
             //await _entitySem.WaitAsync(_semWaitTime);
-            ////var entity = GetFromCache(key) ?? await GetFromDatabase(key);
 
             //string sql;
             //TEntity? entity = null;
@@ -187,7 +186,7 @@
         /// <param name="commandTimeoutS">SQL command timeout in seconds.</param>
         /// <returns>Returns the number of rows affected by the query.</returns>
         /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
-        public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
+        public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = EntityDataRepository.DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
         {
             var rowsAffected = 0;
             await _sem.WaitAsync(stoppingToken);
@@ -223,7 +222,7 @@
         /// <param name="stoppingToken">Cancellation token to signal exit.</param>
         /// <returns>Returns the number of rows affected by the query.</returns>
         /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
-        public static async Task<int> ExecuteAsync(IEnumerable<string> sqls, int? commandTimeoutS = DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
+        public static async Task<int> ExecuteAsync(IEnumerable<string> sqls, int? commandTimeoutS = EntityDataRepository.DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
         {
             var rowsAffected = 0;
             await _sem.WaitAsync(stoppingToken);
@@ -299,7 +298,7 @@
         public static MySqlConnection? CreateConnection(
             bool openConnection = true,
             bool runLeakWatcher = true,
-            uint waitTimeS = DefaultConnectionWaitTimeS)
+            uint waitTimeS = EntityDataRepository.DefaultConnectionWaitTimeS)
         {
             var task = Task.Run(async () =>  await CreateConnectionAsync(openConnection, runLeakWatcher, waitTimeS));
             task.Wait();
@@ -309,7 +308,7 @@
         public static async Task<MySqlConnection?> CreateConnectionAsync(
             bool openConnection = true,
             bool runLeakWatcher = true,
-            uint waitTimeS = DefaultConnectionWaitTimeS,
+            uint waitTimeS = EntityDataRepository.DefaultConnectionWaitTimeS,
             CancellationToken stoppingToken = default)
         {
             var connection = new MySqlConnection(_connectionString);

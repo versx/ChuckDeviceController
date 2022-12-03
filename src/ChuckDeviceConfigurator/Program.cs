@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using ChuckDeviceConfigurator;
@@ -53,6 +55,18 @@ if (config.Providers.Count() == 2)
     Environment.FailFast($"Failed to find or load configuration file, exiting...");
 }
 
+// MySQL resiliency options
+var resiliencyOptions = new MySqlResiliencyOptions();
+config.Bind("Database", resiliencyOptions);
+
+// JWT authentication options for gRPC endpoints
+var jwtConfig = new JwtAuthConfig();
+config.Bind("Jwt", jwtConfig);
+
+// User identity options
+var identityConfig = GetDefaultIdentityOptions();
+config.Bind("UserAccounts", identityConfig);
+
 #endregion
 
 #region Logger
@@ -79,15 +93,9 @@ catch (Exception ex)
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
 
-var jwtAuthEnabled = config.GetSection("Jwt").GetValue<bool>("Enabled");
-
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
-
-var resiliencyOptions = new MySqlResiliencyOptions();
-config.Bind("Database", resiliencyOptions);
-resiliencyOptions ??= new();
 
 #region Logger Filtering
 
@@ -102,8 +110,6 @@ builder.WebHost.ConfigureLogging(configure => configure.AddSimpleConsole(options
 builder.Services.AddDbContext<UserIdentityContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), ServiceLifetime.Transient);
 
-var identityConfig = GetDefaultIdentityOptions();
-config.GetSection("UserAccounts").Bind(identityConfig);
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options => options = identityConfig)
     .AddDefaultUI()
@@ -114,6 +120,8 @@ builder.Services.AddMemoryCache(options =>
 {
     options.SizeLimit = long.MaxValue;
 });
+
+//builder.Services.AddGrpc();
 
 // Register external 3rd party authentication providers if configured
 builder.Services.Configure<JwtAuthConfig>(config.GetSection("Jwt"));
@@ -130,8 +138,16 @@ builder.Services
         //    });
         //});
     })
-    .AddAuthentication()
-    .AddJwtBearer()
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new()
+        {
+            ValidIssuer = jwtConfig.Issuer,
+            ValidAudience = jwtConfig.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtConfig.Key)),
+        };
+    })
     .AddCookie(options =>
     {
         // Cookie settings
@@ -339,9 +355,12 @@ else
 }
 
 // TODO: app.UseMiddleware<UnhandledExceptionMiddleware>();
-if (jwtAuthEnabled)
+if (jwtConfig.Enabled)
 {
-    app.UseMiddleware<JwtValidatorMiddleware>();
+    app.UseWhen(
+        context => context.Request.ContentType == JwtValidatorMiddleware.DefaultContentType,
+        appBuilder => appBuilder.UseMiddleware<JwtValidatorMiddleware>()
+    );
 }
 
 // Call 'Configure' method in plugins
@@ -365,7 +384,7 @@ app.UseAuthorization();
 //app.UseSession();
 
 // gRPC listener server services
-if (jwtAuthEnabled)
+if (jwtConfig.Enabled)
 {
     app.MapGrpcService<JwtAuthServerService>();
 }
