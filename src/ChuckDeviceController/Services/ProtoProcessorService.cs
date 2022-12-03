@@ -10,6 +10,7 @@
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Services.Rpc;
