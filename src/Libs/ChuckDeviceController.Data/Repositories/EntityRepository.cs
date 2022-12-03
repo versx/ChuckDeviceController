@@ -75,8 +75,8 @@
 
             EntityDataRepository.AddTypeMappers();
 
-            _entityRepository = new EntityDataRepository(connectionString);
-
+            //_entityRepository = new EntityDataRepository(connectionString);
+            _entityRepository = new EntityDataRepository();
             //Task.Run(async () => _connection = await CreateConnectionAsync()).Wait();
         }
 

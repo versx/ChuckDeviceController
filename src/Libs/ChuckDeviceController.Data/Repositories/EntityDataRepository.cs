@@ -15,7 +15,7 @@
     {
         #region Constants
 
-        public const uint DefaultConnectionWaitTimeS = 3;
+        public const uint DefaultConnectionWaitTimeS = 30;
         public const int DefaultCommandTimeoutS = 30;
 
         #endregion
@@ -23,23 +23,22 @@
         #region Variables
 
         private readonly SemaphoreSlim _sem = new(1, 1);
-        private readonly string _connectionString;
+        private readonly SemaphoreSlim _semEntity = new(15, 15);
+        //private readonly string _connectionString;
         private MySqlConnection? _connection;
 
         #endregion
 
         #region Constructor
 
-        public EntityDataRepository(string connectionString)
+        //public EntityDataRepository(string connectionString)
+        public EntityDataRepository()
         {
-            _connectionString = connectionString
-                ?? throw new ArgumentNullException(nameof(connectionString), $"{nameof(connectionString)} cannot be null!");
+            //_connectionString = connectionString
+            //    ?? throw new ArgumentNullException(nameof(connectionString), $"{nameof(connectionString)} cannot be null!");
 
             AddTypeMappers();
             OpenConnection();
-
-            //var csb = MySqlConnectorFactory.Instance.CreateConnectionStringBuilder();
-            //csb.ConnectionString = _connectionString;
         }
 
         #endregion
@@ -58,7 +57,7 @@
             where TKey : notnull
             where TEntity : BaseEntity
         {
-            //await _sem.WaitAsync(stoppingToken);
+            await _semEntity.WaitAsync(stoppingToken);
 
             TEntity? result = null;
             try
@@ -80,7 +79,7 @@
                 Console.WriteLine($"[GetByIdAsync] Error: {ex}");
             }
 
-            //_sem.Release();
+            _semEntity.Release();
             return result;
         }
 
@@ -214,9 +213,8 @@
                 throw new Exception($"Not connected to MySQL database server!");
             }
 
-            using var trans = await _connection.BeginTransactionAsync(stoppingToken);
-
             var rowsAffected = 0;
+            using var trans = await _connection.BeginTransactionAsync(stoppingToken);
             try
             {
                 rowsAffected += await _connection.BulkInsertAsync(tableName, entities, dataFunc, trans, includeOnDuplicateQuery: true);
@@ -243,19 +241,18 @@
 
         private async Task OpenConnectionAsync(CancellationToken stoppingToken = default)
         {
-            if (_connection != null)
+            if (_connection != null && _connection.State != ConnectionState.Open)
             {
-                _connection.Dispose();
-                _connection = null;
+                await _connection.OpenAsync(stoppingToken);
             }
-
-            //_connection = new MySqlConnection(_connectionString);
-            //await _connection.OpenAsync(stoppingToken);
-            //await WaitForConnectionAsync(stoppingToken);
-            _connection = await EntityRepository.CreateConnectionAsync(stoppingToken: stoppingToken);
+            else if (_connection == null || (_connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
+            {
+                _connection?.Dispose();
+                _connection = await EntityRepository.CreateConnectionAsync(stoppingToken: stoppingToken);
+            }
         }
 
-        private void EnsureConnectionIsOpen(bool attemptReopen)
+        private void EnsureConnectionIsOpen(bool attemptReopen = true)
         {
             if (_connection == null || (_connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
             {

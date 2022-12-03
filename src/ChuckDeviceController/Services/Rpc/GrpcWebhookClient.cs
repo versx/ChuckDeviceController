@@ -4,7 +4,7 @@
 
     public interface IGrpcWebhookClient
     {
-        Task<WebhookPayloadResponse?> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json);
+        Task<WebhookPayloadResponse?> SendAsync(WebhookPayloadType webhookType, string json);
     }
 
     public class GrpcWebhookClient : IGrpcWebhookClient
@@ -16,7 +16,7 @@
             _client = client;
         }
 
-        public async Task<WebhookPayloadResponse?> SendWebhookPayloadAsync(WebhookPayloadType webhookType, string json)
+        public async Task<WebhookPayloadResponse?> SendAsync(WebhookPayloadType webhookType, string json)
         {
             // Create gRPC payload request
             var request = new WebhookPayloadRequest

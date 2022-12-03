@@ -22,6 +22,7 @@
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
+    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Protos;
@@ -84,6 +85,8 @@
             IDataConsumerService dataConsumerService)
             : base(logger, options?.Value?.IntervalS ?? DataProcessorOptionsConfig.DefaultIntervalS)
         {
+            Options = options?.Value ?? new();
+
             _logger = logger;
             _taskQueue = taskQueue;
             _dataConsumerService = dataConsumerService;
@@ -93,10 +96,6 @@
             _clearFortsService = clearFortsService;
             _memCache = memCache;
             _env = env;
-
-            //connection = EntityRepository.CreateConnectionAsync().Result;
-
-            Options = options?.Value ?? new();
             _semParser = new SemaphoreSlim(Options.ParsingConcurrencyLevel, Options.ParsingConcurrencyLevel);
         }
 
@@ -354,10 +353,7 @@
 
             if (webhooks.Any())
             {
-                foreach (var account in webhooks)
-                {
-                    await SendWebhookPayloadAsync(WebhookPayloadType.Account, account);
-                }
+                await SendWebhooksAsync(WebhookType.Accounts, webhooks);
             }
         }
 
@@ -534,10 +530,7 @@
 
             if (webhooks.Any())
             {
-                foreach (var weather in webhooks)
-                {
-                    await SendWebhookPayloadAsync(WebhookPayloadType.Weather, weather);
-                }
+                await SendWebhooksAsync(WebhookType.Weather, webhooks);
             }
         }
 
@@ -605,10 +598,7 @@
             if (webhooks.Any())
             {
                 _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
-                foreach (var pokemon in webhooks)
-                {
-                    await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
-                }
+                await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
                 // Send pokemon to Configurator endpoint for IV stats
                 await SendPokemonAsync(webhooks);
@@ -665,10 +655,7 @@
             if (webhooks.Any())
             {
                 _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
-                foreach (var pokemon in webhooks)
-                {
-                    await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
-                }
+                await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
                 // Send pokemon to Configurator endpoint for IV stats
                 await SendPokemonAsync(webhooks);
@@ -731,10 +718,7 @@
             if (webhooks.Any())
             {
                 _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
-                foreach (var pokemon in webhooks)
-                {
-                    await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
-                }
+                await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
                 // Send pokemon to Configurator endpoint for IV stats
                 await SendPokemonAsync(webhooks);
@@ -827,14 +811,7 @@
 
             if (webhooks.Any())
             {
-                foreach (var (key, pokestops) in webhooks)
-                {
-                    var type = ConvertWebhookType(key);
-                    foreach (var pokestop in pokestops)
-                    {
-                        await SendWebhookPayloadAsync(type, pokestop);
-                    }
-                }
+                await SendWebhooksAsync(webhooks);
             }
 
             if (string.IsNullOrEmpty(username))
@@ -856,6 +833,8 @@
 
         private async Task UpdateFortDetailsAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> fortDetails)
         {
+            var webhooks = new Dictionary<WebhookType, List<BaseEntity>>();
+
             var fortDetailsPokestops = fortDetails
                 .Where(fort => fort.data.FortType == FortType.Checkpoint);
             if (fortDetailsPokestops.Any())
@@ -885,10 +864,19 @@
                             ProtoDataStatistics.Instance.TotalFortDetailsProcessed++;
                         }
 
-                        foreach (var webhook in pokestopWebhooks)
+                        if (pokestopWebhooks.Any())
                         {
-                            var type = ConvertWebhookType(webhook.Key);
-                            await SendWebhookPayloadAsync(type, pokestop);
+                            foreach (var (key, value) in pokestopWebhooks)
+                            {
+                                if (webhooks.ContainsKey(key))
+                                {
+                                    webhooks[key].Add(value);
+                                }
+                                else
+                                {
+                                    webhooks.Add(key, new() { value });
+                                }
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -928,12 +916,22 @@
                         if (gym.HasChanges)
                         {
                             await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDetailsOnMergeUpdate, gym);
+                            ProtoDataStatistics.Instance.TotalFortDetailsProcessed++;
                         }
 
-                        foreach (var webhook in gymWebhooks)
+                        if (gymWebhooks.Any())
                         {
-                            var type = ConvertWebhookType(webhook.Key);
-                            await SendWebhookPayloadAsync(type, gym);
+                            foreach (var (key, value) in gymWebhooks)
+                            {
+                                if (webhooks.ContainsKey(key))
+                                {
+                                    webhooks[key].Add(value);
+                                }
+                                else
+                                {
+                                    webhooks.Add(key, new() { value });
+                                }
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -944,6 +942,11 @@
                 }
 
                 _logger.LogInformation($"[{requestId}] {count:N0} gym fort details parsed");
+            }
+
+            if (webhooks.Any())
+            {
+                await SendWebhooksAsync(webhooks);
             }
         }
 
@@ -1041,11 +1044,7 @@
 
             if (webhooks.Any())
             {
-                foreach (var (key, value) in webhooks)
-                {
-                    var type = ConvertWebhookType(key);
-                    await SendWebhookPayloadAsync(type, value);
-                }
+                await SendWebhooksAsync(webhooks);
             }
         }
 
@@ -1105,14 +1104,7 @@
 
             if (webhooks.Any())
             {
-                foreach (var (key, pokestopQuests) in webhooks)
-                {
-                    var type = ConvertWebhookType(key);
-                    foreach (var quest in pokestopQuests)
-                    {
-                        await SendWebhookPayloadAsync(type, quest);
-                    }
-                }
+                await SendWebhooksAsync(webhooks);
             }
         }
 
@@ -1183,10 +1175,7 @@
             if (webhooks.Any())
             {
                 _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
-                foreach (var pokemon in webhooks)
-                {
-                    await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
-                }
+                await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
                 // Send pokemon to Configurator endpoint for IV stats
                 await SendPokemonAsync(webhooks);
@@ -1245,10 +1234,7 @@
             if (webhooks.Any())
             {
                 _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
-                foreach (var pokemon in webhooks)
-                {
-                    await SendWebhookPayloadAsync(WebhookPayloadType.Pokemon, pokemon);
-                }
+                await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
                 // Send pokemon to Configurator endpoint for IV stats
                 await SendPokemonAsync(webhooks);
@@ -1298,10 +1284,7 @@
             if (webhooks.Any())
             {
                 //_logger.LogDebug($"Sending {webhooks.Count:N0} pokestop incident webhooks");
-                foreach (var incident in webhooks)
-                {
-                    await SendWebhookPayloadAsync(WebhookPayloadType.Invasion, incident);
-                }
+                await SendWebhooksAsync(WebhookType.Invasions, webhooks);
             }
         }
 
@@ -1401,7 +1384,44 @@
 
         #region Grpc Senders
 
-        private async Task SendWebhookPayloadAsync<T>(WebhookPayloadType webhookType, T entity)
+        private async Task SendWebhooksAsync<T>(WebhookType type, IEnumerable<T> webhooks)
+        {
+            // Fire off gRPC request on a separate thread
+            await Task.Run(() =>
+            {
+                new Thread(async () =>
+                {
+                    var webhookType = ConvertWebhookType(type);
+                    foreach (var webhook in webhooks)
+                    {
+                        await SendWebhookAsync(webhookType, webhook);
+                    }
+                })
+                { IsBackground = true }.Start();
+            });
+        }
+
+        private async Task SendWebhooksAsync<T>(Dictionary<WebhookType, List<T>> webhooks)
+        {
+            // Fire off gRPC request on a separate thread
+            await Task.Run(() =>
+            {
+                new Thread(async () =>
+                {
+                    foreach (var (type, entities) in webhooks)
+                    {
+                        var webhookType = ConvertWebhookType(type);
+                        foreach (var entity in entities)
+                        {
+                            await SendWebhookAsync(webhookType, entity);
+                        }
+                    }
+                })
+                { IsBackground = true }.Start();
+            });
+        }
+
+        private async Task SendWebhookAsync<T>(WebhookPayloadType webhookType, T entity)
         {
             if (entity == null)
             {
@@ -1409,70 +1429,61 @@
                 return;
             }
 
-            //var json = entity.ToJson();
-            //if (string.IsNullOrEmpty(json))
-            //{
-            //    _logger.LogWarning($"Failed to serialize entity {typeof(T).Name} to relay to webhook service, skipping...");
-            //    return;
-            //}
+            var json = entity.ToJson();
+            if (string.IsNullOrEmpty(json))
+            {
+                _logger.LogWarning($"Failed to serialize entity {typeof(T).Name} to relay to webhook service, skipping...");
+                return;
+            }
 
-            //// Fire off gRPC request on a separate thread
-            //await Task.Run(() =>
-            //{
-            //    new Thread(async () =>
-            //    {
-            //        await _grpcClientService.SendWebhookPayloadAsync(webhookType, json);
-            //    })
-            //    { IsBackground = true }.Start();
-            //});
-
-            await Task.CompletedTask;
+            // Fire off gRPC request on a separate thread
+            await _grpcWebhookClient.SendAsync(webhookType, json);
         }
 
         private async Task SendPokemonAsync(List<Pokemon> pokemon)
         {
-            //var newPokemon = pokemon
-            //    .Where(pkmn => pkmn.IsNewPokemon)
-            //    .ToList();
-            //var newPokemonWithIV = pokemon
-            //    .Where(pkmn => pkmn.IsNewPokemonWithIV)
-            //    .ToList();
+            var newPokemon = pokemon
+                .Where(pkmn => pkmn.IsNewPokemon)
+                .ToList();
+            var newPokemonWithIV = pokemon
+                .Where(pkmn => pkmn.IsNewPokemonWithIV)
+                .ToList();
 
-            //if (newPokemon.Any())
-            //{
-            //    // Fire off gRPC request on a separate thread
-            //    await Task.Run(() =>
-            //    {
-            //        new Thread(async () =>
-            //        {
-            //            // Send got Pokemon proto message
-            //            await _grpcClientService.SendRpcPayloadAsync(
-            //                    newPokemon,
-            //                    PayloadType.PokemonList,
-            //                    hasIV: false
-            //                );
-            //        })
-            //        { IsBackground = true }.Start();
-            //    });
-            //}
+            if (newPokemon.Any())
+            {
+                // Fire off gRPC request on a separate thread
+                await Task.Run(() =>
+                {
+                    new Thread(async () =>
+                    {
+                        // Send got Pokemon proto message
+                        await _grpcProtoClient.SendAsync(
+                            newPokemon,
+                            PayloadType.PokemonList,
+                            hasIV: false
+                        );
+                    })
+                    { IsBackground = true }.Start();
+                });
+            }
 
-            //if (newPokemonWithIV.Any())
-            //{
-            //    // Fire off gRPC request on a separate thread
-            //    await Task.Run(() =>
-            //    {
-            //        new Thread(async () =>
-            //        {
-            //            // Send got Pokemon IV proto message
-            //            await _grpcClientService.SendRpcPayloadAsync(
-            //                newPokemonWithIV,
-            //                PayloadType.PokemonList,
-            //                hasIV: true
-            //            );
-            //        })
-            //        { IsBackground = true }.Start();
-            //    });
-            //}
+            if (newPokemonWithIV.Any())
+            {
+                // Fire off gRPC request on a separate thread
+                await Task.Run(() =>
+                {
+                    new Thread(async () =>
+                    {
+                        // Send got Pokemon IV proto message
+                        await _grpcProtoClient.SendAsync(
+                            newPokemonWithIV,
+                            PayloadType.PokemonList,
+                            hasIV: true
+                        );
+                    })
+                    { IsBackground = true }.Start();
+                });
+            }
 
             await Task.CompletedTask;
         }
@@ -1480,14 +1491,14 @@
         private async Task SendPokestopsAsync(List<PokemonFortProto> forts, string username)
         {
             // Fire off gRPC request on a separate thread
-            //await Task.Run(() =>
-            //{
-            //    new Thread(async () =>
-            //    {
-            //        await _grpcClientService.SendRpcPayloadAsync(forts, PayloadType.FortList, username);
-            //    })
-            //    { IsBackground = true }.Start();
-            //});
+            await Task.Run(() =>
+            {
+                new Thread(async () =>
+                {
+                    await _grpcProtoClient.SendAsync(forts, PayloadType.FortList, username);
+                })
+                { IsBackground = true }.Start();
+            });
 
             await Task.CompletedTask;
         }
@@ -1495,15 +1506,15 @@
         private async Task SendPlayerDataAsync(string username, ushort level, uint xp)
         {
             // Fire off gRPC request on a separate thread
-            //await Task.Run(() =>
-            //{
-            //    new Thread(async () =>
-            //    {
-            //        var payload = new { username, level, xp };
-            //        await _grpcClientService.SendRpcPayloadAsync(payload, PayloadType.PlayerInfo, username);
-            //    })
-            //    { IsBackground = true }.Start();
-            //});
+            await Task.Run(() =>
+            {
+                new Thread(async () =>
+                {
+                    var payload = new { username, level, xp };
+                    await _grpcProtoClient.SendAsync(payload, PayloadType.PlayerInfo, username);
+                })
+                { IsBackground = true }.Start();
+            });
 
             await Task.CompletedTask;
         }

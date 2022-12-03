@@ -4,7 +4,7 @@
 
     public interface IGrpcLevelingClient
     {
-        Task<TrainerInfoResponse?> SendGetTrainerLevelingStatusAsync(string username);
+        Task<TrainerInfoResponse?> SendAsync(string username);
     }
 
     public class GrpcLevelingClient : IGrpcLevelingClient
@@ -16,7 +16,7 @@
             _client = client;
         }
 
-        public async Task<TrainerInfoResponse?> SendGetTrainerLevelingStatusAsync(string username)
+        public async Task<TrainerInfoResponse?> SendAsync(string username)
         {
             // Create gRPC payload request
             var request = new TrainerInfoRequest

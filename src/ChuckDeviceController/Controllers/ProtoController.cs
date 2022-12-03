@@ -95,7 +95,7 @@
             await SetAccountLevelAsync(payload.Uuid, payload.Username, payload.Level, payload.TrainerXp ?? 0);
 
             // Set device last location and last seen time
-            var device = await SetLastDeviceLocationAsync(payload);
+            var device = await SetDeviceLastLocationAsync(payload);
 
             // Queue proto payload for processing
             await _taskQueue.EnqueueAsync(new ProtoPayloadQueueItem
@@ -113,7 +113,7 @@
 
         #region Private Methods
 
-        private async Task<Device?> SetLastDeviceLocationAsync(ProtoPayload payload)
+        private async Task<Device?> SetDeviceLastLocationAsync(ProtoPayload payload)
         {
             await _semDevices.WaitAsync();
             Device? device = null;
@@ -158,7 +158,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"SetLastDeviceLocationAsync: {ex}");
+                _logger.LogError($"SetDeviceLastLocationAsync: {ex}");
             }
 
             _semDevices.Release();
