@@ -28,8 +28,8 @@
         private readonly ILogger<IProtoProcessorService> _logger;
         private readonly IAsyncQueue<ProtoPayloadQueueItem> _protoQueue;
         private readonly IAsyncQueue<DataQueueItem> _dataQueue;
-        private readonly IGrpcProtoClient _grpcProtoClient;
-        private readonly IGrpcLevelingClient _grpcLevelingClient;
+        private readonly IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> _grpcProtoClient;
+        private readonly IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> _grpcLevelingClient;
 
         private static readonly ConcurrentDictionary<ulong, int> _emptyCells = new();
         private static readonly ConcurrentDictionary<string, bool> _canStoreData = new();
@@ -51,8 +51,8 @@
             IOptions<ProtoProcessorOptionsConfig> options,
             IAsyncQueue<ProtoPayloadQueueItem> protoQueue,
             IAsyncQueue<DataQueueItem> dataQueue,
-            IGrpcProtoClient grpcProtoClient,
-            IGrpcLevelingClient grpcLevelingClient)
+            IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> grpcProtoClient,
+            IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> grpcLevelingClient)
         {
             _logger = logger;
             _protoQueue = protoQueue;
@@ -440,7 +440,12 @@
                     level,
                 };
                 // Inform frontend/configurator via RPC of trainer account XP and Level for leveling instance stats
-                await _grpcProtoClient.SendAsync(playerInfo, PayloadType.PlayerInfo, username);
+                await _grpcProtoClient.SendAsync(new PayloadRequest
+                {
+                    PayloadType = PayloadType.PlayerInfo,
+                    Payload = playerInfo.ToJson(),
+                    Username = username,
+                });
             }
 
             sw.Stop();
@@ -648,7 +653,10 @@
             }
 
             // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
-            var levelingStatus = await _grpcLevelingClient.SendAsync(username);
+            var levelingStatus = await _grpcLevelingClient.SendAsync(new TrainerInfoRequest
+            {
+                Username = username,
+            });
             if ((levelingStatus?.Status ?? TrainerInfoStatus.Error) != TrainerInfoStatus.Ok)
             {
                 // Failure occurred, return true to be safe

@@ -74,10 +74,6 @@ builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueIt
 builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
 
-builder.Services.AddSingleton<IGrpcProtoClient, GrpcProtoClient>();
-builder.Services.AddSingleton<IGrpcLevelingClient, GrpcLevelingClient>();
-builder.Services.AddSingleton<IGrpcWebhookClient, GrpcWebhookClient>();
-
 builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
 {
     using var scope = factory.CreateScope();
@@ -92,8 +88,6 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
 });
 builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
 builder.Services.AddSingleton<IDataConsumerService, DataConsumerService>();
-
-builder.Services.AddSingleton<AuthHeadersInterceptor>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
@@ -138,26 +132,44 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+#region gRPC Clients
+
 var grpcConfig = new GrpcEndpointsConfig();
 config.Bind("Grpc", grpcConfig);
 
-builder.Services
-    .AddGrpcClient<Payload.PayloadClient>(options => options.Address = new Uri(grpcConfig.Configurator))
-    .AddInterceptor<AuthHeadersInterceptor>();
-builder.Services
-    .AddGrpcClient<Leveling.LevelingClient>(options => options.Address = new Uri(grpcConfig.Configurator))
-    .AddInterceptor<AuthHeadersInterceptor>();
-builder.Services
-    .AddGrpcClient<WebhookPayload.WebhookPayloadClient>(options => options.Address = new Uri(grpcConfig.Communicator))
-    // TODO: Add gRPC JWT auth token retrieval to client registration
-    //.AddCallCredentials(async (context, metadata, serviceProvider) =>
-    //{
-    //    var provider = serviceProvider.GetRequiredService<ITokenProvider>();
-    //    var token = await provider.GetJwtTokenAsync();
-    //    metadata.Add("Authorization", $"Bearer {token}");
-    //    //return await Task.CompletedTask;
-    //})
-    .AddInterceptor<AuthHeadersInterceptor>();
+builder.Services.AddSingleton<IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse>, GrpcProtoClient>();
+builder.Services.AddSingleton<IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>, GrpcLevelingClient>();
+builder.Services.AddSingleton<IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse>, GrpcWebhookClient>();
+//builder.Services.AddSingleton<IGrpcProtoClient, GrpcProtoClient>();
+//builder.Services.AddSingleton<IGrpcLevelingClient, GrpcLevelingClient>();
+//builder.Services.AddSingleton<IGrpcWebhookClient, GrpcWebhookClient>();
+builder.Services.AddSingleton<AuthHeadersInterceptor>();
+
+if (!string.IsNullOrEmpty(grpcConfig.Configurator))
+{
+    builder.Services
+        .AddGrpcClient<Payload.PayloadClient>(options => options.Address = new Uri(grpcConfig.Configurator))
+        .AddInterceptor<AuthHeadersInterceptor>();
+    builder.Services
+        .AddGrpcClient<Leveling.LevelingClient>(options => options.Address = new Uri(grpcConfig.Configurator))
+        .AddInterceptor<AuthHeadersInterceptor>();
+}
+if (!string.IsNullOrEmpty(grpcConfig.Communicator))
+{
+    builder.Services
+        .AddGrpcClient<WebhookPayload.WebhookPayloadClient>(options => options.Address = new Uri(grpcConfig.Communicator))
+        // TODO: Add gRPC JWT auth token retrieval to client registration
+        //.AddCallCredentials(async (context, metadata, serviceProvider) =>
+        //{
+        //    var provider = serviceProvider.GetRequiredService<ITokenProvider>();
+        //    var token = await provider.GetJwtTokenAsync();
+        //    metadata.Add("Authorization", $"Bearer {token}");
+        //    //return await Task.CompletedTask;
+        //})
+        .AddInterceptor<AuthHeadersInterceptor>();
+}
+
+#endregion
 
 // Instantiate PvpRankGenerator singleton immediately before protos are received
 await PvpRankGenerator.Instance.InitializeAsync();

@@ -2,12 +2,7 @@
 {
     using ChuckDeviceController.Protos;
 
-    public interface IGrpcLevelingClient
-    {
-        Task<TrainerInfoResponse?> SendAsync(string username);
-    }
-
-    public class GrpcLevelingClient : IGrpcLevelingClient
+    public class GrpcLevelingClient : IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>
     {
         private readonly Leveling.LevelingClient _client;
 
@@ -16,17 +11,18 @@
             _client = client;
         }
 
-        public async Task<TrainerInfoResponse?> SendAsync(string username)
+        public async Task<TrainerInfoResponse?> SendAsync(TrainerInfoRequest payload)
         {
-            // Create gRPC payload request
-            var request = new TrainerInfoRequest
+            try
             {
-                Username = username,
-            };
-
-            // Handle the response of the request
-            var response = await _client.ReceivedTrainerInfoAsync(request);
-            return response;
+                var response = await _client.ReceivedTrainerInfoAsync(payload);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SendAsync] Error: {ex.Message}");
+            }
+            return null;
         }
     }
 }

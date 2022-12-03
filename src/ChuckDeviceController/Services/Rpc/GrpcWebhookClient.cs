@@ -2,12 +2,7 @@
 {
     using ChuckDeviceController.Protos;
 
-    public interface IGrpcWebhookClient
-    {
-        Task<WebhookPayloadResponse?> SendAsync(WebhookPayloadType webhookType, string json);
-    }
-
-    public class GrpcWebhookClient : IGrpcWebhookClient
+    public class GrpcWebhookClient : IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse>
     {
         private readonly WebhookPayload.WebhookPayloadClient _client;
 
@@ -16,18 +11,19 @@
             _client = client;
         }
 
-        public async Task<WebhookPayloadResponse?> SendAsync(WebhookPayloadType webhookType, string json)
+        public async Task<WebhookPayloadResponse?> SendAsync(WebhookPayloadRequest payload)
         {
-            // Create gRPC payload request
-            var request = new WebhookPayloadRequest
+            // TODO: Add config property deciding whether to enable webhooks or not
+            try
             {
-                PayloadType = webhookType,
-                Payload = json,
-            };
-
-            // Handle the response of the request
-            var response = await _client.ReceivedWebhookPayloadAsync(request);
-            return response;
+                var response = await _client.ReceivedWebhookPayloadAsync(payload);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SendAsync] Error: {ex.Message}");
+            }
+            return null;
         }
     }
 }

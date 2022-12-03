@@ -52,8 +52,8 @@
         private readonly ILogger<IDataProcessorService> _logger;
         private readonly IAsyncQueue<DataQueueItem> _taskQueue;
         private readonly IMemoryCache _diskCache;
-        private readonly IGrpcProtoClient _grpcProtoClient;
-        private readonly IGrpcWebhookClient _grpcWebhookClient;
+        private readonly IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> _grpcProtoClient;
+        private readonly IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse> _grpcWebhookClient;
         private readonly IClearFortsHostedService _clearFortsService;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly IWebHostEnvironment _env;
@@ -77,8 +77,8 @@
             IOptions<DataProcessorOptionsConfig> options,
             IAsyncQueue<DataQueueItem> taskQueue,
             IMemoryCache diskCache,
-            IGrpcProtoClient grpcProtoClient,
-            IGrpcWebhookClient grpcWebhookClient,
+            IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> grpcProtoClient,
+            IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse> grpcWebhookClient,
             IClearFortsHostedService clearFortsService,
             IMemoryCacheHostedService memCache,
             IWebHostEnvironment env,
@@ -1429,15 +1429,19 @@
                 return;
             }
 
-            var json = entity.ToJson();
-            if (string.IsNullOrEmpty(json))
-            {
-                _logger.LogWarning($"Failed to serialize entity {typeof(T).Name} to relay to webhook service, skipping...");
-                return;
-            }
+            //var json = entity.ToJson();
+            //if (string.IsNullOrEmpty(json))
+            //{
+            //    _logger.LogWarning($"Failed to serialize entity {typeof(T).Name} to relay to webhook service, skipping...");
+            //    return;
+            //}
 
-            // Fire off gRPC request on a separate thread
-            await _grpcWebhookClient.SendAsync(webhookType, json);
+            //// Fire off gRPC request on a separate thread
+            //await _grpcWebhookClient.SendAsync(new WebhookPayloadRequest
+            //{
+            //    PayloadType = webhookType,
+            //    Payload = json,
+            //});
         }
 
         private async Task SendPokemonAsync(List<Pokemon> pokemon)
@@ -1457,11 +1461,12 @@
                     new Thread(async () =>
                     {
                         // Send got Pokemon proto message
-                        await _grpcProtoClient.SendAsync(
-                            newPokemon,
-                            PayloadType.PokemonList,
-                            hasIV: false
-                        );
+                        await _grpcProtoClient.SendAsync(new PayloadRequest
+                        {
+                            PayloadType = PayloadType.PokemonList,
+                            Payload = newPokemon.ToJson(),
+                            HasIV = false,
+                        });
                     })
                     { IsBackground = true }.Start();
                 });
@@ -1475,11 +1480,12 @@
                     new Thread(async () =>
                     {
                         // Send got Pokemon IV proto message
-                        await _grpcProtoClient.SendAsync(
-                            newPokemonWithIV,
-                            PayloadType.PokemonList,
-                            hasIV: true
-                        );
+                        await _grpcProtoClient.SendAsync(new PayloadRequest
+                        {
+                            PayloadType = PayloadType.PokemonList,
+                            Payload = newPokemonWithIV.ToJson(),
+                            HasIV = true,
+                        });
                     })
                     { IsBackground = true }.Start();
                 });
@@ -1495,7 +1501,12 @@
             {
                 new Thread(async () =>
                 {
-                    await _grpcProtoClient.SendAsync(forts, PayloadType.FortList, username);
+                    await _grpcProtoClient.SendAsync(new PayloadRequest
+                    {
+                        PayloadType = PayloadType.FortList,
+                        Payload = forts.ToJson(),
+                        Username = username,
+                    });
                 })
                 { IsBackground = true }.Start();
             });
@@ -1511,7 +1522,12 @@
                 new Thread(async () =>
                 {
                     var payload = new { username, level, xp };
-                    await _grpcProtoClient.SendAsync(payload, PayloadType.PlayerInfo, username);
+                    await _grpcProtoClient.SendAsync(new PayloadRequest
+                    {
+                        PayloadType = PayloadType.PlayerInfo,
+                        Payload = payload.ToJson(),
+                        Username = username,
+                    });
                 })
                 { IsBackground = true }.Start();
             });
