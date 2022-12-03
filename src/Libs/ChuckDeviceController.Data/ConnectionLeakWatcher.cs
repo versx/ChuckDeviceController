@@ -29,7 +29,7 @@
         private static int _idCounter = 0;
         private readonly int _connectionId = ++_idCounter;
         private readonly Timer? _timer;
-        //Store reference to connection so we can unsubscribe from state change events
+        // Store reference to connection so we can unsubscribe from state change events
         private DbConnection? _connection;
         private readonly uint _connectionTimeoutS;
 
@@ -47,15 +47,13 @@
             _connectionTimeoutS = connectionTimeoutS;
             StackTrace = Environment.StackTrace;
 
-            //_logger.LogDebug($"Connection opened {_connectionId}");
-            Console.WriteLine($"[ConnectionId={_connectionId}]  Connection opened");
+            Console.WriteLine($"[{_connectionId}] Connection opened");
 
             _timer = new Timer(_ =>
             {
-                // The timeout expired without the connection being closed. Write to debug output the stack trace of the connection creation to
-                // assist in pinpointing the problem
-                //_logger.LogWarning($"Suspected connection leak with origin:\n{StackTrace}\nConnection id: {_connectionId}");
-                Console.WriteLine($"[ConnectionId={_connectionId}] Suspected connection leak with origin:\n{StackTrace}");
+                // The timeout expired without the connection being closed. Write to debug output the stack trace
+                // of the connection creation to assist in pinpointing the problem
+                Console.WriteLine($"[{_connectionId}] Suspected connection leak with origin:\n{StackTrace}");
                 // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
             }, null, _connectionTimeoutS * 1000, Timeout.Infinite);
@@ -67,8 +65,7 @@
             if (stateChangeEventArgs.CurrentState == ConnectionState.Closed)
             {
                 // The connection was closed within the timeout
-                //_logger.LogWarning($"Connection closed {_connectionId}");
-                Console.WriteLine($"[ConnectionId={_connectionId}] Connection closed");
+                Console.WriteLine($"[{_connectionId}] Connection closed");
                 // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
             }

@@ -39,12 +39,17 @@
     public class DataProcessorOptionsConfig : DataLogLevelOptionsConfig
     {
         public const int DefaultIntervalS = 3;
+        public const ushort DefaultConcurrencyLevel = 10;
 
         public bool ClearOldForts { get; set; } = true;
 
         public ProcessingQueueConfig Queue { get; set; } = new();
 
         public ushort IntervalS { get; set; } = DefaultIntervalS;
+
+        public ushort ParsingConcurrencyLevel { get; set; } = DefaultConcurrencyLevel;
+
+        #region Processing Options
 
         public bool ProcessPlayerData { get; set; } = false;
 
@@ -73,6 +78,8 @@
         public bool ProcessEncounters { get; set; } = true;
 
         public bool ProcessDiskEncounters { get; set; } = true;
+
+        #endregion
     }
 
     public class DataConsumerOptionsConfig : DataLogLevelOptionsConfig

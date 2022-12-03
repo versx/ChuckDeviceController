@@ -45,8 +45,8 @@
 
         #region Variables
 
-        private static readonly SemaphoreSlim _parsingSem = new(5, 5); //new(1, 1);
-        private static readonly object _cellLock = new();
+        private static readonly TimeSpan _diskCacheExpiry = TimeSpan.FromMinutes(30);
+        private readonly SemaphoreSlim _semParser;// = new(1, 1);
 
         private readonly ILogger<IDataProcessorService> _logger;
         private readonly IAsyncQueue<DataQueueItem> _taskQueue;
@@ -56,7 +56,6 @@
         private readonly IMemoryCacheHostedService _memCache;
         private readonly IWebHostEnvironment _env;
         private readonly IDataConsumerService _dataConsumerService;
-        private readonly TimeSpan _diskCacheExpiry = TimeSpan.FromMinutes(30);
         //private readonly ThreadManager _threadManager = new(maxThreadCount: 25);
 
         #endregion
@@ -95,6 +94,7 @@
             //connection = EntityRepository.CreateConnectionAsync().Result;
 
             Options = options?.Value ?? new();
+            _semParser = new SemaphoreSlim(Options.ParsingConcurrencyLevel, Options.ParsingConcurrencyLevel);
         }
 
         #endregion
@@ -162,20 +162,12 @@
 
         private async Task ProcessWorkItemAsync(MySqlConnection connection, DataItems workItem, CancellationToken stoppingToken = default)
         {
-            await _parsingSem.WaitAsync(stoppingToken);
+            await _semParser.WaitAsync(stoppingToken);
 
             if (workItem == null)
                 return;
 
             CheckQueueLength();
-
-            //MySqlConnection connection = null;
-            //using var connection = await EntityRepository.CreateConnectionAsync(stoppingToken: stoppingToken);
-            //if (connection == null)
-            //{
-            //    _logger.LogError($"Failed to connect to database");
-            //    return;
-            //}
 
             var sw = new Stopwatch();
             if (ShowBenchmarkTimes)
@@ -313,7 +305,7 @@
                 //PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
             }
 
-            _parsingSem.Release();
+            _semParser.Release();
             await Task.CompletedTask;
         }
 
@@ -1408,11 +1400,11 @@
 
         private async Task SendWebhookPayloadAsync<T>(WebhookPayloadType webhookType, T entity)
         {
-            //if (entity == null)
-            //{
-            //    _logger.LogWarning($"Unable to relay entity {typeof(T).Name} to webhook service, entity is null...");
-            //    return;
-            //}
+            if (entity == null)
+            {
+                _logger.LogWarning($"Unable to relay entity {typeof(T).Name} to webhook service, entity is null...");
+                return;
+            }
 
             //var json = entity.ToJson();
             //if (string.IsNullOrEmpty(json))

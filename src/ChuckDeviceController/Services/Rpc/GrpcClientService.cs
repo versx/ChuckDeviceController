@@ -97,7 +97,6 @@
                     };
 
                     // Handle the response of the request
-                    // TODO: Fix issue with GetTrainerLevelingStatusAsync
                     var response = await client.ReceivedTrainerInfoAsync(request);
                     return response;
                 }
