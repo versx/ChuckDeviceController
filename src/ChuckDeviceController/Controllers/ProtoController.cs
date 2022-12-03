@@ -199,7 +199,7 @@
 
                     if (oldLevel > 0)
                     {
-                        _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' went from level {oldLevel} to {level} with {trainerXp:N0} XP");
+                        _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' leveled up from {oldLevel} to {level} with {trainerXp:N0} XP");
                     }
                 }
             }
