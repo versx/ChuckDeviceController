@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Services
 {
+    using System.Collections.Concurrent;
     using System.Diagnostics;
 
     using Microsoft.Extensions.Options;
@@ -15,7 +16,12 @@
 
     public class ProtoProcessorService : BackgroundService, IProtoProcessorService
     {
+        #region Constants
+
         private const ushort DefaultMaxEmptyCellsCount = 3;
+        private const uint DefaultArCacheLimit = 1000;
+
+        #endregion
 
         #region Variables
 
@@ -24,11 +30,10 @@
         private readonly IAsyncQueue<DataQueueItem> _dataQueue;
         private readonly IGrpcClientService _grpcClientService;
 
-        private static readonly Dictionary<ulong, int> _emptyCells = new();
-        private static readonly TimedMapCollection<string, bool> _arQuestActualMap = new(1000);
-        private static readonly TimedMapCollection<string, bool> _arQuestTargetMap = new(1000);
-        private static readonly Dictionary<string, bool> _canStoreData = new();
-        private static readonly object _storeDataLock = new();
+        private static readonly ConcurrentDictionary<ulong, int> _emptyCells = new();
+        private static readonly ConcurrentDictionary<string, bool> _canStoreData = new();
+        private static readonly TimedMapCollection<string, bool> _arQuestActualMap = new(DefaultArCacheLimit);
+        private static readonly TimedMapCollection<string, bool> _arQuestTargetMap = new(DefaultArCacheLimit);
 
         #endregion
 
@@ -590,21 +595,10 @@
                 {
                     foreach (var cell in newCells)
                     {
-                        var cellId = cell.cell;
-                        lock (_emptyCells)
-                        {
-                            if (!_emptyCells.ContainsKey(cellId))
-                            {
-                                _emptyCells.Add(cellId, 1);
-                            }
-                            else
-                            {
-                                _emptyCells[cellId]++;
-                            }
-                        }
+                        ulong cellId = Convert.ToUInt64(cell.cell);
+                        _emptyCells.AddOrUpdate(cellId, 1, (key, oldValue) => ++oldValue);
 
-                        var count = _emptyCells[cellId];
-                        if (count == DefaultMaxEmptyCellsCount)
+                        if (_emptyCells[cellId] == DefaultMaxEmptyCellsCount)
                         {
                             _logger.LogWarning($"[{uuid}] Cell {cellId} was empty 3 times in a row. Assuming empty.");
                             results.Add(cell);
@@ -618,18 +612,8 @@
                 {
                     foreach (var cell in newCells)
                     {
-                        lock (_emptyCells)
-                        {
-                            var cellId = cell.cell;
-                            if (_emptyCells.ContainsKey(cellId))
-                            {
-                                _emptyCells[cellId] = 0;
-                            }
-                            else
-                            {
-                                _emptyCells.Add(cellId, 0);
-                            }
-                        }
+                        ulong cellId = Convert.ToUInt64(cell.cell);
+                        _emptyCells.AddOrUpdate(cellId, 0, (key, oldValue) => 0);
                     }
 
                     //isEmptyGmo = false;
@@ -655,12 +639,9 @@
 
         private async Task<bool> IsAllowedToSaveDataAsync(string username)
         {
-            lock (_storeDataLock)
+            if (_canStoreData.ContainsKey(username))
             {
-                if (_canStoreData.ContainsKey(username))
-                {
-                    return _canStoreData[username];
-                }
+                return _canStoreData[username];
             }
 
             // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
@@ -677,17 +658,8 @@
                 (levelingStatus!.IsLeveling && levelingStatus!.StoreLevelingData) ||
                 !levelingStatus!.IsLeveling;
 
-            lock (_storeDataLock)
-            {
-                if (_canStoreData.ContainsKey(username))
-                {
-                    _canStoreData[username] = storeData;
-                }
-                else
-                {
-                    _canStoreData.Add(username, storeData);
-                }
-            }
+            _canStoreData.AddOrUpdate(username, storeData, (key, oldValue) => storeData);
+
             return storeData;
         }
 
