@@ -47,19 +47,22 @@
 
         public static string? GetIPAddress(this HttpRequest request, string? defaultValue = "0.0.0.0")
         {
-            var cfHeader = request.Headers["cf-connecting-ip"].ToString();
-            var forwardedfor = request.Headers["x-forwarded-for"].ToString()?.Split(',').FirstOrDefault();
+            var cfHeader = request.Headers["CF-Connecting-IP"].ToString();
+            var forwardedHost = request.Headers["X-Forwarded-Host"].ToString();
+            var forwardedFor = request.Headers["X-Forwarded-For"].ToString()?.Split(',').FirstOrDefault();
             var remoteIp = request.HttpContext.Connection.RemoteIpAddress?.ToString();
             var localIp = request.HttpContext.Connection.LocalIpAddress?.ToString();
             var ipAddr = !string.IsNullOrEmpty(cfHeader)
                 ? cfHeader
-                : !string.IsNullOrEmpty(forwardedfor)
-                    ? forwardedfor
-                    : !string.IsNullOrEmpty(remoteIp)
-                        ? remoteIp
-                        : !string.IsNullOrEmpty(localIp)
-                            ? localIp
-                            : defaultValue;
+                : !string.IsNullOrEmpty(forwardedHost)
+                    ? forwardedHost
+                    : !string.IsNullOrEmpty(forwardedFor)
+                        ? forwardedFor
+                        : !string.IsNullOrEmpty(remoteIp)
+                            ? remoteIp
+                            : !string.IsNullOrEmpty(localIp)
+                                ? localIp
+                                : defaultValue;
             return ipAddr;
         }
 

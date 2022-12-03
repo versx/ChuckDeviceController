@@ -648,7 +648,7 @@
             }
 
             // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
-            var levelingStatus = await _grpcLevelingClient.SendGetTrainerLevelingStatusAsync(username);
+            var levelingStatus = await _grpcLevelingClient.SendAsync(username);
             if ((levelingStatus?.Status ?? TrainerInfoStatus.Error) != TrainerInfoStatus.Ok)
             {
                 // Failure occurred, return true to be safe
