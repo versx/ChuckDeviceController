@@ -6,7 +6,6 @@
 
     using Microsoft.Extensions.Options;
 
-    using ChuckDeviceCommunicator.Services.Rpc;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Configuration;
@@ -34,7 +33,7 @@
         #region Variables
 
         private readonly ILogger<IWebhookRelayService> _logger;
-        private readonly IGrpcClientService _grpcClientService;
+        private readonly IGrpcClient<WebhookEndpoint.WebhookEndpointClient, WebhookEndpointRequest, WebhookEndpointResponse> _grpcWebhookClient;
         private readonly List<Webhook> _webhookEndpoints = new();
         private readonly Timer _timer;
         private readonly Timer _requestTimer;
@@ -98,11 +97,11 @@
 
         public WebhookRelayService(
             ILogger<IWebhookRelayService> logger,
-            IGrpcClientService grpcClientService,
+            IGrpcClient<WebhookEndpoint.WebhookEndpointClient, WebhookEndpointRequest, WebhookEndpointResponse> grpcWebhookClient,
             IOptions<WebhookRelayConfig> options)
         {
             _logger = logger;
-            _grpcClientService = grpcClientService;
+            _grpcWebhookClient = grpcWebhookClient;
             Options = options.Value;
 
             _timer = new Timer(WebhookRelayIntervalS * 1000);
@@ -778,7 +777,7 @@
 
             try
             {
-                var response = await _grpcClientService.GetWebhookEndpointsAsync(DefaultEndpointsTimeoutS);
+                var response = await _grpcWebhookClient.SendAsync(new());
                 if (response?.Status != WebhookEndpointStatus.Ok)
                 {
                     _logger.LogError($"Failed to retrieve webhook endpoints!");

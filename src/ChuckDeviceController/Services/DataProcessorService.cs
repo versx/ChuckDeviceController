@@ -28,7 +28,6 @@
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Pvp;
     using ChuckDeviceController.Pvp.Models;
-    using ChuckDeviceController.Services.Rpc;
 
     // TODO: Add webhook sender service - add webhook items to queue
     // TODO: Split up/refactor class

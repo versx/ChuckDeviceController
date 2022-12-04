@@ -17,7 +17,7 @@
             _webhookRelayService = webhookRelayService;
         }
 
-        public override async Task<WebhookPayloadResponse> ReceivedWebhookPayload(WebhookPayloadRequest request, ServerCallContext context)
+        public override async Task<WebhookPayloadResponse> HandleWebhookPayload(WebhookPayloadRequest request, ServerCallContext context)
         {
             var json = request.Payload;
             if (string.IsNullOrEmpty(json))

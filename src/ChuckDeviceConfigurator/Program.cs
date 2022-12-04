@@ -12,7 +12,6 @@ using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Extensions;
 using ChuckDeviceConfigurator.Localization;
-using ChuckDeviceConfigurator.Middleware;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
@@ -121,10 +120,7 @@ builder.Services.AddMemoryCache(options =>
     options.SizeLimit = long.MaxValue;
 });
 
-//builder.Services.AddGrpc();
-
 // Register external 3rd party authentication providers if configured
-builder.Services.Configure<JwtAuthConfig>(config.GetSection("Jwt"));
 builder.Services
     .AddAuthorization(options =>
     {
@@ -161,7 +157,7 @@ builder.Services
         //options.ReturnUrlParameter = "";
 
     })
-    .AddOpenAuthProviders(builder.Configuration);
+    .AddOpenAuthProviders(config);
 
 #endregion
 
@@ -180,10 +176,11 @@ builder.Services.AddSwaggerGen(options =>
 
 #region Configuration
 
-builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration.GetSection("Keys"));
-builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
-builder.Services.Configure<LeafletMapConfig>(builder.Configuration.GetSection("Map"));
-builder.Services.Configure<MySqlResiliencyOptions>(builder.Configuration.GetSection("Database"));
+builder.Services.Configure<AuthMessageSenderOptions>(config.GetSection("Keys"));
+builder.Services.Configure<EntityMemoryCacheConfig>(config.GetSection("Cache"));
+builder.Services.Configure<JwtAuthConfig>(config.GetSection("Jwt"));
+builder.Services.Configure<LeafletMapConfig>(config.GetSection("Map"));
+builder.Services.Configure<MySqlResiliencyOptions>(config.GetSection("Database"));
 
 #endregion
 
@@ -315,7 +312,7 @@ if (controllerContext != null)
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 {
     RootPluginsDirectory = Strings.PluginsFolder,
-    Configuration = builder.Configuration,
+    Configuration = config,
     Services = builder.Services,
     SharedServiceHosts = sharedServiceHosts,
 });
