@@ -4,10 +4,14 @@
 
     public class GrpcProtoClient : IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse>
     {
+        private readonly ILogger<GrpcProtoClient> _logger;
         private readonly Payload.PayloadClient _client;
 
-        public GrpcProtoClient(Payload.PayloadClient client)
+        public GrpcProtoClient(
+            ILogger<GrpcProtoClient> logger,
+            Payload.PayloadClient client)
         {
+            _logger = logger;
             _client = client;
         }
 
@@ -15,12 +19,12 @@
         {
             try
             {
-                var response = await _client.ReceivedPayloadAsync(payload);
+                var response = await _client.HandlePayloadAsync(payload);
                 return response;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SendAsync] Error: {ex.Message}");
+                _logger.LogError($"Error: {ex.Message}");
             }
             return null;
         }

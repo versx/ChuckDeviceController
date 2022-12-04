@@ -4,10 +4,14 @@
 
     public class GrpcLevelingClient : IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>
     {
+        private readonly ILogger<GrpcLevelingClient> _logger;
         private readonly Leveling.LevelingClient _client;
 
-        public GrpcLevelingClient(Leveling.LevelingClient client)
+        public GrpcLevelingClient(
+            ILogger<GrpcLevelingClient> logger,
+            Leveling.LevelingClient client)
         {
+            _logger = logger;
             _client = client;
         }
 
@@ -15,12 +19,12 @@
         {
             try
             {
-                var response = await _client.ReceivedTrainerInfoAsync(payload);
+                var response = await _client.HandleTrainerInfoAsync(payload);
                 return response;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SendAsync] Error: {ex.Message}");
+                _logger.LogError($"Error: {ex.Message}");
             }
             return null;
         }

@@ -7,7 +7,7 @@ package leveling;
 // The trainer leveling service definition.
 service Leveling {
     // Sends trainer info
-    rpc ReceivedTrainerInfo (TrainerInfoRequest) returns (TrainerInfoResponse);
+    rpc HandleTrainerInfo (TrainerInfoRequest) returns (TrainerInfoResponse);
 }
 
 // The request message containing the trainer username.

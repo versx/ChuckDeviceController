@@ -5,7 +5,7 @@ option csharp_namespace = "ChuckDeviceController.Protos";
 package webhook;
 
 service WebhookPayload {
-    rpc ReceivedWebhookPayload (WebhookPayloadRequest) returns (WebhookPayloadResponse);
+    rpc HandleWebhookPayload (WebhookPayloadRequest) returns (WebhookPayloadResponse);
 }
 
 message WebhookPayloadRequest {

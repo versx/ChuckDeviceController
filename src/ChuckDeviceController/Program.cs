@@ -56,12 +56,11 @@ builder.WebHost.ConfigureLogging(configure =>
 
 #region Configuration
 
-builder.Services.Configure<EntityMemoryCacheConfig>(builder.Configuration.GetSection("Cache"));
-builder.Services.Configure<GrpcEndpointsConfig>(builder.Configuration.GetSection("Grpc"));
-//builder.Services.Configure<ProcessingOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions"));
-builder.Services.Configure<ProtoProcessorOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Protos"));
-builder.Services.Configure<DataProcessorOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Data"));
-builder.Services.Configure<DataConsumerOptionsConfig>(builder.Configuration.GetSection("ProcessingOptions:Consumer"));
+builder.Services.Configure<EntityMemoryCacheConfig>(config.GetSection("Cache"));
+builder.Services.Configure<GrpcEndpointsConfig>(config.GetSection("Grpc"));
+builder.Services.Configure<ProtoProcessorOptionsConfig>(config.GetSection("ProcessingOptions:Protos"));
+builder.Services.Configure<DataProcessorOptionsConfig>(config.GetSection("ProcessingOptions:Data"));
+builder.Services.Configure<DataConsumerOptionsConfig>(config.GetSection("ProcessingOptions:Consumer"));
 
 #endregion
 
@@ -140,9 +139,6 @@ config.Bind("Grpc", grpcConfig);
 builder.Services.AddSingleton<IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse>, GrpcProtoClient>();
 builder.Services.AddSingleton<IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>, GrpcLevelingClient>();
 builder.Services.AddSingleton<IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse>, GrpcWebhookClient>();
-//builder.Services.AddSingleton<IGrpcProtoClient, GrpcProtoClient>();
-//builder.Services.AddSingleton<IGrpcLevelingClient, GrpcLevelingClient>();
-//builder.Services.AddSingleton<IGrpcWebhookClient, GrpcWebhookClient>();
 builder.Services.AddSingleton<AuthHeadersInterceptor>();
 
 if (!string.IsNullOrEmpty(grpcConfig.Configurator))

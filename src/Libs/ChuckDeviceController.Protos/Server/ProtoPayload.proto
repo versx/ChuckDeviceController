@@ -9,7 +9,7 @@ package payload;
 // The proto payload service definition.
 service Payload {
     // Sends a proto payload
-    rpc ReceivedPayload (PayloadRequest) returns (PayloadResponse);
+    rpc HandlePayload (PayloadRequest) returns (PayloadResponse);
 }
 
 // The request message containing the JSON payload.

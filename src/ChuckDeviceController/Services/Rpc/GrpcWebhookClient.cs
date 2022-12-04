@@ -4,10 +4,14 @@
 
     public class GrpcWebhookClient : IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse>
     {
+        private readonly ILogger<GrpcWebhookClient> _logger;
         private readonly WebhookPayload.WebhookPayloadClient _client;
 
-        public GrpcWebhookClient(WebhookPayload.WebhookPayloadClient client)
+        public GrpcWebhookClient(
+            ILogger<GrpcWebhookClient> logger,
+            WebhookPayload.WebhookPayloadClient client)
         {
+            _logger = logger;
             _client = client;
         }
 
@@ -16,12 +20,12 @@
             // TODO: Add config property deciding whether to enable webhooks or not
             try
             {
-                var response = await _client.ReceivedWebhookPayloadAsync(payload);
+                var response = await _client.HandleWebhookPayloadAsync(payload);
                 return response;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[SendAsync] Error: {ex.Message}");
+                _logger.LogError($"Error: {ex.Message}");
             }
             return null;
         }
