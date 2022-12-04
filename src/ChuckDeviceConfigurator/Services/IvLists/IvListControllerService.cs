@@ -2,6 +2,7 @@
 {
 	using Microsoft.EntityFrameworkCore;
 
+	using ChuckDeviceController.Collections;
 	using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -9,21 +10,20 @@
     {
 		#region Variables
 
-		//private readonly ILogger<IIvListControllerService> _logger;
+		private readonly ILogger<IIvListControllerService> _logger;
 		private readonly IDbContextFactory<ControllerDbContext> _factory;
 
-		private readonly object _ivListsLock = new();
-		private List<IvList> _ivLists;
+		private SafeCollection<IvList> _ivLists;
 
 		#endregion
 
 		#region Constructor
 
 		public IvListControllerService(
-			//ILogger<IIvListControllerService> logger,
+			ILogger<IIvListControllerService> logger,
 			IDbContextFactory<ControllerDbContext> factory)
 		{
-			//_logger = logger;
+			_logger = logger;
 			_factory = factory;
 			_ivLists = new();
 
@@ -36,23 +36,21 @@
 
 		public void Reload()
 		{
-			lock (_ivListsLock)
-			{
-				_ivLists = GetIvLists();
-			}
+			var ivLists = GetIvLists();
+			_ivLists = new(ivLists);
 		}
 
 		public void Add(IvList ivList)
 		{
-			lock (_ivListsLock)
+			if (_ivLists.Contains(ivList))
 			{
-				if (_ivLists.Contains(ivList))
-				{
-					// Already exists
-					return;
-				}
-				_ivLists.Add(ivList);
+				// Already exists
+				return;
 			}
+			if (!_ivLists.TryAdd(ivList))
+			{
+                _logger.LogError($"Failed to add IV list with name '{ivList.Name}'");
+            }
 		}
 
 		public void Edit(IvList newIvList, string oldIvListName)
@@ -63,27 +61,23 @@
 
 		public void Delete(string name)
 		{
-			lock (_ivListsLock)
+			if (!_ivLists.Remove(x => x.Name == name))
 			{
-				_ivLists = _ivLists.Where(x => x.Name != name)
-								   .ToList();
+				_logger.LogError($"Failed to remove IV list with name '{name}'");
 			}
 		}
-
 		public IvList GetByName(string name)
 		{
-			IvList? ivList = null;
-			lock (_ivListsLock)
-			{
-				ivList = _ivLists.Find(x => x.Name == name);
-			}
-			return ivList;
-		}
+            var ivList = _ivLists.TryGet(x => x.Name == name);
+            return ivList;
+        }
 
 		public IReadOnlyList<IvList> GetByNames(IReadOnlyList<string> names)
 		{
-			return names.Select(name => GetByName(name))
-						.ToList();
+			var ivLists = names
+				.Select(name => GetByName(name))
+				.ToList();
+			return ivLists;
 		}
 
 		#endregion
@@ -92,11 +86,9 @@
 
 		private List<IvList> GetIvLists()
 		{
-			using (var context = _factory.CreateDbContext())
-			{
-				var ivLists = context.IvLists.ToList();
-				return ivLists;
-			}
+			using var context = _factory.CreateDbContext();
+			var ivLists = context.IvLists.ToList();
+			return ivLists;
 		}
 
 		#endregion
