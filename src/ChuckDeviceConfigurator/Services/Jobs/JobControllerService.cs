@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs
 {
+    using System.Collections.Concurrent;
+
     using Microsoft.EntityFrameworkCore;
     using POGOProtos.Rpc;
 
@@ -43,13 +45,9 @@
         private readonly IRoutingHost _routeGenerator;
         private readonly IRouteCalculator _routeCalculator;
 
-        private static readonly Dictionary<string, Device> _devices = new();
-        private static readonly Dictionary<string, IJobController> _instances = new();
-        private static readonly Dictionary<string, Type> _pluginInstances = new();
-
-        private readonly object _devicesLock = new();
-        private readonly object _instancesLock = new();
-        private static readonly object _pluginInstancesLock = new();
+        private static readonly ConcurrentDictionary<string, Device> _devices = new();
+        private static readonly ConcurrentDictionary<string, IJobController> _instances = new();
+        private static readonly ConcurrentDictionary<string, Type> _pluginInstances = new();
 
         #endregion
 
@@ -220,13 +218,15 @@
                 return;
             }
 
-            lock (_pluginInstancesLock)
+            if (!_pluginInstances.ContainsKey(customInstanceType))
             {
-                if (!_pluginInstances.ContainsKey(customInstanceType))
+                if (!_pluginInstances.TryAdd(customInstanceType, typeof(T)))
                 {
-                    _pluginInstances.Add(customInstanceType, typeof(T));
-                    _logger.LogInformation($"Successfully added job controller '{customInstanceType}' to plugin job controllers cache from plugin");
+                    // Failed to register job controller instance from plugin
+                    _logger.LogError($"Failed to register job controller instance from plugin: {customInstanceType}");
+                    return;
                 }
+                _logger.LogInformation($"Successfully added job controller '{customInstanceType}' to plugin job controllers cache from plugin");
             }
 
             await Task.CompletedTask;
@@ -346,10 +346,7 @@
                 return;
             }
 
-            lock (_instancesLock)
-            {
-                _instances[instance.Name] = jobController;
-            }
+            _instances.AddOrUpdate(instance.Name, jobController, (key, oldValue) => jobController);
 
             await Task.CompletedTask;
         }
@@ -362,97 +359,96 @@
                 return null;
             }
 
-            lock (_devicesLock)
+            if (!_devices.ContainsKey(uuid))
             {
-                if (!_devices.ContainsKey(uuid))
-                {
-                    _logger.LogWarning($"[{uuid}] Device is not assigned an instance!");
-                    return null;
-                }
-
-                var device = _devices[uuid];
-                var instanceName = device.InstanceName;
-                if (device == null || string.IsNullOrEmpty(instanceName))
-                {
-                    _logger.LogWarning($"Device or device instance name was null, unable to retrieve job controller instance");
-                    return null;
-                }
-
-                return GetInstanceControllerByName(instanceName);
+                _logger.LogWarning($"[{uuid}] Device is not assigned an instance!");
+                return null;
             }
+
+            if (!_devices.TryGetValue(uuid, out Device? device))
+            {
+                _logger.LogError($"[{uuid}] Failed to get device from cache.");
+            }
+            var instanceName = device?.InstanceName;
+            if (device == null || string.IsNullOrEmpty(instanceName))
+            {
+                _logger.LogWarning($"Device or device instance name was null, unable to retrieve job controller instance");
+                return null;
+            }
+
+            return GetInstanceControllerByName(instanceName);
         }
 
         public IJobController GetInstanceControllerByName(string instanceName)
         {
-            IJobController jobController;
-            lock (_instancesLock)
+            if (!_instances.ContainsKey(instanceName))
             {
-                if (!_instances.ContainsKey(instanceName))
-                {
-                    _logger.LogError($"[{instanceName}] Unable to get instance controller by name, it does not exist in cache");
-                    return null;
-                }
-                jobController = _instances[instanceName];
+                _logger.LogError($"[{instanceName}] Unable to get instance controller by name, it does not exist in cache");
+                return null;
+            }
+
+            if (!_instances.TryGetValue(instanceName, out IJobController? jobController))
+            {
+                // Failed to get job controller instance
+                _logger.LogError($"[{instanceName}] Failed to get job controller instance");
             }
             return jobController;
         }
 
         public async Task<string> GetStatusAsync(Instance instance)
         {
-            IJobController jobController;
-            lock (_instancesLock)
+            if (!_instances.ContainsKey(instance.Name))
             {
-                if (!_instances.ContainsKey(instance.Name))
-                {
-                    // Instance not started or added to instance cache yet
-                    return "Starting...";
-                }
+                // Instance not started or added to instance cache yet
+                return "Starting...";
+            }
 
-                jobController = _instances[instance.Name];
+            if (!_instances.TryGetValue(instance.Name, out IJobController? jobController))
+            {
+                // Failed to get job controller instance
+                _logger.LogError($"[{instance.Name}] Failed to get job controller instance");
             }
             if (jobController != null)
             {
                 return await jobController.GetStatusAsync();
             }
-
             return "Error";
         }
 
         public void ReloadAllInstances()
         {
-            lock (_instancesLock)
+            foreach (var (_, instanceController) in _instances)
             {
-                foreach (var (_, instanceController) in _instances)
-                {
-                    instanceController?.ReloadAsync().ConfigureAwait(false);
-                }
+                instanceController?.ReloadAsync().ConfigureAwait(false);
             }
+
             _assignmentService.Reload();
         }
 
         public async Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName)
         {
-            lock (_instancesLock)
+            if (!_instances.ContainsKey(oldInstanceName))
             {
-                if (!_instances.ContainsKey(oldInstanceName))
-                {
-                    _logger.LogError($"[{oldInstanceName}] Instance does not exist in instance cache, skipping instance reload...");
-                    return;
-                }
+                _logger.LogError($"[{oldInstanceName}] Instance does not exist in instance cache, skipping instance reload...");
+                return;
+            }
 
-                var oldInstance = _instances[oldInstanceName];
-                if (oldInstance != null)
+            var oldInstance = _instances[oldInstanceName];
+            if (oldInstance != null)
+            {
+                var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, oldInstance.Name, true) == 0);
+                foreach (var (uuid, device) in devices)
                 {
-                    var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, oldInstance.Name, true) == 0);
-                    foreach (var (uuid, device) in devices)
-                    {
-                        device.InstanceName = newInstance.Name;
-                        _devices[uuid] = device;
-                    }
-                    _instances[oldInstanceName]?.StopAsync().ConfigureAwait(false);
-                    _instances.Remove(oldInstanceName);
-                    //_instances[oldInstanceName] = null;
+                    device.InstanceName = newInstance.Name;
+                    _devices[uuid] = device;
                 }
+                _instances[oldInstanceName]?.StopAsync().ConfigureAwait(false);
+                if (!_instances.TryRemove(oldInstanceName, out _))
+                {
+                    // Failed to remove job controller instance
+                    _logger.LogError($"[{oldInstanceName}] Failed to remove job controller instance");
+                }
+                //_instances[oldInstanceName] = null;
             }
 
             await AddInstanceAsync(newInstance);
@@ -460,20 +456,22 @@
 
         public async Task RemoveInstanceAsync(string instanceName)
         {
-            lock (_instancesLock)
+            _instances[instanceName]?.StopAsync();
+            //_instances[instanceName] = null;
+            if (!_instances.TryRemove(instanceName, out _))
             {
-                _instances[instanceName]?.StopAsync();
-                //_instances[instanceName] = null;
-                _instances.Remove(instanceName);
+                // Failed to remove instance
+                _logger.LogError($"[{instanceName}] Failed to remove instance");
             }
 
-            lock (_devicesLock)
+            var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, instanceName, true) == 0);
+            foreach (var (uuid, _) in devices)
             {
-                var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, instanceName, true) == 0);
-                foreach (var (uuid, _) in devices)
+                //_devices[device.Key] = null;
+                if (!_devices.TryRemove(uuid, out _))
                 {
-                    //_devices[device.Key] = null;
-                    _devices.Remove(uuid);
+                    // Failed to remove device
+                    _logger.LogError($"[{uuid}] Failed to remove device");
                 }
             }
 
@@ -488,59 +486,50 @@
         public IReadOnlyList<T> GetQueue<T>(string instanceName)
         {
             var queue = new List<T>();
-            lock (_instancesLock)
-            {
-                var jobController = GetInstanceControllerByName(instanceName);
-                if (jobController == null)
-                    return queue;
+            var jobController = GetInstanceControllerByName(instanceName);
+            if (jobController == null)
+                return queue;
 
-                if (jobController is IvInstanceController ivController)
-                {
-                    queue = (List<T>)ivController.GetQueue();
-                }
-                else if (jobController is AutoInstanceController questController)
-                {
-                    queue = (List<T>)questController.GetQueue();
-                }
+            if (jobController is IvInstanceController ivController)
+            {
+                queue = (List<T>)ivController.GetQueue();
+            }
+            else if (jobController is AutoInstanceController questController)
+            {
+                queue = (List<T>)questController.GetQueue();
             }
             return queue;
         }
 
         public void RemoveFromQueue(string instanceName, string id)
         {
-            lock (_instancesLock)
-            {
-                var jobController = GetInstanceControllerByName(instanceName);
-                if (jobController == null)
-                    return;
+            var jobController = GetInstanceControllerByName(instanceName);
+            if (jobController == null)
+                return;
 
-                if (jobController is IvInstanceController ivController)
-                {
-                    ivController.RemoveFromQueue(id);
-                }
-                else if (jobController is AutoInstanceController questController)
-                {
-                    questController.RemoveFromQueue(id);
-                }
+            if (jobController is IvInstanceController ivController)
+            {
+                ivController.RemoveFromQueue(id);
+            }
+            else if (jobController is AutoInstanceController questController)
+            {
+                questController.RemoveFromQueue(id);
             }
         }
 
         public void ClearQueue(string instanceName)
         {
-            lock (_instancesLock)
-            {
-                var jobController = GetInstanceControllerByName(instanceName);
-                if (jobController == null)
-                    return;
+            var jobController = GetInstanceControllerByName(instanceName);
+            if (jobController == null)
+                return;
 
-                if (jobController is IvInstanceController ivController)
-                {
-                    ivController.ClearQueue();
-                }
-                else if (jobController is AutoInstanceController questController)
-                {
-                    questController.ClearQueue();
-                }
+            if (jobController is IvInstanceController ivController)
+            {
+                ivController.ClearQueue();
+            }
+            else if (jobController is AutoInstanceController questController)
+            {
+                questController.ClearQueue();
             }
         }
 
@@ -552,42 +541,33 @@
 
         public void GotPokemon(Pokemon pokemon, bool hasIv)
         {
-            lock (_instancesLock)
+            foreach (var (_, jobController) in _instances)
             {
-                foreach (var (_, jobController) in _instances)
+                if (jobController is IvInstanceController ivController)
                 {
-                    if (jobController is IvInstanceController ivController)
-                    {
-                        ivController.GotPokemon(pokemon, hasIv);
-                    }
+                    ivController.GotPokemon(pokemon, hasIv);
                 }
             }
         }
 
         public void GotFort(PokemonFortProto fort, string username)
         {
-            lock (_instancesLock)
+            foreach (var (_, jobController) in _instances)
             {
-                foreach (var (_, jobController) in _instances)
+                if (jobController is LevelingInstanceController levelController)
                 {
-                    if (jobController is LevelingInstanceController levelController)
-                    {
-                        levelController.GotFort(fort, username);
-                    }
+                    levelController.GotFort(fort, username);
                 }
             }
         }
 
         public void GotPlayerInfo(string username, ushort level, ulong xp)
         {
-            lock (_instancesLock)
+            foreach (var (_, jobController) in _instances)
             {
-                foreach (var (_, jobController) in _instances)
+                if (jobController is LevelingInstanceController levelController)
                 {
-                    if (jobController is LevelingInstanceController levelController)
-                    {
-                        levelController.SetPlayerInfo(username, level, xp);
-                    }
+                    levelController.SetPlayerInfo(username, level, xp);
                 }
             }
         }
@@ -597,20 +577,17 @@
             var storeLevelingData = true;
             var isTrainerLeveling = false;
 
-            lock (_instancesLock)
+            foreach (var (_, jobController) in _instances)
             {
-                foreach (var (_, jobController) in _instances)
-                {
-                    if (jobController is not LevelingInstanceController levelController)
-                        continue;
+                if (jobController is not LevelingInstanceController levelController)
+                    continue;
 
-                    // Check if trainer account is using leveling instance
-                    if (levelController.HasTrainer(username))
-                    {
-                        storeLevelingData = levelController.StoreLevelData;
-                        isTrainerLeveling = true;
-                        break;
-                    }
+                // Check if trainer account is using leveling instance
+                if (levelController.HasTrainer(username))
+                {
+                    storeLevelingData = levelController.StoreLevelData;
+                    isTrainerLeveling = true;
+                    break;
                 }
             }
 
@@ -628,29 +605,26 @@
 
         public void AddDevice(Device device)
         {
-            lock (_devicesLock)
+            if (!_devices.TryAdd(device.Uuid, device))
             {
-                if (!_devices.ContainsKey(device.Uuid))
-                {
-                    _devices.Add(device.Uuid, device);
-                }
+                // Failed to add device, might already exist
+                _logger.LogError($"[{device.Uuid}] Failed to add device, might already exist");
             }
+
             _assignmentService.Reload();
         }
 
         public IEnumerable<string> GetDeviceUuidsInInstance(string instanceName)
         {
             var uuids = new List<string>();
-            lock (_devicesLock)
+            foreach (var (uuid, device) in _devices)
             {
-                foreach (var (uuid, device) in _devices)
+                if (string.Compare(device.InstanceName, instanceName, true) == 0)
                 {
-                    if (string.Compare(device.InstanceName, instanceName, true) == 0)
-                    {
-                        uuids.Add(uuid);
-                    }
+                    uuids.Add(uuid);
                 }
             }
+
             return uuids;
         }
 
@@ -670,15 +644,18 @@
 
         public void RemoveDevice(string uuid)
         {
-            lock (_devicesLock)
+            if (!_devices.ContainsKey(uuid))
             {
-                if (!_devices.ContainsKey(uuid))
-                {
-                    _logger.LogError($"[{uuid}] Unable to remove device from cache, it does not exist");
-                    return;
-                }
-                _devices.Remove(uuid);
+                _logger.LogError($"[{uuid}] Unable to remove device from cache, it does not exist");
+                return;
             }
+
+            if (!_devices.TryRemove(uuid, out _))
+            {
+                // Failed to remove device
+                _logger.LogError($"[{uuid}] Failed to remove device");
+            }
+
             _assignmentService.Reload();
         }
 
@@ -861,18 +838,13 @@
 
         private static IJobController CreatePluginJobController(string customInstanceType, IInstance instance, IReadOnlyList<Geofence> geofences)
         {
-            Type jobControllerType;
-            lock (_pluginInstancesLock)
+            if (!_pluginInstances.ContainsKey(customInstanceType))
             {
-                if (!_pluginInstances.ContainsKey(customInstanceType))
-                {
-                    _logger.LogError($"[{instance.Name}] Plugin job controller has not been registered, unable to initialize job controller instance");
-                    return null;
-                }
-
-                jobControllerType = _pluginInstances[customInstanceType];
+                _logger.LogError($"[{instance.Name}] Plugin job controller has not been registered, unable to initialize job controller instance");
+                return null;
             }
 
+            var jobControllerType = _pluginInstances[customInstanceType];
             object? jobControllerInstance = null;
             try
             {
