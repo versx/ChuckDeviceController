@@ -25,6 +25,18 @@
 
         public object SyncRoot => _lock;
 
+        public T? this[int index]
+        {
+            get
+            {
+                if (index < _entities.Count)
+                {
+                    return _entities[index];
+                }
+                return default;
+            }
+        }
+
         #endregion
 
         #region Constructors
@@ -42,6 +54,14 @@
         #endregion
 
         #region Collection Impl
+
+        public void AddRange(IEnumerable<T> items)
+        {
+            lock (_lock)
+            {
+                _entities.AddRange(items);
+            }
+        }
 
         public bool TryAdd(T item)
         {
@@ -183,6 +203,14 @@
             }
         }
 
-        #endregion
+        public void Clear()
+        {
+            lock (_lock)
+            {
+                _entities.Clear();
+            }
+
+            #endregion
+        }
     }
 }
