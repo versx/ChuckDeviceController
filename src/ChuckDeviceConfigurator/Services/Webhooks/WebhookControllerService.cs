@@ -2,19 +2,18 @@
 {
 	using Microsoft.EntityFrameworkCore;
 
+	using ChuckDeviceController.Collections;
 	using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 	using ChuckDeviceController.Data.Extensions;
 
-	public class WebhookControllerService : IWebhookControllerService
+    public class WebhookControllerService : IWebhookControllerService
 	{
 		#region Variables
 
 		//private readonly ILogger<IWebhookControllerService> _logger;
 		private readonly IDbContextFactory<ControllerDbContext> _factory;
-
-		private readonly object _webhooksLock = new();
-		private List<Webhook> _webhooks;
+		private SafeCollection<Webhook> _webhooks;
 
 		#endregion
 
@@ -37,22 +36,19 @@
 
 		public void Reload()
 		{
-			lock (_webhooksLock)
-			{
-				_webhooks = (List<Webhook>)GetAll();
-			}
+			_webhooks = new(GetAll());
 		}
 
 		public void Add(Webhook webhook)
 		{
-			lock (_webhooksLock)
+			if (_webhooks.Contains(webhook))
 			{
-				if (_webhooks.Contains(webhook))
-				{
-					// Already exists
-					return;
-				}
-				_webhooks.Add(webhook);
+				// Already exists
+				return;
+			}
+			if (!_webhooks.TryAdd(webhook))
+			{
+				// Failed to add webhook
 			}
 		}
 
@@ -64,52 +60,47 @@
 
 		public void Delete(string name)
 		{
-			lock (_webhooksLock)
+			//_webhooks = new(_webhooks.Where(x => x.Name != name).ToList());
+			if (!_webhooks.Remove(x => x.Name == name))
 			{
-				_webhooks = _webhooks.Where(x => x.Name != name)
-								     .ToList();
+				// Failed to remove webhook by name
 			}
 		}
 
 		public Webhook GetByName(string name)
 		{
-			Webhook? webhook = null;
-			lock (_webhooksLock)
-			{
-				webhook = _webhooks.Find(x => x.Name == name);
-			}
+			var webhook = _webhooks.TryGet(x => x.Name == name);
 			return webhook;
 		}
 
 		public IReadOnlyList<Webhook> GetByNames(IReadOnlyList<string> names)
 		{
-			return names.Select(name => GetByName(name))
-						.ToList();
+			var webhooks = names
+				.Select(name => GetByName(name))
+				.ToList();
+			return webhooks;
 		}
 
 		public IReadOnlyList<Webhook> GetAll(bool includeGeofenceMultiPolygons = false)
 		{
-			using (var context = _factory.CreateDbContext())
-			{
-				var webhooks = context.Webhooks.ToList();
-				if (includeGeofenceMultiPolygons)
-                {
-					var geofences = context.Geofences.ToList();
-					foreach (var webhook in webhooks)
-					{
-						foreach (var webhookGeofence in webhook.Geofences)
-                        {
-							var geofence = geofences.FirstOrDefault(g => g.Name == webhookGeofence);
-							if (geofence == null)
-								continue;
+			using var context = _factory.CreateDbContext();
 
-							var (_, coordinates) = geofence.ConvertToMultiPolygons();
-							webhook.GeofenceMultiPolygons = coordinates;
-                        }
-					}
-                }
+			var webhooks = context.Webhooks.ToList();
+			if (!includeGeofenceMultiPolygons)
 				return webhooks;
+
+			var geofences = context.Geofences.ToList();
+			foreach (var webhook in webhooks)
+			{
+				var coordinates = geofences
+					.Where(g => webhook.Geofences.Contains(g.Name))
+					.Select(g => g.ConvertToMultiPolygons())
+					.SelectMany(g => g.Item2)
+					.ToList();
+				webhook.GeofenceMultiPolygons = coordinates;
 			}
+
+			return webhooks;
 		}
 
 		#endregion

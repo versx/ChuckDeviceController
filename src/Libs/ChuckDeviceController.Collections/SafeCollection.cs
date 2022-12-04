@@ -4,6 +4,10 @@
     using System.Collections.Concurrent;
     using System.Diagnostics.CodeAnalysis;
 
+    /// <summary>
+    /// Thread safe concurrent collection.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class SafeCollection<T> : IProducerConsumerCollection<T>
     {
         #region Variables
