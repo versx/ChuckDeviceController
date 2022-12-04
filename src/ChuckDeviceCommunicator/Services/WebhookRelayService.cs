@@ -1,11 +1,13 @@
 ﻿namespace ChuckDeviceCommunicator.Services
 {
+    using System.Collections.Concurrent;
     using System.Net;
     using System.Text;
     using System.Timers;
 
     using Microsoft.Extensions.Options;
 
+    using ChuckDeviceController.Collections;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Configuration;
@@ -17,7 +19,7 @@
     using ChuckDeviceController.Net.Utilities;
     using ChuckDeviceController.Protos;
 
-    // TODO: Use SemaphoreSlim 
+    // TODO: Refactor as stateless
 
     public class WebhookRelayService : IWebhookRelayService
     {
@@ -34,41 +36,25 @@
 
         private readonly ILogger<IWebhookRelayService> _logger;
         private readonly IGrpcClient<WebhookEndpoint.WebhookEndpointClient, WebhookEndpointRequest, WebhookEndpointResponse> _grpcWebhookClient;
-        private readonly List<Webhook> _webhookEndpoints = new();
+        private readonly SafeCollection<Webhook> _webhookEndpoints = new();
         private readonly Timer _timer;
         private readonly Timer _requestTimer;
         private ulong _totalWebhooksSent;
 
-        private readonly Dictionary<string, Pokemon> _pokemonEvents = new();
-        private readonly Dictionary<string, Pokestop> _pokestopEvents = new();
-        private readonly Dictionary<string, Pokestop> _lureEvents = new();
-        private readonly Dictionary<string, PokestopWithIncident> _invasionEvents = new();
-        private readonly Dictionary<string, Pokestop> _questEvents = new();
-        private readonly Dictionary<string, Pokestop> _alternativeQuestEvents = new();
-        private readonly Dictionary<string, Gym> _gymEvents = new();
-        private readonly Dictionary<string, Gym> _gymInfoEvents = new();
-        private readonly Dictionary<ulong, GymWithDefender> _gymDefenderEvents = new();
-        private readonly Dictionary<string, GymWithTrainer> _gymTrainerEvents = new();
-        private readonly Dictionary<string, Gym> _eggEvents = new();
-        private readonly Dictionary<string, Gym> _raidEvents = new();
-        private readonly Dictionary<long, Weather> _weatherEvents = new();
-        private readonly Dictionary<string, Account> _accountEvents = new();
-
-        private readonly object _webhookLock = new();
-        private readonly object _pokemonLock = new();
-        private readonly object _pokestopsLock = new();
-        private readonly object _luresLock = new();
-        private readonly object _invasionsLock = new();
-        private readonly object _questsLock = new();
-        private readonly object _alternativeQuestsLock = new();
-        private readonly object _gymsLock = new();
-        private readonly object _gymInfoLock = new();
-        private readonly object _gymDefendersLock = new();
-        private readonly object _gymTrainersLock = new();
-        private readonly object _eggsLock = new();
-        private readonly object _raidsLock = new();
-        private readonly object _weatherLock = new();
-        private readonly object _accountsLock = new();
+        private readonly ConcurrentDictionary<string, Pokemon> _pokemonEvents = new();
+        private readonly ConcurrentDictionary<string, Pokestop> _pokestopEvents = new();
+        private readonly ConcurrentDictionary<string, Pokestop> _lureEvents = new();
+        private readonly ConcurrentDictionary<string, PokestopWithIncident> _invasionEvents = new();
+        private readonly ConcurrentDictionary<string, Pokestop> _questEvents = new();
+        private readonly ConcurrentDictionary<string, Pokestop> _alternativeQuestEvents = new();
+        private readonly ConcurrentDictionary<string, Gym> _gymEvents = new();
+        private readonly ConcurrentDictionary<string, Gym> _gymInfoEvents = new();
+        private readonly ConcurrentDictionary<ulong, GymWithDefender> _gymDefenderEvents = new();
+        private readonly ConcurrentDictionary<string, GymWithTrainer> _gymTrainerEvents = new();
+        private readonly ConcurrentDictionary<string, Gym> _eggEvents = new();
+        private readonly ConcurrentDictionary<string, Gym> _raidEvents = new();
+        private readonly ConcurrentDictionary<long, Weather> _weatherEvents = new();
+        private readonly ConcurrentDictionary<string, Account> _accountEvents = new();
 
         #endregion
 
@@ -171,6 +157,11 @@
                 return;
             }
 
+            if (string.IsNullOrEmpty(json))
+            {
+                return;
+            }
+
             switch (webhookType)
             {
                 case WebhookPayloadType.Pokemon:
@@ -180,10 +171,7 @@
                         _logger.LogError($"Failed to deserialize Pokemon webhook payload");
                         return;
                     }
-                    lock (_pokemonLock)
-                    {
-                        _pokemonEvents[pokemon.Id] = pokemon;
-                    }
+                    _pokemonEvents.AddOrUpdate(pokemon.Id, pokemon, (key, oldValue) => pokemon);
                     break;
                 case WebhookPayloadType.Pokestop:
                     var pokestop = json.FromJson<Pokestop>();
@@ -192,10 +180,7 @@
                         _logger.LogError($"Failed to deserialize Pokestop webhook payload");
                         return;
                     }
-                    lock (_pokestopsLock)
-                    {
-                        _pokestopEvents[pokestop.Id] = pokestop;
-                    }
+                    _pokestopEvents.AddOrUpdate(pokestop.Id, pokestop, (key, oldValue) => pokestop);
                     break;
                 case WebhookPayloadType.Lure:
                     var lure = json.FromJson<Pokestop>();
@@ -204,10 +189,7 @@
                         _logger.LogError($"Failed to deserialize Lure webhook payload");
                         return;
                     }
-                    lock (_luresLock)
-                    {
-                        _lureEvents[lure.Id] = lure;
-                    }
+                    _lureEvents.AddOrUpdate(lure.Id, lure, (key, oldValue) => lure);
                     break;
                 case WebhookPayloadType.Invasion:
                     var pokestopWithIncident = json.FromJson<PokestopWithIncident>();
@@ -216,10 +198,7 @@
                         _logger.LogError($"Failed to deserialize Invasion webhook payload");
                         return;
                     }
-                    lock (_invasionsLock)
-                    {
-                        _invasionEvents[pokestopWithIncident.Pokestop.Id] = pokestopWithIncident;
-                    }
+                    _invasionEvents.AddOrUpdate(pokestopWithIncident.Pokestop.Id, pokestopWithIncident, (key, oldValue) => pokestopWithIncident);
                     break;
                 case WebhookPayloadType.Quest:
                     var quest = json.FromJson<Pokestop>();
@@ -228,10 +207,7 @@
                         _logger.LogError($"Failed to deserialize Quest webhook payload");
                         return;
                     }
-                    lock (_questsLock)
-                    {
-                        _questEvents[quest.Id] = quest;
-                    }
+                    _questEvents.AddOrUpdate(quest.Id, quest, (key, oldValue) => quest);
                     break;
                 case WebhookPayloadType.AlternativeQuest:
                     var altQuest = json.FromJson<Pokestop>();
@@ -240,10 +216,7 @@
                         _logger.LogError($"Failed to deserialize Alternative Quest webhook payload");
                         return;
                     }
-                    lock (_alternativeQuestsLock)
-                    {
-                        _alternativeQuestEvents[altQuest.Id] = altQuest;
-                    }
+                    _alternativeQuestEvents.AddOrUpdate(altQuest.Id, altQuest, (key, oldValue) => altQuest);
                     break;
                 case WebhookPayloadType.Gym:
                     var gym = json.FromJson<Gym>();
@@ -252,10 +225,7 @@
                         _logger.LogError($"Failed to deserialize Gym webhook payload");
                         return;
                     }
-                    lock (_gymsLock)
-                    {
-                        _gymEvents[gym.Id] = gym;
-                    }
+                    _gymEvents.AddOrUpdate(gym.Id, gym, (key, oldValue) => gym);
                     break;
                 case WebhookPayloadType.GymInfo:
                     var gymInfo = json.FromJson<Gym>();
@@ -264,10 +234,7 @@
                         _logger.LogError($"Failed to deserialize GymInfo webhook payload");
                         return;
                     }
-                    lock (_gymInfoLock)
-                    {
-                        _gymInfoEvents[gymInfo.Id] = gymInfo;
-                    }
+                    _gymInfoEvents.AddOrUpdate(gymInfo.Id, gymInfo, (key, oldValue) => gymInfo);
                     break;
                 case WebhookPayloadType.GymDefender:
                     var gymWithDefender = json.FromJson<GymWithDefender>();
@@ -276,10 +243,7 @@
                         _logger.LogError($"Failed to deserialize GymDefender webhook payload");
                         return;
                     }
-                    lock (_gymDefendersLock)
-                    {
-                        _gymDefenderEvents[gymWithDefender.Defender.Id] = gymWithDefender;
-                    }
+                    _gymDefenderEvents.AddOrUpdate(gymWithDefender.Defender.Id, gymWithDefender, (key, oldValue) => gymWithDefender);
                     break;
                 case WebhookPayloadType.GymTrainer:
                     var gymWithTrainer = json.FromJson<GymWithTrainer>();
@@ -288,10 +252,7 @@
                         _logger.LogError($"Failed to deserialize GymTrainer webhook payload");
                         return;
                     }
-                    lock (_gymTrainersLock)
-                    {
-                        _gymTrainerEvents[gymWithTrainer.Trainer.Name] = gymWithTrainer;
-                    }
+                    _gymTrainerEvents.AddOrUpdate(gymWithTrainer.Trainer.Name, gymWithTrainer, (key, oldValue) => gymWithTrainer);
                     break;
                 case WebhookPayloadType.Egg:
                     var egg = json.FromJson<Gym>();
@@ -300,10 +261,7 @@
                         _logger.LogError($"Failed to deserialize Egg webhook payload");
                         return;
                     }
-                    lock (_eggsLock)
-                    {
-                        _eggEvents[egg.Id] = egg;
-                    }
+                    _eggEvents.AddOrUpdate(egg.Id, egg, (key, oldValue) => egg);
                     break;
                 case WebhookPayloadType.Raid:
                     var raid = json.FromJson<Gym>();
@@ -312,10 +270,7 @@
                         _logger.LogError($"Failed to deserialize Raid webhook payload");
                         return;
                     }
-                    lock (_raidsLock)
-                    {
-                        _raidEvents[raid.Id] = raid;
-                    }
+                    _raidEvents.AddOrUpdate(raid.Id, raid, (key, oldValue) => raid);
                     break;
                 case WebhookPayloadType.Weather:
                     var weather = json.FromJson<Weather>();
@@ -324,10 +279,7 @@
                         _logger.LogError($"Failed to deserialize Weather webhook payload");
                         return;
                     }
-                    lock (_weatherLock)
-                    {
-                        _weatherEvents[weather.Id] = weather;
-                    }
+                    _weatherEvents.AddOrUpdate(weather.Id, weather, (key, oldValue) => weather);
                     break;
                 case WebhookPayloadType.Account:
                     var account = json.FromJson<Account>();
@@ -336,10 +288,7 @@
                         _logger.LogError($"Failed to deserialize Account webhook payload");
                         return;
                     }
-                    lock (_accountsLock)
-                    {
-                        _accountEvents[account.Username] = account;
-                    }
+                    _accountEvents.AddOrUpdate(account.Username, account, (key, oldValue) => account);
                     break;
             }
 
@@ -369,117 +318,75 @@
 
             #region Build Events List
 
-            lock (_pokemonLock)
+            if (_pokemonEvents.Any())
             {
-                if (_pokemonEvents.Count > 0)
-                {
-                    pokemonEvents = new(_pokemonEvents);
-                    _pokemonEvents.Clear();
-                }
+                pokemonEvents = new(_pokemonEvents);
+                _pokemonEvents.Clear();
             }
-            lock (_pokestopsLock)
+            if (_pokestopEvents.Any())
             {
-                if (_pokestopEvents.Count > 0)
-                {
-                    pokestopEvents = new(_pokestopEvents);
-                    _pokestopEvents.Clear();
-                }
+                pokestopEvents = new(_pokestopEvents);
+                _pokestopEvents.Clear();
             }
-            lock (_luresLock)
+            if (_lureEvents.Any())
             {
-                if (_lureEvents.Count > 0)
-                {
-                    lureEvents = new(_lureEvents);
-                    _lureEvents.Clear();
-                }
+                lureEvents = new(_lureEvents);
+                _lureEvents.Clear();
             }
-            lock (_invasionsLock)
+            if (_invasionEvents.Any())
             {
-                if (_invasionEvents.Count > 0)
-                {
-                    invasionEvents = new(_invasionEvents);
-                    _invasionEvents.Clear();
-                }
+                invasionEvents = new(_invasionEvents);
+                _invasionEvents.Clear();
             }
-            lock (_questsLock)
+            if (_questEvents.Any())
             {
-                if (_questEvents.Count > 0)
-                {
-                    questEvents = new(_questEvents);
-                    _questEvents.Clear();
-                }
+                questEvents = new(_questEvents);
+                _questEvents.Clear();
             }
-            lock (_alternativeQuestsLock)
+            if (_alternativeQuestEvents.Any())
             {
-                if (_alternativeQuestEvents.Count > 0)
-                {
-                    alternativeQuestEvents = new(_alternativeQuestEvents);
-                    _alternativeQuestEvents.Clear();
-                }
+                alternativeQuestEvents = new(_alternativeQuestEvents);
+                _alternativeQuestEvents.Clear();
             }
-            lock (_gymsLock)
+            if (_gymEvents.Any())
             {
-                if (_gymEvents.Count > 0)
-                {
-                    gymEvents = new(_gymEvents);
-                    _gymEvents.Clear();
-                }
+                gymEvents = new(_gymEvents);
+                _gymEvents.Clear();
             }
-            lock (_gymInfoLock)
+            if (_gymInfoEvents.Any())
             {
-                if (_gymInfoEvents.Count > 0)
-                {
-                    gymInfoEvents = new(_gymInfoEvents);
-                    _gymInfoEvents.Clear();
-                }
+                gymInfoEvents = new(_gymInfoEvents);
+                _gymInfoEvents.Clear();
             }
-            lock (_gymDefendersLock)
+            if (_gymDefenderEvents.Any())
             {
-                if (_gymDefenderEvents.Count > 0)
-                {
-                    gymDefenderEvents = new(_gymDefenderEvents);
-                    _gymDefenderEvents.Clear();
-                }
+                gymDefenderEvents = new(_gymDefenderEvents);
+                _gymDefenderEvents.Clear();
             }
-            lock (_gymTrainersLock)
+            if (_gymTrainerEvents.Any())
             {
-                if (_gymTrainerEvents.Count > 0)
-                {
-                    gymTrainerEvents = new(_gymTrainerEvents);
-                    _gymTrainerEvents.Clear();
-                }
+                gymTrainerEvents = new(_gymTrainerEvents);
+                _gymTrainerEvents.Clear();
             }
-            lock (_eggsLock)
+            if (_eggEvents.Any())
             {
-                if (_eggEvents.Count > 0)
-                {
-                    eggEvents = new(_eggEvents);
-                    _eggEvents.Clear();
-                }
+                eggEvents = new(_eggEvents);
+                _eggEvents.Clear();
             }
-            lock (_raidsLock)
+            if (_raidEvents.Any())
             {
-                if (_raidEvents.Count > 0)
-                {
-                    raidEvents = new(_raidEvents);
-                    _raidEvents.Clear();
-                }
+                raidEvents = new(_raidEvents);
+                _raidEvents.Clear();
             }
-            lock (_weatherLock)
+            if (_weatherEvents.Any())
             {
-                if (_weatherEvents.Count > 0)
-                {
-                    weatherEvents = new(_weatherEvents);
-                    _weatherEvents.Clear();
-                }
+                weatherEvents = new(_weatherEvents);
+                _weatherEvents.Clear();
             }
-            lock (_accountsLock)
+            if (_accountEvents.Any())
             {
-                if (_accountEvents.Count > 0)
-                {
-                    accountEvents = new(_accountEvents);
-                    _accountEvents.Clear();
-                }
+                accountEvents = new(_accountEvents);
+                _accountEvents.Clear();
             }
 
             #endregion
@@ -488,14 +395,14 @@
             {
                 var events = new List<dynamic>();
                 var endpoint = _webhookEndpoints[i];
-                if (!endpoint.Enabled)
+                if (!(endpoint?.Enabled ?? false))
                     continue;
 
                 if (pokemonEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Pokemon))
                 {
                     foreach (var (_, pokemon) in pokemonEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(pokemon.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -518,7 +425,7 @@
                 {
                     foreach (var (_, pokestop) in pokestopEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -535,7 +442,7 @@
                 {
                     foreach (var (_, lure) in lureEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(lure.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -552,7 +459,7 @@
                 {
                     foreach (var (_, pokestopWithIncident) in invasionEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(pokestopWithIncident.Pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -569,7 +476,7 @@
                 {
                     foreach (var (_, quest) in questEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(quest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -585,7 +492,7 @@
                 {
                     foreach (var (_, alternativeQuest) in alternativeQuestEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(alternativeQuest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -606,7 +513,7 @@
                             if (!GeofenceService.IsPointInPolygon(gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
                         }
-                        if (endpoint.Data?.GymTeamIds.Any() ?? false)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (endpoint.Data.GymTeamIds.Contains((ushort)gym.Team))
                                 continue;
@@ -618,7 +525,7 @@
                 {
                     foreach (var (_, gymInfo) in gymInfoEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(gymInfo.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -635,7 +542,7 @@
                 {
                     foreach (var (_, gymDefender) in gymDefenderEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(gymDefender.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -648,7 +555,7 @@
                 {
                     foreach (var (_, gymTrainer) in gymTrainerEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(gymTrainer.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -661,7 +568,7 @@
                 {
                     foreach (var (_, egg) in eggEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(egg.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -678,7 +585,7 @@
                 {
                     foreach (var (_, raid) in raidEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(raid.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -701,7 +608,7 @@
                 {
                     foreach (var (_, weather) in weatherEvents)
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
+                        if (endpoint.Geofences?.Any() ?? false)
                         {
                             if (!GeofenceService.IsPointInPolygon(weather.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                                 continue;
@@ -724,7 +631,6 @@
 
                 if (events.Count > 0)
                 {
-                    _totalWebhooksSent += Convert.ToUInt64(events.Count);
                     await SendWebhookEventsAsync(endpoint.Url, events);
                     Thread.Sleep(Convert.ToInt32(endpoint.Delay * 1000));
                 }
@@ -736,7 +642,7 @@
 
         private async Task SendWebhookEventsAsync(string url, List<dynamic> payloads, ushort retryCount = 0)
         {
-            if ((payloads?.Count ?? 0) == 0)
+            if (!(payloads?.Any() ?? false))
                 return;
 
             var json = payloads.ToJson();
@@ -749,26 +655,28 @@
             // Send webhook payloads to endpoint
             var (statusCode, result) = await NetUtils.PostAsync(url, json, Options.RequestTimeout);
             // If the request failed, attempt it again in 3 seconds
-            if (statusCode != HttpStatusCode.OK)
+            if (statusCode == HttpStatusCode.OK)
             {
-                _logger.LogError($"Webhook endpoint {url} did not return an 'OK' status code, {statusCode} with response: {result}");
-
-                // Try sending again
-                if (retryCount >= Options.MaximumRetryCount)
-                {
-                    _logger.LogWarning($"{retryCount}/{Options.MaximumRetryCount} attempts made to send webhook payload to endpoint {url}, aborting...");
-                    return;
-                }
-
-                // Wait 3 seconds before trying again
-                Thread.Sleep(RequestFailedRetryDelayS * 1000);
-                retryCount++;
-                _logger.LogWarning($"Retry attempt {retryCount}/{Options.MaximumRetryCount} to resend webhook payload to endpoint {url}");
-
-                await SendWebhookEventsAsync(url, payloads!, retryCount);
+                _totalWebhooksSent += Convert.ToUInt64(payloads.Count);
+                _logger.LogInformation($"Sent {payloads!.Count:N0} webhook events to {url}. Total sent this session: {_totalWebhooksSent}");
                 return;
             }
-            _logger.LogInformation($"Sent {payloads!.Count:N0} webhook events to {url}. Total sent this session: {_totalWebhooksSent}");
+
+            _logger.LogError($"Webhook endpoint {url} did not return an 'OK' status code, {statusCode} with response: {result}");
+
+            // Try sending again
+            if (retryCount >= Options.MaximumRetryCount)
+            {
+                _logger.LogWarning($"{retryCount}/{Options.MaximumRetryCount} attempts made to send webhook payload to endpoint {url}, aborting...");
+                return;
+            }
+
+            // Wait 3 seconds before trying again
+            Thread.Sleep(RequestFailedRetryDelayS * 1000);
+            retryCount++;
+            _logger.LogWarning($"Retry attempt {retryCount}/{Options.MaximumRetryCount} to resend webhook payload to endpoint {url}");
+
+            await SendWebhookEventsAsync(url, payloads!, retryCount);
         }
 
         private async Task SendWebhookEndpointsRequestAsync()
@@ -786,20 +694,17 @@
 
                 var json = response.Payload;
                 var webhooks = json.FromJson<List<Webhook>>();
-                if (webhooks == null || webhooks.Count == 0)
+                if (!(webhooks?.Any() ?? false))
                 {
                     _logger.LogError($"Failed to retrieve webhook endpoints, list was null or empty!");
                     return;
                 }
 
                 // Set webhook endpoints
-                lock (_webhookLock)
-                {
-                    _webhookEndpoints.Clear();
-                    _webhookEndpoints.AddRange(webhooks);
-                }
+                _webhookEndpoints.Clear();
+                _webhookEndpoints.AddRange(webhooks);
 
-                _logger.LogInformation($"Successfully retrieved updated webhook endpoints.");
+                _logger.LogInformation($"Successfully retrieved {webhooks.Count:N0} updated webhook endpoints.");
             }
             catch (Exception ex)
             {
@@ -809,23 +714,15 @@
 
         private static bool IsPokemonBlacklisted(uint? pokemonId, uint? formId, uint? costumeId, ushort? genderId, List<string> blacklisted)
         {
-            if (blacklisted == null || blacklisted.Count == 0)
+            if (!(blacklisted?.Any() ?? false))
                 return false;
 
             var sb = new StringBuilder();
             sb.Append($"{pokemonId}");
-            if (formId > 0)
-            {
-                sb.Append($"_f{formId}");
-            }
-            if (costumeId > 0)
-            {
-                sb.Append($"_c{costumeId}");
-            }
-            if (genderId > 0)
-            {
-                sb.Append($"_g{genderId}");
-            }
+            if (formId > 0) sb.Append($"_f{formId}");
+            if (costumeId > 0) sb.Append($"_c{costumeId}");
+            if (genderId > 0) sb.Append($"_g{genderId}");
+
             var key = sb.ToString();
             var matches = blacklisted.Contains(key);
             return matches;
