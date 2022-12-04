@@ -139,7 +139,7 @@
                 //await ProcessWorkItemAsync(items, stoppingToken);
                 new Thread(async () =>
                 {
-                    using var connection = await EntityRepository.CreateConnectionAsync(stoppingToken: stoppingToken);
+                    using var connection = await EntityRepository.CreateConnectionAsync($"{nameof(DataProcessorService)}::RunJobAsync", stoppingToken: stoppingToken);
                     if (connection == null)
                     {
                         _logger.LogError($"Failed to connect to MySQL database server!");

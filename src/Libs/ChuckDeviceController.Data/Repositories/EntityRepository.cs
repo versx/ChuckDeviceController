@@ -21,7 +21,7 @@
 
         //private static readonly ILogger<EntityRepository> _logger =
         //    new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Trace)));
-        private static readonly SemaphoreSlim _sem = new(1);
+        private static readonly SemaphoreSlim _sem = new(5, 5);
         private static readonly SemaphoreSlim _entitySem = new(25); // TODO: Make entity fetching concurrency level configurable
         //private static readonly SemaphoreSlim _entitySem = new(1);
         private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(15); // TODO: Make entity fetch lock wait time configurable
@@ -191,11 +191,11 @@
             var rowsAffected = 0;
             await _sem.WaitAsync(stoppingToken);
 
-            // TODO: _connection
-            using var connection = await CreateConnectionAsync(stoppingToken: stoppingToken);
+            using var connection = await CreateConnectionAsync($"{nameof(EntityRepository)}::ExecuteAsync[Param]", stoppingToken: stoppingToken);
             if (connection == null)
             {
                 Console.WriteLine("[ExecuteAsync} Error: Not connected to MySQL database server!");
+                _sem.Release();
                 return rowsAffected;
             }
             using var trans = await connection.BeginTransactionAsync(stoppingToken);
@@ -206,7 +206,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteAsync] Error: {ex}");
+                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -227,11 +227,11 @@
             var rowsAffected = 0;
             await _sem.WaitAsync(stoppingToken);
 
-            // TODO: _connection
-            using var connection = await CreateConnectionAsync(stoppingToken: stoppingToken);
+            using var connection = await CreateConnectionAsync($"{nameof(EntityRepository)}::ExecuteAsync[Raw]", stoppingToken: stoppingToken);
             if (connection == null)
             {
                 Console.WriteLine("[ExecuteAsync} Error: Not connected to MySQL database server!");
+                _sem.Release();
                 return rowsAffected;
             }
             using var trans = await connection.BeginTransactionAsync(stoppingToken);
@@ -245,7 +245,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteAsync] Error: {ex}");
+                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -269,10 +269,11 @@
             var rowsAffected = 0;
             await _sem.WaitAsync(stoppingToken);
 
-            using var connection = await CreateConnectionAsync(stoppingToken: stoppingToken);
+            using var connection = await CreateConnectionAsync($"{nameof(EntityRepository)}::ExecuteBulkAsync", stoppingToken: stoppingToken);
             if (connection == null)
             {
                 Console.WriteLine("[ExecuteBulkAsync} Error: Not connected to MySQL database server!");
+                _sem.Release();
                 return rowsAffected;
             }
             using var trans = await connection.BeginTransactionAsync(stoppingToken);
@@ -283,7 +284,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteBulkAsync] Error: {ex}");
+                Console.WriteLine($"[ExecuteBulkAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -296,16 +297,18 @@
         #region CreateConnection Methods
 
         public static MySqlConnection? CreateConnection(
+            string name,
             bool openConnection = true,
             bool runLeakWatcher = true,
             uint waitTimeS = EntityDataRepository.DefaultConnectionWaitTimeS)
         {
-            var task = Task.Run(async () =>  await CreateConnectionAsync(openConnection, runLeakWatcher, waitTimeS));
+            var task = Task.Run(async () =>  await CreateConnectionAsync(name, openConnection, runLeakWatcher, waitTimeS));
             task.Wait();
             return task.Result;
         }
 
         public static async Task<MySqlConnection?> CreateConnectionAsync(
+            string name,
             bool openConnection = true,
             bool runLeakWatcher = true,
             uint waitTimeS = EntityDataRepository.DefaultConnectionWaitTimeS,
@@ -314,15 +317,22 @@
             var connection = new MySqlConnection(_connectionString);
             if (openConnection)
             {
-                await connection.OpenAsync(stoppingToken);
-                await connection.WaitForConnectionAsync(waitTimeS, stoppingToken);
+                try
+                {
+                    await connection.OpenAsync(stoppingToken);
+                    await connection.WaitForConnectionAsync(waitTimeS, stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[CreateConnectionAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                }
             }
 
             Interlocked.Increment(ref _instanceCount);
 
             if (runLeakWatcher)
             {
-                _ = new ConnectionLeakWatcher(connection);
+                _ = new ConnectionLeakWatcher(name, connection);
             }
             return connection;
         }

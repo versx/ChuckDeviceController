@@ -38,7 +38,7 @@
             //    ?? throw new ArgumentNullException(nameof(connectionString), $"{nameof(connectionString)} cannot be null!");
 
             AddTypeMappers();
-            OpenConnection();
+            OpenConnection($"{nameof(EntityDataRepository)}::ctor");
         }
 
         #endregion
@@ -76,7 +76,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetByIdAsync] Error: {ex}");
+                Console.WriteLine($"[GetByIdAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             _semEntity.Release();
@@ -109,7 +109,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetAllAsync] Error: {ex}");
+                Console.WriteLine($"[GetAllAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             _sem.Release();
@@ -147,7 +147,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteAsync] Error: {ex}");
+                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             _sem.Release();
@@ -185,7 +185,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteAsync] Error: {ex}");
+                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -222,7 +222,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteBulkAsync] Error: {ex}");
+                Console.WriteLine($"[ExecuteBulkAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -234,12 +234,12 @@
 
         #region Private Methods
 
-        private void OpenConnection()
+        private void OpenConnection(string name)
         {
-            Task.Run(async () => await OpenConnectionAsync()).Wait();
+            Task.Run(async () => await OpenConnectionAsync(name)).Wait();
         }
 
-        private async Task OpenConnectionAsync(CancellationToken stoppingToken = default)
+        private async Task OpenConnectionAsync(string name, CancellationToken stoppingToken = default)
         {
             if (_connection != null && _connection.State != ConnectionState.Open)
             {
@@ -248,7 +248,7 @@
             else if (_connection == null || (_connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
             {
                 _connection?.Dispose();
-                _connection = await EntityRepository.CreateConnectionAsync(stoppingToken: stoppingToken);
+                _connection = await EntityRepository.CreateConnectionAsync(name, stoppingToken: stoppingToken);
             }
         }
 
@@ -261,7 +261,7 @@
                     throw new Exception($"Not connected to MySQL database server!");
                 }
 
-                OpenConnection();
+                OpenConnection($"{nameof(EntityDataRepository)}::EnsureConnectionIsOpen");
             }
         }
 

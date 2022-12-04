@@ -11,7 +11,7 @@
 
         Task<T?> DequeueAsync(CancellationToken stoppingToken = default);
 
-        Task<IEnumerable<T>> DequeueBulkAsync(
+        Task<IEnumerable<T>?> DequeueBulkAsync(
             uint maxBatchSize,
             CancellationToken stoppingToken = default);
     }
