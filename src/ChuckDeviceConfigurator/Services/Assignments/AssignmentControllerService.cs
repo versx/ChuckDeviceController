@@ -6,6 +6,7 @@
 
     using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
     using ChuckDeviceConfigurator.Services.Geofences;
+    using ChuckDeviceController.Collections;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
@@ -22,9 +23,8 @@
         private readonly ILogger<IAssignmentControllerService> _logger;
         private readonly IGeofenceControllerService _geofenceService;
 
-        private readonly object _assignmentsLock = new();
         private readonly System.Timers.Timer _timer;
-        private List<Assignment> _assignments;
+        private SafeCollection<Assignment> _assignments;
         private bool _initialized;
         private long _lastUpdated;
 
@@ -59,7 +59,7 @@
             _mapFactory = mapFactory;
 
             _lastUpdated = -2;
-            _assignments = new List<Assignment>();
+            _assignments = new SafeCollection<Assignment>();
             _timer = new System.Timers.Timer(CheckAssignmentsIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckAssignmentsAsync();
             _mapFactory = mapFactory;
@@ -91,17 +91,19 @@
         {
             // Reload all available device assignments
             var assignments = GetAssignments();
-            lock (_assignmentsLock)
-            {
-                _assignments = assignments;
-            }
+            _assignments = new(assignments);
         }
 
         public void Add(Assignment assignment)
         {
-            lock (_assignmentsLock)
+            if (_assignments.Contains(assignment))
             {
-                _assignments.Add(assignment);
+                // Already exists
+                return;
+            }
+            if (!_assignments.TryAdd(assignment))
+            {
+                _logger.LogError($"Failed to add assignment with id '{assignment.Id}'");
             }
         }
 
@@ -118,48 +120,24 @@
 
         public void Delete(uint id)
         {
-            lock (_assignmentsLock)
+            if (!_assignments.Remove(x => x.Id == id))
             {
-                _assignments = _assignments
-                    .Where(x => x.Id != id)
-                    .ToList();
+                _logger.LogError($"Failed to remove assignment with id '{id}'");
             }
         }
 
-        public Assignment GetByName(uint name)
+        public Assignment GetByName(uint id)
         {
-            List<Assignment> assignments;
-            lock (_assignmentsLock)
-            {
-                assignments = _assignments;
-            }
-
-            var assignment = assignments?.FirstOrDefault(x => x.Id == name);
+            var assignment = _assignments.Get(x => x.Id == id);
             return assignment;
         }
 
         public IReadOnlyList<Assignment> GetByNames(IReadOnlyList<uint> names)
         {
-            List<Assignment> assignments;
-            lock (_assignmentsLock)
-            {
-                assignments = _assignments;
-            }
-
-            var result = new List<Assignment>();
-            if (assignments == null)
-            {
-                return result;
-            }
-
-            foreach (var assignment in assignments)
-            {
-                if (!names.Contains(assignment.Id))
-                    continue;
-
-                result.Add(assignment);
-            }
-            return result;
+            var assignments = names
+                .Select(name => GetByName(name))
+                .ToList();
+            return assignments;
         }
 
         #region Start Assignments
@@ -171,13 +149,10 @@
 
         public async Task StartAssignmentGroupAsync(AssignmentGroup assignmentGroup)
         {
-            List<Assignment> assignments;
-            lock (_assignmentsLock)
-            {
-                var assignmentIds = assignmentGroup.AssignmentIds;
-                assignments = _assignments.Where(assignment => assignmentIds.Contains(assignment.Id))
-                                          .ToList();
-            }
+            var assignmentIds = assignmentGroup.AssignmentIds;
+            var assignments = _assignments
+                .Where(assignment => assignmentIds.Contains(assignment.Id))
+                .ToList();
 
             foreach (var assignment in assignments)
             {
@@ -191,8 +166,7 @@
 
         public async Task ReQuestAssignmentAsync(uint assignmentId)
         {
-            var assignmentIds = new[] { assignmentId };
-            await ReQuestAssignmentsAsync(assignmentIds);
+            await ReQuestAssignmentsAsync(new[] { assignmentId });
         }
 
         public async Task ReQuestAssignmentsAsync(IEnumerable<uint> assignmentIds)
@@ -307,14 +281,10 @@
 
         public async Task InstanceControllerCompleteAsync(string instanceName)
         {
-            List<Assignment> assignments;
-            lock (_assignmentsLock)
-            {
-                // Only trigger enabled on-complete assignments
-                assignments = _assignments
-                    .Where(x => x.Enabled && x.Time == 0)
-                    .ToList();
-            }
+            // Only trigger enabled on-complete assignments
+            var assignments = _assignments
+                 .Where(x => x.Enabled && x.Time == 0)
+                 .ToList();
             foreach (var assignment in assignments)
             {
                 await TriggerAssignmentAsync(assignment, instanceName);
@@ -374,12 +344,7 @@
                 _lastUpdated = -1;
             }
 
-            var assignments = new List<Assignment>();
-            lock (_assignmentsLock)
-            {
-                assignments = _assignments;
-            }
-            foreach (var assignment in assignments)
+            foreach (var assignment in _assignments)
             {
                 if (assignment.Enabled && assignment.Time != 0 && now >= assignment.Time && _lastUpdated < assignment.Time)
                 {

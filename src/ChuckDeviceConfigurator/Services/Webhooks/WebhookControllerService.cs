@@ -11,7 +11,7 @@
 	{
 		#region Variables
 
-		//private readonly ILogger<IWebhookControllerService> _logger;
+		private readonly ILogger<IWebhookControllerService> _logger;
 		private readonly IDbContextFactory<ControllerDbContext> _factory;
 		private SafeCollection<Webhook> _webhooks;
 
@@ -20,10 +20,10 @@
 		#region Constructor
 
 		public WebhookControllerService(
-			//ILogger<IWebhookControllerService> logger,
+			ILogger<IWebhookControllerService> logger,
 			IDbContextFactory<ControllerDbContext> factory)
 		{
-			//_logger = logger;
+			_logger = logger;
 			_factory = factory;
 			_webhooks = new();
 
@@ -36,7 +36,8 @@
 
 		public void Reload()
 		{
-			_webhooks = new(GetAll());
+			var webhooks = GetAll();
+			_webhooks = new(webhooks);
 		}
 
 		public void Add(Webhook webhook)
@@ -48,8 +49,8 @@
 			}
 			if (!_webhooks.TryAdd(webhook))
 			{
-				// Failed to add webhook
-			}
+				_logger.LogError($"Failed to add webhook with name '{webhook.Name}'");
+            }
 		}
 
 		public void Edit(Webhook newWebhook, string oldWebhookName)
@@ -63,8 +64,8 @@
 			//_webhooks = new(_webhooks.Where(x => x.Name != name).ToList());
 			if (!_webhooks.Remove(x => x.Name == name))
 			{
-				// Failed to remove webhook by name
-			}
+				_logger.LogError($"Failed to remove webhook with name '{name}'");
+            }
 		}
 
 		public Webhook GetByName(string name)
