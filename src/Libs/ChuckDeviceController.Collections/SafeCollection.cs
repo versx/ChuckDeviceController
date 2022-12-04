@@ -8,6 +8,7 @@
     /// Thread safe concurrent collection.
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    /// <reference>https://learn.microsoft.com/en-us/dotnet/api/system.collections.concurrent.iproducerconsumercollection-1?view=net-7.0</reference>
     public class SafeCollection<T> : IProducerConsumerCollection<T>
     {
         #region Variables
