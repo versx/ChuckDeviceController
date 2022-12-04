@@ -464,6 +464,9 @@
 
         private async Task UpdateClientWeatherAsync(string requestId, MySqlConnection connection, IEnumerable<ClientWeatherProto> clientWeather)
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var webhooks = new List<Weather>();
             var count = clientWeather.Count();
             var index = 1;
@@ -502,8 +505,8 @@
                 _logger.LogInformation($"[{requestId}] Parsing weather cell {index:N0}/{count:N0}");
                 try
                 {
-                    //var oldWeather = await EntityRepository.GetEntityAsync<long, Weather>(connection, wcell.Id, _memCache);
-                    Weather? oldWeather = null;
+                    var oldWeather = await EntityRepository.GetEntityAsync<long, Weather>(connection, wcell.Id, _memCache);
+                    //Weather? oldWeather = null;
                     await wcell.UpdateAsync(oldWeather, _memCache);
 
                     if (wcell.HasChanges)
@@ -525,7 +528,9 @@
                 index++;
             }
 
-            _logger.LogInformation($"[{requestId}] {count:N0} weather cells parsed");
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{requestId}] {count:N0} weather cells parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -535,6 +540,9 @@
 
         private async Task UpdateWildPokemonAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> wildPokemon)
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var webhooks = new List<Pokemon>();
             var count = wildPokemon.Count();
             //var index = 1;
@@ -592,7 +600,9 @@
                 //index++;
             }
 
-            _logger.LogInformation($"[{requestId}] {count:N0} wild pokemon parsed");
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{requestId}] {count:N0} wild pokemon parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -606,6 +616,9 @@
 
         private async Task UpdateNearbyPokemonAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> nearbyPokemon)
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var webhooks = new List<Pokemon>();
             var count = nearbyPokemon.Count();
             //var index = 1;
@@ -649,7 +662,10 @@
                 }
                 //index++;
             }
-            _logger.LogInformation($"[{requestId}] {count:N0} nearby pokemon parsed");
+
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{requestId}] {count:N0} nearby pokemon parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -663,6 +679,9 @@
 
         private async Task UpdateMapPokemonAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> mapPokemon)
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var webhooks = new List<Pokemon>();
             var count = mapPokemon.Count();
             var index = 1;
@@ -712,7 +731,10 @@
                 }
                 index++;
             }
-            _logger.LogInformation($"[{requestId}] {count:N0} map pokemon parsed");
+
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{requestId}] {count:N0} map pokemon parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -726,6 +748,9 @@
 
         private async Task UpdateFortsAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> forts, string? username)
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var webhooks = new Dictionary<WebhookType, List<BaseEntity>>();
             var count = forts.Count();
             //var index = 1;
@@ -806,7 +831,10 @@
                 }
                 //index++;
             }
-            _logger.LogInformation($"[{requestId}] {count:N0} forts parsed");
+
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{requestId}] {count:N0} forts parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -832,6 +860,9 @@
 
         private async Task UpdateFortDetailsAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> fortDetails)
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var webhooks = new Dictionary<WebhookType, List<BaseEntity>>();
 
             var fortDetailsPokestops = fortDetails
@@ -940,7 +971,9 @@
                     //index++;
                 }
 
-                _logger.LogInformation($"[{requestId}] {count:N0} gym fort details parsed");
+                sw.Stop();
+                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                _logger.LogInformation($"[{requestId}] {count:N0} gym fort details parsed in {totalSeconds}s");
             }
 
             if (webhooks.Any())
@@ -951,6 +984,9 @@
 
         private async Task UpdateGymInfoAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> gymInfos)
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var webhooks = new Dictionary<WebhookType, List<BaseEntity>>();
             var count = gymInfos.Count();
             var index = 1;
@@ -1039,7 +1075,9 @@
                 index++;
             }
 
-            _logger.LogInformation($"[{requestId}] {count:N0} gym infos parsed");
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{requestId}] {count:N0} gym info parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -1049,7 +1087,9 @@
 
         private async Task UpdateQuestsAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> quests)
         {
-            // Convert quest protos to Pokestop models
+            var sw = new Stopwatch();
+            sw.Start();
+
             var webhooks = new Dictionary<WebhookType, List<Pokestop>>();
             var count = quests.Count();
             //var index = 1;
@@ -1099,7 +1139,10 @@
                 }
                 //index++;
             }
-            _logger.LogInformation($"[{requestId}] {count:N0} quests parsed");
+
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{requestId}] {count:N0} quests parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -1109,6 +1152,9 @@
 
         private async Task UpdateEncountersAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> encounters)
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var now = DateTime.UtcNow.ToTotalSeconds();
             var timestampMs = now * 1000;
             var webhooks = new List<Pokemon>();
@@ -1169,7 +1215,10 @@
                 }
                 //index++;
             }
-            _logger.LogInformation($"[{requestId}] {count:N0} pokemon encounters parsed");
+
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{requestId}] {count:N0} pokemon encounters parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -1183,6 +1232,9 @@
 
         private async Task UpdateDiskEncountersAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> diskEncounters)
         {
+            var sw = new Stopwatch();
+            sw.Start();
+
             var webhooks = new List<Pokemon>();
             var count = diskEncounters.Count();
             var index = 1;
@@ -1228,7 +1280,10 @@
                 }
                 index++;
             }
-            _logger.LogInformation($"[{requestId}] {count:N0} pokemon disk encounters parsed");
+
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{requestId}] {count:N0} pokemon disk encounters parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -1244,6 +1299,9 @@
         {
             if (!(pokestop.Incidents?.Any() ?? false))
                 return;
+
+            var sw = new Stopwatch();
+            sw.Start();
 
             var incidents = pokestop.Incidents;
             var webhooks = new List<PokestopWithIncident>();
@@ -1278,7 +1336,10 @@
                 }
                 //index++;
             }
-            //_logger.LogInformation($"[{requestId}] {count:N0} pokemon incidents parsed");
+
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            //_logger.LogInformation($"[{requestId}] {count:N0} pokemon incidents parsed in {totalSeconds}s");
 
             if (webhooks.Any())
             {
@@ -1350,16 +1411,6 @@
                 _ => WebhookPayloadType.Pokemon,
             };
         }
-
-        //private static List<TEntity> FilterEntityData<TEntity>(string property, List<dynamic> data, ProtoDataType type)
-        //{
-        //    var entities = data
-        //        .Where(x => x.type == type)
-        //        .Select(x => (TEntity)x.GetType().GetProperty(property).GetValue(x, null))
-        //        .Distinct()
-        //        .ToList();
-        //    return entities;
-        //}
 
         private void PrintBenchmarkTimes(DataLogLevel logLevel, IReadOnlyList<object> entities, string text = "total entities", Stopwatch? sw = null)
         {
