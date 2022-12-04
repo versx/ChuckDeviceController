@@ -23,15 +23,6 @@
 
     public class WebhookRelayService : IWebhookRelayService
     {
-        #region Constants
-
-        public const ushort WebhookRelayIntervalS = 5; // 5 seconds
-        public const ushort RequestWebhookIntervalS = 60; // 60 seconds
-        public const ushort RequestFailedRetryDelayS = 3; // 3 seconds
-        public const uint DefaultEndpointsTimeoutS = 15; // 15 seconds
-
-        #endregion
-
         #region Variables
 
         private readonly ILogger<IWebhookRelayService> _logger;
@@ -90,11 +81,11 @@
             _grpcWebhookClient = grpcWebhookClient;
             Options = options.Value;
 
-            _timer = new Timer(WebhookRelayIntervalS * 1000);
+            _timer = new Timer(Options.ProcessingIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckWebhooksAsync();
 
             // TODO: Eventually receive webhook endpoints on-demand via configurator upon add/remove/modify
-            _requestTimer = new Timer(RequestWebhookIntervalS * 1000);
+            _requestTimer = new Timer(Options.EndpointsIntervalS * 1000);
             _requestTimer.Elapsed += async (sender, e) => await SendWebhookEndpointsRequestAsync();
 
             Task.Run(async () => await StartAsync()).Wait();
@@ -320,27 +311,27 @@
 
             if (_pokemonEvents.Any())
             {
-                pokemonEvents = new(_pokemonEvents);
+                pokemonEvents = new(_pokemonEvents.ToArray());
                 _pokemonEvents.Clear();
             }
             if (_pokestopEvents.Any())
             {
-                pokestopEvents = new(_pokestopEvents);
+                pokestopEvents = new(_pokestopEvents.ToArray());
                 _pokestopEvents.Clear();
             }
             if (_lureEvents.Any())
             {
-                lureEvents = new(_lureEvents);
+                lureEvents = new(_lureEvents.ToArray());
                 _lureEvents.Clear();
             }
             if (_invasionEvents.Any())
             {
-                invasionEvents = new(_invasionEvents);
+                invasionEvents = new(_invasionEvents.ToArray());
                 _invasionEvents.Clear();
             }
             if (_questEvents.Any())
             {
-                questEvents = new(_questEvents);
+                questEvents = new(_questEvents.ToArray());
                 _questEvents.Clear();
             }
             if (_alternativeQuestEvents.Any())
@@ -350,42 +341,42 @@
             }
             if (_gymEvents.Any())
             {
-                gymEvents = new(_gymEvents);
+                gymEvents = new(_gymEvents.ToArray());
                 _gymEvents.Clear();
             }
             if (_gymInfoEvents.Any())
             {
-                gymInfoEvents = new(_gymInfoEvents);
+                gymInfoEvents = new(_gymInfoEvents.ToArray());
                 _gymInfoEvents.Clear();
             }
             if (_gymDefenderEvents.Any())
             {
-                gymDefenderEvents = new(_gymDefenderEvents);
+                gymDefenderEvents = new(_gymDefenderEvents.ToArray());
                 _gymDefenderEvents.Clear();
             }
             if (_gymTrainerEvents.Any())
             {
-                gymTrainerEvents = new(_gymTrainerEvents);
+                gymTrainerEvents = new(_gymTrainerEvents.ToArray());
                 _gymTrainerEvents.Clear();
             }
             if (_eggEvents.Any())
             {
-                eggEvents = new(_eggEvents);
+                eggEvents = new(_eggEvents.ToArray());
                 _eggEvents.Clear();
             }
             if (_raidEvents.Any())
             {
-                raidEvents = new(_raidEvents);
+                raidEvents = new(_raidEvents.ToArray());
                 _raidEvents.Clear();
             }
             if (_weatherEvents.Any())
             {
-                weatherEvents = new(_weatherEvents);
+                weatherEvents = new(_weatherEvents.ToArray());
                 _weatherEvents.Clear();
             }
             if (_accountEvents.Any())
             {
-                accountEvents = new(_accountEvents);
+                accountEvents = new(_accountEvents.ToArray());
                 _accountEvents.Clear();
             }
 
@@ -398,238 +389,120 @@
                 if (!(endpoint?.Enabled ?? false))
                     continue;
 
-                if (pokemonEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Pokemon))
+                if (pokemonEvents.Any() && endpoint.Types.Contains(WebhookType.Pokemon))
                 {
-                    foreach (var (_, pokemon) in pokemonEvents)
+                    var webhooks = ProcessPokemon(endpoint, pokemonEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(pokemon.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        if (endpoint.Data?.PokemonIds.Any() ?? false)
-                        {
-                            if (IsPokemonBlacklisted(
-                                pokemon.PokemonId,
-                                pokemon.Form,
-                                pokemon.Costume,
-                                pokemon.Gender,
-                                endpoint.Data.PokemonIds
-                            ))
-                                continue;
-                        }
-                        events.Add(pokemon.GetWebhookData(WebhookHeaders.Pokemon));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (pokestopEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Pokestops))
+                if (pokestopEvents.Any() && endpoint.Types.Contains(WebhookType.Pokestops))
                 {
-                    foreach (var (_, pokestop) in pokestopEvents)
+                    var webhooks = ProcessPokestops(endpoint, pokestopEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        if (endpoint.Data?.PokestopIds.Any() ?? false)
-                        {
-                            if (endpoint.Data.PokestopIds.Contains(pokestop.Id))
-                                continue;
-                        }
-                        events.Add(pokestop.GetWebhookData(WebhookHeaders.Pokestop));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (lureEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Lures))
+                if (lureEvents.Any() && endpoint.Types.Contains(WebhookType.Lures))
                 {
-                    foreach (var (_, lure) in lureEvents)
+                    var webhooks = ProcessLures(endpoint, lureEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(lure.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        if (endpoint.Data?.LureIds.Any() ?? false)
-                        {
-                            if (endpoint.Data.LureIds.Contains(lure.LureId))
-                                continue;
-                        }
-                        events.Add(lure.GetWebhookData(WebhookHeaders.Lure));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (invasionEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Invasions))
+                if (invasionEvents.Any() && endpoint.Types.Contains(WebhookType.Invasions))
                 {
-                    foreach (var (_, pokestopWithIncident) in invasionEvents)
+                    var webhooks = ProcessInvasions(endpoint, invasionEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(pokestopWithIncident.Pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        if (endpoint.Data?.InvasionIds.Any() ?? false)
-                        {
-                            if (endpoint.Data.InvasionIds.Contains(pokestopWithIncident.Invasion.Character))
-                                continue;
-                        }
-                        events.Add(pokestopWithIncident.Invasion.GetWebhookData(WebhookHeaders.Invasion, pokestopWithIncident.Pokestop));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (questEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Quests))
+                if (questEvents.Any() && endpoint.Types.Contains(WebhookType.Quests))
                 {
-                    foreach (var (_, quest) in questEvents)
+                    var webhooks = ProcessQuests(endpoint, questEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(quest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        // TODO: Add quest filtering
-                        //if (endpoint.Data?.Quests.Any() ?? false)
-                        //{
-                        //}
-                        events.Add(quest.GetWebhookData(WebhookHeaders.Quest));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (alternativeQuestEvents.Count > 0 && endpoint.Types.Contains(WebhookType.AlternativeQuests))
+                if (alternativeQuestEvents.Any() && endpoint.Types.Contains(WebhookType.AlternativeQuests))
                 {
-                    foreach (var (_, alternativeQuest) in alternativeQuestEvents)
+                    var webhooks = ProcessAltQuests(endpoint, alternativeQuestEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(alternativeQuest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        // TODO: Add alternative quest filtering
-                        //if (endpoint.Data?.Quests.Any() ?? false)
-                        //{
-                        //}
-                        events.Add(alternativeQuest.GetWebhookData(WebhookHeaders.AlternativeQuest));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (gymEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Gyms))
+                if (gymEvents.Any() && endpoint.Types.Contains(WebhookType.Gyms))
                 {
-                    foreach (var (_, gym) in gymEvents)
+                    var webhooks = ProcessGyms(endpoint, gymEvents);
+                    if (webhooks.Any())
                     {
-                        if ((endpoint.Geofences?.Count ?? 0) > 0)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (endpoint.Data.GymTeamIds.Contains((ushort)gym.Team))
-                                continue;
-                        }
-                        events.Add(gym.GetWebhookData(WebhookHeaders.Gym));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (gymInfoEvents.Count > 0 && endpoint.Types.Contains(WebhookType.GymInfo))
+                if (gymInfoEvents.Any() && endpoint.Types.Contains(WebhookType.GymInfo))
                 {
-                    foreach (var (_, gymInfo) in gymInfoEvents)
+                    var webhooks = ProcessGymInfo(endpoint, gymInfoEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(gymInfo.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        if (endpoint.Data?.GymIds.Any() ?? false)
-                        {
-                            if (endpoint.Data.GymIds.Contains(gymInfo.Id))
-                                continue;
-                        }
-                        events.Add(gymInfo.GetWebhookData("gym-info"));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (gymDefenderEvents.Count > 0 && endpoint.Types.Contains(WebhookType.GymDefenders))
+                if (gymDefenderEvents.Any() && endpoint.Types.Contains(WebhookType.GymDefenders))
                 {
-                    foreach (var (_, gymDefender) in gymDefenderEvents)
+                    var webhooks = ProcessGymDefenders(endpoint, gymDefenderEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(gymDefender.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        // TODO: Add gym defenders filtering
-                        events.Add(gymDefender.Defender.GetWebhookData("gym-defender", gymDefender.Gym));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (gymTrainerEvents.Count > 0 && endpoint.Types.Contains(WebhookType.GymTrainers))
+                if (gymTrainerEvents.Any() && endpoint.Types.Contains(WebhookType.GymTrainers))
                 {
-                    foreach (var (_, gymTrainer) in gymTrainerEvents)
+                    var webhooks = ProcessGymTrainers(endpoint, gymTrainerEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(gymTrainer.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        // TODO: Add gym trainers filtering
-                        events.Add(gymTrainer.Trainer.GetWebhookData("gym-trainer", gymTrainer.Gym));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (eggEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Eggs))
+                if (eggEvents.Any() && endpoint.Types.Contains(WebhookType.Eggs))
                 {
-                    foreach (var (_, egg) in eggEvents)
+                    var webhooks = ProcessEggs(endpoint, eggEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(egg.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        if (endpoint.Data?.EggLevels.Any() ?? false)
-                        {
-                            if (endpoint.Data.EggLevels.Contains(egg.RaidLevel ?? 0))
-                                continue;
-                        }
-                        events.Add(egg.GetWebhookData(WebhookHeaders.Egg));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (raidEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Raids))
+                if (raidEvents.Any() && endpoint.Types.Contains(WebhookType.Raids))
                 {
-                    foreach (var (_, raid) in raidEvents)
+                    var webhooks = ProcessRaids(endpoint, raidEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(raid.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        if (endpoint.Data?.RaidPokemonIds.Any() ?? false)
-                        {
-                            if (IsPokemonBlacklisted(
-                                raid.RaidPokemonId,
-                                raid.RaidPokemonForm,
-                                raid.RaidPokemonCostume,
-                                raid.RaidPokemonGender,
-                                endpoint.Data.PokemonIds
-                            ))
-                                continue;
-                        }
-                        events.Add(raid.GetWebhookData(WebhookHeaders.Raid));
+                        events.AddRange(webhooks);
                     }
                 }
-                if (weatherEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Weather))
+                if (weatherEvents.Any() && endpoint.Types.Contains(WebhookType.Weather))
                 {
-                    foreach (var (_, weather) in weatherEvents)
+                    var webhooks = ProcessWeather(endpoint, weatherEvents);
+                    if (webhooks.Any())
                     {
-                        if (endpoint.Geofences?.Any() ?? false)
-                        {
-                            if (!GeofenceService.IsPointInPolygon(weather.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                                continue;
-                        }
-                        if (endpoint.Data?.WeatherConditionIds.Any() ?? false)
-                        {
-                            if (endpoint.Data.WeatherConditionIds.Contains((ushort)weather.GameplayCondition))
-                                continue;
-                        }
-                        events.Add(weather.GetWebhookData(WebhookHeaders.Weather));
+                        events.AddRange(webhooks);
                     }
                 }
                 if (accountEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Accounts))
                 {
-                    foreach (var (_, account) in accountEvents)
+                    var webhooks = ProcessAccounts(endpoint, accountEvents);
+                    if (webhooks.Any())
                     {
-                        events.Add(account.GetWebhookData(WebhookHeaders.Account));
+                        events.AddRange(webhooks);
                     }
                 }
 
-                if (events.Count > 0)
+                if (events.Any())
                 {
                     await SendWebhookEventsAsync(endpoint.Url, events);
                     Thread.Sleep(Convert.ToInt32(endpoint.Delay * 1000));
@@ -653,7 +526,7 @@
             }
 
             // Send webhook payloads to endpoint
-            var (statusCode, result) = await NetUtils.PostAsync(url, json, Options.RequestTimeout);
+            var (statusCode, result) = await NetUtils.PostAsync(url, json, Options.RequestTimeoutS);
             // If the request failed, attempt it again in 3 seconds
             if (statusCode == HttpStatusCode.OK)
             {
@@ -672,7 +545,7 @@
             }
 
             // Wait 3 seconds before trying again
-            Thread.Sleep(RequestFailedRetryDelayS * 1000);
+            Thread.Sleep(Options.FailedRetryDelayS * 1000);
             retryCount++;
             _logger.LogWarning($"Retry attempt {retryCount}/{Options.MaximumRetryCount} to resend webhook payload to endpoint {url}");
 
@@ -726,6 +599,310 @@
             var key = sb.ToString();
             var matches = blacklisted.Contains(key);
             return matches;
+        }
+
+        #endregion
+
+        #region Processing Methods
+
+        private static IEnumerable<dynamic> ProcessPokemon(Webhook endpoint, IReadOnlyDictionary<string, Pokemon> pokemonEvents)
+        {
+            foreach (var (_, pokemon) in pokemonEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(pokemon.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                if (endpoint.Data?.PokemonIds.Any() ?? false)
+                {
+                    if (IsPokemonBlacklisted(
+                        pokemon.PokemonId,
+                        pokemon.Form,
+                        pokemon.Costume,
+                        pokemon.Gender,
+                        endpoint.Data.PokemonIds
+                    ))
+                        continue;
+                }
+                var data = pokemon.GetWebhookData(WebhookHeaders.Pokemon);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessPokestops(Webhook endpoint, IReadOnlyDictionary<string, Pokestop> pokestopEvents)
+        {
+            foreach (var (_, pokestop) in pokestopEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                if (endpoint.Data?.PokestopIds.Any() ?? false)
+                {
+                    if (endpoint.Data.PokestopIds.Contains(pokestop.Id))
+                        continue;
+                }
+                var data = pokestop.GetWebhookData(WebhookHeaders.Pokestop);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessLures(Webhook endpoint, IReadOnlyDictionary<string, Pokestop> lureEvents)
+        {
+            foreach (var (_, lure) in lureEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(lure.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                if (endpoint.Data?.LureIds.Any() ?? false)
+                {
+                    if (endpoint.Data.LureIds.Contains(lure.LureId))
+                        continue;
+                }
+                var data = lure.GetWebhookData(WebhookHeaders.Lure);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessInvasions(Webhook endpoint, IReadOnlyDictionary<string, PokestopWithIncident> invasionEvents)
+        {
+            foreach (var (_, pokestopWithIncident) in invasionEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(pokestopWithIncident.Pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                if (endpoint.Data?.InvasionIds.Any() ?? false)
+                {
+                    if (endpoint.Data.InvasionIds.Contains(pokestopWithIncident.Invasion.Character))
+                        continue;
+                }
+                var data = pokestopWithIncident.Invasion.GetWebhookData(WebhookHeaders.Invasion, pokestopWithIncident.Pokestop);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessQuests(Webhook endpoint, IReadOnlyDictionary<string, Pokestop> questEvents)
+        {
+            foreach (var (_, quest) in questEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(quest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                // TODO: Add quest filtering
+                //if (endpoint.Data?.Quests.Any() ?? false)
+                //{
+                //}
+                var data = quest.GetWebhookData(WebhookHeaders.Quest);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessAltQuests(Webhook endpoint, IReadOnlyDictionary<string, Pokestop> alternativeQuestEvents)
+        {
+            foreach (var (_, alternativeQuest) in alternativeQuestEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(alternativeQuest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                // TODO: Add alternative quest filtering
+                //if (endpoint.Data?.Quests.Any() ?? false)
+                //{
+                //}
+                var data = alternativeQuest.GetWebhookData(WebhookHeaders.AlternativeQuest);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessGyms(Webhook endpoint, IReadOnlyDictionary<string, Gym> gymEvents)
+        {
+            foreach (var (_, gym) in gymEvents)
+            {
+                if ((endpoint.Geofences?.Count ?? 0) > 0)
+                {
+                    if (!GeofenceService.IsPointInPolygon(gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                if (endpoint.Data?.GymTeamIds.Any() ?? false)
+                {
+                    if (endpoint.Data.GymTeamIds.Contains((ushort)gym.Team))
+                        continue;
+                }
+                var data = gym.GetWebhookData(WebhookHeaders.Gym);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessGymInfo(Webhook endpoint, IReadOnlyDictionary<string, Gym> gymInfoEvents)
+        {
+            foreach (var (_, gymInfo) in gymInfoEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(gymInfo.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                if (endpoint.Data?.GymIds.Any() ?? false)
+                {
+                    if (endpoint.Data.GymIds.Contains(gymInfo.Id))
+                        continue;
+                }
+                var data = gymInfo.GetWebhookData("gym-info");
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessGymDefenders(Webhook endpoint, IReadOnlyDictionary<ulong, GymWithDefender> gymDefenderEvents)
+        {
+            foreach (var (_, gymDefender) in gymDefenderEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(gymDefender.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                // TODO: Add gym defenders filtering
+                var data = gymDefender.Defender.GetWebhookData("gym-defender", gymDefender.Gym);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessGymTrainers(Webhook endpoint, IReadOnlyDictionary<string, GymWithTrainer> gymTrainerEvents)
+        {
+            foreach (var (_, gymTrainer) in gymTrainerEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(gymTrainer.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                // TODO: Add gym trainers filtering
+                var data = gymTrainer.Trainer.GetWebhookData("gym-trainer", gymTrainer.Gym);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessEggs(Webhook endpoint, IReadOnlyDictionary<string, Gym> eggEvents)
+        {
+            foreach (var (_, egg) in eggEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(egg.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                if (endpoint.Data?.EggLevels.Any() ?? false)
+                {
+                    if (endpoint.Data.EggLevels.Contains(egg.RaidLevel ?? 0))
+                        continue;
+                }
+                var data = egg.GetWebhookData(WebhookHeaders.Egg);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessRaids(Webhook endpoint, IReadOnlyDictionary<string, Gym> raidEvents)
+        {
+            foreach (var (_, raid) in raidEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(raid.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                if (endpoint.Data?.RaidPokemonIds.Any() ?? false)
+                {
+                    if (IsPokemonBlacklisted(
+                        raid.RaidPokemonId,
+                        raid.RaidPokemonForm,
+                        raid.RaidPokemonCostume,
+                        raid.RaidPokemonGender,
+                        endpoint.Data.PokemonIds
+                    ))
+                        continue;
+                }
+                var data = raid.GetWebhookData(WebhookHeaders.Raid);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessWeather(Webhook endpoint, IReadOnlyDictionary<long, Weather> weatherEvents)
+        {
+            foreach (var (_, weather) in weatherEvents)
+            {
+                if (endpoint.Geofences?.Any() ?? false)
+                {
+                    if (!GeofenceService.IsPointInPolygon(weather.ToCoordinate(), endpoint.GeofenceMultiPolygons))
+                        continue;
+                }
+                if (endpoint.Data?.WeatherConditionIds.Any() ?? false)
+                {
+                    if (endpoint.Data.WeatherConditionIds.Contains((ushort)weather.GameplayCondition))
+                        continue;
+                }
+                var data = weather.GetWebhookData(WebhookHeaders.Weather);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
+        }
+
+        private static IEnumerable<dynamic> ProcessAccounts(Webhook endpoint, IReadOnlyDictionary<string, Account> accountEvents)
+        {
+            foreach (var (_, account) in accountEvents)
+            {
+                var data = account.GetWebhookData(WebhookHeaders.Account);
+                if (data != null)
+                {
+                    yield return data;
+                }
+            }
         }
 
         #endregion
