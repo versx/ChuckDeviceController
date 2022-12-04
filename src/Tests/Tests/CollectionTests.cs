@@ -1,6 +1,7 @@
 ﻿namespace Tests
 {
     using ChuckDeviceController.Collections;
+    using System.Diagnostics;
 
     [TestFixture]
     internal class CollectionTests
@@ -10,7 +11,7 @@
         [SetUp]
         public void SetUp()
         {
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < 100000; i++)
             {
                 if (!_collection.TryAdd(i))
                 {
@@ -40,6 +41,39 @@
         {
             var result = _collection.Remove(x => x == 3);
             Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void MeasureBenchmarks()
+        {
+            var maxBatchSize = 10000;
+            var result = new List<int>();
+            var sw = new Stopwatch();
+            sw.Start();
+
+            for (var i = 0; i < maxBatchSize; i++)
+            {
+                if (!_collection.Any())
+                    break;
+
+                if (!_collection.TryTake(out int item))
+                {
+                    Console.WriteLine($"Failed to dequeue item: {item}");
+                    continue;
+                }
+
+                result.Add(item);
+            }
+            sw.Stop();
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            sw.Reset();
+            Console.WriteLine($"Loop took: {totalSeconds}s");
+
+            sw.Start();
+            var results = _collection.Take(maxBatchSize);
+            sw.Stop();
+            totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            Console.WriteLine($"Take took: {totalSeconds}s");
         }
     }
 }
