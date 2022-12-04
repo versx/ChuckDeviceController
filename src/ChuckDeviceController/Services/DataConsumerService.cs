@@ -15,6 +15,7 @@
     {
         #region Variables
 
+        private readonly CancellationTokenSource _tokenSource;
         private readonly ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> _queue;
         //private readonly SemaphoreSlim _sem = new(1, 1);
         private readonly System.Timers.Timer _timer = new();
@@ -312,10 +313,13 @@
 
             Options = options.Value;
 
+            _logger = logger;
+            _env = env;
             _queue = new ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>>(
-                Options.QueueConcurrencyLevelMultiplier,
+                Environment.ProcessorCount * Options.QueueConcurrencyLevelMultiplier,
                 Options.QueueCapacity
             );
+            _tokenSource = new CancellationTokenSource();
 
             _timer.Interval = Options.IntervalS * 1000;
             _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(new());
@@ -366,7 +370,7 @@
                     return;
                 }
 
-                //using var connection = new MySqlConnection(EntityRepository.ConnectionString);
+                _logger.LogInformation($"{nameof(DataConsumerService)} prepared {entityCount:N0} data entities for MySQL database upsert in {seconds}s...");
                 //var leakMonitor = new ConnectionLeakWatcher(connection);
                 //await connection.OpenAsync(stoppingToken);
 
