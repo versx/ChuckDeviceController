@@ -34,7 +34,7 @@
 
         #region Event Handlers
 
-        public override async Task<PayloadResponse> ReceivedPayload(PayloadRequest request, ServerCallContext context)
+        public override async Task<PayloadResponse> HandlePayload(PayloadRequest request, ServerCallContext context)
         {
             //_logger.LogDebug($"Received {request.PayloadType} proto message");
 

@@ -31,7 +31,7 @@
 
         #region Event Handlers
 
-        public override async Task<WebhookEndpointResponse> ReceivedWebhookEndpoint(WebhookEndpointRequest request, ServerCallContext context)
+        public override async Task<WebhookEndpointResponse> HandleWebhookEndpoint(WebhookEndpointRequest request, ServerCallContext context)
         {
             _logger.LogDebug($"Received fetch webhook endpoints request from: {context.Host}");
 

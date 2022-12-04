@@ -20,7 +20,7 @@
             _jobControllerService = jobControllerService;
         }
 
-        public override async Task<TrainerInfoResponse> ReceivedTrainerInfo(TrainerInfoRequest request, ServerCallContext context)
+        public override async Task<TrainerInfoResponse> HandleTrainerInfo(TrainerInfoRequest request, ServerCallContext context)
         {
             _logger.LogDebug($"Received {request.Username} request for trainer info");
             var username = request?.Username;

@@ -23,7 +23,7 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <Protobuf Include="..\ChuckDeviceController.Protos\JwtAuth.proto" GrpcServices="Server,Client" />
+    <Protobuf Include="..\ChuckDeviceController.Protos\Server\JwtAuth.proto" GrpcServices="Server,Client" />
   </ItemGroup>
 
 </Project>
