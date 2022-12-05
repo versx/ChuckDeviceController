@@ -47,10 +47,11 @@ builder.WebHost.UseUrls(config["Urls"]);
 
 var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
 builder.WebHost.ConfigureLogging(configure =>
-    configure.AddSimpleConsole(options =>
-        GetLoggingConfig(logLevel, configure)
-    )
-);
+{
+    var loggingSection = config.GetSection("Logging");
+    configure.AddFile(loggingSection);
+    configure.AddSimpleConsole(options => GetLoggingConfig(logLevel, configure));
+});
 
 #endregion
 

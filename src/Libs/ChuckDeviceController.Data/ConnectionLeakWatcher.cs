@@ -22,8 +22,8 @@
     /// <credits>https://stackoverflow.com/a/15002420</credits>
     public class ConnectionLeakWatcher : IDisposable
     {
-        private static readonly ILogger<ConnectionLeakWatcher> _logger =
-            new Logger<ConnectionLeakWatcher>(LoggerFactory.Create(x => x.SetMinimumLevel(LogLevel.Trace)));// AddConsole()));
+        //private static readonly ILogger<ConnectionLeakWatcher> _logger =
+        //    new Logger<ConnectionLeakWatcher>(LoggerFactory.Create(x => x.SetMinimumLevel(LogLevel.Trace)));// AddConsole()));
 
         private const uint DefaultConnectionLeakTimeoutS = 120;
 
@@ -52,13 +52,13 @@
             Name = name;
             StackTrace = Environment.StackTrace;
 
-            _logger.LogInformation($"[{_connectionId}] {Name} Connection opened");
+            Console.WriteLine($"[{_connectionId}] {Name} Connection opened");
 
             _timer = new Timer(_ =>
             {
                 // The timeout expired without the connection being closed. Write to debug output the stack trace
                 // of the connection creation to assist in pinpointing the problem
-                _logger.LogInformation($"[{_connectionId}] {Name} Suspected connection leak with origin:\n{StackTrace}");
+                Console.WriteLine($"[{_connectionId}] {Name} Suspected connection leak with origin:\n{StackTrace}");
                 // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
             }, null, _connectionTimeoutS * 1000, Timeout.Infinite);
@@ -70,7 +70,7 @@
             if (stateChangeEventArgs.CurrentState == ConnectionState.Closed)
             {
                 // The connection was closed within the timeout
-                _logger.LogInformation($"[{_connectionId}] {Name} Connection closed");
+                Console.WriteLine($"[{_connectionId}] {Name} Connection closed");
                 // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
             }

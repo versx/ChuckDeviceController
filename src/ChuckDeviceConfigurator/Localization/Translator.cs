@@ -115,6 +115,8 @@
                     remote.ToJson(pretty: true)
                 );
                 _logger.LogInformation($"{locale} file saved.");
+
+                await Task.Delay(TimeSpan.FromSeconds(1));
             }
         }
 
