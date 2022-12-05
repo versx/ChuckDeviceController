@@ -1,0 +1,13 @@
+﻿@model IEnumerable<NotificationViewModel>
+
+@foreach (var notification in Model)
+{
+    <div class="alert alert-dismissible alert-@notification.IconType d-flex align-items-center fade show" role="alert">
+        <div>
+            @Html.Raw(notification.IconSvg) <strong>@notification.Icon</strong>
+            <br>
+            @notification.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+}

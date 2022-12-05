@@ -605,6 +605,8 @@
 
         #region Processing Methods
 
+        // TODO: Move to WebhookExtensions class
+
         private static IEnumerable<dynamic> ProcessPokemon(Webhook endpoint, IReadOnlyDictionary<string, Pokemon> pokemonEvents)
         {
             foreach (var (_, pokemon) in pokemonEvents)

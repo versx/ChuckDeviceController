@@ -13,5 +13,7 @@
         /// <param name="options">Route generator options to use.</param>
         /// <returns>Returns a list of coordinates of the generated route.</returns>
         List<ICoordinate> GenerateRoute(RouteGeneratorOptions options);
+
+        // TODO: OptimizeRoute
     }
 }
