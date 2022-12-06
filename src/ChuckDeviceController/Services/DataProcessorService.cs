@@ -567,8 +567,8 @@
                         ProtoDataStatistics.Instance.TotalSpawnpointsProcessed++;
                     }
 
-                    //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
-                    Pokemon? oldPokemon = null;
+                    var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
+                    //Pokemon? oldPokemon = null;
                     //await pokemon.UpdateAsync(connection, _memCache, updateIv: false, skipLookup: false);
                     await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
                     await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
@@ -642,8 +642,8 @@
                         continue;
                     }
 
-                    //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
-                    Pokemon? oldPokemon = null;
+                    var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
+                    //Pokemon? oldPokemon = null;
                     //await pokemon.UpdateAsync(connection, _memCache, updateIv: false, skipLookup: false);
                     await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
                     await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
@@ -770,8 +770,8 @@
                         case FortType.Checkpoint:
                             // Init Pokestop model from fort proto data
                             var pokestop = new Pokestop(data, cellId);
-                            //var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestop.Id, _memCache);
-                            Pokestop? oldPokestop = null;
+                            var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestop.Id, _memCache);
+                            //Pokestop? oldPokestop = null;
                             //var pokestopWebhooks = await pokestop.UpdateAsync(connection, _memCache, updateQuest: false, skipLookup: false);
                             var pokestopWebhooks = await pokestop.UpdateAsync(oldPokestop, _memCache, updateQuest: false);
 
@@ -799,8 +799,8 @@
                         case FortType.Gym:
                             // Init Gym model from fort proto data
                             var gym = new Gym(data, cellId);
-                            //var oldGym = await EntityRepository.GetEntityAsync<string, Gym>(connection, gym.Id, _memCache);
-                            Gym? oldGym = null;
+                            var oldGym = await EntityRepository.GetEntityAsync<string, Gym>(connection, gym.Id, _memCache);
+                            //Gym? oldGym = null;
                             //var gymWebhooks = await gym.UpdateAsync(connection, _memCache, skipLookup: false);
                             var gymWebhooks = await gym.UpdateAsync(oldGym, _memCache);
 
