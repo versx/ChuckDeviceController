@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
+    using System;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
@@ -31,11 +32,12 @@
 
         private readonly ILogger<IvInstanceController> _logger;
         private readonly IDbContextFactory<MapDbContext> _mapFactory;
-        private readonly PokemonPriorityQueue<Pokemon> _pokemonQueue;
+        //private readonly PokemonPriorityQueue<Pokemon> _pokemonQueue;
+        private readonly SortedPriorityQueue<Pokemon> _pokemonQueue;
         private readonly PokemonPriorityQueue<ScannedPokemon> _scannedPokemon;
-        private static readonly List<ushort> EventAttackIV = new() { 0, 1, 15 };
+        private static readonly IEnumerable<ushort> EventAttackIV = new ushort[] { 0, 1, 15 };
 
-        private readonly object _queueLock = new();
+        //private readonly object _queueLock = new();
         private readonly object _scannedLock = new();
         private readonly object _statsLock = new();
 
@@ -91,7 +93,9 @@
 
             _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _mapFactory = mapFactory;
-            _pokemonQueue = new PokemonPriorityQueue<Pokemon>(QueueLimit);
+            //_pokemonQueue = new PokemonPriorityQueue<Pokemon>(QueueLimit);
+            //_pokemonQueue = new PokemonPriorityQueue<Pokemon, Pokemon>(PokemonIds, QueueLimit, new PokemonComparer(PokemonIds));
+            _pokemonQueue = new SortedPriorityQueue<Pokemon>(QueueLimit, new PokemonComparer(PokemonIds));
             _scannedPokemon = new PokemonPriorityQueue<ScannedPokemon>();
             _startDate = DateTime.UtcNow.ToTotalSeconds();
 
@@ -121,16 +125,22 @@
                 return await Task.FromResult(scanNextTask);
             }
 
-            Pokemon? pokemon = null;
-            lock (_queueLock)
-            {
-                if (_pokemonQueue.Count == 0)
-                {
-                    return null;
-                }
+            //Pokemon? pokemon = null;
+            //lock (_queueLock)
+            //{
+            //    if (_pokemonQueue.Count == 0)
+            //    {
+            //        return null;
+            //    }
 
-                pokemon = _pokemonQueue.Pop();
+            //    pokemon = _pokemonQueue.Dequeue();
+            //}
+
+            if (!_pokemonQueue.Any())
+            {
+                return null;
             }
+            var pokemon = _pokemonQueue.Dequeue();
             if (pokemon == null)
             {
                 return null;
@@ -250,8 +260,8 @@
             if (hasIv && pokemon.AttackIV != null)
             {
                 // Pokemon has IVs scanned, attempt to remove it from the Pokemon queue if it's in it.
-                lock (_queueLock)
-                {
+                //lock (_queueLock)
+                //{
                     // Remove Pokemon from scan queue
                     var index = _pokemonQueue.IndexOf(pokemon);
                     if (index > -1)
@@ -269,7 +279,7 @@
                         // Push Pokemon to top of queue
                         _pokemonQueue.Insert(0, pokemon);
                     }
-                }
+                //}
 
                 // Update internal IV stats for job controller status
                 UpdateStats();
@@ -284,8 +294,8 @@
             if (!(isNotLure && isEventSpawn && isDesiredPokemon))
                 return;
 
-            lock (_queueLock)
-            {
+            //lock (_queueLock)
+            //{
                 // Check if Pokemon without IVs is still in queue pending
                 if (_pokemonQueue.Contains(pokemon))
                 {
@@ -293,33 +303,52 @@
                 }
 
                 // Find the last index of the same Pokemon in the queue to insert pending encounter
-                var index = GetLastIndexOf(pokemon.PokemonId, pokemon.Form ?? 0);
-                if (_pokemonQueue.Count >= QueueLimit && index == null)
+                var lastIndex = _pokemonQueue.GetLastIndexOf(pokemon, item =>
+                {
+                    var targetPriority = PokemonComparer.GetPriorityIndex(item.PokemonId, item.Form, PokemonIds);
+                    if (targetPriority == null)
+                    {
+                        return null;
+                    }
+
+                    for (var i = 0; i < _pokemonQueue.Count; i++)
+                    {
+                        var pkmn = _pokemonQueue[i];
+                        var priority = PokemonComparer.GetPriorityIndex(pkmn.PokemonId, pkmn.Form, PokemonIds);
+                        if (priority > -1 && targetPriority < priority)
+                        {
+                            return (uint)i;
+                        }
+                    }
+                    return null;
+                });
+                //var lastIndex = GetLastIndexOf(pokemon.PokemonId, pokemon.Form ?? 0);
+                if (_pokemonQueue.Count >= QueueLimit && lastIndex == null)
                 {
                     _logger.LogWarning($"[{Name}] Queue is full!");
                 }
                 else if (_pokemonQueue.Count >= QueueLimit)
                 {
-                    if (index != null)
+                    if (lastIndex != null)
                     {
                         // Insert in queue at index
-                        _pokemonQueue.Insert((int)index, pokemon);
+                        _pokemonQueue.Insert((int)lastIndex, pokemon);
 
                         // Remove last item in the queue
-                        _ = _pokemonQueue.PopLast();
+                        _ = _pokemonQueue.DequeueLast();
                     }
                 }
-                else if (index != null)
+                else if (lastIndex != null)
                 {
                     // Insert in queue at index
-                    _pokemonQueue.Insert((int)index, pokemon);
+                    _pokemonQueue.Insert((int)lastIndex, pokemon);
                 }
                 else
                 {
                     // Add to the end of the queue
                     _pokemonQueue.Add(pokemon);
                 }
-            }
+            //}
         }
 
         /// <summary>
@@ -328,8 +357,8 @@
         /// <param name="encounterId">Pokemon encounter ID</param>
         internal void RemoveFromQueue(string encounterId)
         {
-            lock (_queueLock)
-            {
+            //lock (_queueLock)
+            //{
                 // Find index of Pokemon encounter to remove by encounter id
                 var index = _pokemonQueue.FindIndex(pokemon => pokemon.Id == encounterId);
                 if (index > -1)
@@ -337,7 +366,7 @@
                     // Remove encounter from queue by index
                     _pokemonQueue.RemoveAt(index);
                 }
-            }
+            //}
         }
 
         /// <summary>
@@ -345,10 +374,10 @@
         /// </summary>
         internal void ClearQueue()
         {
-            lock (_queueLock)
-            {
+            //lock (_queueLock)
+            //{
                 _pokemonQueue.Clear();
-            }
+            //}
         }
 
         #endregion
@@ -471,44 +500,26 @@
             return result;
         }
 
-        private int? GetPriorityIndex(uint pokemonId, ushort formId)
-        {
-            var key = formId > 0
-                ? $"{pokemonId}_f{formId}"
-                : $"{pokemonId}";
-            var priority = PokemonIds.IndexOf(key);
-            if (priority > -1)
-            {
-                return priority;
-            }
-            if (formId > 0)
-            {
-                var index = PokemonIds.IndexOf($"{pokemonId}");
-                return index;
-            }
-            return null;
-        }
-
         private uint? GetLastIndexOf(uint pokemonId, ushort formId)
         {
-            var targetPriority = GetPriorityIndex(pokemonId, formId);
+            var targetPriority = PokemonComparer.GetPriorityIndex(pokemonId, formId, PokemonIds);
             if (targetPriority == null)
             {
                 return null;
             }
 
-            lock (_queueLock)
-            {
+            //lock (_queueLock)
+            //{
                 for (var i = 0; i < _pokemonQueue.Count; i++)
                 {
                     var pokemon = _pokemonQueue[i];
-                    var priority = GetPriorityIndex(pokemon.PokemonId, formId);
+                    var priority = PokemonComparer.GetPriorityIndex(pokemon.PokemonId, formId, PokemonIds);
                     if (priority > -1 && targetPriority < priority)
                     {
                         return (uint)i;
                     }
                 }
-            }
+            //}
             return null;
         }
 
@@ -549,6 +560,56 @@
                 Pokemon = pokemon;
                 DateScanned = dateScanned;
             }
+        }
+    }
+
+    public class PokemonComparer : IComparer<Pokemon>
+    {
+        private readonly List<string> _priorityList;
+
+        public PokemonComparer(List<string> priorityList)
+        {
+            _priorityList = priorityList;
+        }
+
+        public int Compare(Pokemon? x, Pokemon? y)
+        {
+            if (x == null)
+            {
+                return -1;
+            }
+            if (y == null)
+            {
+                return -1; // 1
+            }
+
+            var index1 = GetPriorityIndex(x, _priorityList) ?? -1;
+            var index2 = GetPriorityIndex(y, _priorityList) ?? -1;
+            return index1.CompareTo(index2);
+        }
+
+        public static int? GetPriorityIndex(Pokemon pokemon, List<string> priorityList)
+        {
+            var index = GetPriorityIndex(pokemon.PokemonId, pokemon.Form, priorityList);
+            return index;
+        }
+
+        public static int? GetPriorityIndex(uint pokemonId, ushort? formId, List<string> priorityList)
+        {
+            var key = formId > 0
+                ? $"{pokemonId}_f{formId}"
+                : $"{pokemonId}";
+            var priority = priorityList.IndexOf(key);
+            if (priority > -1)
+            {
+                return priority;
+            }
+            if (formId > 0)
+            {
+                var index = priorityList.IndexOf($"{pokemonId}");
+                return index;
+            }
+            return null;
         }
     }
 }
