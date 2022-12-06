@@ -3,6 +3,7 @@
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Text;
 
     using MySqlConnector;
     using POGOProtos.Rpc;
@@ -1107,6 +1108,17 @@
         }
 
         #endregion
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.Append(PokemonId);
+            if ((Form ?? 0) > 0)    sb.Append($"_f{Form}");
+            if ((Costume ?? 0) > 0) sb.Append($"_c{Costume}");
+            if ((Gender ?? 0) > 0)  sb.Append($"_g{Gender}");
+            var id = sb.ToString();
+            return id;
+        }
     }
 
     /*

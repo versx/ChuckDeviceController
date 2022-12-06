@@ -362,7 +362,12 @@
 
             try
             {
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
                 var entitiesToUpsert = await _queue.TakeAllAsync(stoppingToken);
+                stopwatch.Stop();
+                var seconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 5).ToString("F5");
+
                 var entityCount = entitiesToUpsert.Sum(x => x.Value?.Count ?? 0);
                 if (entityCount == 0)
                 {

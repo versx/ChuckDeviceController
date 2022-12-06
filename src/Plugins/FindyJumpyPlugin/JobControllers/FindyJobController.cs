@@ -17,12 +17,13 @@
     [GeofenceType(GeofenceType.Geofence)]
     public class FindyJobController : IJobController, IJobControllerCoordinates, IScanNextInstanceController
     {
-        private const int MaxBatchSpawnpoints = 5000;
+        private const int DefaultMaxBatchSpawnpoints = 5000;
 
         #region Variables
 
         private readonly IDatabaseHost _dbHost;
-        private readonly IGeofenceServiceHost _geofenceService;
+        private readonly IGeofenceServiceHost _geofenceHost;
+        private readonly ILoggingHost _loggingHost;
 
         private readonly object _tthLock = new();
         private readonly IMemoryCache _tthCache;
@@ -59,7 +60,8 @@
             List<List<ICoordinate>> coords,
             List<IMultiPolygon> multiPolygons,
             IDatabaseHost dbHost,
-            IGeofenceServiceHost geofenceService)
+            IGeofenceServiceHost geofenceHost,
+            ILoggingHost loggingHost)
         {
             Name = instance.Name;
             MinimumLevel = instance.MinimumLevel;
@@ -71,7 +73,8 @@
             MultiPolygons = multiPolygons;
 
             _dbHost = dbHost;
-            _geofenceService = geofenceService;
+            _geofenceHost = geofenceHost;
+            _loggingHost = loggingHost;
 
             // TODO: Get MemoryCache config
             _tthCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
@@ -192,13 +195,13 @@
                         spawnpoint.Longitude > bbox.MinimumLongitude &&
                         spawnpoint.Latitude < bbox.MaximumLatitude &&
                         spawnpoint.Longitude < bbox.MaximumLongitude,
-                    limit: MaxBatchSpawnpoints).Result;
+                    limit: DefaultMaxBatchSpawnpoints).Result;
 
                 var count = 0;
                 foreach (var spawnpoint in spawnpoints)
                 {
                     var spawnpointCoord = new Coordinate(spawnpoint.Latitude, spawnpoint.Longitude);
-                    if (_geofenceService.IsPointInMultiPolygons(spawnpointCoord, MultiPolygons))
+                    if (_geofenceHost.IsPointInMultiPolygons(spawnpointCoord, MultiPolygons))
                     {
                         tmpCoords.Add(spawnpointCoord);
                     }

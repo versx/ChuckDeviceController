@@ -29,6 +29,7 @@
         private readonly IDbContextFactory<MapDbContext> _mapFactory;
         private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
 
+        // TODO: Replace all collections below with thread-safe collections
         private readonly List<PokestopWithMode> _allStops = new();
         private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops = new();
         private readonly Dictionary<(string, bool), byte> _todayStopsAttempts = new(); // (PokestopId, IsAlternative)

@@ -100,6 +100,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Shared\_NotificationsPartial.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Microsoft.AspNetCore.Authentication.Google" />
     <None Remove="AspNet.Security.OAuth.Discord" />
     <None Remove="AspNet.Security.OAuth.GitHub" />
@@ -112,12 +116,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Watch Remove="Views\Shared\_NotificationsPartial.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Services\Geofences\" />
     <Folder Include="Views\Device\EditorTemplates\" />
     <Folder Include="Views\Shared\EditorTemplates\" />
     <Folder Include="Services\Plugins\Hosts\EventBusService\" />
     <Folder Include="Services\Plugins\Hosts\EventBusService\Publishers\" />
     <Folder Include="Services\Plugins\Hosts\EventBusService\Subscribers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Views\Device\_NotificationsPartial.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

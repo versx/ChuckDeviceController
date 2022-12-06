@@ -16,9 +16,6 @@
     using Extensions;
     using Tasks;
 
-    // TODO: Add base/abstract GenericTask : ITask class for plugins via CDC.Common lib
-    // TODO: Expose geofence/circle converter service to Plugins
-
     public struct JumpyCoord
     {
         public ulong Id { get; set; }
@@ -37,7 +34,8 @@
         #region Variables
 
         private readonly IDatabaseHost _dbHost;
-        private readonly IGeofenceServiceHost _geofenceService;
+        private readonly IGeofenceServiceHost _geofenceHost;
+        private readonly ILoggingHost _loggingHost;
 
         private readonly object _pokemonLock = new();
         private readonly IMemoryCache _pokemonCache;
@@ -76,7 +74,8 @@
             List<List<ICoordinate>> coords,
             List<IMultiPolygon> multiPolygons,
             IDatabaseHost dbHost,
-            IGeofenceServiceHost geofenceService)
+            IGeofenceServiceHost geofenceHost,
+            ILoggingHost loggingHost)
         {
             Name = instance.Name;
             MinimumLevel = instance.MinimumLevel;
@@ -88,7 +87,8 @@
             MultiPolygons = multiPolygons;
 
             _dbHost = dbHost;
-            _geofenceService = geofenceService;
+            _geofenceHost = geofenceHost;
+            _loggingHost = loggingHost;
 
             // TODO: Get MemoryCache config
             _pokemonCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
@@ -213,7 +213,7 @@
                     }
 
                     var spawnpointCoord = new Coordinate(spawnpoint.Latitude, spawnpoint.Longitude);
-                    if (_geofenceService.IsPointInMultiPolygons(spawnpointCoord, MultiPolygons))
+                    if (_geofenceHost.IsPointInMultiPolygons(spawnpointCoord, MultiPolygons))
                     {
                         tmpCoords.Add(new JumpyCoord
                         {

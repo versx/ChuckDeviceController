@@ -10,6 +10,7 @@
     /// </summary>
     public class UIconsService : IUIconsService
     {
+        // TODO: Make UIcons settings configurable
         private const string DefaultIconFormat = "png";
         private const string IndexJson = "index.json";
         private const string DefaultIconUrl = "https://raw.githubusercontent.com/WatWowMap/wwm-uicons/main/pokemon/";
@@ -49,9 +50,10 @@
             _baseIconUrl = baseIconUrl;
             IconFormat = iconFormat;
 
-            BuildIndexManifestAsync().ConfigureAwait(false)
-                                     .GetAwaiter()
-                                     .GetResult();
+            BuildIndexManifestAsync()
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
         }
 
         #endregion
