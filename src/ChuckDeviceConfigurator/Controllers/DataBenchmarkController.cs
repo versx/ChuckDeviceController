@@ -18,7 +18,7 @@
         // GET: DataBenchmarkController
         public async Task<ActionResult> Index()
         {
-            var data = await NetUtils.GetAsync(StatsEndpoint, timeoutS: 10);
+            var data = await NetUtils.GetAsync(StatsEndpoint, timeoutS: 15);
             var model = data?.FromJson<ProtoDataStatisticsViewModel>();
             return View(model);
         }

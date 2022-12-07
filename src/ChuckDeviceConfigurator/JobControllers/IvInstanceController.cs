@@ -132,7 +132,6 @@
             //    {
             //        return null;
             //    }
-
             //    pokemon = _pokemonQueue.Dequeue();
             //}
 
@@ -303,26 +302,7 @@
                 }
 
                 // Find the last index of the same Pokemon in the queue to insert pending encounter
-                var lastIndex = _pokemonQueue.GetLastIndexOf(pokemon, item =>
-                {
-                    var targetPriority = PokemonComparer.GetPriorityIndex(item.PokemonId, item.Form, PokemonIds);
-                    if (targetPriority == null)
-                    {
-                        return null;
-                    }
-
-                    for (var i = 0; i < _pokemonQueue.Count; i++)
-                    {
-                        var pkmn = _pokemonQueue[i];
-                        var priority = PokemonComparer.GetPriorityIndex(pkmn.PokemonId, pkmn.Form, PokemonIds);
-                        if (priority > -1 && targetPriority < priority)
-                        {
-                            return (uint)i;
-                        }
-                    }
-                    return null;
-                });
-                //var lastIndex = GetLastIndexOf(pokemon.PokemonId, pokemon.Form ?? 0);
+                var lastIndex = _pokemonQueue.LastIndexOf(pokemon, GetPriorityIndex);
                 if (_pokemonQueue.Count >= QueueLimit && lastIndex == null)
                 {
                     _logger.LogWarning($"[{Name}] Queue is full!");
@@ -500,26 +480,23 @@
             return result;
         }
 
-        private uint? GetLastIndexOf(uint pokemonId, ushort formId)
+        private uint? GetPriorityIndex(Pokemon pokemon)
         {
-            var targetPriority = PokemonComparer.GetPriorityIndex(pokemonId, formId, PokemonIds);
+            var targetPriority = PokemonComparer.GetPriorityIndex(pokemon.PokemonId, pokemon.Form, PokemonIds);
             if (targetPriority == null)
             {
                 return null;
             }
 
-            //lock (_queueLock)
-            //{
-                for (var i = 0; i < _pokemonQueue.Count; i++)
+            for (var i = 0; i < _pokemonQueue.Count; i++)
+            {
+                var pkmn = _pokemonQueue[i];
+                var priority = PokemonComparer.GetPriorityIndex(pkmn.PokemonId, pkmn.Form, PokemonIds);
+                if (priority > -1 && targetPriority < priority)
                 {
-                    var pokemon = _pokemonQueue[i];
-                    var priority = PokemonComparer.GetPriorityIndex(pokemon.PokemonId, formId, PokemonIds);
-                    if (priority > -1 && targetPriority < priority)
-                    {
-                        return (uint)i;
-                    }
+                    return (uint)i;
                 }
-            //}
+            }
             return null;
         }
 
