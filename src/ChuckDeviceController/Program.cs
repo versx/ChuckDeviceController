@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 using ChuckDeviceController;
 using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
-using ChuckDeviceController.Collections.Queues;
+using ChuckDeviceController.Collections;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Repositories;
@@ -68,8 +68,8 @@ builder.Services.Configure<DataConsumerOptionsConfig>(config.GetSection("Process
 #region Services
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSingleton<IAsyncQueue<ProtoPayloadQueueItem>, AsyncQueue<ProtoPayloadQueueItem>>();
-builder.Services.AddSingleton<IAsyncQueue<DataQueueItem>, AsyncQueue<DataQueueItem>>();
+builder.Services.AddSingleton<SafeCollection<ProtoPayloadQueueItem>>();
+builder.Services.AddSingleton<SafeCollection<DataQueueItem>>();
 
 builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();

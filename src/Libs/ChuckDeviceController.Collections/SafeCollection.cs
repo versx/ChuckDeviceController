@@ -137,7 +137,7 @@
 
         #region Extensions
 
-        public IEnumerable<T> Take(int count)
+        public IEnumerable<T> Take(int count, CancellationToken stoppingToken = default)
         {
             IEnumerable<T>? entities = null;
             lock (_lock)

@@ -5,7 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
     using POGOProtos.Rpc;
 
-    using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Collections;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
@@ -26,7 +26,7 @@
         private readonly SemaphoreSlim _semDevices = new(1); // REVIEW: static access modifier
 
         private readonly ILogger<ProtoController> _logger;
-        private readonly IAsyncQueue<ProtoPayloadQueueItem> _taskQueue;
+        private readonly SafeCollection<ProtoPayloadQueueItem> _taskQueue;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly ControllerDbContext _context;
 
@@ -36,7 +36,7 @@
 
         public ProtoController(
             ILogger<ProtoController> logger,
-            IAsyncQueue<ProtoPayloadQueueItem> taskQueue,
+            SafeCollection<ProtoPayloadQueueItem> taskQueue,
             IMemoryCacheHostedService memCache,
             ControllerDbContext context)
         {
@@ -98,11 +98,17 @@
             var device = await SetDeviceLastLocationAsync(payload);
 
             // Queue proto payload for processing
-            await _taskQueue.EnqueueAsync(new ProtoPayloadQueueItem
+            //await _taskQueue.EnqueueAsync(new ProtoPayloadQueueItem
+            var wasAdded =  _taskQueue.TryAdd(new ProtoPayloadQueueItem
             {
                 Payload = payload,
                 Device = device,
             });
+            if (!wasAdded)
+            {
+                // Failed to enqueue item with proto queue
+                _logger.LogError($"Failed to enqueue proto data with proto queue");
+            }
             ProtoDataStatistics.Instance.TotalProtoPayloadsReceived++;
 
             var response = BuildProtoResponse(payload);

@@ -5,15 +5,15 @@
     public class AsyncQueue<T> : IAsyncQueue<T>
     {
         private readonly SemaphoreSlim _sem = new(1, 1);
-        private readonly BlockingCollection<T> _queue;
-        //private readonly SafeCollection<T> _queue;
+        //private readonly BlockingCollection<T> _queue;
+        private readonly SafeCollection<T> _queue;
 
         public uint Count => Convert.ToUInt32(_queue?.Count ?? 0);
 
         public AsyncQueue()
         {
-            _queue = new BlockingCollection<T>();
-            //_queue = new SafeCollection<T>();
+            //_queue = new BlockingCollection<T>();
+            _queue = new SafeCollection<T>();
         }
 
         public async Task EnqueueAsync(T item, CancellationToken stoppingToken = default)
@@ -33,13 +33,7 @@
         {
             await _sem.WaitAsync(stoppingToken);
 
-            foreach (var item in items)
-            {
-                if (!_queue.TryAdd(item))
-                {
-                    Console.WriteLine($"Failed to enqueue item: {item}");
-                }
-            }
+            _queue.AddRange(items);
 
             _sem.Release();
             await Task.CompletedTask;
@@ -65,26 +59,27 @@
                 return null!;
             }
 
-            await _sem.WaitAsync(stoppingToken);
+            //await _sem.WaitAsync(stoppingToken);
 
-            var result = new List<T>();
-            for (var i = 0; i < maxBatchSize; i++)
-            {
-                if (!_queue.Any())
-                    break;
+            //var result = new List<T>();
+            //for (var i = 0; i < maxBatchSize; i++)
+            //{
+            //    if (!_queue.Any())
+            //        break;
 
-                if (!_queue.TryTake(out T? item))
-                {
-                    Console.WriteLine($"Failed to dequeue item: {item}");
-                    continue;
-                }
+            //    if (!_queue.TryTake(out T? item))
+            //    {
+            //        Console.WriteLine($"Failed to dequeue item: {item}");
+            //        continue;
+            //    }
 
-                result.Add(item);
-            }
+            //    result.Add(item);
+            //}
 
             //var results = _queue.Take((int)maxBatchSize);
-            _sem.Release();
-            return result;
+            //_sem.Release();
+            var results = _queue.Take((int)maxBatchSize, stoppingToken);
+            return results;
 
             //for (; ; )
             //{

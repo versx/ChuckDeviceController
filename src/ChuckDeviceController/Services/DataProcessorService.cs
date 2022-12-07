@@ -14,7 +14,7 @@
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
     
-    using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Collections;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data;
@@ -49,7 +49,7 @@
         private readonly SemaphoreSlim _semParser;// = new(1, 1);
 
         private readonly ILogger<IDataProcessorService> _logger;
-        private readonly IAsyncQueue<DataQueueItem> _taskQueue;
+        private readonly SafeCollection<DataQueueItem> _taskQueue;
         private readonly IMemoryCache _diskCache;
         private readonly IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> _grpcProtoClient;
         private readonly IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse> _grpcWebhookClient;
@@ -74,7 +74,7 @@
         public DataProcessorService(
             ILogger<IDataProcessorService> logger,
             IOptions<DataProcessorOptionsConfig> options,
-            IAsyncQueue<DataQueueItem> taskQueue,
+            SafeCollection<DataQueueItem> taskQueue,
             IMemoryCache diskCache,
             IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> grpcProtoClient,
             IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse> grpcWebhookClient,
@@ -189,6 +189,7 @@
             ProtoDataStatistics.Instance.TotalPokemonEncountersReceived += (uint)workItem.Encounters.Count();
             ProtoDataStatistics.Instance.TotalPokemonDiskEncountersReceived += (uint)workItem.DiskEncounters.Count();
 
+            var guid = Guid.NewGuid().ToString()[..8];
             try
             {
                 var guid = Guid.NewGuid().ToString()[..8];
@@ -302,7 +303,7 @@
             {
                 sw.Stop();
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, DefaultDecimals);
-                _logger.LogInformation($"Finished parsing {workItem.Count:N0} data entities in {totalSeconds}s");
+                _logger.LogInformation($"[{guid}] Finished parsing {workItem.Count:N0} data entities in {totalSeconds}s");
                 //PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
             }
 
@@ -770,8 +771,8 @@
                         case FortType.Checkpoint:
                             // Init Pokestop model from fort proto data
                             var pokestop = new Pokestop(data, cellId);
-                            var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestop.Id, _memCache);
-                            //Pokestop? oldPokestop = null;
+                            //var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestop.Id, _memCache);
+                            Pokestop? oldPokestop = null;
                             //var pokestopWebhooks = await pokestop.UpdateAsync(connection, _memCache, updateQuest: false, skipLookup: false);
                             var pokestopWebhooks = await pokestop.UpdateAsync(oldPokestop, _memCache, updateQuest: false);
 
@@ -799,8 +800,8 @@
                         case FortType.Gym:
                             // Init Gym model from fort proto data
                             var gym = new Gym(data, cellId);
-                            var oldGym = await EntityRepository.GetEntityAsync<string, Gym>(connection, gym.Id, _memCache);
-                            //Gym? oldGym = null;
+                            //var oldGym = await EntityRepository.GetEntityAsync<string, Gym>(connection, gym.Id, _memCache);
+                            Gym? oldGym = null;
                             //var gymWebhooks = await gym.UpdateAsync(connection, _memCache, skipLookup: false);
                             var gymWebhooks = await gym.UpdateAsync(oldGym, _memCache);
 
@@ -1315,8 +1316,8 @@
                 //_logger.LogInformation($"[{requestId}] Parsing pokestop incident {index:N0}/{count:N0}");
                 try
                 {
-                    var oldIncident = await EntityRepository.GetEntityAsync<string, Incident>(connection, incident.Id, _memCache);
-                    //await incident.UpdateAsync(connection, _memCache, skipOldLookup: false);
+                    //var oldIncident = await EntityRepository.GetEntityAsync<string, Incident>(connection, incident.Id, _memCache);
+                    Incident? oldIncident = null;
                     await incident.UpdateAsync(oldIncident, _memCache);
 
                     if (incident.HasChanges)
@@ -1332,7 +1333,7 @@
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"ParseIncidentsAsync: {ex.InnerException?.Message ?? ex.Message}");
+                    _logger.LogError($"UpdateIncidentsAsync: {ex.InnerException?.Message ?? ex.Message}");
                 }
                 //index++;
             }
