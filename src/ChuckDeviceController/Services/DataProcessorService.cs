@@ -1184,14 +1184,14 @@
                         pokemon = Pokemon.ParsePokemonFromWild(data.Pokemon, cellId.Id, username, isEvent);
                         //isNew = true;
                     }
-                    await pokemon.AddEncounterAsync(data, username);
+                    pokemon.AddEncounter(data, username);
 
                     //if (pokemon.HasIvChanges)
                     //{
                     SetPvpRankings(pokemon);
                     //}
 
-                    Spawnpoint? spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.Pokemon.TimeTillHiddenMs, timestampMs);
+                    var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.Pokemon.TimeTillHiddenMs, timestampMs);
                     if (spawnpoint != null)
                     {
                         await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);

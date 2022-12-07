@@ -463,7 +463,7 @@
 
         #region Public Methods
 
-        public async Task AddEncounterAsync(EncounterOutProto encounterData, string username)
+        public void AddEncounter(EncounterOutProto encounterData, string username)
         {
             var pokemonId = Convert.ToUInt32(encounterData.Pokemon.Pokemon.PokemonId);
             var cp = Convert.ToUInt16(encounterData.Pokemon.Pokemon.Cp);
@@ -547,8 +547,6 @@
             SeenType = SeenType.Encounter;
             Updated = DateTime.UtcNow.ToTotalSeconds();
             Changed = Updated;
-
-            await Task.CompletedTask;
         }
 
         public void AddDiskEncounter(DiskEncounterOutProto diskEncounterData, string username)
