@@ -12,13 +12,15 @@
     [Authorize(Roles = RoleConsts.BenchmarksRole)]
     public class DataBenchmarkController : Controller
     {
+        // TODO: Consider using gRPC to retrieve the proto/data statistics
         // TODO: Add controller endpoint to config
         private const string StatsEndpoint = "http://localhost:8882/api/Statistics";
+        private const ushort DefaultTimeoutS = 15;
 
         // GET: DataBenchmarkController
         public async Task<ActionResult> Index()
         {
-            var data = await NetUtils.GetAsync(StatsEndpoint, timeoutS: 15);
+            var data = await NetUtils.GetAsync(StatsEndpoint, timeoutS: DefaultTimeoutS);
             var model = data?.FromJson<ProtoDataStatisticsViewModel>();
             return View(model);
         }

@@ -81,8 +81,8 @@
                 Started = $"{uptimeLocal.ToLongDateString()} {uptimeLocal.ToLongTimeString()}",
             };
 
-            _eventAggregatorHost.Subscribe(new PluginObserver());
-            _eventAggregatorHost.Publish(new PluginEvent("Test from HomeController"));
+            //_eventAggregatorHost.Subscribe(new PluginObserver());
+            //_eventAggregatorHost.Publish(new PluginEvent("Test from HomeController"));
 
             return View(model);
         }
