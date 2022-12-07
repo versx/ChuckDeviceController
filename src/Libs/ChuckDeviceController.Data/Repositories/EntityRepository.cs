@@ -8,7 +8,6 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
-    using static Dapper.SqlMapper;
 
     public class EntityRepository
     {
@@ -165,6 +164,36 @@
             }
 
             return entity;
+        }
+
+        public static async Task<IEnumerable<TEntity>> GetEntitiesAsync<TKey, TEntity>(
+            MySqlConnection connection,
+            string? whereClause = null)
+        {
+            try
+            {
+                //EnsureConnectionIsOpen(attemptReopen: true);
+
+                var tableName = typeof(TEntity).GetTableAttribute();
+                var keyName = typeof(TEntity).GetKeyAttribute();
+                var sql = $"SELECT * FROM {tableName}";
+                if (!string.IsNullOrEmpty(whereClause))
+                {
+                    sql += whereClause;
+                }
+
+                var results = await connection.QueryAsync<TEntity>(
+                    sql,
+                    commandTimeout: DefaultCommandTimeoutS,
+                    commandType: CommandType.Text
+                );
+                return results;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GetEntitiesAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+            }
+            return null!;
         }
 
         #endregion
