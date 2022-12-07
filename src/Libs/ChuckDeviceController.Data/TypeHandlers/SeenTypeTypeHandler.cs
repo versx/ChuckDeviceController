@@ -16,7 +16,7 @@
             {
                 return (SeenType)(string)value;
             }
-            return null;
+            return SeenType.Unset;
         }
 
         public void SetValue(IDbDataParameter parameter, object value)

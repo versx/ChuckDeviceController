@@ -14,7 +14,6 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Extensions.Http.Caching;
-    using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
 
