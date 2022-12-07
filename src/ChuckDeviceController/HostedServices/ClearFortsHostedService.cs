@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.HostedServices
 {
+    using System.Collections.Concurrent;
     using System.Threading;
 
     using Microsoft.Extensions.Options;
@@ -12,9 +13,13 @@
     public class ClearFortsHostedService : TimedHostedService, IClearFortsHostedService
     {
         private const uint TimerIntervalS = 15 * 60; // 15 minutes
+        private const int DefaultConcurrencyLevel = 25;
+        private const ushort DefaultCapacity = ushort.MaxValue;
 
         #region Variables
 
+        private static readonly ConcurrentDictionary<ulong, ConcurrentBag<string>> _gymIdsPerCell = new(DefaultConcurrencyLevel, DefaultCapacity);
+        private static readonly ConcurrentDictionary<ulong, ConcurrentBag<string>> _stopIdsPerCell = new(DefaultConcurrencyLevel, DefaultCapacity);
         private readonly ILogger<IClearFortsHostedService> _logger;
 
         private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
@@ -74,11 +79,11 @@
             if (!Options.ClearOldForts)
                 return;
 
-            lock (_gymCellLock)
+            _gymIdsPerCell.AddOrUpdate(cellId, new ConcurrentBag<string> { gymId }, (key, oldValue) =>
             {
-                if (!_gymIdsPerCell.ContainsKey(cellId))
-                {
-                    _gymIdsPerCell.Add(cellId, new());
+                oldValue.Add(gymId);
+                return oldValue;
+            });
                 }
                 _gymIdsPerCell[cellId].Add(gymId);
             }
@@ -89,11 +94,11 @@
             if (!Options.ClearOldForts)
                 return;
 
-            lock (_stopCellLock)
+            _stopIdsPerCell.AddOrUpdate(cellId, new ConcurrentBag<string> { pokestopId }, (key, oldValue) =>
             {
-                if (!_stopIdsPerCell.ContainsKey(cellId))
-                {
-                    _stopIdsPerCell.Add(cellId, new());
+                oldValue.Add(pokestopId);
+                return oldValue;
+            });
                 }
                 _stopIdsPerCell[cellId].Add(pokestopId);
             }
