@@ -20,6 +20,7 @@
 
         private const ushort DefaultMaxEmptyCellsCount = 3;
         private const uint DefaultArCacheLimit = 1000;
+        private const int DefaultProcessingWaitTimeS = 3;
 
         #endregion
 
@@ -83,14 +84,12 @@
             {
                 if (_protoQueue.Count == 0)
                 {
-                    Thread.Sleep(1);
-                    //await Task.Delay(1, stoppingToken);
+                    await Task.Delay(DefaultProcessingWaitTimeS * 1000, stoppingToken);
                     continue;
                 }
 
                 try
                 {
-                    //var workItems = await _protoQueue.DequeueBulkAsync(Options.Queue.MaximumBatchSize, stoppingToken);
                     var workItems = _protoQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
                     if (!(workItems?.Any() ?? false))
                     {
@@ -121,8 +120,7 @@
                     _logger.LogError(ex, "Error occurred executing task work item.");
                 }
 
-                Thread.Sleep(1);
-                //await Task.Delay(50, stoppingToken);
+                await Task.Delay(DefaultProcessingWaitTimeS * 1000, stoppingToken);
             }
 
             _logger.LogError("Exited ProtoProcessorService background processing...");
@@ -441,6 +439,7 @@
                     level,
                 };
                 // Inform frontend/configurator via RPC of trainer account XP and Level for leveling instance stats
+                // TODO: Send in new thread
                 await _grpcProtoClient.SendAsync(new PayloadRequest
                 {
                     PayloadType = PayloadType.PlayerInfo,
@@ -462,11 +461,10 @@
                 return;
 
             // TODO: Make parsed protos logging configurable
-            //var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-            //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
+            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{uuid}] Parsed {processedProtos.Count:N0} protos in {totalSeconds}s");
 
             ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;
-            //await _dataQueue.EnqueueAsync(new DataQueueItem
             var wasAdded = _dataQueue.TryAdd(new DataQueueItem
             {
                 Username = username,
@@ -526,18 +524,18 @@
 
                 //isInvalidGmo = false;
                 var gmoMapCells = gmo.MapCell;
+                if (gmoMapCells.Count == 0)
+                {
+                    _logger.LogDebug($"[{uuid}] Map cells are empty");
+                    return results;
+                }
+
                 var newWildPokemon = new List<dynamic>();
                 var newNearbyPokemon = new List<dynamic>();
                 var newMapPokemon = new List<dynamic>();
                 var newClientWeather = new List<dynamic>();
                 var newForts = new List<dynamic>();
                 var newCells = new List<dynamic>();
-
-                if (gmoMapCells.Count == 0)
-                {
-                    _logger.LogDebug($"[{uuid}] Map cells are empty");
-                    return results;
-                }
 
                 foreach (var mapCell in gmoMapCells)
                 {
