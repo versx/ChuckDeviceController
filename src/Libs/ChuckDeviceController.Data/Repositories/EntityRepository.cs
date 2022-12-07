@@ -8,12 +8,16 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
+    using static Dapper.SqlMapper;
 
     public class EntityRepository
     {
         #region Constants
 
+        private const ushort DefaultConnectionLeakTimeoutS = 300; // 5 minutes
         private const double DefaultExpiryLimitM = 15;
+        private const uint DefaultConnectionWaitTimeS = 30;
+        private const int DefaultCommandTimeoutS = 30;
 
         #endregion
 
@@ -22,8 +26,7 @@
         //private static readonly ILogger<EntityRepository> _logger =
         //    new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Trace)));
         private static readonly SemaphoreSlim _sem = new(5, 5);
-        private static readonly SemaphoreSlim _entitySem = new(25); // TODO: Make entity fetching concurrency level configurable
-        //private static readonly SemaphoreSlim _entitySem = new(1);
+        private static readonly SemaphoreSlim _semEntity = new(10); // TODO: Make entity fetching concurrency level configurable
         private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(15); // TODO: Make entity fetch lock wait time configurable
         private static readonly IEnumerable<ConnectionState> _invalidConnectionStates = new[]
         {
@@ -84,6 +87,34 @@
 
         #region GetEntity Methods
 
+        public static async Task<bool> EntityExistsAsync<TKey, TEntity>(
+            MySqlConnection connection,
+            TKey key,
+            IMemoryCacheHostedService memCache,
+            bool skipCache = false)
+        {
+            if (!skipCache)
+            {
+                var existsInCache = memCache.IsSet<TKey, TEntity>(key);
+                return existsInCache;
+            }
+
+            try
+            {
+                var tableName = typeof(TEntity).GetTableAttribute();
+                var keyName = typeof(TEntity).GetKeyAttribute();
+                var sql = $"SELECT id FROM {tableName} WHERE {keyName} = '{key}'";
+                var results = await connection.ExecuteAsync(sql, commandTimeout: DefaultCommandTimeoutS, commandType: CommandType.Text);
+                var result = results == 1;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[EntityExistsAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+            }
+            return false;
+        }
+
         public static async Task<TEntity?> GetEntityAsync<TKey, TEntity>(
             MySqlConnection connection,
             TKey key,
@@ -94,7 +125,7 @@
             where TKey : notnull //class
             where TEntity : BaseEntity
         {
-            TEntity? entity;
+            TEntity? entity = null;
             if (!skipCache)
             {
                 entity = memCache.Get<TKey, TEntity>(key);
@@ -104,7 +135,28 @@
                 }
             }
 
-            entity = await _entityRepository.GetByIdAsync<TKey, TEntity>(connection, key);
+            //await _semEntity.WaitAsync();
+            //entity = await _entityRepository.GetByIdAsync<TKey, TEntity>(connection, key);
+            try
+            {
+                //EnsureConnectionIsOpen(attemptReopen: true);
+
+                var tableName = typeof(TEntity).GetTableAttribute();
+                var keyName = typeof(TEntity).GetKeyAttribute();
+                var sql = $"SELECT * FROM {tableName} WHERE {keyName} = '{key}'";
+
+                entity = await connection.QueryFirstOrDefaultAsync<TEntity>(
+                    sql,
+                    commandTimeout: DefaultCommandTimeoutS,
+                    commandType: CommandType.Text
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GetByIdAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+            }
+
+            //_semEntity.Release();
 
             if (setCache && entity != null)
             {
@@ -113,65 +165,6 @@
             }
 
             return entity;
-
-            //await _entitySem.WaitAsync(_semWaitTime);
-
-            //string sql;
-            //TEntity? entity = null;
-
-            //try
-            //{
-            //    if (!skipCache)
-            //    {
-            //        entity = memCache.Get<TKey, TEntity>(key);
-            //        if (entity != null)
-            //        {
-            //            _entitySem.Release();
-            //            return entity;
-            //        }
-            //    }
-
-            //    //entity ??= await GetEntityAsync<TKey, TEntity>(key);
-            //    var tableName = GetTableAttribute<TEntity>();
-            //    if (string.IsNullOrEmpty(tableName))
-            //    {
-            //        _entitySem.Release();
-            //        return null;
-            //    }
-            //    var keyName = GetKeyAttribute<TEntity>();
-            //    if (string.IsNullOrEmpty(keyName))
-            //    {
-            //        _entitySem.Release();
-            //        return null;
-            //    }
-
-            //    using var connection = new MySqlConnection(ConnectionString);
-            //    if (connection.State != ConnectionState.Open)
-            //    {
-            //        await connection.OpenAsync();
-            //        await WaitForConnectionAsync(connection);
-            //    }
-
-            //    sql = $"SELECT * FROM {tableName} WHERE {keyName} = '{key}'";
-            //    //entity = await _connection.QueryFirstOrDefaultAsync<TEntity>(sql, commandTimeout: DefaultCommandTimeoutS, commandType: CommandType.Text);
-            //    entity = await connection.QueryFirstOrDefaultAsync<TEntity>(sql, commandTimeout: DefaultCommandTimeoutS, commandType: CommandType.Text);
-            //    if (setCache && entity != null)
-            //    {
-            //        var defaultExpiry = TimeSpan.FromMinutes(expiryLimitM);
-            //        memCache.Set(key, entity, defaultExpiry);
-            //    }
-
-            //    _entitySem.Release();
-            //    return entity;
-            //}
-            //catch (Exception ex)
-            //{
-            //    //_logger.LogError($"Error: {ex}");
-            //    Console.WriteLine($"[GetEntityAsync] Error: {ex}");
-            //    _entitySem.Release();
-            //}
-
-            //return null;
         }
 
         #endregion
@@ -312,6 +305,7 @@
             bool openConnection = true,
             bool runLeakWatcher = true,
             uint waitTimeS = EntityDataRepository.DefaultConnectionWaitTimeS,
+            uint connectionLeakTimeoutS = DefaultConnectionLeakTimeoutS,
             CancellationToken stoppingToken = default)
         {
             var connection = new MySqlConnection(_connectionString);
@@ -332,7 +326,7 @@
 
             if (runLeakWatcher)
             {
-                _ = new ConnectionLeakWatcher(name, connection);
+                //_ = new ConnectionLeakWatcher(name, connection, connectionLeakTimeoutS);
             }
             return connection;
         }

@@ -23,7 +23,7 @@
         #region Variables
 
         private readonly SemaphoreSlim _sem = new(1, 1);
-        private readonly SemaphoreSlim _semEntity = new(15, 15);
+        private readonly SemaphoreSlim _semEntity = new(1, 1); //new(15, 15);
         //private readonly string _connectionString;
         private MySqlConnection? _connection;
 
@@ -31,12 +31,8 @@
 
         #region Constructor
 
-        //public EntityDataRepository(string connectionString)
         public EntityDataRepository()
         {
-            //_connectionString = connectionString
-            //    ?? throw new ArgumentNullException(nameof(connectionString), $"{nameof(connectionString)} cannot be null!");
-
             AddTypeMappers();
             OpenConnection($"{nameof(EntityDataRepository)}::ctor");
         }
@@ -57,7 +53,7 @@
             where TKey : notnull
             where TEntity : BaseEntity
         {
-            await _semEntity.WaitAsync(stoppingToken);
+            //await _semEntity.WaitAsync(stoppingToken);
 
             TEntity? result = null;
             try
@@ -79,7 +75,7 @@
                 Console.WriteLine($"[GetByIdAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
 
-            _semEntity.Release();
+            //_semEntity.Release();
             return result;
         }
 

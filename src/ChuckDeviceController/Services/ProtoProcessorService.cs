@@ -6,14 +6,13 @@
     using Microsoft.Extensions.Options;
     using POGOProtos.Rpc;
 
+    using ChuckDeviceController.Collections;
     using ChuckDeviceController.Collections.Cache;
-    using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
-    using ChuckDeviceController.Services.Rpc;
 
     public class ProtoProcessorService : BackgroundService, IProtoProcessorService
     {
@@ -27,8 +26,8 @@
         #region Variables
 
         private readonly ILogger<IProtoProcessorService> _logger;
-        private readonly IAsyncQueue<ProtoPayloadQueueItem> _protoQueue;
-        private readonly IAsyncQueue<DataQueueItem> _dataQueue;
+        private readonly SafeCollection<ProtoPayloadQueueItem> _protoQueue;
+        private readonly SafeCollection<DataQueueItem> _dataQueue;
         private readonly IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> _grpcProtoClient;
         private readonly IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> _grpcLevelingClient;
 
@@ -50,8 +49,8 @@
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
             IOptions<ProtoProcessorOptionsConfig> options,
-            IAsyncQueue<ProtoPayloadQueueItem> protoQueue,
-            IAsyncQueue<DataQueueItem> dataQueue,
+            SafeCollection<ProtoPayloadQueueItem> protoQueue,
+            SafeCollection<DataQueueItem> dataQueue,
             IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> grpcProtoClient,
             IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> grpcLevelingClient)
         {
@@ -91,7 +90,8 @@
 
                 try
                 {
-                    var workItems = await _protoQueue.DequeueBulkAsync(Options.Queue.MaximumBatchSize, stoppingToken);
+                    //var workItems = await _protoQueue.DequeueBulkAsync(Options.Queue.MaximumBatchSize, stoppingToken);
+                    var workItems = _protoQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
                     if (!(workItems?.Any() ?? false))
                     {
                         Thread.Sleep(1);
@@ -466,11 +466,17 @@
             //_logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
 
             ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;
-            await _dataQueue.EnqueueAsync(new DataQueueItem
+            //await _dataQueue.EnqueueAsync(new DataQueueItem
+            var wasAdded = _dataQueue.TryAdd(new DataQueueItem
             {
                 Username = username,
                 Data = processedProtos,
-            }, stoppingToken);
+            });
+            if (!wasAdded)
+            {
+                // Failed to enqueue item with proto queue
+                _logger.LogError($"Failed to enqueue entity data with data queue");
+            }
         }
 
         #endregion

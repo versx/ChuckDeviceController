@@ -13,7 +13,7 @@
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
-    
+
     using ChuckDeviceController.Collections;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Configuration;
@@ -120,6 +120,8 @@
 
         protected override async Task RunJobAsync(CancellationToken stoppingToken)
         {
+            await _semParser.WaitAsync(stoppingToken);
+
             try
             {
                 if (_taskQueue.Count == 0)
@@ -128,7 +130,8 @@
                     return;
                 }
 
-                var workItems = await _taskQueue.DequeueBulkAsync(Options.Queue.MaximumBatchSize, stoppingToken);
+                //var workItems = await _taskQueue.DequeueBulkAsync(Options.Queue.MaximumBatchSize, stoppingToken);
+                var workItems = _taskQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
                 if (!(workItems?.Any() ?? false))
                 {
                     Thread.Sleep(1);
@@ -136,7 +139,14 @@
                 }
 
                 var items = DataItems.ParseWorkItems(workItems);
-                //await ProcessWorkItemAsync(items, stoppingToken);
+                //var result = ProcessWorkItemAsync(connection, items, stoppingToken);
+                //while (!result.IsCompleted)
+                //{
+                //    //Console.WriteLine($"Waiting for DataProcessor to finish...");
+                //    //Thread.Sleep(1);
+                //    await Task.Delay(TimeSpan.FromMilliseconds(10), stoppingToken);
+                //}
+                //Console.WriteLine($"Finished data processing...");
                 new Thread(async () =>
                 {
                     using var connection = await EntityRepository.CreateConnectionAsync($"{nameof(DataProcessorService)}::RunJobAsync", stoppingToken: stoppingToken);
@@ -158,12 +168,13 @@
                 _logger.LogError(ex, "Error occurred executing task work item.");
             }
 
+            _semParser.Release();
             Thread.Sleep(1);
         }
 
         private async Task ProcessWorkItemAsync(MySqlConnection connection, DataItems workItem, CancellationToken stoppingToken = default)
         {
-            await _semParser.WaitAsync(stoppingToken);
+            //await _semParser.WaitAsync(stoppingToken);
 
             if (workItem == null)
                 return;
@@ -192,8 +203,6 @@
             var guid = Guid.NewGuid().ToString()[..8];
             try
             {
-                var guid = Guid.NewGuid().ToString()[..8];
-
                 // Parse player account data
                 if (Options.ProcessPlayerData && workItem.PlayerData.Any())
                 {
@@ -307,7 +316,7 @@
                 //PrintBenchmarkTimes(DataLogLevel.Summary, workItem.Data, "total entities", sw);
             }
 
-            _semParser.Release();
+            //_semParser.Release();
             await Task.CompletedTask;
         }
 
@@ -559,7 +568,6 @@
                     var timestampMs = wild.timestampMs;
                     var username = wild.username;
                     var isEvent = wild.isEvent;
-                    //var pokemon = new Pokemon(data, cellId, username, isEvent);
                     Pokemon pokemon = Pokemon.ParsePokemonFromWild(data, cellId, username, isEvent);
                     Spawnpoint spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.TimeTillHiddenMs, timestampMs);
                     if (spawnpoint != null)
@@ -570,7 +578,6 @@
 
                     var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
                     //Pokemon? oldPokemon = null;
-                    //await pokemon.UpdateAsync(connection, _memCache, updateIv: false, skipLookup: false);
                     await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
                     await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                     ProtoDataStatistics.Instance.TotalWildPokemonProcessed++;
@@ -645,7 +652,6 @@
 
                     var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
                     //Pokemon? oldPokemon = null;
-                    //await pokemon.UpdateAsync(connection, _memCache, updateIv: false, skipLookup: false);
                     await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
                     await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                     ProtoDataStatistics.Instance.TotalNearbyPokemonProcessed++;
