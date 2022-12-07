@@ -10,6 +10,7 @@
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
 
     public class DataConsumerService : IDataConsumerService // TODO: TimedHostedService
     {
@@ -22,18 +23,6 @@
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IWebHostEnvironment _env;
         private readonly SqlBulk _bulk = new();
-        private readonly Dictionary<SqlQueryType, (string, string)> _sqlCache = new();
-        private readonly IEnumerable<SqlQueryType> _fortDetailTypes = new[]
-        {
-            SqlQueryType.PokestopDetailsOnMergeUpdate,
-            SqlQueryType.GymDetailsOnMergeUpdate,
-        };
-        private readonly IEnumerable<string> _fortDetailColumns = new[]
-        {
-            "Id",
-            "Name",
-            "Url",
-        };
         //private static readonly IReadOnlyDictionary<SqlQueryType, ColumnDataExpression<dynamic>> upsertExpressions = new Dictionary<SqlQueryType, ColumnDataExpression<dynamic>>
         //{
         //    {
@@ -308,9 +297,6 @@
             IWebHostEnvironment env,
             IOptions<DataConsumerOptionsConfig> options)
         {
-            _logger = logger;
-            _env = env;
-
             Options = options.Value;
 
             _logger = logger;
@@ -322,8 +308,24 @@
             _tokenSource = new CancellationTokenSource();
 
             _timer.Interval = Options.IntervalS * 1000;
-            _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(new());
+            _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(_tokenSource.Token);
             _timer.Start();
+
+            //new Thread(async () =>
+            //{
+            //    while (!_tokenSource.IsCancellationRequested)
+            //    {
+            //        //while (!await ConsumeDataAsync(_tokenSource.Token))
+            //        //{
+            //        //    //await Task.Delay(TimeSpan.FromSeconds(Options.IntervalS));
+            //        //    Thread.Sleep(TimeSpan.FromSeconds(Options.IntervalS));
+            //        //}
+            //        await ConsumeDataAsync(_tokenSource.Token);
+            //        Thread.Sleep(TimeSpan.FromSeconds(Options.IntervalS));
+            //        //await Task.Delay(TimeSpan.FromSeconds(Options.IntervalS));
+            //    }
+            //})
+            //{ IsBackground = true, }.Start();
         }
 
         #endregion
@@ -362,12 +364,7 @@
 
             try
             {
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
                 var entitiesToUpsert = await _queue.TakeAllAsync(stoppingToken);
-                stopwatch.Stop();
-                var seconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 5).ToString("F5");
-
                 var entityCount = entitiesToUpsert.Sum(x => x.Value?.Count ?? 0);
                 if (entityCount == 0)
                 {
@@ -375,32 +372,23 @@
                     return;
                 }
 
-                _logger.LogInformation($"{nameof(DataConsumerService)} prepared {entityCount:N0} data entities for MySQL database upsert in {seconds}s...");
-                //var leakMonitor = new ConnectionLeakWatcher(connection);
-                //await connection.OpenAsync(stoppingToken);
-
-                //_logger.LogInformation($"Preparing {entityCount:N0} for upsert...");
-                _logger.LogInformation($"{nameof(DataConsumerService)} is preparing {entityCount:N0} data entities for MySQL database upsert...");
-                var results = new List<SqlBulkResult>();
+                _logger.LogInformation($"{nameof(DataConsumerService)} prepared {entityCount:N0} data entities for MySQL database upsert...");
+                //var results = new List<SqlBulkResult>();
                 var sw = new Stopwatch();
                 sw.Start();
 
-                foreach (var (sqlType, entities) in entitiesToUpsert)
-                {
-                    var result = await UpsertEntitiesAsync(sqlType, entities, stoppingToken);
-                    if (!result.Success)
-                    {
-                        _logger.LogError($"Failed to insert {entityCount:N0} entities");
-                    }
-                    results.Add(result);
-                }
+                var sqls = _bulk.PrepareSqlQuery(
+                    entitiesToUpsert,
+                    Options?.MaximumBatchSize ?? DataConsumerOptionsConfig.DefaultMaximumBatchSize
+                );
+                var result = await EntityRepository.ExecuteAsync(sqls, stoppingToken: stoppingToken);
 
                 sw.Stop();
 
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
-                var rowsAffected = results.Sum(x => x.RowsAffected);
-                var batchCount = results.Sum(x => x.BatchCount);
-                var expectedCount = results.Sum(x => x.ExpectedCount);
+                var rowsAffected = result; //results.Sum(x => x.RowsAffected);
+                var batchCount = sqls.Count(); //results.Sum(x => x.BatchCount);
+                var expectedCount = entityCount; //results.Sum(x => x.ExpectedCount);
 
                 PrintBenchmarkResults(DataLogLevel.Summary,
                     new BenchmarkResults(
@@ -448,30 +436,31 @@
 
 
             // ~ 1-3s
-            string sqlQuery, sqlValues;
-            if (_sqlCache.ContainsKey(sqlType))
-            {
-                (sqlQuery, sqlValues) = _sqlCache[sqlType];
-            }
-            else
-            {
-                (sqlQuery, sqlValues) = SqlQueryBuilder.GetQuery(sqlType);
-                _sqlCache.Add(sqlType, (sqlQuery, sqlValues));
-            }
+            //string sqlQuery, sqlValues;
+            //if (_sqlCache.ContainsKey(sqlType))
+            //{
+            //    (sqlQuery, sqlValues) = _sqlCache[sqlType];
+            //}
+            //else
+            //{
+            //    (sqlQuery, sqlValues) = SqlQueryBuilder.GetQuery(sqlType);
+            //    _sqlCache.Add(sqlType, (sqlQuery, sqlValues));
+            //}
 
-            var includedProperties = _fortDetailTypes.Contains(sqlType)
-                ? _fortDetailColumns
-                : null;
-            var result = await _bulk.InsertBulkRawAsync(
-                sqlQuery,
-                sqlValues,
-                entities,
-                batchSize: Options?.MaximumBatchSize ?? DataConsumerOptionsConfig.DefaultMaxBatchSize,
-                includedProperties,
-                ignoredProperties: null,
-                stoppingToken
-            );
-            return result;
+            //var includedProperties = _fortDetailTypes.Contains(sqlType)
+            //    ? _fortDetailColumns
+            //    : null;
+            //var result = await _bulk.InsertBulkRawAsync(
+            //    sqlQuery,
+            //    sqlValues,
+            //    entities,
+            //    batchSize: Options?.MaximumBatchSize ?? DataConsumerOptionsConfig.DefaultMaxBatchSize,
+            //    includedProperties,
+            //    ignoredProperties: null,
+            //    stoppingToken
+            //);
+            //return result;
+            return null;
         }
 
         private void PrintBenchmarkResults(DataLogLevel logLevel, BenchmarkResults results, SortedDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> entities)
