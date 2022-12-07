@@ -1,8 +1,6 @@
 ﻿namespace ChuckDeviceController.Data
 {
     // TODO: Finish Account queries
-    // TODO: Finish GymDefender queries
-    // TODO: Finish GymTrainer queries
 
     public static class SqlQueries
     {
@@ -109,11 +107,140 @@ SET
 WHERE id={0}
 ";
 
-        public const string GymTrainerOnMergeUpdate = @"";
-        public const string GymTrainerValuesRaw = @"";
+        #endregion
 
-        public const string GymDefenderOnMergeUpdate = @"";
-        public const string GymDefenderValuesRaw = @"";
+        #region Gym Trainer Queries
+
+        public const string GymTrainerOnMergeUpdate = @"
+INSERT INTO gym_trainer (
+    name, level, team_id, battles_won, km_walked, pokemon_caught, experience
+    combat_rank, combat_rating, has_shared_ex_pass, gym_badge_type, updated
+)
+VALUES {0}
+ON DUPLICATE KEY UPDATE
+    name=VALUES(name),
+    level=VALUES(level),
+    team_id=VALUES(team_id),
+    battles_won=VALUES(battles_won),
+    km_walked=VALUES(km_walked),
+    pokemon_caught=VALUES(pokemon_caught),
+    experience=VALUES(experience),
+    combat_rank=VALUES(combat_rank),
+    combat_rating=VALUES(combat_rating),
+    has_shared_ex_pass=VALUES(has_shared_ex_pass),
+    gym_badge_type=VALUES(gym_badge_type),
+    updated=VALUES(updated)
+";
+        /// <summary>
+        /// 0 - name
+        /// 1 - level
+        /// 2 - team_id
+        /// 3 - battles_won
+        /// 4 - km_walked
+        /// 5 - pokemon_caught
+        /// 6 - experience
+        /// 7 - combat_rank
+        /// 8 - combat_rating
+        /// 9 - has_shared_ex_pass
+        /// 10 - gym_badge_type
+        /// 11 - updated
+        /// </summary>
+        public const string GymTrainerValuesRaw = @"
+{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9},
+{10}, {11}
+";
+
+        #endregion
+
+        #region Gym Defenders Queries
+
+        public const string GymDefenderOnMergeUpdate = @"
+INSERT INTO gym_defender (
+    id, nickname, pokemon_id, display_pokemon_id, form, costume, gender, cp_when_deployed, cp_now, cp,
+    battles_won, battles_lost, berry_value, times_fed, deployment_duration, trainer_name, fort_id, atv_iv, def_iv, sta_iv,
+    move_1, move_2, move_3, battles_attacked, battles_defended, buddy_km_walked, buddy_candy_awarded, coins_returned, from_fort, hatched_from_egg,
+    is_bad, is_egg, is_lucky, shiny, pvp_combat_won, pvp_combat_total, npc_combat_won, npc_combat_total, height_m, weight_kg,
+    updated
+)
+VALUES {0}
+ON DUPLICATE KEY UPDATE
+    nickname=VALUES(nickname),
+    cp_when_deployed=VALUES(cp_when_deployed),
+    cp_now=VALUES(cp_now),
+    cp=VALUES(cp),
+    battles_won=VALUES(battles_won),
+    battles_lost=VALUES(battles_lost),
+    berry_value=VALUES(berry_value),
+    times_fed=VALUES(times_fed),
+    deployment_duration=VALUES(deployment_duration),
+    trainer_name=VALUES(trainer_name),
+    fort_id=VALUES(fort_id),
+    move_1=VALUES(move_1),
+    move_2=VALUES(move_2),
+    move_3=VALUES(move_3),
+    battles_attacked=VALUES(battles_attacked),
+    battles_defended=VALUES(battles_defended),
+    buddy_km_walked=VALUES(buddy_km_walked),
+    buddy_candy_awarded=VALUES(buddy_candy_awarded),
+    coins_returned=VALUES(coins_returned),
+    pvp_combat_won=VALUES(pvp_combat_won),
+    pvp_combat_total=VALUES(pvp_combat_total),
+    npc_combat_won=VALUES(npc_combat_won),
+    npc_combat_total=VALUES(npc_combat_total),
+    height_m=VALUES(height_m),
+    weight_kg=VALUES(weight_kg),
+    updated=VALUES(updated)
+";
+        /// <summary>
+        /// 0 - id
+        /// 1 - nickname
+        /// 2 - pokemon_id
+        /// 3 - display_pokemon_id
+        /// 4 - form
+        /// 5 - costume
+        /// 6 - gender
+        /// 7 - cp_when_deployed
+        /// 8 - cp_now
+        /// 9 - cp
+        /// 10 - battles_won
+        /// 11 - battles_lost
+        /// 12 - berry_value
+        /// 13 - times_fed
+        /// 14 - deployment_duration
+        /// 15 - trainer_name
+        /// 16 - fort_id
+        /// 17 - atk_iv
+        /// 18 - def_iv
+        /// 19 - sta_iv
+        /// 20 - move_1
+        /// 21 - move_2
+        /// 22 - move_3
+        /// 23 - battles_attacked
+        /// 24 - battles_defended
+        /// 25 - buddy_km_walked
+        /// 26 - buddy_candy_awarded
+        /// 27 - coins_returned
+        /// 28 - from_fort
+        /// 29 - hatched_from_egg
+        /// 30 - is_bad
+        /// 31 - is_egg
+        /// 32 - is_lucky
+        /// 33 - shiny
+        /// 34 - pvp_combat_won
+        /// 35 - pvp_combat_total
+        /// 36 - npc_combat_won
+        /// 37 - npc_combat_total
+        /// 38 - height_m
+        /// 39 - weight_kg
+        /// 40 - updated
+        /// </summary>
+        public const string GymDefenderValuesRaw = @"
+{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9},
+{10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19},
+{20}, {21}, {22}, {23}, {24}, {25}, {26}, {27}, {28}, {29},
+{30}, {31}, {32}, {33}, {34}, {35}, {36}, {37}, {38}, {39},
+{40}
+";
 
         #endregion
 

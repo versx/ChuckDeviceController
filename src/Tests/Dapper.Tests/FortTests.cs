@@ -12,16 +12,15 @@
     internal class FortTests
     {
         private const string ConnectionString = ""; // TODO: Add connection string to environment vars
-
-        public const string GetPokestopById = "SELECT * FROM pokestop WHERE id=@id";
+        private const string GetPokestopById = "SELECT * FROM pokestop WHERE id=@id";
 
         private MySqlConnection _connection = new(ConnectionString);
 
         [SetUp]
         public void Setup()
         {
-            _connection = new MySqlConnection(ConnectionString);
-            Task.Run(async () => await _connection.OpenAsync()).Wait();
+            //_connection = new MySqlConnection(ConnectionString);
+            //Task.Run(async () => await _connection.OpenAsync()).Wait();
         }
 
         [TestCase("a59634f8aec34f9b8e7b265124d78ac8.16")]
@@ -54,6 +53,26 @@
             Assert.That(pokestop, Is.Not.Null);
         }
 
+        [Test]
+        public async Task TestGymDefender()
+        {
+            var instance = Activator.CreateInstance(typeof(GymDefender)) as GymDefender;
+            var columnNames = GetPropertyNames(instance);
+            Assert.IsTrue(true);
+        }
+
+        [Test]
+        public async Task TestGymTrainer()
+        {
+            var instance = Activator.CreateInstance(typeof(GymTrainer)) as GymTrainer;
+            var columnNames = GetPropertyNames(instance);
+            foreach (var columnName in  columnNames)
+            {
+                Console.WriteLine(columnName);
+            }
+            Assert.IsTrue(true);
+        }
+
         private static void SetTypeMap<TEntity>()
         {
             Dapper.SqlMapper.SetTypeMap(
@@ -75,7 +94,7 @@
             return (attrib?.Name ?? member.Name).ToLower();
         }
 
-        private static IEnumerable<string> GetPropertyNames<TEntity>(
+        private IEnumerable<string> GetPropertyNames<TEntity>(
             TEntity entity,
             IEnumerable<string>? includedProperties = null,
             IEnumerable<string>? ignoredProperties = null)
@@ -105,6 +124,7 @@
                     continue;
 
                 yield return $"{columnAttr.Name} AS {prop.Name}";
+                //yield return columnAttr.Name;
                 //yield return prop.Name;
             }
         }
