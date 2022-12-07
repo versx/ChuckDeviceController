@@ -4,6 +4,7 @@
     using System.Threading;
 
     using Microsoft.Extensions.Options;
+    using MySqlConnector;
 
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Entities;
@@ -21,12 +22,6 @@
         private static readonly ConcurrentDictionary<ulong, ConcurrentBag<string>> _gymIdsPerCell = new(DefaultConcurrencyLevel, DefaultCapacity);
         private static readonly ConcurrentDictionary<ulong, ConcurrentBag<string>> _stopIdsPerCell = new(DefaultConcurrencyLevel, DefaultCapacity);
         private readonly ILogger<IClearFortsHostedService> _logger;
-
-        private readonly Dictionary<ulong, List<string>> _gymIdsPerCell = new();
-        private readonly Dictionary<ulong, List<string>> _stopIdsPerCell = new();
-
-        private readonly object _gymCellLock = new();
-        private readonly object _stopCellLock = new();
 
         #endregion
 
@@ -52,28 +47,6 @@
 
         #region Add Cells
 
-        public void AddCell(ulong cellId)
-        {
-            if (!Options.ClearOldForts)
-                return;
-
-            lock (_gymCellLock)
-            {
-                if (!_gymIdsPerCell.ContainsKey(cellId))
-                {
-                    _gymIdsPerCell.Add(cellId, new());
-                }
-            }
-
-            lock (_stopCellLock)
-            {
-                if (!_stopIdsPerCell.ContainsKey(cellId))
-                {
-                    _stopIdsPerCell.Add(cellId, new());
-                }
-            }
-        }
-
         public void AddGym(ulong cellId, string gymId)
         {
             if (!Options.ClearOldForts)
@@ -84,9 +57,6 @@
                 oldValue.Add(gymId);
                 return oldValue;
             });
-                }
-                _gymIdsPerCell[cellId].Add(gymId);
-            }
         }
 
         public void AddPokestop(ulong cellId, string pokestopId)
@@ -99,51 +69,20 @@
                 oldValue.Add(pokestopId);
                 return oldValue;
             });
-                }
-                _stopIdsPerCell[cellId].Add(pokestopId);
-            }
         }
 
         #endregion
 
         #region Clear Cells
 
-        public void ClearCells()
-        {
-            //ClearPokestops();
-            //ClearGyms();
-            lock (_stopCellLock)
-            {
-                _stopIdsPerCell.Clear();
-            }
-            lock (_gymCellLock)
-            {
-                _gymIdsPerCell.Clear();
-            }
-        }
-
         public void ClearPokestops()
         {
-            lock (_stopCellLock)
-            {
-                _stopIdsPerCell.Clear();
-                //_stopIdsPerCell.Keys.ToList().ForEach(cellId =>
-                //{
-                //    _stopIdsPerCell[cellId].Clear();
-                //});
-            }
+            _stopIdsPerCell.Clear();
         }
 
         public void ClearGyms()
         {
-            lock (_gymCellLock)
-            {
-                _gymIdsPerCell.Clear();
-                //_gymIdsPerCell.Keys.ToList().ForEach(cellId =>
-                //{
-                //    _gymIdsPerCell[cellId].Clear();
-                //});
-            }
+            _gymIdsPerCell.Clear();
         }
 
         #endregion
@@ -158,71 +97,68 @@
         {
             try
             {
-                // TODO: Get pokestops and gyms via Dapper
-                //using var context = await _factory.CreateDbContextAsync();
+                using var connection = await EntityRepository.CreateConnectionAsync($"{nameof(IClearFortsHostedService)}::ClearOldFortsAsync");
+                if (connection == null)
+                {
+                    _logger.LogError($"Failed to connect to MySQL database server!");
+                    return;
+                }
 
                 var stopsToDelete = new List<Pokestop>();
-                var stopIdKeys = _stopIdsPerCell.Keys.ToList();
-                for (var i = 0; i < stopIdKeys.Count; i++)
+                var stopCellIds = _stopIdsPerCell.Keys
+                    .Where(x => _stopIdsPerCell[x].Any())
+                    .ToList();
+                for (var i = 0; i < stopCellIds.Count; i++)
                 {
-                    var cellId = stopIdKeys[i];
+                    var cellId = stopCellIds[i];
                     var pokestopIds = _stopIdsPerCell[cellId];
                     if (!pokestopIds.Any())
                         continue;
 
-                    // Get pokestops within S2 cell and not marked deleted
-                    // Filter pokestops that have not been seen within S2 cell by devices
-                    //var pokestops = context.Pokestops
-                    //    .Where(stop => stop.CellId == cellId && !stop.IsDeleted)
-                    //    .Where(stop => !pokestopIds.Contains(stop.Id))
-                    //    .ToList();
-                    //if (pokestops.Any())
-                    //{
-                    //    // Mark gyms as deleted
-                    //    pokestops.ForEach(stop => stop.IsDeleted = true);
-                    //    stopsToDelete.AddRange(pokestops);
-                    //}
+                    //Console.WriteLine($"Checking cell id {cellId} with {pokestopIds.Count:N0} pokestops");
+                    var pokestops = await GetDeletableFortsAsync<Pokestop>(connection, cellId, pokestopIds);
+                    if (pokestops.Any())
+                    {
+                        stopsToDelete.AddRange(pokestops);
+                    }
                 }
 
                 var gymsToDelete = new List<Gym>();
-                var gymIdKeys = _gymIdsPerCell.Keys.ToList();
-                for (var i = 0; i < gymIdKeys.Count; i++)
+                var gymCellIds = _gymIdsPerCell.Keys
+                    .Where(x => _gymIdsPerCell[x].Any())
+                    .ToList();
+                for (var i = 0; i < gymCellIds.Count; i++)
                 {
-                    var cellId = gymIdKeys[i];
+                    var cellId = gymCellIds[i];
                     var gymIds = _gymIdsPerCell[cellId];
                     if (!gymIds.Any())
                         continue;
 
-                    // Get gyms within S2 cell and not marked deleted
-                    // Filter gyms that have not been seen within S2 cell by devices
-                    //var gyms = context.Gyms
-                    //    .Where(gym => gym.CellId == cellId && !gym.IsDeleted)
-                    //    .Where(gym => !gymIds.Contains(gym.Id))
-                    //    .ToList();
-                    //if (gyms.Any())
-                    //{
-                    //    // Mark gyms as deleted
-                    //    gyms.ForEach(gym => gym.IsDeleted = true);
-                    //    gymsToDelete.AddRange(gyms);
-                    //}
+                    //Console.WriteLine($"Checking cell id {cellId} with {gymIds.Count:N0} gyms");
+                    var gyms = await GetDeletableFortsAsync<Gym>(connection, cellId, gymIds);
+                    if (gyms.Any())
+                    {
+                        gymsToDelete.AddRange(gyms);
+                    }
                 }
 
-                if (stopsToDelete.Count > 0)
+                if (stopsToDelete.Any())
                 {
                     _logger.LogInformation($"Marking {stopsToDelete.Count:N0} Pokestops as deleted since they no longer seem to exist.");
-
                     var result = await EntityRepository.ExecuteBulkAsync("pokestop", stopsToDelete, new ColumnDataExpression<Pokestop>
                     {
+                        { "id", x => x.Id },
                         { "deleted", x => x.IsDeleted },
                     });
                     _logger.LogInformation($"{result:N0} Pokestops have been marked as deleted.");
                 }
 
-                if (gymsToDelete.Count > 0)
+                if (gymsToDelete.Any())
                 {
                     _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they no longer seem to exist.");
                     var result = await EntityRepository.ExecuteBulkAsync("gym", gymsToDelete, new ColumnDataExpression<Gym>
                     {
+                        { "id", x => x.Id },
                         { "deleted", x => x.IsDeleted },
                     });
                     _logger.LogInformation($"{result:N0} Gyms have been marked as deleted.");
@@ -248,9 +184,30 @@
             if (!Options.ClearOldForts)
                 return;
 
-            await ClearOldFortsAsync();
+            //await ClearOldFortsAsync();
+            new Thread(async () => await ClearOldFortsAsync()) { IsBackground = true }.Start();
+            await Task.CompletedTask;
         }
 
         #endregion
+
+        private static async Task<IEnumerable<TEntity>> GetDeletableFortsAsync<TEntity>(MySqlConnection connection, ulong cellId, IEnumerable<string> fortIds)
+            where TEntity : BaseFort
+        {
+            var fortsToDelete = new List<TEntity>();
+
+            // Get forts within S2 cell and not marked deleted.
+            // Filter forts that have not been seen within S2
+            // cell by devices.
+            var stopIdsArg = string.Join(", ", fortIds.Select(x => $"'{x}'"));
+            var whereClause = $" WHERE cell_id = {cellId} AND id NOT IN ({stopIdsArg}) AND deleted = false";
+            var forts = await EntityRepository.GetEntitiesAsync<string, TEntity>(connection, whereClause);
+            foreach (var fort in forts)
+            {
+                fort.IsDeleted = true;
+                fortsToDelete.Add(fort);
+            }
+            return fortsToDelete;
+        }
     }
 }
