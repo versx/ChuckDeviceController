@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Data
 {
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Data;
 
@@ -26,6 +27,18 @@
         //private static readonly SemaphoreSlim _sem = new(1, 1);
         private static readonly ILogger<SqlBulk> _logger =
             new Logger<SqlBulk>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Debug)));
+        private readonly Dictionary<SqlQueryType, (string, string)> _sqlCache = new();
+        private readonly IEnumerable<SqlQueryType> _fortDetailTypes = new[]
+        {
+            SqlQueryType.PokestopDetailsOnMergeUpdate,
+            SqlQueryType.GymDetailsOnMergeUpdate,
+        };
+        private readonly IEnumerable<string> _fortDetailColumns = new[]
+        {
+            "Id",
+            "Name",
+            "Url",
+        };
 
         #endregion
 
@@ -144,6 +157,56 @@
 
             //_sem.Release();
             return new SqlBulkResult(success, batchCount, rowsAffected, expectedCount);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entitiesToUpsert"></param>
+        /// <param name="batchSize"></param>
+        /// <returns></returns>
+        public IEnumerable<string> PrepareSqlQuery<TEntity>(SortedDictionary<SqlQueryType, ConcurrentBag<TEntity>> entitiesToUpsert, int batchSize = DefaultBatchSize)
+            where TEntity : BaseEntity
+        {
+            var sqls = new List<string>();
+
+            try
+            {
+                foreach (var (sqlType, entities) in entitiesToUpsert)
+                {
+                    string sqlQuery, sqlValues;
+                    if (_sqlCache.ContainsKey(sqlType))
+                    {
+                        (sqlQuery, sqlValues) = _sqlCache[sqlType];
+                    }
+                    else
+                    {
+                        (sqlQuery, sqlValues) = SqlQueryBuilder.GetQuery(sqlType);
+                        _sqlCache.Add(sqlType, (sqlQuery, sqlValues));
+                    }
+
+                    var useComma = !string.IsNullOrEmpty(sqlValues);
+                    var sql = GenerateSqlQueryBatchesRaw(
+                        sqlQuery,
+                        sqlValues,
+                        entities,
+                        batchSize,
+                        _fortDetailTypes.Contains(sqlType)
+                            ? _fortDetailColumns
+                            : null,
+                        null,
+                        useCommaInsteadOfEndingStatement: useComma
+                    );
+                    sqls.AddRange(sql);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
+            }
+
+            return sqls;
         }
 
         #endregion
