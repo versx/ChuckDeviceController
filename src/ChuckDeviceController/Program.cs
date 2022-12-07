@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using MySqlConnector;
 
 using ChuckDeviceController;
 using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
@@ -31,6 +32,10 @@ if (config.Providers.Count() == 2)
     // failed to load config provider.
     Environment.FailFast($"Failed to find or load configuration file, exiting...");
 }
+
+// MySQL resiliency options
+var resiliencyConfig = new MySqlResiliencyOptions();
+config.Bind("Database", resiliencyConfig);
 
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
@@ -97,23 +102,15 @@ builder.Services.AddDistributedMemoryCache();
 #region Database Contexts
 
 // Register data contexts, factories, and pools
-//var poolSize = config.GetValue("DbContextPoolSize", 1024);
-builder.Services.AddDbContextFactory<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, new()), ServiceLifetime.Singleton);
-//builder.Services.AddDbContextPool<MapDbContext>(options =>
-//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
-//builder.Services.AddDbContextPool<ControllerDbContext>(options =>
-//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName), poolSize);
 builder.Services.AddDbContext<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, new()), ServiceLifetime.Scoped);
-builder.Services.AddDbContext<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, new()), ServiceLifetime.Scoped);
-//builder.Services.AddPooledDbContextFactory<MapDbContext>(options =>
-//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName)
-//, poolSize);
-//builder.Services.AddPooledDbContextFactory<ControllerDbContext>(options =>
-//  options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName)
-//, poolSize);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Scoped);
+
+{
+    var connection = new MySqlConnection(connectionString);
+    Task.Run(async () => await connection.OpenAsync()).Wait();
+    //connection.Open();
+    return connection;
+});
 
 #endregion
 

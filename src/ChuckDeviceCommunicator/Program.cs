@@ -4,6 +4,7 @@ using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Protos;
 
+// TODO: Add log to file support
 
 #region Config
 

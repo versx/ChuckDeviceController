@@ -55,8 +55,8 @@ if (config.Providers.Count() == 2)
 }
 
 // MySQL resiliency options
-var resiliencyOptions = new MySqlResiliencyOptions();
-config.Bind("Database", resiliencyOptions);
+var resiliencyConfig = new MySqlResiliencyOptions();
+config.Bind("Database", resiliencyConfig);
 
 // JWT authentication options for gRPC endpoints
 var jwtConfig = new JwtAuthConfig();
@@ -98,6 +98,7 @@ builder.WebHost.UseConfiguration(config);
 
 #region Logger Filtering
 
+// TODO: Add log to file support
 var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
 builder.WebHost.ConfigureLogging(configure => configure.AddSimpleConsole(options => GetLoggingConfig(logLevel, configure)));
 
@@ -107,7 +108,7 @@ builder.WebHost.ConfigureLogging(configure => configure.AddSimpleConsole(options
 
 // https://codewithmukesh.com/blog/user-management-in-aspnet-core-mvc/
 builder.Services.AddDbContext<UserIdentityContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), ServiceLifetime.Transient);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Transient);
 
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options => options = identityConfig)
@@ -189,13 +190,13 @@ builder.Services.Configure<MySqlResiliencyOptions>(config.GetSection("Database")
 // Register data contexts, factories, and pools
 var poolSize = config.GetValue("DbContextPoolSize", 1024);
 builder.Services.AddDbContextFactory<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), ServiceLifetime.Singleton);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), ServiceLifetime.Singleton);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Singleton);
 builder.Services.AddDbContextPool<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), poolSize);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), poolSize);
 builder.Services.AddDbContextPool<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyOptions), poolSize);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), poolSize);
 
 #endregion
 

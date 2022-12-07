@@ -2,13 +2,16 @@
 {
     public class MySqlResiliencyOptions
     {
-        public const int DefaultMaxRetryCount = 10;
+        public const ushort DefaultMaximumPoolSize = 1024;
+        public const int DefaultMaximumRetryCount = 10;
         public const int DefaultRetryIntervalS = 10;
         public const int DefaultCommandTimeoutS = 30;
         public const int DefaultConnectionTimeoutS = 30;
         public const int DefaultConnectionLeakTimeoutS = 120;
 
-        public int MaxRetryCount { get; set; } = DefaultMaxRetryCount;
+        public ushort MaximumPoolSize { get; set; } = DefaultMaximumPoolSize;
+
+        public int MaximumRetryCount { get; set; } = DefaultMaximumRetryCount;
 
         public int RetryIntervalS { get; set; } = DefaultRetryIntervalS;
 
