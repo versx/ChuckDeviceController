@@ -211,35 +211,24 @@
         public static Pokemon ParsePokemonFromWild(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
         {
             var spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
-            var hasDisplay = wildPokemon.Pokemon.PokemonDisplay != null;
             var pokemon = new Pokemon
             {
                 Id = wildPokemon.EncounterId.ToString(),
                 PokemonId = Convert.ToUInt16(wildPokemon.Pokemon.PokemonId),
                 Latitude = wildPokemon.Latitude,
                 Longitude = wildPokemon.Longitude,
-                Gender = hasDisplay 
-                    ? Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay?.Gender ?? PokemonDisplayProto.Types.Gender.Unset)
-                    : (ushort)0,
-                Form = Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay?.Form ?? PokemonDisplayProto.Types.Form.Unset),
-                Costume = hasDisplay
-                    ? Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay?.Costume ?? PokemonDisplayProto.Types.Costume.Unset)
-                    : (ushort)0,
-                Weather = hasDisplay
-                    ? Convert.ToUInt16(wildPokemon.Pokemon.PokemonDisplay?.WeatherBoostedCondition ?? GameplayWeatherProto.Types.WeatherCondition.None)
-                    : (ushort)0,
                 SpawnId = spawnId,
                 IsEvent = isEvent,
                 Username = username,
                 CellId = cellId,
                 SeenType = SeenType.Wild,
             };
+            pokemon.SetPokemonDisplay(wildPokemon.Pokemon?.PokemonDisplay);
             return pokemon;
         }
 
         public static async Task<Pokemon> ParsePokemonFromNearby(MySqlConnection connection, IMemoryCacheHostedService memCache, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
         {
-            var hasDisplay = nearbyPokemon.PokemonDisplay != null;
             var pokestopId = string.IsNullOrEmpty(nearbyPokemon.FortId)
                 ? null
                 : nearbyPokemon.FortId;
@@ -247,24 +236,13 @@
             {
                 Id = Convert.ToString(nearbyPokemon.EncounterId),
                 PokemonId = Convert.ToUInt16(nearbyPokemon.PokedexNumber),
-                Form = hasDisplay
-                    ? Convert.ToUInt16(nearbyPokemon.PokemonDisplay?.Form ?? PokemonDisplayProto.Types.Form.Unset)
-                    : (ushort)0,
-                Costume = hasDisplay
-                    ? Convert.ToUInt16(nearbyPokemon.PokemonDisplay?.Costume ?? PokemonDisplayProto.Types.Costume.Unset)
-                    : (ushort)0,
-                Weather = hasDisplay
-                    ? Convert.ToUInt16(nearbyPokemon.PokemonDisplay?.WeatherBoostedCondition ?? GameplayWeatherProto.Types.WeatherCondition.None)
-                    : (ushort)0,
-                Gender = hasDisplay
-                    ? Convert.ToUInt16(nearbyPokemon.PokemonDisplay?.Gender ?? PokemonDisplayProto.Types.Gender.Unset)
-                    : (ushort)0,
                 PokestopId = pokestopId,
                 IsEvent = isEvent,
                 Username = username,
                 CellId = cellId,
                 IsExpireTimestampVerified = false,
             };
+            pokemon.SetPokemonDisplay(nearbyPokemon.PokemonDisplay);
 
             // Figure out where the Pokemon is
             double lat;
@@ -286,7 +264,7 @@
                 var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, nearbyPokemon.FortId, memCache);
                 if (pokestop == null)
                 {
-                    Console.WriteLine($"Failed to fetch Pokestop for nearby Pokemon '{pokemon.Id}' to find location, skipping");
+                    // Failed to fetch Pokestop for nearby Pokemon in order to find location, skipping
                     return null;
                 }
                 lat = pokestop.Latitude;
@@ -302,24 +280,18 @@
 
         public static async Task<Pokemon> ParsePokemonFromMap(MySqlConnection connection, IMemoryCacheHostedService memCache, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
         {
-            var hasDisplay = mapPokemon.PokemonDisplay != null;
             var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
             var spawnpointId = mapPokemon.SpawnpointId;
             var pokemon = new Pokemon
             {
                 Id = encounterId.ToString(),
                 PokemonId = Convert.ToUInt32(mapPokemon.PokedexTypeId),
-                Gender = hasDisplay
-                    ? Convert.ToUInt16(mapPokemon.PokemonDisplay?.Gender ?? PokemonDisplayProto.Types.Gender.Unset)
-                    : (ushort)0,
-                Form = Convert.ToUInt16(mapPokemon.PokemonDisplay?.Form ?? PokemonDisplayProto.Types.Form.Unset),
-                Costume = Convert.ToUInt16(mapPokemon.PokemonDisplay?.Costume ?? PokemonDisplayProto.Types.Costume.Unset),
-                Weather = Convert.ToUInt16(mapPokemon.PokemonDisplay?.WeatherBoostedCondition ?? GameplayWeatherProto.Types.WeatherCondition.None),
                 IsEvent = isEvent,
                 Username = username,
                 CellId = cellId,
                 SeenType = SeenType.LureWild,
             };
+            pokemon.SetPokemonDisplay(mapPokemon.PokemonDisplay);
             
             // Get Pokestop via spawnpoint id
             var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, spawnpointId, memCache);
@@ -986,6 +958,23 @@
                 level = Convert.ToUInt16(Math.Round(171.0112688 * cpMultiplier - 95.20425243));
             }
             return level;
+        }
+
+        private void SetPokemonDisplay(PokemonDisplayProto? pokemonDisplay)
+        {
+            var hasDisplay = pokemonDisplay != null;
+            Form = hasDisplay
+                ? Convert.ToUInt16(pokemonDisplay?.Form ?? PokemonDisplayProto.Types.Form.Unset)
+                : (ushort)0;
+            Costume = hasDisplay
+                ? Convert.ToUInt16(pokemonDisplay?.Costume ?? PokemonDisplayProto.Types.Costume.Unset)
+                : (ushort)0;
+            Gender = hasDisplay
+                ? Convert.ToUInt16(pokemonDisplay?.Gender ?? PokemonDisplayProto.Types.Gender.Unset)
+                : (ushort)0;
+            Weather = hasDisplay
+                ? Convert.ToUInt16(pokemonDisplay?.WeatherBoostedCondition ?? GameplayWeatherProto.Types.WeatherCondition.None)
+                : (ushort)0;
         }
 
         #endregion

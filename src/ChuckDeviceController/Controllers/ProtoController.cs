@@ -149,7 +149,10 @@
                         device.LastLatitude = payloadLat;
                         device.LastLongitude = payloadLon;
                     }
-                    device.LastHost = ipAddr;
+                    if (device.LastHost != ipAddr)
+                    {
+                        device.LastHost = ipAddr;
+                    }
                     device.LastSeen = now;
                     _context.Devices.Update(device);
                 }
