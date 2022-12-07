@@ -1,5 +1,8 @@
 ﻿namespace ChuckDeviceController
 {
+    using System.ComponentModel;
+    using System.Text.Json.Serialization;
+
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Repositories;
 
@@ -21,10 +24,16 @@
 
         #region Properties
 
+        [JsonPropertyName("database_connections_created")]
+        [DisplayName("Benchmark Times")]
         public override ulong TotalDatabaseConnectionsCreated => EntityRepository.InstanceCount;
 
+        [JsonPropertyName("data_times")]
+        [DisplayName("Benchmark Times")]
         public override IReadOnlyList<DataEntityTime> Times => _entityTimes; // Data consumer times
 
+        [JsonPropertyName("avg_time")]
+        [DisplayName("Average Benchmark Time")]
         public override DataEntityTime? AverageTime
         {
             get
