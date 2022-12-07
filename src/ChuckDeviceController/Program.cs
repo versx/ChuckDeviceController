@@ -104,7 +104,7 @@ builder.Services.AddDistributedMemoryCache();
 // Register data contexts, factories, and pools
 builder.Services.AddDbContext<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Scoped);
-
+builder.Services.AddScoped<MySqlConnection>(options =>
 {
     var connection = new MySqlConnection(connectionString);
     Task.Run(async () => await connection.OpenAsync()).Wait();

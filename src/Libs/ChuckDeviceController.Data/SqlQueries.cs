@@ -255,16 +255,20 @@ INSERT INTO device (
 VALUES
     {0}
 ON DUPLICATE KEY UPDATE
-    instance_name=VALUES(instance_name),
-    account_username=VALUES(account_username),
-    last_host=VALUES(last_host),
-    last_lat=VALUES(last_lat),
-    last_lon=VALUES(last_lon),
-    last_seen=VALUES(last_seen),
+    instance_name=COALESCE(VALUES(instance_name), instance_name),
+    account_username=COALESCE(VALUES(account_username), account_username),
+    last_host=COALESCE(VALUES(last_host), last_host),
+    last_lat=COALESCE(VALUES(last_lat), last_lat),
+    last_lon=COALESCE(VALUES(last_lon), last_lon),
+    last_seen=COALESCE(VALUES(last_seen), last_seen),
     pending_account_switch=VALUES(pending_account_switch)
 ";
-
-        public const string DeviceValues = "(@Uuid, @InstanceName, @AccountUsername, @LastHost, @LastLatitude, @LastLongitude, @LastSeen, @IsPendingAccountSwitch)";
+        public const string DeviceValues = @"(
+    @Uuid, @InstanceName, @AccountUsername,
+    @LastHost, @LastLatitude, @LastLongitude, @LastSeen,
+    @IsPendingAccountSwitch
+)
+";
 
         #endregion
 

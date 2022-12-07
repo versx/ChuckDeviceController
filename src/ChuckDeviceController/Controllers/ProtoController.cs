@@ -3,32 +3,36 @@
     using System.Collections.Concurrent;
 
     using Microsoft.AspNetCore.Mvc;
+    using MySqlConnector;
     using POGOProtos.Rpc;
 
     using ChuckDeviceController.Collections;
-    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
     using ChuckDeviceController.Services;
-
+    
     [ApiController]
     public class ProtoController : ControllerBase
     {
+        private const int DefaultConcurrencyLevel = 25;
+        private const ushort DefaultCapacity = ushort.MaxValue;
         private const string ContentTypeJson = "application/json";
 
         #region Variables
 
-        private static readonly ConcurrentDictionary<string, ushort> _levelCache = new();
+        private static readonly ConcurrentDictionary<string, ushort> _levelCache = new(DefaultConcurrencyLevel, DefaultCapacity);
         private readonly SemaphoreSlim _semDevices = new(1); // REVIEW: static access modifier
 
         private readonly ILogger<ProtoController> _logger;
         private readonly SafeCollection<ProtoPayloadQueueItem> _taskQueue;
         private readonly IMemoryCacheHostedService _memCache;
-        private readonly ControllerDbContext _context;
+        private readonly MySqlConnection _connection;
 
         #endregion
 
@@ -38,12 +42,12 @@
             ILogger<ProtoController> logger,
             SafeCollection<ProtoPayloadQueueItem> taskQueue,
             IMemoryCacheHostedService memCache,
-            ControllerDbContext context)
+            MySqlConnection connection)
         {
             _logger = logger;
             _taskQueue = taskQueue;
             _memCache = memCache;
-            _context = context;
+            _connection = connection;
         }
 
         #endregion
@@ -95,10 +99,9 @@
             await SetAccountLevelAsync(payload.Uuid, payload.Username, payload.Level, payload.TrainerXp ?? 0);
 
             // Set device last location and last seen time
-            var device = await SetDeviceLastLocationAsync(payload);
+            var device = await SetDeviceLocationAsync(payload);
 
             // Queue proto payload for processing
-            //await _taskQueue.EnqueueAsync(new ProtoPayloadQueueItem
             var wasAdded =  _taskQueue.TryAdd(new ProtoPayloadQueueItem
             {
                 Payload = payload,
@@ -119,7 +122,7 @@
 
         #region Private Methods
 
-        private async Task<Device?> SetDeviceLastLocationAsync(ProtoPayload payload)
+        private async Task<Device?> SetDeviceLocationAsync(ProtoPayload payload)
         {
             await _semDevices.WaitAsync();
             Device? device = null;
@@ -130,7 +133,7 @@
                 var ipAddr = Request.GetIPAddress(defaultValue: null);
                 //\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b
 
-                device = await _context.Devices.FindAsync(payload.Uuid);
+                device = await EntityRepository.GetEntityAsync<string, Device>(_connection, payload.Uuid, _memCache, skipCache: false, setCache: true);
                 if (device == null)
                 {
                     device = new Device
@@ -142,7 +145,6 @@
                         LastLongitude = payload.LongitudeTarget,
                         LastSeen = now,
                     };
-                    await _context.Devices.AddAsync(device);
                 }
                 else
                 {
@@ -160,14 +162,18 @@
                         device.LastHost = ipAddr;
                     }
                     device.LastSeen = now;
-                    _context.Devices.Update(device);
                 }
 
-                await _context.SaveChangesAsync();
+                var sql = string.Format(SqlQueries.DeviceOnMergeUpdate, SqlQueries.DeviceValues);
+                var result = await EntityRepository.ExecuteAsync(_connection, sql, device);
+                if (result < 1)
+                {
+                    _logger.LogWarning($"Failed to update device '{device.Uuid}'");
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"SetDeviceLastLocationAsync: {ex}");
+                _logger.LogError($"SetDeviceLastLocationAsync: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             _semDevices.Release();
@@ -184,37 +190,43 @@
                 }
 
                 // Attempt to get cached level, if it exists
-                if (_levelCache.TryGetValue(username, out var oldLevel))
+                _levelCache.TryGetValue(username, out var oldLevel);
+
+                // Check if cached level is same as current level
+                // or if higher than current
+                if (oldLevel == level || oldLevel > level)
                 {
-                    // Check if cached level is same as current level
-                    // or if higher than current
-                    if (oldLevel == level || oldLevel > level)
-                    {
-                        return;
-                    }
+                    return;
                 }
 
-                // Attempt to add account level to cache, otherwise if it exists
+                // Add account level to cache, otherwise if it exists
                 // update the value
                 _levelCache.AddOrUpdate(username, level, (key, oldValue) => level);
 
-                // Update account level if account exists
-                var account = await _context.Accounts.FindAsync(username);
-                if (account != null)
-                {
-                    account.Level = level;
-                    _context.Accounts.Update(account);
-                    await _context.SaveChangesAsync();
+                // Attempt to fetch account
+                var account = await EntityRepository.GetEntityAsync<string, Account>(_connection, username, _memCache, skipCache: false, setCache: true);
+                if (account == null)
+                    return;
 
-                    if (oldLevel > 0)
+                if (account.Level != level)
+                {
+                    // Update account level
+                    account.Level = level;
+                    var result = await EntityRepository.ExecuteAsync(_connection, SqlQueries.AccountLevelUpdate, account);
+                    if (result < 1)
                     {
-                        _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' leveled up from {oldLevel} to {level} with {trainerXp:N0} XP");
+                        _logger.LogWarning($"Failed to update level for account '{account.Username}'");
                     }
+                }
+
+                if (oldLevel > 0)
+                {
+                    _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' leveled up from {oldLevel} to {level} with {trainerXp:N0} XP");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[{uuid}] Error: {ex}");
+                _logger.LogError($"[{uuid}] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 

@@ -194,7 +194,7 @@
             using var trans = await connection.BeginTransactionAsync(stoppingToken);
             try
             {
-                rowsAffected = await connection.ExecuteAsync(sql, param, commandTimeout: commandTimeoutS, commandType: CommandType.Text);
+                rowsAffected = await connection.ExecuteAsync(sql, param, trans, commandTimeoutS, CommandType.Text);
                 await trans.CommitAsync(stoppingToken);
             }
             catch (Exception ex)
@@ -204,6 +204,35 @@
             }
 
             _sem.Release();
+            return rowsAffected;
+        }
+
+        /// <summary>
+        /// Execute parameterized SQL query.
+        /// </summary>
+        /// <param name="sql">SQL query to execute.</param>
+        /// <param name="param">Parameter for SQL query.</param>
+        /// <param name="commandTimeoutS">SQL command timeout in seconds.</param>
+        /// <returns>Returns the number of rows affected by the query.</returns>
+        /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
+        public static async Task<int> ExecuteAsync(MySqlConnection connection, string sql, object? param = null, int? commandTimeoutS = EntityDataRepository.DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
+        {
+            var rowsAffected = 0;
+            //await _sem.WaitAsync(stoppingToken);
+
+            using var trans = await connection.BeginTransactionAsync(stoppingToken);
+            try
+            {
+                rowsAffected = await connection.ExecuteAsync(sql, param, trans, commandTimeoutS, CommandType.Text);
+                await trans.CommitAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                await trans.RollbackAsync(stoppingToken);
+            }
+
+            //_sem.Release();
             return rowsAffected;
         }
 

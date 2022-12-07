@@ -29,6 +29,7 @@
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), DefaultMimeType);
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.ContentType.ToString(), DefaultMimeType);
+                client.DefaultRequestHeaders.Add(HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent);
                 client.Timeout = TimeSpan.FromSeconds(timeoutS);
                 return await client.GetStringAsync(url);
             }
@@ -52,7 +53,7 @@
         /// <param name="timeoutS"></param>
         /// <param name="userAgent"></param>
         /// <returns>Returns the response string of the HTTP POST request.</returns>
-        public static async Task<(HttpStatusCode, string?)> PostAsync(string url, string? payload = null, uint timeoutS = DefaultRequestTimeoutS, string userAgent = DefaultUserAgent)
+        public static async Task<(HttpStatusCode, string?)> PostAsync(string url, string? payload = null, uint timeoutS = DefaultRequestTimeoutS, string? userAgent = DefaultUserAgent)
         {
             try
             {

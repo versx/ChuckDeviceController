@@ -83,6 +83,8 @@
 
         #endregion
 
+        #region Route Handlers
+
         private async Task<DeviceResponse> HandleControllerRequestAsync(DevicePayload payload)
         {
             _logger.LogInformation($"[{payload?.Uuid}] Received control request: {payload?.Type}");
@@ -122,6 +124,8 @@
                     return CreateErrorResponse($"Unhandled request type '{payload.Type}'");
             }
         }
+
+        #endregion
 
         #region Request Handlers
 
@@ -496,7 +500,7 @@
 
         #region Helper Methods
 
-        private async Task<TEntity?> GetEntityAsync<TKey, TEntity>(ControllerDbContext context, TKey? key)
+        private async Task<TEntity?> GetEntityAsync<TKey, TEntity>(ControllerDbContext context, TKey? key, bool skipCache = true)
             where TEntity : class
         {
             if (key == null)
@@ -504,7 +508,12 @@
                 return default;
             }
 
-            var entity = _memCache.Get<TKey, TEntity>(key);
+            TEntity? entity = null;
+            if (!skipCache)
+            {
+                entity = _memCache.Get<TKey, TEntity>(key);
+            }
+
             entity ??= await context.Set<TEntity>().FindAsync(key);
             return entity;
         }
