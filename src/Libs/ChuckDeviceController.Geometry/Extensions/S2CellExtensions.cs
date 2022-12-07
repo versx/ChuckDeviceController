@@ -60,7 +60,7 @@
         public static S2LatLng S2LatLngFromId(this ulong cellId)
         {
             var s2cell = S2CellFromId(cellId);
-            var center = s2cell.RectBound.Center;
+            var center = s2cell.CapBound.RectBound.Center;
             return center;
         }
 

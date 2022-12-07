@@ -193,13 +193,13 @@
             }
         }
 
-        #endregion
-
-        public uint? GetLastIndexOf(T item, Func<T, uint?> match)
+        public uint? LastIndexOf(T item, Func<T, uint?> match)
         {
             var lastIndex = match(item);
             return lastIndex;
         }
+
+        #endregion
 
         public void Insert(int index, T item)
         {
