@@ -57,10 +57,10 @@
                     HandlePokemonListPayload(json, request.HasIV);
                     break;
                 case PayloadType.Fort:
-                    HandleFortPayload(json, request.Username);
+                    HandleFortPayload(json);
                     break;
                 case PayloadType.FortList:
-                    HandleFortListPayload(json, request.Username);
+                    HandleFortListPayload(json);
                     break;
                 case PayloadType.PlayerInfo:
                     HandlePlayerInfoPayload(json);
@@ -110,10 +110,11 @@
             }
         }
 
-        private void HandleFortPayload(string json, string username)
+        private void HandleFortPayload(string json)
         {
-            var fort = json.FromJson<PokemonFortProto>();
-            if (fort == null)
+            //var fort = json.FromJson<PokemonFortProto>();
+            var fortData = json.FromJson<dynamic>();
+            if (fortData == null)
             {
                 // Failed to deserialize payload to PokemonFortProto
                 _logger.LogError($"Failed to deserialize JSON payload to PokemonFortProto proto: {json}");
@@ -122,12 +123,15 @@
 
             _logger.LogDebug($"Received 1 {PayloadType.Fort} proto message");
 
+            var fort = (PokemonFortProto)fortData.data;
+            var username = (string)fortData.username;
             _jobControllerService.GotFort(fort, username);
         }
 
-        private void HandleFortListPayload(string json, string username)
+        private void HandleFortListPayload(string json)
         {
-            var forts = json.FromJson<List<PokemonFortProto>>();
+            //var forts = json.FromJson<List<PokemonFortProto>>();
+            var forts = json.FromJson<List<dynamic>>();
             if (forts == null)
             {
                 // Failed to deserialize payload to list of PokemonFortProto
@@ -137,8 +141,10 @@
 
             _logger.LogDebug($"Received {forts.Count:N0} {PayloadType.Fort} proto messages");
 
-            foreach (var fort in forts)
+            foreach (var fortData in forts)
             {
+                var fort = (PokemonFortProto)fortData.data;
+                var username = (string)fortData.username;
                 _jobControllerService.GotFort(fort, username);
             }
         }

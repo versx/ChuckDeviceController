@@ -13,6 +13,12 @@
     {
         public DataLogLevel LogLevel { get; set; } = DataLogLevel.Summary;
 
+        public bool ShowProcessingTimes { get; set; } = true;
+
+        public bool ShowProcessingCount { get; set; } = true;
+
+        public ushort DecimalPrecision { get; set; } = 4;
+
         public bool IsEnabled(DataLogLevel logLevel)
         {
             return (LogLevel & logLevel) == logLevel;
@@ -48,6 +54,10 @@
         public ushort IntervalS { get; set; } = DefaultIntervalS;
 
         public ushort ParsingConcurrencyLevel { get; set; } = DefaultConcurrencyLevel;
+
+        public ushort CellScanIntervalS { get; set; } = 900; // 15 seconds
+
+        public ushort WeatherCellScanIntervalS { get; set; } = 1800; // 30 seconds
 
         #region Processing Options
 

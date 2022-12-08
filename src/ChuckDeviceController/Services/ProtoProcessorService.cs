@@ -134,7 +134,10 @@
             CheckQueueLength();
 
             var sw = new Stopwatch();
-            sw.Start();
+            if (Options.ShowProcessingTimes)
+            {
+                sw.Start();
+            }
 
             var uuid = payload.Payload.Uuid;
             var username = payload.Payload.Username;
@@ -147,23 +150,6 @@
             //var isEmptyGmo = true;
             //var isInvalidGmo = true;
             //var containsGmo = false;
-
-            //Coordinate? targetCoord = null;
-            //var inArea = false;
-            //if (payload.Payload.LatitudeTarget != 0 && payload.Payload.LongitudeTarget != 0)
-            //{
-            //    targetCoord = new Coordinate(payload.Payload.LatitudeTarget, payload.Payload.LongitudeTarget);
-            //}
-            //var targetKnown = false;
-            //S2CellId targetCellId = default;
-            //if (targetCoord != null)
-            //{
-            //    // Check target is within cell id instead of checking geofences
-            //    targetKnown = true;
-            //    targetCellId = targetCoord.S2CellIdFromCoordinate();
-            //    //_logger.LogDebug($"[{uuid}] Data received within target area {targetCoord} and target distance {payload.TargetMaxDistance}");
-            //}
-            //_logger.LogWarning($"[{device.Uuid}] InArea={inArea}");
 
             var processedProtos = new List<dynamic>();
             var contents = payload?.Payload?.Contents ?? new List<ProtoData>();
@@ -448,8 +434,6 @@
                 });
             }
 
-            sw.Stop();
-
             if (!processedProtos.Any())
                 return;
 
@@ -460,9 +444,12 @@
             if (!storeData)
                 return;
 
-            // TODO: Make parsed protos logging configurable
-            var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-            _logger.LogInformation($"[{uuid}] Parsed {processedProtos.Count:N0} protos in {totalSeconds}s");
+            if (Options.ShowProcessingTimes)
+            {
+                sw.Stop();
+                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                _logger.LogInformation($"[{uuid}] Parsed {processedProtos.Count:N0} protos{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
+            }
 
             ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;
             var wasAdded = _dataQueue.TryAdd(new DataQueueItem

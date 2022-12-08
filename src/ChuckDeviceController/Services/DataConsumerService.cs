@@ -18,7 +18,6 @@
 
         private readonly CancellationTokenSource _tokenSource;
         private readonly ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> _queue;
-        //private readonly SemaphoreSlim _sem = new(1, 1);
         private readonly System.Timers.Timer _timer = new();
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IWebHostEnvironment _env;
@@ -285,9 +284,6 @@
 
         public DataConsumerOptionsConfig Options { get; }
 
-        // TODO: Add 'ShowBenchmarkTimes' to config
-        public bool ShowBenchmarkTimes => _env?.IsDevelopment() ?? false;
-
         #endregion
 
         #region Constructor
@@ -310,22 +306,6 @@
             _timer.Interval = Options.IntervalS * 1000;
             _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(_tokenSource.Token);
             _timer.Start();
-
-            //new Thread(async () =>
-            //{
-            //    while (!_tokenSource.IsCancellationRequested)
-            //    {
-            //        //while (!await ConsumeDataAsync(_tokenSource.Token))
-            //        //{
-            //        //    //await Task.Delay(TimeSpan.FromSeconds(Options.IntervalS));
-            //        //    Thread.Sleep(TimeSpan.FromSeconds(Options.IntervalS));
-            //        //}
-            //        await ConsumeDataAsync(_tokenSource.Token);
-            //        Thread.Sleep(TimeSpan.FromSeconds(Options.IntervalS));
-            //        //await Task.Delay(TimeSpan.FromSeconds(Options.IntervalS));
-            //    }
-            //})
-            //{ IsBackground = true, }.Start();
         }
 
         #endregion
@@ -354,11 +334,8 @@
 
         private async Task ConsumeDataAsync(CancellationToken stoppingToken)
         {
-            //await _sem.WaitAsync(stoppingToken);
-
             if (!_queue.Any())
             {
-                //_sem.Release();
                 return;
             }
 
@@ -368,11 +345,10 @@
                 var entityCount = entitiesToUpsert.Sum(x => x.Value?.Count ?? 0);
                 if (entityCount == 0)
                 {
-                    //_sem.Release();
                     return;
                 }
 
-                _logger.LogInformation($"{nameof(DataConsumerService)} prepared {entityCount:N0} data entities for MySQL database upsert...");
+                _logger.LogDebug($"{nameof(DataConsumerService)} prepared {entityCount:N0} data entities for MySQL database upsert...");
                 //var results = new List<SqlBulkResult>();
                 var sw = new Stopwatch();
                 sw.Start();
@@ -404,73 +380,71 @@
             {
                 _logger.LogError($"ConsumeDataAsync: {ex.InnerException?.Message ?? ex.Message}");
             }
-
-            //_sem.Release();
         }
 
-        private async Task<SqlBulkResult> UpsertEntitiesAsync(SqlQueryType sqlType, IEnumerable<BaseEntity> entities, CancellationToken stoppingToken = default)
-        {
-            // ~ 2-5s
-            //var entity = entities.FirstOrDefault();
-            //if (entity == null)
-            //{
-            //    _logger.LogError($"Fail");
-            //    continue;
-            //}
+        //private async Task<SqlBulkResult> UpsertEntitiesAsync(SqlQueryType sqlType, IEnumerable<BaseEntity> entities, CancellationToken stoppingToken = default)
+        //{
+        //    // ~ 2-5s
+        //    //var entity = entities.FirstOrDefault();
+        //    //if (entity == null)
+        //    //{
+        //    //    _logger.LogError($"Fail");
+        //    //    continue;
+        //    //}
 
-            //var tableName = EntityRepository.GetTableAttribute(entity.GetType());
-            //if (string.IsNullOrEmpty(tableName))
-            //{
-            //    _logger.LogError($"Failed to get table name for entity type '{entity.GetType().Name}'");
-            //    continue;
-            //}
+        //    //var tableName = EntityRepository.GetTableAttribute(entity.GetType());
+        //    //if (string.IsNullOrEmpty(tableName))
+        //    //{
+        //    //    _logger.LogError($"Failed to get table name for entity type '{entity.GetType().Name}'");
+        //    //    continue;
+        //    //}
 
-            //if (!upsertExpressions.ContainsKey(sqlType))
-            //{
-            //    _logger.LogWarning($"Upsert expression does not exist for SQL query type '{sqlType}', skipping...");
-            //    continue;
-            //}
+        //    //if (!upsertExpressions.ContainsKey(sqlType))
+        //    //{
+        //    //    _logger.LogWarning($"Upsert expression does not exist for SQL query type '{sqlType}', skipping...");
+        //    //    continue;
+        //    //}
 
-            //var affectedRows = await EntityRepository.ExecuteBulkAsync(tableName, entities, upsertExpressions[sqlType], stoppingToken);
-            //var result = new SqlBulkResult(true, 1, affectedRows, entityCount);
+        //    //var affectedRows = await EntityRepository.ExecuteBulkAsync(tableName, entities, upsertExpressions[sqlType], stoppingToken);
+        //    //var result = new SqlBulkResult(true, 1, affectedRows, entityCount);
 
 
-            // ~ 1-3s
-            //string sqlQuery, sqlValues;
-            //if (_sqlCache.ContainsKey(sqlType))
-            //{
-            //    (sqlQuery, sqlValues) = _sqlCache[sqlType];
-            //}
-            //else
-            //{
-            //    (sqlQuery, sqlValues) = SqlQueryBuilder.GetQuery(sqlType);
-            //    _sqlCache.Add(sqlType, (sqlQuery, sqlValues));
-            //}
+        //    // ~ 1-3s
+        //    //string sqlQuery, sqlValues;
+        //    //if (_sqlCache.ContainsKey(sqlType))
+        //    //{
+        //    //    (sqlQuery, sqlValues) = _sqlCache[sqlType];
+        //    //}
+        //    //else
+        //    //{
+        //    //    (sqlQuery, sqlValues) = SqlQueryBuilder.GetQuery(sqlType);
+        //    //    _sqlCache.Add(sqlType, (sqlQuery, sqlValues));
+        //    //}
 
-            //var includedProperties = _fortDetailTypes.Contains(sqlType)
-            //    ? _fortDetailColumns
-            //    : null;
-            //var result = await _bulk.InsertBulkRawAsync(
-            //    sqlQuery,
-            //    sqlValues,
-            //    entities,
-            //    batchSize: Options?.MaximumBatchSize ?? DataConsumerOptionsConfig.DefaultMaxBatchSize,
-            //    includedProperties,
-            //    ignoredProperties: null,
-            //    stoppingToken
-            //);
-            //return result;
-            return null;
-        }
+        //    //var includedProperties = _fortDetailTypes.Contains(sqlType)
+        //    //    ? _fortDetailColumns
+        //    //    : null;
+        //    //var result = await _bulk.InsertBulkRawAsync(
+        //    //    sqlQuery,
+        //    //    sqlValues,
+        //    //    entities,
+        //    //    batchSize: Options?.MaximumBatchSize ?? DataConsumerOptionsConfig.DefaultMaxBatchSize,
+        //    //    includedProperties,
+        //    //    ignoredProperties: null,
+        //    //    stoppingToken
+        //    //);
+        //    //return result;
+        //    return null;
+        //}
 
         private void PrintBenchmarkResults(DataLogLevel logLevel, BenchmarkResults results, SortedDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> entities)
         {
             var time = string.Empty;
-            if (ShowBenchmarkTimes)
+            if (Options.ShowProcessingCount)
             {
                 results.Stopwatch?.Stop();
                 var totalSeconds = Math.Round(results.Stopwatch?.Elapsed.TotalSeconds ?? 0, 5).ToString("F5");
-                time = results.Stopwatch != null
+                time = results.Stopwatch != null && Options.ShowProcessingTimes
                     ? $" in {totalSeconds}s"
                     : string.Empty;
             }
