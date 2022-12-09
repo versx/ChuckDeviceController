@@ -122,14 +122,16 @@
             {
                 if (_taskQueue.Count == 0)
                 {
-                    Thread.Sleep(1);
+                    //Thread.Sleep(1);
+                    _semParser.Release();
                     return;
                 }
 
                 var workItems = _taskQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
                 if (!(workItems?.Any() ?? false))
                 {
-                    Thread.Sleep(1);
+                    //Thread.Sleep(1);
+                    _semParser.Release();
                     return;
                 }
 
@@ -868,9 +870,7 @@
 
             // Send found/nearby forts with gRPC service for leveling instance
             var lvlForts = forts
-                .Select(fort => fort.data)
-                .Select(fort => (PokemonFortProto)fort)
-                .Where(fort => fort.FortType == FortType.Checkpoint)
+                .Where(fort => ((PokemonFortProto)fort.data).FortType == FortType.Checkpoint)
                 .ToList();
             // Ensure that the account username is set, otherwise ignore relaying
             // fort data for leveling instance
@@ -1604,7 +1604,8 @@
             await Task.CompletedTask;
         }
 
-        private async Task SendPokestopsAsync(List<PokemonFortProto> forts)
+        //private async Task SendPokestopsAsync(List<PokemonFortProto> forts)
+        private async Task SendPokestopsAsync(List<dynamic> forts)
         {
             // Fire off gRPC request on a separate thread
             await Task.Run(() =>

@@ -202,10 +202,14 @@
             var stopIdsArg = string.Join(", ", fortIds.Select(x => $"'{x}'"));
             var whereClause = $" WHERE cell_id = {cellId} AND id NOT IN ({stopIdsArg}) AND deleted = false";
             var forts = await EntityRepository.GetEntitiesAsync<string, TEntity>(connection, whereClause);
-            foreach (var fort in forts)
+
+            if (forts != null)
             {
-                fort.IsDeleted = true;
-                fortsToDelete.Add(fort);
+                foreach (var fort in forts)
+                {
+                    fort.IsDeleted = true;
+                    fortsToDelete.Add(fort);
+                }
             }
             return fortsToDelete;
         }

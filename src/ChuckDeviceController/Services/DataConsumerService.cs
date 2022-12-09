@@ -293,7 +293,7 @@
             IWebHostEnvironment env,
             IOptions<DataConsumerOptionsConfig> options)
         {
-            Options = options.Value;
+            Options = options.Value ?? new();
 
             _logger = logger;
             _env = env;
@@ -348,20 +348,23 @@
                     return;
                 }
 
-                _logger.LogDebug($"{nameof(DataConsumerService)} prepared {entityCount:N0} data entities for MySQL database upsert...");
                 //var results = new List<SqlBulkResult>();
                 var sw = new Stopwatch();
-                sw.Start();
+                if (Options.ShowProcessingTimes)
+                {
+                    sw.Start();
+                    _logger.LogDebug($"{nameof(DataConsumerService)} prepared {entityCount:N0} data entities for MySQL database upsert...");
+                }
 
-                var sqls = _bulk.PrepareSqlQuery(
-                    entitiesToUpsert,
-                    Options?.MaximumBatchSize ?? DataConsumerOptionsConfig.DefaultMaximumBatchSize
-                );
+                var sqls = _bulk.PrepareSqlQuery(entitiesToUpsert, Options.MaximumBatchSize);
                 var result = await EntityRepository.ExecuteAsync(sqls, stoppingToken: stoppingToken);
 
-                sw.Stop();
+                if (Options.ShowProcessingTimes)
+                {
+                    sw.Stop();
+                }
 
-                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 5);
+                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
                 var rowsAffected = result; //results.Sum(x => x.RowsAffected);
                 var batchCount = sqls.Count(); //results.Sum(x => x.BatchCount);
                 var expectedCount = entityCount; //results.Sum(x => x.ExpectedCount);
@@ -440,11 +443,11 @@
         private void PrintBenchmarkResults(DataLogLevel logLevel, BenchmarkResults results, SortedDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> entities)
         {
             var time = string.Empty;
-            if (Options.ShowProcessingCount)
+            if (Options.ShowProcessingTimes)
             {
                 results.Stopwatch?.Stop();
                 var totalSeconds = Math.Round(results.Stopwatch?.Elapsed.TotalSeconds ?? 0, 5).ToString("F5");
-                time = results.Stopwatch != null && Options.ShowProcessingTimes
+                time = results.Stopwatch != null
                     ? $" in {totalSeconds}s"
                     : string.Empty;
             }

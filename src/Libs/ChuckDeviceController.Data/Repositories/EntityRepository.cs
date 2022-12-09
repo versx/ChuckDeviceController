@@ -384,7 +384,7 @@
 
             if (runLeakWatcher)
             {
-                //_ = new ConnectionLeakWatcher(name, connection, connectionLeakTimeoutS);
+                _ = new ConnectionLeakWatcher(name, connection, connectionLeakTimeoutS);
             }
             return connection;
         }

@@ -84,7 +84,8 @@
             {
                 if (_protoQueue.Count == 0)
                 {
-                    await Task.Delay(DefaultProcessingWaitTimeS * 1000, stoppingToken);
+                    //await Task.Delay(DefaultProcessingWaitTimeS * 1000, stoppingToken);
+                    //await Task.Delay(DefaultProcessingWaitTimeS * 100, stoppingToken);
                     continue;
                 }
 
