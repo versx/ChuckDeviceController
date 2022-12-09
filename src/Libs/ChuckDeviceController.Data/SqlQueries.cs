@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Data
 {
-    // TODO: Finish Account queries
-
     public static class SqlQueries
     {
         #region Gym Queries
@@ -665,8 +663,61 @@ ON DUPLICATE KEY UPDATE
 
         #region Account Queries
 
-        public const string AccountOnMergeUpdate = @"";
-        public const string AccountValuesRaw = @"";
+        public const string AccountOnMergeUpdate = @"
+INSERT INTO account (
+    username, password, first_warning_timestamp, failed_timestamp, failed, level,
+    last_encounter_time, last_encounter_lat, last_encounter_lon, spins, tutorial,
+    creation_timestamp, warn, warn_expire_timestamp, warn_message_acknowledged,
+    was_suspended, banned, last_used_timestamp, `group`
+)
+VALUES
+    {0}
+ON DUPLICATE KEY UPDATE
+    first_warning_timestamp=VALUES(first_warning_timestamp),
+    failed_timestamp=VALUES(failed_timestamp),
+    failed=VALUES(failed),
+    level=VALUES(level),
+    last_encounter_time=VALUES(last_encounter_time),
+    last_encounter_lat=VALUES(last_encounter_lat),
+    last_encounter_lon=VALUES(last_encounter_lon),
+    spins=VALUES(spins),
+    tutorial=VALUES(tutorial),
+    creation_timestamp=VALUES(creation_timestamp),
+    warn=VALUES(warn),
+    warn_expire_timestamp=VALUES(warn_expire_timestamp),
+    warn_message_acknowledged=VALUES(warn_message_acknowledged),
+    was_suspended=VALUES(was_suspended),
+    banned=VALUES(banned),
+    last_used_timestamp=VALUES(last_used_timestamp),
+    `group`=VALUES(`group`)
+";
+        /// <summary>
+        /// 0 - username
+        /// 1 - password
+        /// 2 - first_warning_timestamp
+        /// 3 - failed_timestamp
+        /// 4 - failed
+        /// 5 - level
+        /// 6 - last_encounter_time
+        /// 7 - last_encounter_lat
+        /// 8 - last_encounter_lon
+        /// 9 - spins
+        /// 10 - tutorial
+        /// 11 - creation_timestamp
+        /// 12 - warn
+        /// 13 - warn_expire_timestamp
+        /// 14 - warn_message_acknowledged
+        /// 15 - was_suspended
+        /// 16 - banned
+        /// 17 - last_used_timestamp
+        /// 18 - group
+        /// </summary>
+        public const string AccountValuesRaw = @"
+(
+    {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9},
+    {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}
+}
+";
 
         public const string AccountLevelUpdate = @"
 UPDATE account
