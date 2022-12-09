@@ -84,8 +84,7 @@
             {
                 if (_protoQueue.Count == 0)
                 {
-                    //await Task.Delay(DefaultProcessingWaitTimeS * 1000, stoppingToken);
-                    //await Task.Delay(DefaultProcessingWaitTimeS * 100, stoppingToken);
+                    await Task.Delay(Options.IntervalS * 1000, stoppingToken);
                     continue;
                 }
 
@@ -100,16 +99,16 @@
                     }
 
                     //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
-                    await Task.Run(() =>
+                    await Task.Run(async () =>
                     {
-                        new Thread(async () =>
-                        {
+                        //new Thread(async () =>
+                        //{
                             foreach (var workItem in workItems)
                             {
                                 await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
                             }
-                        })
-                        { IsBackground = true }.Start();
+                        //})
+                        //{ IsBackground = true }.Start();
                     }, stoppingToken);
                 }
                 catch (OperationCanceledException)
@@ -121,7 +120,7 @@
                     _logger.LogError(ex, "Error occurred executing task work item.");
                 }
 
-                await Task.Delay(DefaultProcessingWaitTimeS * 1000, stoppingToken);
+                await Task.Delay(Options.IntervalS * 1000, stoppingToken);
             }
 
             _logger.LogError("Exited ProtoProcessorService background processing...");

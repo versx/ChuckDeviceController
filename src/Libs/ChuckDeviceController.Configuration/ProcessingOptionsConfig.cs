@@ -37,15 +37,19 @@
 
     public class ProtoProcessorOptionsConfig : DataLogLevelOptionsConfig
     {
+        public const int DefaultIntervalS = 3;
+
         public bool ProcessMapPokemon { get; set; } = true;
 
         public ProcessingQueueConfig Queue { get; set; } = new();
+
+        public ushort IntervalS { get; set; } = DefaultIntervalS;
     }
 
     public class DataProcessorOptionsConfig : DataLogLevelOptionsConfig
     {
         public const int DefaultIntervalS = 3;
-        public const ushort DefaultConcurrencyLevel = 10;
+        public const ushort DefaultConcurrencyLevel = 15;
 
         public bool ClearOldForts { get; set; } = true;
 
@@ -107,7 +111,5 @@
         public ushort IntervalS { get; set; } = DefaultIntervalS;
 
         public ushort QueueConcurrencyLevelMultiplier { get; set; } = DefaultQueueConcurrencyLevelMultiplier;
-
-        public int QueueCapacity { get; set; } = DefaultQueueCapacity;
     }
 }

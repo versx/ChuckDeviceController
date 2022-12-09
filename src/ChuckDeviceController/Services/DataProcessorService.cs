@@ -122,7 +122,6 @@
             {
                 if (_taskQueue.Count == 0)
                 {
-                    //Thread.Sleep(1);
                     _semParser.Release();
                     return;
                 }
@@ -130,7 +129,6 @@
                 var workItems = _taskQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
                 if (!(workItems?.Any() ?? false))
                 {
-                    //Thread.Sleep(1);
                     _semParser.Release();
                     return;
                 }
@@ -831,7 +829,7 @@
 
                             if (Options.ProcessIncidents)
                             {
-                            await UpdateIncidentsAsync(requestId, connection, pokestop);
+                                await UpdateIncidentsAsync(requestId, connection, pokestop);
                             }
                             break;
                         case FortType.Gym:
@@ -875,8 +873,6 @@
             var lvlForts = forts
                 .Where(fort => ((PokemonFortProto)fort.data).FortType == FortType.Checkpoint)
                 .ToList();
-            // Ensure that the account username is set, otherwise ignore relaying
-            // fort data for leveling instance
             if (!lvlForts.Any())
                 return;
 
@@ -1362,7 +1358,7 @@
             if (Options.ShowProcessingTimes)
             {
                 sw.Start();
-                _logger.LogInformation($"[{requestId}] Parsing {count:N0} pokestop incidents");
+                //_logger.LogInformation($"[{requestId}] Parsing {count:N0} pokestop incidents");
             }
 
             // Loop incidents
@@ -1401,7 +1397,7 @@
             {
                 sw.Stop();
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-                _logger.LogInformation($"[{requestId}] {count:N0} pokemon incidents parsed in {totalSeconds}s");
+                //_logger.LogInformation($"[{requestId}] {count:N0} pokemon incidents parsed in {totalSeconds}s");
             }
 
             if (webhooks.Any())

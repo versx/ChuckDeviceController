@@ -299,7 +299,7 @@
             _env = env;
             _queue = new ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>>(
                 Environment.ProcessorCount * Options.QueueConcurrencyLevelMultiplier,
-                Options.QueueCapacity
+                (int)Options.Queue.MaximumCapacity
             );
             _tokenSource = new CancellationTokenSource();
 
@@ -314,16 +314,26 @@
 
         public async Task AddEntityAsync(SqlQueryType type, BaseEntity entity)
         {
+            // Lock for thread safety
             var partial = _queue.GetOrAdd(type, _ => new());
-            lock (partial) partial.Add(entity); // Lock for thread safety
+            lock (partial)
+            {
+                partial.Add(entity);
+            }
 
             await Task.CompletedTask;
         }
 
         public async Task AddEntitiesAsync(SqlQueryType type, IEnumerable<BaseEntity> entities)
         {
+            // Lock for thread safety
             var partial = _queue.GetOrAdd(type, _ => new());
-            lock (partial) entities.ToList().ForEach(entity => partial.Add(entity)); // Lock for thread safety
+            lock (partial)
+            {
+                entities
+                    .ToList()
+                    .ForEach(entity => partial.Add(entity));
+            }
 
             await Task.CompletedTask;
         }
@@ -339,16 +349,20 @@
                 return;
             }
 
+            CheckQueueLength();
+
             try
             {
-                var entitiesToUpsert = await _queue.TakeAllAsync(stoppingToken);
+                //var entitiesToUpsert = await _queue.TakeAllAsync(stoppingToken);
+                //var entitiesToUpsert = _queue.TakeAll();
+                var entitiesToUpsert = await _queue.TakeAsync((int)Options.Queue.MaximumBatchSize, stoppingToken);
+                //var entitiesToUpsert = _queue.Take(100);
                 var entityCount = entitiesToUpsert.Sum(x => x.Value?.Count ?? 0);
                 if (entityCount == 0)
                 {
                     return;
                 }
 
-                //var results = new List<SqlBulkResult>();
                 var sw = new Stopwatch();
                 if (Options.ShowProcessingTimes)
                 {
@@ -356,7 +370,7 @@
                     _logger.LogDebug($"{nameof(DataConsumerService)} prepared {entityCount:N0} data entities for MySQL database upsert...");
                 }
 
-                var sqls = _bulk.PrepareSqlQuery(entitiesToUpsert, Options.MaximumBatchSize);
+                var sqls = _bulk.PrepareSqlQuery(entitiesToUpsert, (int)Options.Queue.MaximumBatchSize);
                 var result = await EntityRepository.ExecuteAsync(sqls, stoppingToken: stoppingToken);
 
                 if (Options.ShowProcessingTimes)
@@ -480,6 +494,19 @@
             sb.AppendLine();
             var message = sb.ToString();
             _logger.LogInformation(message);
+        }
+
+        private void CheckQueueLength()
+        {
+            var usage = $"{_queue.Count:N0}/{Options.Queue.MaximumCapacity:N0}";
+            if (_queue.Count >= Options.Queue.MaximumCapacity)
+            {
+                _logger.LogError($"Data consumer queue is at maximum capacity! {usage}");
+            }
+            else if (_queue.Count >= Options.Queue.MaximumSizeWarning)
+            {
+                _logger.LogWarning($"Data consumer queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
+            }
         }
 
         #endregion
