@@ -58,7 +58,7 @@
             {
                 // The timeout expired without the connection being closed. Write to debug output the stack trace
                 // of the connection creation to assist in pinpointing the problem
-                Console.WriteLine($"[{_connectionId}] {Name} Suspected connection leak with origin:\n{StackTrace}");
+                Console.WriteLine($"[{_connectionId}] {Name} Suspected connection leak after {connectionTimeoutS} seconds with origin:\n{StackTrace}");
                 // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
             }, null, _connectionTimeoutS * 1000, Timeout.Infinite);

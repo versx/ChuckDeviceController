@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
+    using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
     using ChuckDeviceConfigurator.Services.Tasks;
@@ -13,11 +14,14 @@
 
     public abstract class BaseSmartInstanceController : IJobController, ILureInstanceController
     {
+        private const int DefaultConcurrencyLevel = 5;
+        private const ushort DefaultCapacity = ushort.MaxValue;
+
         #region Variables
 
         private static readonly Random _random = new();
         private readonly ILogger<BaseSmartInstanceController> _logger;
-        internal readonly Dictionary<string, DeviceIndex> _currentUuid = new();
+        internal readonly ConcurrentDictionary<string, DeviceIndex> _currentUuid;
 
         // Below used for basic leap frog routing only
         internal int _lastIndex = 0;
@@ -67,6 +71,7 @@
             EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
 
             _logger = new Logger<BaseSmartInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+            _currentUuid = new ConcurrentDictionary<string, DeviceIndex>(DefaultConcurrencyLevel, DefaultCapacity);
         }
 
         #endregion
@@ -156,7 +161,6 @@
 
         internal ICoordinate SplitRoute(string uuid)
         {
-            // TODO: Lock index
             var currentUuidIndex = _currentUuid.ContainsKey(uuid)
                 ? _currentUuid[uuid].LastRouteIndex
                 : Convert.ToInt32(Math.Round(Convert.ToDouble(_random.Next(ushort.MinValue, ushort.MaxValue) % Coordinates.Count)));
@@ -359,10 +363,11 @@
             if (_currentUuid.ContainsKey(uuid))
                 return;
 
-            _currentUuid.Add(uuid, new DeviceIndex
+            var deviceIndex = new DeviceIndex
             {
                 LastSeen = DateTime.UtcNow.ToTotalSeconds(),
-            });
+            };
+            _currentUuid.AddOrUpdate(uuid, deviceIndex, (key, oldValue) => deviceIndex);
         }
 
         private List<string> GetLiveDevices()
@@ -382,7 +387,11 @@
                 if (index.LastSeen < deadDeviceCutOffTime)
                 {
                     // Device has not updated in the last 60 seconds, assume dead/offline
-                    _currentUuid.Remove(currentUuid);
+                    var result = _currentUuid.TryRemove(currentUuid, out var _);
+                    if (!result)
+                    {
+                        // Failed to remove device, could have already been removed
+                    }
                 }
                 else
                 {

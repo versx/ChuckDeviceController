@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
+    using System.Collections.Concurrent;
+
     using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +26,8 @@
         private const ushort IgnoreTimeBossS = 60; // 1 minute
         private const ushort NoRaidTimeS = Strings.ThirtyMinutesS; // 30 minutes
         private const ushort GymInfoSyncS = 30; // 30 seconds
+        private const int DefaultConcurrencyLevel = 5;
+        private const ushort DefaultCapacity = ushort.MaxValue;
 
         #endregion
 
@@ -34,9 +38,9 @@
         private readonly System.Timers.Timer _timer;
 
         //private readonly object _smartRaidLock = new();
-        private readonly Dictionary<string, Gym> _smartRaidGyms;
-        private readonly Dictionary<ICoordinate, List<string>> _smartRaidGymsInPoint;
-        private readonly Dictionary<ICoordinate, ulong> _smartRaidPointsUpdated;
+        private readonly ConcurrentDictionary<string, Gym> _smartRaidGyms;
+        private readonly ConcurrentDictionary<ICoordinate, List<string>> _smartRaidGymsInPoint;
+        private readonly ConcurrentDictionary<ICoordinate, ulong> _smartRaidPointsUpdated;
 
         private readonly object _statsLock = new();
         private ulong _startDate;
@@ -78,14 +82,15 @@
 
             _factory = factory;
             _logger = new Logger<SmartRaidInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-            _smartRaidGyms = new Dictionary<string, Gym>();
-            _smartRaidGymsInPoint = new Dictionary<ICoordinate, List<string>>();
-            _smartRaidPointsUpdated = new Dictionary<ICoordinate, ulong>();
+            _smartRaidGyms = new ConcurrentDictionary<string, Gym>(DefaultConcurrencyLevel, DefaultCapacity);
+            _smartRaidGymsInPoint = new ConcurrentDictionary<ICoordinate, List<string>>(DefaultConcurrencyLevel, DefaultCapacity);
+            _smartRaidPointsUpdated = new ConcurrentDictionary<ICoordinate, ulong>(DefaultConcurrencyLevel, DefaultCapacity);
 
             // Load/build gyms list for smart raid cache
-            LoadGymsAsync().ConfigureAwait(false)
-                           .GetAwaiter()
-                           .GetResult();
+            LoadGymsAsync()
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
 
             _timer = new System.Timers.Timer(GymInfoSyncS * 1000); // 30 second interval
             _timer.Elapsed += async (sender, e) => await UpdateGymInfoAsync();

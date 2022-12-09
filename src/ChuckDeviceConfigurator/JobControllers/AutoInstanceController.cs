@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
+    using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceConfigurator.Utilities;
-    using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Collections;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
@@ -29,16 +30,13 @@
         private readonly IDbContextFactory<MapDbContext> _mapFactory;
         private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
 
-        // TODO: Replace all collections below with thread-safe collections
-        private readonly List<PokestopWithMode> _allStops = new();
-        private readonly PokemonPriorityQueue<PokestopWithMode> _todayStops = new();
-        private readonly Dictionary<(string, bool), byte> _todayStopsAttempts = new(); // (PokestopId, IsAlternative)
-        private readonly PokemonPriorityQueue<ulong> _bootstrapCellIds = new();
-        private readonly Dictionary<string, string> _accounts = new();
-        private readonly Dictionary<string, bool> _lastMode = new();
-        private readonly List<string> _ignorePokestopIds = new();
-
-        private readonly object _bootstrapCellIdsLock = new();
+        private readonly SafeCollection<PokestopWithMode> _allStops = new();
+        private readonly SafeCollection<PokestopWithMode> _todayStops = new();
+        private readonly ConcurrentDictionary<(string, bool), byte> _todayStopsAttempts = new(); // (PokestopId, IsAlternative)
+        private readonly SafeCollection<ulong> _bootstrapCellIds = new();
+        private readonly ConcurrentDictionary<string, string> _accounts = new();
+        private readonly ConcurrentDictionary<string, bool> _lastMode = new();
+        private readonly SafeCollection<string> _ignorePokestopIds = new();
 
         private readonly System.Timers.Timer _timer;
         private int _bootstrapTotalCount = 0;
@@ -128,10 +126,16 @@
 
             _logger.LogInformation($"[{Name}] Clearing Quests in {timeLeft:N0}s at 12:00 AM (Currently: {localTime})");
 
-            UpdateAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            UpdateAsync()
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
             if (!IgnoreS2CellBootstrap)
             {
-                BootstrapAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                BootstrapAsync()
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
             }
         }
 
@@ -203,19 +207,13 @@
                             }
                         }
 
-                        // TODO: Lock nearbyStops
                         foreach (var stop in nearbyStops)
                         {
-                            var index = _todayStops.IndexOf(stop);
-                            if (index > -1)
-                            {
-                                _todayStops.RemoveAt(index);
-                            }
+                            _todayStops.Remove(stop);
                         }
                     }
                     else
                     {
-                        // TODO: Lock _todayStops
                         PokestopWithMode? stop = _todayStops.Pop();
                         if (stop == null)
                         {
@@ -239,7 +237,6 @@
                     catch (Exception ex)
                     {
                         _logger.LogError($"[{Name}] [{options.Uuid}] Failed to calculate cooldown time for device: {ex}");
-                        // TODO: Lock _todayStops
                         _todayStops.Add(pokestop);
                         return null;
                     }
@@ -273,21 +270,18 @@
                     catch (Exception ex)
                     {
                         _logger.LogError($"[{Name}] [{options.Uuid}] Failed to store cooldown: {ex}");
-                        // TODO: Lock _todayStops
                         _todayStops.Add(pokestop);
                         return null;
                     }
 
-                    // TODO: Lock _todayStopsAttempts
                     IncrementSpinAttempt(pokestop);
 
                     await CheckCompletionStatusAsync(options.Uuid);
 
-                    // TODO: Lock _lastMode
                     var modeKey = options.AccountUsername ?? options.Uuid;
                     if (!_lastMode.ContainsKey(modeKey))
                     {
-                        _lastMode.Add(modeKey, pokestop.IsAlternative);
+                        _lastMode.AddOrUpdate(modeKey, pokestop.IsAlternative, (key, oldValue) => pokestop.IsAlternative);
                     }
                     else
                     {
@@ -306,22 +300,18 @@
             switch (AutoType)
             {
                 case AutoInstanceType.Quest:
-                    lock (_bootstrapCellIdsLock)
+                    if (_bootstrapCellIds.Any())
                     {
-                        if (_bootstrapCellIds.Count > 0)
-                        {
-                            var totalCount = _bootstrapTotalCount;
-                            var foundCount = totalCount - _bootstrapCellIds.Count;
-                            var percentage = foundCount > 0 && totalCount > 0
-                                ? Convert.ToDouble((double)foundCount / totalCount) * 100
-                                : 0;
+                        var totalCount = _bootstrapTotalCount;
+                        var foundCount = totalCount - _bootstrapCellIds.Count;
+                        var percentage = foundCount > 0 && totalCount > 0
+                            ? Convert.ToDouble((double)foundCount / totalCount) * 100
+                            : 0;
 
-                            var bootstrapStatus = $"Bootstrapping: {foundCount:N0}/{totalCount:N0} ({Math.Round(percentage, 2)}%)";
-                            return bootstrapStatus;
-                        }
+                        var bootstrapStatus = $"Bootstrapping: {foundCount:N0}/{totalCount:N0} ({Math.Round(percentage, 2)}%)";
+                        return bootstrapStatus;
                     }
 
-                    // TODO: Lock _allStops
                     var ids = _allStops.Select(x => x.Pokestop.Id).ToList();
                     var currentCountDb = 0ul;
                     using (var context = _mapFactory.CreateDbContext())
@@ -329,7 +319,6 @@
                         currentCountDb = await context.GetPokestopQuestCountAsync(ids, QuestMode);
                     }
 
-                    // TODO: Lock _allStops
                     var maxCount = _allStops.Count;
                     var currentCount = maxCount - _todayStops.Count;
 
@@ -414,12 +403,14 @@
 
         public void RemoveFromQueue(string pokestopId)
         {
-            // TODO: Lock
-
             // Add pokestop to ignore list
             if (!_ignorePokestopIds.Contains(pokestopId))
             {
-                _ignorePokestopIds.Add(pokestopId);
+                var result = _ignorePokestopIds.TryAdd(pokestopId);
+                if (!result)
+                {
+                    // Failed to add pokestop ID to ignored pokestop cache
+                }
             }
 
             // Check ignore list against todays list when retrieving next pokestop
@@ -436,8 +427,6 @@
 
         internal void ClearQueue()
         {
-            // TODO: Lock
-
             // Add all Pokestop ids from _todayStops to ignore list
             var todayStops = _todayStops;
             for (var i = 0; i < todayStops.Count; i++)
@@ -446,7 +435,7 @@
                 var stop = todayStops[i];
                 if (!_ignorePokestopIds.Contains(stop.Pokestop.Id))
                 {
-                    _ignorePokestopIds.Add(stop.Pokestop.Id);
+                    _ignorePokestopIds.Remove(stop.Pokestop.Id);
                 }
             }
 
@@ -479,16 +468,18 @@
             using var context = _mapFactory.CreateDbContext();
             // Get S2 cells within multi polygon
             var existingCells = await context.GetS2CellsAsync(MultiPolygons);
-            var existingCellIds = existingCells.Select(cell => cell.Id)
-                                               .ToList();
+            var existingCellIds = existingCells
+                .Select(cell => cell.Id)
+                .ToList();
 
             // Remove any duplicates
             allCellIds = allCellIds.Distinct().ToList();
 
             // Filter all existing S2 cells not already found 
-            var missingCellIds = allCellIds.Where(cellId => !existingCellIds.Contains(cellId))
-                                           //.Distinct()
-                                           .ToList();
+            var missingCellIds = allCellIds
+                .Where(cellId => !existingCellIds.Contains(cellId))
+                //.Distinct()
+                .ToList();
 
             var total = allCellIds.Count;
             var found = total - missingCellIds.Count;
@@ -497,11 +488,8 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
             _logger.LogInformation($"[{Name}] Bootstrap Status: {found:N0}/{total:N0} after {totalSeconds} seconds");
 
-            lock (_bootstrapCellIdsLock)
-            {
-                _bootstrapCellIds.Clear();
-                _bootstrapCellIds.AddRange(missingCellIds);
-            }
+            _bootstrapCellIds.Clear();
+            _bootstrapCellIds.AddRange(missingCellIds);
             _bootstrapTotalCount = total;
         }
 
@@ -540,7 +528,11 @@
                                     if (!GeofenceService.InPolygon(polygon, stop.ToCoordinate()))
                                         continue;
 
-                                    _allStops.Add(new PokestopWithMode(stop, isAlternative));
+                                    var result = _allStops.TryAdd(new PokestopWithMode(stop, isAlternative));
+                                    if (!result)
+                                    {
+                                        // Failed to add pokestop to all pokestops list
+                                    }
                                 }
                             }
                             catch (Exception ex)
@@ -596,7 +588,6 @@
             PokestopWithMode? closestAlternative = null;
             double closestAlternativeDistance = Strings.DefaultDistance;
 
-            // TODO: Lock _todayStops
             var todayStops = _todayStops;
             if (todayStops.Count == 0)
             {
@@ -629,7 +620,6 @@
             }
 
             PokestopWithMode? closest;
-            // TODO: Lock _lastMode
             var key = modeKey;
             bool? mode = _lastMode.ContainsKey(key)
                 ? _lastMode[key]
@@ -684,7 +674,6 @@
                 return;
             }
 
-            // TODO: Lock newStops
             foreach (var stop in newStops)
             {
                 var isNormal = QuestMode == QuestMode.Normal || QuestMode == QuestMode.Both;
@@ -725,7 +714,7 @@
             }
             else
             {
-                _todayStopsAttempts.Add(key, amount);
+                _todayStopsAttempts.AddOrUpdate(key, amount, (key, oldValue) => amount);
             }
         }
 
@@ -739,9 +728,7 @@
 
         private async Task<SwitchAccountTask> HandlePokestopDelayAsync(PokestopWithMode pokestop, string uuid, string? accountUsername)
         {
-            // TODO: Lock _todayStops
             _todayStops.Add(pokestop);
-            // TODO: Lock _accounts
             string newUsername;
             try
             {
@@ -756,7 +743,7 @@
                 if (!_accounts.ContainsKey(uuid))
                 {
                     newUsername = newAccount.Username;
-                    _accounts.Add(uuid, newAccount.Username);
+                    _accounts.AddOrUpdate(uuid, newAccount.Username, (key, oldValue) => newAccount.Username);
 
                     _logger.LogDebug($"[{Name}] [{uuid}] Over logout delay. Switching account from {accountUsername ?? "?"} to {newUsername ?? "?"}");
                 }
@@ -836,7 +823,7 @@
 
         private async Task<BootstrapTask> CreateBootstrapTaskAsync()
         {
-            var targetCellId = _bootstrapCellIds.PopLast();
+            var targetCellId = _bootstrapCellIds.TakeLast();
             if (targetCellId == default)
             {
                 return null;
@@ -846,21 +833,13 @@
             var coord = new Coordinate(center.LatDegrees, center.LngDegrees);
             var cellIds = center.GetLoadedS2CellIds();
 
-            lock (_bootstrapCellIdsLock)
+            foreach (var cellId in cellIds)
             {
-                foreach (var cellId in cellIds)
-                {
-                    var index = _bootstrapCellIds.IndexOf(cellId.Id);
-                    if (index > 0)
-                    {
-                        _bootstrapCellIds.RemoveAt(index);
-                    }
-                }
+                _bootstrapCellIds.Remove(cellId.Id);
             }
 
             if (_bootstrapCellIds.Count == 0)
             {
-                // TODO: Lock _bootstrapCellIds
                 await BootstrapAsync();
                 if (_bootstrapCellIds.Count == 0)
                 {
@@ -917,7 +896,11 @@
                 if (_accounts.ContainsKey(uuid))
                 {
                     var username = _accounts[uuid];
-                    _accounts.Remove(uuid);
+                    var result = _accounts.TryRemove(uuid, out var _);
+                    if (!result)
+                    {
+                        // Failed to remove account from cache
+                    }
                     return await context.GetAccountAsync(username);
                 }
 

@@ -159,10 +159,22 @@
                 var entities = Take(count);
                 return entities;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Array.Empty<T>();
             }
+        }
+
+        public T TakeLast()
+        {
+            T entity;
+            lock (_lock)
+            {
+                var lastIndex = _entities.Count - 1;
+                entity = _entities[lastIndex];
+                _entities.RemoveAt(lastIndex);
+            }
+            return entity;
         }
 
         public T? Get(Predicate<T> predicate)
@@ -201,6 +213,14 @@
             {
                 var count = _entities.RemoveAll(predicate);
                 return count > 0;
+            }
+        }
+
+        public void Remove(T item)
+        {
+            lock (_lock)
+            {
+                _entities.Remove(item);
             }
         }
 

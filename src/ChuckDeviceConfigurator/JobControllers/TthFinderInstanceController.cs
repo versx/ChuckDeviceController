@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
+    using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,9 @@
 
     public class TthFinderInstanceController : IJobController
     {
+        private const int DefaultConcurrencyLevel = 5;
+        private const ushort DefaultCapacity = ushort.MaxValue;
+
         #region Variables
 
         private readonly ILogger<TthFinderInstanceController> _logger;
@@ -38,7 +42,7 @@
         private int _lastIndex = 0;
         private ulong _startTime = 0;
         private ulong _lastCompletedTime = 0;
-        private Dictionary<ulong, uint?> _spawnpoints;
+        private ConcurrentDictionary<ulong, uint?> _spawnpoints;
 
         #endregion
 
@@ -84,7 +88,7 @@
             _logger = new Logger<TthFinderInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _factory = factory;
             _routeCalculator = routeCalculator;
-            _spawnpoints = new Dictionary<ulong, uint?>();
+            _spawnpoints = new ConcurrentDictionary<ulong, uint?>(DefaultConcurrencyLevel, DefaultCapacity);
 
             SpawnpointCoordinates = GenerateSpawnpointCoordinates();
         }
@@ -227,7 +231,7 @@
                 ).ToList();
 
                 // Cache all existing spawnpoints
-                _spawnpoints = list.ToDictionary(x => x.Id, y => y.DespawnSecond);
+                _spawnpoints = new(list.ToDictionary(x => x.Id, y => y.DespawnSecond));
 
                 var coords = list.Select(spawn => spawn.ToCoordinate())
                                  .ToList();

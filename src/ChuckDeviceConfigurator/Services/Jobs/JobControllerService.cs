@@ -700,8 +700,9 @@
 
         private void OnAccountLevelUp(object? sender, AccountLevelUpEventArgs e)
         {
-            var date = e.DateReached.FromSeconds()
-                                    .ToLocalTime();
+            var date = e.DateReached
+                .FromSeconds()
+                .ToLocalTime();
             _logger.LogInformation($"Account {e.Username} has reached level {e.Level} at {date} with a total of {e.XP} XP!");
             // TODO: Update account level via database/ProtoProcessorService
         }

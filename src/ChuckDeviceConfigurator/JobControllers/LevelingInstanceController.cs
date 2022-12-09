@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
+    using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,8 @@
         private const ushort DefaultMinTargetLevel = 0;
         private const ushort DefaultMaxTargetLevel = 40;
         private const ushort DefaultLastPokestopsSpunCacheLimit = 10;
+        private const int DefaultConcurrencyLevel = 5;
+        private const ushort DefaultCapacity = ushort.MaxValue;
 
         #endregion
 
@@ -90,8 +93,8 @@
 
         private readonly ILogger<LevelingInstanceController> _logger;
         private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
-        private readonly Dictionary<string, PlayerLevelingData> _players = new();
-        private readonly object _playersLock = new();
+        private readonly ConcurrentDictionary<string, PlayerLevelingData> _players = new();
+        //private readonly object _playersLock = new();
 
         #endregion
 
@@ -145,6 +148,7 @@
 
             _logger = new Logger<LevelingInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _deviceFactory = deviceFactory;
+            _players = new ConcurrentDictionary<string, PlayerLevelingData>(DefaultConcurrencyLevel, DefaultCapacity);
 
             var startingCoordData = instance.Data?.StartingCoordinate ?? Strings.DefaultStartingCoordinate;
             var startingCoord = GetStartingCoordinate(startingCoordData);
@@ -188,10 +192,7 @@
                 return null;
             }
 
-            lock (_playersLock)
-            {
-                _players[options.AccountUsername].LastSeen = DateTime.UtcNow.ToTotalSeconds();
-            }
+            _players[options.AccountUsername].LastSeen = DateTime.UtcNow.ToTotalSeconds();
 
             var delay = await GetDelayAsync(currentCoord, options.Uuid, options.Account);
             var task = CreateTask(currentCoord, delay, deployEgg: true);
@@ -202,92 +203,89 @@
         {
             var status = string.Empty;
 
-            lock (_playersLock)
+            // Get list of accounts that are actively leveling and seen withint he last 60 minutes
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var players = _players.Where(pair => now - pair.Value.LastSeen <= Strings.SixtyMinutesS)
+                                    .Select(pair => pair.Key)
+                                    .ToList();
+
+            var data = new List<LevelStatsStatus>();
+            foreach (var player in players)
             {
-                // Get list of accounts that are actively leveling and seen withint he last 60 minutes
-                var now = DateTime.UtcNow.ToTotalSeconds();
-                var players = _players.Where(pair => now - pair.Value.LastSeen <= Strings.SixtyMinutesS)
-                                      .Select(pair => pair.Key)
-                                      .ToList();
+                var min = Math.Min(Math.Max(MaximumLevel + 1, DefaultMinTargetLevel), DefaultMaxTargetLevel);
+                var max = Math.Min(Math.Max(MinimumLevel, DefaultMinTargetLevel), DefaultMaxTargetLevel);
+                var xpTarget = LevelXp[min];
+                var xpStart = LevelXp[max];
+                var xpCurrent = _players[player].XP;
+                var xpReceived = Convert.ToDouble((double)xpCurrent - xpStart);
+                var xpRemaining = Convert.ToDouble((double)xpTarget - xpStart);
+                var xpPercentage = xpReceived / xpRemaining * 100;
+                var startXp = 0ul;
+                var startTime = DateTime.UtcNow.ToTotalSeconds();
 
-                var data = new List<LevelStatsStatus>();
-                foreach (var player in players)
+                // Get latest player xp and time
+                var xpPerTime = _players[player].XpPerTime;
+                for (var i = 0; i < xpPerTime.Count; i++)
                 {
-                    var min = Math.Min(Math.Max(MaximumLevel + 1, DefaultMinTargetLevel), DefaultMaxTargetLevel);
-                    var max = Math.Min(Math.Max(MinimumLevel, DefaultMinTargetLevel), DefaultMaxTargetLevel);
-                    var xpTarget = LevelXp[min];
-                    var xpStart = LevelXp[max];
-                    var xpCurrent = _players[player].XP;
-                    var xpReceived = Convert.ToDouble((double)xpCurrent - xpStart);
-                    var xpRemaining = Convert.ToDouble((double)xpTarget - xpStart);
-                    var xpPercentage = xpReceived / xpRemaining  * 100;
-                    var startXp = 0ul;
-                    var startTime = DateTime.UtcNow.ToTotalSeconds();
-
-                    // Get latest player xp and time
-                    var xpPerTime = _players[player].XpPerTime;
-                    for (var i = 0; i < xpPerTime.Count; i++)
+                    var (time, xp) = xpPerTime[i];
+                    if ((now - time) <= Strings.SixtyMinutesS)
                     {
-                        var (time, xp) = xpPerTime[i];
-                        if ((now - time) <= Strings.SixtyMinutesS)
-                        {
-                            startXp = xp;
-                            startTime = time;
-                            break;
-                        }
-
-                        // Purge old XP stats older than 60 minutes
-                        _ = xpPerTime.Pop();
+                        startXp = xp;
+                        startTime = time;
+                        break;
                     }
 
-                    var xpDelta = xpPerTime.LastOrDefault().Item2 - startXp;
-                    var timeDelta = Math.Max(
-                        1,
-                        xpPerTime.LastOrDefault().Item1 - startTime
-                    );
-                    var xpPerHour = xpDelta == 0 || timeDelta == 0
-                        ? 0
-                        : Convert.ToUInt64((double)xpDelta / timeDelta * Strings.SixtyMinutesS);
-                    var timeLeft = xpTarget == 0 || xpCurrent == 0 || xpPerHour == 0
-                        ? 999.0
-                        : Convert.ToDouble((double)xpTarget - xpCurrent) / Convert.ToDouble(xpPerHour);
-
-                    data.Add(new LevelStatsStatus
-                    {
-                        XpTarget = xpTarget,
-                        XpStart = xpStart,
-                        XpCurrent = xpCurrent,
-                        XpPercentage = Math.Round(xpPercentage, 2),
-                        Level = _players[player].Level,
-                        Username = player,
-                        XpPerHour = xpPerHour,
-                        TimeLeft = timeLeft,
-                    });
+                    // Purge old XP stats older than 60 minutes
+                    _ = xpPerTime.Pop();
                 }
 
-                foreach (var player in data)
-                {
-                    if (!string.IsNullOrEmpty(status))
-                    {
-                        status += "<br />";
-                    }
-                    var isDefault = player.TimeLeft == int.MinValue || player.TimeLeft == int.MaxValue;
-                    var timeLeftHours = isDefault
-                        ? 999
-                        : player.TimeLeft;
-                    var timeLeftMinutes = isDefault
-                        ? 0
-                        : (player.TimeLeft - (double)timeLeftHours) * 60;
+                var xpDelta = xpPerTime.LastOrDefault().Item2 - startXp;
+                var timeDelta = Math.Max(
+                    1,
+                    xpPerTime.LastOrDefault().Item1 - startTime
+                );
+                var xpPerHour = xpDelta == 0 || timeDelta == 0
+                    ? 0
+                    : Convert.ToUInt64((double)xpDelta / timeDelta * Strings.SixtyMinutesS);
+                var timeLeft = xpTarget == 0 || xpCurrent == 0 || xpPerHour == 0
+                    ? 999.0
+                    : Convert.ToDouble((double)xpTarget - xpCurrent) / Convert.ToDouble(xpPerHour);
 
-                    if (player.Level > MaximumLevel)
-                    {
-                        status += $"{player.Username}: Lvl {player.Level} Complete";
-                    }
-                    else
-                    {
-                        var timeLeftStatus = FormatTimeRemaining(timeLeftHours, timeLeftMinutes);
-                        status += $"{player.Username}: {player.XpPercentage}% {player.XpPerHour:N0}XP/h {timeLeftStatus}";
-                    }
+                data.Add(new LevelStatsStatus
+                {
+                    XpTarget = xpTarget,
+                    XpStart = xpStart,
+                    XpCurrent = xpCurrent,
+                    XpPercentage = Math.Round(xpPercentage, 2),
+                    Level = _players[player].Level,
+                    Username = player,
+                    XpPerHour = xpPerHour,
+                    TimeLeft = timeLeft,
+                });
+            }
+
+            foreach (var player in data)
+            {
+                if (!string.IsNullOrEmpty(status))
+                {
+                    status += "<br />";
+                }
+                var isDefault = player.TimeLeft == int.MinValue || player.TimeLeft == int.MaxValue;
+                var timeLeftHours = isDefault
+                    ? 999
+                    : player.TimeLeft;
+                var timeLeftMinutes = isDefault
+                    ? 0
+                    : (player.TimeLeft - (double)timeLeftHours) * 60;
+
+                if (player.Level > MaximumLevel)
+                {
+                    status += $"{player.Username}: Lvl {player.Level} Complete";
+                }
+                else
+                {
+                    var timeLeftStatus = FormatTimeRemaining(timeLeftHours, timeLeftMinutes);
+                    status += $"{player.Username}: {player.XpPercentage}% {player.XpPerHour:N0}XP/h {timeLeftStatus}";
                 }
             }
 
@@ -319,46 +317,34 @@
 
         internal void SetPlayerInfo(string username, ushort level, ulong xp)
         {
-            lock (_playersLock)
+            AddPlayer(username);
+
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var previousLevel = _players[username].Level;
+            // Check if incoming level from protos is higher than existing
+            // set level, if so then the trainer has leveled up
+            if (level > previousLevel && previousLevel > 0)// || level > MaximumLevel)
             {
-                AddPlayer(username);
-
-                var now = DateTime.UtcNow.ToTotalSeconds();
-                var previousLevel = _players[username].Level;
-                // Check if incoming level from protos is higher than existing
-                // set level, if so then the trainer has leveled up
-                if (level > previousLevel && previousLevel > 0)// || level > MaximumLevel)
+                // Trainer has leveled up
+                if (level > MaximumLevel)
                 {
-                    // Trainer has leveled up
-                    if (level > MaximumLevel)
-                    {
-                        // Finished
-                        _logger.LogInformation($"[{Name}] [{username}] Trainer has reached level {MaximumLevel} with {xp:N0} total XP!");
-                    }
-                    else
-                    {
-                        _logger.LogInformation($"[{Name}] [{username}] Trainer has level up from {previousLevel} to {level} with {xp:N0} total XP!");
-                    }
-                    OnAccountLevelUp(level, username, xp, now);
-
-                    /* REVIEW: Redundant
-                    if (level > MaximumLevel)
-                    {
-                        // Trainer has leveled up completely
-                        _logger.LogInformation($"[{Name}] [{username}] Trainer has reached level {MaximumLevel} with {xp:N0} total XP!");
-                        OnAccountLevelUp(level, username, xp, now);
-                    }
-                    */
+                    // Finished
+                    _logger.LogInformation($"[{Name}] [{username}] Trainer has reached level {MaximumLevel} with {xp:N0} total XP!");
                 }
-
-                _players[username].Level = level;
-                _players[username].XP = xp;
-
-                // Prevent multiple XpPerTime entries that are the same
-                if (!_players[username].XpPerTime.Exists(tuple => tuple.Item1 == now))
+                else
                 {
-                    _players[username].XpPerTime.Add((now, xp));
+                    _logger.LogInformation($"[{Name}] [{username}] Trainer has level up from {previousLevel} to {level} with {xp:N0} total XP!");
                 }
+                OnAccountLevelUp(level, username, xp, now);
+            }
+
+            _players[username].Level = level;
+            _players[username].XP = xp;
+
+            // Prevent multiple XpPerTime entries that are the same
+            if (!_players[username].XpPerTime.Exists(tuple => tuple.Item1 == now))
+            {
+                _players[username].XpPerTime.Add((now, xp));
             }
         }
 
@@ -389,32 +375,29 @@
             if (coord.DistanceTo(StartingCoordinate) > Radius)
                 return;
 
-            lock (_playersLock)
+            // Add player if it does not exist incase we receive the fort data before
+            // the device asks for a task when it is added to the player cache
+            if (!_players.ContainsKey(username))
             {
-                // Add player if it does not exist incase we receive the fort data before
-                // the device asks for a task when it is added to the player cache
-                if (!_players.ContainsKey(username))
-                {
-                    AddPlayer(username);
-                }
+                AddPlayer(username);
+            }
 
-                var player = _players[username];
-                // Check if fort has been visited already and unspun Pokestop cache
-                // for player still contains the fort
-                if (fort.Visited)
+            var player = _players[username];
+            // Check if fort has been visited already and unspun Pokestop cache
+            // for player still contains the fort
+            if (fort.Visited)
+            {
+                // Pokestop already spun, check if it's in our unspun cache
+                if (player.UnspunPokestops.ContainsKey(fort.FortId))
                 {
-                    // Pokestop already spun, check if it's in our unspun cache
-                    if (player.UnspunPokestops.ContainsKey(fort.FortId))
-                    {
-                        // Remove already visited Pokestop from unspun cache
-                        player.UnspunPokestops.Remove(fort.FortId);
-                    }
+                    // Remove already visited Pokestop from unspun cache
+                    player.UnspunPokestops.Remove(fort.FortId);
                 }
-                else
-                {
-                    // Pokestop has not been spun yet, add to unspun Pokestops cache
-                    player.UnspunPokestops[fort.FortId] = fort;
-                }
+            }
+            else
+            {
+                // Pokestop has not been spun yet, add to unspun Pokestops cache
+                player.UnspunPokestops[fort.FortId] = fort;
             }
         }
 
@@ -574,7 +557,7 @@
         {
             if (!_players.ContainsKey(username))
             {
-                _players.Add(username, new());
+                _players.AddOrUpdate(username, new PlayerLevelingData(), (key, oldValue) => new());
             }
         }
 
