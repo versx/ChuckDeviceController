@@ -108,8 +108,8 @@ builder.Services.AddDbContext<MapDbContext>(options =>
 builder.Services.AddScoped<MySqlConnection>(options =>
 {
     var connection = new MySqlConnection(connectionString);
-    Task.Run(async () => await connection.OpenAsync()).Wait();
-    //connection.Open();
+    //Task.Run(async () => await connection.OpenAsync()).Wait();
+    connection.Open();
     return connection;
 });
 
