@@ -40,6 +40,30 @@
 
         public static async Task<SortedDictionary<SqlQueryType, ConcurrentBag<TEntity>>> TakeAsync<TEntity>(
             this ConcurrentDictionary<SqlQueryType, ConcurrentBag<TEntity>> dict,
+            int batchSize = 1000)
+        {
+            lock (_lock)
+            {
+                var dictList = new List<KeyValuePair<SqlQueryType, TEntity>>(dict
+                    .SelectMany(x => x.Value.Select(y => KeyValuePair.Create(x.Key, y)))
+                    .ToList()
+                );
+
+                var cloned = new SafeCollection<KeyValuePair<SqlQueryType, TEntity>>(dictList);
+                var items = cloned.Take(batchSize);
+                var sorted = items
+                    .GroupBy(g => g.Key, g => g.Value)
+                    .ToDictionary(x => x.Key, y => new ConcurrentBag<TEntity>(y.ToList()))
+                    .ToSorted();
+
+                dict.Remove(items.Select(x => x.Value));
+
+                return sorted;
+            }
+        }
+
+        public static async Task<SortedDictionary<SqlQueryType, ConcurrentBag<TEntity>>> TakeAsync<TEntity>(
+            this ConcurrentDictionary<SqlQueryType, ConcurrentBag<TEntity>> dict,
             int batchSize = 1000,
             CancellationToken stoppingToken = default)
         {
