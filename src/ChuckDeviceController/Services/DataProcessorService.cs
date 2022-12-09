@@ -314,9 +314,9 @@
 
                 try
                 {
-                    var username = player.username;
+                    var username = (string)player.username;
                     var data = (GetPlayerOutProto)player.gpr;
-                    Account account = await EntityRepository.GetEntityAsync<string, Account>(connection, username, _memCache);
+                    var account = await EntityRepository.GetEntityAsync<string, Account>(connection, username, _memCache);
                     if (account == null)
                     {
                         _logger.LogWarning($"Failed to retrieve account with username '{username}' from cache and database");
@@ -1065,7 +1065,7 @@
 
                         foreach (var gymDefenderData in gymDefenders)
                         {
-                            // TODO: Implement webhooks for GymDefender and GymTrainer
+                            // TODO: Implement webhook logic for GymDefender and GymTrainer
                             if (Options.ProcessGymTrainers && gymDefenderData.TrainerPublicProfile != null)
                             {
                                 var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);

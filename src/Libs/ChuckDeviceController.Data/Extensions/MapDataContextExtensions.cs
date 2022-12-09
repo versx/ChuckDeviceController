@@ -135,7 +135,6 @@
         {
             if (pokestopIds.Count > MaxBatchCount)
             {
-                // TODO: Benchmark if manual batching is necessary with Z.EntityFramework library (which already has it's own batching options/logic)
                 var result = 0ul;
                 var batchSize = Convert.ToInt64(Math.Ceiling(Convert.ToDouble(pokestopIds.Count) / MaxBatchCount));
                 for (var i = 0; i < batchSize; i++)

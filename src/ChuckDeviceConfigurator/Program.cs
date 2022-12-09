@@ -524,8 +524,7 @@ async Task AddOrUpdatePluginState(IPluginHost pluginHost)
 {
     if (serviceProvider == null)
     {
-        // TODO: Throw error
-        return;
+        throw new NullReferenceException(nameof(serviceProvider));
     }
 
     using (var scope = serviceProvider.CreateScope())

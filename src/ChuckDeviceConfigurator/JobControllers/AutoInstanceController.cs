@@ -214,7 +214,7 @@
                     }
                     else
                     {
-                        PokestopWithMode? stop = _todayStops.Pop();
+                        PokestopWithMode? stop = _todayStops.TakeFirst();
                         if (stop == null)
                         {
                             return null;
@@ -237,7 +237,11 @@
                     catch (Exception ex)
                     {
                         _logger.LogError($"[{Name}] [{options.Uuid}] Failed to calculate cooldown time for device: {ex}");
-                        _todayStops.Add(pokestop);
+                        var result = _todayStops.TryAdd(pokestop);
+                        if (!result)
+                        {
+                            // Failed to add pokestop
+                        }
                         return null;
                     }
 
@@ -270,7 +274,11 @@
                     catch (Exception ex)
                     {
                         _logger.LogError($"[{Name}] [{options.Uuid}] Failed to store cooldown: {ex}");
-                        _todayStops.Add(pokestop);
+                        var result = _todayStops.TryAdd(pokestop);
+                        if (!result)
+                        {
+                            // Failed to add pokestop
+                        }
                         return null;
                     }
 
@@ -569,7 +577,11 @@
                             // Add Pokestop if it's not already in the list
                             if (!_todayStops.Contains(stop))
                             {
-                                _todayStops.Add(stop);
+                                var result = _todayStops.TryAdd(stop);
+                                if (!result)
+                                {
+                                    // Failed to add pokestop
+                                }
                             }
                         }
                     }
@@ -691,7 +703,11 @@
                        ((stop.QuestType == null && isNormal) ||
                        (stop.AlternativeQuestType == null && isAlternative)))
                     {
-                        _todayStops.Add(pokestopWithMode);
+                        var result = _todayStops.TryAdd(pokestopWithMode);
+                        if (!result)
+                        {
+                            // Failed to add pokestop
+                        }
                     }
                 }
             }
@@ -728,7 +744,11 @@
 
         private async Task<SwitchAccountTask> HandlePokestopDelayAsync(PokestopWithMode pokestop, string uuid, string? accountUsername)
         {
-            _todayStops.Add(pokestop);
+            var result = _todayStops.TryAdd(pokestop);
+            if (!result)
+            {
+                // Failed to add pokestop
+            }
             string newUsername;
             try
             {

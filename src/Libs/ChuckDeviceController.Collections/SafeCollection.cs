@@ -165,6 +165,17 @@
             }
         }
 
+        public T TakeFirst()
+        {
+            T entity;
+            lock (_lock)
+            {
+                entity = _entities[0];
+                _entities.RemoveAt(0);
+            }
+            return entity;
+        }
+
         public T TakeLast()
         {
             T entity;
