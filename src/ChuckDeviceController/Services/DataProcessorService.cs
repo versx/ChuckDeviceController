@@ -317,7 +317,7 @@
                     var account = await EntityRepository.GetEntityAsync<string, Account>(connection, username, _memCache);
                     if (account == null)
                     {
-                        _logger.LogWarning($"Failed to retrieve account with username '{username}' from cache and database");
+                        _logger.LogWarning($"Failed to retrieve account with username '{username}' from cache and database to update account status");
                         continue;
                     }
 

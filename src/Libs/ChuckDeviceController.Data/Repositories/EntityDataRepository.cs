@@ -162,7 +162,7 @@
         {
             await _sem.WaitAsync(stoppingToken);
 
-            EnsureConnectionIsOpen(attemptReopen: true);
+            // TODO: EnsureConnectionIsOpen(attemptReopen: true);
 
             if (_connection == null)
             {
