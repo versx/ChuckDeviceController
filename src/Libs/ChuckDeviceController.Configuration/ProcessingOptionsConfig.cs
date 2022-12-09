@@ -77,6 +77,8 @@
 
         public bool ProcessGymTrainers { get; set; } = true;
 
+        public bool ProcessIncidents { get; set; } = true;
+
         public bool ProcessWildPokemon { get; set; } = true;
 
         public bool ProcessNearbyPokemon { get; set; } = true;

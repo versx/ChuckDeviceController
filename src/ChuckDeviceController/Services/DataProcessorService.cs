@@ -829,7 +829,10 @@
                                 // TODO: GroupWebhooks(pokestopWebhooks, webhooks);
                             }
 
+                            if (Options.ProcessIncidents)
+                            {
                             await UpdateIncidentsAsync(requestId, connection, pokestop);
+                            }
                             break;
                         case FortType.Gym:
                             // Init Gym model from fort proto data
