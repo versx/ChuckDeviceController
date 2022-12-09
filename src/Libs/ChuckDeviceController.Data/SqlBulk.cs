@@ -10,7 +10,6 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Repositories;
 
-    // TODO: Use nvarchar instead of varchar for string columns
     // TODO: Use Stored Procedure for upsert queries
 
     public class SqlBulk

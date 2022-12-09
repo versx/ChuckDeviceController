@@ -1612,10 +1612,13 @@
             {
                 new Thread(async () =>
                 {
+                    var data = forts
+                        .Select(fort => new { fort.data, fort.username })
+                        .ToList();
                     await _grpcProtoClient.SendAsync(new PayloadRequest
                     {
                         PayloadType = PayloadType.FortList,
-                        Payload = forts.ToJson(),
+                        Payload = data.ToJson(),
                     });
                 })
                 { IsBackground = true }.Start();

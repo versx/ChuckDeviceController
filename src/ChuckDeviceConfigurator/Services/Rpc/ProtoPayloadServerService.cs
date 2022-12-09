@@ -130,8 +130,7 @@
 
         private void HandleFortListPayload(string json)
         {
-            //var forts = json.FromJson<List<PokemonFortProto>>();
-            var forts = json.FromJson<List<dynamic>>();
+            var forts = json.FromJson<List<FortData>>();
             if (forts == null)
             {
                 // Failed to deserialize payload to list of PokemonFortProto
@@ -141,11 +140,9 @@
 
             _logger.LogDebug($"Received {forts.Count:N0} {PayloadType.Fort} proto messages");
 
-            foreach (var fortData in forts)
+            foreach (var fort in forts)
             {
-                var fort = (PokemonFortProto)fortData.data;
-                var username = (string)fortData.username;
-                _jobControllerService.GotFort(fort, username);
+                _jobControllerService.GotFort(fort.Data, fort.Username);
             }
         }
 
@@ -169,5 +166,12 @@
         }
 
         #endregion
+
+        private class FortData
+        {
+            public PokemonFortProto Data { get; set; } = null!;
+
+            public string Username { get; set; } = null!;
+        }
     }
 }

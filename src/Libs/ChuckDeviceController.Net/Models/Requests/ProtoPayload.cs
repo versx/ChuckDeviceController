@@ -9,7 +9,7 @@
         public string? PokemonEncounterId { get; set; }
 
         [JsonPropertyName("uuid")]
-        public string Uuid { get; set; }
+        public string Uuid { get; set; } = null!;
 
         [JsonPropertyName("devicename")]
         public string? DeviceName { get; set; }

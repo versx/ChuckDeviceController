@@ -54,8 +54,8 @@
 
         #region Routes
 
-        // Test route for debugging, TODO: remove in production
 #if DEBUG
+        // Test route for debugging
         [HttpGet("/raw")]
         public string Get() => ":D";
 #endif
@@ -185,9 +185,7 @@
             try
             {
                 if (string.IsNullOrEmpty(username) || level <= 0)
-                {
                     return;
-                }
 
                 // Attempt to get cached level, if it exists
                 _levelCache.TryGetValue(username, out var oldLevel);
@@ -195,9 +193,7 @@
                 // Check if cached level is same as current level
                 // or if higher than current
                 if (oldLevel == level || oldLevel > level)
-                {
                     return;
-                }
 
                 // Add account level to cache, otherwise if it exists
                 // update the value
