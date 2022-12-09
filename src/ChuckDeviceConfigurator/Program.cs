@@ -31,6 +31,7 @@ using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Extensions.Http.Caching;
+using ChuckDeviceController.Logging;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.EventBus;
 using ChuckDeviceController.Plugin.EventBus.Observer;
@@ -100,7 +101,7 @@ builder.WebHost.UseConfiguration(config);
 
 // TODO: Add log to file support
 var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
-builder.WebHost.ConfigureLogging(configure => configure.AddSimpleConsole(options => GetLoggingConfig(logLevel, configure)));
+builder.WebHost.ConfigureLogging(configure => configure.GetLoggingConfig(logLevel));
 
 #endregion
 
@@ -517,23 +518,6 @@ IdentityOptions GetDefaultIdentityOptions()
         //options.Stores.ProtectPersonalData = true;
     };
     return options;
-}
-
-// TODO: Create extension and move to separate library
-static ILoggingBuilder GetLoggingConfig(LogLevel defaultLogLevel, ILoggingBuilder configure)
-{
-    configure.SetMinimumLevel(defaultLogLevel);
-    configure.AddSimpleConsole(options =>
-    {
-        options.IncludeScopes = false;
-        options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
-    });
-    configure.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-    //configure.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", LogLevel.Error);
-    configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
-    configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
-
-    return configure;
 }
 
 async Task AddOrUpdatePluginState(IPluginHost pluginHost)

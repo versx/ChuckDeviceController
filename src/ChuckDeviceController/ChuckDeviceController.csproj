@@ -57,6 +57,7 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Logging\ChuckDeviceController.Logging.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Pvp\ChuckDeviceController.Pvp.csproj" />

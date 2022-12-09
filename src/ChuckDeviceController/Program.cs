@@ -15,6 +15,7 @@ using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.HostedServices;
+using ChuckDeviceController.Logging;
 using ChuckDeviceController.Protos;
 using ChuckDeviceController.Pvp;
 using ChuckDeviceController.Services;
@@ -55,7 +56,7 @@ builder.WebHost.ConfigureLogging(configure =>
 {
     var loggingSection = config.GetSection("Logging");
     configure.AddFile(loggingSection);
-    configure.AddSimpleConsole(options => GetLoggingConfig(logLevel, configure));
+    configure.GetLoggingConfig(logLevel);
 });
 
 #endregion
@@ -213,23 +214,6 @@ logger.LogDebug($"Opening database connection took {totalSeconds}s");
 app.Run();
 
 #endregion
-
-// TODO: Create extension and move to separate library
-static ILoggingBuilder GetLoggingConfig(LogLevel defaultLogLevel, ILoggingBuilder configure)
-{
-    configure.SetMinimumLevel(defaultLogLevel);
-    configure.AddSimpleConsole(options =>
-    {
-        options.IncludeScopes = false;
-        options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
-    });
-    configure.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
-    //configure.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", LogLevel.Error);
-    configure.AddFilter("Microsoft.EntityFrameworkCore.Update", LogLevel.None);
-    configure.AddFilter("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", LogLevel.None);
-
-    return configure;
-}
 
 static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
 {
