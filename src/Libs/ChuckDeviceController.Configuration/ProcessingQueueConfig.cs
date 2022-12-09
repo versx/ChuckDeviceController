@@ -2,10 +2,24 @@
 {
     public class ProcessingQueueConfig
     {
-        public uint MaximumBatchSize { get; set; } = 100;
+        public const uint DefaultMaximumBatchSize = 100;
+        public const uint DefaultMaximumSizeWarning = 500;
+        public const ushort DefaultMaximumCapacity = 8192;
 
-        public uint MaximumSizeWarning { get; set; } = 500;
+        public uint MaximumBatchSize { get; set; } = DefaultMaximumBatchSize;
 
-        public ushort MaximumCapacity { get; set; } = 8192;
+        public uint MaximumSizeWarning { get; set; } = DefaultMaximumSizeWarning;
+
+        public uint MaximumCapacity { get; set; } = DefaultMaximumCapacity;
+
+        public ProcessingQueueConfig(
+            uint maximumBatchSize = DefaultMaximumBatchSize,
+            uint maximumSizeWarning = DefaultMaximumSizeWarning,
+            uint maximumCapacity = DefaultMaximumCapacity)
+        {
+            MaximumBatchSize = maximumBatchSize;
+            MaximumSizeWarning = maximumSizeWarning;
+            MaximumCapacity = maximumCapacity;
+        }
     }
 }

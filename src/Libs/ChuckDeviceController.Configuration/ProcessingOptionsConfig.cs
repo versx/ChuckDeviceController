@@ -97,11 +97,12 @@
     public class DataConsumerOptionsConfig : DataLogLevelOptionsConfig
     {
         public static readonly ushort DefaultQueueConcurrencyLevelMultiplier = Convert.ToUInt16(Environment.ProcessorCount * 4);
-        public const int DefaultMaximumBatchSize = 1000;
-        public const int DefaultIntervalS = 10;
-        public const int DefaultQueueCapacity = 1024 * 1024;
+        public const int DefaultIntervalS = 5;
+        public const uint DefaultMaximumBatchSize = 5000;
+        public const uint DefaultMaximumSizeWarning = 1024;
+        public const uint DefaultQueueCapacity = 1024 * 1024;
 
-        public int MaximumBatchSize { get; set; } = DefaultMaximumBatchSize;
+        public ProcessingQueueConfig Queue { get; set; } = new(DefaultMaximumBatchSize, DefaultMaximumSizeWarning, DefaultQueueCapacity);
 
         public ushort IntervalS { get; set; } = DefaultIntervalS;
 
