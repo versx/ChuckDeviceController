@@ -1,15 +1,12 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceController.JobControllers
 {
     using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging;
     using POGOProtos.Rpc;
 
-    using ChuckDeviceConfigurator.JobControllers.EventArgs;
-    using ChuckDeviceConfigurator.Services.Tasks;
-    using ChuckDeviceConfigurator.Utilities;
-    using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Common.Jobs;
@@ -20,6 +17,9 @@
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.JobControllers.Models;
+    using ChuckDeviceController.JobControllers.Tasks;
+    using ChuckDeviceController.JobControllers.Utilities;
 
     public class LevelingInstanceController : IJobController
     {
@@ -94,7 +94,6 @@
         private readonly ILogger<LevelingInstanceController> _logger;
         private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
         private readonly ConcurrentDictionary<string, PlayerLevelingData> _players = new();
-        //private readonly object _playersLock = new();
 
         #endregion
 
@@ -112,7 +111,7 @@
 
         public bool IsEvent { get; }
 
-        public Coordinate StartingCoordinate { get; }
+        public ICoordinate StartingCoordinate { get; }
 
         public bool StoreLevelData { get; }
 
@@ -209,7 +208,7 @@
                                     .Select(pair => pair.Key)
                                     .ToList();
 
-            var data = new List<LevelStatsStatus>();
+            var data = new List<LevelingStatus>();
             foreach (var player in players)
             {
                 var min = Math.Min(Math.Max(MaximumLevel + 1, DefaultMinTargetLevel), DefaultMaxTargetLevel);
@@ -251,7 +250,7 @@
                     ? 999.0
                     : Convert.ToDouble((double)xpTarget - xpCurrent) / Convert.ToDouble(xpPerHour);
 
-                data.Add(new LevelStatsStatus
+                data.Add(new LevelingStatus
                 {
                     XpTarget = xpTarget,
                     XpStart = xpStart,
@@ -315,7 +314,7 @@
             return Task.CompletedTask;
         }
 
-        internal void SetPlayerInfo(string username, ushort level, ulong xp)
+        public void SetPlayerInfo(string username, ushort level, ulong xp)
         {
             AddPlayer(username);
 
@@ -348,7 +347,7 @@
             }
         }
 
-        internal void GotFort(PokemonFortProto fort, string username)
+        public void GotFort(PokemonFortProto fort, string username)
         {
             if (fort == null)
             {
@@ -364,7 +363,7 @@
 
             if (fort.FortType == FortType.Gym)
             {
-                // Do not process Pokestop forts, we should not be receiving them anyways
+                // Do not process Gym forts, we should not be receiving them anyways
                 // but better safe than sorry I guess
                 return;
             }
@@ -391,7 +390,11 @@
                 if (player.UnspunPokestops.ContainsKey(fort.FortId))
                 {
                     // Remove already visited Pokestop from unspun cache
-                    player.UnspunPokestops.Remove(fort.FortId);
+                    var result = player.UnspunPokestops.TryRemove(fort.FortId, out var _);
+                    if (!result)
+                    {
+                        // Failed to remove unspun pokestop from cache
+                    }
                 }
             }
             else
@@ -401,7 +404,7 @@
             }
         }
 
-        internal bool HasTrainer(string username)
+        public bool HasTrainer(string username)
         {
             var result = _players?.ContainsKey(username) ?? false;
             return result;
@@ -411,7 +414,7 @@
 
         #region Private Methods
 
-        private LevelingTask CreateTask(Coordinate coord, double delay, bool deployEgg = true)
+        private LevelingTask CreateTask(ICoordinate coord, double delay, bool deployEgg = true)
         {
             return new LevelingTask
             {
@@ -435,40 +438,45 @@
             };
         }
 
-        private Coordinate? GetNextScanLocation(string username, IAccount? account = null)
+        private ICoordinate? GetNextScanLocation(string username, IAccount? account = null)
         {
             AddPlayer(username);
 
             var player = _players[username];
             Coordinate? currentCoord = null;
 
-            lock (player.UnspunPokestopsLock)
+            if (player.UnspunPokestops.IsEmpty)
             {
-                if (player.UnspunPokestops.Count == 0)
-                {
-                    // No unspun Pokestops received/cached yet, return starting location
-                    return StartingCoordinate;
-                }
+                // No unspun Pokestops received/cached yet, return starting location
+                return StartingCoordinate;
+            }
 
-                // Find the next closest Pokestop to spin
-                var closestPokestop = FindClosestPokestop(player, account);
-                if (closestPokestop != null)
+            // Find the next closest Pokestop to spin
+            var closestPokestop = FindClosestPokestop(player, account);
+            if (closestPokestop != null)
+            {
+                currentCoord = new Coordinate(closestPokestop.Latitude, closestPokestop.Longitude);
+                // Remove the next Pokestop to spin from the unspun Pokestops cache
+                var result = player.UnspunPokestops.TryRemove(closestPokestop.FortId, out var _);
+                if (!result)
                 {
-                    currentCoord = new Coordinate(closestPokestop.Latitude, closestPokestop.Longitude);
-                    // Remove the next Pokestop to spin from the unspun Pokestops cache
-                    player.UnspunPokestops.Remove(closestPokestop.FortId);
-                    // Keep a cache list of the last 5 Pokestops spun and add the next closest
-                    // Pokestop to the last Pokestops spun cache
-                    var fortIds = player.LastPokestopsSpun.Keys.ToList();
-                    // Purge last Pokestops spun cache if more than 10
-                    while (player.LastPokestopsSpun.Count > DefaultLastPokestopsSpunCacheLimit)
-                    {
-                        // Remove from the bottom of the cache list
-                        var fortId = fortIds[^1];
-                        player.LastPokestopsSpun.Remove(fortId);
-                    }
-                    player.LastPokestopsSpun[closestPokestop.FortId] = currentCoord;
+                    // Failed to remove unspun pokestop from cache
                 }
+                // Keep a cache list of the last 5 Pokestops spun and add the next closest
+                // Pokestop to the last Pokestops spun cache
+                var fortIds = player.LastPokestopsSpun.Keys.ToList();
+                // Purge last Pokestops spun cache if more than 10
+                while (player.LastPokestopsSpun.Count > DefaultLastPokestopsSpunCacheLimit)
+                {
+                    // Remove from the bottom of the cache list
+                    var fortId = fortIds[^1];
+                    var lastResult = player.LastPokestopsSpun.TryRemove(fortId, out var _);
+                    if (!lastResult)
+                    {
+                        // Failed to remove last spun pokestop from cache
+                    }
+                }
+                player.LastPokestopsSpun[closestPokestop.FortId] = currentCoord;
             }
 
             if (currentCoord != null)
@@ -478,7 +486,7 @@
             return currentCoord;
         }
 
-        private async Task<double> GetDelayAsync(Coordinate currentCoord, string uuid, IAccount? account = null)
+        private async Task<double> GetDelayAsync(ICoordinate currentCoord, string uuid, IAccount? account = null)
         {
             double delay;
             ulong encounterTime;
@@ -579,7 +587,7 @@
             return status;
         }
 
-        private Coordinate? GetStartingCoordinate(string startingCoordData)
+        private ICoordinate? GetStartingCoordinate(string startingCoordData)
         {
             if (!string.IsNullOrEmpty(startingCoordData))
             {
@@ -610,43 +618,5 @@
         }
 
         #endregion
-
-        private class PlayerLevelingData
-        {
-            public Dictionary<string, PokemonFortProto> UnspunPokestops { get; } = new();
-
-            public object UnspunPokestopsLock { get; } = new();
-
-            public Dictionary<string, Coordinate> LastPokestopsSpun { get; } = new();
-
-            public ulong LastSeen { get; set; }
-
-            public ulong XP { get; set; }
-
-            public ushort Level { get; set; }
-
-            public PokemonPriorityQueue<(ulong, ulong)> XpPerTime { get; } = new(); // timestamp, xp
-
-            public Coordinate? LastLocation { get; set; }
-        }
-
-        private class LevelStatsStatus
-        {
-            public ulong XpTarget { get; set; }
-
-            public ulong XpStart { get; set; }
-
-            public ulong XpCurrent { get; set; }
-
-            public double XpPercentage { get; set; }
-
-            public ushort Level { get; set; }
-
-            public string? Username { get; set; }
-
-            public double XpPerHour { get; set; }
-
-            public double TimeLeft { get; set; }
-        }
     }
 }

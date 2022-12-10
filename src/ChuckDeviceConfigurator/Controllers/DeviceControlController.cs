@@ -5,7 +5,6 @@
     using Microsoft.AspNetCore.Mvc;
 
     using ChuckDeviceConfigurator.Services.Jobs;
-    using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
@@ -14,6 +13,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Extensions.Http.Caching;
+    using ChuckDeviceController.JobControllers.Tasks;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
 

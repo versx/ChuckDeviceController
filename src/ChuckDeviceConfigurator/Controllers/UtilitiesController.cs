@@ -4,7 +4,6 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Options;
 
-    using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
@@ -15,6 +14,7 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.JobControllers;
 
     [Authorize(Roles = RoleConsts.UtilitiesRole)]
     public class UtilitiesController : Controller

@@ -6,7 +6,6 @@
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
 
     public static partial class Utils
@@ -194,16 +193,6 @@
                 : link;
         }
 
-        public static string GetQueueLink(string instanceName, string displayText = "Queue", string basePath = "/Instance/IvQueue", bool html = false)
-        {
-            var encodedName = Uri.EscapeDataString(instanceName);
-            var url = $"{basePath}/{encodedName}";
-            var status = $"<a href='{url}'>{displayText}</a>";
-            return html
-                ? status
-                : url;
-        }
-
         public static double BenchmarkAction(Action action, ushort precision = 4)
         {
             var stopwatch = new System.Diagnostics.Stopwatch();
@@ -214,13 +203,6 @@
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
             Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");
             return totalSeconds;
-        }
-
-        public static int CompareCoordinates(ICoordinate coord1, ICoordinate coord2)
-        {
-            var d1 = Math.Pow(coord1.Latitude, 2) + Math.Pow(coord1.Longitude, 2);
-            var d2 = Math.Pow(coord2.Latitude, 2) + Math.Pow(coord2.Longitude, 2);
-            return d1.CompareTo(d2);
         }
 
         // Credits: https://jasonwatmore.com/post/2018/10/17/c-pure-pagination-logic-in-c-aspnet

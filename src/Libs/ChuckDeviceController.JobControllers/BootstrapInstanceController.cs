@@ -1,10 +1,10 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceController.JobControllers
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    using ChuckDeviceConfigurator.JobControllers.EventArgs;
-    using ChuckDeviceConfigurator.Services.Tasks;
+    using Microsoft.Extensions.Logging;
+
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
@@ -12,6 +12,7 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.JobControllers.Tasks;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Routing;
     using ChuckDeviceController.Routing.Utilities;

@@ -1,9 +1,10 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceController.JobControllers
 {
     using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
-    using ChuckDeviceConfigurator.Services.Tasks;
+    using Microsoft.Extensions.Logging;
+
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Jobs;
@@ -11,6 +12,8 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.JobControllers.Models;
+    using ChuckDeviceController.JobControllers.Tasks;
 
     public abstract class BaseSmartInstanceController : IJobController, ILureInstanceController
     {

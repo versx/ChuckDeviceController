@@ -1,11 +1,11 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceController.JobControllers
 {
     using System.Collections.Concurrent;
 
     using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging;
 
-    using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
@@ -14,6 +14,8 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.JobControllers.Models;
+    using ChuckDeviceController.JobControllers.Tasks;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Routing;
 
@@ -419,22 +421,6 @@
         }
 
         #endregion
-
-        private class SmartRaidGym
-        {
-            public Gym Gym { get; set; }
-
-            public ulong Updated { get; set; }
-
-            public ICoordinate Coordinate { get; set; }
-
-            public SmartRaidGym(Gym gym, ulong updated, ICoordinate coordinate)
-            {
-                Gym = gym;
-                Updated = updated;
-                Coordinate = coordinate;
-            }
-        }
 
         private class GymsResult
         {

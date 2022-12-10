@@ -6,8 +6,6 @@
     using POGOProtos.Rpc;
 
     using ChuckDeviceConfigurator.Extensions;
-    using ChuckDeviceConfigurator.JobControllers;
-    using ChuckDeviceConfigurator.JobControllers.EventArgs;
     using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
     using ChuckDeviceConfigurator.Services.Geofences;
@@ -22,6 +20,7 @@
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.JobControllers;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager;
     using ChuckDeviceController.Routing;

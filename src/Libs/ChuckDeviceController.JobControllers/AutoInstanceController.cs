@@ -1,13 +1,11 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceController.JobControllers
 {
     using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging;
 
-    using ChuckDeviceConfigurator.JobControllers.EventArgs;
-    using ChuckDeviceConfigurator.Services.Tasks;
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
@@ -21,6 +19,9 @@
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.JobControllers.Models;
+    using ChuckDeviceController.JobControllers.Tasks;
+    using ChuckDeviceController.JobControllers.Utilities;
 
     public class AutoInstanceController : IJobController
     {
@@ -433,7 +434,7 @@
             }
         }
 
-        internal void ClearQueue()
+        public void ClearQueue()
         {
             // Add all Pokestop ids from _todayStops to ignore list
             var todayStops = _todayStops;
@@ -939,18 +940,5 @@
         }
 
         #endregion
-    }
-
-    public class PokestopWithMode
-    {
-        public Pokestop Pokestop { get; set; }
-
-        public bool IsAlternative { get; set; }
-
-        public PokestopWithMode(Pokestop pokestop, bool isAlternative)
-        {
-            Pokestop = pokestop;
-            IsAlternative = isAlternative;
-        }
     }
 }

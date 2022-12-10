@@ -1396,7 +1396,7 @@
             if (Options.ShowProcessingTimes)
             {
                 sw.Stop();
-                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
+                //var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
                 //_logger.LogInformation($"[{requestId}] {count:N0} pokemon incidents parsed in {totalSeconds}s");
             }
 

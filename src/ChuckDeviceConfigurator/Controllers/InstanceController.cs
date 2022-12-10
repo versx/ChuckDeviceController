@@ -5,7 +5,6 @@
     using Microsoft.AspNetCore.Mvc;
     using static POGOProtos.Rpc.PokemonDisplayProto.Types;
 
-    using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Localization;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
@@ -16,6 +15,7 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.JobControllers.Models;
 
     [Authorize(Roles = RoleConsts.InstancesRole)]
     public class InstanceController : Controller

@@ -1,12 +1,10 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceController.JobControllers
 {
-    using System;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging;
 
-    using ChuckDeviceConfigurator.Services.Tasks;
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Collections.Queues;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Jobs;
@@ -17,6 +15,9 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.JobControllers.Models;
+    using ChuckDeviceController.JobControllers.Tasks;
+    using ChuckDeviceController.JobControllers.Utilities;
 
     public class IvInstanceController : IJobController, ILureInstanceController, IScanNextInstanceController
     {
@@ -93,8 +94,6 @@
 
             _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
             _mapFactory = mapFactory;
-            //_pokemonQueue = new PokemonPriorityQueue<Pokemon>(QueueLimit);
-            //_pokemonQueue = new PokemonPriorityQueue<Pokemon, Pokemon>(PokemonIds, QueueLimit, new PokemonComparer(PokemonIds));
             _pokemonQueue = new SortedPriorityQueue<Pokemon>(QueueLimit, new PokemonComparer(PokemonIds));
             _scannedPokemon = new PokemonPriorityQueue<ScannedPokemon>();
             _startDate = DateTime.UtcNow.ToTotalSeconds();
@@ -244,7 +243,7 @@
         /// </summary>
         /// <param name="pokemon">Pokemon encounter</param>
         /// <param name="hasIv">Pokemon has IVs</param>
-        internal void GotPokemon(Pokemon pokemon, bool hasIv)
+        public void GotPokemon(Pokemon pokemon, bool hasIv)
         {
             // First thing to do is ensure that the received Pokemon is within this IV job
             // controller's geofence bounds.
@@ -261,23 +260,23 @@
                 // Pokemon has IVs scanned, attempt to remove it from the Pokemon queue if it's in it.
                 //lock (_queueLock)
                 //{
-                    // Remove Pokemon from scan queue
-                    var index = _pokemonQueue.IndexOf(pokemon);
-                    if (index > -1)
-                    {
-                        // Remove Pokemon from queue at index
-                        _pokemonQueue.RemoveAt(index);
-                    }
-                    // Checks if instance is for event as well as the Pokemon has not been re-scanned
-                    // yet and that it also meets the desired IV stats for event re-scans.
-                    if (IsEvent && !pokemon.IsEvent &&
-                        EventAttackIV.Contains(pokemon.AttackIV ?? 999) &&
-                        pokemon.DefenseIV == 15 && pokemon.StaminaIV == 15)
-                    {
-                        pokemon.IsEvent = true;
-                        // Push Pokemon to top of queue
-                        _pokemonQueue.Insert(0, pokemon);
-                    }
+                // Remove Pokemon from scan queue
+                var index = _pokemonQueue.IndexOf(pokemon);
+                if (index > -1)
+                {
+                    // Remove Pokemon from queue at index
+                    _pokemonQueue.RemoveAt(index);
+                }
+                // Checks if instance is for event as well as the Pokemon has not been re-scanned
+                // yet and that it also meets the desired IV stats for event re-scans.
+                if (IsEvent && !pokemon.IsEvent &&
+                    EventAttackIV.Contains(pokemon.AttackIV ?? 999) &&
+                    pokemon.DefenseIV == 15 && pokemon.StaminaIV == 15)
+                {
+                    pokemon.IsEvent = true;
+                    // Push Pokemon to top of queue
+                    _pokemonQueue.Insert(0, pokemon);
+                }
                 //}
 
                 // Update internal IV stats for job controller status
@@ -295,39 +294,39 @@
 
             //lock (_queueLock)
             //{
-                // Check if Pokemon without IVs is still in queue pending
-                if (_pokemonQueue.Contains(pokemon))
-                {
-                    return;
-                }
+            // Check if Pokemon without IVs is still in queue pending
+            if (_pokemonQueue.Contains(pokemon))
+            {
+                return;
+            }
 
-                // Find the last index of the same Pokemon in the queue to insert pending encounter
-                var lastIndex = _pokemonQueue.LastIndexOf(pokemon, GetPriorityIndex);
-                if (_pokemonQueue.Count >= QueueLimit && lastIndex == null)
-                {
-                    _logger.LogWarning($"[{Name}] Queue is full!");
-                }
-                else if (_pokemonQueue.Count >= QueueLimit)
-                {
-                    if (lastIndex != null)
-                    {
-                        // Insert in queue at index
-                        _pokemonQueue.Insert((int)lastIndex, pokemon);
-
-                        // Remove last item in the queue
-                        _ = _pokemonQueue.DequeueLast();
-                    }
-                }
-                else if (lastIndex != null)
+            // Find the last index of the same Pokemon in the queue to insert pending encounter
+            var lastIndex = _pokemonQueue.LastIndexOf(pokemon, GetPriorityIndex);
+            if (_pokemonQueue.Count >= QueueLimit && lastIndex == null)
+            {
+                _logger.LogWarning($"[{Name}] Queue is full!");
+            }
+            else if (_pokemonQueue.Count >= QueueLimit)
+            {
+                if (lastIndex != null)
                 {
                     // Insert in queue at index
                     _pokemonQueue.Insert((int)lastIndex, pokemon);
+
+                    // Remove last item in the queue
+                    _ = _pokemonQueue.DequeueLast();
                 }
-                else
-                {
-                    // Add to the end of the queue
-                    _pokemonQueue.Add(pokemon);
-                }
+            }
+            else if (lastIndex != null)
+            {
+                // Insert in queue at index
+                _pokemonQueue.Insert((int)lastIndex, pokemon);
+            }
+            else
+            {
+                // Add to the end of the queue
+                _pokemonQueue.Add(pokemon);
+            }
             //}
         }
 
@@ -335,28 +334,28 @@
         /// Remove Pokemon from IV queue based on encounter ID.
         /// </summary>
         /// <param name="encounterId">Pokemon encounter ID</param>
-        internal void RemoveFromQueue(string encounterId)
+        public void RemoveFromQueue(string encounterId)
         {
             //lock (_queueLock)
             //{
-                // Find index of Pokemon encounter to remove by encounter id
-                var index = _pokemonQueue.FindIndex(pokemon => pokemon.Id == encounterId);
-                if (index > -1)
-                {
-                    // Remove encounter from queue by index
-                    _pokemonQueue.RemoveAt(index);
-                }
+            // Find index of Pokemon encounter to remove by encounter id
+            var index = _pokemonQueue.FindIndex(pokemon => pokemon.Id == encounterId);
+            if (index > -1)
+            {
+                // Remove encounter from queue by index
+                _pokemonQueue.RemoveAt(index);
+            }
             //}
         }
 
         /// <summary>
         /// Clear all pending Pokemon encounters from IV queue.
         /// </summary>
-        internal void ClearQueue()
+        public void ClearQueue()
         {
             //lock (_queueLock)
             //{
-                _pokemonQueue.Clear();
+            _pokemonQueue.Clear();
             //}
         }
 
@@ -525,19 +524,6 @@
         }
 
         #endregion
-
-        private class ScannedPokemon
-        {
-            public Pokemon Pokemon { get; set; }
-
-            public ulong DateScanned { get; set; }
-
-            public ScannedPokemon(Pokemon pokemon, ulong dateScanned)
-            {
-                Pokemon = pokemon;
-                DateScanned = dateScanned;
-            }
-        }
     }
 
     public class PokemonComparer : IComparer<Pokemon>

@@ -1,6 +1,6 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceController.JobControllers.Models
 {
-    internal class DeviceIndex
+    public class DeviceIndex
     {
         public int LastRouteIndex { get; set; }
 

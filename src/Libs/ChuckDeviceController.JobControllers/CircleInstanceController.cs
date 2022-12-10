@@ -1,6 +1,8 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceController.JobControllers
 {
     using System.Threading.Tasks;
+
+    using Microsoft.Extensions.Logging;
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Geometry.Models.Contracts;

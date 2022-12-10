@@ -1,11 +1,11 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers
+﻿namespace ChuckDeviceController.JobControllers
 {
     using System.Collections.Concurrent;
     using System.Threading.Tasks;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Logging;
 
-    using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Common.Tasks;
@@ -16,6 +16,7 @@
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.JobControllers.Tasks;
     using ChuckDeviceController.Routing;
 
     /*
@@ -99,7 +100,7 @@
 
         public async Task<ITask> GetTaskAsync(TaskOptions options)
         {
-            if (SpawnpointCoordinates?.Count == 0)
+            if (!(SpawnpointCoordinates?.Any() ?? false))
             {
                 _logger.LogWarning($"[{Name}] [{options.Uuid}] No spawnpoints available to find TTH!");
                 return null;

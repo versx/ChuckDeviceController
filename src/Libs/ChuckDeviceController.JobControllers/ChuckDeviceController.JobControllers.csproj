@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Geometry.Models\ChuckDeviceController.Geometry.Models.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Routing\ChuckDeviceController.Routing.csproj" />
+  </ItemGroup>
+
+</Project>

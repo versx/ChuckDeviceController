@@ -1,7 +1,5 @@
-﻿namespace ChuckDeviceConfigurator.JobControllers.EventArgs
+﻿namespace ChuckDeviceController.JobControllers
 {
-    using System;
-
     public sealed class AccountLevelUpEventArgs : EventArgs
     {
         public ushort Level { get; }

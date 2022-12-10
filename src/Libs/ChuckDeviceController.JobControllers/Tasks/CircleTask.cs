@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Services.Tasks
+﻿namespace ChuckDeviceController.JobControllers.Tasks
 {
 	using System.Text.Json.Serialization;
 
