@@ -63,6 +63,8 @@
 
         public DataProcessorOptionsConfig Options { get; }
 
+        public bool EnableWebhooks { get; }
+
         #endregion
 
         #region Constructor
@@ -77,10 +79,12 @@
             IClearFortsHostedService clearFortsService,
             IMemoryCacheHostedService memCache,
             IWebHostEnvironment env,
+            IConfiguration configuration,
             IDataConsumerService dataConsumerService)
             : base(logger, options?.Value?.IntervalS ?? DataProcessorOptionsConfig.DefaultIntervalS)
         {
             Options = options?.Value ?? new();
+            EnableWebhooks = configuration.GetValue<bool>("Webhooks:Enabled");
 
             _logger = logger;
             _taskQueue = taskQueue;
@@ -1495,6 +1499,9 @@
 
         private async Task SendWebhooksAsync<T>(WebhookType type, IEnumerable<T> webhooks)
         {
+            if (!EnableWebhooks)
+                return;
+
             // Fire off gRPC request on a separate thread
             await Task.Run(() =>
             {
@@ -1512,6 +1519,9 @@
 
         private async Task SendWebhooksAsync<T>(Dictionary<WebhookType, List<T>> webhooks)
         {
+            if (!EnableWebhooks)
+                return;
+
             // Fire off gRPC request on a separate thread
             await Task.Run(() =>
             {
@@ -1532,25 +1542,28 @@
 
         private async Task SendWebhookAsync<T>(WebhookPayloadType webhookType, T entity)
         {
+            if (!EnableWebhooks)
+                return;
+
             if (entity == null)
             {
                 _logger.LogWarning($"Unable to relay entity {typeof(T).Name} to webhook service, entity is null...");
                 return;
             }
 
-            //var json = entity.ToJson();
-            //if (string.IsNullOrEmpty(json))
-            //{
-            //    _logger.LogWarning($"Failed to serialize entity {typeof(T).Name} to relay to webhook service, skipping...");
-            //    return;
-            //}
+            var json = entity.ToJson();
+            if (string.IsNullOrEmpty(json))
+            {
+                _logger.LogWarning($"Failed to serialize entity {typeof(T).Name} to relay to webhook service, skipping...");
+                return;
+            }
 
-            //// Fire off gRPC request on a separate thread
-            //await _grpcWebhookClient.SendAsync(new WebhookPayloadRequest
-            //{
-            //    PayloadType = webhookType,
-            //    Payload = json,
-            //});
+            // Fire off gRPC request on a separate thread
+            await _grpcWebhookClient.SendAsync(new WebhookPayloadRequest
+            {
+                PayloadType = webhookType,
+                Payload = json,
+            });
         }
 
         private async Task SendPokemonAsync(List<Pokemon> pokemon)
@@ -1603,7 +1616,6 @@
             await Task.CompletedTask;
         }
 
-        //private async Task SendPokestopsAsync(List<PokemonFortProto> forts)
         private async Task SendPokestopsAsync(List<dynamic> forts)
         {
             // Fire off gRPC request on a separate thread
