@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService
 {
+    using ChuckDeviceController.Collections;
+
     /// <summary>
     /// Enables a subscriber to unsubscribe from further events before
     /// disposing of the object.
@@ -8,7 +10,7 @@
     {
         #region Variables
 
-        private readonly List<IObserver<T>> _observers;
+        private readonly SafeCollection<IObserver<T>> _observers;
         private readonly IObserver<T> _observerToUnsubscribe;
         private bool _isDisposed;
 
@@ -21,7 +23,7 @@
         /// </summary>
         /// <param name="observers">Registered observer instances.</param>
         /// <param name="observerToUnsubscribe">Observers instances to unsubscribe from.</param>
-        public Unsubscriber(List<IObserver<T>> observers, IObserver<T> observerToUnsubscribe)
+        public Unsubscriber(SafeCollection<IObserver<T>> observers, IObserver<T> observerToUnsubscribe)
         {
             _observers = observers;
             _observerToUnsubscribe = observerToUnsubscribe;

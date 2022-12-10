@@ -27,7 +27,7 @@
         #region Variables
 
         private static readonly ConcurrentDictionary<string, ushort> _levelCache = new(DefaultConcurrencyLevel, DefaultCapacity);
-        private readonly SemaphoreSlim _semDevices = new(1); // REVIEW: static access modifier
+        private readonly SemaphoreSlim _semDevices = new(DefaultConcurrencyLevel); // TODO: Make proto devices update concurrency level configurable
 
         private readonly ILogger<ProtoController> _logger;
         private readonly SafeCollection<ProtoPayloadQueueItem> _taskQueue;

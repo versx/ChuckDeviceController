@@ -5,10 +5,10 @@
     public interface IApiKeyManagerService
     {
         Task<string> GetApiKey(uint id);
+
         Task<string> GetApiKey(string name);
 
         Task<ApiKey> GetApiKeyByName(string name);
-
 
         Task<bool> ValidateKey(string apiKey);
 

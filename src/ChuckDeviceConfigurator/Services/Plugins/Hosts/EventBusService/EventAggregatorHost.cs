@@ -1,5 +1,8 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService
 {
+    using System.Collections.Concurrent;
+
+    using ChuckDeviceController.Collections;
     using ChuckDeviceController.Plugin.EventBus;
 
     /// <summary>
@@ -11,11 +14,10 @@
 
         private static readonly Logger<IEventAggregatorHost> _logger =
             new(LoggerFactory.Create(x => x.AddConsole()));
-        private readonly List<IEvent> _events;
-        private readonly List<IEvent> _eventsRelayed;
-        private readonly List<IObserver<IEvent>> _observers;
-        private readonly Dictionary<Type, List<IObserver<IEvent>>> _typedObservers;
-        private readonly object _eventsLock = new();
+        private readonly SafeCollection<IEvent> _events;
+        private readonly SafeCollection<IEvent> _eventsRelayed;
+        private readonly SafeCollection<IObserver<IEvent>> _observers;
+        private readonly ConcurrentDictionary<Type, SafeCollection<IObserver<IEvent>>> _typedObservers;
 
         #endregion
 
@@ -32,10 +34,10 @@
 
         public EventAggregatorHost()
         {
-            _events = new List<IEvent>();
-            _eventsRelayed = new List<IEvent>();
-            _observers = new List<IObserver<IEvent>>();
-            _typedObservers = new Dictionary<Type, List<IObserver<IEvent>>>();
+            _events = new SafeCollection<IEvent>();
+            _eventsRelayed = new SafeCollection<IEvent>();
+            _observers = new SafeCollection<IObserver<IEvent>>();
+            _typedObservers = new ConcurrentDictionary<Type, SafeCollection<IObserver<IEvent>>>();
         }
 
         #endregion
@@ -48,9 +50,9 @@
         /// <param name="event">The event to publish.</param>
         public void Publish(IEvent @event)
         {
-            lock (_eventsLock)
+            if (!_events.TryAdd(@event))
             {
-                _events.Add(@event);
+                // Failed to add event to events cache
             }
 
             foreach (var observer in _observers)
@@ -109,15 +111,11 @@
         {
             if (!_typedObservers.TryGetValue(typeof(T), out var observers))
             {
-                observers = new List<IObserver<IEvent>>();
+                observers = new SafeCollection<IObserver<IEvent>>();
                 _typedObservers[typeof(T)] = observers;
             }
 
-            List<IEvent> events;
-            lock (_eventsLock)
-            {
-                events = _events.Where(evt => evt is T).ToList();
-            }
+            var events = new SafeCollection<IEvent>(_events.Where(evt => evt is T));
             return SubscribeAndSendEvents(observers, newObserver, events);
         }
 
@@ -129,30 +127,29 @@
             SubscribeAndSendEvents(_observers, newObserver, _events);
 
         private IDisposable SubscribeAndSendEvents(
-            List<IObserver<IEvent>> currentObservers,
+            SafeCollection<IObserver<IEvent>> currentObservers,
             IObserver<IEvent> newObserver,
-            IReadOnlyList<IEvent> events)
+            SafeCollection<IEvent> events)
         {
             if (!currentObservers.Contains(newObserver))
             {
-                currentObservers.Add(newObserver);
+                if (!currentObservers.TryAdd(newObserver))
+                {
+                    // Failed to add observer to cache
+                }
 
                 // Provide observer with existing data.
-                //foreach (var @event in events)
-                lock (_eventsLock)
+                for (var i = 0; i < events.Count; i++)
                 {
-                    for (var i = 0; i < events.Count; i++)
+                    var @event = events[i];
+                    var result = ExecutePublish(newObserver, @event);
+                    if (result != EventExecutionResult.Executed)
                     {
-                        var @event = events[i];
-                        var result = ExecutePublish(newObserver, @event);
-                        if (result != EventExecutionResult.Executed)
-                        {
-                            // Error occurred
-                            _logger.LogError($"Failed to publish event '{@event.GetType().FullName}' to event bus with result '{result}'");
-                        }
-
-                        RemoveEvent(@event);
+                        // Error occurred
+                        _logger.LogError($"Failed to publish event '{@event.GetType().FullName}' to event bus with result '{result}'");
                     }
+
+                    RemoveEvent(@event);
                 }
             }
 
@@ -165,7 +162,10 @@
             try
             {
                 observer.OnNext(@event);
-                _eventsRelayed.Add(@event);
+                if (!_eventsRelayed.TryAdd(@event))
+                {
+                    // Failed to add event to events sent cache
+                }
                 result = EventExecutionResult.Executed;
             }
             catch (Exception ex)
@@ -178,12 +178,9 @@
 
         private void RemoveEvent(IEvent @event)
         {
-            lock (_eventsLock)
+            if (_events.Contains(@event))
             {
-                if (_events.Contains(@event))
-                {
-                    _events.Remove(@event);
-                }
+                _events.Remove(@event);
             }
         }
 
