@@ -62,7 +62,7 @@
             _grpcProtoClient = grpcProtoClient;
             _grpcLevelingClient = grpcLevelingClient;
 
-            Options = options.Value;
+            Options = options?.Value ?? new();
         }
 
         #endregion
@@ -245,6 +245,9 @@
                                         ?? GetArQuestMode(uuid!, timestamp);
                                     var title = fsr.ChallengeQuest.QuestDisplay.Title;
                                     var quest = fsr.ChallengeQuest.Quest;
+                                    // Ignore AR quests so they get rescanned if they were the first quest a scanner would hold onto
+                                    if (quest.QuestType != QuestType.QuestGeotargetedArScan || Options.AllowArQuests)
+                                    {
                                     if (quest.QuestType == QuestType.QuestGeotargetedArScan && uuid != null)
                                     {
                                         _arQuestActualMap.SetValue(uuid, value: true, timestamp);
@@ -256,6 +259,12 @@
                                         quest,
                                         hasAr,
                                     });
+                                }
+                                    else
+                                    {
+                                        _logger.LogWarning($"[{uuid}] Quest was blocked because it is type '{quest.QuestType}'.");
+                                        _logger.LogInformation($"[{uuid}] Quest info: {quest}");
+                                    }
                                 }
                             }
                             else

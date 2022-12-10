@@ -54,7 +54,7 @@
             Name = name;
             StackTrace = Environment.StackTrace;
 
-            _logger.LogInformation($"[{_connectionId}] {Name} Connection opened");
+            _logger.LogDebug($"[{_connectionId}] {Name} Connection opened");
 
             _timer = new Timer(_ =>
             {
@@ -72,7 +72,7 @@
             if (stateChangeEventArgs.CurrentState == ConnectionState.Closed)
             {
                 // The connection was closed within the timeout
-                _logger.LogInformation($"[{_connectionId}] {Name} Connection closed");
+                _logger.LogDebug($"[{_connectionId}] {Name} Connection closed");
                 // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
             }

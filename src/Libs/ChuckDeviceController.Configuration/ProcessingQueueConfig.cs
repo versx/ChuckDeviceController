@@ -3,8 +3,8 @@
     public class ProcessingQueueConfig
     {
         public const uint DefaultMaximumBatchSize = 100;
-        public const uint DefaultMaximumSizeWarning = 500;
-        public const ushort DefaultMaximumCapacity = 8192;
+        public const uint DefaultMaximumSizeWarning = 1024;
+        public const ushort DefaultMaximumCapacity = 10240;
 
         public uint MaximumBatchSize { get; set; } = DefaultMaximumBatchSize;
 

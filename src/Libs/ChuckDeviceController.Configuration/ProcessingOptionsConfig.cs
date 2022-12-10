@@ -39,6 +39,8 @@
     {
         public const int DefaultIntervalS = 3;
 
+        public bool AllowArQuests { get; set; } = true;
+
         public bool ProcessMapPokemon { get; set; } = true;
 
         public ProcessingQueueConfig Queue { get; set; } = new();
