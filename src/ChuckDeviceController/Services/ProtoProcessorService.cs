@@ -31,6 +31,7 @@
         private readonly SafeCollection<DataQueueItem> _dataQueue;
         private readonly IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> _grpcProtoClient;
         private readonly IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> _grpcLevelingClient;
+        private readonly SemaphoreSlim _sem = new(15, 15);
 
         private static readonly ConcurrentDictionary<ulong, int> _emptyCells = new();
         private static readonly ConcurrentDictionary<string, bool> _canStoreData = new();
@@ -94,22 +95,18 @@
                     if (!(workItems?.Any() ?? false))
                     {
                         Thread.Sleep(1);
-                        //await Task.Delay(1, stoppingToken);
                         continue;
                     }
 
                     //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
-                    await Task.Run(async () =>
+                    new Thread(async () =>
                     {
-                        //new Thread(async () =>
-                        //{
-                            foreach (var workItem in workItems)
-                            {
-                                await Task.Factory.StartNew(async () => await ProcessWorkItemAsync(workItem, stoppingToken));
-                            }
-                        //})
-                        //{ IsBackground = true }.Start();
-                    }, stoppingToken);
+                        foreach (var workItem in workItems)
+                        {
+                            await ProcessWorkItemAsync(workItem, stoppingToken).ConfigureAwait(false);
+                        }
+                    })
+                    { IsBackground = true }.Start();
                 }
                 catch (OperationCanceledException)
                 {

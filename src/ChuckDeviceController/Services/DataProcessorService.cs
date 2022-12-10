@@ -280,7 +280,7 @@
             {
                 sw.Stop();
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-                _logger.LogInformation($"[{guid}] Finished parsing {workItem.Count:N0} data entities{(Options.ShowProcessingTimes ? $"in {totalSeconds}s" : "")}");
+                _logger.LogInformation($"[{guid}] Finished parsing {workItem.Count:N0} data entities{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
             }
 
             await Task.CompletedTask;
