@@ -22,9 +22,9 @@
                 var response = await _client.HandleTrainerInfoAsync(payload);
                 return response;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError($"Error: {ex.Message}");
+                //_logger.LogError($"Error: {ex.Message}");
             }
             return null;
         }

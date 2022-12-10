@@ -70,6 +70,7 @@
             Response.Headers["Accept"] = ContentTypeJson;
             Response.Headers["Content-Type"] = ContentTypeJson;
 
+            // TODO: Use middleware
             ProtoDataStatistics.Instance.TotalRequestsProcessed++;
 
             var response = await HandleProtoRequest(payload).ConfigureAwait(false);

@@ -23,7 +23,6 @@
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IWebHostEnvironment _env;
         private readonly SqlBulk _bulk = new();
-        private readonly SqlQueryTypeComparer _queryTypeComparer;
         //private static readonly IReadOnlyDictionary<SqlQueryType, ColumnDataExpression<dynamic>> upsertExpressions = new Dictionary<SqlQueryType, ColumnDataExpression<dynamic>>
         //{
         //    {
@@ -304,7 +303,6 @@
                 (int)Options.Queue.MaximumCapacity
             );
             _tokenSource = new CancellationTokenSource();
-            _queryTypeComparer = new SqlQueryTypeComparer();
 
             _timer.Interval = Options.IntervalS * 1000;
             _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(_tokenSource.Token);
@@ -357,7 +355,7 @@
             try
             {
                 //var entitiesToUpsert = await _queue.TakeAllAsync(_queryTypeComparer, stoppingToken);
-                var entitiesToUpsert = await _queue.TakeAsync(_queryTypeComparer, (int)Options.Queue.MaximumBatchSize, stoppingToken);
+                var entitiesToUpsert = await _queue.TakeAsync(new SqlQueryTypeComparer(), (int)Options.Queue.MaximumBatchSize, stoppingToken);
                 var entityCount = entitiesToUpsert.Sum(x => x.Value?.Count ?? 0);
                 if (entityCount == 0)
                 {
