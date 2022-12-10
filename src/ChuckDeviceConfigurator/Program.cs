@@ -99,9 +99,13 @@ builder.WebHost.UseConfiguration(config);
 
 #region Logger Filtering
 
-// TODO: Add log to file support
 var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
-builder.WebHost.ConfigureLogging(configure => configure.GetLoggingConfig(logLevel));
+builder.WebHost.ConfigureLogging(configure =>
+{
+    var loggingSection = config.GetSection("Logging");
+    configure.AddFile(loggingSection);
+    configure.GetLoggingConfig(logLevel);
+});
 
 #endregion
 
@@ -189,15 +193,14 @@ builder.Services.Configure<MySqlResiliencyOptions>(config.GetSection("Database")
 #region Database Contexts
 
 // Register data contexts, factories, and pools
-var poolSize = config.GetValue("DbContextPoolSize", 1024);
 builder.Services.AddDbContextFactory<ControllerDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Singleton);
 builder.Services.AddDbContextPool<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), poolSize);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), resiliencyConfig.MaximumPoolSize);
 builder.Services.AddDbContextPool<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), poolSize);
+    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), resiliencyConfig.MaximumPoolSize);
 
 #endregion
 
