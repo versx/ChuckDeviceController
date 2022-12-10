@@ -7,6 +7,7 @@
 
     using Microsoft.Extensions.Options;
 
+    using ChuckDeviceController.Collections.Extensions;
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
@@ -22,6 +23,7 @@
         private readonly ILogger<IDataConsumerService> _logger;
         private readonly IWebHostEnvironment _env;
         private readonly SqlBulk _bulk = new();
+        private readonly SqlQueryTypeComparer _queryTypeComparer;
         //private static readonly IReadOnlyDictionary<SqlQueryType, ColumnDataExpression<dynamic>> upsertExpressions = new Dictionary<SqlQueryType, ColumnDataExpression<dynamic>>
         //{
         //    {
@@ -302,6 +304,7 @@
                 (int)Options.Queue.MaximumCapacity
             );
             _tokenSource = new CancellationTokenSource();
+            _queryTypeComparer = new SqlQueryTypeComparer();
 
             _timer.Interval = Options.IntervalS * 1000;
             _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(_tokenSource.Token);
@@ -353,10 +356,8 @@
 
             try
             {
-                //var entitiesToUpsert = await _queue.TakeAllAsync(stoppingToken);
-                //var entitiesToUpsert = _queue.TakeAll();
-                var entitiesToUpsert = await _queue.TakeAsync((int)Options.Queue.MaximumBatchSize, stoppingToken);
-                //var entitiesToUpsert = _queue.Take(100);
+                //var entitiesToUpsert = await _queue.TakeAllAsync(_queryTypeComparer, stoppingToken);
+                var entitiesToUpsert = await _queue.TakeAsync(_queryTypeComparer, (int)Options.Queue.MaximumBatchSize, stoppingToken);
                 var entityCount = entitiesToUpsert.Sum(x => x.Value?.Count ?? 0);
                 if (entityCount == 0)
                 {
@@ -510,6 +511,11 @@
         }
 
         #endregion
+    }
+
+    public class SqlQueryTypeComparer : IComparer<SqlQueryType>
+    {
+        public int Compare(SqlQueryType x, SqlQueryType y) => ((int)x).CompareTo((int)y);
     }
 
     public class BenchmarkResults
