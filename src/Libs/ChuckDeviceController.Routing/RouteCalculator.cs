@@ -1,13 +1,15 @@
-﻿namespace ChuckDeviceConfigurator.Services.Routing
+﻿namespace ChuckDeviceController.Routing
 {
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.Routing.Utilities;
 
     public class RouteCalculator : IRouteCalculator
     {
-        private const ushort DefaultCircleSize = Strings.DefaultCircleSize;
+        #region Variables
 
         private readonly List<ICoordinate> _coordinates;
+
+        #endregion
 
         #region Properties
 
@@ -92,7 +94,7 @@
             }
 
             var sorted = _coordinates;
-            sorted.Sort(Utils.CompareCoordinates);
+            sorted.Sort(GeoUtils.CompareCoordinates);
             var ordered = OrderByDistance(sorted);
 
             if (ClearCoordinatesAfterOptimization)
@@ -124,7 +126,7 @@
             return distance;
         }
 
-        private static List<ICoordinate> OrderByDistance(List<ICoordinate> coordinates, ushort circleSize = DefaultCircleSize)
+        private static List<ICoordinate> OrderByDistance(List<ICoordinate> coordinates, ushort radiusM = Strings.DefaultRadiusM)
         {
             var orderedList = new List<ICoordinate>();
             var coords = new List<ICoordinate>(coordinates);
@@ -139,12 +141,12 @@
 
                 for (var i = 0; i < coords.Count; i++)
                 {
-                    var distanceQuick = GetDistanceQuick(currentPoint, coords[i]) + (circleSize / 2);
+                    var distanceQuick = GetDistanceQuick(currentPoint, coords[i]) + (radiusM / 2);
                     //var distanceQuick = currentPoint.DistanceTo(coordinates[i]) + (circleSize / 2);
                     if (distanceQuick > closestDistance)
                         continue;
 
-                    var distance = GetDistance(currentPoint, coords[i]) + (circleSize / 2);
+                    var distance = GetDistance(currentPoint, coords[i]) + (radiusM / 2);
                     //var distance = currentPoint.DistanceTo(coordinates[i]) + (circleSize / 2);
                     if (distance < closestDistance)
                     {

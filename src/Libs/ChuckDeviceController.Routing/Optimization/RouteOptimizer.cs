@@ -1,11 +1,7 @@
-﻿namespace ChuckDeviceConfigurator.Services.Routing
+﻿namespace ChuckDeviceController.Routing.Optimization
 {
     using System.Security.Cryptography;
 
-    using Microsoft.EntityFrameworkCore;
-
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
@@ -17,7 +13,6 @@
         #region Variables
 
         private static readonly RandomNumberGenerator _rand = RandomNumberGenerator.Create();
-        private readonly IDbContextFactory<MapDbContext> _factory;
 
         #endregion
 
@@ -63,9 +58,8 @@
 
         #region Constructor
 
-        public RouteOptimizer(IDbContextFactory<MapDbContext> factory, List<MultiPolygon> multiPolygons)
+        public RouteOptimizer(List<MultiPolygon> multiPolygons)
         {
-            _factory = factory;
             MultiPolygons = multiPolygons;
         }
 
@@ -79,9 +73,9 @@
         /// </summary>
         /// <param name="options">Route optimization options to use.</param>
         /// <returns>Returns the optimized route.</returns>
-        public async Task<List<Coordinate>> OptimizeRouteAsync(RouteOptimizerOptions options)
+        public async Task<List<ICoordinate>> OptimizeRouteAsync(RouteOptimizerOptions options)
         {
-            var coordinates = new List<Coordinate>();
+            var coordinates = new List<ICoordinate>();
             foreach (var multiPolygon in MultiPolygons)
             {
                 //var newCircle, currentLatLng, point;
@@ -113,7 +107,7 @@
 
             if (options.OptimizeTsp)
             {
-                var optimizedRoute = GetOptimization(coordinates, options.CircleSize, options.OptimizationAttempts, options.OptimizeTsp);
+                var optimizedRoute = GetOptimization(coordinates, options.RadiusM, options.OptimizationAttempts, options.OptimizeTsp);
                 return optimizedRoute;
             }
 
@@ -124,68 +118,71 @@
 
         #region Private Methods
 
-        private async Task<List<Coordinate>> GetEntityCoordinatesAsync(IBoundingBox bbox)
+        private async Task<List<ICoordinate>> GetEntityCoordinatesAsync(IBoundingBox bbox)
         {
-            var coordinates = new List<Coordinate>();
-            using (var context = _factory.CreateDbContext())
-            {
-                if (IncludeGyms)
-                {
-                    var gymCoords = context.Gyms.AsEnumerable()
-                                                .Where(gym => bbox.IsInBoundingBox(gym.Latitude, gym.Longitude))
-                                                .Select(gym => gym.ToCoordinate())
-                                                .ToList();
-                    coordinates.AddRange(gymCoords);
-                }
-                if (IncludePokestops)
-                {
-                    var pokestopCoords = context.Pokestops.AsEnumerable()
-                                                          .Where(stop => bbox.IsInBoundingBox(stop.Latitude, stop.Longitude))
-                                                          .Select(stop => stop.ToCoordinate())
-                                                          .ToList();
-                    coordinates.AddRange(pokestopCoords);
-                }
-                if (IncludeSpawnpoints)
-                {
-                    var spawnpointCoords = context.Spawnpoints.AsEnumerable()
-                                                              .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude))
-                                                              .Select(spawn => spawn.ToCoordinate())
-                                                              .ToList();
-                    coordinates.AddRange(spawnpointCoords);
-                }
-                if (IncludeS2Cells)
-                {
-                    var cellCoords = context.Cells.AsEnumerable()
-                                                  .Where(cell => bbox.IsInBoundingBox(cell.Latitude, cell.Longitude))
-                                                  .Select(cell => cell.ToCoordinate())
-                                                  .ToList();
-                    coordinates.AddRange(cellCoords);
-                }
-                if (IncludeNests)
-                {
-                }
-            }
+            var coordinates = new List<ICoordinate>();
+            // TODO: Fetch interested locations or provide them via constructor/options
+            //if (IncludeGyms)
+            //{
+            //    var gymCoords = context.Gyms
+            //        .AsEnumerable()
+            //        .Where(gym => bbox.IsInBoundingBox(gym.Latitude, gym.Longitude))
+            //        .Select(gym => gym.ToCoordinate())
+            //        .ToList();
+            //    coordinates.AddRange(gymCoords);
+            //}
+            //if (IncludePokestops)
+            //{
+            //    var pokestopCoords = context.Pokestops
+            //        .AsEnumerable()
+            //        .Where(stop => bbox.IsInBoundingBox(stop.Latitude, stop.Longitude))
+            //        .Select(stop => stop.ToCoordinate())
+            //        .ToList();
+            //    coordinates.AddRange(pokestopCoords);
+            //}
+            //if (IncludeSpawnpoints)
+            //{
+            //    var spawnpointCoords = context.Spawnpoints
+            //        .AsEnumerable()
+            //        .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude))
+            //        .Select(spawn => spawn.ToCoordinate())
+            //        .ToList();
+            //    coordinates.AddRange(spawnpointCoords);
+            //}
+            //if (IncludeS2Cells)
+            //{
+            //    var cellCoords = context.Cells
+            //        .AsEnumerable()
+            //        .Where(cell => bbox.IsInBoundingBox(cell.Latitude, cell.Longitude))
+            //        .Select(cell => cell.ToCoordinate())
+            //        .ToList();
+            //    coordinates.AddRange(cellCoords);
+            //}
+            //if (IncludeNests)
+            //{
+            //}
 
-            var coordsInArea = coordinates.Where(coord => GeofenceService.InMultiPolygon((List<IMultiPolygon>)MultiPolygons, coord))
-                                            .ToList();
+            var coordsInArea = coordinates
+                .Where(coord => GeofenceService.InMultiPolygon((List<IMultiPolygon>)MultiPolygons, coord))
+                .ToList();
 
             return await Task.FromResult(coordsInArea);
         }
 
-        private static List<Coordinate> GetOptimization(List<Coordinate> coordinates, ushort circleSize = 750, ushort optimizationAttempts = 1, bool tsp = true)
+        private static List<ICoordinate> GetOptimization(List<ICoordinate> coordinates, ushort circleSize = 750, ushort optimizationAttempts = 1, bool tsp = true)
         {
             if ((coordinates?.Count ?? 0) == 0)
             {
                 throw new Exception("Invalid coordinates set");
             }
 
-            var bestAttempt = new List<Coordinate>();
+            var bestAttempt = new List<ICoordinate>();
             for (var i = 0; i < optimizationAttempts; i++)
             {
-                var coords = new List<Coordinate>(coordinates!);
+                var coords = new List<ICoordinate>(coordinates!);
                 coords.Shuffle();
 
-                var attempt = new List<Coordinate>();
+                var attempt = new List<ICoordinate>();
                 while (coords.Count > 0)
                 {
                     var coord1 = coords.FirstOrDefault()!;
@@ -217,11 +214,11 @@
             return bestAttempt;
         }
 
-        private static List<Coordinate> TspCoordinates(List<Coordinate> coordinates)
+        private static List<ICoordinate> TspCoordinates(List<ICoordinate> coordinates)
         {
-            var result = new List<Coordinate>();
+            var result = new List<ICoordinate>();
             var index = _rand.Next(0, coordinates.Count);
-            var distances = new Dictionary<double, Coordinate>();
+            var distances = new Dictionary<double, ICoordinate>();
 
             while (coordinates.Count > 0)
             {
@@ -247,7 +244,7 @@
                 }
 
                 //ksort(distances);
-                distances = new Dictionary<double, Coordinate>
+                distances = new Dictionary<double, ICoordinate>
                 (
                     from pair in distances
                     orderby pair.Value ascending
@@ -261,14 +258,14 @@
             return result;
         }
 
-        private static double Haversine(Coordinate coord1, Coordinate coord2)
+        private static double Haversine(ICoordinate coord1, ICoordinate coord2)
         {
             const int radius = 6378137; // approximation of Earth's radius
             //var radius = 6371000;
-            var latFrom = (coord1.Latitude * Math.PI / 180);
-            var lngFrom = (coord1.Longitude * Math.PI / 180);
-            var latTo = (coord2.Latitude * Math.PI / 180);
-            var lngTo = (coord2.Longitude * Math.PI / 180);
+            var latFrom = coord1.Latitude * Math.PI / 180;
+            var lngFrom = coord1.Longitude * Math.PI / 180;
+            var latTo = coord2.Latitude * Math.PI / 180;
+            var lngTo = coord2.Longitude * Math.PI / 180;
             var latDelta = latTo - latFrom;
             var lngDelta = lngTo - lngFrom;
             var latSin = Math.Pow(Math.Sin(latDelta / 2), 2);

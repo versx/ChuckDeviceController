@@ -1,6 +1,7 @@
-﻿namespace ChuckDeviceConfigurator.Services.Routing
+﻿namespace ChuckDeviceController.Routing.Optimization
 {
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     /// <summary>
     /// Route optimizer
@@ -47,6 +48,6 @@
         /// </summary>
         /// <param name="options">Route optimizer options to use.</param>
         /// <returns>Returns a list of optimized route coordinates.</returns>
-        Task<List<Coordinate>> OptimizeRouteAsync(RouteOptimizerOptions options);
+        Task<List<ICoordinate>> OptimizeRouteAsync(RouteOptimizerOptions options);
     }
 }

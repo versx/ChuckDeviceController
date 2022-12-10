@@ -5,7 +5,6 @@
 
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Jobs;
@@ -17,6 +16,7 @@
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Geometry.Models.Contracts;
+    using ChuckDeviceController.Routing;
 
     /*
      * TODO: TthFinder logic

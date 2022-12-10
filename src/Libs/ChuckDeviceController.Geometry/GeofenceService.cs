@@ -7,7 +7,7 @@
 
     public static class GeofenceService
     {
-        public static bool InMultiPolygon(IReadOnlyList<IMultiPolygon> multiPolygons, Coordinate point)
+        public static bool InMultiPolygon(IReadOnlyList<IMultiPolygon> multiPolygons, ICoordinate point)
         {
             var result = InMultiPolygon(multiPolygons, point.Latitude, point.Longitude);
             return result;
@@ -49,7 +49,7 @@
         }
 
         // Credits: http://codereview.stackexchange.com/a/108903
-        public static bool IsPointInPolygon<T>(Coordinate point, IReadOnlyList<T> polygon)
+        public static bool IsPointInPolygon<T>(ICoordinate point, IReadOnlyList<T> polygon)
             where T : ICoordinate
         {
             int polygonLength = polygon.Count, i = 0;

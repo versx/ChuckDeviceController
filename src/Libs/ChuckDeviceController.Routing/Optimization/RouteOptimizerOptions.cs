@@ -1,17 +1,15 @@
-﻿namespace ChuckDeviceConfigurator.Services.Routing
+﻿namespace ChuckDeviceController.Routing.Optimization
 {
-    using ChuckDeviceController.Geometry.Models;
-
     /// <summary>
     /// Routing optimization options
     /// </summary>
     public class RouteOptimizerOptions
     {
         /// <summary>
-        /// Gets or sets a value used to determine the size of each
-        /// coordinate to space between when optimizing the route.
+        /// Gets or sets a value used to determine the radius
+        /// between each coordinate when generating the route.
         /// </summary>
-        public ushort CircleSize { get; set; } = Strings.DefaultCircleSize;
+        public ushort RadiusM { get; set; } = Strings.DefaultRadiusM;
 
         /// <summary>
         /// Gets or sets a value used to decide how many optimization

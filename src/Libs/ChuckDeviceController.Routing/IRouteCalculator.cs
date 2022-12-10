@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Services.Routing
+﻿namespace ChuckDeviceController.Routing
 {
     using ChuckDeviceController.Geometry.Models.Contracts;
 

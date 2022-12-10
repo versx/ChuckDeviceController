@@ -5,7 +5,6 @@
     using Google.Common.Geometry;
     using Microsoft.EntityFrameworkCore;
 
-    using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Jobs;
@@ -16,6 +15,7 @@
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Routing;
 
     public class SmartRaidInstanceController : IJobController
     {
@@ -205,14 +205,15 @@
             // TODO: Get S2 cells within multi polygon bounding box instead of generating route
 
             var allGyms = await GetGymsAsync();
-            var routeGenerator = new RouteGenerator(_factory);
-            var route = routeGenerator.GenerateRoute(new RouteGeneratorOptions
+            var options = new RouteGeneratorOptions
             {
-                CircleSize = 500,
+                RadiusM = 500,
                 MaximumPoints = 500,
                 MultiPolygons = (List<IMultiPolygon>)MultiPolygons,
                 RouteType = RouteGenerationType.Bootstrap,
-            });
+            };
+            var routeGenerator = new RouteGenerator();
+            var route = routeGenerator.GenerateRoute(options);
 
             // Optimize bootstrapped route
             var routeCalculator = new RouteCalculator(new List<ICoordinate>(route));
@@ -221,14 +222,18 @@
             foreach (var coord in route)
             {
                 var latlng = S2LatLng.FromDegrees(coord.Latitude, coord.Longitude);
-                var cellIds = latlng.GetLoadedS2CellIds()
-                                    .Select(cell => cell.Id)
-                                    .ToList();
+                var cellIds = latlng
+                    .GetLoadedS2CellIds()
+                    .Select(cell => cell.Id)
+                    .ToList();
                 try
                 {
-                    var gyms = allGyms.Where(gym => cellIds.Contains(gym.CellId))
-                                      .ToList();
-                    var gymIds = gyms.Select(gym => gym.Id).ToList();
+                    var gyms = allGyms
+                        .Where(gym => cellIds.Contains(gym.CellId))
+                        .ToList();
+                    var gymIds = gyms
+                        .Select(gym => gym.Id)
+                        .ToList();
                     _smartRaidGymsInPoint[coord] = gymIds;
                     _smartRaidPointsUpdated[coord] = 0;
 

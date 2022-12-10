@@ -4,8 +4,6 @@
     using System.Threading.Tasks;
 
     using ChuckDeviceConfigurator.JobControllers.EventArgs;
-    using ChuckDeviceConfigurator.Services.Routing;
-    using ChuckDeviceConfigurator.Services.Routing.Utilities;
     using ChuckDeviceConfigurator.Services.Tasks;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
@@ -15,6 +13,8 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Routing;
+    using ChuckDeviceController.Routing.Utilities;
 
     public class BootstrapInstanceController : BaseSmartInstanceController, IScanNextInstanceController
     {
@@ -200,7 +200,7 @@
                 MultiPolygons = _multiPolygons,
                 RouteType = RouteGenerationType.Bootstrap,
                 //RouteType = RouteGenerationType.Randomized,
-                CircleSize = CircleSize,
+                RadiusM = CircleSize,
             });
 
             stopwatch.Stop();

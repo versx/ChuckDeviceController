@@ -1,36 +1,24 @@
-﻿namespace ChuckDeviceConfigurator.Services.Routing
+﻿namespace ChuckDeviceController.Routing
 {
     using System.Collections.Generic;
     using System.Linq;
 
-    using Microsoft.EntityFrameworkCore;
-
-    using ChuckDeviceConfigurator.Utilities;
-    using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Geometry;
     using ChuckDeviceController.Geometry.Extensions;
     using ChuckDeviceController.Geometry.Models;
     using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Routing.Utilities;
 
     // TODO: Find clusters to use with dynamic route
+    // TODO: Remove ChuckDeviceController.Plugin dependency just for IRoutingHost interface
 
     public class RouteGenerator : IRoutingHost
     {
-        private const ushort DefaultCircleSize = Strings.DefaultCircleSize; // 70m
-
-        #region Variables
-
-        private readonly IDbContextFactory<MapDbContext> _factory;
-
-        #endregion
-
         #region Constructor
 
-        public RouteGenerator(IDbContextFactory<MapDbContext> factory)
+        public RouteGenerator()
         {
-            _factory = factory;
         }
 
         #endregion
@@ -40,7 +28,7 @@
         /// <summary>
         /// Generates a route using the provided route generation options.
         /// </summary>
-        /// <param name="options">Routing generation </param>
+        /// <param name="options">Routing generation options to use.</param>
         /// <returns>Returns a list of the generated route.</returns>
         /// <exception cref="Exception"></exception>
         public List<ICoordinate> GenerateRoute(RouteGeneratorOptions options)
@@ -48,9 +36,8 @@
             var coordinates = new List<ICoordinate>();
             var geofences = options.MultiPolygons;
             var maxPoints = options.MaximumPoints;
-            var circleSize = options.CircleSize;
 
-            if ((geofences?.Count ?? 0) == 0)
+            if (!(geofences?.Any() ?? false))
             {
                 throw new Exception($"Unable to generate route, at least one geofence is required.");
             }
@@ -58,15 +45,15 @@
             switch (options.RouteType)
             {
                 case RouteGenerationType.Bootstrap:
-                    var bootstrapRoute = GenerateBootstrapRoute(geofences!, circleSize);
+                    var bootstrapRoute = GenerateBootstrapRoute(geofences!, options);
                     coordinates.AddRange(bootstrapRoute);
                     break;
                 case RouteGenerationType.Randomized:
-                    var randomRoute = GenerateRandomRoute(geofences!, maxPoints, circleSize);
+                    var randomRoute = GenerateRandomRoute(geofences!, maxPoints);
                     coordinates.AddRange(randomRoute);
                     break;
                 case RouteGenerationType.Optimized:
-                    var optimizedRoute = GenerateOptimizedRoute(geofences!, circleSize);
+                    var optimizedRoute = GenerateOptimizedRoute(geofences!);
                     coordinates.AddRange(optimizedRoute);
                     break;
                 default:
@@ -79,22 +66,23 @@
 
         #region Route Generator Methods
 
-        private List<Coordinate> GenerateBootstrapRoute(List<IMultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
+        private List<ICoordinate> GenerateBootstrapRoute(List<IMultiPolygon> multiPolygons, RouteGeneratorOptions options)
         {
-            var coordinates = new List<Coordinate>();
+            var coordinates = new List<ICoordinate>();
             foreach (var multiPolygon in multiPolygons)
             {
-                var coords = GenerateBootstrapRoute(multiPolygon, circleSize);
+                var coords = GenerateBootstrapRoute(multiPolygon, options);
                 coordinates.AddRange(coords);
             }
             return coordinates;
         }
 
-        private List<Coordinate> GenerateBootstrapRoute(IMultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
+        private List<ICoordinate> GenerateBootstrapRoute(IMultiPolygon multiPolygon, RouteGeneratorOptions options)
         {
+            var radius = options.RadiusM;
             var xMod = Math.Sqrt(0.75);
             var yMod = Math.Sqrt(0.568);
-            var points = new List<Coordinate>();
+            var points = new List<ICoordinate>();
 
             var polygon = multiPolygon.ToCoordinates();
             var bbox = polygon.GetBoundingBox();
@@ -104,10 +92,10 @@
             var minLon = bbox.MinimumLongitude;
             var maxLat = bbox.MaximumLatitude;
             var maxLon = bbox.MaximumLongitude;
-            var currentLatLng = new Coordinate(maxLat, maxLon);
-            var lastLatLng = new Coordinate(minLat, minLon);
-            var startLatLng = GetNextCoordinate(currentLatLng, 90, circleSize * 1.5);
-            var endLatLng = GetNextCoordinate(GetNextCoordinate(lastLatLng, 270, circleSize * 1.5), 180, circleSize);
+            ICoordinate currentLatLng = new Coordinate(maxLat, maxLon);
+            ICoordinate lastLatLng = new Coordinate(minLat, minLon);
+            var startLatLng = GetNextCoordinate(currentLatLng, 90, radius * 1.5);
+            var endLatLng = GetNextCoordinate(GetNextCoordinate(lastLatLng, 270, radius * 1.5), 180, radius);
             var row = 0;
             var heading = 270;
             var i = 0;
@@ -118,54 +106,54 @@
                 {
                     var distance = GetDistance(currentLatLng, minLine);
                     var isInGeofence = GeofenceService.IsPointInPolygon(currentLatLng, polygon);
-                    if ((distance <= circleSize || distance == 0) && isInGeofence)
+                    if ((distance <= radius || distance == 0) && isInGeofence)
                     {
                         points.Add(currentLatLng);
                     }
-                    currentLatLng = GetNextCoordinate(currentLatLng, heading, xMod * circleSize * 2);
+                    currentLatLng = GetNextCoordinate(currentLatLng, heading, xMod * radius * 2);
                     i++;
                 } while ((heading == 270 && currentLatLng.Longitude > endLatLng.Longitude) || (heading == 90 && currentLatLng.Longitude < startLatLng.Longitude));
 
-                currentLatLng = GetNextCoordinate(currentLatLng, 180, yMod * circleSize * 2);
+                currentLatLng = GetNextCoordinate(currentLatLng, 180, yMod * radius * 2);
                 heading = row % 2 == 1
                     ? 270
                     : 90;
-                currentLatLng = GetNextCoordinate(currentLatLng, heading, xMod * circleSize * 3);
+                currentLatLng = GetNextCoordinate(currentLatLng, heading, xMod * radius * 3);
                 row++;
             }
             return points;
         }
 
-        private List<Coordinate> GenerateRandomRoute(List<IMultiPolygon> multiPolygons, uint maxPoints = 500, double circleSize = DefaultCircleSize)
+        private List<ICoordinate> GenerateRandomRoute(List<IMultiPolygon> multiPolygons, uint maxPoints = 500)
         {
-            var coordinates = new List<Coordinate>();
+            var coordinates = new List<ICoordinate>();
             foreach (var multiPolygon in multiPolygons)
             {
-                var coords = GenerateRandomRoute(multiPolygon, maxPoints, circleSize);
+                var coords = GenerateRandomRoute(multiPolygon, maxPoints);
                 coordinates.AddRange(coords);
             }
             return coordinates;
         }
 
-        private List<Coordinate> GenerateRandomRoute(IMultiPolygon multiPolgyon, uint maxPoints = 500, double circleSize = DefaultCircleSize)
+        private List<ICoordinate> GenerateRandomRoute(IMultiPolygon multiPolgyon, uint maxPoints = 500)
         {
             var coordinates = multiPolgyon.ToCoordinates();
-            var routeCoords = Calculate(coordinates, maxPoints, circleSize);
+            var routeCoords = Calculate(coordinates, maxPoints);
             return routeCoords;
         }
 
-        private List<Coordinate> GenerateOptimizedRoute(List<IMultiPolygon> multiPolygons, double circleSize = DefaultCircleSize)
+        private List<ICoordinate> GenerateOptimizedRoute(List<IMultiPolygon> multiPolygons)
         {
-            var coordinates = new List<Coordinate>();
+            var coordinates = new List<ICoordinate>();
             foreach (var multiPolygon in multiPolygons)
             {
-                var coords = GenerateOptimizedRoute(multiPolygon, circleSize);
+                var coords = GenerateOptimizedRoute(multiPolygon);
                 coordinates.AddRange(coords);
             }
             return coordinates;
         }
 
-        private List<Coordinate> GenerateOptimizedRoute(IMultiPolygon multiPolygon, double circleSize = DefaultCircleSize)
+        private List<ICoordinate> GenerateOptimizedRoute(IMultiPolygon multiPolygon)
         {
             var polygon = multiPolygon.ToCoordinates();
             var bbox = polygon.GetBoundingBox();
@@ -174,42 +162,42 @@
             var maxLat = bbox.MaximumLatitude;
             var maxLon = bbox.MaximumLongitude;
 
-            var coordinates = new List<Coordinate>();
-            using (var context = _factory.CreateDbContext())
-            {
-                var spawnpoints = context.Spawnpoints.Where(spawn =>
-                    spawn.Latitude >= minLat &&
-                    spawn.Longitude >= minLon &&
-                    spawn.Latitude <= maxLat &&
-                    spawn.Longitude <= maxLon &&
-                    spawn.DespawnSecond != null
-                ).ToList();
-                var pokestops = context.Pokestops.Where(stop =>
-                    stop.Latitude >= minLat &&
-                    stop.Longitude >= minLon &&
-                    stop.Latitude <= maxLat &&
-                    stop.Longitude <= maxLon
-                ).ToList();
-                var gyms = context.Gyms.Where(gym =>
-                    gym.Latitude >= minLat &&
-                    gym.Longitude >= minLon &&
-                    gym.Latitude <= maxLat &&
-                    gym.Longitude <= maxLon
-                ).ToList();
-                var cells = context.Cells.Where(cell =>
-                    cell.Latitude >= minLat &&
-                    cell.Longitude >= minLon &&
-                    cell.Latitude <= maxLat &&
-                    cell.Longitude <= maxLon
-                ).ToList();
+            var coordinates = new List<ICoordinate>();
+            //using (var context = _factory.CreateDbContext())
+            //{
+            //    var spawnpoints = context.Spawnpoints.Where(spawn =>
+            //        spawn.Latitude >= minLat &&
+            //        spawn.Longitude >= minLon &&
+            //        spawn.Latitude <= maxLat &&
+            //        spawn.Longitude <= maxLon &&
+            //        spawn.DespawnSecond != null
+            //    ).ToList();
+            //    var pokestops = context.Pokestops.Where(stop =>
+            //        stop.Latitude >= minLat &&
+            //        stop.Longitude >= minLon &&
+            //        stop.Latitude <= maxLat &&
+            //        stop.Longitude <= maxLon
+            //    ).ToList();
+            //    var gyms = context.Gyms.Where(gym =>
+            //        gym.Latitude >= minLat &&
+            //        gym.Longitude >= minLon &&
+            //        gym.Latitude <= maxLat &&
+            //        gym.Longitude <= maxLon
+            //    ).ToList();
+            //    var cells = context.Cells.Where(cell =>
+            //        cell.Latitude >= minLat &&
+            //        cell.Longitude >= minLon &&
+            //        cell.Latitude <= maxLat &&
+            //        cell.Longitude <= maxLon
+            //    ).ToList();
 
-                spawnpoints.ForEach(x => coordinates.Add(x.ToCoordinate()));
-                pokestops.ForEach(x => coordinates.Add(x.ToCoordinate()));
-                gyms.ForEach(x => coordinates.Add(x.ToCoordinate()));
-                //cells.ForEach(x => list.Add(x.ToCoordinate()));
-                var s2cells = bbox.GetS2CellCoordinates();
-                coordinates.AddRange(s2cells);
-            }
+            //    spawnpoints.ForEach(x => coordinates.Add(x.ToCoordinate()));
+            //    pokestops.ForEach(x => coordinates.Add(x.ToCoordinate()));
+            //    gyms.ForEach(x => coordinates.Add(x.ToCoordinate()));
+            //    //cells.ForEach(x => list.Add(x.ToCoordinate()));
+            //    var s2cells = bbox.GetS2CellCoordinates();
+            //    coordinates.AddRange(s2cells);
+            //}
 
             var coordsInArea = coordinates.Where(coord => GeofenceService.IsPointInPolygon(coord, polygon))
                                           .ToList();
@@ -223,12 +211,12 @@
         #region Private Methods
 
         /*
-        private static List<Coordinate> FilterCoordinates(List<Coordinate> coordinates, ushort stepDistance)
+        private static List<ICoordinate> FilterCoordinates(List<ICoordinate> coordinates, ushort stepDistance)
         {
-            var list = new List<Coordinate>();
+            var list = new List<ICoordinate>();
             foreach (var coord in coordinates)
             {
-                // Coordinate is geofenced if in one geofenced area
+                // ICoordinate is geofenced if in one geofenced area
                 if (GeofenceService.IsPointInPolygon(coord, coordinates))
                 {
                     list.Add(coord);
@@ -250,14 +238,14 @@
             return list;
         }
 
-        private static Coordinate GetNewCoord(Coordinate start, double distance, double bearing)
+        private static ICoordinate GetNewCoord(ICoordinate start, double distance, double bearing)
         {
             //var destination = 
             return null;
         }
         */
 
-        private static double GetDistance(Coordinate source, Coordinate destination)
+        private static double GetDistance(ICoordinate source, ICoordinate destination)
         {
             var dx = source.Latitude - destination.Latitude;
             var dy = source.Longitude - destination.Longitude;
@@ -271,7 +259,7 @@
         /// <param name="maxPoints">Maximum amount of coordinate points to generate.</param>
         /// <param name="circleSize">The distance or spacing in meters between the previous and next coordinate generated.</param>
         /// <returns></returns>
-        private static List<Coordinate> Calculate(IReadOnlyList<ICoordinate> coords, uint maxPoints = 3000, double circleSize = 70)
+        private static List<ICoordinate> Calculate(IReadOnlyList<ICoordinate> coords, uint maxPoints = 3000)
         {
             var bbox = coords.GetBoundingBox();
             var minLat = bbox.MinimumLatitude;
@@ -279,7 +267,7 @@
             var maxLat = bbox.MaximumLatitude;
             var maxLon = bbox.MaximumLongitude;
             var rand = new Random();
-            var result = new List<Coordinate>();
+            var result = new List<ICoordinate>();
             for (var i = 0; i < maxPoints; i++)
             {
                 var coord = new Coordinate
@@ -295,7 +283,7 @@
                 }
             }
             //result.Sort((a, b) => a.Latitude.CompareTo(b.Latitude));
-            result.Sort(Utils.CompareCoordinates);
+            result.Sort(GeoUtils.CompareCoordinates);
             return result;
         }
 
@@ -307,7 +295,7 @@
         /// <param name="heading">Heading in degrees, clockwise from 0 degrees north.</param>
         /// <param name="distance">Distance in meters</param>
         /// <returns>The destination coordinate</returns>
-        private static Coordinate GetNextCoordinate(ICoordinate coordinate, double heading, double distance)
+        private static ICoordinate GetNextCoordinate(ICoordinate coordinate, double heading, double distance)
         {
             heading = (heading + 360) % 360;
             const double earthRadius = 6378137; // Approximation of Earth's radius

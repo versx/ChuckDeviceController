@@ -25,9 +25,9 @@
         public uint MaximumPoints { get; set; } = 500;
 
         /// <summary>
-        /// Gets or sets a value used to determine the size of each
-        /// coordinate to space between when generating the route.
+        /// Gets or sets a value used to determine the radius
+        /// between each coordinate when generating the route.
         /// </summary>
-        public double CircleSize { get; set; } = 70;// Strings.DefaultCircleSize;
+        public double RadiusM { get; set; } = 70;// Strings.DefaultCircleSize;
     }
 }

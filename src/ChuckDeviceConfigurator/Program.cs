@@ -21,7 +21,6 @@ using ChuckDeviceConfigurator.Services.Plugins;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService;
 using ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService.Publishers;
-using ChuckDeviceConfigurator.Services.Routing;
 using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceConfigurator.Services.Webhooks;
@@ -37,6 +36,7 @@ using ChuckDeviceController.Plugin.EventBus;
 using ChuckDeviceController.Plugin.EventBus.Observer;
 using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
+using ChuckDeviceController.Routing;
 
 
 // TODO: Modularize everything, add as many services as possible as plugins

@@ -12,7 +12,6 @@
     using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
     using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceConfigurator.Services.IvLists;
-    using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceConfigurator.Services.Rpc.Models;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceController.Common.Data;
@@ -25,6 +24,7 @@
     using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager;
+    using ChuckDeviceController.Routing;
 
     using Type = System.Type;
 

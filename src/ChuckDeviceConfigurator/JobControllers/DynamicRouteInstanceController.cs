@@ -1,10 +1,10 @@
 ﻿namespace ChuckDeviceConfigurator.JobControllers
 {
-    using ChuckDeviceConfigurator.Services.Routing;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
+    using ChuckDeviceController.Routing;
 
     // TODO: Calculate proper status for DynamicRoute job controller instance
 
@@ -55,13 +55,14 @@
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
-            var route = _routeGenerator.GenerateRoute(new RouteGeneratorOptions
+            var options = new RouteGeneratorOptions
             {
-                CircleSize = Strings.DefaultCircleSize,
+                RadiusM = Strings.DefaultCircleSize,
                 RouteType = RouteGenerationType.Randomized,
                 MultiPolygons = (List<IMultiPolygon>)MultiPolygons,
                 MaximumPoints = 500,
-            });
+            };
+            var route = _routeGenerator.GenerateRoute(options);
 
             stopwatch.Stop();
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);

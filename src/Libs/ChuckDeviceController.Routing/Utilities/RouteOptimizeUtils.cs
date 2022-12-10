@@ -1,18 +1,16 @@
-﻿namespace ChuckDeviceConfigurator.Services.Routing.Utilities
+﻿namespace ChuckDeviceController.Routing.Utilities
 {
     using ChuckDeviceController.Geometry.Models.Contracts;
 
     public static class RouteOptimizeUtil
     {
-        private const double EarthRadius = 6371e3;
-
         public static List<ICoordinate> Optimize(List<ICoordinate> coords)
         {
             var start = coords.FirstOrDefault();
             if (start == null)
             {
                 Console.WriteLine($"Unable to get first starting coordinate from coordinates list");
-                return null;
+                return null!;
             }
             var route = Optimize(coords, start.Latitude, start.Longitude);
             return route;
@@ -132,7 +130,7 @@
             (
                 Math.Sin(lat1) * Math.Sin(lat2) +
                 Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(delta)
-            ) * EarthRadius);
+            ) * Strings.EarthRadiusM);
             return distance;
         }
 

@@ -65,6 +65,7 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Routing\ChuckDeviceController.Routing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
