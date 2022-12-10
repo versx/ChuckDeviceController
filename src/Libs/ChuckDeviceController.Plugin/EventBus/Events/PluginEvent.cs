@@ -6,7 +6,7 @@
     public class PluginEvent : IEvent
     {
         /// <summary>
-        /// Gets the event payload.
+        /// Gets or sets the payload data included in the event.
         /// </summary>
         public string Payload { get; }
 

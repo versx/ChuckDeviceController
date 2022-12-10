@@ -2,24 +2,40 @@
 {
     using ChuckDeviceController.Plugin.EventBus.Events;
 
-    // TODO: Test impl
+    /// <summary>
+    /// 
+    /// </summary>
     public class PluginObserver : ICustomObserver<PluginEvent>
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public void OnCompleted()
         {
             Console.WriteLine($"TestObserver - OnCompleted");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="error"></param>
         public void OnError(Exception error)
         {
             Console.WriteLine($"TestObserver - OnError: {error}");
         }
 
-        public void OnNext(IEvent value)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        public void OnNext(PluginEvent value)
         {
             Console.WriteLine($"TestObserver - OnNext: {value.Payload}");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Unsubscribe()
         {
             Console.WriteLine($"TestObserver - Unsubscribe");

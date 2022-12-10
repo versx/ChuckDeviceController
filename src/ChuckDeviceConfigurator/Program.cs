@@ -259,7 +259,6 @@ var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
 var geofenceServiceHost = new GeofenceServiceHost(connectionString);
 var eventAggregatorHost = new EventAggregatorHost();
 eventAggregatorHost.Subscribe(new PluginObserver());
-eventAggregatorHost.Subscribe(new TestObserver());
 
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
 builder.Services.AddSingleton<IDatabaseHost>(databaseHost);

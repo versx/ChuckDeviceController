@@ -15,7 +15,7 @@
             _unsubscriber = eventAggregatorHost.Subscribe(this);
         }
 
-        public void OnNext(IEvent @event)
+        public void OnNext(PluginEvent @event)
         {
             Console.WriteLine($"{GetType().Name}: processing event with description '{@event.Payload}'.");
         }
