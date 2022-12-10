@@ -141,7 +141,7 @@
                 // Provide observer with existing data.
                 for (var i = 0; i < events.Count; i++)
                 {
-                    var @event = events[i];
+                    var @event = events[i]!;
                     var result = ExecutePublish(newObserver, @event);
                     if (result != EventExecutionResult.Executed)
                     {

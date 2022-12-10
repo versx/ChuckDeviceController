@@ -3,11 +3,11 @@
     /// <summary>
     /// Typed observer implementation.
     /// </summary>
-    /// <typeparam name="TEvent">
+    /// <typeparam name="T">
     /// The <seealso cref="IEvent"/> event type the observer should expect.
     /// </typeparam>
-    public interface ICustomObserver<TEvent> : IObserver<TEvent>
-        where TEvent : IEvent
+    public interface ICustomObserver<T> : IObserver<IEvent> // IObserver<T>
+        where T : IEvent
     {
         /// <summary>
         /// Unsubscribes from the inherited <seealso cref="IEvent"/>

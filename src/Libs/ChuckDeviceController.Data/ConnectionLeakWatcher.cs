@@ -6,6 +6,8 @@
     using Microsoft.Extensions.Logging;
     using MySqlConnector;
 
+    using ChuckDeviceController.Logging;
+
     /// <summary>
     ///     This class can help identify db connection leaks (connections that are not closed after use).
     /// Usage:
@@ -22,8 +24,8 @@
     /// <credits>https://stackoverflow.com/a/15002420</credits>
     public class ConnectionLeakWatcher : IDisposable
     {
-        //private static readonly ILogger<ConnectionLeakWatcher> _logger =
-        //    new Logger<ConnectionLeakWatcher>(LoggerFactory.Create(x => x.SetMinimumLevel(LogLevel.Trace)));// AddConsole()));
+        private readonly ILogger<ConnectionLeakWatcher> _logger =
+            GenericLoggerFactory.CreateLogger<ConnectionLeakWatcher>(LogLevel.Debug);
 
         private const uint DefaultConnectionLeakTimeoutS = 120;
 
@@ -52,13 +54,13 @@
             Name = name;
             StackTrace = Environment.StackTrace;
 
-            Console.WriteLine($"[{_connectionId}] {Name} Connection opened");
+            _logger.LogInformation($"[{_connectionId}] {Name} Connection opened");
 
             _timer = new Timer(_ =>
             {
                 // The timeout expired without the connection being closed. Write to debug output the stack trace
                 // of the connection creation to assist in pinpointing the problem
-                Console.WriteLine($"[{_connectionId}] {Name} Suspected connection leak after {connectionTimeoutS} seconds with origin:\n{StackTrace}");
+                _logger.LogWarning($"[{_connectionId}] {Name} Suspected connection leak after {connectionTimeoutS} seconds with origin:\n{StackTrace}");
                 // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
             }, null, _connectionTimeoutS * 1000, Timeout.Infinite);
@@ -70,7 +72,7 @@
             if (stateChangeEventArgs.CurrentState == ConnectionState.Closed)
             {
                 // The connection was closed within the timeout
-                Console.WriteLine($"[{_connectionId}] {Name} Connection closed");
+                _logger.LogInformation($"[{_connectionId}] {Name} Connection closed");
                 // That's it - we're done. Clean up by calling Dispose.
                 Dispose();
             }

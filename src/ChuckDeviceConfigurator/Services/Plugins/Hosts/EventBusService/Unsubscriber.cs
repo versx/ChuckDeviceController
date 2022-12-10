@@ -1,12 +1,14 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService
 {
     using ChuckDeviceController.Collections;
+    using ChuckDeviceController.Plugin.EventBus;
 
     /// <summary>
     /// Enables a subscriber to unsubscribe from further events before
     /// disposing of the object.
     /// </summary>
     public class Unsubscriber<T> : IDisposable
+        where T : IEvent
     {
         #region Variables
 

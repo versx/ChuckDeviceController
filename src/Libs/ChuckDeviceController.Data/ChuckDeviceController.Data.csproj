@@ -29,6 +29,7 @@
     <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Logging\ChuckDeviceController.Logging.csproj" />
   </ItemGroup>
 
 </Project>

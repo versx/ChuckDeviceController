@@ -28,7 +28,7 @@
         /// 
         /// </summary>
         /// <param name="value"></param>
-        public void OnNext(PluginEvent value)
+        public void OnNext(IEvent value)
         {
             Console.WriteLine($"TestObserver - OnNext: {value.Payload}");
         }
