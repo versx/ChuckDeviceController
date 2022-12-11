@@ -38,6 +38,13 @@
             {
                 ConsoleColor originalColor = Console.ForegroundColor;
 
+                if (config.UseTimestamp && !string.IsNullOrEmpty(config.TimestampFormat))
+                {
+                    var time = config.UseUnix ? DateTime.UtcNow : DateTime.Now;
+                    var timestamp = string.Format(config.TimestampFormat, time);
+                    Console.Write($"[{timestamp}] ");
+                }
+
                 Console.ForegroundColor = config.LogLevelColorMap[logLevel];
                 //Console.WriteLine($"[{eventId.Id,2}: {logLevel,-12}]");
                 //Console.WriteLine($"[{eventId.Id}:{logLevel,-11}]");

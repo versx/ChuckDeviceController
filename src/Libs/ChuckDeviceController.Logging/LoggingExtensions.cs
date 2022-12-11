@@ -1,7 +1,6 @@
 ﻿namespace ChuckDeviceController.Logging
 {
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Console;
 
     public static class LoggingExtensions
     {
