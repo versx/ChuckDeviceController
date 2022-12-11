@@ -455,7 +455,7 @@
             if (Options.ShowProcessingTimes)
             {
                 results.Stopwatch?.Stop();
-                var totalSeconds = Math.Round(results.Stopwatch?.Elapsed.TotalSeconds ?? 0, 5).ToString("F5");
+                var totalSeconds = Math.Round(results.Stopwatch?.Elapsed.TotalSeconds ?? 0, Options.DecimalPrecision).ToString("F5");
                 time = results.Stopwatch != null
                     ? $" in {totalSeconds}s"
                     : string.Empty;

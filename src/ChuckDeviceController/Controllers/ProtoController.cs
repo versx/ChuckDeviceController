@@ -111,7 +111,7 @@
             if (!wasAdded)
             {
                 // Failed to enqueue item with proto queue
-                _logger.LogError($"Failed to enqueue proto data with proto queue");
+                _logger.LogError($"[{payload.Uuid}] Failed to enqueue proto data with proto queue");
             }
             ProtoDataStatistics.Instance.TotalProtoPayloadsReceived++;
 

@@ -104,16 +104,18 @@ builder.WebHost.ConfigureLogging(configure =>
 {
     configure.ClearProviders();
     var loggingSection = config.GetSection("Logging");
-    var colorMap = new Dictionary<LogLevel, ConsoleColor>();
-    var colorLoggingSection = loggingSection.GetSection("ColorConsole:LogLevelColorMap");
-    colorLoggingSection.Bind(colorMap);
+    var loggingConfig = new ColorConsoleLoggerConfiguration();
+    var colorLoggingSection = loggingSection.GetSection("ColorConsole");
+    colorLoggingSection.Bind(loggingConfig);
     configure.AddColorConsoleLogger(options =>
     {
-        options.LogLevelColorMap = colorMap;
+        options.LogLevelColorMap = loggingConfig.LogLevelColorMap;
     });
     configure.AddFile(loggingSection, options =>
     {
-        options.FormatLogFileName = fileName => string.Format(fileName, DateTime.UtcNow);
+        var time = loggingConfig.UseUnix ? DateTime.UtcNow : DateTime.Now;
+        options.FormatLogFileName = fileName => string.Format(fileName, time);
+        options.UseUtcTimestamp = true;
     });
     configure.GetLoggingConfig(logLevel);
 });

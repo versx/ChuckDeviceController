@@ -446,7 +446,7 @@
             if (Options.ShowProcessingTimes)
             {
                 sw.Stop();
-                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
                 _logger.LogInformation($"[{uuid}] Parsed {processedProtos.Count:N0} protos{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
             }
 
