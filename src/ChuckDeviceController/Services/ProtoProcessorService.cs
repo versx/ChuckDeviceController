@@ -168,8 +168,12 @@
                         try
                         {
                             var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (gpr?.Success ?? false)
+                            if (!(gpr?.Success ?? false))
                             {
+                                _logger.LogError($"[{uuid}] Malformed GetPlayerOutProto");
+                                continue;
+                            }
+
                                 processedProtos.Add(new
                                 {
                                     type = ProtoDataType.PlayerData,
@@ -197,8 +201,8 @@
                                 continue;
                             }
 
-                            var inventoryItems = ghi.InventoryDelta?.InventoryItem;
-                            if (inventoryItems == null)
+                            var inventoryItems = ghi.InventoryDelta.InventoryItem;
+                            if (!inventoryItems.Any())
                                 continue;
 
                             foreach (var item in inventoryItems)
@@ -207,13 +211,16 @@
                                 if (itemData == null)
                                     continue;
 
-                                if ((itemData?.PlayerStats?.Experience ?? 0) > 0)
+                                if ((itemData.PlayerStats?.Experience ?? 0) > 0)
                                 {
-                                    xp = Convert.ToUInt32(itemData?.PlayerStats?.Experience ?? 0);
+                                    xp = Convert.ToUInt64(itemData.PlayerStats!.Experience);
                                 }
 
-                                var quests = itemData?.Quests?.Quest;
-                                if (uuid != null && (quests?.Count ?? 0) > 0)
+                                var quests = itemData.Quests?.Quest;
+                                if (uuid == null || !(quests?.Any() ?? false))
+                                    continue;
+
+                                foreach (var quest in quests)
                                 {
                                     foreach (var quest in quests!)
                                     {
@@ -235,19 +242,24 @@
                         try
                         {
                             var fsr = FortSearchOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (fsr != null)
-                            {
-                                if (fsr.ChallengeQuest?.Quest != null)
-                                {
+                            if (fsr?.ChallengeQuest?.Quest == null)
+                                continue;
+
                                     // Check for AR quest or if AR quest is required
                                     var hasAr = hasArQuestReqGlobal
                                         ?? hasArQuestReq
                                         ?? GetArQuestMode(uuid!, timestamp);
                                     var title = fsr.ChallengeQuest.QuestDisplay.Title;
                                     var quest = fsr.ChallengeQuest.Quest;
+
                                     // Ignore AR quests so they get rescanned if they were the first quest a scanner would hold onto
-                                    if (quest.QuestType != QuestType.QuestGeotargetedArScan || Options.AllowArQuests)
+                            if (quest.QuestType == QuestType.QuestGeotargetedArScan && !Options.AllowArQuests)
                                     {
+                                _logger.LogWarning($"[{uuid}] Quest was blocked because it is type '{quest.QuestType}'.");
+                                _logger.LogInformation($"[{uuid}] Quest info: {quest}");
+                                continue;
+                            }
+
                                     if (quest.QuestType == QuestType.QuestGeotargetedArScan && uuid != null)
                                     {
                                         _arQuestActualMap.SetValue(uuid, value: true, timestamp);
@@ -260,18 +272,6 @@
                                         hasAr,
                                     });
                                 }
-                                    else
-                                    {
-                                        _logger.LogWarning($"[{uuid}] Quest was blocked because it is type '{quest.QuestType}'.");
-                                        _logger.LogInformation($"[{uuid}] Quest info: {quest}");
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                _logger.LogError($"[{uuid}] Malformed FortSearchOutProto");
-                            }
-                        }
                         catch (Exception ex)
                         {
                             _logger.LogError($"[{uuid}] Unable to decode FortSearchOutProto: {ex}");
@@ -285,8 +285,13 @@
                             if (level >= 30 || isMadData)
                             {
                                 var er = EncounterOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                                if (er?.Status == EncounterOutProto.Types.Status.EncounterSuccess)
+                                var status = er?.Status ?? EncounterOutProto.Types.Status.EncounterError;
+                                if (status != EncounterOutProto.Types.Status.EncounterSuccess)
                                 {
+                                    _logger.LogError($"[{uuid}] Malformed EncounterOutProto");
+                                    continue;
+                                }
+
                                     processedProtos.Add(new
                                     {
                                         type = ProtoDataType.Encounter,
@@ -312,8 +317,13 @@
                             try
                             {
                                 var der = DiskEncounterOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                                if (der?.Result == DiskEncounterOutProto.Types.Result.Success)
+                                var status = der?.Result ?? DiskEncounterOutProto.Types.Result.Unknown;
+                                if (status != DiskEncounterOutProto.Types.Result.Success)
                                 {
+                                    _logger.LogError($"[{uuid}] Malformed DiskEncounterOutProto");
+                                    continue;
+                                }
+
                                     processedProtos.Add(new
                                     {
                                         type = ProtoDataType.DiskEncounter,
@@ -337,8 +347,12 @@
                         try
                         {
                             var fdr = FortDetailsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (fdr != null)
+                            if (fdr == null)
                             {
+                                _logger.LogError($"[{uuid}] Malformed FortDetailsOutProto");
+                                continue;
+                            }
+
                                 processedProtos.Add(new
                                 {
                                     type = ProtoDataType.FortDetails,
@@ -366,14 +380,19 @@
                         try
                         {
                             var ggi = GymGetInfoOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (ggi != null)
+                            if (ggi == null)
                             {
+                                _logger.LogError($"[{uuid}] Malformed GymGetInfoOutProto");
+                                continue;
+                            }
+
                                 processedProtos.Add(new
                                 {
                                     type = ProtoDataType.GymInfo,
                                     data = ggi,
                                 });
 
+                            // TODO: Add ProcessGymDefenders and ProcessGymTrainers option to ProcessingOptions.Protos config
                                 if (ggi.GymStatusAndDefenders == null)
                                 {
                                     _logger.LogWarning($"Invalid GymStatusAndDefenders provided, skipping...\n: {ggi}");

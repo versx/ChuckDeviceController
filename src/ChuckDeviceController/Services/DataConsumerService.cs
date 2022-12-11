@@ -356,6 +356,7 @@
             {
                 //var entitiesToUpsert = await _queue.TakeAllAsync(_queryTypeComparer, stoppingToken);
                 var entitiesToUpsert = await _queue.TakeAsync(new SqlQueryTypeComparer(), (int)Options.Queue.MaximumBatchSize, stoppingToken);
+                //var entitiesToUpsert = _queue.Take(new SqlQueryTypeComparer(), (int)Options.Queue.MaximumBatchSize);
                 var entityCount = entitiesToUpsert.Sum(x => x.Value?.Count ?? 0);
                 if (entityCount == 0)
                 {
@@ -366,7 +367,7 @@
                 if (Options.ShowProcessingTimes)
                 {
                     sw.Start();
-                    _logger.LogDebug($"{nameof(DataConsumerService)} prepared {entityCount:N0} data entities for MySQL database upsert...");
+                    _logger.LogTrace($"Prepared {entityCount:N0} data entities for MySQL database upsert...");
                 }
 
                 var sqls = _bulk.PrepareSqlQuery(entitiesToUpsert, (int)Options.Queue.MaximumBatchSize);
@@ -468,10 +469,10 @@
             //_logger.LogInformation($"{nameof(DataConsumerService)} upserted {results.RowsAffected:N0}/{results.EntityCount:N0} {results.Text} between {results.BatchCount:N0} batches{time}");
             var grouped = entities.Select(pair => $"{pair.Key}: {pair.Value.Count:N0}");
             var sb = new StringBuilder();
-            sb.AppendLine();
-            sb.Append(nameof(DataConsumerService));
-            sb.Append(' ');
-            sb.Append("upserted");
+            //sb.AppendLine();
+            //sb.Append(nameof(DataConsumerService));
+            //sb.Append(' ');
+            sb.Append("Upserted");
             sb.Append(' ');
             sb.Append($"{results.RowsAffected:N0}");
             sb.Append('/');
@@ -492,17 +493,18 @@
             sb.Append(']');
             sb.AppendLine();
             var message = sb.ToString();
-            _logger.LogInformation(message);
+            _logger.LogTrace(message);
         }
 
         private void CheckQueueLength()
         {
-            var usage = $"{_queue.Count:N0}/{Options.Queue.MaximumCapacity:N0}";
-            if (_queue.Count >= Options.Queue.MaximumCapacity)
+            var count = _queue.Sum(x => x.Value.Count);
+            var usage = $"{count:N0}/{Options.Queue.MaximumCapacity:N0}";
+            if (count >= Options.Queue.MaximumCapacity)
             {
                 _logger.LogError($"Data consumer queue is at maximum capacity! {usage}");
             }
-            else if (_queue.Count >= Options.Queue.MaximumSizeWarning)
+            else if (count >= Options.Queue.MaximumSizeWarning)
             {
                 _logger.LogWarning($"Data consumer queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
