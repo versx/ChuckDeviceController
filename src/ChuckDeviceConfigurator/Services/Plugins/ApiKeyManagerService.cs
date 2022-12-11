@@ -17,16 +17,18 @@
 
         #region Variables
 
-        private static readonly ILogger<IApiKeyManagerService> _logger =
-            new Logger<IApiKeyManagerService>(LoggerFactory.Create(x => x.AddConsole()));
+        private readonly ILogger<IApiKeyManagerService> _logger;
         private readonly ControllerDbContext _context;
 
         #endregion
 
         #region Constructor
 
-        public ApiKeyManagerService(ControllerDbContext context)
+        public ApiKeyManagerService(
+            ILogger<IApiKeyManagerService> logger,
+            ControllerDbContext context)
         {
+            _logger = logger;
             _context = context;
         }
 

@@ -6,8 +6,6 @@
 
         #region Variables
 
-        //private static readonly ILogger _logger =
-        //    new Logger<TimedHostedService>(LoggerFactory.Create(x => x.AddConsole()));
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _stoppingCts = new();
         private readonly System.Timers.Timer _timer;

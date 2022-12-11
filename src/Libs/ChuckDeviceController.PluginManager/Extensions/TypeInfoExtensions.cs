@@ -4,18 +4,20 @@
 
     using Microsoft.Extensions.Logging;
 
+    using ChuckDeviceController.Logging;
     using ChuckDeviceController.Plugin.Services;
 
     public static class TypeInfoExtensions
     {
-        private static readonly ILogger _logger =
-            LoggerFactory.Create(x => x.AddConsole()).CreateLogger(nameof(TypeInfoExtensions));
+        private static readonly ILogger<IPluginManager> _logger =
+            GenericLoggerFactory.CreateLogger<IPluginManager>();
 
         public static IEnumerable<Type> GetAssignableTypes<T>(this IEnumerable<Type> assemblyTypes)
         {
-            var types = assemblyTypes.Where(type => typeof(T).IsAssignableFrom(type))
-                                     .Where(type => (type.IsClass && !type.IsAbstract) || type.IsSubclassOf(typeof(T)))
-                                     .ToList();
+            var types = assemblyTypes
+                .Where(type => typeof(T).IsAssignableFrom(type))
+                .Where(type => (type.IsClass && !type.IsAbstract) || type.IsSubclassOf(typeof(T)))
+                .ToList();
             return types;
         }
 

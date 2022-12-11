@@ -232,9 +232,9 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
     var memCacheConfig = memCacheOptions?.Value ?? new();
     var memCache = new GenericMemoryCacheHostedService(
-        new Logger<IMemoryCacheHostedService>(LoggerFactory.Create(x => x.AddConsole())),
+        GenericLoggerFactory.CreateLogger<IMemoryCacheHostedService>(),
         Options.Create(memCacheConfig)
-    );
+    ); ;
     return memCache;
 });
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();

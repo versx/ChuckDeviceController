@@ -14,15 +14,12 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Plugin.EventBus;
-    using ChuckDeviceController.Plugin.EventBus.Events;
-    using ChuckDeviceController.Plugin.EventBus.Observer;
     using ChuckDeviceController.PluginManager;
 
     [Authorize(Roles = RoleConsts.DefaultRole)]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger =
-            new Logger<HomeController>(LoggerFactory.Create(x => x.AddConsole()));
+        private readonly ILogger<HomeController> _logger;
         private readonly ControllerDbContext _deviceContext;
         private readonly MapDbContext _mapContext;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -30,12 +27,14 @@
         private readonly IEventAggregatorHost _eventAggregatorHost;
 
         public HomeController(
+            ILogger<HomeController> logger,
             ControllerDbContext deviceContext,
             MapDbContext mapContext,
             UserManager<ApplicationUser> userManager,
             IUiHost uiHost,
             IEventAggregatorHost eventAggregatorHost)
         {
+            _logger = logger;
             _deviceContext = deviceContext;
             _mapContext = mapContext;
             _userManager = userManager;

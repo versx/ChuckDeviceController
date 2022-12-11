@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.PluginManager
 {
+    using System.Collections.Concurrent;
     using System.Reflection;
 
     using Microsoft.AspNetCore.Builder;
@@ -28,6 +29,7 @@
         private static readonly ILogger<IPluginManager> _logger =
             new Logger<IPluginManager>(LoggerFactory.Create(x => x.AddConsole()));
         private static IPluginManager? _instance;
+        //private static readonly ConcurrentDictionary<string, IPluginHost> _plugins = new();
         private static readonly Dictionary<string, IPluginHost> _plugins = new();
         private IServiceCollection _services = null!;
         private IWebHostEnvironment _webHostEnv = null!;
