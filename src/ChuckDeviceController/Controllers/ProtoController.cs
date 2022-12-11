@@ -16,7 +16,7 @@
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
     using ChuckDeviceController.Services;
-    
+
     [ApiController]
     public class ProtoController : ControllerBase
     {
@@ -27,7 +27,7 @@
         #region Variables
 
         private static readonly ConcurrentDictionary<string, ushort> _levelCache = new(DefaultConcurrencyLevel, DefaultCapacity);
-        private readonly SemaphoreSlim _semDevices = new(DefaultConcurrencyLevel); // TODO: Make proto devices update concurrency level configurable
+        private static readonly SemaphoreSlim _semDevices = new(DefaultConcurrencyLevel); // TODO: Make proto devices update concurrency level configurable
 
         private readonly ILogger<ProtoController> _logger;
         private readonly SafeCollection<ProtoPayloadQueueItem> _taskQueue;
@@ -153,7 +153,8 @@
                     var deviceLon = Math.Round(device.LastLongitude ?? 0, 6);
                     var payloadLat = Math.Round(payload.LatitudeTarget, 6);
                     var payloadLon = Math.Round(payload.LongitudeTarget, 6);
-                    if (deviceLat != payloadLat || deviceLon != payloadLon)
+                    if ((deviceLat != payloadLat || deviceLon != payloadLon) &&
+                        payloadLat != 0 && payloadLon != 0)
                     {
                         device.LastLatitude = payloadLat;
                         device.LastLongitude = payloadLon;
