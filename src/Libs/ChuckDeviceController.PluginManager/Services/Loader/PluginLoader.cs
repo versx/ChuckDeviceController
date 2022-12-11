@@ -5,6 +5,7 @@
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Logging;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
@@ -14,7 +15,7 @@
     {
         // Variables
         private static readonly ILogger<IPluginLoader> _logger =
-            new Logger<IPluginLoader>(LoggerFactory.Create(x => x.AddConsole()));
+            GenericLoggerFactory.CreateLogger<IPluginLoader>();
 
         // Properties
         public IEnumerable<PluginHost> LoadedPlugins { get; }

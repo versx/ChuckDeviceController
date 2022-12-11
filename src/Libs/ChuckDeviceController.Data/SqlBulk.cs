@@ -128,7 +128,7 @@
             catch (Exception ex)
             {
                 success = false;
-                _logger.LogError($"Error: {ex}");
+                _logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             //_sem.Release();
@@ -265,6 +265,7 @@
         {
             var batchCount = (int)Math.Ceiling((double)entities.Count() / batchSize);
             var sqlQueries = new List<string>();
+            var batchCount = (int)Math.Ceiling((double)entities.Count() / batchSize);
             var endingStatement = useCommaInsteadOfEndingStatement
                 ? ','
                 : ';';

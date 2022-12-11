@@ -4,6 +4,7 @@
 
     using Microsoft.Extensions.Logging;
 
+    using ChuckDeviceController.Logging;
     using ChuckDeviceController.PluginManager.Extensions;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
     using ChuckDeviceController.PluginManager.Services.Loader;
@@ -14,8 +15,8 @@
     /// <typeparam name="TPlugin">Plugin interface contract type.</typeparam>
     public class PluginFinder<TPlugin> where TPlugin : class
     {
-        private readonly ILogger<PluginFinder<TPlugin>> _logger =
-            new Logger<PluginFinder<TPlugin>>(LoggerFactory.Create(x => x.AddConsole()));
+        private static readonly ILogger<PluginFinder<TPlugin>> _logger =
+            GenericLoggerFactory.CreateLogger<PluginFinder<TPlugin>>();
 
         #region Properties
 

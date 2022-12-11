@@ -12,6 +12,7 @@
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Logging;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager.Mvc.Extensions;
     using ChuckDeviceController.PluginManager.Mvc.Razor;
@@ -27,10 +28,10 @@
         #region Variables
 
         private static readonly ILogger<IPluginManager> _logger =
-            new Logger<IPluginManager>(LoggerFactory.Create(x => x.AddConsole()));
+            GenericLoggerFactory.CreateLogger<IPluginManager>();
         private static IPluginManager? _instance;
-        //private static readonly ConcurrentDictionary<string, IPluginHost> _plugins = new();
-        private static readonly Dictionary<string, IPluginHost> _plugins = new();
+        private static readonly ConcurrentDictionary<string, IPluginHost> _plugins = new();
+        //private static readonly Dictionary<string, IPluginHost> _plugins = new();
         private IServiceCollection _services = null!;
         private IWebHostEnvironment _webHostEnv = null!;
         //private IReadOnlyList<IApiKey> _apiKeys;
@@ -260,9 +261,13 @@
                 }
             }
 
-            _plugins.Add(plugin.Name, pluginHost);
-            _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");
+            if (!_plugins.TryAdd(plugin.Name, pluginHost))
+            {
+                _logger.LogError($"Failed to load plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author}.");
+                return;
+            }
 
+            _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");
             OnPluginHostAdded(pluginHost);
         }
 
@@ -359,7 +364,11 @@
 
             pluginHost.Plugin.OnRemove();
             pluginHost.SetState(PluginState.Removed);
-            _plugins.Remove(pluginName);
+            if (!_plugins.TryRemove(pluginName, out var _))
+            {
+                _logger.LogError($"[{pluginName}] Failed to remove plugin");
+                return;
+            }
 
             OnPluginHostStateChanged(pluginHost, previousState);
             OnPluginHostRemoved(pluginHost);

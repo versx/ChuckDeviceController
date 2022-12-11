@@ -21,6 +21,7 @@
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.JobControllers;
+    using ChuckDeviceController.Logging;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager;
     using ChuckDeviceController.Routing;
@@ -34,7 +35,7 @@
         #region Variables
 
         private static readonly ILogger<IJobControllerService> _logger =
-            new Logger<IJobControllerService>(LoggerFactory.Create(x => x.AddConsole()));
+            GenericLoggerFactory.CreateLogger<IJobControllerService>();
         private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
         private readonly IDbContextFactory<MapDbContext> _mapFactory;
         private readonly ITimeZoneService _timeZoneService;

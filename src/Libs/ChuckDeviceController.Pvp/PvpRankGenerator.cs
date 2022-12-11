@@ -2,16 +2,18 @@
 {
     using System.Timers;
 
-    using ChuckDeviceController.Extensions.Json;
-    using ChuckDeviceController.Net.Utilities;
-    using ChuckDeviceController.Pvp.Extensions;
-    using ChuckDeviceController.Pvp.GameMaster;
-    using ChuckDeviceController.Pvp.Models;
-
+    using Microsoft.Extensions.Logging;
     using POGOProtos.Rpc;
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
+
+    using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.Logging;
+    using ChuckDeviceController.Net.Utilities;
+    using ChuckDeviceController.Pvp.Extensions;
+    using ChuckDeviceController.Pvp.GameMaster;
+    using ChuckDeviceController.Pvp.Models;
 
     // Credits: https://github.com/Chuckleslove
     // Credits: https://github.com/RealDeviceMap/RealDeviceMap/blob/development/Sources/RealDeviceMapLib/Misc/PVPStatsManager.swift
@@ -21,6 +23,8 @@
     {
         #region Variables
 
+        private static readonly ILogger<IPvpRankGenerator> _logger =
+            GenericLoggerFactory.CreateLogger<IPvpRankGenerator>();
         private Dictionary<PokemonWithFormAndGender, PokemonBaseStats> _pokemonBaseStats = new();
         private readonly Dictionary<PvpLeague, Dictionary<PokemonWithFormAndGender, List<PvpRank>>> _ranking = new();
         private readonly object _rankLock = new();
@@ -266,7 +270,7 @@
             var pkmn = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
             if (!_pokemonBaseStats.ContainsKey(pkmn))
             {
-                Console.WriteLine($"Pokemon base stats manifest does not contains Pokemon '{pkmn.Pokemon}_{pkmn.Form}_{pkmn.Gender}', skipping...");
+                _logger.LogWarning($"Pokemon base stats manifest does not contains Pokemon '{pkmn.Pokemon}_{pkmn.Form}_{pkmn.Gender}', skipping...");
                 return result;
                 //return null;
             }
@@ -385,14 +389,14 @@
             var newETag = await GetETag(Strings.MasterFileEndpoint);
             if (string.IsNullOrEmpty(newETag))
             {
-                Console.WriteLine($"Failed to get HTTP header ETag from game master file request");
+                _logger.LogWarning($"Failed to get HTTP header ETag from game master file request");
                 return;
             }
 
             if (newETag == _lastETag)
                 return;
 
-            Console.WriteLine($"Game master file changed, downloading new version...");
+            _logger.LogWarning($"Game master file changed, downloading new version...");
             await LoadMasterFileAsync(newETag);
         }
 
@@ -402,12 +406,12 @@
                 return;
 
             _loading = true;
-            Console.WriteLine($"Checking if game master file needs to be downloaded...");
+            _logger.LogDebug($"Checking if game master file needs to be downloaded...");
 
             var newETag = eTag ?? await GetETag(Strings.MasterFileEndpoint);
             if (string.IsNullOrEmpty(newETag))
             {
-                Console.WriteLine($"Failed to get HTTP header ETag from game master file request");
+                _logger.LogWarning($"Failed to get HTTP header ETag from game master file request");
                 return;
             }
             _lastETag = newETag;
@@ -415,16 +419,16 @@
             var requestData = await NetUtils.GetAsync(Strings.MasterFileEndpoint);
             if (string.IsNullOrEmpty(requestData))
             {
-                Console.WriteLine($"Failed to download latest game master file data.");
+                _logger.LogWarning($"Failed to download latest game master file data.");
                 return;
             }
 
-            Console.WriteLine($"Starting game master file parsing...");
+            _logger.LogInformation($"Starting game master file parsing...");
             var templates = requestData.FromJson<List<Dictionary<string, object>>>();
             if (templates == null)
             {
                 // Failed to parse templates
-                Console.WriteLine($"Failed to deserialize game master file");
+                _logger.LogError($"Failed to deserialize game master file");
                 return;
             }
 
@@ -466,7 +470,7 @@
                     var pokemon = pokemonName.GetPokemonFromName();
                     if (pokemon == HoloPokemonId.Missingno)
                     {
-                        Console.WriteLine($"Failed to get Pokemon for '{pokemonName}'");
+                        _logger.LogDebug($"Failed to get Pokemon for '{pokemonName}'");
                         continue;
                     }
 
@@ -477,7 +481,7 @@
                         var formId = formName.GetFormFromName();
                         if (formId == PokemonForm.Unset)
                         {
-                            Console.WriteLine($"Failed to get form for '{formName}'");
+                            _logger.LogDebug($"Failed to get form for '{formName}'");
                             continue;
                         }
                         form = formId;
@@ -541,7 +545,7 @@
             }
 
             _loading = false;
-            Console.WriteLine($"New game master file parsed successfully");
+            _logger.LogInformation($"New game master file parsed successfully");
         }
 
         #endregion

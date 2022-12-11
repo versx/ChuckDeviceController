@@ -71,7 +71,7 @@ config.Bind("UserAccounts", identityConfig);
 
 #region Logger
 
-var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
+var logger = GenericLoggerFactory.CreateLogger<Program>();
 // Need to call at startup so time gets set now and not when first visit to dashboard
 var started = Strings.Uptime.ToLocalTime();
 logger.LogInformation($"Started: {started.ToLongDateString()} {started.ToLongTimeString()}");

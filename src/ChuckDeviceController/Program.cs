@@ -40,7 +40,7 @@ config.Bind("Database", resiliencyConfig);
 
 var connectionString = config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 var serverVersion = ServerVersion.AutoDetect(connectionString);
-var logger = new Logger<Program>(LoggerFactory.Create(x => x.AddConsole()));
+var logger = GenericLoggerFactory.CreateLogger<Program>();
 
 #endregion
 

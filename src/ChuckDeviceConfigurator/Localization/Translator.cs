@@ -14,13 +14,14 @@
 
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.Logging;
     using ChuckDeviceController.Net.Utilities;
     using ChuckDeviceController.Plugin;
 
     public class Translator : Language<string, string, Dictionary<string, string>>, ILocalizationHost
     {
         private static readonly ILogger<Translator> _logger =
-            new Logger<Translator>(LoggerFactory.Create(x => x.AddConsole()));
+            GenericLoggerFactory.CreateLogger<Translator>();
 
         private const string SourceLocaleUrl = "https://raw.githubusercontent.com/WatWowMap/pogo-translations/master/static/locales/";
         private static readonly string _appLocalesFolder = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}{Strings.LocaleFolder}";
