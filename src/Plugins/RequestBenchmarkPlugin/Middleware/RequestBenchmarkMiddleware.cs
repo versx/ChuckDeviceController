@@ -1,7 +1,5 @@
 ﻿namespace RequestBenchmarkPlugin.Middleware
 {
-    using Nito.AsyncEx;
-
     using Data.Contexts;
     using Data.Entities;
     using Services;
@@ -12,7 +10,7 @@
         private readonly RequestDelegate _next;
         private readonly IRequestBenchmarkService _benchmarkService;
         //private readonly object _lock = new();
-        private readonly AsyncLock _lock = new();
+        private readonly SemaphoreSlim _sem = new(1, 1);
 
         public RequestBenchmarkMiddleware(RequestDelegate next, IRequestBenchmarkService benchmarkService)
         {
@@ -22,32 +20,33 @@
 
         public async Task InvokeAsync(HttpContext context, RequestTimesDbContext dbContext)
         {
-            using (await _lock.LockAsync())
+            await _sem.WaitAsync();
+
+            var route = context.Request.Path.ToString();
+            var exists = _benchmarkService.Benchmarks.ContainsKey(route);
+            var benchmark = exists
+                ? _benchmarkService.Benchmarks[route]
+                : new(route);
+
+            using (StopwatchTimer.Initialize(benchmark))
             {
-                var route = context.Request.Path.ToString();
-                var exists = _benchmarkService.Benchmarks.ContainsKey(route);
-                var benchmark = exists
-                    ? _benchmarkService.Benchmarks[route]
-                    : new(route);
-
-                using (StopwatchTimer.Initialize(benchmark))
-                {
-                    await _next(context);
-                }
-
-                var timing = RequestTime.FromRequestBenchmark(benchmark);
-                if (exists)
-                {
-                    dbContext.Update(timing);
-                }
-                else
-                {
-                    await dbContext.AddAsync(timing);
-                }
-
-                try { await dbContext.SaveChangesAsync(); } catch { }
-                _benchmarkService.UpdateRouteBenchmark(route, benchmark);
+                await _next(context);
             }
+
+            var timing = RequestTime.FromRequestBenchmark(benchmark);
+            if (exists)
+            {
+                dbContext.Update(timing);
+            }
+            else
+            {
+                await dbContext.AddAsync(timing);
+            }
+
+            try { await dbContext.SaveChangesAsync(); } catch { }
+            _benchmarkService.UpdateRouteBenchmark(route, benchmark);
+
+            _sem.Release();
         }
     }
 }
