@@ -24,7 +24,6 @@
             lock (_lock)
             {
                 var sorted = dict
-                    //.ToDictionary(x => x.Key, y => y.Value)
                     .ToSorted(comparer);
                 dict.Clear();
 
@@ -41,7 +40,6 @@
             await _sem.WaitAsync(stoppingToken);
 
             var sorted = dict
-                //.ToDictionary(x => x.Key, y => y.Value)
                 .ToSorted(comparer);
             dict.Clear();
 

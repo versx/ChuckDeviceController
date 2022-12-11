@@ -236,7 +236,7 @@
                 }
 
                 _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}'");
-                if (!IsAccountValid(account, minLevel, maxLevel))
+                if (!account.IsValid(minLevel, maxLevel, ignoreWarning: false, groupName: null))
                 {
                     _logger.LogWarning($"[{device.Uuid}] Assigned account is no longer valid, switching accounts...");
 
@@ -531,19 +531,6 @@
                 // Update entity in cache
                 _memCache.Set(key, entity);
             }
-        }
-
-        private static bool IsAccountValid(Account? account, ushort minLevel, ushort maxLevel)
-        {
-            if (account == null)
-                return false;
-
-            var isValid =
-                account.Level >= minLevel && account.Level <= maxLevel &&
-                (account.FirstWarningTimestamp ?? 0) == 0 &&
-                string.IsNullOrEmpty(account.Failed) &&
-                (account.FailedTimestamp ?? 0) == 0;
-            return isValid;
         }
 
         #endregion

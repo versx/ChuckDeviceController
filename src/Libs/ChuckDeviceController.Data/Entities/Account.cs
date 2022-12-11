@@ -23,6 +23,7 @@
         private const uint CooldownPeriodS = 7200;
         private const string FailedGprBanned = "GPR_BANNED";
         private const string FailedGprRedWarning = "GPR_RED_WARNING";
+        private const string FailedBanned = "banned";
         private const string FailedSuspended = "suspended";
         private const string FailedInvalidCredentials = "invalid_credentials";
 
@@ -188,10 +189,16 @@
         public bool SendWebhook { get; set; }
 
         [NotMapped]
-        public bool IsAccountClean => string.IsNullOrEmpty(Failed) && !IsAccountInCooldown && Spins < 3500;
+        public bool IsAccountClean =>
+            !IsAccountBanned &&
+            !IsAccountSuspended &&
+            !IsAccountWarned &&
+            !IsAccountInvalidCredentials &&
+            !IsAccountInCooldown &&
+            Spins < 3500;
 
         [NotMapped]
-        public bool IsAccountBanned => Failed == "banned" || Failed == FailedGprBanned || (IsBanned ?? false);
+        public bool IsAccountBanned => Failed == FailedBanned || Failed == FailedGprBanned || (IsBanned ?? false);
 
         [NotMapped]
         public bool IsAccountWarned =>
@@ -305,19 +312,13 @@
             await Task.CompletedTask;
         }
 
-        public bool IsValid(bool ignoreWarning = false, string? groupName = null)
+        public bool IsValid(ushort minLevel, ushort maxLevel, bool ignoreWarning = false, string? groupName = null)
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            return (
-                    string.Compare(GroupName, groupName, true) == 0 &&
-                    string.IsNullOrEmpty(Failed)
-                ) || (
-                    Failed == FailedGprRedWarning &&
-                    (ignoreWarning || (WarnExpireTimestamp ?? ulong.MaxValue) <= now)
-                ) || (
-                    Failed == FailedSuspended &&
-                    (FailedTimestamp ?? ulong.MaxValue) <= now - 2592000
-                );
+            var matchesGroup = string.Compare(GroupName, groupName, true) == 0;
+            var matchesLevel = Level >= minLevel && Level <= maxLevel;
+            var matches = matchesGroup && matchesLevel;
+            var isValid = matches && (IsAccountClean || (IsAccountWarned && ignoreWarning));
+            return isValid;
         }
 
         public string GetStatus()
