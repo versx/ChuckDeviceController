@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option csharp_namespace = "ChuckDeviceController.Protos";
+
+package statistics;
+
+service Statistics {
+    rpc HandleStatistics (StatisticsRequest) returns (StatisticsResponse);
+}
+
+message StatisticsRequest {
+}
+
+message StatisticsResponse {
+	StatisticsStatus status = 1;
+    string json = 2;
+}
+
+// TODO: Make separate proto file, remove other abcStatus enums, and import new status enum
+enum StatisticsStatus {
+	Ok = 0;
+	Error = 1;
+}

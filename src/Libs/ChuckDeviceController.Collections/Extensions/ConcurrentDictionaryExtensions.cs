@@ -7,6 +7,15 @@
         private static readonly SemaphoreSlim _sem = new(1, 1);
         private static readonly object _lock = new();
 
+        public static int GetCount<TKey, TEntity>(this ConcurrentDictionary<TKey, ConcurrentBag<TEntity>> dict)
+        {
+            lock (_lock)
+            {
+                var count = dict.Values.Sum(x => x.Count);
+                return count;
+            }
+        }
+
         public static SortedDictionary<TKey, ConcurrentBag<TEntity>> TakeAll<TKey, TEntity>(
             this ConcurrentDictionary<TKey, ConcurrentBag<TEntity>> dict,
             IComparer<TKey> comparer)
@@ -15,7 +24,7 @@
             lock (_lock)
             {
                 var sorted = dict
-                    .ToDictionary(x => x.Key, y => y.Value)
+                    //.ToDictionary(x => x.Key, y => y.Value)
                     .ToSorted(comparer);
                 dict.Clear();
 
@@ -32,7 +41,7 @@
             await _sem.WaitAsync(stoppingToken);
 
             var sorted = dict
-                .ToDictionary(x => x.Key, y => y.Value)
+                //.ToDictionary(x => x.Key, y => y.Value)
                 .ToSorted(comparer);
             dict.Clear();
 

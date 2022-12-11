@@ -9,9 +9,9 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Repositories;
+    using ChuckDeviceController.Logging;
 
     // TODO: Use Stored Procedure for upsert queries
-
     public class SqlBulk
     {
         #region Constants
@@ -25,7 +25,7 @@
 
         //private static readonly SemaphoreSlim _sem = new(1, 1);
         private static readonly ILogger<SqlBulk> _logger =
-            new Logger<SqlBulk>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Debug)));
+            GenericLoggerFactory.CreateLogger<SqlBulk>();
         private readonly Dictionary<SqlQueryType, (string, string)> _sqlCache = new();
         private readonly IEnumerable<SqlQueryType> _fortDetailTypes = new[]
         {
