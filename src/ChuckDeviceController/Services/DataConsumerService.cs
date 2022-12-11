@@ -345,29 +345,24 @@
 
         private async Task ConsumeDataAsync(CancellationToken stoppingToken)
         {
-            if (!_queue.Any())
-            {
+            var entityCount = _queue.GetCount();
+            if (entityCount == 0)
                 return;
-            }
 
-            CheckQueueLength();
+            var requestId = Guid.NewGuid().ToString()[..8];
+            CheckQueueLength(requestId);
 
             try
             {
-                //var entitiesToUpsert = await _queue.TakeAllAsync(_queryTypeComparer, stoppingToken);
-                var entitiesToUpsert = await _queue.TakeAsync(new SqlQueryTypeComparer(), (int)Options.Queue.MaximumBatchSize, stoppingToken);
+                var entitiesToUpsert = await _queue.TakeAllAsync(new SqlQueryTypeComparer(), stoppingToken);
+                //var entitiesToUpsert = await _queue.TakeAsync(new SqlQueryTypeComparer(), (int)Options.Queue.MaximumBatchSize, stoppingToken);
                 //var entitiesToUpsert = _queue.Take(new SqlQueryTypeComparer(), (int)Options.Queue.MaximumBatchSize);
-                var entityCount = entitiesToUpsert.Sum(x => x.Value?.Count ?? 0);
-                if (entityCount == 0)
-                {
-                    return;
-                }
 
                 var sw = new Stopwatch();
                 if (Options.ShowProcessingTimes)
                 {
                     sw.Start();
-                    _logger.LogTrace($"Prepared {entityCount:N0} data entities for MySQL database upsert...");
+                    _logger.LogTrace($"[{requestId}] Prepared {entityCount:N0} data entities for MySQL database upsert...");
                 }
 
                 var sqls = _bulk.PrepareSqlQuery(entitiesToUpsert, (int)Options.Queue.MaximumBatchSize);
@@ -383,7 +378,7 @@
                 var batchCount = sqls.Count(); //results.Sum(x => x.BatchCount);
                 var expectedCount = entityCount; //results.Sum(x => x.ExpectedCount);
 
-                PrintBenchmarkResults(DataLogLevel.Summary,
+                PrintBenchmarkResults(requestId, DataLogLevel.Summary,
                     new BenchmarkResults(
                         rowsAffected, expectedCount, batchCount,
                         "total entities", totalSeconds, sw),
@@ -395,7 +390,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"ConsumeDataAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[{requestId}] ConsumeDataAsync: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
@@ -454,7 +449,7 @@
         //    return null;
         //}
 
-        private void PrintBenchmarkResults(DataLogLevel logLevel, BenchmarkResults results, SortedDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> entities)
+        private void PrintBenchmarkResults(string requestId, DataLogLevel logLevel, BenchmarkResults results, SortedDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> entities)
         {
             var time = string.Empty;
             if (Options.ShowProcessingTimes)
@@ -472,6 +467,8 @@
             //sb.AppendLine();
             //sb.Append(nameof(DataConsumerService));
             //sb.Append(' ');
+            sb.Append($"[{requestId}]");
+            sb.Append(' ');
             sb.Append("Upserted");
             sb.Append(' ');
             sb.Append($"{results.RowsAffected:N0}");
@@ -496,17 +493,17 @@
             _logger.LogTrace(message);
         }
 
-        private void CheckQueueLength()
+        private void CheckQueueLength(string requestId)
         {
             var count = _queue.Sum(x => x.Value.Count);
             var usage = $"{count:N0}/{Options.Queue.MaximumCapacity:N0}";
             if (count >= Options.Queue.MaximumCapacity)
             {
-                _logger.LogError($"Data consumer queue is at maximum capacity! {usage}");
+                _logger.LogError($"[{requestId}] Data consumer queue is at maximum capacity! {usage}");
             }
             else if (count >= Options.Queue.MaximumSizeWarning)
             {
-                _logger.LogWarning($"Data consumer queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
+                _logger.LogWarning($"[{requestId}] Data consumer queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
         }
 

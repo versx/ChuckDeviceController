@@ -197,79 +197,79 @@
             ProtoDataStatistics.Instance.TotalPokemonEncountersReceived += (uint)workItem.Encounters.Count();
             ProtoDataStatistics.Instance.TotalPokemonDiskEncountersReceived += (uint)workItem.DiskEncounters.Count();
 
-            var guid = Guid.NewGuid().ToString()[..8];
+            var requestId = Guid.NewGuid().ToString()[..8];
             try
             {
                 // Parse player account data
                 if (Options.ProcessPlayerData && workItem.PlayerData.Any())
                 {
-                    await UpdatePlayerDataAsync(guid, connection, workItem.PlayerData);
+                    await UpdatePlayerDataAsync(requestId, connection, workItem.PlayerData);
                 }
 
                 // Parse S2 cells
                 if (Options.ProcessCells && workItem.Cells.Any())
                 {
-                    await UpdateCellsAsync(guid, workItem.Cells);
+                    await UpdateCellsAsync(requestId, workItem.Cells);
                 }
 
                 // Parse weather cells
                 if (Options.ProcessWeather && workItem.Weather.Any())
                 {
-                    await UpdateClientWeatherAsync(guid, connection, workItem.Weather);
+                    await UpdateClientWeatherAsync(requestId, connection, workItem.Weather);
                 }
 
                 // Parse Pokestop and Gym forts
                 if (Options.ProcessForts && workItem.Forts.Any())
                 {
-                    await UpdateFortsAsync(guid, connection, workItem.Forts);
+                    await UpdateFortsAsync(requestId, connection, workItem.Forts);
                 }
 
                 // Parse Fort Details
                 if (Options.ProcessFortDetails && workItem.FortDetails.Any())
                 {
-                    await UpdateFortDetailsAsync(guid, connection, workItem.FortDetails);
+                    await UpdateFortDetailsAsync(requestId, connection, workItem.FortDetails);
                 }
 
                 // Parse gym info
                 if (Options.ProcessGymInfo && workItem.GymInfo.Any())
                 {
-                    await UpdateGymInfoAsync(guid, connection, workItem.GymInfo);
+                    await UpdateGymInfoAsync(requestId, connection, workItem.GymInfo);
                 }
 
                 // Parse wild pokemon
                 if (Options.ProcessWildPokemon && workItem.WildPokemon.Any())
                 {
-                    await UpdateWildPokemonAsync(guid, connection, workItem.WildPokemon);
+                    await UpdateWildPokemonAsync(requestId, connection, workItem.WildPokemon);
                 }
 
                 // Parse nearby pokemon
                 if (Options.ProcessNearbyPokemon && workItem.NearbyPokemon.Any())
                 {
-                    await UpdateNearbyPokemonAsync(guid, connection, workItem.NearbyPokemon);
+                    await UpdateNearbyPokemonAsync(requestId, connection, workItem.NearbyPokemon);
                 }
 
                 // Parse map pokemon
                 if (Options.ProcessMapPokemon && workItem.MapPokemon.Any())
                 {
-                    await UpdateMapPokemonAsync(guid, connection, workItem.MapPokemon);
+                    await UpdateMapPokemonAsync(requestId, connection, workItem.MapPokemon);
                 }
 
                 // Parse pokemon encounters
                 if (Options.ProcessEncounters && workItem.Encounters.Any())
                 {
-                    await UpdateEncountersAsync(guid, connection, workItem.Encounters);
+                    await UpdateEncountersAsync(requestId, connection, workItem.Encounters);
                 }
 
                 // Parse pokemon disk encounters
                 if (Options.ProcessDiskEncounters && workItem.DiskEncounters.Any())
                 {
-                    await UpdateDiskEncountersAsync(guid, connection, workItem.DiskEncounters);
+                    await UpdateDiskEncountersAsync(requestId, connection, workItem.DiskEncounters);
                 }
 
                 // Parse pokestop quests
                 if (Options.ProcessQuests && workItem.Quests.Any())
                 {
-                    await UpdateQuestsAsync(guid, connection, workItem.Quests);
+                    await UpdateQuestsAsync(requestId, connection, workItem.Quests);
                 }
 
                 //Parallel.ForEach(tasks, async (task, token) => await task.ConfigureAwait(false));
@@ -284,7 +284,7 @@
             {
                 sw.Stop();
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-                _logger.LogInformation($"[{guid}] Finished parsing {workItem.Count:N0} data entities{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
+                _logger.LogInformation($"[{requestId}] Finished parsing {workItem.Count:N0} data entities{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
             }
 
             await Task.CompletedTask;
