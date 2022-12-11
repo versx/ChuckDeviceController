@@ -113,9 +113,9 @@
                      "account_suspended":
                     return await HandleAccountStatusRequestAsync(device?.Uuid, device?.AccountUsername, payload?.Type);
                 case "tutorial_done":
-                    return await HandleTutorialStatusAsync(device?.AccountUsername);
+                    return await HandleTutorialStatusRequestAsync(device?.AccountUsername);
                 case "logged_out":
-                    return await HandleLogoutAsync(device);
+                    return await HandleLogoutRequestAsync(device);
                 case "job_failed":
                     _logger.LogWarning($"[{device?.Uuid}] Job failed");
                     return CreateErrorResponse("Job failed");
@@ -407,7 +407,7 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleTutorialStatusAsync(string? username)
+        private async Task<DeviceResponse> HandleTutorialStatusRequestAsync(string? username)
         {
             var account = await GetEntityAsync<string, Account>(_context, username);
             if (string.IsNullOrEmpty(username) || account == null)
@@ -428,7 +428,7 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleLogoutAsync(Device? device)
+        private async Task<DeviceResponse> HandleLogoutRequestAsync(Device? device)
         {
             if (device == null)
             {
