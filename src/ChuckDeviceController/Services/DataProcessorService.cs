@@ -321,7 +321,7 @@
                     var account = await EntityRepository.GetEntityAsync<string, Account>(connection, username, _memCache);
                     if (account == null)
                     {
-                        _logger.LogWarning($"Failed to retrieve account with username '{username}' from cache and database to update account status");
+                        _logger.LogWarning($"[{requestId}] Failed to retrieve account with username '{username}' from cache and database to update account status");
                         continue;
                     }
 
@@ -336,7 +336,7 @@
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"UpdatePlayerDataAsync: {ex}");
+                    _logger.LogError($"UpdatePlayerDataAsync: {ex.InnerException?.Message ?? ex.Message}");
                 }
                 index++;
             }
@@ -390,7 +390,7 @@
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"UpdateCellsAsync: {ex}");
+                    _logger.LogError($"UpdateCellsAsync: {ex.InnerException?.Message ?? ex.Message}");
                 }
             }
 
@@ -448,7 +448,7 @@
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateCellAsync: {ex}");
+                _logger.LogError($"UpdateCellAsync: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             //try

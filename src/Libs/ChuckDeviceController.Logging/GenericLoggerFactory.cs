@@ -1,7 +1,6 @@
 ﻿namespace ChuckDeviceController.Logging
 {
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Console;
 
     public static class GenericLoggerFactory
     {
@@ -13,11 +12,23 @@
                 if (addConsole)
                 {
                     //options.AddConsole(x => });
-                    options.AddSimpleConsole(options =>
-                    {
-                        options.IncludeScopes = false;
-                        options.ColorBehavior = LoggerColorBehavior.Enabled;
-                    });
+                    //options.AddSimpleConsole(options =>
+                    //{
+                    //    options.IncludeScopes = false;
+                    //    options.ColorBehavior = LoggerColorBehavior.Enabled;
+                    //});
+                    //options.AddColorConsoleLogger(configure =>
+                    //{
+                    //    configure.LogLevelColorMap = new Dictionary<LogLevel, ConsoleColor>
+                    //    {
+                    //        { LogLevel.Debug, ConsoleColor.Gray },
+                    //        { LogLevel.Information, ConsoleColor.DarkGreen },
+                    //        { LogLevel.Warning, ConsoleColor.Yellow },
+                    //        { LogLevel.Error, ConsoleColor.Red },
+                    //        { LogLevel.Trace, ConsoleColor.Cyan },
+                    //        { LogLevel.Critical, ConsoleColor.DarkRed },
+                    //    };
+                    //});
                 }
                 options.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
                 //options.AddFilter("Microsoft.EntityFrameworkCore.Model.Validation", LogLevel.Error);

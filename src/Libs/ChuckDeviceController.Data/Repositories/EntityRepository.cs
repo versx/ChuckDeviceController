@@ -3,11 +3,13 @@
     using System.Data;
 
     using Dapper;
+    using Microsoft.Extensions.Logging;
     using MySqlConnector;
 
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
+    using ChuckDeviceController.Logging;
 
     public class EntityRepository
     {
@@ -22,8 +24,8 @@
 
         #region Variables
 
-        //private static readonly ILogger<EntityRepository> _logger =
-        //    new Logger<EntityRepository>(LoggerFactory.Create(options => options.SetMinimumLevel(LogLevel.Trace)));
+        private static readonly ILogger<EntityRepository> _logger =
+            GenericLoggerFactory.CreateLogger<EntityRepository>(LogLevel.Debug);
         private static readonly SemaphoreSlim _sem = new(5, 5);
         private static readonly SemaphoreSlim _semEntity = new(10); // TODO: Make entity fetching concurrency level configurable
         private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(15); // TODO: Make entity fetch lock wait time configurable
@@ -32,7 +34,6 @@
             ConnectionState.Broken,
             ConnectionState.Closed,
         };
-        //private static MySqlConnection? _connection;
         private static string? _connectionString;
         private readonly bool _openConnection;
         private static EntityDataRepository _entityRepository = default!;
@@ -109,7 +110,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[EntityExistsAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[EntityExistsAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
             return false;
         }
@@ -152,7 +153,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetByIdAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[GetByIdAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             //_semEntity.Release();
@@ -191,7 +192,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetEntitiesAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[GetEntitiesAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
             return null!;
         }
@@ -216,7 +217,7 @@
             using var connection = await CreateConnectionAsync($"{nameof(EntityRepository)}::ExecuteAsync[Param]", stoppingToken: stoppingToken);
             if (connection == null)
             {
-                Console.WriteLine("[ExecuteAsync} Error: Not connected to MySQL database server!");
+                _logger.LogError("[ExecuteAsync} Error: Not connected to MySQL database server!");
                 _sem.Release();
                 return rowsAffected;
             }
@@ -228,7 +229,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -257,7 +258,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -281,7 +282,7 @@
             using var connection = await CreateConnectionAsync($"{nameof(EntityRepository)}::ExecuteAsync[Raw]", stoppingToken: stoppingToken);
             if (connection == null)
             {
-                Console.WriteLine("[ExecuteAsync} Error: Not connected to MySQL database server!");
+                _logger.LogError("[ExecuteAsync} Error: Not connected to MySQL database server!");
                 _sem.Release();
                 return rowsAffected;
             }
@@ -296,7 +297,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -323,7 +324,7 @@
             using var connection = await CreateConnectionAsync($"{nameof(EntityRepository)}::ExecuteBulkAsync", stoppingToken: stoppingToken);
             if (connection == null)
             {
-                Console.WriteLine("[ExecuteBulkAsync} Error: Not connected to MySQL database server!");
+                _logger.LogError("[ExecuteBulkAsync} Error: Not connected to MySQL database server!");
                 _sem.Release();
                 return rowsAffected;
             }
@@ -335,7 +336,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteBulkAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[ExecuteBulkAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -376,7 +377,7 @@
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[CreateConnectionAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                    _logger.LogError($"[CreateConnectionAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 }
             }
 

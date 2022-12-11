@@ -4,12 +4,14 @@
     using System.Data;
 
     using Dapper;
+    using Microsoft.Extensions.Logging;
     using MySqlConnector;
 
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.TypeHandlers;
+    using ChuckDeviceController.Logging;
 
     public class EntityDataRepository : IEntityDataRepository
     {
@@ -22,6 +24,8 @@
 
         #region Variables
 
+        private readonly ILogger<IEntityDataRepository> _logger =
+            GenericLoggerFactory.CreateLogger<IEntityDataRepository>();
         private readonly SemaphoreSlim _sem = new(1, 1);
         private readonly SemaphoreSlim _semEntity = new(1, 1); //new(15, 15);
         //private readonly string _connectionString;
@@ -72,7 +76,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetByIdAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[GetByIdAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             //_semEntity.Release();
@@ -105,7 +109,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetAllAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[GetAllAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             _sem.Release();
@@ -143,7 +147,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
 
             _sem.Release();
@@ -181,7 +185,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 
@@ -218,7 +222,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ExecuteBulkAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError($"[ExecuteBulkAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
                 await trans.RollbackAsync(stoppingToken);
             }
 

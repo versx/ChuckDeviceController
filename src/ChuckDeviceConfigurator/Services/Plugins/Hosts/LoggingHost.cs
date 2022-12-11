@@ -1,15 +1,12 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins.Hosts
 {
+    using ChuckDeviceController.Logging;
     using ChuckDeviceController.Plugin;
 
     public class LoggingHost : ILoggingHost
     {
-        private readonly ILogger<ILoggingHost> _logger;
-
-        public LoggingHost()
-        {
-            _logger = new Logger<ILoggingHost>(LoggerFactory.Create(x => x.AddConsole()));
-        }
+        private static readonly ILogger<ILoggingHost> _logger =
+            GenericLoggerFactory.CreateLogger<ILoggingHost>();
 
         public void LogTrace(string message, params object?[] args)
         {
