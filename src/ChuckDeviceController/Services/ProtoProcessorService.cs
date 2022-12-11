@@ -11,10 +11,13 @@
     using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
 
-    public class ProtoProcessorService : BackgroundService, IProtoProcessorService
+    // TODO: Consider storing protos as Dictionary<string, List<ProtoPayload>> queue
+
+    public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
     {
         #region Constants
 
@@ -31,7 +34,6 @@
         private readonly SafeCollection<DataQueueItem> _dataQueue;
         private readonly IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> _grpcProtoClient;
         private readonly IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> _grpcLevelingClient;
-        private readonly SemaphoreSlim _sem = new(15, 15);
 
         private static readonly ConcurrentDictionary<ulong, int> _emptyCells = new();
         private static readonly ConcurrentDictionary<string, bool> _canStoreData = new();
@@ -55,6 +57,7 @@
             SafeCollection<DataQueueItem> dataQueue,
             IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> grpcProtoClient,
             IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> grpcLevelingClient)
+            : base(logger, options?.Value?.IntervalS ?? ProtoProcessorOptionsConfig.DefaultIntervalS)
         {
             _logger = logger;
             _protoQueue = protoQueue;
@@ -69,58 +72,57 @@
 
         #region Background Service
 
+        public override async Task StopAsync(CancellationToken stoppingToken)
+        {
+            _logger.LogInformation(
+                $"{nameof(IProtoProcessorService)} is stopping.");
+
+            await base.StopAsync(stoppingToken);
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation(
                 $"{nameof(IProtoProcessorService)} is now running in the background.");
 
-            await Task.Run(async () =>
-                await BackgroundProcessing(stoppingToken)
-            , stoppingToken);
+            await Task.CompletedTask;
         }
 
-        private async Task BackgroundProcessing(CancellationToken stoppingToken)
+        protected override async Task RunJobAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            if (_protoQueue.Count == 0)
             {
-                if (_protoQueue.Count == 0)
-                {
-                    await Task.Delay(Options.IntervalS * 1000, stoppingToken);
-                    continue;
-                }
-
-                try
-                {
-                    var workItems = _protoQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
-                    if (!(workItems?.Any() ?? false))
-                    {
-                        Thread.Sleep(1);
-                        continue;
-                    }
-
-                    //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
-                    new Thread(async () =>
-                    {
-                        foreach (var workItem in workItems)
-                        {
-                            await ProcessWorkItemAsync(workItem, stoppingToken).ConfigureAwait(false);
-                        }
-                    })
-                    { IsBackground = true }.Start();
-                }
-                catch (OperationCanceledException)
-                {
-                    // Prevent throwing if stoppingToken was signaled
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error occurred executing task work item.");
-                }
-
-                await Task.Delay(Options.IntervalS * 1000, stoppingToken);
+                return;
             }
 
-            _logger.LogError("Exited ProtoProcessorService background processing...");
+            try
+            {
+                var workItems = _protoQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
+                if (!(workItems?.Any() ?? false))
+                {
+                    return;
+                }
+
+                //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
+                new Thread(async () =>
+                {
+                    foreach (var workItem in workItems)
+                    {
+                        await ProcessWorkItemAsync(workItem, stoppingToken).ConfigureAwait(false);
+                    }
+                })
+                { IsBackground = true }.Start();
+            }
+            catch (OperationCanceledException)
+            {
+                // Prevent throwing if stoppingToken was signaled
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred executing task work item.");
+            }
+
+            await Task.CompletedTask;
         }
 
         private async Task ProcessWorkItemAsync(ProtoPayloadQueueItem payload, CancellationToken stoppingToken)
@@ -174,17 +176,12 @@
                                 continue;
                             }
 
-                                processedProtos.Add(new
-                                {
-                                    type = ProtoDataType.PlayerData,
-                                    gpr,
-                                    username,
-                                });
-                            }
-                            else
+                            processedProtos.Add(new
                             {
-                                _logger.LogError($"[{uuid}] Malformed GetPlayerOutProto");
-                            }
+                                type = ProtoDataType.PlayerData,
+                                gpr,
+                                username,
+                            });
                         }
                         catch (Exception ex)
                         {
@@ -222,13 +219,10 @@
 
                                 foreach (var quest in quests)
                                 {
-                                    foreach (var quest in quests!)
+                                    if (quest.QuestContext == QuestProto.Types.Context.ChallengeQuest &&
+                                        quest.QuestType == QuestType.QuestGeotargetedArScan)
                                     {
-                                        if (quest.QuestContext == QuestProto.Types.Context.ChallengeQuest &&
-                                            quest.QuestType == QuestType.QuestGeotargetedArScan)
-                                        {
-                                            _arQuestActualMap.SetValue(uuid, value: true, timestamp);
-                                        }
+                                        _arQuestActualMap.SetValue(uuid, value: true, timestamp);
                                     }
                                 }
                             }
@@ -245,33 +239,33 @@
                             if (fsr?.ChallengeQuest?.Quest == null)
                                 continue;
 
-                                    // Check for AR quest or if AR quest is required
-                                    var hasAr = hasArQuestReqGlobal
-                                        ?? hasArQuestReq
-                                        ?? GetArQuestMode(uuid!, timestamp);
-                                    var title = fsr.ChallengeQuest.QuestDisplay.Title;
-                                    var quest = fsr.ChallengeQuest.Quest;
+                            // Check for AR quest or if AR quest is required
+                            var hasAr = hasArQuestReqGlobal
+                                ?? hasArQuestReq
+                                ?? GetArQuestMode(uuid!, timestamp);
+                            var title = fsr.ChallengeQuest.QuestDisplay.Title;
+                            var quest = fsr.ChallengeQuest.Quest;
 
-                                    // Ignore AR quests so they get rescanned if they were the first quest a scanner would hold onto
+                            // Ignore AR quests so they get rescanned if they were the first quest a scanner would hold onto
                             if (quest.QuestType == QuestType.QuestGeotargetedArScan && !Options.AllowArQuests)
-                                    {
+                            {
                                 _logger.LogWarning($"[{uuid}] Quest was blocked because it is type '{quest.QuestType}'.");
                                 _logger.LogInformation($"[{uuid}] Quest info: {quest}");
                                 continue;
                             }
 
-                                    if (quest.QuestType == QuestType.QuestGeotargetedArScan && uuid != null)
-                                    {
-                                        _arQuestActualMap.SetValue(uuid, value: true, timestamp);
-                                    }
-                                    processedProtos.Add(new
-                                    {
-                                        type = ProtoDataType.Quest,
-                                        title,
-                                        quest,
-                                        hasAr,
-                                    });
-                                }
+                            if (quest.QuestType == QuestType.QuestGeotargetedArScan && uuid != null)
+                            {
+                                _arQuestActualMap.SetValue(uuid, value: true, timestamp);
+                            }
+                            processedProtos.Add(new
+                            {
+                                type = ProtoDataType.Quest,
+                                title,
+                                quest,
+                                hasAr,
+                            });
+                        }
                         catch (Exception ex)
                         {
                             _logger.LogError($"[{uuid}] Unable to decode FortSearchOutProto: {ex}");
@@ -292,18 +286,13 @@
                                     continue;
                                 }
 
-                                    processedProtos.Add(new
-                                    {
-                                        type = ProtoDataType.Encounter,
-                                        data = er,
-                                        username,
-                                        isEvent = false,
-                                    });
-                                }
-                                else if (er == null)
+                                processedProtos.Add(new
                                 {
-                                    _logger.LogError($"[{uuid}] Malformed EncounterOutProto");
-                                }
+                                    type = ProtoDataType.Encounter,
+                                    data = er,
+                                    username,
+                                    isEvent = false,
+                                });
                             }
                         }
                         catch (Exception ex)
@@ -324,18 +313,13 @@
                                     continue;
                                 }
 
-                                    processedProtos.Add(new
-                                    {
-                                        type = ProtoDataType.DiskEncounter,
-                                        data = der,
-                                        username,
-                                        isEvent = false,
-                                    });
-                                }
-                                else
+                                processedProtos.Add(new
                                 {
-                                    _logger.LogError($"[{uuid}] Malformed DiskEncounterOutProto");
-                                }
+                                    type = ProtoDataType.DiskEncounter,
+                                    data = der,
+                                    username,
+                                    isEvent = false,
+                                });
                             }
                             catch (Exception ex)
                             {
@@ -353,16 +337,11 @@
                                 continue;
                             }
 
-                                processedProtos.Add(new
-                                {
-                                    type = ProtoDataType.FortDetails,
-                                    data = fdr,
-                                });
-                            }
-                            else
+                            processedProtos.Add(new
                             {
-                                _logger.LogError($"[{uuid}] Malformed FortDetailsOutProto");
-                            }
+                                type = ProtoDataType.FortDetails,
+                                data = fdr,
+                            });
                         }
                         catch (Exception ex)
                         {
@@ -386,47 +365,42 @@
                                 continue;
                             }
 
-                                processedProtos.Add(new
-                                {
-                                    type = ProtoDataType.GymInfo,
-                                    data = ggi,
-                                });
+                            processedProtos.Add(new
+                            {
+                                type = ProtoDataType.GymInfo,
+                                data = ggi,
+                            });
 
                             // TODO: Add ProcessGymDefenders and ProcessGymTrainers option to ProcessingOptions.Protos config
-                                if (ggi.GymStatusAndDefenders == null)
-                                {
-                                    _logger.LogWarning($"Invalid GymStatusAndDefenders provided, skipping...\n: {ggi}");
-                                    continue;
-                                }
-                                var fortId = ggi.GymStatusAndDefenders.PokemonFortProto.FortId;
-                                var gymDefenders = ggi.GymStatusAndDefenders.GymDefender;
-                                if (gymDefenders == null)
-                                    continue;
-
-                                foreach (var gymDefender in gymDefenders)
-                                {
-                                    if (gymDefender.TrainerPublicProfile != null)
-                                    {
-                                        processedProtos.Add(new
-                                        {
-                                            type = ProtoDataType.Trainer,
-                                            data = gymDefender.TrainerPublicProfile,
-                                        });
-                                    }
-                                    if (gymDefender.MotivatedPokemon != null)
-                                    {
-                                        processedProtos.Add(new
-                                        {
-                                            type = ProtoDataType.GymDefender,
-                                            fort = fortId,
-                                            data = gymDefender,
-                                        });
-                                    }
-                                }
-                            }
-                            else
+                            if (ggi.GymStatusAndDefenders == null)
                             {
-                                _logger.LogError($"[{uuid}] Malformed GymGetInfoOutProto");
+                                _logger.LogWarning($"Invalid GymStatusAndDefenders provided, skipping...\n: {ggi}");
+                                continue;
+                            }
+                            var fortId = ggi.GymStatusAndDefenders.PokemonFortProto.FortId;
+                            var gymDefenders = ggi.GymStatusAndDefenders.GymDefender;
+                            if (gymDefenders == null)
+                                continue;
+
+                            foreach (var gymDefender in gymDefenders)
+                            {
+                                if (gymDefender.TrainerPublicProfile != null)
+                                {
+                                    processedProtos.Add(new
+                                    {
+                                        type = ProtoDataType.Trainer,
+                                        data = gymDefender.TrainerPublicProfile,
+                                    });
+                                }
+                                if (gymDefender.MotivatedPokemon != null)
+                                {
+                                    processedProtos.Add(new
+                                    {
+                                        type = ProtoDataType.GymDefender,
+                                        fort = fortId,
+                                        data = gymDefender,
+                                    });
+                                }
                             }
                         }
                         catch (Exception ex)
