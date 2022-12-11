@@ -29,7 +29,10 @@ builder.WebHost.UseConfiguration(config);
 builder.WebHost.UseUrls(proxyConfig.Urls);
 
 builder.Services
-    .AddHttpClient(Strings.ProxyHttpClientName)
+    .AddHttpClient(Strings.ProxyHttpClientName, options =>
+    {
+        options.Timeout = TimeSpan.FromSeconds(10);
+    })
     .ConfigurePrimaryHttpMessageHandler(sp => new HttpClientHandler
     {
         AllowAutoRedirect = false,
@@ -45,6 +48,7 @@ var app = builder.Build();
 app.MapGet("/", () => ":D");
 #endif
 
+//app.Use(HandleProxiedRequest);
 if (proxyConfig?.RawEndpoints?.Any() ?? false)
 {
     app.UseWhen(
@@ -68,13 +72,50 @@ await app.RunAsync();
 
 #region Helpers
 
+//async Task HandleProxiedRequest(HttpContext context, RequestDelegate next)
+//{
+//    var path = context.Request.Path.ToString();
+//    if (Strings.RawEndpoint != path)
+//        return;
+
+//    var request = context.Request.CreateProxyHttpRequest();
+//    switch (path)
+//    {
+//        case Strings.RawEndpoint:
+//            var rawUri = new Uri(proxyConfig.RawEndpoints.First());
+//            request.Headers.Host = rawUri.Authority;
+//            request.RequestUri = rawUri;
+//            break;
+//    }
+
+//    try
+//    {
+//        var httpClientFactory = context.RequestServices.GetRequiredService<IHttpClientFactory>();
+//        using var httpClient = httpClientFactory.CreateClient(Strings.ProxyHttpClientName);
+//        var response = await httpClient.SendAsync(request);//, HttpCompletionOption.ResponseHeadersRead);
+//        Console.WriteLine($"Status: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+
+//        //var forwardContext = new ForwardContext(httpClient, context, request).AddXForwardedHeaders();
+//        //await forwardContext.Send();
+//    }
+//    catch (InvalidOperationException ex)
+//    {
+//        throw new InvalidOperationException($"{ex.Message} Did you forget to call services.AddProxy()?", ex);
+//    }
+//}
+
 Action<IApplicationBuilder> HandleProxiedEndpoint(string endpoint)
 {
     var proxyHandler = (IApplicationBuilder appProxy) =>
-        appProxy.RunProxy(context => context
-            .ForwardTo(endpoint)
-            .AddXForwardedHeaders()
-            .Send());
+        appProxy.RunProxy(async context =>
+        {
+            var response = await context
+                .ForwardTo(endpoint)
+                .AddXForwardedHeaders()
+                .Send();
+            Console.WriteLine($"Status: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+            return response;
+        });
     return proxyHandler;
 }
 

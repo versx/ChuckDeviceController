@@ -150,15 +150,8 @@
             {
                 change = 0;
             }
-            var status = $"Coord Count: {_tthCoords.Count:N0}";
-            if (change > 0)
-            {
-                status += $", Delta: +{change}";
-            }
-            else
-            {
-                status += $", Delta: {change}";
-            }
+            var changes = change > 0 ? "+" : "";
+            var status = $"Coord Count: {_tthCoords.Count:N0}, Delta: {changes}{change}";
             return await Task.FromResult(status);
         }
 

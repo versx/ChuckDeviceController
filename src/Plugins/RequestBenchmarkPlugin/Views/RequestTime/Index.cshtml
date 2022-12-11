@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Request Benchmarks";
     var totalRequests = Model?.Sum(x => x.Requests) ?? 0;
-    var totalTime = Utils.FormatTime(Model?.Sum(x => x.Total) ?? 0);
+    var totalTime = Utils.FormatTime(Model?.Sum(x => x.Total) ?? 0, 4);
 }
 
 <h1>Request Benchmarks</h1>
