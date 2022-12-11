@@ -128,7 +128,7 @@
                 var newLoc = GetNextScanLocation(curSecInHour, loc);
                 _firstRun = false;
 
-                Console.WriteLine($"[{Name}] [{options.Uuid}] Pokemon - Instance: {Name} - oldLoc={loc} & newLoc={newLoc}/{_pokemonCoords.Count / 2}");
+                Console.WriteLine($"[{Name}] [{options.Uuid}] Pokemon - Instance: {Name} - oldLoc={loc:N0} & newLoc={newLoc:N0}/{_pokemonCoords.Count / 2:N0}");
 
                 var currentCoord = new JumpyCoord
                 {

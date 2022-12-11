@@ -117,7 +117,7 @@
                 newLoc = 0;
             }
 
-            Console.WriteLine($"[{Name}] [{options.Uuid}] TTH - oldLoc={loc} & newLoc={newLoc}/{_tthCoords.Count:N0}");
+            Console.WriteLine($"[{Name}] [{options.Uuid}] TTH - oldLoc={loc:N0} & newLoc={newLoc:N0}/{_tthCoords.Count:N0}");
 
             _currentDevicesMaxLocation = newLoc;
 

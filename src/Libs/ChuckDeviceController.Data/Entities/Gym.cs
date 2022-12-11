@@ -116,7 +116,7 @@
             Latitude = fortData.Latitude;
             Longitude = fortData.Longitude;
             IsEnabled = fortData.Enabled;
-            GuardingPokemonId = Convert.ToUInt16(fortData.GuardPokemonId);
+            GuardingPokemonId = Convert.ToUInt32(fortData.GuardPokemonId);
             Team = fortData.Team;
             AvailableSlots = Convert.ToUInt16(fortData.GymDisplay?.SlotsAvailable ?? 0);
             LastModifiedTimestamp = Convert.ToUInt64(fortData.LastModifiedMs / 1000);
@@ -132,7 +132,7 @@
             //PartnerId = fortData.PartnerId != "" ? fortData.PartnerId : null;
             if (fortData.Sponsor != FortSponsor.Types.Sponsor.Unset)
             {
-                SponsorId = Convert.ToUInt16(fortData.Sponsor);
+                SponsorId = Convert.ToUInt32(fortData.Sponsor);
             }
             if (!string.IsNullOrEmpty(fortData.ImageUrl))
             {
@@ -152,14 +152,14 @@
                 RaidIsExclusive = fortData.RaidInfo.IsExclusive;
                 if (fortData.RaidInfo.RaidPokemon != null)
                 {
-                    RaidPokemonId = Convert.ToUInt16(fortData.RaidInfo.RaidPokemon.PokemonId);
-                    RaidPokemonMove1 = Convert.ToUInt16(fortData.RaidInfo.RaidPokemon.Move1);
-                    RaidPokemonMove2 = Convert.ToUInt16(fortData.RaidInfo.RaidPokemon.Move2);
-                    RaidPokemonForm = Convert.ToUInt16(fortData.RaidInfo.RaidPokemon.PokemonDisplay.Form);
-                    RaidPokemonCP = Convert.ToUInt16(fortData.RaidInfo.RaidPokemon.Cp);
+                    RaidPokemonId = Convert.ToUInt32(fortData.RaidInfo.RaidPokemon.PokemonId);
+                    RaidPokemonMove1 = Convert.ToUInt32(fortData.RaidInfo.RaidPokemon.Move1);
+                    RaidPokemonMove2 = Convert.ToUInt32(fortData.RaidInfo.RaidPokemon.Move2);
+                    RaidPokemonForm = Convert.ToUInt32(fortData.RaidInfo.RaidPokemon.PokemonDisplay.Form);
+                    RaidPokemonCP = Convert.ToUInt32(fortData.RaidInfo.RaidPokemon.Cp);
                     RaidPokemonGender = Convert.ToUInt16(fortData.RaidInfo.RaidPokemon.PokemonDisplay.Gender);
-                    RaidPokemonCostume = Convert.ToUInt16(fortData.RaidInfo.RaidPokemon.PokemonDisplay.Costume);
-                    RaidPokemonEvolution = Convert.ToUInt16(fortData.RaidInfo.RaidPokemon.PokemonDisplay.CurrentTempEvolution);
+                    RaidPokemonCostume = Convert.ToUInt32(fortData.RaidInfo.RaidPokemon.PokemonDisplay.Costume);
+                    RaidPokemonEvolution = Convert.ToUInt32(fortData.RaidInfo.RaidPokemon.PokemonDisplay.CurrentTempEvolution);
                 }
             }
 
