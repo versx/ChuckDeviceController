@@ -668,7 +668,8 @@ INSERT INTO account (
     username, password, first_warning_timestamp, failed_timestamp, failed, level,
     last_encounter_time, last_encounter_lat, last_encounter_lon, spins, tutorial,
     creation_timestamp, warn, warn_expire_timestamp, warn_message_acknowledged,
-    was_suspended, banned, last_used_timestamp, `group`
+    suspended_message_acknowledged, was_suspended, banned, last_used_timestamp,
+    `group`
 )
 VALUES
     {0}
@@ -686,6 +687,7 @@ ON DUPLICATE KEY UPDATE
     warn=VALUES(warn),
     warn_expire_timestamp=VALUES(warn_expire_timestamp),
     warn_message_acknowledged=VALUES(warn_message_acknowledged),
+    suspended_message_acknowledged=VALUES(suspended_message_acknowledged),
     was_suspended=VALUES(was_suspended),
     banned=VALUES(banned),
     last_used_timestamp=VALUES(last_used_timestamp),
@@ -707,15 +709,16 @@ ON DUPLICATE KEY UPDATE
         /// 12 - warn
         /// 13 - warn_expire_timestamp
         /// 14 - warn_message_acknowledged
-        /// 15 - was_suspended
-        /// 16 - banned
-        /// 17 - last_used_timestamp
-        /// 18 - group
+        /// 15 - suspended_message_acknowledged
+        /// 16 - was_suspended
+        /// 17 - banned
+        /// 18 - last_used_timestamp
+        /// 19 - group
         /// </summary>
         public const string AccountValuesRaw = @"
 (
     {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9},
-    {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}
+    {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}
 )
 ";
 

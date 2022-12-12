@@ -7,7 +7,6 @@
     using MySqlConnector;
 
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions.Json;
 
     internal class FortTests
@@ -22,14 +21,6 @@
         {
             _connection = new MySqlConnection(ConnectionString);
             Task.Run(async () => await _connection.OpenAsync()).Wait();
-        }
-
-        [TestCase("atv08")]
-        public async Task TestDevice(string uuid)
-        {
-            SetTypeMap<Device>();
-            var device = await EntityRepository.GetEntityAsync<string, Device>(_connection, uuid, null, skipCache: true, setCache: false);
-            Assert.That(device, Is.Not.Null);
         }
 
         [TestCase("a59634f8aec34f9b8e7b265124d78ac8.16")]
