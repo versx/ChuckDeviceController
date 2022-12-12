@@ -9,8 +9,6 @@
     {
         private readonly RequestDelegate _next;
         private readonly IRequestBenchmarkService _benchmarkService;
-        //private readonly object _lock = new();
-        private readonly SemaphoreSlim _sem = new(1, 1);
 
         public RequestBenchmarkMiddleware(RequestDelegate next, IRequestBenchmarkService benchmarkService)
         {
@@ -20,11 +18,15 @@
 
         public async Task InvokeAsync(HttpContext context, RequestTimesDbContext dbContext)
         {
-            await _sem.WaitAsync();
+            // TODO: Make configurable to ignore gRPC requests
+            if (context.Request.ContentType == "application/grpc")
+            {
+                await _next(context);
+                return;
+            }
 
             var route = context.Request.Path.ToString();
-            var exists = _benchmarkService.Benchmarks.ContainsKey(route);
-            var benchmark = exists
+            var benchmark = _benchmarkService.Benchmarks.ContainsKey(route)
                 ? _benchmarkService.Benchmarks[route]
                 : new(route);
 
@@ -34,19 +36,9 @@
             }
 
             var timing = RequestTime.FromRequestBenchmark(benchmark);
-            if (exists)
-            {
-                dbContext.Update(timing);
-            }
-            else
-            {
-                await dbContext.AddAsync(timing);
-            }
+            await _benchmarkService.SaveRouteBenchmark(dbContext, route, timing);
 
-            try { await dbContext.SaveChangesAsync(); } catch { }
             _benchmarkService.UpdateRouteBenchmark(route, benchmark);
-
-            _sem.Release();
         }
     }
 }

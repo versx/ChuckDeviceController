@@ -2,18 +2,20 @@
 {
     using System.Collections.Concurrent;
 
+    using Data.Contexts;
+    using Data.Entities;
     using Utilities;
 
     public class RequestBenchmarkService : IRequestBenchmarkService
     {
         private static readonly ConcurrentDictionary<string, RequestBenchmark> _requestBenchmarks = new();
         private static readonly object _lock = new();
+        private static readonly SemaphoreSlim _sem = new(1, 1);
         private readonly ILogger<IRequestBenchmarkService> _logger;
 
         public IReadOnlyDictionary<string, RequestBenchmark> Benchmarks => _requestBenchmarks;
 
-        public RequestBenchmarkService(
-            ILogger<IRequestBenchmarkService> logger)
+        public RequestBenchmarkService(ILogger<IRequestBenchmarkService> logger)
         {
             _logger = logger;
         }
@@ -32,9 +34,6 @@
         {
             lock (_lock)
             {
-                if (!_requestBenchmarks.ContainsKey(route))
-                    return;
-
                 if (!_requestBenchmarks.TryRemove(route, out var _))
                 {
                     _logger.LogWarning($"Failed to remove request benchmark for route '{route}' from cache");
@@ -48,17 +47,30 @@
         {
             lock (_lock)
             {
-                if (_requestBenchmarks.ContainsKey(route))
-                {
-                    _requestBenchmarks[route] = benchmark;
-                    return;
-                }
-
-                if (!_requestBenchmarks.TryAdd(route, benchmark))
-                {
-                    _logger.LogWarning($"Failed to add request benchmark for route '{route}' to cache");
-                }
+                _requestBenchmarks.AddOrUpdate(route, benchmark, (key, oldValue) => benchmark);
             }
+        }
+
+        public async Task SaveRouteBenchmark(RequestTimesDbContext context, string route, RequestTime timing)
+        {
+            await _sem.WaitAsync();
+
+            if (context.RequestTimes.Any(x => x.Route == route))
+            {
+                context.Update(timing);
+            }
+            else
+            {
+                await context.AddAsync(timing);
+            }
+
+            try { await context.SaveChangesAsync(); }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.InnerException?.Message ?? ex.Message}");
+            }
+
+            _sem.Release();
         }
     }
 }
