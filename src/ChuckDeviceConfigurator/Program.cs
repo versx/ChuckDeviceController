@@ -215,6 +215,12 @@ builder.Services.AddDbContextPool<ControllerDbContext>(options =>
 builder.Services.AddDbContextPool<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), resiliencyConfig.MaximumPoolSize);
 
+var sqliteConnectionString = $"Data Source={Strings.PluginsDatabasePath}";
+builder.Services.AddDbContext<PluginDbContext>(options =>
+    options.UseSqlite(sqliteConnectionString), ServiceLifetime.Scoped);
+builder.Services.AddDbContextFactory<PluginDbContext>(options =>
+    options.UseSqlite(sqliteConnectionString), ServiceLifetime.Singleton);
+
 #endregion
 
 #region Services
@@ -287,6 +293,7 @@ builder.Services.AddSingleton<IRoutingHost, RouteGenerator>();
 builder.Services.AddSingleton<IEventAggregatorHost>(eventAggregatorHost);
 builder.Services.AddScoped<IPublisher, PluginPublisher>();
 
+
 // TODO: Do not build service provider from collection manually, leave it up to DI - https://andrewlock.net/access-services-inside-options-and-startup-using-configureoptions/
 var serviceProvider = builder.Services.BuildServiceProvider();
 
@@ -325,6 +332,15 @@ if (controllerContext != null)
     apiKeys = context.ApiKeys.ToList();
 }
 
+// Load plugin states from SQLite database
+var pluginStates = new List<Plugin>();
+var pluginContext = serviceProvider.GetService<IDbContextFactory<PluginDbContext>>();
+if (pluginContext != null)
+{
+    using var context = pluginContext.CreateDbContext();
+    pluginStates = context.Plugins.ToList();
+}
+
 // Instantiate 'IPluginManager' singleton with configurable options
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
 {
@@ -333,14 +349,13 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
     Services = builder.Services,
     SharedServiceHosts = sharedServiceHosts,
 });
-
 pluginManager.PluginHostAdded += OnPluginHostAdded;
 pluginManager.PluginHostRemoved += OnPluginHostRemoved;
 pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
 
 // Find plugins, register plugin services, load plugin assemblies,
 // call OnLoad callback and register with 'IPluginManager' cache
-await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, apiKeys);
+await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, apiKeys); //pluginStates);
 
 // Start the job controller service after all plugins have loaded. (TODO: Add PluginsLoadedComplete event?)
 // This is so all custom IJobController's provided via plugins have been registered.
@@ -429,7 +444,7 @@ async void OnPluginHostRemoved(object? sender, PluginHostRemovedEventArgs e)
     using (var scope = serviceProvider.CreateScope())
     {
         var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<ControllerDbContext>();
+        var context = services.GetRequiredService<PluginDbContext>();
 
         // Get cached plugin state from database
         var dbPlugin = await context.Plugins.FindAsync(e.PluginHost.Plugin.Name);
@@ -545,7 +560,7 @@ async Task AddOrUpdatePluginState(IPluginHost pluginHost)
     using (var scope = serviceProvider.CreateScope())
     {
         var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<ControllerDbContext>();
+        var context = services.GetRequiredService<PluginDbContext>();
 
         // Get cached plugin state from database
         var dbPlugin = await context.Plugins.FindAsync(pluginHost.Plugin.Name);
@@ -556,9 +571,9 @@ async Task AddOrUpdatePluginState(IPluginHost pluginHost)
             await context.Plugins.AddAsync(new Plugin
             {
                 Name = pluginHost.Plugin.Name,
+                FullPath = pluginHost.Assembly.AssemblyFullPath,
                 State = pluginHost.State,
             });
-            await context.SaveChangesAsync();
         }
         else
         {
@@ -571,9 +586,9 @@ async Task AddOrUpdatePluginState(IPluginHost pluginHost)
 
                 // Update plugin host state
                 context.Plugins.Update(dbPlugin);
-                await context.SaveChangesAsync();
             }
         }
+        await context.SaveChangesAsync();
     }
 }
 

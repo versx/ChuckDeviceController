@@ -4,9 +4,10 @@
     using System.ComponentModel.DataAnnotations.Schema;
 
     using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
 
     [Table("plugin")]
-    public class Plugin : BaseEntity
+    public class Plugin : BaseEntity, IPluginState
     {
         [
             Column("name"),
@@ -14,6 +15,9 @@
             DatabaseGenerated(DatabaseGeneratedOption.None),
         ]
         public string Name { get; set; } = null!;
+
+        [Column("full_path")]
+        public string FullPath { get; set; } = null!;
 
         [Column("state")]
         public PluginState State { get; set; }

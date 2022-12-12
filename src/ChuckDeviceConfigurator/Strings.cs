@@ -32,6 +32,9 @@
         public static readonly string PluginsFolder = Path.Combine(BasePath, "plugins");
         public static readonly string AuthProviderFileName = "auth_providers.json";
 
+        public const string PluginsDatabase = "plugins.db";
+        public static readonly string PluginsDatabasePath = Path.Combine(PluginsFolder, PluginsDatabase);
+
         #endregion
 
         #region Default User Properties
