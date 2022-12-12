@@ -108,9 +108,6 @@
         {
             //await _sem.WaitAsync(stoppingToken);
 
-            // TODO: Fix bandaid
-            entities = entities.Where(x => x != null);
-
             bool success;
             var rowsAffected = 0;
             var batchCount = 0;
@@ -263,7 +260,6 @@
             bool useCommaInsteadOfEndingStatement = true)
             where TEntity : BaseEntity
         {
-            var batchCount = (int)Math.Ceiling((double)entities.Count() / batchSize);
             var sqlQueries = new List<string>();
             var batchCount = (int)Math.Ceiling((double)entities.Count() / batchSize);
             var endingStatement = useCommaInsteadOfEndingStatement

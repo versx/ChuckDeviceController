@@ -3,6 +3,7 @@
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Text.Json.Serialization;
 
     using Microsoft.EntityFrameworkCore;
     using POGOProtos.Rpc;
@@ -57,12 +58,14 @@
         [
             DisplayName("First Warning Time"),
             Column("first_warning_timestamp"),
+            JsonPropertyName("first_warning_timestamp"),
         ]
         public ulong? FirstWarningTimestamp { get; set; }
 
         [
             DisplayName("Failed Time"),
             Column("failed_timestamp"),
+            JsonPropertyName("failed_timestamp"),
         ]
         public ulong? FailedTimestamp { get; set; }
 
@@ -81,12 +84,14 @@
         [
             DisplayName("Last Encounter Time"),
             Column("last_encounter_time"),
+            JsonPropertyName("last_encounter_time"),
         ]
         public ulong? LastEncounterTime { get; set; }
 
         [
             DisplayName("Last Encounter Latitude"),
             Column("last_encounter_lat"),
+            JsonPropertyName("last_encounter_lat"),
             Precision(18, 6),
         ]
         public double? LastEncounterLatitude { get; set; }
@@ -94,6 +99,7 @@
         [
             DisplayName("Last Encounter Longitude"),
             Column("last_encounter_lon"),
+            JsonPropertyName("last_encounter_lon"),
             Precision(18, 6),
         ]
         public double? LastEncounterLongitude { get; set; }
@@ -113,66 +119,77 @@
         [
             DisplayName("Created"),
             Column("creation_timestamp"),
+            JsonPropertyName("creation_timestamp"),
         ]
         public ulong? CreationTimestamp { get; set; }
 
         [
             DisplayName("Has Warning"),
             Column("warn"),
+            JsonPropertyName("warn"),
         ]
         public bool? HasWarn { get; set; }
 
         [
             DisplayName("Warning Expire Time"),
             Column("warn_expire_timestamp"),
+            JsonPropertyName("warn_expire_timestamp"),
         ]
         public ulong? WarnExpireTimestamp { get; set; }
 
         [
             DisplayName("Warning Message Acknowledged"),
             Column("warn_message_acknowledged"),
+            JsonPropertyName("warn_message_acknowledged"),
         ]
         public bool? WarnMessageAcknowledged { get; set; }
 
         [
             DisplayName("Suspended Message Acknowledged"),
             Column("suspended_message_acknowledged"),
+            JsonPropertyName("suspended_message_acknowledged"),
         ]
         public bool? SuspendedMessageAcknowledged { get; set; }
 
         [
             DisplayName("Was Suspended"),
             Column("was_suspended"),
+            JsonPropertyName("was_suspended"),
         ]
         public bool? WasSuspended { get; set; }
 
         [
             DisplayName("Banned"),
             Column("banned"),
+            JsonPropertyName("banned"),
         ]
         public bool? IsBanned { get; set; }
 
         [
             DisplayName("Last Used"),
             Column("last_used_timestamp"),
+            JsonPropertyName("last_used_timestamp"),
         ]
         public ulong? LastUsedTimestamp { get; set; } = 0;
 
         [
             DisplayName("Group"),
             Column("group"),
+            JsonPropertyName("group"),
         ]
         public string? GroupName { get; set; }
 
         [
             DisplayName("Status"),
             NotMapped,
+            JsonPropertyName("status"),
         ]
         public string Status => GetStatus();
 
         [
             DisplayName("Last Encounter"),
             NotMapped,
+            JsonPropertyName("last_encounter"),
         ]
         public string LastEncounter => LastEncounterTime?
             .FromSeconds()
@@ -182,13 +199,20 @@
         [
             DisplayName("In Use"),
             NotMapped,
+            JsonPropertyName("in_use"),
         ]
         public bool IsInUse { get; set; }
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonIgnore,
+        ]
         public bool SendWebhook { get; set; }
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonPropertyName("is_account_clean"),
+        ]
         public bool IsAccountClean =>
             !IsAccountBanned &&
             !IsAccountSuspended &&
@@ -197,33 +221,57 @@
             !IsAccountInCooldown &&
             Spins < 3500;
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonPropertyName("is_account_banned"),
+        ]
         public bool IsAccountBanned => Failed == FailedBanned || Failed == FailedGprBanned || (IsBanned ?? false);
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonPropertyName("is_account_warned"),
+        ]
         public bool IsAccountWarned =>
             (Failed == FailedGprRedWarning && FailedTimestamp >= DateTime.UtcNow.ToTotalSeconds() - WarningPeriodS) ||
             (FirstWarningTimestamp > 0 && FirstWarningTimestamp >= DateTime.UtcNow.ToTotalSeconds() - WarningPeriodS) ||
             (HasWarn ?? false && WarnExpireTimestamp >= DateTime.UtcNow.ToTotalSeconds() - WarningPeriodS);
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonPropertyName("is_account_suspended"),
+        ]
         public bool IsAccountSuspended => 
             (Failed == FailedSuspended || (WasSuspended ?? false)) &&
             FailedTimestamp >= DateTime.UtcNow.ToTotalSeconds() - SuspendedPeriodS;
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonPropertyName("is_account_invalid_credentials"),
+        ]
         public bool IsAccountInvalidCredentials => Failed == FailedInvalidCredentials;
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonPropertyName("is_account_in_cooldown"),
+        ]
         public bool IsAccountInCooldown => LastEncounterTime > 0 && CooldownPeriodS >= DateTime.UtcNow.ToTotalSeconds() - LastEncounterTime;
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonPropertyName("is_level_40_or_higher"),
+        ]
         public bool IsLevel40OrHigher => Level >= 40;
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonPropertyName("is_level_30_or_higher"),
+        ]
         public bool IsLevel30OrHigher => Level >= 30 && Level < 40;
 
-        [NotMapped]
+        [
+            NotMapped,
+            JsonPropertyName("is_new"),
+        ]
         public bool IsNewAccount => Level == 0;
 
         #endregion

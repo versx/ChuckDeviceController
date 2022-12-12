@@ -187,7 +187,7 @@
         {
             List<TEntity>? results = null;
             IQueryable<TEntity>? filtered = null;
-            IOrderedQueryable<TEntity>? ordered = null;
+            IOrderedQueryable<TEntity>? ordered;
 
             if (_controllerEntityTypes.Contains(typeof(TEntity)))
             {

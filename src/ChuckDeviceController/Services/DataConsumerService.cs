@@ -13,7 +13,7 @@
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Repositories;
 
-    public class DataConsumerService : IDataConsumerService // TODO: TimedHostedService
+    public class DataConsumerService : IDataConsumerService
     {
         #region Variables
 

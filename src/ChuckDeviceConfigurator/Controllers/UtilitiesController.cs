@@ -490,11 +490,11 @@
                     case "Pokemon":
                         sw.Start();
                         var pokemonCount = await _mapContext.Pokemon
-                                                            .Where(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time)
-                                                            .DeleteFromQueryAsync(options =>
-                                                            {
-                                                                options.UseTableLock = true;
-                                                            });
+                            .Where(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time)
+                            .DeleteFromQueryAsync(options =>
+                            {
+                                options.UseTableLock = true;
+                            });
                         sw.Stop();
                         var pkmnSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
                         _logger.LogInformation($"Successfully deleted {pokemonCount:N0} old Pokemon from the database in {pkmnSeconds}s");
@@ -502,11 +502,11 @@
                     case "Incidents":
                         sw.Start();
                         var invasionsCount = await _mapContext.Incidents
-                                                              .Where(incident => Math.Abs((decimal)now - incident.Expiration) > time)
-                                                              .DeleteFromQueryAsync(options =>
-                                                              {
-                                                                  options.UseTableLock = true;
-                                                              });
+                            .Where(incident => Math.Abs((decimal)now - incident.Expiration) > time)
+                            .DeleteFromQueryAsync(options =>
+                            {
+                                options.UseTableLock = true;
+                            });
                         sw.Stop();
                         var invasionSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
                         _logger.LogInformation($"Successfully deleted {invasionsCount:N0} old Invasions from the database in {invasionSeconds}s");

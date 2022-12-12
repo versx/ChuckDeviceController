@@ -85,7 +85,6 @@
 
             try
             {
-                // TODO: Bandaid for now
                 if (currentIndex > Coordinates.Count)
                 {
                     currentIndex = 0;

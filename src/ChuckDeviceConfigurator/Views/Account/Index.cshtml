@@ -11,7 +11,7 @@
 </p>
 
 <div class="form-floating mb-3">
-    <select class="form-control" onChange="onAccountGroupChange(this);">
+    <select id="SelectedGroup" name="SelectedGroup" class="form-control" onChange="onAccountGroupChange(this);">
         @{
             // TODO: Cleanup
             if (string.IsNullOrEmpty(ViewBag.SelectedGroup))
@@ -454,6 +454,7 @@
                 </tr>
             </thead>
             <tbody>
+                @*
                 @foreach (var item in Model.Accounts)
                 {
                     <tr>
@@ -492,6 +493,7 @@
                         </td>
                     </tr>
                 }
+                *@
             </tbody>
         </table>
     </div>
@@ -540,7 +542,49 @@
                 info: false,
             });
 
-            $('#table-accounts').DataTable({
+            const tableAccounts = $('#table-accounts').DataTable({
+                ajax: {
+                    method: 'POST',
+                    url: '/Account/GetAccounts?accountGroup=' + $('#SelectedGroup').val() + '&formatted=true',
+                    dataSrc: 'accounts',
+                },
+                columns: [
+                    { data: 'username' },
+                    { data: 'level' },
+                    {
+                        data: {
+                            _: 'status.formatted',
+                            sort: 'status.sort',
+                        },
+                    },
+                    { data: 'in_use' },
+                    { data: 'spins' },
+                    {
+                        data: {
+                            _: 'last_encounter.formatted',
+                            sort: 'last_encounter.sort',
+                        },
+                    },
+                    { data: 'group' },
+                    {
+                        data: 'action',
+                        render: function(data, type, row, meta) {
+                            const html = `
+                            <div class="dropdown">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownGroup" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-bars"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
+                                    <li><a class="dropdown-item" href="Account/Edit/${row.username}"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
+                                    <li><a class="dropdown-item" href="Account/Details/${row.username}"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
+                                    <li><a class="dropdown-item" href="Account/Delete/${row.username}"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
+                                </ul>
+                            </div>
+`;
+                            return html;
+                        },
+                    },
+                ],
                 columnDefs: [
                     // Username Level Status InUse Spins LastEncounter Group Action
                     // 0        1     2      3     4     5             6     7

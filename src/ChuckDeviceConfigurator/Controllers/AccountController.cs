@@ -5,6 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
+    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Contexts;
@@ -42,25 +43,29 @@
             var onlyGroups = accountGroup == "all_groups";
             var onlyNoGroups = accountGroup == "no_groups";
             var allAccounts = await _context.Accounts.ToListAsync();
-            var accounts = allAccounts.Where(x =>
-                // All accounts with and without groups
-                (!onlyGroups && !onlyNoGroups && string.IsNullOrEmpty(accountGroup)) ||
-                // Only accounts with a group
-                (onlyGroups && x.GroupName != null) ||
-                // Only accounts without a group
-                (onlyNoGroups && x.GroupName == null) ||
-                // All matching accounts with a group
-                (!string.IsNullOrEmpty(x.GroupName) && accountGroup == x.GroupName)
-            ).ToList();
+            var accounts = allAccounts
+                .Where(x =>
+                    // All accounts with and without groups
+                    (!onlyGroups && !onlyNoGroups && string.IsNullOrEmpty(accountGroup)) ||
+                    // Only accounts with a group
+                    (onlyGroups && x.GroupName != null) ||
+                    // Only accounts without a group
+                    (onlyNoGroups && x.GroupName == null) ||
+                    // All matching accounts with a group
+                    (!string.IsNullOrEmpty(x.GroupName) && accountGroup == x.GroupName)
+                )
+                .ToList();
             var devices = await _context.Devices.ToListAsync();
 
-            var accountsInUse = devices.Where(device => device.AccountUsername != null)
-                                       .Select(device => device.AccountUsername)
-                                       .ToList();
-            var accountGroups = allAccounts.DistinctBy(x => x.GroupName)
-                                           .Select(x => x.GroupName)
-                                           .Where(x => !string.IsNullOrEmpty(x))
-                                           .ToList();
+            var accountsInUse = devices
+                .Where(device => device.AccountUsername != null)
+                .Select(device => device.AccountUsername)
+                .ToList();
+            var accountGroups = allAccounts
+                .DistinctBy(x => x.GroupName)
+                .Select(x => x.GroupName)
+                .Where(x => !string.IsNullOrEmpty(x))
+                .ToList();
 
             // NOTE: Speed up accounts grouped by level query
             var sw = new System.Diagnostics.Stopwatch();
@@ -93,7 +98,7 @@
 
             var model = new AccountStatisticsViewModel
             {
-                Accounts = accounts ?? new(),
+                //Accounts = accounts ?? new(),
                 AccountLevelStatistics = accountLevelStatistics,
                 TotalAccounts = (ulong)total,
                 InCooldown = (ulong)accounts!.LongCount(x => x.IsAccountInCooldown),
@@ -138,6 +143,59 @@
             ViewBag.AccountGroups = accountGroups;
             ViewBag.SelectedGroup = accountGroup;
             return View(model);
+        }
+
+        [HttpPost]
+        [Produces("application/json")]
+        public async Task<ActionResult> GetAccounts(string? accountGroup = null, bool? formatted = false)
+        {
+            var onlyGroups = accountGroup == "all_groups";
+            var onlyNoGroups = accountGroup == "no_groups";
+            var allAccounts = await _context.Accounts.ToListAsync();
+            var accounts = allAccounts
+                .Where(x =>
+                    // All accounts with and without groups
+                    (!onlyGroups && !onlyNoGroups && string.IsNullOrEmpty(accountGroup)) ||
+                    // Only accounts with a group
+                    (onlyGroups && x.GroupName != null) ||
+                    // Only accounts without a group
+                    (onlyNoGroups && x.GroupName == null) ||
+                    // All matching accounts with a group
+                    (!string.IsNullOrEmpty(x.GroupName) && accountGroup == x.GroupName)
+                )
+                .ToList();
+
+            if (!(formatted ?? false))
+            {
+                return new JsonResult(new { accounts });
+            }
+
+            var formattedAccounts = new List<dynamic>();
+            foreach (var account in accounts)
+            {
+                formattedAccounts.Add(new
+                {
+                    account.Username,
+                    account.Password,
+                    account.Level,
+                    account.Spins,
+                    account.Tutorial,
+                    status = new
+                    {
+                        formatted = Utils.GetAccountStatusColor(account.Status),
+                        sort = account.Status,
+                    },
+                    group = account.GroupName,
+                    last_encounter = new
+                    {
+                        formatted = Utils.GetLastUpdatedStatus(account.LastEncounterTime ?? 0),
+                        sort = account.LastEncounterTime,
+                    },
+                    in_use = Utils.FormatBoolean(account.IsInUse),
+                    action = "",
+                });
+            }
+            return new JsonResult(new { accounts = formattedAccounts });
         }
 
         // GET: AccountController/Details/5

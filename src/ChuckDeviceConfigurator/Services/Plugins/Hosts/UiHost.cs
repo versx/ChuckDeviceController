@@ -101,6 +101,7 @@
             }
         }
 
+        // TODO: Remove UpdateDashboardStatisticsAsync and add updaterExpression to update value at an interval
         public async Task AddDashboardStatisticAsync(IDashboardStatsItem stats)
         {
             if (_dashboardStats.ContainsKey(stats.Name))

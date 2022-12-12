@@ -238,7 +238,7 @@
                 _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}'");
                 if (!account.IsValid(minLevel, maxLevel, ignoreWarning: false, groupName: null))
                 {
-                    _logger.LogWarning($"[{device.Uuid}] Assigned account is no longer valid, switching accounts...");
+                    _logger.LogWarning($"[{device.Uuid}] Assigned account '{account.Username}' is no longer valid, switching accounts...");
 
                     // Current account does not meet requirements
                     device.AccountUsername = null;

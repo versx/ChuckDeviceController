@@ -814,7 +814,7 @@
             }
 
             // Cache pokemon entity by id
-            // TODO: memCache.Set(Id, this);
+            memCache.Set(Id, this);
 
             await Task.CompletedTask;
         }

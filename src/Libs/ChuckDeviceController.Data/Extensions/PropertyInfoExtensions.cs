@@ -85,41 +85,33 @@
             IEnumerable<string>? includedProperties = null,
             IEnumerable<string>? ignoredProperties = null)
         {
-            if (entity == null)
+            // Include only public instance properties as well as base inherited properties
+            var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+            var properties = entity!.GetType().GetProperties(flags);
+            //var properties = TypeDescriptor.GetProperties(typeof(TEntity));
+
+            foreach (var prop in properties)
             {
-                // TODO: Remove bandaid
-                yield return null;
-            }
-            else
-            {
-                // Include only public instance properties as well as base inherited properties
-                var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
-                var properties = entity!.GetType().GetProperties(flags);
-                //var properties = TypeDescriptor.GetProperties(typeof(TEntity));
+                // Ignore any properties specified that match the entity
+                if ((ignoredProperties?.Contains(prop.Name) ?? false) ||
+                    !(includedProperties?.Contains(prop.Name) ?? true))
+                    continue;
 
-                foreach (var prop in properties)
-                {
-                    // Ignore any properties specified that match the entity
-                    if ((ignoredProperties?.Contains(prop.Name) ?? false) ||
-                        !(includedProperties?.Contains(prop.Name) ?? true))
-                        continue;
+                // Ignore any properties that are not mapped to a database table via an attribute
+                // or if the property is explicitly set to not be mapped.
+                if (prop.GetCustomAttribute<ColumnAttribute>() == null)// ||
+                                                                       //prop.GetCustomAttribute<NotMappedAttribute>() != null)
+                    continue;
 
-                    // Ignore any properties that are not mapped to a database table via an attribute
-                    // or if the property is explicitly set to not be mapped.
-                    if (prop.GetCustomAttribute<ColumnAttribute>() == null)// ||
-                        //prop.GetCustomAttribute<NotMappedAttribute>() != null)
-                        continue;
+                // Ignore any virtual/database generated properties marked via attribute
+                var generatedAttr = prop.GetCustomAttribute<DatabaseGeneratedAttribute>();
+                if (generatedAttr != null && generatedAttr.DatabaseGeneratedOption == DatabaseGeneratedOption.Computed)
+                    continue;
 
-                    // Ignore any virtual/database generated properties marked via attribute
-                    var generatedAttr = prop.GetCustomAttribute<DatabaseGeneratedAttribute>();
-                    if (generatedAttr != null && generatedAttr.DatabaseGeneratedOption == DatabaseGeneratedOption.Computed)
-                        continue;
-
-                    // Check if property type is an enum and check if it's an enum we want to convert to an integer
-                    var value = prop.GetValue(entity);
-                    var safeValue = SqlifyPropertyValue(prop, value);
-                    yield return safeValue;
-                }
+                // Check if property type is an enum and check if it's an enum we want to convert to an integer
+                var value = prop.GetValue(entity);
+                var safeValue = SqlifyPropertyValue(prop, value);
+                yield return safeValue;
             }
         }
 
