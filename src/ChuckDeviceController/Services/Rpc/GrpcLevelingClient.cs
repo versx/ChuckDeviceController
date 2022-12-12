@@ -24,7 +24,7 @@
             }
             catch (Exception)
             {
-                //_logger.LogError($"Error: {ex.Message}");
+                //_logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
             }
             return null;
         }

@@ -131,10 +131,12 @@
             // Retrieve Pokestops/Gyms that have been upgraded/downgraded
             var pokestops = _mapContext.Pokestops.ToList();
             var gyms = _mapContext.Gyms.ToList();
-            var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
-                                                .ToList();
-            var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
-                                      .ToList();
+            var convertiblePokestops = pokestops
+                .Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
+                .ToList();
+            var convertibleGyms = gyms
+                .Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
+                .ToList();
 
             var model = new ConvertFortsViewModel
             {
@@ -153,10 +155,12 @@
             {
                 var pokestops = _mapContext.Pokestops.ToList();
                 var gyms = _mapContext.Gyms.ToList();
-                var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
-                                                    .ToList();
-                var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
-                                          .ToList();
+                var convertiblePokestops = pokestops
+                    .Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
+                    .ToList();
+                var convertibleGyms = gyms
+                    .Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
+                    .ToList();
 
                 foreach (var pokestop in convertiblePokestops)
                 {
@@ -300,8 +304,9 @@
                 // Convert all Pokestops to Gyms
                 var pokestops = _mapContext.Pokestops.ToList();
                 var gyms = _mapContext.Gyms.ToList();
-                var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
-                                                    .ToList();
+                var convertiblePokestops = pokestops
+                    .Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
+                    .ToList();
 
                 foreach (var pokestop in convertiblePokestops)
                 {
@@ -330,8 +335,9 @@
                 // Convert all Gyms to Pokestops
                 var pokestops = _mapContext.Pokestops.ToList();
                 var gyms = _mapContext.Gyms.ToList();
-                var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
-                                          .ToList();
+                var convertibleGyms = gyms
+                    .Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
+                    .ToList();
 
                 foreach (var gym in convertibleGyms)
                 {
@@ -359,8 +365,9 @@
         public ActionResult ClearStalePokestops()
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var pokestops = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
-                                                 .ToList();
+            var pokestops = _mapContext.Pokestops
+                .Where(pokestop => Math.Abs((decimal)now - pokestop.Updated) > Strings.OneDayS)
+                .ToList();
             return View(pokestops);
         }
 
@@ -372,8 +379,9 @@
             try
             {
                 var now = DateTime.UtcNow.ToTotalSeconds();
-                var pokestopsToDelete = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
-                                                             .ToList();
+                var pokestopsToDelete = _mapContext.Pokestops
+                    .Where(pokestop => Math.Abs((decimal)now - pokestop.Updated) > Strings.OneDayS)
+                    .ToList();
 
                 await _mapContext.Pokestops.BulkDeleteAsync(pokestopsToDelete, options =>
                 {
