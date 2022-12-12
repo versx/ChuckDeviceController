@@ -9,7 +9,7 @@
 <p>@Html.ValidationMessage("ApiKey", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Plugin", ControllerText = "Plugins", CurrentPage = "Create API Key" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Plugin", ControllerText = "Api Keys", Fragment = "apikeys", CurrentPage = "Create API Key" })
 
 <h4>API Key</h4>
 <hr />
@@ -41,10 +41,10 @@
             }
         </div>
     </div>
+    <br />
     <div class="checkbox mb-3">
         <label><input type="checkbox" asp-for="IsEnabled" checked> Enabled</label>
     </div>
-    <br />
     <div class="form-group mb-3">
         <input type="submit" value="Create" class="btn btn-primary" />
     </div>

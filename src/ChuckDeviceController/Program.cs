@@ -131,6 +131,7 @@ builder.Services.AddScoped<MySqlConnection>(options =>
 });
 
 // Dapper-Repositories registration
+// Reference: https://github.com/phnx47/dapper-repositories
 MicroOrmConfig.SqlProvider = SqlProvider.MySQL;
 MicroOrmConfig.AllowKeyAsIdentity = true;
 builder.Services.AddSingleton(typeof(ISqlGenerator<>), typeof(SqlGenerator<>));
