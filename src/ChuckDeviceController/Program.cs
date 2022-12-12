@@ -1,5 +1,6 @@
 using System.Diagnostics;
 
+using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -151,30 +152,32 @@ config.Bind("Grpc", grpcConfig);
 builder.Services.AddSingleton<IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse>, GrpcProtoClient>();
 builder.Services.AddSingleton<IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>, GrpcLevelingClient>();
 builder.Services.AddSingleton<IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse>, GrpcWebhookClient>();
+//builder.Services.AddSingleton<IGrpcClient<JwtAuth.JwtAuthClient, JwtAuthRequest, JwtAuthResponse>, GrpcJwtAuthClient>();
 builder.Services.AddSingleton<AuthHeadersInterceptor>();
 
 if (!string.IsNullOrEmpty(grpcConfig.Configurator))
 {
+    var uri = new Uri(grpcConfig.Configurator);
+    // Reference: https://learn.microsoft.com/en-us/aspnet/core/grpc/authn-and-authz?view=aspnetcore-7.0#bearer-token-with-grpc-client-factory
     builder.Services
-        .AddGrpcClient<Payload.PayloadClient>(options => options.Address = new Uri(grpcConfig.Configurator))
+        .AddGrpcClient<Payload.PayloadClient>(options => options.Address = uri)
+        //.AddCallCredentials(AddAuthorizationToken)
+        //.ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true)
         .AddInterceptor<AuthHeadersInterceptor>();
     builder.Services
-        .AddGrpcClient<Leveling.LevelingClient>(options => options.Address = new Uri(grpcConfig.Configurator))
+        .AddGrpcClient<Leveling.LevelingClient>(options => options.Address = uri)
+        //.AddCallCredentials(AddAuthorizationToken)
+        //.ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true)
         .AddInterceptor<AuthHeadersInterceptor>();
-}
-if (!string.IsNullOrEmpty(grpcConfig.Communicator))
-{
     builder.Services
-        .AddGrpcClient<WebhookPayload.WebhookPayloadClient>(options => options.Address = new Uri(grpcConfig.Communicator))
-        // TODO: Add gRPC JWT auth token retrieval to client registration
-        //.AddCallCredentials(async (context, metadata, serviceProvider) =>
-        //{
-        //    var provider = serviceProvider.GetRequiredService<ITokenProvider>();
-        //    var token = await provider.GetJwtTokenAsync();
-        //    metadata.Add("Authorization", $"Bearer {token}");
-        //    //return await Task.CompletedTask;
-        //})
+        .AddGrpcClient<WebhookPayload.WebhookPayloadClient>(options => options.Address = uri)
+        //.AddCallCredentials(AddAuthorizationToken)
+        //.ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true)
         .AddInterceptor<AuthHeadersInterceptor>();
+    //builder.Services
+    //    .AddGrpcClient<JwtAuth.JwtAuthClient>(options => options.Address = uri)
+    //    .ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true);
+    //    //.AddInterceptor<AuthHeadersInterceptor>();
 }
 
 #endregion
@@ -262,4 +265,18 @@ static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
         $"Requests per second:     {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds)}");
 
     stopwatch.Stop();
+}
+
+static async Task AddAuthorizationToken(AuthInterceptorContext context, Metadata metadata, IServiceProvider serviceProvider)
+{
+    var client = serviceProvider.GetService<IGrpcClient<JwtAuth.JwtAuthClient, JwtAuthRequest, JwtAuthResponse>>();
+    var response = await client!.SendAsync(new JwtAuthRequest
+    {
+        Identifier = AuthHeadersInterceptor.DefaultGrpcServiceIdentifier,
+    });
+    var token = response?.AccessToken;
+    if (token != null)
+    {
+        metadata.Add(AuthHeadersInterceptor.AuthorizationHeader, $"Bearer {token}");
+    }
 }

@@ -515,8 +515,8 @@
 
                 try
                 {
-                    //Weather? oldWeather = null;
-                    var oldWeather = await EntityRepository.GetEntityAsync<long, Weather>(connection, wcell.Id, _memCache);
+                    Weather? oldWeather = null;
+                    //var oldWeather = await EntityRepository.GetEntityAsync<long, Weather>(connection, wcell.Id, _memCache);
                     await wcell.UpdateAsync(oldWeather, _memCache);
 
                     if (wcell.HasChanges)
@@ -586,8 +586,8 @@
                         ProtoDataStatistics.Instance.TotalSpawnpointsProcessed++;
                     }
 
-                    //Pokemon? oldPokemon = null;
-                    var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
+                    Pokemon? oldPokemon = null;
+                    //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
                     await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
                     await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                     ProtoDataStatistics.Instance.TotalWildPokemonProcessed++;
@@ -669,8 +669,8 @@
                         continue;
                     }
 
-                    //Pokemon? oldPokemon = null;
-                    var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
+                    Pokemon? oldPokemon = null;
+                    //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
                     await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
                     await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                     ProtoDataStatistics.Instance.TotalNearbyPokemonProcessed++;
@@ -817,8 +817,8 @@
                         case FortType.Checkpoint:
                             // Init Pokestop model from fort proto data
                             var pokestop = new Pokestop(data, cellId);
-                            //Pokestop? oldPokestop = null;
-                            var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestop.Id, _memCache);
+                            Pokestop? oldPokestop = null;
+                            //var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestop.Id, _memCache);
                             var pokestopWebhooks = await pokestop.UpdateAsync(oldPokestop, _memCache, updateQuest: false);
 
                             await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopIgnoreOnMerge, pokestop);
@@ -838,8 +838,8 @@
                         case FortType.Gym:
                             // Init Gym model from fort proto data
                             var gym = new Gym(data, cellId);
-                            //Gym? oldGym = null;
-                            var oldGym = await EntityRepository.GetEntityAsync<string, Gym>(connection, gym.Id, _memCache);
+                            Gym? oldGym = null;
+                            //var oldGym = await EntityRepository.GetEntityAsync<string, Gym>(connection, gym.Id, _memCache);
                             var gymWebhooks = await gym.UpdateAsync(oldGym, _memCache);
 
                             await _dataConsumerService.AddEntityAsync(SqlQueryType.GymOnMergeUpdate, gym);
@@ -1498,9 +1498,6 @@
 
         private async Task SendWebhooksAsync<T>(WebhookType type, IEnumerable<T> webhooks)
         {
-            if (!EnableWebhooks)
-                return;
-
             // Fire off gRPC request on a separate thread
             await Task.Run(() =>
             {
@@ -1518,9 +1515,6 @@
 
         private async Task SendWebhooksAsync<T>(Dictionary<WebhookType, List<T>> webhooks)
         {
-            if (!EnableWebhooks)
-                return;
-
             // Fire off gRPC request on a separate thread
             await Task.Run(() =>
             {
@@ -1541,9 +1535,6 @@
 
         private async Task SendWebhookAsync<T>(WebhookPayloadType webhookType, T entity)
         {
-            if (!EnableWebhooks)
-                return;
-
             if (entity == null)
             {
                 _logger.LogWarning($"Unable to relay entity {typeof(T).Name} to webhook service, entity is null...");

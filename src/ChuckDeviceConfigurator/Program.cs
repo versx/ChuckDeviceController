@@ -216,8 +216,6 @@ builder.Services.AddDbContextPool<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), resiliencyConfig.MaximumPoolSize);
 
 var sqliteConnectionString = $"Data Source={Strings.PluginsDatabasePath}";
-builder.Services.AddDbContext<PluginDbContext>(options =>
-    options.UseSqlite(sqliteConnectionString), ServiceLifetime.Scoped);
 builder.Services.AddDbContextFactory<PluginDbContext>(options =>
     options.UseSqlite(sqliteConnectionString), ServiceLifetime.Singleton);
 
@@ -444,7 +442,8 @@ async void OnPluginHostRemoved(object? sender, PluginHostRemovedEventArgs e)
     using (var scope = serviceProvider.CreateScope())
     {
         var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<PluginDbContext>();
+        var factory = services.GetRequiredService<IDbContextFactory<PluginDbContext>>();
+        using var context = await factory.CreateDbContextAsync();
 
         // Get cached plugin state from database
         var dbPlugin = await context.Plugins.FindAsync(e.PluginHost.Plugin.Name);
@@ -560,7 +559,8 @@ async Task AddOrUpdatePluginState(IPluginHost pluginHost)
     using (var scope = serviceProvider.CreateScope())
     {
         var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<PluginDbContext>();
+        var factory = services.GetRequiredService<IDbContextFactory<PluginDbContext>>();
+        using var context = await factory.CreateDbContextAsync();
 
         // Get cached plugin state from database
         var dbPlugin = await context.Plugins.FindAsync(pluginHost.Plugin.Name);

@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Authorization.Jwt
 {
+    using System.Collections.Concurrent;
     using System.IdentityModel.Tokens.Jwt;
     using System.Security.Claims;
     using System.Text;
@@ -24,6 +25,7 @@
 
         private static readonly ILogger<JwtAuthManager> _logger =
             new Logger<JwtAuthManager>(LoggerFactory.Create(x => x.AddConsole()));
+        protected static readonly ConcurrentDictionary<string, JwtAuthResponse> _jwtTokens = new();
 
         #endregion
 
@@ -47,7 +49,15 @@
                 };
             }
 
+            if (_jwtTokens.ContainsKey(identifierRole))
+            {
+                if (_jwtTokens.TryGetValue(identifierRole, out var response))
+                {
+                    return response;
+                }
+            }
             var token = GenerateJwtToken(identifierRole, config);
+            _jwtTokens.AddOrUpdate(identifierRole, token, (key, oldValue) => token);
             //_logger.LogDebug($"Generated access token: {token}");
             return token;
         }
@@ -91,6 +101,7 @@
             var response = new JwtAuthResponse
             {
                 AccessToken = jwtToken,
+                // TODO: Rename to ExpiresAt unix ts instead of seconds
                 ExpiresIn = (uint)tokenExpires.Subtract(DateTime.UtcNow).TotalSeconds,
                 Status = JwtAuthStatus.Ok,
             };

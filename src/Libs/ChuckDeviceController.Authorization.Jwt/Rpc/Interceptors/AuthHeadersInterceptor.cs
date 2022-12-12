@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors
 {
+    using System.Collections.Concurrent;
+
     using Grpc.Core;
     using Grpc.Core.Interceptors;
     using Grpc.Net.Client;
@@ -17,10 +19,10 @@
     {
         #region Constants
 
-        private const string AuthorizationHeader = "Authorization";
-        private const string IgnoreJwtValidationHeader = "IgnoreJwtValidation";
-        private const string DefaultGrpcServiceIdentifier = "Grpc";
-        //private const string DefaultInternalServiceIdentifier = "InternalService";
+        public const string AuthorizationHeader = "Authorization";
+        public const string IgnoreJwtValidationHeader = "IgnoreJwtValidation";
+        public const string DefaultGrpcServiceIdentifier = "Grpc";
+        //public const string DefaultInternalServiceIdentifier = "InternalService";
 
         #endregion
 
@@ -28,7 +30,7 @@
 
         private static readonly ILogger<AuthHeadersInterceptor> _logger =
             new Logger<AuthHeadersInterceptor>(LoggerFactory.Create(x => x.AddConsole()));
-        protected static readonly Dictionary<string, ulong> _jwtTokens = new();
+        protected static readonly ConcurrentDictionary<string, ulong> _jwtTokens = new();
         private static readonly object _lock = new();
         private static bool _isJwtAuthEnabled = true;
 
@@ -180,7 +182,7 @@
                 {
                     var now = DateTime.UtcNow.ToTotalSeconds();
                     var expireTimestamp = now + response.ExpiresIn;
-                    _jwtTokens.Add(response.AccessToken, expireTimestamp);
+                    _jwtTokens.AddOrUpdate(response.AccessToken, expireTimestamp, (key, oldValue) => expireTimestamp);
                 }
             }
         }
@@ -197,7 +199,10 @@
                     var expires = _jwtTokens[token];
                     if (now >= expires)
                     {
-                        _jwtTokens.Remove(token);
+                        if (!_jwtTokens.TryRemove(token, out var _))
+                        {
+                            _logger.LogError($"Failed to remove Jwt access token from cache...");
+                        }
                     }
                 }
             }

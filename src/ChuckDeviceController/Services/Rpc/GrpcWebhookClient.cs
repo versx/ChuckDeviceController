@@ -6,18 +6,25 @@
     {
         private readonly ILogger<GrpcWebhookClient> _logger;
         private readonly WebhookPayload.WebhookPayloadClient _client;
+        private readonly bool _webhooksEnabled;
 
         public GrpcWebhookClient(
             ILogger<GrpcWebhookClient> logger,
-            WebhookPayload.WebhookPayloadClient client)
+            WebhookPayload.WebhookPayloadClient client,
+            IConfiguration configuration)
         {
             _logger = logger;
             _client = client;
+            _webhooksEnabled = configuration.GetValue<bool>("Webhooks:Enabled");
         }
 
         public async Task<WebhookPayloadResponse?> SendAsync(WebhookPayloadRequest payload)
         {
-            // TODO: Add config property deciding whether to enable webhooks or not
+            if (!_webhooksEnabled)
+            {
+                return null;
+            }
+
             try
             {
                 var response = await _client.HandleWebhookPayloadAsync(payload);
