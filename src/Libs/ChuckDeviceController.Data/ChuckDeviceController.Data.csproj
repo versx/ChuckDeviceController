@@ -11,8 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper.StrongName" Version="2.0.123" />
+    <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="EntityFrameworkCore.Triggered" Version="3.2.1" />
+    <PackageReference Include="MicroOrm.Dapper.Repositories" Version="1.24.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.11">
       <PrivateAssets>all</PrivateAssets>

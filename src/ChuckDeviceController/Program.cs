@@ -1,6 +1,9 @@
 using System.Diagnostics;
 
 using Grpc.Core;
+using MicroOrm.Dapper.Repositories;
+using MicroOrm.Dapper.Repositories.Config;
+using MicroOrm.Dapper.Repositories.SqlGenerator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -127,6 +130,12 @@ builder.Services.AddScoped<MySqlConnection>(options =>
     return connection;
 });
 
+// Dapper-Repositories registration
+MicroOrmConfig.SqlProvider = SqlProvider.MySQL;
+MicroOrmConfig.AllowKeyAsIdentity = true;
+builder.Services.AddSingleton(typeof(ISqlGenerator<>), typeof(SqlGenerator<>));
+builder.Services.AddScoped(typeof(DapperRepository<>), typeof(BaseEntityRepository<>));
+
 #endregion
 
 #region Hosted Services
@@ -159,6 +168,7 @@ if (!string.IsNullOrEmpty(grpcConfig.Configurator))
 {
     var uri = new Uri(grpcConfig.Configurator);
     // Reference: https://learn.microsoft.com/en-us/aspnet/core/grpc/authn-and-authz?view=aspnetcore-7.0#bearer-token-with-grpc-client-factory
+    // Reference[Impl]: https://github.com/dotnet/AspNetCore.Docs/blob/main/aspnetcore/grpc/authn-and-authz/sample/6.x/TicketerClient/Program.cs
     builder.Services
         .AddGrpcClient<Payload.PayloadClient>(options => options.Address = uri)
         //.AddCallCredentials(AddAuthorizationToken)

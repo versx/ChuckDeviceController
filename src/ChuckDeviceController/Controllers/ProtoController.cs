@@ -2,6 +2,7 @@
 {
     using System.Collections.Concurrent;
 
+    using MicroOrm.Dapper.Repositories;
     using Microsoft.AspNetCore.Mvc;
     using MySqlConnector;
     using POGOProtos.Rpc;
@@ -33,6 +34,7 @@
         private readonly SafeCollection<ProtoPayloadQueueItem> _taskQueue;
         private readonly IMemoryCacheHostedService _memCache;
         private readonly MySqlConnection _connection;
+        //private readonly DapperRepository<Device> _deviceRepository;
 
         #endregion
 
@@ -43,11 +45,16 @@
             SafeCollection<ProtoPayloadQueueItem> taskQueue,
             IMemoryCacheHostedService memCache,
             MySqlConnection connection)
+            //DapperRepository<Device> deviceRepository)
         {
             _logger = logger;
             _taskQueue = taskQueue;
             _memCache = memCache;
             _connection = connection;
+            EntityDataRepository.AddTypeMappers();
+            //_deviceRepository = deviceRepository;
+            //var device = _deviceRepository.FindById("atv08");
+            //Console.WriteLine($"Device: {device}");
         }
 
         #endregion
