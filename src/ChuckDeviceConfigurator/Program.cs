@@ -39,10 +39,6 @@ using ChuckDeviceController.PluginManager.Mvc.Extensions;
 using ChuckDeviceController.Routing;
 
 
-// TODO: Modularize everything, add as many services as possible as plugins
-// TODO: Consolidate benchmark/profiling/diagnostic plugins into one? (i.e. RequestBenchmarkPlugin, MemoryBenchmarkPlugin, MiniProfilerPlugin)
-// TODO: Add HealthChecksPlugin
-
 #region Config
 
 var config = Config.LoadConfig(args, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));

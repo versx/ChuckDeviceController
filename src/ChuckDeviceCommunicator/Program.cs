@@ -2,9 +2,9 @@ using ChuckDeviceCommunicator.Services;
 using ChuckDeviceCommunicator.Services.Rpc;
 using ChuckDeviceController.Authorization.Jwt.Extensions;
 using ChuckDeviceController.Configuration;
+using ChuckDeviceController.Logging;
 using ChuckDeviceController.Protos;
 
-// TODO: Add log to file support
 
 #region Config
 
@@ -25,6 +25,31 @@ config.Bind("Relay", webhookConfig);
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
+
+#region Logging Filtering
+
+var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
+builder.WebHost.ConfigureLogging(configure =>
+{
+    configure.ClearProviders();
+    var loggingSection = config.GetSection("Logging");
+    var loggingConfig = new ColorConsoleLoggerConfiguration();
+    var colorLoggingSection = loggingSection.GetSection("ColorConsole");
+    colorLoggingSection.Bind(loggingConfig);
+    configure.AddColorConsoleLogger(options =>
+    {
+        options.LogLevelColorMap = loggingConfig.LogLevelColorMap;
+    });
+    configure.AddFile(loggingSection, options =>
+    {
+        var time = loggingConfig.UseUnix ? DateTime.UtcNow : DateTime.Now;
+        options.FormatLogFileName = fileName => string.Format(fileName, time);
+        options.UseUtcTimestamp = true;
+    });
+    configure.GetLoggingConfig(logLevel);
+});
+
+#endregion
 
 #region Services
 
