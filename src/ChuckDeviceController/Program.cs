@@ -26,6 +26,7 @@ using ChuckDeviceController.Protos;
 using ChuckDeviceController.Pvp;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
+using ChuckDeviceController.Authorization.Jwt.Extensions;
 
 // TODO: IAccountStatusHostedService - Loop all accounts with `first_warning_timestamp`, `failed` or `failed_timestamp` set and check if warning/suspension is lifted. If so, clear it.
 
