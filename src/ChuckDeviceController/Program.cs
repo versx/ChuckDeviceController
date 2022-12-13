@@ -208,6 +208,15 @@ if (config.GetValue<bool>("ConvertMadData"))
     app.UseMadDataConverter();
 }
 
+app.Use((context, next) =>
+{
+    if (context.Request.ContentType != "application/grpc")
+    {
+        ProtoDataStatistics.Instance.TotalRequestsProcessed++;
+    }
+    return next();
+});
+
 app.UseAuthorization();
 app.MapControllers();
 

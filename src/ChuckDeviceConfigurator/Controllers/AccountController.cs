@@ -67,7 +67,6 @@
                 .Where(x => !string.IsNullOrEmpty(x))
                 .ToList();
 
-            // NOTE: Speed up accounts grouped by level query
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
@@ -138,7 +137,6 @@
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
             _logger.LogDebug($"Account stats took {totalSeconds}s");
             // Time: 0.1302 - So it's not the query, it's Razor being slow in the frontend :(
-            // TODO: No, it's definitely the query as well
 
             ViewBag.AccountGroups = accountGroups;
             ViewBag.SelectedGroup = accountGroup;

@@ -362,6 +362,7 @@
                 return CreateErrorResponse($"Failed to retrieve account with username '{username}'");
             }
 
+            var oldStatus = account.Status;
             switch (status?.ToLower())
             {
                 case "account_banned":
@@ -397,7 +398,11 @@
                     break;
             }
 
-            // TODO: Send webhook for account status change
+            if (oldStatus != account.Status)
+            {
+                // TODO: Send webhook for account status change
+                _logger.LogInformation($"Status changed for account '{account.Username}' from '{oldStatus}' to '{account.Status}'.");
+            }
 
             await SetEntityAsync(account.Username, account, skipCache: false);
 
