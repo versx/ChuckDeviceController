@@ -1,8 +1,6 @@
-﻿namespace ChuckDeviceController.JobControllers.Tasks
+﻿namespace ChuckDeviceController.Common.Tasks
 {
     using System.Text.Json.Serialization;
-
-    using ChuckDeviceController.Common.Tasks;
 
     public class BaseJobTask : ITask
     {

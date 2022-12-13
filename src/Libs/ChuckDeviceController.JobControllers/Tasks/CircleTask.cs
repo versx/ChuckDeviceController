@@ -3,6 +3,7 @@
 	using System.Text.Json.Serialization;
 
 	using ChuckDeviceController.Common;
+	using ChuckDeviceController.Common.Tasks;
 
 	public class CircleTask : BaseJobTask
 	{
