@@ -6,7 +6,7 @@
         public const string DefaultGrpcServiceIdentifier = "Grpc";
         public const string DefaultInternalServiceIdentifier = "InternalService";
 
-        //public const string AuthorizationHeader = "Authorization";
+        public const string AuthorizationHeader = "Authorization";
         public const string ClaimTypeNameRole = "role";
         //public const string IgnoreJwtValidationHeader = "IgnoreJwtValidation";
     }

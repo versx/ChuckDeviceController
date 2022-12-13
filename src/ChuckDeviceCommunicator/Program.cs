@@ -1,6 +1,6 @@
 using ChuckDeviceCommunicator.Services;
 using ChuckDeviceCommunicator.Services.Rpc;
-using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
+using ChuckDeviceController.Authorization.Jwt.Extensions;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Protos;
 
@@ -37,13 +37,13 @@ builder.Services.Configure<GrpcEndpointsConfig>(config.GetSection("Grpc"));
 
 builder.Services.AddSingleton<IWebhookRelayService, WebhookRelayService>();
 builder.Services.AddSingleton<IGrpcClient<WebhookEndpoint.WebhookEndpointClient, WebhookEndpointRequest, WebhookEndpointResponse>, GrpcWebhookEndpointsClient>();
-builder.Services.AddSingleton<AuthHeadersInterceptor>();
 
 if (!string.IsNullOrEmpty(grpcConfig.Configurator))
 {
     builder.Services
         .AddGrpcClient<WebhookEndpoint.WebhookEndpointClient>(options => options.Address = new Uri(grpcConfig.Configurator))
-        .AddInterceptor<AuthHeadersInterceptor>();
+        .AddCallCredentials(CallCredentialsExtensions.GetAuthorizationToken)
+        .ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true);
 }
 
 #endregion

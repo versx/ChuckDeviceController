@@ -18,7 +18,9 @@
   <ItemGroup>
     <ProjectReference Include="..\ChuckDeviceController.Configuration\ChuckDeviceController.Configuration.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Net\ChuckDeviceController.Net.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,5 @@
 using System.Diagnostics;
 
-using Grpc.Core;
 using MicroOrm.Dapper.Repositories;
 using MicroOrm.Dapper.Repositories.Config;
 using MicroOrm.Dapper.Repositories.SqlGenerator;
@@ -10,7 +9,7 @@ using Microsoft.Extensions.Options;
 using MySqlConnector;
 
 using ChuckDeviceController;
-using ChuckDeviceController.Authorization.Jwt.Models;
+using ChuckDeviceController.Authorization.Jwt.Extensions;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
@@ -18,15 +17,12 @@ using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Extensions.Http.Caching;
-using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Logging;
-using ChuckDeviceController.Net.Utilities;
 using ChuckDeviceController.Protos;
 using ChuckDeviceController.Pvp;
 using ChuckDeviceController.Services;
 using ChuckDeviceController.Services.Rpc;
-using ChuckDeviceController.Authorization.Jwt.Extensions;
 
 // TODO: IAccountStatusHostedService - Loop all accounts with `first_warning_timestamp`, `failed` or `failed_timestamp` set and check if warning/suspension is lifted. If so, clear it.
 
@@ -173,15 +169,15 @@ if (!string.IsNullOrEmpty(grpcConfig.Configurator))
     // Reference[Impl]: https://github.com/dotnet/AspNetCore.Docs/blob/main/aspnetcore/grpc/authn-and-authz/sample/6.x/TicketerClient/Program.cs
     builder.Services
         .AddGrpcClient<Payload.PayloadClient>(options => options.Address = uri)
-        .AddCallCredentials(GetAuthorizationToken)
+        .AddCallCredentials(CallCredentialsExtensions.GetAuthorizationToken)
         .ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true);
     builder.Services
         .AddGrpcClient<Leveling.LevelingClient>(options => options.Address = uri)
-        .AddCallCredentials(GetAuthorizationToken)
+        .AddCallCredentials(CallCredentialsExtensions.GetAuthorizationToken)
         .ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true);
     builder.Services
         .AddGrpcClient<WebhookPayload.WebhookPayloadClient>(options => options.Address = uri)
-        .AddCallCredentials(GetAuthorizationToken)
+        .AddCallCredentials(CallCredentialsExtensions.GetAuthorizationToken)
         .ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true);
 }
 
@@ -270,17 +266,4 @@ static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
         $"Requests per second:     {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds)}");
 
     stopwatch.Stop();
-}
-
-static async Task GetAuthorizationToken(AuthInterceptorContext context, Metadata metadata, IServiceProvider serviceProvider)
-{
-    // TODO: Make Jwt endpoint configurable
-    var url = "http://127.0.0.1:8881/api/jwt/generate?identifier=Grpc";
-    var (status, json) = await NetUtils.PostAsync(url);
-    var response = json?.FromJson<JwtResponse>() ?? new();
-    var token = response?.AccessToken;
-    if (token != null)
-    {
-        metadata.Add("Authorization", $"Bearer {token}");
-    }
 }
