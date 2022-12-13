@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 using MySqlConnector;
 
 using ChuckDeviceController;
-using ChuckDeviceController.Authorization.Jwt.Rpc.Interceptors;
+using ChuckDeviceController.Authorization.Jwt.Models;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
@@ -18,8 +18,10 @@ using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Extensions.Http.Caching;
+using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Logging;
+using ChuckDeviceController.Net.Utilities;
 using ChuckDeviceController.Protos;
 using ChuckDeviceController.Pvp;
 using ChuckDeviceController.Services;
@@ -162,8 +164,6 @@ config.Bind("Grpc", grpcConfig);
 builder.Services.AddSingleton<IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse>, GrpcProtoClient>();
 builder.Services.AddSingleton<IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>, GrpcLevelingClient>();
 builder.Services.AddSingleton<IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse>, GrpcWebhookClient>();
-//builder.Services.AddSingleton<IGrpcClient<JwtAuth.JwtAuthClient, JwtAuthRequest, JwtAuthResponse>, GrpcJwtAuthClient>();
-builder.Services.AddSingleton<AuthHeadersInterceptor>();
 
 if (!string.IsNullOrEmpty(grpcConfig.Configurator))
 {
@@ -172,23 +172,16 @@ if (!string.IsNullOrEmpty(grpcConfig.Configurator))
     // Reference[Impl]: https://github.com/dotnet/AspNetCore.Docs/blob/main/aspnetcore/grpc/authn-and-authz/sample/6.x/TicketerClient/Program.cs
     builder.Services
         .AddGrpcClient<Payload.PayloadClient>(options => options.Address = uri)
-        //.AddCallCredentials(AddAuthorizationToken)
-        //.ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true)
-        .AddInterceptor<AuthHeadersInterceptor>();
+        .AddCallCredentials(GetAuthorizationToken)
+        .ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true);
     builder.Services
         .AddGrpcClient<Leveling.LevelingClient>(options => options.Address = uri)
-        //.AddCallCredentials(AddAuthorizationToken)
-        //.ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true)
-        .AddInterceptor<AuthHeadersInterceptor>();
+        .AddCallCredentials(GetAuthorizationToken)
+        .ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true);
     builder.Services
         .AddGrpcClient<WebhookPayload.WebhookPayloadClient>(options => options.Address = uri)
-        //.AddCallCredentials(AddAuthorizationToken)
-        //.ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true)
-        .AddInterceptor<AuthHeadersInterceptor>();
-    //builder.Services
-    //    .AddGrpcClient<JwtAuth.JwtAuthClient>(options => options.Address = uri)
-    //    .ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true);
-    //    //.AddInterceptor<AuthHeadersInterceptor>();
+        .AddCallCredentials(GetAuthorizationToken)
+        .ConfigureChannel(options => options.UnsafeUseInsecureChannelCallCredentials = true);
 }
 
 #endregion
@@ -278,16 +271,15 @@ static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
     stopwatch.Stop();
 }
 
-static async Task AddAuthorizationToken(AuthInterceptorContext context, Metadata metadata, IServiceProvider serviceProvider)
+static async Task GetAuthorizationToken(AuthInterceptorContext context, Metadata metadata, IServiceProvider serviceProvider)
 {
-    var client = serviceProvider.GetService<IGrpcClient<JwtAuth.JwtAuthClient, JwtAuthRequest, JwtAuthResponse>>();
-    var response = await client!.SendAsync(new JwtAuthRequest
-    {
-        Identifier = AuthHeadersInterceptor.DefaultGrpcServiceIdentifier,
-    });
+    // TODO: Make Jwt endpoint configurable
+    var url = "http://127.0.0.1:8881/api/jwt/generate?identifier=Grpc";
+    var (status, json) = await NetUtils.PostAsync(url);
+    var response = json?.FromJson<JwtResponse>() ?? new();
     var token = response?.AccessToken;
     if (token != null)
     {
-        metadata.Add(AuthHeadersInterceptor.AuthorizationHeader, $"Bearer {token}");
+        metadata.Add("Authorization", $"Bearer {token}");
     }
 }

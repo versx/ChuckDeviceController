@@ -19,11 +19,6 @@
     <ProjectReference Include="..\ChuckDeviceController.Configuration\ChuckDeviceController.Configuration.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
-    <ProjectReference Include="..\ChuckDeviceController.Protos\ChuckDeviceController.Protos.csproj" />
-  </ItemGroup>
-	
-  <ItemGroup>
-    <Protobuf Include="..\ChuckDeviceController.Protos\Server\JwtAuth.proto" GrpcServices="Server,Client" />
   </ItemGroup>
 
 </Project>

@@ -8,24 +8,17 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.IdentityModel.Tokens;
 
+    using ChuckDeviceController.Authorization.Jwt.Models;
     using ChuckDeviceController.Configuration;
-    using ChuckDeviceController.Protos;
+    using ChuckDeviceController.Extensions;
 
     public class JwtAuthManager
     {
-        #region Constants
-
-        private const string DefaultGrpcServiceIdentifier = "Grpc";
-        private const string DefaultInternalServiceIdentifier = "InternalService";
-        private const string ClaimTypeNameRole = "role";
-
-        #endregion
-
         #region Variables
 
         private static readonly ILogger<JwtAuthManager> _logger =
             new Logger<JwtAuthManager>(LoggerFactory.Create(x => x.AddConsole()));
-        protected static readonly ConcurrentDictionary<string, JwtAuthResponse> _jwtTokens = new();
+        protected readonly ConcurrentDictionary<string, JwtResponse> _jwtTokens = new();
 
         #endregion
 
@@ -38,14 +31,14 @@
 
         #region Public Methods
 
-        public JwtAuthResponse Generate(JwtAuthRequest request, JwtAuthConfig config)
+        public JwtResponse Generate(string identifier, JwtAuthConfig config)
         {
-            var identifierRole = GetAuthRequestIdentifierRole(request);
+            var identifierRole = GetAuthRequestIdentifierRole(identifier);
             if (string.IsNullOrEmpty(identifierRole))
             {
-                return new JwtAuthResponse
+                return new JwtResponse
                 {
-                    Status = JwtAuthStatus.Error,
+                    Status = JwtStatus.Error,
                 };
             }
 
@@ -56,6 +49,7 @@
                     return response;
                 }
             }
+
             var token = GenerateJwtToken(identifierRole, config);
             _jwtTokens.AddOrUpdate(identifierRole, token, (key, oldValue) => token);
             //_logger.LogDebug($"Generated access token: {token}");
@@ -74,7 +68,7 @@
 
         #region Private Methods
 
-        private static JwtAuthResponse GenerateJwtToken(string identifier, JwtAuthConfig config)
+        private static JwtResponse GenerateJwtToken(string identifier, JwtAuthConfig config)
         {
             var id = Guid.NewGuid().ToString();
             var secret = Encoding.UTF8.GetBytes(config.Key);
@@ -98,12 +92,11 @@
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = tokenHandler.WriteToken(token);
 
-            var response = new JwtAuthResponse
+            var response = new JwtResponse
             {
                 AccessToken = jwtToken,
-                // TODO: Rename to ExpiresAt unix ts instead of seconds
-                ExpiresIn = (uint)tokenExpires.Subtract(DateTime.UtcNow).TotalSeconds,
-                Status = JwtAuthStatus.Ok,
+                ExpiresAt = tokenExpires.ToTotalSeconds(),
+                Status = JwtStatus.Ok,
             };
             return response;
         }
@@ -132,11 +125,11 @@
                 );
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var claim = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypeNameRole); //ClaimTypes.Role);
+                var claim = jwtToken.Claims.FirstOrDefault(x => x.Type == Strings.ClaimTypeNameRole); //ClaimTypes.Role);
                 var identifier = claim?.Value;
 
                 // Ensure the service identifier is set and is our constant internal service value
-                var result = !string.IsNullOrEmpty(identifier) && identifier == DefaultInternalServiceIdentifier;
+                var result = !string.IsNullOrEmpty(identifier) && identifier == Strings.DefaultInternalServiceIdentifier;
                 return result;
             }
             catch (Exception ex)
@@ -146,11 +139,11 @@
             return false;
         }
 
-        private static string? GetAuthRequestIdentifierRole(JwtAuthRequest request)
+        private static string? GetAuthRequestIdentifierRole(string identifier)
         {
-            if (request.Identifier == DefaultGrpcServiceIdentifier)
+            if (identifier == Strings.DefaultGrpcServiceIdentifier)
             {
-                return DefaultInternalServiceIdentifier;
+                return Strings.DefaultInternalServiceIdentifier;
             }
             return null;
         }

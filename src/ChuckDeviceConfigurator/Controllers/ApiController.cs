@@ -1,9 +1,6 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
-    using System.Net.Mime;
-
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Common.Jobs;

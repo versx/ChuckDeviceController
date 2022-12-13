@@ -8,9 +8,6 @@
 
     public class JwtValidatorMiddleware
     {
-        public const string DefaultContentType = "application/grpc";
-        public const string IgnoreJwtValidationHeader = "IgnoreJwtValidation";
-
         private readonly RequestDelegate _next;
         private readonly JwtAuthConfig _jwtConfig;
 
@@ -30,12 +27,12 @@
             // Extract 'IgnoreJwtValidation' header value from request,
             // which indicates it's for the JwtAuth endpoint. If so, 
             // allow it to proceed otherwise validate JWT.
-            var ignoreValidationHeader = httpContext.Request.GetHeader(IgnoreJwtValidationHeader);
-            if (ignoreValidationHeader == "1")
-            {
-                await _next(httpContext);
-                return;
-            }
+            //var ignoreValidationHeader = httpContext.Request.GetHeader(JwtStrings.IgnoreJwtValidationHeader);
+            //if (ignoreValidationHeader == "1")
+            //{
+            //    await _next(httpContext);
+            //    return;
+            //}
 
             // Extract 'Authorization' header value from request
             var token = httpContext.Request.GetAuthorizationHeader();

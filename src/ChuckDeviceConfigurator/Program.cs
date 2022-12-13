@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -42,8 +42,6 @@ using ChuckDeviceController.Routing;
 // TODO: Modularize everything, add as many services as possible as plugins
 // TODO: Consolidate benchmark/profiling/diagnostic plugins into one? (i.e. RequestBenchmarkPlugin, MemoryBenchmarkPlugin, MiniProfilerPlugin)
 // TODO: Add HealthChecksPlugin
-// TODO: Load/read plugin state upon loading (SQLite?)
-// TODO: Load each plugin in its own thread
 
 #region Config
 
@@ -253,7 +251,7 @@ builder.Services.AddScoped<IApiKeyManagerService, ApiKeyManagerService>();
 builder.Services.AddGrpc(options =>
 {
     options.IgnoreUnknownServices = true;
-    options.EnableDetailedErrors = true;
+    //options.EnableDetailedErrors = true;
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });
 
@@ -384,8 +382,9 @@ else
 // TODO: app.UseMiddleware<UnhandledExceptionMiddleware>();
 if (jwtConfig.Enabled)
 {
+    // Controls whether to protect the gRPC endpoints with JWT
     app.UseWhen(
-        context => context.Request.ContentType == JwtValidatorMiddleware.DefaultContentType,
+        context => context.Request.ContentType == "application/grpc",
         appBuilder => appBuilder.UseMiddleware<JwtValidatorMiddleware>()
     );
 }
@@ -410,11 +409,6 @@ app.UseCookiePolicy(new CookiePolicyOptions
 app.UseAuthorization();
 //app.UseSession();
 
-// gRPC listener server services
-if (jwtConfig.Enabled)
-{
-    app.MapGrpcService<JwtAuthServerService>();
-}
 app.MapGrpcService<ProtoPayloadServerService>();
 app.MapGrpcService<TrainerInfoServerService>();
 app.MapGrpcService<WebhookEndpointServerService>();
