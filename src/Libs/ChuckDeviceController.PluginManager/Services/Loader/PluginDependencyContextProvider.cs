@@ -219,7 +219,8 @@
                     dependencies.Add(new PluginDependency
                     {
                         DependencyNameWithoutExtension = Path.GetFileNameWithoutExtension(asset),
-                        Version = new Version(runtimeLibrary.Version),
+                        //Version = new Version(runtimeLibrary.Version),
+                        Version = runtimeLibrary.Version,
                         DependencyPath = path,
                         ProbingPath = Path.Combine(runtimeLibrary.Name.ToLowerInvariant(), runtimeLibrary.Version, path),
                     });
@@ -244,7 +245,8 @@
                     dependencies.Add(new PluginDependency
                     {
                         DependencyNameWithoutExtension = Path.GetFileNameWithoutExtension(assembly),
-                        Version = new Version(referenceAssembly.Version),
+                        //Version = new Version(referenceAssembly.Version),
+                        Version = referenceAssembly.Version,
                         DependencyPath = Path.Join("refs", assembly),
                     });
                 }

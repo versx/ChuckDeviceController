@@ -4,7 +4,8 @@
     {
         public string DependencyNameWithoutExtension { get; set; }
 
-        public Version Version { get; set; }
+        //public Version Version { get; set; }
+        public string Version { get; set; }
 
         public string DependencyPath { get; set; }
 
