@@ -16,11 +16,6 @@ SET pluginFolder=../../%pluginsBin%/%projectName%/
 SET depsFileExt=.deps.json
 
 :: TODO: Create plugin folder if does not exist
-
-:: Copy plugin library and dependencies config file
-copy "%targetPath%" "%pluginFolder%/%targetFileName%"
-copy "%targetDir%/%projectName%%depsFileExt%" "%pluginFolder%/%projectName%%depsFileExt%"
-
 :: TODO: Copy all dependency files other than ChuckDeviceController.* libraries
 
 if not exist "%pluginFolder%/appsettings.json" (
@@ -39,5 +34,9 @@ if exist "%targetDir%/Views/" (
 if exist "%targetDir%/wwwroot/" (
   xcopy /S /E /Y /I "%targetDir%/wwwroot" "%pluginFolder%/wwwroot"
 )
+
+:: Copy plugin library and dependencies config file
+copy "%targetPath%" "%pluginFolder%/%targetFileName%"
+copy "%targetDir%/%projectName%%depsFileExt%" "%pluginFolder%/%projectName%%depsFileExt%"
 
 ::"../../../scripts/copy.bat" "$(TargetPath)" "$(ProjectName)" "$(TargetFileName)" "$(TargetDir)" "$(SolutionDir)"
