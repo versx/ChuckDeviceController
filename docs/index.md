@@ -19,6 +19,7 @@ Relays new and changed data entities to outgoing endpoints that are received fro
 **ChuckProxy:**
 Splits and proxies requests from Atlas devices to separate endpoints.
 
+
 ## Features  
 - Plugin system  
     * Create new job controller instances  
@@ -57,6 +58,7 @@ Splits and proxies requests from Atlas devices to separate endpoints.
 - .NET 7 SDK  
 - MySQL or MariaDB  
 
+
 ### Supported Databases  
 - MySQL 5.7
 - MySQL 8.0
@@ -68,7 +70,7 @@ Splits and proxies requests from Atlas devices to separate endpoints.
 
 
 ## Frameworks and Libraries
-* .NET 7.0
+* .NET 7
 * ASP.NET Core
 * EntityFramework Core
 * Dapper
