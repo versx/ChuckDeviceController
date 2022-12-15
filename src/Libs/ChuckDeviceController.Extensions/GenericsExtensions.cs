@@ -43,10 +43,14 @@
         /// <typeparam name="T">The type of object to convert.</typeparam>
         /// <param name="value">The actual object value.</param>
         /// <returns>Returns the string representation of the converted object.</returns>
-        public static string ObjectToString<T>(this T value)
+        public static string? ObjectToString<T>(this T value)
         {
             //TypeConverter tc = TypeDescriptor.GetConverter(typeof(T));
             //return tc.ConvertToString(value);
+            if (value == null)
+            {
+                return null;
+            }
             try
             {
                 return Enum.GetName(typeof(T), value);
@@ -54,7 +58,7 @@
             catch (Exception ex)
             {
                 Debug.WriteLine($"ObjectToString: {ex}");
-                return value.ToString();
+                return value?.ToString();
             }
         }
 
@@ -113,6 +117,40 @@
             }
             var value = obj.GetType()!.GetProperty(propertyName)!.GetValue(obj);
             return value;
+        }
+
+        public static Dictionary<TKey, TValue> Merge<TKey, TValue>(
+            this IReadOnlyDictionary<TKey, TValue> items1,
+            IReadOnlyDictionary<TKey, TValue> items2,
+            bool updateValues = false)
+            where TKey : notnull
+        {
+            if (items1 is null)
+            {
+                throw new ArgumentNullException(nameof(items1));
+            }
+
+            if (items2 is null)
+            {
+                throw new ArgumentNullException(nameof(items2));
+            }
+
+            var result = new Dictionary<TKey, TValue>(items1);
+            foreach (var (key, value) in items2)
+            {
+                if (!result.ContainsKey(key))
+                {
+                    result.Add(key, value);
+                    continue;
+                }
+
+                // Key already exists, check if values are the same
+                if (!Equals(result[key], value) && updateValues)
+                {
+                    result[key] = value;
+                }
+            }
+            return result;
         }
     }
 }

@@ -5,7 +5,7 @@ option csharp_namespace = "ChuckDeviceController.Protos";
 package webhookEndpoint;
 
 service WebhookEndpoint {
-    rpc ReceivedWebhookEndpoint (WebhookEndpointRequest) returns (WebhookEndpointResponse);
+    rpc HandleWebhookEndpoint (WebhookEndpointRequest) returns (WebhookEndpointResponse);
 }
 
 enum WebhookEndpointStatus {

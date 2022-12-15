@@ -2,8 +2,10 @@
 {
     using Microsoft.AspNetCore.Identity;
 
+    using ChuckDeviceController.Common;
+
     public static class UserIdentityContextSeed
-	{
+    {
         public static async Task SeedSuperAdminAsync(
             UserManager<ApplicationUser> userManager)
             //RoleManager<IdentityRole> roleManager)

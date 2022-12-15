@@ -1,23 +1,19 @@
-﻿@using System.Web
-@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceConfigurator.ViewModels
-@using ChuckDeviceController.Data.Entities
-@model IvQueueViewModel
+﻿@model IvQueueViewModel
 @{
     ViewData["Title"] = "IV Queue " + Model?.Name;
-    var confirmText = "Are you sure you want to clear all pending Pokemon encounters from the queue?";
+    var confirmText = "Are you sure you want to clear all pending Pokemon encounters from the IV queue?";
     var clearAllText = "Clears all pending Pokemon encounters in the IV queue.";
     var removeEncounterText = "Removes the pending Pokemon encounter from the IV queue.";
 }
 
-<h1>IV Queue @Model?.Name</h1>
+<h1>IV Queue - @Model?.Name</h1>
 <br />
 
 <p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
 
 <div class="pb-5">
     <div class="form-group float-start">
-        <a class="btn btn-danger btn-sm" title="@(clearAllText)" asp-action="ClearQueue" asp-route-name="@Model?.Name" onclick="return confirm('@(confirmText)')">
+        <a class="btn btn-danger btn-sm" title="@(clearAllText)" href="@Model?.Name/Clear" onclick="return confirm('@(confirmText)')">
             <i class="fa-solid fa-trash-can"></i>&nbsp;Clear Queue
         </a>
     </div>
@@ -53,20 +49,20 @@
             <th>
                 Location
             </th>
-            <th>Action</th>
+            <th width="5%">Action</th>
         </tr>
     </thead>
     <tbody>
     @{
         var index = 1;
-        foreach (var item in Model!.Queue)
+        foreach (var item in Model?.Queue ?? new())
         {
             <tr>
                 <th scope="row">
                     @index
                 </th>
                 <td>
-                    @Html.Raw(Utils.GetPokemonIcon(item.PokemonId, width: "32", height: "32", html: true))
+                    @Html.Raw(Utils.GetPokemonIcon(item.PokemonId, item.PokemonFormId, item.PokemonGender, item.PokemonCostumeId, width: "32", height: "32", html: true))
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.PokemonName)
@@ -87,7 +83,7 @@
                     @Html.Raw(Utils.GetGoogleMapsLink(item.Latitude, item.Longitude, html: true))
                 </td>
                 <td>
-                    <a class="btn btn-danger btn-sm" href="@Model.Name/Remove/@item.EncounterId" title="@(removeEncounterText)">
+                    <a class="btn btn-danger btn-sm" href="@Model?.Name/Remove/@item.EncounterId" title="@(removeEncounterText)">
                         <i class="fa-solid fa-trash-can"></i>
                     </a>
                 </td>
@@ -104,7 +100,18 @@
         $(document).ready(function() {
             $('#table-ivqueue').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 8 },
+                    // # Image Name ID Form Costume EncounterID Location Action
+                    // 0 1     2    3  4    5       6           7        8
+                    // 0 2     3    4  5    6       7           8        1
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 2, targets: 1 },
+                    { responsivePriority: 3, targets: 2 },
+                    { responsivePriority: 4, targets: 3 },
+                    { responsivePriority: 5, targets: 4 },
+                    { responsivePriority: 6, targets: 5 },
+                    { responsivePriority: 7, targets: 6 },
+                    { responsivePriority: 8, targets: 7 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -116,19 +123,16 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });
         const handleAutoRefresh = (e) => {
             const isChecked = $(e).is(':checked');
             if (isChecked) {
-                location.href = '@Url.Action("IvQueue", new { name = Model.Name, autoRefresh = true })';
+                location.href = '@Url.Action("IvQueue", new { name = Model?.Name, autoRefresh = true })';
             } else {
-                location.href = '@Url.Action("IvQueue", new { name = Model.Name, autoRefresh = false })';
+                location.href = '@Url.Action("IvQueue", new { name = Model?.Name, autoRefresh = false })';
             }
         };
     </script>

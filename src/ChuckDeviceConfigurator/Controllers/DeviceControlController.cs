@@ -1,59 +1,93 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
+    using System.Reflection;
+
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.Services.Jobs;
-    using ChuckDeviceConfigurator.Services.Tasks;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Http;
+    using ChuckDeviceController.Extensions.Http.Caching;
+    using ChuckDeviceController.JobControllers.Tasks;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
 
     [ApiController]
     public class DeviceControlController : ControllerBase
     {
+        private const string ContentTypeJson = "application/json";
+
+        #region Variables
+
         private readonly ILogger<DeviceControlController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IJobControllerService _jobControllerService;
+        private readonly IMemoryCacheHostedService _memCache;
+
+        #endregion
+
+        #region Constructor
 
         public DeviceControlController(
             ILogger<DeviceControlController> logger,
-            DeviceControllerContext context,
-            IJobControllerService jobControllerService)
+            ControllerDbContext context,
+            IJobControllerService jobControllerService,
+            IMemoryCacheHostedService memCache)
         {
             _logger = logger;
             _context = context;
             _jobControllerService = jobControllerService;
+            _memCache = memCache;
         }
+
+        #endregion
 
         #region Routes
 
+#if DEBUG
         [
             Route("/controler"),
             Route("/controller"),
-            HttpGet,
+            HttpGet(),
         ]
         public string GetAsync() => ":)";
+#endif
 
         [
             Route("/controler"),
             Route("/controller"),
-            HttpPost,
+            HttpPost(),
+            Produces(ContentTypeJson),
         ]
-        public async Task<DeviceResponse> PostAsync(DevicePayload payload)
+        public async Task<DeviceResponse> PostAsync(DevicePayload payload)//object body)
         {
+            //{"type":"init","uuid":"iPhone","username":"0011223344","timestamp":1669798714537}
+            //{"type":"get_account","uuid":"iPhone","username":"0011223344","timestamp":1669799065184,"min_level":30,"max_level":36}
+            //{"type":"get_job","uuid":"iPhone","username":"0011223344","timestamp":1669798714537}
+            //{"type":"get_job","uuid":"atv08","trainerlvl":5,"trainerexp":12210,"username":"0W3EiL8Ihgq"}
+
+            Response.Headers["Accept"] = ContentTypeJson;
+            Response.Headers["Content-Type"] = ContentTypeJson;
+
+            //_logger.LogInformation($"CDC: {body}");
+            //var payload = body.ToString().FromJson<DevicePayload>();
+
             var response = await HandleControllerRequestAsync(payload);
             return response;
         }
 
         #endregion
 
+        #region Route Handlers
+
         private async Task<DeviceResponse> HandleControllerRequestAsync(DevicePayload payload)
         {
-            _logger.LogInformation($"[{payload.Uuid}] Received control request: {payload.Type}");
+            _logger.LogInformation($"[{payload?.Uuid}] Received control request: {payload?.Type}");
 
             if (string.IsNullOrEmpty(payload?.Uuid))
             {
@@ -61,16 +95,9 @@
                 return CreateErrorResponse($"Device UUID is not set in payload.");
             }
 
-            var device = await _context.Devices.FindAsync(payload.Uuid);
-            /*
-            if (device == null && payload.Type != "init")
-            {
-                _logger.LogError($"Failed to retrieve device '{payload.Uuid}', skipping...");
-                return null;
-            }
-            */
+            var device = await GetEntityAsync<string, Device>(_context, payload.Uuid);
 
-            switch (payload.Type.ToLower())
+            switch (payload!.Type!.ToLower())
             {
                 case "init":
                     return await HandleInitializeRequestAsync(payload.Uuid, device);
@@ -79,78 +106,78 @@
                 case "get_account":
                     return await HandleGetAccountAsync(device);
                 case "get_job":
-                    return await HandleGetJobRequestAsync(device, payload.Username);
+                    return await HandleGetJobRequestAsync(device, payload?.Username);
                 case "account_banned" or
                      "account_warning" or
                      "account_invalid_credentials" or
                      "account_suspended":
-                    return await HandleAccountStatusRequestAsync(device, payload.Type);
+                    return await HandleAccountStatusRequestAsync(device?.Uuid, device?.AccountUsername, payload?.Type);
                 case "tutorial_done":
-                    return await HandleTutorialStatusAsync(device);
+                    return await HandleTutorialStatusRequestAsync(device?.AccountUsername);
                 case "logged_out":
-                    return await HandleLogoutAsync(device);
+                    return await HandleLogoutRequestAsync(device);
                 case "job_failed":
-                    _logger.LogWarning($"[{device.Uuid}] Job failed");
+                    _logger.LogWarning($"[{device?.Uuid}] Job failed");
                     return CreateErrorResponse("Job failed");
                 default:
-                    _logger.LogWarning($"[{device.Uuid}] Unhandled request type '{payload.Type}'");
+                    _logger.LogWarning($"[{device?.Uuid}] Unhandled request type '{payload.Type}'");
                     return CreateErrorResponse($"Unhandled request type '{payload.Type}'");
             }
         }
+
+        #endregion
 
         #region Request Handlers
 
         private async Task<DeviceResponse> HandleInitializeRequestAsync(string uuid, Device? device = null)
         {
-            if (device is not null)
+            var gitsha = GitHub.GetGitHash(Assembly.GetExecutingAssembly());
+            if (device is null)
             {
-                // Device is already registered
-                var assignedInstance = !string.IsNullOrEmpty(device.InstanceName);
-                if (!assignedInstance)
+                // Register new device
+                _logger.LogInformation($"[{uuid}] Registering new device...");
+                var ipAddr = Request.GetIPAddress();
+                device = new Device
                 {
-                    _logger.LogWarning($"[{device.Uuid}] Device is not assigned to an instance or the assigned instance is still starting!");
-                }
-                return new DeviceResponse
-                {
-                    Status = "ok",
-                    Data = new DeviceAssignmentResponse
-                    {
-                        Assigned = assignedInstance,
-                        Version = Strings.AssemblyVersion,
-                        Commit = "", // TODO: Get git commit
-                        Provider = Strings.AssemblyName,
-                    },
+                    Uuid = uuid,
+                    LastHost = ipAddr,
                 };
+
+                await _context.Devices.AddAsync(device);
+                await _context.SaveChangesAsync();
+                _memCache.Set(uuid, device);
             }
 
-            // Register new device
-            _logger.LogDebug($"[{uuid}] Registering new device...");
-            await _context.AddAsync(new Device
+            // Device is already registered
+            var assignedInstance = !string.IsNullOrEmpty(device.InstanceName);
+            if (!assignedInstance)
             {
-                Uuid = uuid,
-            });
-            await _context.SaveChangesAsync();
+                _logger.LogWarning($"[{device.Uuid}] Device is not assigned to an instance or the assigned instance is still starting!");
+            }
 
             return new DeviceResponse
             {
                 Status = "ok",
                 Data = new DeviceAssignmentResponse
                 {
-                    Assigned = false,
+                    Assigned = assignedInstance,
                     Version = Strings.AssemblyVersion,
-                    Commit = "", // TODO: Get git commit
+                    Commit = gitsha,
                     Provider = Strings.AssemblyName,
                 },
             };
         }
 
-        private async Task<DeviceResponse> HandleHeartbeatRequestAsync(Device device)
+        private async Task<DeviceResponse> HandleHeartbeatRequestAsync(Device? device)
         {
-            if (device != null)
+            if (device is not null)
             {
-                device.LastHost = Request.GetIPAddress();
-                _context.Update(device);
-                await _context.SaveChangesAsync();
+                var ipAddr = Request.GetIPAddress();
+                if (device.LastHost != ipAddr)
+                {
+                    device.LastHost = ipAddr;
+                    await SetEntityAsync(device.Uuid, device);
+                }
             }
             return new DeviceResponse
             {
@@ -158,15 +185,15 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleGetAccountAsync(Device device)
+        private async Task<DeviceResponse> HandleGetAccountAsync(Device? device)
         {
-            var minLevel = Strings.DefaultMinimumLevel;
-            var maxLevel = Strings.DefaultMaximumLevel;
-
-            if (device == null)
+            if (device is null)
             {
                 return CreateErrorResponse($"Failed to get account, provided device was null");
             }
+
+            var minLevel = Strings.DefaultMinimumLevel;
+            var maxLevel = Strings.DefaultMaximumLevel;
 
             // Get instance controller for device and set min/max level variables
             var jobController = _jobControllerService.GetInstanceController(device.Uuid);
@@ -180,10 +207,11 @@
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
                 var devices = _context.Devices.ToList();
-                var inUseAccounts = devices.Where(d => !string.IsNullOrEmpty(d.AccountUsername))
-                                           .OrderBy(d => d.LastSeen)
-                                           .Select(d => d.AccountUsername?.ToLower())
-                                           .ToList();
+                var inUseAccounts = devices
+                    .Where(d => !string.IsNullOrEmpty(d.AccountUsername))
+                    .OrderBy(d => d.LastSeen)
+                    .Select(d => d.AccountUsername?.ToLower())
+                    .ToList();
 
                 // Get new account between min/max level and not in inUseAccount list
                 account = _context.GetNewAccount(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts!);
@@ -196,12 +224,11 @@
                 }
 
                 device.AccountUsername = account.Username;
-                _context.Devices.Update(device);
-                await _context.SaveChangesAsync();
+                await SetEntityAsync(device.Uuid, device);
             }
             else
             {
-                account = await _context.Accounts.FindAsync(device.AccountUsername);
+                account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
                 if (account == null)
                 {
                     // Failed to get account
@@ -209,37 +236,32 @@
                 }
 
                 _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}'");
-                if (account.Level >= minLevel && account.Level <= maxLevel &&
-                    (account.FirstWarningTimestamp == null || account.FirstWarningTimestamp == 0) &&
-                    string.IsNullOrEmpty(account.Failed) &&
-                    (account.FailedTimestamp == null || account.FailedTimestamp == 0))
+                if (!account.IsValid(minLevel, maxLevel, ignoreWarning: false, groupName: null))
                 {
-                    // Clear pending account switch flag for device if set
-                    if (device.IsPendingAccountSwitch)
-                    {
-                        device.IsPendingAccountSwitch = false;
-                        _context.Update(device);
-                        await _context.SaveChangesAsync();
-                    }
+                    _logger.LogWarning($"[{device.Uuid}] Assigned account '{account.Username}' is no longer valid, switching accounts...");
 
-                    return new DeviceResponse
-                    {
-                        Status = "ok",
-                        Data = new DeviceAccountResponse
-                        {
-                            Username = account.Username.Trim(),
-                            Password = account.Password.Trim(),
-                            Level = account.Level,
-                            FirstWarningTimestamp = account.FirstWarningTimestamp,
-                        },
-                    };
-                }
-                else
-                {
+                    // Current account does not meet requirements
+                    device.AccountUsername = null;
+                    await SetEntityAsync(device.Uuid, device);
+
+                    // Remove account from cache
+                    _memCache.Unset<string, Account>(account.Username);
+
                     // Switch account
                     return CreateSwitchAccountTask(minLevel, maxLevel);
                 }
+
+                // Clear pending account switch flag for device if set
+                if (device.IsPendingAccountSwitch)
+                {
+                    _logger.LogDebug($"[{device.Uuid}] Pending manual account switch, reverting flag to prevent loop.");
+
+                    device.IsPendingAccountSwitch = false;
+                    await SetEntityAsync(device.Uuid, device, skipCache: false);
+                }
             }
+
+            _memCache.Set(account.Username, account);
 
             return new DeviceResponse
             {
@@ -254,19 +276,17 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleGetJobRequestAsync(Device device, string username)
+        private async Task<DeviceResponse> HandleGetJobRequestAsync(Device? device, string? username)
         {
             if (device == null)
             {
-                _logger.LogError($"Unable to get job for device, device is null");
                 return CreateErrorResponse("Unable to get job for device, device is null");
             }
 
             var jobController = _jobControllerService.GetInstanceController(device.Uuid);
             if (jobController == null)
             {
-                _logger.LogError($"[{device.Uuid}] Failed to get job instance controller");
-                return CreateErrorResponse($"Failed to get job instance controller");
+                return CreateErrorResponse($"[{device.Uuid}] Failed to get job instance controller");
             }
 
             var minLevel = jobController.MinimumLevel;
@@ -276,25 +296,23 @@
             {
                 return CreateSwitchAccountTask(minLevel, maxLevel);
             }
-            else
+
+            // Handle account assignment changes from UI
+            // REVIEW: Double check that this doesn't loop if account and in-game name differ
+            if (device.AccountUsername != username)
             {
-                // Handle account assignment changes from UI
-                // TODO: Double check that this doesn't loop if account and in-game name differ
-                if (device.AccountUsername != username)
-                {
-                    return CreateSwitchAccountTask(minLevel, maxLevel);
-                }
+                return CreateSwitchAccountTask(minLevel, maxLevel);
             }
 
             Account? account = null;
             if (!string.IsNullOrEmpty(username))
             {
                 // Get account by username from request payload
-                account = await _context.Accounts.FindAsync(username);
+                account = await GetEntityAsync<string, Account>(_context, username);
                 if (account == null)
                 {
                     // Unable to find account based on payload username, look for device's assigned account username instead
-                    account = await _context.Accounts.FindAsync(device.AccountUsername);
+                    account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
                     if (account == null)
                     {
                         _logger.LogError($"[{device.Uuid}] Failed to lookup account {username} and {device.AccountUsername} in database, switching accounts...");
@@ -309,18 +327,19 @@
                 }
             }
 
-            var task = await jobController.GetTaskAsync(new TaskOptions
+            if (account != null)
             {
-                Uuid = device.Uuid,
-                AccountUsername = device.AccountUsername,
-                Account = account,
-            });
-            if (task == null)
-            {
-                return CreateErrorResponse("No tasks available yet", logWarning: true);
+                _memCache.Set(account.Username, account);
             }
 
-            _logger.LogInformation($"[{device?.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
+            var options = new TaskOptions(device.Uuid, device.AccountUsername, account);
+            var task = await jobController.GetTaskAsync(options);
+            if (task == null)
+            {
+                return CreateErrorResponse($"[{device.Uuid}] No tasks available yet", logWarning: true);
+            }
+
+            _logger.LogInformation($"[{device.Uuid}] Sending {task.Action} job to {task.Latitude}, {task.Longitude}");
             return new DeviceResponse
             {
                 Status = "ok",
@@ -328,22 +347,23 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleAccountStatusRequestAsync(Device device, string status)
+        private async Task<DeviceResponse> HandleAccountStatusRequestAsync(string? uuid, string? username, string? status)
         {
             // Check if device is assigned an account username
-            if (string.IsNullOrEmpty(device.AccountUsername))
+            if (string.IsNullOrEmpty(username))
             {
-                return CreateErrorResponse($"Device '{device.Uuid}' is not assigned an account!");
+                return CreateErrorResponse($"[{uuid}] Device is not assigned an account!");
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var account = await _context.Accounts.FindAsync(device.AccountUsername);
+            var account = await GetEntityAsync<string, Account>(_context, username);
             if (account == null)
             {
-                return CreateErrorResponse($"Failed to retrieve account with username '{device.AccountUsername}'");
+                return CreateErrorResponse($"Failed to retrieve account with username '{username}'");
             }
 
-            switch (status.ToLower())
+            var oldStatus = account.Status;
+            switch (status?.ToLower())
             {
                 case "account_banned":
                     if (account.FirstWarningTimestamp == null || string.IsNullOrEmpty(account.Failed))
@@ -360,10 +380,7 @@
                     //}
                     break;
                 case "account_warning":
-                    if (account.FirstWarningTimestamp == null)
-                    {
-                        account.FirstWarningTimestamp = now;
-                    }
+                    account.FirstWarningTimestamp ??= now;
                     break;
                 case "account_invalid_credentials":
                     if (account.FirstWarningTimestamp == null || string.IsNullOrEmpty(account.Failed))
@@ -380,8 +397,14 @@
                     }
                     break;
             }
-            _context.Accounts.Update(account);
-            await _context.SaveChangesAsync();
+
+            if (oldStatus != account.Status)
+            {
+                // TODO: Send webhook for account status change
+                _logger.LogInformation($"Status changed for account '{account.Username}' from '{oldStatus}' to '{account.Status}'.");
+            }
+
+            await SetEntityAsync(account.Username, account, skipCache: false);
 
             return new DeviceResponse
             {
@@ -389,11 +412,10 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleTutorialStatusAsync(Device device)
+        private async Task<DeviceResponse> HandleTutorialStatusRequestAsync(string? username)
         {
-            var username = device.AccountUsername;
-            var account = await _context.Accounts.FindAsync(username);
-            if (device == null || string.IsNullOrEmpty(username) || account == null)
+            var account = await GetEntityAsync<string, Account>(_context, username);
+            if (string.IsNullOrEmpty(username) || account == null)
             {
                 return CreateErrorResponse("Failed to get account.");
             }
@@ -403,8 +425,7 @@
             }
             account.Tutorial = 1;
 
-            _context.Accounts.Update(account);
-            await _context.SaveChangesAsync();
+            await SetEntityAsync(account.Username, account, skipCache: false);
 
             return new DeviceResponse
             {
@@ -412,7 +433,7 @@
             };
         }
 
-        private async Task<DeviceResponse> HandleLogoutAsync(Device device)
+        private async Task<DeviceResponse> HandleLogoutRequestAsync(Device? device)
         {
             if (device == null)
             {
@@ -434,12 +455,11 @@
                 return CreateSwitchAccountTask(minLevel, maxLevel);
             }
 
-            // Only clear the account username if the device is pending an account switch made from the UI
+            // Clear the account username if the device is not pending an account switch made from the UI
+            // otherwise this will lead to a continuous loop
             if (!device.IsPendingAccountSwitch)
             {
-                device.AccountUsername = null;
-                _context.Devices.Update(device);
-                await _context.SaveChangesAsync();
+                await SetEntityAsync(device.Uuid, device, skipCache: false);
             }
 
             return new DeviceResponse
@@ -449,6 +469,8 @@
         }
 
         #endregion
+
+        #region Response Handlers
 
         private static DeviceResponse CreateSwitchAccountTask(ushort minLevel, ushort maxLevel)
         {
@@ -480,5 +502,42 @@
                 Data = data,
             };
         }
+
+        #endregion
+
+        #region Helper Methods
+
+        private async Task<TEntity?> GetEntityAsync<TKey, TEntity>(ControllerDbContext context, TKey? key, bool skipCache = true)
+            where TEntity : class
+        {
+            if (key == null)
+            {
+                return default;
+            }
+
+            TEntity? entity = null;
+            if (!skipCache)
+            {
+                entity = _memCache.Get<TKey, TEntity>(key);
+            }
+
+            entity ??= await context.Set<TEntity>().FindAsync(key);
+            return entity;
+        }
+
+        private async Task SetEntityAsync<TKey, TEntity>(TKey key, TEntity entity, bool skipCache = true)
+            where TEntity : class
+        {
+            _context.Set<TEntity>().Update(entity);
+            await _context.SaveChangesAsync();
+
+            if (!skipCache)
+            {
+                // Update entity in cache
+                _memCache.Set(key, entity);
+            }
+        }
+
+        #endregion
     }
 }

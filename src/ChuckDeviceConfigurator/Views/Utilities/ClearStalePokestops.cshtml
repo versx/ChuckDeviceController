@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceController.Data.Entities
-@model List<Pokestop>
+﻿@model List<Pokestop>
 @{
     ViewData["Title"] = "Utilities - Clear Stale Pokestops";
 }
@@ -15,24 +14,21 @@
 </p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Utilities" asp-action="Index">Utilities</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Clear Stale Pokestops</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Clear Stale Pokestops" })
 
 <hr />
 <div class="row">
     <div class="col">
         <form asp-controller="Utilities" asp-action="ClearStalePokestops">
             <div class="pb-5">
-                <input type="submit" value="Delete All" class="btn btn-danger float-end" title="Delete All Stale Pokestops" onclick="return confirm('You are about to delete \'@(Model.Count)\' Pokestops, are you sure this is what you want to do?');" />
+                <input type="submit" value="Delete All" class="btn btn-danger btn-sm float-end" title="Delete All Stale Pokestops" onclick="return confirm('You are about to delete \'@(Model.Count)\' Pokestops, are you sure this is what you want to do?');" />
             </div>
             <table id="table-stale-pokestops" class="table table-striped table-bordered dt-responsive nowrap">
                 <thead class="table-dark">
                     <tr>
+                        <th scope="col">
+                            Image
+                        </th>
                         <th scope="col">
                             @Html.DisplayNameFor(model => model[0].Id)
                         </th>
@@ -40,7 +36,7 @@
                             @Html.DisplayNameFor(model => model[0].Name)
                         </th>
                         <th scope="col">
-                            @Html.DisplayNameFor(model => model[0].UpdatedTime)
+                            @Html.DisplayNameFor(model => model[0].Updated)
                         </th>
                         <th scope="col">
                             @Html.DisplayNameFor(model => model[0].IsEnabled)
@@ -48,7 +44,7 @@
                         <th scope="col">
                             @Html.DisplayNameFor(model => model[0].IsDeleted)
                         </th>
-                        <th scope="col">Action</th>
+                        <th width="5%">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -57,19 +53,21 @@
                         <tr>
                             <th scope="row">
                                 <img src="@item.Url" height="48" width="48" />
-                                @Html.DisplayFor(modelItem => item.Id)
                             </th>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Id)
+                            </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.Name)
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.UpdatedTime)
+                                @Html.Raw(Utils.GetLastUpdatedStatus(item.Updated, html: true))
                             </td>
                             <td>
-                                @Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")
+                                @Html.Raw(Utils.FormatBoolean(item.IsEnabled, html: true)) @*Html.Raw($"<span class=\"{(item.IsEnabled ? "pokestop-enabled" : "pokestop-disabled")}\">{(item.IsEnabled ? "Yes" : "No")}</span>")*@
                             </td>
                             <td>
-                                @(item.IsDeleted ? "Yes" : "No")
+                                @Utils.FormatBoolean(item.IsDeleted)
                             </td>
                             <td>
                                 <a class="btn btn-danger btn-sm" asp-action="DeletePokestop" asp-route-id="@item.Id" title="Delete Stale Pokestop" onclick="return confirm('You are about to delete Pokestop \'@(item.Name ?? item.Id)\', are you sure this is what you want to do?');"><i class="fa-solid fa-trash-can"></i></a>
@@ -88,7 +86,16 @@
         $(document).ready(function() {
             $('#table-stale-pokestops').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 5 },
+                    // Image Id Name LastUpdated Enabled Deleted Action
+                    // 0     1  2    3           4       5       6
+                    // 0     5  2    10          3       4       1
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 5, targets: 1 },
+                    { responsivePriority: 2, targets: 2, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 10, targets: 3 },
+                    { responsivePriority: 3, targets: 4 },
+                    { responsivePriority: 4, targets: 5 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -103,10 +110,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });

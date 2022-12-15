@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
-@using ChuckDeviceController.Data.Entities
-@model ViewModelsModel<IvList>
+﻿@model ViewModelsModel<IvListViewModel>
 @{
     ViewData["Title"] = "IV Lists";
 }
@@ -19,9 +17,9 @@
                 @Html.DisplayNameFor(model => model.Items[0].Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Items[0].PokemonIds)
+                @Html.DisplayNameFor(model => model.Items[0].Pokemon)
             </th>
-            <th>Action</th>
+            <th width="5%">Action</th>
         </tr>
     </thead>
     <tbody>
@@ -32,7 +30,14 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </th>
                 <td>
-                    @string.Join(", ", item.PokemonIds.Take(10))
+                    @if (item.Pokemon.Count > 10)
+                    {
+                        @Html.Raw(string.Join(" ", item.Pokemon.Take(10)))<label class="text-muted">&nbsp;& @(item.Pokemon.Count - 10) more ...</label>
+                    }
+                    else
+                    {
+                        @Html.Raw(string.Join(" ", item.Pokemon))
+                    }
                 </td>
                 <td>
                     <div class="dropdown">
@@ -56,7 +61,9 @@
         $(document).ready(function() {
             $('#table-ivlists').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 2 },
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 2, targets: 1 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -71,10 +78,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });

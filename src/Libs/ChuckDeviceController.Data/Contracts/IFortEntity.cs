@@ -1,12 +1,12 @@
 ﻿namespace ChuckDeviceController.Data.Contracts
 {
-    public interface IFortEntity
+    public interface IFortEntity : IFortPowerLevel
     {
-        string Id { get; set; }
+        string Id { get; }
 
-        string Name { get; set; }
+        string? Name { get; }
 
-        string Url { get; set; }
+        string? Url { get; }
 
         bool IsEnabled { get; }
 
@@ -14,10 +14,12 @@
 
         ulong CellId { get; }
 
-        uint? PowerUpPoints { get; }
+        //bool IsArScanEligible { get; }
 
-        ushort? PowerUpLevel { get; }
+        ulong FirstSeenTimestamp { get; }
 
-        ulong? PowerUpEndTimestamp { get; }
+        ulong LastModifiedTimestamp { get; }
+
+        ulong Updated { get; }
     }
 }

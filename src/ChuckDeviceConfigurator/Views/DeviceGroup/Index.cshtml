@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
-@using ChuckDeviceController.Data.Entities
-@using ChuckDeviceController.Extensions
+﻿@using ChuckDeviceController.Extensions
 @model ViewModelsModel<DeviceGroup>
 @{
     ViewData["Title"] = "Device Groups";
@@ -22,7 +20,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].DeviceUuids)
             </th>
-            <th>Action</th>
+            <th width="5%">Action</th>
         </tr>
     </thead>
     <tbody>
@@ -57,7 +55,9 @@
         $(document).ready(function() {
             $('#table-device-groups').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 2 },
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 2, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -72,10 +72,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });

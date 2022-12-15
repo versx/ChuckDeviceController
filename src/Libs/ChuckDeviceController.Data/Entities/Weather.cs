@@ -1,19 +1,20 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
     using POGOProtos.Rpc;
     using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
-    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Geometry.Extensions;
 
     [Table("weather")]
-    public partial class Weather : BaseEntity, ICoordinateEntity, IWebhookEntity
+    public partial class Weather : BaseEntity, IWeather, ICoordinateEntity, IWebhookEntity
     {
         #region Properties
 
@@ -36,17 +37,11 @@
         [Column("gameplay_condition")]
         public WeatherCondition GameplayCondition { get; set; }
 
-        [Column("wind_direction")]
-        public ushort WindDirection { get; set; }
-
         [Column("cloud_level")]
         public ushort CloudLevel { get; set; }
 
         [Column("rain_level")]
         public ushort RainLevel { get; set; }
-
-        [Column("wind_level")]
-        public ushort WindLevel { get; set; }
 
         [Column("snow_level")]
         public ushort SnowLevel { get; set; }
@@ -54,20 +49,30 @@
         [Column("fog_level")]
         public ushort FogLevel { get; set; }
 
+        [Column("wind_level")]
+        public ushort WindLevel { get; set; }
+
+        [Column("wind_direction")]
+        public ushort WindDirection { get; set; }
+
+        [Column("warn_weather")]
+        public bool? WarnWeather { get; set; }
+
         [Column("special_effect_level")]
         public ushort SpecialEffectLevel { get; set; }
 
         [Column("severity")]
         public ushort? Severity { get; set; }
 
-        [Column("warn_weather")]
-        public bool? WarnWeather { get; set; }
-
         [Column("updated")]
         public ulong Updated { get; set; }
 
+        // TODO: Just use one condition for changes
         [NotMapped]
         public bool SendWebhook { get; set; }
+
+        [NotMapped]
+        public bool HasChanges { get; set; }
 
         #endregion
 
@@ -104,33 +109,35 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapDataContext context)
+        //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipLookup = false)
+        public async Task UpdateAsync(Weather? oldWeather, IMemoryCacheHostedService memCache)
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            Updated = now;
+            Updated = DateTime.UtcNow.ToTotalSeconds();
 
-            Weather? oldWeather = null;
-            try
-            {
-                oldWeather = await context.Weather.FindAsync(Id);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Weather: {ex}");
-            }
-
+            //var oldWeather = skipLookup
+            //    ? null
+            //    : await EntityRepository.GetEntityAsync<long, Weather>(connection, Id, memCache);
             if (oldWeather == null)
             {
                 SendWebhook = true;
+                HasChanges = true;
             }
             else if (oldWeather.GameplayCondition != GameplayCondition || 
-                     oldWeather.WarnWeather != WarnWeather)
+                     oldWeather.WarnWeather != WarnWeather ||
+                     oldWeather.Severity != Severity ||
+                     oldWeather.SpecialEffectLevel != SpecialEffectLevel)
             {
                 SendWebhook = true;
+                HasChanges = true;
             }
+
+            // Cache weather cell entity by id
+            memCache.Set(Id, this);
+
+            await Task.CompletedTask;
         }
 
-        public dynamic GetWebhookData(string type)
+        public dynamic? GetWebhookData(string type)
         {
             switch (type.ToLower())
             {
@@ -151,7 +158,7 @@
                             s2_cell_id = Id,
                             latitude = Latitude,
                             longitude = Longitude,
-                            polygon = polygon,
+                            polygon,
                             gameplay_condition = GameplayCondition,
                             wind_direction = WindDirection,
                             cloud_level = CloudLevel,

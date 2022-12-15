@@ -3,36 +3,49 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.AspNetCore.Mvc.Rendering;
 
-    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Extensions.Http.Caching;
 
     [Controller]
     [Authorize(Roles = RoleConsts.DevicesRole)]
-    public class DeviceController : Controller
+    public class DeviceController : BaseMvcController
     {
         private readonly ILogger<DeviceController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IJobControllerService _jobControllerService;
+        private readonly IMemoryCacheHostedService _memCache;
 
         public DeviceController(
             ILogger<DeviceController> logger,
-            DeviceControllerContext context,
-            IJobControllerService jobControllerService)
+            ControllerDbContext context,
+            IJobControllerService jobControllerService,
+            IMemoryCacheHostedService memCache)
         {
             _logger = logger;
             _context = context;
             _jobControllerService = jobControllerService;
+            _memCache = memCache;
         }
 
         // GET: DeviceController
         public ActionResult Index()
         {
             var devices = _context.Devices.ToList();
+            var accountLevels = _context.Accounts
+                .AsEnumerable()
+                .Where(account => devices.Any(device => device.AccountUsername == account.Username))
+                .ToDictionary(x => x.Username, y => y.Level);
+            devices.ForEach(device =>
+            {
+                device.AccountLevel = device.AccountUsername != null
+                    ? accountLevels[device.AccountUsername]
+                    : (ushort)0;
+            });
             var model = new ViewModelsModel<Device>
             {
                 Items = devices,
@@ -48,6 +61,11 @@
             {
                 // Failed to retrieve device from database, does it exist?
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Device with id '{id}' does not exist.",
+                    Icon = NotificationIcon.Error,
+                });
                 return View();
             }
             return View(device);
@@ -56,10 +74,12 @@
         // GET: DeviceController/Create
         public ActionResult Create()
         {
-            var accountsInUse = _context.Devices.Select(device => device.AccountUsername)
-                                                .ToList();
-            var accounts = _context.Accounts.Where(account => !accountsInUse.Contains(account.Username))
-                                            .ToList();
+            var accountsInUse = _context.Devices
+                .Select(device => device.AccountUsername)
+                .ToList();
+            var accounts = _context.Accounts
+                .Where(account => !accountsInUse.Contains(account.Username))
+                .ToList();
             var instances = _context.Instances.ToList();
             ViewBag.Instances = instances;
             ViewBag.Accounts = accounts;
@@ -69,19 +89,34 @@
         // POST: DeviceController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(IFormCollection collection)
+        public async Task<ActionResult> Create(Device deviceModel)//IFormCollection collection)
         {
             try
             {
-                var uuid = Convert.ToString(collection["Uuid"]);
-                var instanceName = Convert.ToString(collection["InstanceName"]);
-                var accountUsername = Convert.ToString(collection["AccountUsername"]);
+                var uuid = deviceModel.Uuid;//Convert.ToString(collection["Uuid"]);
+                var instanceName = deviceModel.InstanceName;//Convert.ToString(collection["InstanceName"]);
+                var accountUsername = deviceModel.AccountUsername;//Convert.ToString(collection["AccountUsername"]);
 
                 if (_context.Devices.Any(device => device.Uuid == uuid))
                 {
                     // Device exists already by name
                     ModelState.AddModelError("Device", $"Device with UUID '{uuid}' already exists.");
-                    return View();
+                    CreateNotification(new NotificationViewModel
+                    {
+                        Message = $"Device with id '{uuid}' already exists.",
+                        Icon = NotificationIcon.Error,
+                    });
+
+                    var accountsInUse = _context.Devices
+                        .Select(device => device.AccountUsername)
+                        .ToList();
+                    var accounts = _context.Accounts
+                        .Where(account => !accountsInUse.Contains(account.Username))
+                        .ToList();
+                    var instances = _context.Instances.ToList();
+                    ViewBag.Instances = instances;
+                    ViewBag.Accounts = accounts;
+                    return View(deviceModel);
                 }
 
                 var device = new Device
@@ -95,14 +130,40 @@
                 await _context.Devices.AddAsync(device);
                 await _context.SaveChangesAsync();
 
+                _memCache.Set(device.Uuid, device);
+
                 _jobControllerService.AddDevice(device);
+
+                if (ModelState.IsValid)
+                {
+                    CreateNotification(new NotificationViewModel
+                    {
+                        Message = $"Device '{device.Uuid}' has been created successfully!",
+                        Icon = NotificationIcon.Success,
+                    });
+                }
 
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
                 ModelState.AddModelError("Device", $"Unknown error occurred while creating new device.");
-                return View();
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Unknown error occurred while creating device '{deviceModel.Uuid}'.",
+                    Icon = NotificationIcon.Error,
+                });
+
+                var accountsInUse = _context.Devices
+                    .Select(device => device.AccountUsername)
+                    .ToList();
+                var accounts = _context.Accounts
+                    .Where(account => !accountsInUse.Contains(account.Username))
+                    .ToList();
+                var instances = _context.Instances.ToList();
+                ViewBag.Instances = instances;
+                ViewBag.Accounts = accounts;
+                return View(deviceModel);
             }
         }
 
@@ -114,17 +175,24 @@
             {
                 // Failed to retrieve device from database, does it exist?
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Device with id '{id}' does not exist.",
+                    Icon = NotificationIcon.Error,
+                });
                 return View();
             }
 
-            var accountsInUse = _context.Devices.Select(device => device.AccountUsername)
-                                                .ToList();
+            var accountsInUse = _context.Devices
+                .Select(device => device.AccountUsername)
+                .ToList();
             // Filter accounts that are not used by devices unless this device we are editing
-            var accounts = _context.Accounts.Where(account => !accountsInUse.Contains(account.Username) || device.AccountUsername == account.Username)
-                                            .ToList();
+            var accounts = _context.Accounts
+                .Where(account => !accountsInUse.Contains(account.Username) || device.AccountUsername == account.Username)
+                .ToList();
             var instances = _context.Instances.ToList();
-            ViewBag.Instances = new SelectList(instances, "Name", "Name");
-            ViewBag.Accounts = new SelectList(accounts, "Username", "Username");
+            ViewBag.Instances = instances;
+            ViewBag.Accounts = accounts;
             return View(device);
         }
 
@@ -140,6 +208,11 @@
                 {
                     // Failed to retrieve device from database, does it exist?
                     ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                    CreateNotification(new NotificationViewModel
+                    {
+                        Message = $"Device with id '{id}' does not exist.",
+                        Icon = NotificationIcon.Error,
+                    });
                     return View();
                 }
 
@@ -162,13 +235,29 @@
                 _context.Devices.Update(device);
                 await _context.SaveChangesAsync();
 
+                _memCache.Set(device.Uuid, device);
+
                 _jobControllerService.ReloadDevice(device, id);
+
+                if (ModelState.IsValid)
+                {
+                    CreateNotification(new NotificationViewModel
+                    {
+                        Message = $"Device '{device.Uuid}' has been updated successfully!",
+                        Icon = NotificationIcon.Success,
+                    });
+                }
 
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
                 ModelState.AddModelError("Device", $"Unknown error occurred while editing device '{id}'.");
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Unknown error occurred while editing device '{id}'.",
+                    Icon = NotificationIcon.Error,
+                });
                 return View();
             }
         }
@@ -181,6 +270,11 @@
             {
                 // Failed to retrieve device from database, does it exist?
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Device with id '{id}' does not exist.",
+                    Icon = NotificationIcon.Error,
+                });
                 return View();
             }
             return View(device);
@@ -198,6 +292,11 @@
                 {
                     // Failed to retrieve device from database, does it exist?
                     ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                    CreateNotification(new NotificationViewModel
+                    {
+                        Message = $"Device with id '{id}' does not exist.",
+                        Icon = NotificationIcon.Error,
+                    });
                     return View();
                 }
 
@@ -205,13 +304,29 @@
                 _context.Devices.Remove(device);
                 await _context.SaveChangesAsync();
 
+                _memCache.Unset<string, Device>(id);
+
                 _jobControllerService.RemoveDevice(id);
+
+                if (ModelState.IsValid)
+                {
+                    CreateNotification(new NotificationViewModel
+                    {
+                        Message = $"Device '{device.Uuid}' has been deleted successfully!",
+                        Icon = NotificationIcon.Success,
+                    });
+                }
 
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
                 ModelState.AddModelError("Device", $"Unknown error occurred while deleting device '{id}'.");
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Unknown error occurred while deleting device '{id}'.",
+                    Icon = NotificationIcon.Error,
+                });
                 return View();
             }
         }
@@ -226,6 +341,11 @@
             {
                 // Failed to retrieve device from database, does it exist?
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Device with id '{id}' does not exist.",
+                    Icon = NotificationIcon.Error,
+                });
                 return View();
             }
 
@@ -235,6 +355,12 @@
 
             _context.Update(device);
             await _context.SaveChangesAsync();
+
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Device with id '{id}' has been forced to logout of current account.",
+                Icon = NotificationIcon.Success,
+            });
 
             return RedirectToAction(nameof(Index));
         }

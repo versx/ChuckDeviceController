@@ -1,5 +1,8 @@
 ﻿namespace ChuckDeviceController.Pvp
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public enum PvpLeague
     {
         /// <summary>

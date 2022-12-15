@@ -3,9 +3,39 @@
     using Google.Common.Geometry;
 
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public static class S2CellExtensions
     {
+        /// <summary>
+        /// Gets the S2 cells within the current multi polygon
+        /// </summary>
+        /// <param name="multiPolygon"></param>
+        /// <param name="minLevel">Minimum S2 cell level to meet</param>
+        /// <param name="maxLevel">Maximum S2 cell level to meet</param>
+        /// <param name="maxCells">Maximum S2 cells to return</param>
+        /// <returns>Returns a list of <seealso cref="S2CellId"/> objects</returns>
+        public static IReadOnlyList<ulong> GetS2CellIds(this IMultiPolygon multiPolygon, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = ushort.MaxValue)
+        {
+            var bbox = multiPolygon.GetBoundingBox();
+            var result = new List<ulong>();
+            var coverage = bbox.GetS2CellCoverage(minLevel, maxLevel, maxCells);
+            foreach (var cellId in coverage)
+            {
+                var cell = new S2Cell(cellId);
+                for (var i = 0; i <= 3; i++)
+                {
+                    var vertex = cell.GetVertex(i);
+                    var coord = vertex.ToCoordinate();
+                    if (!GeofenceService.InPolygon(multiPolygon, coord))
+                        continue;
+
+                    result.Add(cellId.Id);
+                }
+            }
+            return result;
+        }
+
         public static S2CellId S2CellIdFromCoordinate(this Coordinate coord) =>
             S2CellIdFromLatLng(coord.Latitude, coord.Longitude);
 
@@ -30,7 +60,7 @@
         public static S2LatLng S2LatLngFromId(this ulong cellId)
         {
             var s2cell = S2CellFromId(cellId);
-            var center = s2cell.RectBound.Center;
+            var center = s2cell.CapBound.RectBound.Center;
             return center;
         }
 
@@ -58,7 +88,7 @@
             return list;
         }
 
-        public static List<Coordinate> GetS2CellCoordinates(this BoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = 100)
+        public static List<Coordinate> GetS2CellCoordinates(this IBoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = 100)
         {
             var cellIds = GetS2CellCoverage(bbox, minLevel, maxLevel, maxCells);
             var coordinates = cellIds.Select(cell => cell.ToLatLng())
@@ -83,7 +113,7 @@
             return coord;
         }
 
-        public static S2CellUnion GetS2CellCoverage(this BoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = int.MaxValue)
+        public static S2CellUnion GetS2CellCoverage(this IBoundingBox bbox, ushort minLevel = 15, ushort maxLevel = 15, int maxCells = int.MaxValue)
         {
             var regionCoverer = new S2RegionCoverer
             {
@@ -96,7 +126,7 @@
             return coverage;
         }
 
-        public static S2LatLngRect GetS2Region(this BoundingBox bbox)
+        public static S2LatLngRect GetS2Region(this IBoundingBox bbox)
         {
             var min = S2LatLng.FromDegrees(bbox.MinimumLatitude, bbox.MinimumLongitude);
             var max = S2LatLng.FromDegrees(bbox.MaximumLatitude, bbox.MaximumLongitude);

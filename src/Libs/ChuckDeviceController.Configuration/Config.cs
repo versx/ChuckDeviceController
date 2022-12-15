@@ -17,11 +17,11 @@
                 .SetBasePath(Directory.GetCurrentDirectory());
             if (File.Exists(baseFilePath))
             {
-                configBuilder = configBuilder.AddJsonFile(baseFilePath, optional: false, reloadOnChange: true);
+                configBuilder = configBuilder.AddJsonFile(baseFilePath, optional: false, reloadOnChange: false);
             }
             if (File.Exists(envFilePath))
             {
-                configBuilder = configBuilder.AddJsonFile(envFilePath, optional: true, reloadOnChange: true);
+                configBuilder = configBuilder.AddJsonFile(envFilePath, optional: true, reloadOnChange: false);
             }
             var config = configBuilder.AddEnvironmentVariables()
                 .AddCommandLine(args)

@@ -6,7 +6,8 @@
 
     using ChuckDeviceConfigurator.Services.Webhooks;
     using ChuckDeviceConfigurator.ViewModels;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -14,12 +15,12 @@
     public class WebhookController : Controller
     {
         private readonly ILogger<WebhookController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IWebhookControllerService _webhookService;
 
         public WebhookController(
             ILogger<WebhookController> logger,
-            DeviceControllerContext context,
+            ControllerDbContext context,
             IWebhookControllerService webhookService)
         {
             _logger = logger;
@@ -54,8 +55,9 @@
         // GET: WebhookController/Create
         public ActionResult Create()
         {
-            var geofences = _context.Geofences.Where(geofence => geofence.Type == GeofenceType.Geofence)
-                                              .ToList();
+            var geofences = _context.Geofences
+                .Where(geofence => geofence.Type == GeofenceType.Geofence)
+                .ToList();
             ViewBag.Geofences = geofences;
             ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
             return View();
@@ -64,36 +66,58 @@
         // POST: WebhookController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(IFormCollection collection)
+        public async Task<ActionResult> Create(Webhook model)
         {
             try
             {
-                var name = Convert.ToString(collection["Name"]);
-                var url = Convert.ToString(collection["Url"]);
-                var types = Convert.ToString(collection["Types"]);
-                var webhookTypes = types.Split(',')
-                                        .Where(type => !string.IsNullOrEmpty(type))
-                                        .Select(type => (WebhookType)Convert.ToUInt32(type))
-                                        .ToList();
-                var delay = Convert.ToDouble(collection["Delay"]);
-                var geofences = Convert.ToString(collection["Geofences"]).Split(',');
-                var enabled = collection["Enabled"].Contains("true");
-
-                if (_context.Webhooks.Any(webhook => webhook.Name == name))
+                if (_context.Webhooks.Any(webhook => webhook.Name == model.Name))
                 {
                     // Webhook already exists by name
-                    ModelState.AddModelError("Webhook", $"Webhook with name '{name}' already exists.");
-                    return View();
+                    ModelState.AddModelError("Webhook", $"Webhook with name '{model.Name}' already exists.");
+                    return View(model);
                 }
+
+                var pokemonIds = (model.Data?.PokemonIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var pokestopIds = (model.Data?.PokestopIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var raidPokemonIds = (model.Data?.RaidPokemonIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var gymIds = (model.Data?.GymIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var geofences = model.Geofences.Where(geofence => !string.IsNullOrEmpty(geofence));
                 var webhook = new Webhook
                 {
-                    Name = name,
-                    Url = url,
-                    Types = webhookTypes,
-                    Delay = delay,
+                    Name = model.Name,
+                    Url = model.Url,
+                    Types = model.Types,
+                    Delay = model.Delay,
                     Geofences = new(geofences),
-                    Enabled = enabled,
-                    Data = new WebhookData(),
+                    Enabled = model.Enabled,
+                    Data = new WebhookData
+                    {
+                        PokemonIds = pokemonIds ?? new(),
+                        PokestopIds = pokestopIds ?? new(),
+                        RaidPokemonIds = raidPokemonIds ?? new(),
+                        LureIds = model.Data?.LureIds ?? new(),
+                        EggLevels = model.Data?.EggLevels ?? new(),
+                        GymTeamIds = model.Data?.GymTeamIds ?? new(),
+                        GymIds = gymIds ?? new(),
+                        InvasionIds = model.Data?.InvasionIds ?? new(),
+                        WeatherConditionIds = model.Data?.WeatherConditionIds ?? new(),
+                    },
                 };
 
                 // Add webhook to database
@@ -107,7 +131,7 @@
             catch
             {
                 ModelState.AddModelError("Webhook", $"Unknown error occurred while creating new webhook.");
-                return View();
+                return View(model);
             }
         }
 
@@ -132,7 +156,7 @@
         // POST: WebhookController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(string id, IFormCollection collection)
+        public async Task<ActionResult> Edit(string id, Webhook model)
         {
             try
             {
@@ -141,27 +165,48 @@
                 {
                     // Failed to retrieve webhook from database, does it exist?
                     ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
-                    return View(webhook);
+                    return View(model);
                 }
 
-                var name = Convert.ToString(collection["Name"]);
-                var url = Convert.ToString(collection["Url"]);
-                var types = Convert.ToString(collection["Types"]);
-                var webhookTypes = types.Split(',')
-                                        .Where(type => !string.IsNullOrEmpty(type))
-                                        .Select(type => (WebhookType)Convert.ToUInt32(type))
-                                        .ToList();
-                var delay = Convert.ToDouble(collection["Delay"]);
-                var geofences = Convert.ToString(collection["Geofences"]).Split(',');
-                var enabled = collection["Enabled"].Contains("true");
-
-                webhook.Name = name;
-                webhook.Url = url;
-                webhook.Types = webhookTypes;
-                webhook.Delay = delay;
+                var pokemonIds = (model.Data?.PokemonIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var pokestopIds = (model.Data?.PokestopIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var raidPokemonIds = (model.Data?.RaidPokemonIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var gymIds = (model.Data?.GymIds ?? new())
+                    .FirstOrDefault()?
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .ToList();
+                var geofences = model.Geofences.Where(geofence => !string.IsNullOrEmpty(geofence));
+                webhook.Name = model.Name;
+                webhook.Url = model.Url;
+                webhook.Types = model.Types;
+                webhook.Delay = model.Delay;
                 webhook.Geofences = new(geofences);
-                webhook.Enabled = enabled;
-                webhook.Data = new WebhookData();
+                webhook.Enabled = model.Enabled;
+                webhook.Data = new WebhookData
+                {
+                    PokemonIds = pokemonIds ?? new(),
+                    PokestopIds = pokestopIds ?? new(),
+                    RaidPokemonIds = raidPokemonIds ?? new(),
+                    LureIds = model.Data?.LureIds ?? new(),
+                    EggLevels = model.Data?.EggLevels ?? new(),
+                    GymTeamIds = model.Data?.GymTeamIds ?? new(),
+                    GymIds = gymIds ?? new(),
+                    InvasionIds = model.Data?.InvasionIds ?? new(),
+                    WeatherConditionIds = model.Data?.WeatherConditionIds ?? new(),
+                };
 
                 _context.Update(webhook);
                 await _context.SaveChangesAsync();
@@ -173,7 +218,7 @@
             catch
             {
                 ModelState.AddModelError("Webhook", $"Unknown error occurred while editing webhook '{id}'.");
-                return View();
+                return View(model);
             }
         }
 

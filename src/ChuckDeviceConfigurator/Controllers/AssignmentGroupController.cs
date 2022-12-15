@@ -8,6 +8,8 @@
     using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -16,12 +18,12 @@
     public class AssignmentGroupController : Controller
     {
         private readonly ILogger<AssignmentGroupController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentGroupController(
             ILogger<AssignmentGroupController> logger,
-            DeviceControllerContext context,
+            ControllerDbContext context,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;
@@ -37,7 +39,25 @@
             {
                 Items = assignmentGroups,
             };
-            // TODO: Include instance type for disabling Re-Quest button
+
+            var assignmentGroupsWithQuests = new List<string>();
+            var questInstanceNames = _context.Instances.Where(x => x.Type == InstanceType.AutoQuest)
+                                                       .Select(x => x.Name)
+                                                       .ToList();
+            var assignments = _context.Assignments.ToList();
+            foreach (var assignmentGroup in assignmentGroups)
+            {
+                var assignmentIds = assignmentGroup.AssignmentIds;
+                var groupAssignments = assignmentIds.Select(id => assignments.FirstOrDefault(a => a.Id == id))
+                                                    .Where(assignment => assignment!.Enabled)
+                                                    .Where(assignment => questInstanceNames.Contains(assignment!.InstanceName))
+                                                    .ToList();
+                if ((groupAssignments?.Count ?? 0) > 0)
+                {
+                    assignmentGroupsWithQuests.Add(assignmentGroup.Name);
+                }
+            }
+            ViewBag.AssignmentGroupsWithQuests = assignmentGroupsWithQuests;
             return View(model);
         }
 
@@ -52,8 +72,9 @@
                 return View();
             }
 
+            var hasQuestInstance = false;
+            var instances = _context.Instances.ToList();
             var assignments = new List<Assignment>();
-            // TODO: Include instance type for removing Re-Quest button
             foreach (var assignmentId in assignmentGroup.AssignmentIds)
             {
                 var assignment = await _context.Assignments.FindAsync(assignmentId);
@@ -62,9 +83,14 @@
                     _logger.LogWarning($"Failed to retrieve assignment with id '{assignmentId}' for assignment group '{id}' details.");
                     continue;
                 }
+                if (instances.Exists(x => x.Name == assignment.InstanceName && x.Type == InstanceType.AutoQuest))
+                {
+                    hasQuestInstance = true;
+                }
                 assignments.Add(assignment);
             }
             ViewBag.Assignments = assignments;
+            ViewBag.HasQuestInstance = hasQuestInstance;
             return View(assignmentGroup);
         }
 
@@ -288,11 +314,11 @@
                 }
 
                 // Start re-quest for all device assignments in assignment group
-                await _assignmentService.ReQuestAssignmentGroupAsync(assignmentGroup);
+                await _assignmentService.ReQuestAssignmentsAsync(assignmentGroup.AssignmentIds);
 
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch
             {
                 ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while starting re-quest for assignment group {id}.");
                 return View();

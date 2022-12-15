@@ -1,10 +1,7 @@
-﻿@using ChuckDeviceController.Data
-@using ChuckDeviceController.Data.Entities
-@using ChuckDeviceConfigurator.ViewModels
-@model IvList
+﻿@model IvList
 @{
     ViewData["Title"] = "Edit IV List " + Model?.Name;
-    var pokemonIds = string.Join(Environment.NewLine, Model?.PokemonIds ?? new List<uint>());
+    var pokemonIds = string.Join(",", (Model?.PokemonIds ?? new()));
 }
 
 <h1>Edit IV List</h1>
@@ -12,30 +9,27 @@
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="IvList" asp-action="Index">IV Lists</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Edit IV List</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "IvList", ControllerText = "IV Lists", CurrentPage = "Edit IV List" })
 
 <h4>IV List '@(Model?.Name)'</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" readonly />
+                <input asp-for="Name" class="form-control" placeholder="IV list name" readonly />
+                <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="PokemonIds" class="control-label"></label> (Specify '*' for all Pokemon)
-                <textarea id="PokemonIds" name="PokemonIds" class="form-control" rows="30">@pokemonIds</textarea>
+            <br />
+            <div class="form-group" hidden>
+                <textarea id="PokemonIds" name="PokemonIds" class="form-control" rows="2" placeholder="IV list pokemon IDs">@pokemonIds</textarea>
+                <label asp-for="PokemonIds"></label>
                 <span asp-validation-for="PokemonIds" class="text-danger"></span>
             </div>
+            @await Html.PartialAsync("_PokemonSelectorPartial", ViewData["Pokemon"])
+            <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

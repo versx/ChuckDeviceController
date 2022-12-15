@@ -1,15 +1,18 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    using ChuckDeviceController.Data.Contexts;
+    using MySqlConnector;
+
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Http.Caching;
 
     [Table("spawnpoint")]
-    public class Spawnpoint : BaseEntity, ICoordinateEntity
+    public class Spawnpoint : BaseEntity, ISpawnpoint, ICoordinateEntity
     {
         #region Properties
 
@@ -29,14 +32,16 @@
         [Column("despawn_sec")]
         public uint? DespawnSecond { get; set; }
 
-        [Column("updated")]
-        public ulong Updated { get; set; }
-
         [Column("last_seen")]
         public ulong? LastSeen { get; set; }
 
+        [Column("updated")]
+        public ulong Updated { get; set; }
+
         [NotMapped]
         public bool HasChanges { get; set; }
+
+        //public virtual ICollection<Pokemon>? Pokemon { get; set; }
 
         #endregion
 
@@ -50,29 +55,16 @@
 
         #region Public Methods
 
-        public async Task UpdateAsync(MapDataContext context, bool update = false)
+        public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool update = false, bool skipLookup = false)
         {
-            Spawnpoint? oldSpawnpoint = null;
-            try
-            {
-                oldSpawnpoint = await context.Spawnpoints.FindAsync(Id);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Spawnpoint: {ex}");
-            }
-
+            var oldSpawnpoint = skipLookup
+                ? null
+                : await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(connection, Id, memCache);
             var now = DateTime.UtcNow.ToTotalSeconds();
             Updated = now;
-            // TODO: UpdateLastSeen property
             LastSeen = now;
 
-            if (!update && oldSpawnpoint != null)
-            {
-                return;
-            }
-
-            if (oldSpawnpoint != null)
+            if (update && oldSpawnpoint != null)
             {
                 if (DespawnSecond == null && oldSpawnpoint.DespawnSecond != null)
                 {
@@ -88,10 +80,10 @@
                 }
             }
 
-            // TODO: Probably redundant below and can remove
-            Updated = now;
-            // TODO: UpdateLastSeen property
-            LastSeen = now;
+            // Cache spawnpoint entity by id
+            memCache.Set(Id, this);
+
+            await Task.CompletedTask;
         }
 
         #endregion

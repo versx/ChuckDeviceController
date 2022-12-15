@@ -1,27 +1,26 @@
 ﻿namespace ChuckDeviceController.Net.Utilities
 {
-    using System;
     using System.Net;
-    using System.Net.Http;
     using System.Text;
-    using System.Threading.Tasks;
 
     public static class NetUtils
     {
-        public const string DefaultUserAgent = "test123456"; // TODO: Set actual UserAgent
+        public const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36";
         public const string DefaultMimeType = "application/json";
+        private const uint DefaultRequestTimeoutS = 15;
 
-        public static string Get(string url)
+        public static string? Get(string url, uint timeoutS = DefaultRequestTimeoutS)
         {
-            return GetAsync(url).Result;
+            return GetAsync(url, timeoutS).Result;
         }
 
         /// <summary>
         /// Sends a HTTP GET request to the specified url.
         /// </summary>
         /// <param name="url">Url to send the request to.</param>
+        /// <param name="timeoutS">Maximum time to wait for request before aborting.</param>
         /// <returns>Returns the response string of the HTTP GET request.</returns>
-        public static async Task<string> GetAsync(string url)
+        public static async Task<string?> GetAsync(string url, uint timeoutS = DefaultRequestTimeoutS)
         {
             try
             {
@@ -30,16 +29,18 @@
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), DefaultMimeType);
                 client.DefaultRequestHeaders.Add(HttpRequestHeader.ContentType.ToString(), DefaultMimeType);
+                client.DefaultRequestHeaders.Add(HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent);
+                client.Timeout = TimeSpan.FromSeconds(timeoutS);
                 return await client.GetStringAsync(url);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to download data from {url}: {ex}");
+                Console.WriteLine($"Failed to download data from {url}: {ex.Message}");
             }
             return null;
         }
 
-        public static (HttpStatusCode, string?) Post(string url, string payload)
+        public static (HttpStatusCode, string?) Post(string url, string? payload = null)
         {
             return PostAsync(url, payload).Result;
         }
@@ -49,8 +50,10 @@
         /// </summary>
         /// <param name="url">Url to send the request to.</param>
         /// <param name="payload">JSON payload that will be sent in the request.</param>
+        /// <param name="timeoutS"></param>
+        /// <param name="userAgent"></param>
         /// <returns>Returns the response string of the HTTP POST request.</returns>
-        public static async Task<(HttpStatusCode, string?)> PostAsync(string url, string payload, uint timeoutS = 30, string userAgent = DefaultUserAgent)
+        public static async Task<(HttpStatusCode, string?)> PostAsync(string url, string? payload = null, uint timeoutS = DefaultRequestTimeoutS, string? userAgent = DefaultUserAgent)
         {
             try
             {
@@ -64,43 +67,48 @@
                     RequestUri = new Uri(url),
                     Headers =
                     {
-                        { HttpRequestHeader.UserAgent.ToString(), userAgent },
                         { HttpRequestHeader.Accept.ToString(), DefaultMimeType },
                         { HttpRequestHeader.ContentType.ToString(), DefaultMimeType },
+                        { HttpRequestHeader.UserAgent.ToString(), userAgent ?? DefaultUserAgent },
                     },
-                    Content = new StringContent(payload, Encoding.UTF8, DefaultMimeType),
                 };
+                if (!string.IsNullOrEmpty(payload))
+                {
+                    requestMessage.Content = new StringContent(payload, Encoding.UTF8, DefaultMimeType);
+                }
+
                 var response = await client.SendAsync(requestMessage);
                 var responseData = await response.Content.ReadAsStringAsync();
                 return (response.StatusCode, responseData);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to post data to {url}: {ex}");
+                Console.WriteLine($"Failed to post data to {url}: {ex.Message}");
             }
             return (HttpStatusCode.BadRequest, null);
         }
 
-        public static HttpResponseMessage Head(string url)
+        public static HttpResponseMessage? Head(string url, uint timeoutS = DefaultRequestTimeoutS)
         {
-            return HeadAsync(url).Result;
+            return HeadAsync(url, timeoutS).Result;
         }
 
-        public static async Task<HttpResponseMessage> HeadAsync(string url)
+        public static async Task<HttpResponseMessage?> HeadAsync(string url, uint timeoutS = DefaultRequestTimeoutS)
         {
             try
             {
                 SetDefaultSecurityProtocol();
 
                 using var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(timeoutS);
                 var requestMessage = new HttpRequestMessage
                 {
                     Method = HttpMethod.Head,
                     RequestUri = new Uri(url),
                     Headers =
                     {
-                        { HttpRequestHeader.Accept.ToString(), DefaultMimeType },
-                        { HttpRequestHeader.ContentType.ToString(), DefaultMimeType },
+                        //{ HttpRequestHeader.Accept.ToString(), DefaultMimeType },
+                        //{ HttpRequestHeader.ContentType.ToString(), DefaultMimeType },
                         { HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent },
                     },
                     //Content = new StringContent(payload, Encoding.UTF8, DefaultMimeType),
@@ -111,7 +119,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to download data from {url}: {ex}");
+                Console.WriteLine($"Failed to download data from {url}: {ex.Message}");
             }
             return null;
         }

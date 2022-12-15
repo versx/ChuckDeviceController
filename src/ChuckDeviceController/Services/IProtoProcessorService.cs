@@ -2,6 +2,5 @@
 {
     public interface IProtoProcessorService
     {
-        Task EnqueueAsync(ProtoPayloadQueueItem payload);
     }
 }

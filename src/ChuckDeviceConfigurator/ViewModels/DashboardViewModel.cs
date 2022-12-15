@@ -3,6 +3,8 @@
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
 
+    using ChuckDeviceController.Plugin;
+
     public class DashboardViewModel
     {
         // Controller counts
@@ -53,6 +55,12 @@
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]
         public ulong IvLists { get; set; }
+
+        [
+            DisplayName("Plugins"),
+            DisplayFormat(DataFormatString = "{0:N0}"),
+        ]
+        public ulong Plugins { get; set; }
 
         [
             DisplayName("Users"),
@@ -138,5 +146,13 @@
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]
         public ulong Weather { get; set; }
+
+        [DisplayName("Uptime")]
+        public string? Uptime { get; set; }
+
+        [DisplayName("Started")]
+        public string? Started { get; set; }
+
+        public IReadOnlyList<IDashboardStatsItem> PluginDashboardStats { get; set; } = new List<IDashboardStatsItem>();
     }
 }

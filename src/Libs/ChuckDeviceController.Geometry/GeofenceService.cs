@@ -1,32 +1,31 @@
 ﻿namespace ChuckDeviceController.Geometry
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
 
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public static class GeofenceService
     {
-        public static bool InMultiPolygon(List<MultiPolygon> multiPolygons, Coordinate point)
+        public static bool InMultiPolygon(IReadOnlyList<IMultiPolygon> multiPolygons, ICoordinate point)
         {
             var result = InMultiPolygon(multiPolygons, point.Latitude, point.Longitude);
             return result;
         }
 
-        public static bool InMultiPolygon(List<MultiPolygon> multiPolygons, double latitude, double longitude)
+        public static bool InMultiPolygon(IReadOnlyList<IMultiPolygon> multiPolygons, double latitude, double longitude)
         {
             var result = multiPolygons.Any(multiPolygon => InPolygon(multiPolygon, latitude, longitude));
             return result;
         }
 
-        public static bool InPolygon(MultiPolygon multiPolygon, Coordinate point)
+        public static bool InPolygon(IMultiPolygon multiPolygon, Coordinate point)
         {
             var result = InPolygon(multiPolygon, point.Latitude, point.Longitude);
             return result;
         }
 
-        public static bool InPolygon(MultiPolygon multiPolygon, double latitude, double longitude)
+        public static bool InPolygon(IMultiPolygon multiPolygon, double latitude, double longitude)
         {
             var numOfPoints = multiPolygon.Count;
             var lats = multiPolygon.Select(coord => coord[0]).ToList();
@@ -39,8 +38,7 @@
                                        * (longitude - lngs[node])
                                        / (lngs[altNode] - lngs[node]))
                                        + lats[node]
-                )
-            )
+                ))
                 {
                     polygonContainsPoint = !polygonContainsPoint;
                 }
@@ -51,7 +49,8 @@
         }
 
         // Credits: http://codereview.stackexchange.com/a/108903
-        public static bool IsPointInPolygon(Coordinate point, List<Coordinate> polygon)
+        public static bool IsPointInPolygon<T>(ICoordinate point, IReadOnlyList<T> polygon)
+            where T : ICoordinate
         {
             int polygonLength = polygon.Count, i = 0;
             var inside = false;
@@ -59,7 +58,7 @@
             double pointX = point.Longitude, pointY = point.Latitude;
             // start / end point for the current polygon segment.
             double startX, startY, endX, endY;
-            Coordinate endPoint = polygon[polygonLength - 1];
+            var endPoint = polygon[polygonLength - 1];
             endX = endPoint.Longitude;
             endY = endPoint.Latitude;
             while (i < polygonLength)
@@ -77,9 +76,12 @@
             return inside;
         }
 
-        public static bool IsPointInPolygon(Coordinate point, List<List<Coordinate>> multiPolygons)
+        public static bool IsPointInPolygon(Coordinate point, IReadOnlyList<IReadOnlyList<Coordinate>>? multiPolygons)
         {
-            foreach (var multiPolygon in multiPolygons)
+            if (!(multiPolygons?.Any() ?? false))
+                return true;
+
+            foreach (var multiPolygon in multiPolygons!)
             {
                 if (IsPointInPolygon(point, multiPolygon))
                 {

@@ -3,13 +3,15 @@
     using System.ComponentModel;
     using System.Text.Json.Serialization;
 
-    public class WebhookData
+    using ChuckDeviceController.Common.Data.Contracts;
+
+    public class WebhookData : IWebhookData
     {
         [
             DisplayName("Pokemon IDs"),
             JsonPropertyName("pokemon_ids"),
         ]
-        public List<uint> PokemonIds { get; set; } = new();
+        public List<string> PokemonIds { get; set; } = new();
 
         [
             DisplayName("Pokestop IDs"),
@@ -21,7 +23,7 @@
             DisplayName("Raid Pokemon IDs"),
             JsonPropertyName("raid_ids"),
         ]
-        public List<uint> RaidPokemonIds { get; set; } = new();
+        public List<string> RaidPokemonIds { get; set; } = new();
 
         [
             DisplayName("Raid Egg Levels"),
@@ -44,6 +46,12 @@
         [
             DisplayName("Gym IDs"),
             JsonPropertyName("gym_ids"),
+        ]
+        public List<string> GymIds { get; set; } = new();
+
+        [
+            DisplayName("Gym Teams"),
+            JsonPropertyName("gym_team_ids"),
         ]
         public List<ushort> GymTeamIds { get; set; } = new();
 

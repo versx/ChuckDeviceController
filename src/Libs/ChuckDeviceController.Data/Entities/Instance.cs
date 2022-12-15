@@ -4,8 +4,11 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
+
     [Table("instance")]
-    public class Instance : BaseEntity
+    public class Instance : BaseEntity, IInstance
     {
         #region Properties
 
@@ -48,20 +51,22 @@
             DisplayName("Data"),
             Column("data"),
         ]
-        public InstanceData Data { get; set; }
+        public InstanceData? Data { get; set; }
 
         [
-            DisplayName("Device Count"),
+            DisplayName("No. Devices"),
             NotMapped,
         ]
-        public int DeviceCount { get; set; }
+        public string? DeviceCount { get; set; }
 
         [
-
             DisplayName("Status"),
             NotMapped,
         ]
-        public string Status { get; set; }
+        public string? Status { get; set; }
+
+        [NotMapped]
+        IInstanceData IInstance.Data => Data;
 
         #endregion
 
@@ -73,14 +78,14 @@
             {
                 InstanceType.AutoQuest => "auto_quest",
                 InstanceType.CirclePokemon => "circle_pokemon",
-                InstanceType.CircleSmartPokemon => "circle_smart_pokemon",
-                InstanceType.DynamicPokemon => "dynamic_pokemon",
+                InstanceType.DynamicRoute => "dynamic_route",
                 InstanceType.CircleRaid => "circle_raid",
                 InstanceType.SmartRaid => "smart_raid",
                 InstanceType.PokemonIV => "pokemon_iv",
                 InstanceType.Bootstrap => "bootstrap",
                 InstanceType.FindTth => "find_tth",
                 InstanceType.Leveling => "leveling",
+                InstanceType.Custom => "custom",
                 _ => type.ToString(),
             };
         }
@@ -91,14 +96,14 @@
             {
                 "auto_quest" => InstanceType.AutoQuest,
                 "circle_pokemon" => InstanceType.CirclePokemon,
-                "circle_smart_pokemon" => InstanceType.CircleSmartPokemon,
-                "dynamic_pokemon" => InstanceType.DynamicPokemon,
+                "dynamic_route" => InstanceType.DynamicRoute,
                 "circle_raid" => InstanceType.CircleRaid,
                 "smart_raid" => InstanceType.SmartRaid,
                 "pokemon_iv" => InstanceType.PokemonIV,
                 "bootstrap" => InstanceType.Bootstrap,
                 "find_tth" => InstanceType.FindTth,
                 "leveling" => InstanceType.Leveling,
+                "custom" => InstanceType.Custom,
                 _ => InstanceType.CirclePokemon,
             };
         }

@@ -1,37 +1,50 @@
 ﻿namespace ChuckDeviceController.Services
 {
-    using System;
+    using System.Collections.Concurrent;
     using System.Diagnostics;
 
-    using Google.Common.Geometry;
+    using Microsoft.Extensions.Options;
     using POGOProtos.Rpc;
 
+    using ChuckDeviceController.Collections;
     using ChuckDeviceController.Collections.Cache;
-    using ChuckDeviceController.Collections.Queues;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry.Extensions;
-    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.HostedServices;
+    using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
-    using ChuckDeviceController.Services.Rpc;
 
-    public class ProtoProcessorService : BackgroundService, IProtoProcessorService
+    // TODO: Consider storing protos as Dictionary<string, List<ProtoPayload>> queue
+
+    public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
     {
+        #region Constants
+
+        private const ushort DefaultMaxEmptyCellsCount = 3;
+        private const uint DefaultArCacheLimit = 1000;
+        private const int DefaultProcessingWaitTimeS = 3;
+
+        #endregion
+
         #region Variables
 
         private readonly ILogger<IProtoProcessorService> _logger;
-        private readonly IBackgroundTaskQueue _taskQueue;
-        private readonly IDataProcessorService _dataProcessor;
-        private readonly IGrpcClientService _grpcClientService;
+        private readonly SafeCollection<ProtoPayloadQueueItem> _protoQueue;
+        private readonly SafeCollection<DataQueueItem> _dataQueue;
+        private readonly IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> _grpcProtoClient;
+        private readonly IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> _grpcLevelingClient;
 
-        private readonly Dictionary<ulong, int> _emptyCells = new();
-        private static readonly TimedMap<bool> _arQuestActualMap = new();
-        private static readonly TimedMap<bool> _arQuestTargetMap = new();
+        private static readonly ConcurrentDictionary<ulong, int> _emptyCells = new();
+        private static readonly ConcurrentDictionary<string, bool> _canStoreData = new();
+        private static readonly TimedMapCollection<string, bool> _arQuestActualMap = new(DefaultArCacheLimit);
+        private static readonly TimedMapCollection<string, bool> _arQuestTargetMap = new(DefaultArCacheLimit);
 
         #endregion
 
         #region Properties
 
-        public bool ProcessMapPokemon { get; set; } = true; // TODO: Make `ProcessMapPokemon` configurable
+        public ProtoProcessorOptionsConfig Options { get; }
 
         #endregion
 
@@ -39,14 +52,20 @@
 
         public ProtoProcessorService(
             ILogger<IProtoProcessorService> logger,
-            IBackgroundTaskQueue taskQueue,
-            IDataProcessorService dataProcessor,
-            IGrpcClientService grpcClientService)
+            IOptions<ProtoProcessorOptionsConfig> options,
+            SafeCollection<ProtoPayloadQueueItem> protoQueue,
+            SafeCollection<DataQueueItem> dataQueue,
+            IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> grpcProtoClient,
+            IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> grpcLevelingClient)
+            : base(logger, options?.Value?.IntervalS ?? ProtoProcessorOptionsConfig.DefaultIntervalS)
         {
             _logger = logger;
-            _taskQueue = (DefaultBackgroundTaskQueue)taskQueue;
-            _dataProcessor = dataProcessor;
-            _grpcClientService = grpcClientService;
+            _protoQueue = protoQueue;
+            _dataQueue = dataQueue;
+            _grpcProtoClient = grpcProtoClient;
+            _grpcLevelingClient = grpcLevelingClient;
+
+            Options = options?.Value ?? new();
         }
 
         #endregion
@@ -66,68 +85,58 @@
             _logger.LogInformation(
                 $"{nameof(IProtoProcessorService)} is now running in the background.");
 
-            await BackgroundProcessing(stoppingToken);
+            await Task.CompletedTask;
         }
 
-        private async Task BackgroundProcessing(CancellationToken stoppingToken)
+        protected override async Task RunJobAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            if (_protoQueue.Count == 0)
             {
-                try
-                {
-                    //var workItem = await _taskQueue.DequeueAsync(stoppingToken);
-                    //await workItem(stoppingToken);
-                    var workItems = await _taskQueue.DequeueMultipleAsync(Strings.MaximumQueueBatchSize, stoppingToken);
-                    //var tasks = workItems.Select(item => Task.Factory.StartNew(async () => await item(stoppingToken)));
-                    //Task.WaitAll(tasks.ToArray(), stoppingToken);
-
-                    await Task.Run(() =>
-                    {
-                        foreach (var workItem in workItems)
-                        {
-                            Task.Factory.StartNew(async () => await workItem(stoppingToken));
-                        }
-                    }, stoppingToken);
-
-                    /*
-                    foreach (var workItem in workItems)
-                    {
-                        await workItem(stoppingToken);
-                    }
-                    */
-                }
-                catch (OperationCanceledException)
-                {
-                    // Prevent throwing if stoppingToken was signaled
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error occurred executing task work item.");
-                }
-                //await Task.Delay(10, stoppingToken);
-                Thread.Sleep(5);
+                return;
             }
 
-            _logger.LogError("Exited background processing...");
+            try
+            {
+                var workItems = _protoQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
+                if (!(workItems?.Any() ?? false))
+                {
+                    return;
+                }
+
+                //Parallel.ForEach(workItems, async payload => await ProcessWorkItemAsync(payload, stoppingToken).ConfigureAwait(false));
+                new Thread(async () =>
+                {
+                    foreach (var workItem in workItems)
+                    {
+                        await ProcessWorkItemAsync(workItem, stoppingToken).ConfigureAwait(false);
+                    }
+                })
+                { IsBackground = true }.Start();
+            }
+            catch (OperationCanceledException)
+            {
+                // Prevent throwing if stoppingToken was signaled
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred executing task work item.");
+            }
+
+            await Task.CompletedTask;
         }
 
-        public async Task EnqueueAsync(ProtoPayloadQueueItem payload)
-        {
-            await _taskQueue.EnqueueAsync(async token =>
-                await ProcessWorkItemAsync(payload, token));
-        }
-
-        private async Task<CancellationToken> ProcessWorkItemAsync(
-            ProtoPayloadQueueItem payload,
-            CancellationToken stoppingToken)
+        private async Task ProcessWorkItemAsync(ProtoPayloadQueueItem payload, CancellationToken stoppingToken)
         {
             if (payload?.Payload == null || payload?.Device == null)
-                return stoppingToken;
+                return;
 
             CheckQueueLength();
 
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var sw = new Stopwatch();
+            if (Options.ShowProcessingTimes)
+            {
+                sw.Start();
+            }
 
             var uuid = payload.Payload.Uuid;
             var username = payload.Payload.Username;
@@ -141,62 +150,44 @@
             //var isInvalidGmo = true;
             //var containsGmo = false;
 
-            Coordinate? targetCoord = null;
-            var inArea = false;
-            if (payload.Payload.LatitudeTarget != 0 && payload.Payload.LongitudeTarget != 0)
-            {
-                targetCoord = new Coordinate(payload.Payload.LatitudeTarget, payload.Payload.LongitudeTarget);
-            }
-            var targetKnown = false;
-            S2CellId targetCellId = default;
-            if (targetCoord != null)
-            {
-                // Check target is within cell id instead of checking geofences
-                targetKnown = true;
-                targetCellId = targetCoord.S2CellIdFromCoordinate();
-                //_logger.LogDebug($"[{uuid}] Data received within target area {targetCoord} and target distance {payload.TargetMaxDistance}");
-            }
-            //_logger.LogWarning($"[{device.Uuid}] InArea={inArea}");
-
             var processedProtos = new List<dynamic>();
-
-            foreach (var rawData in payload.Payload.Contents)
+            var contents = payload?.Payload?.Contents ?? new List<ProtoData>();
+            foreach (var rawData in contents)
             {
-                if (string.IsNullOrEmpty(rawData.Data))
-                {
-                    _logger.LogWarning($"[{uuid}] Unhandled proto {rawData.Method}: Proto data is null '{rawData.Data}'");
-                    continue;
-                }
                 var data = rawData.Data;
                 var method = (Method)rawData.Method;
                 var hasArQuestReq = rawData.HaveAr;
+
+                if (string.IsNullOrEmpty(data))
+                {
+                    _logger.LogDebug($"[{uuid}] Unhandled proto {method} ({rawData.Method}): Proto data is null '{data}'");
+                    continue;
+                }
+
                 switch (method)
                 {
-                    /*
                     case Method.GetPlayer:
                         try
                         {
                             var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (gpr?.Success ?? false)
-                            {
-                                processedProtos.Add(new
-                                {
-                                    type = ProtoDataType.PlayerData,
-                                    gpr,
-                                    username,
-                                });
-                            }
-                            else
+                            if (!(gpr?.Success ?? false))
                             {
                                 _logger.LogError($"[{uuid}] Malformed GetPlayerOutProto");
+                                continue;
                             }
+
+                            processedProtos.Add(new
+                            {
+                                type = ProtoDataType.PlayerData,
+                                gpr,
+                                username,
+                            });
                         }
                         catch (Exception ex)
                         {
                             _logger.LogError($"[{uuid}] Unable to decode GetPlayerOutProto: {ex}");
                         }
                         break;
-                    */
                     case Method.GetHoloholoInventory:
                         try
                         {
@@ -207,8 +198,8 @@
                                 continue;
                             }
 
-                            var inventoryItems = ghi.InventoryDelta?.InventoryItem;
-                            if (inventoryItems == null)
+                            var inventoryItems = ghi.InventoryDelta.InventoryItem;
+                            if (!inventoryItems.Any())
                                 continue;
 
                             foreach (var item in inventoryItems)
@@ -217,21 +208,21 @@
                                 if (itemData == null)
                                     continue;
 
-                                if ((itemData?.PlayerStats?.Experience ?? 0) > 0)
+                                if ((itemData.PlayerStats?.Experience ?? 0) > 0)
                                 {
-                                    xp = Convert.ToUInt32(itemData?.PlayerStats?.Experience ?? 0);
+                                    xp = Convert.ToUInt64(itemData.PlayerStats!.Experience);
                                 }
 
-                                var quests = itemData?.Quests?.Quest;
-                                if (uuid != null && (quests?.Count ?? 0) > 0)
+                                var quests = itemData.Quests?.Quest;
+                                if (uuid == null || !(quests?.Any() ?? false))
+                                    continue;
+
+                                foreach (var quest in quests)
                                 {
-                                    foreach (var quest in quests)
+                                    if (quest.QuestContext == QuestProto.Types.Context.ChallengeQuest &&
+                                        quest.QuestType == QuestType.QuestGeotargetedArScan)
                                     {
-                                        if (quest.QuestContext == QuestProto.Types.Context.ChallengeQuest &&
-                                            quest.QuestType == QuestType.QuestGeotargetedArScan)
-                                        {
-                                            _arQuestActualMap.Set(uuid, true, timestamp);
-                                        }
+                                        _arQuestActualMap.SetValue(uuid, value: true, timestamp);
                                     }
                                 }
                             }
@@ -245,36 +236,35 @@
                         try
                         {
                             var fsr = FortSearchOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (fsr != null)
-                            {
-                                if (fsr.ChallengeQuest?.Quest != null)
-                                {
-                                    // Check for AR quest or if AR quest is required
-                                    var hasAr = hasArQuestReqGlobal
-                                        ?? hasArQuestReq
-                                        ?? GetArQuestMode(uuid, timestamp);
-                                    var title = fsr.ChallengeQuest.QuestDisplay.Title;
-                                    var quest = fsr.ChallengeQuest.Quest;
-                                    _logger.LogDebug($"[{uuid}] Has AR: {hasAr}");
+                            if (fsr?.ChallengeQuest?.Quest == null)
+                                continue;
 
-                                    if (quest.QuestType == QuestType.QuestGeotargetedArScan && uuid != null)
-                                    {
-                                        _arQuestActualMap.Set(uuid, true, timestamp);
-                                    }
-                                    processedProtos.Add(new
-                                    {
-                                        type = ProtoDataType.Quest,
-                                        title,
-                                        quest,
-                                        hasAr,
-                                    });
-                                    //quests++;
-                                }
-                            }
-                            else
+                            // Check for AR quest or if AR quest is required
+                            var hasAr = hasArQuestReqGlobal
+                                ?? hasArQuestReq
+                                ?? GetArQuestMode(uuid!, timestamp);
+                            var title = fsr.ChallengeQuest.QuestDisplay.Title;
+                            var quest = fsr.ChallengeQuest.Quest;
+
+                            // Ignore AR quests so they get rescanned if they were the first quest a scanner would hold onto
+                            if (quest.QuestType == QuestType.QuestGeotargetedArScan && !Options.AllowArQuests)
                             {
-                                _logger.LogError($"[{uuid}] Malformed FortSearchOutProto");
+                                _logger.LogWarning($"[{uuid}] Quest was blocked because it is type '{quest.QuestType}'.");
+                                _logger.LogInformation($"[{uuid}] Quest info: {quest}");
+                                continue;
                             }
+
+                            if (quest.QuestType == QuestType.QuestGeotargetedArScan && uuid != null)
+                            {
+                                _arQuestActualMap.SetValue(uuid, value: true, timestamp);
+                            }
+                            processedProtos.Add(new
+                            {
+                                type = ProtoDataType.Quest,
+                                title,
+                                quest,
+                                hasAr,
+                            });
                         }
                         catch (Exception ex)
                         {
@@ -289,20 +279,20 @@
                             if (level >= 30 || isMadData)
                             {
                                 var er = EncounterOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                                if (er?.Status == EncounterOutProto.Types.Status.EncounterSuccess)
-                                {
-                                    processedProtos.Add(new
-                                    {
-                                        type = ProtoDataType.Encounter,
-                                        data = er,
-                                        username,
-                                        isEvent = false,
-                                    });
-                                }
-                                else if (er == null)
+                                var status = er?.Status ?? EncounterOutProto.Types.Status.EncounterError;
+                                if (status != EncounterOutProto.Types.Status.EncounterSuccess)
                                 {
                                     _logger.LogError($"[{uuid}] Malformed EncounterOutProto");
+                                    continue;
                                 }
+
+                                processedProtos.Add(new
+                                {
+                                    type = ProtoDataType.Encounter,
+                                    data = er,
+                                    username,
+                                    isEvent = false,
+                                });
                             }
                         }
                         catch (Exception ex)
@@ -311,25 +301,25 @@
                         }
                         break;
                     case Method.DiskEncounter:
-                        if (ProcessMapPokemon && (level >= 30 || isMadData))
+                        if (Options.ProcessMapPokemon && (level >= 30 || isMadData))
                         {
                             try
                             {
                                 var der = DiskEncounterOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                                if (der?.Result == DiskEncounterOutProto.Types.Result.Success)
-                                {
-                                    processedProtos.Add(new
-                                    {
-                                        type = ProtoDataType.DiskEncounter,
-                                        data = der,
-                                        username,
-                                        isEvent = false,
-                                    });
-                                }
-                                else
+                                var status = der?.Result ?? DiskEncounterOutProto.Types.Result.Unknown;
+                                if (status != DiskEncounterOutProto.Types.Result.Success)
                                 {
                                     _logger.LogError($"[{uuid}] Malformed DiskEncounterOutProto");
+                                    continue;
                                 }
+
+                                processedProtos.Add(new
+                                {
+                                    type = ProtoDataType.DiskEncounter,
+                                    data = der,
+                                    username,
+                                    isEvent = false,
+                                });
                             }
                             catch (Exception ex)
                             {
@@ -341,18 +331,17 @@
                         try
                         {
                             var fdr = FortDetailsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (fdr != null)
-                            {
-                                processedProtos.Add(new
-                                {
-                                    type = ProtoDataType.FortDetails,
-                                    data = fdr,
-                                });
-                            }
-                            else
+                            if (fdr == null)
                             {
                                 _logger.LogError($"[{uuid}] Malformed FortDetailsOutProto");
+                                continue;
                             }
+
+                            processedProtos.Add(new
+                            {
+                                type = ProtoDataType.FortDetails,
+                                data = fdr,
+                            });
                         }
                         catch (Exception ex)
                         {
@@ -360,212 +349,58 @@
                         }
                         break;
                     case Method.GetMapObjects:
-                        try
+                        var gmo = ParseGetMapObjectsProto(uuid!, username!, data);
+                        if (gmo.Any())
                         {
-                            //containsGmo = true;
-                            var gmo = GetMapObjectsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (gmo != null)
-                            {
-                                //isInvalidGmo = false;
-                                var gmoMapCells = gmo.MapCell;
-                                var newWildPokemon = new List<dynamic>();
-                                var newNearbyPokemon = new List<dynamic>();
-                                var newMapPokemon = new List<dynamic>();
-                                var newClientWeather = new List<dynamic>();
-                                var newForts = new List<dynamic>();
-                                var newCells = new List<dynamic>();
-
-                                if (gmoMapCells.Count == 0)
-                                {
-                                    _logger.LogDebug($"[{uuid}] Map cells are empty");
-                                    continue;
-                                }
-
-                                // Check if we're within the same cell, if so then we are within the target distance
-                                if (!inArea && targetKnown && gmoMapCells.Select(x => x.S2CellId).Contains(targetCellId.Id))
-                                {
-                                    inArea = true;
-                                }
-
-                                foreach (var mapCell in gmoMapCells)
-                                {
-                                    var timestampMs = Convert.ToUInt64(mapCell.AsOfTimeMs);
-                                    foreach (var wild in mapCell.WildPokemon)
-                                    {
-                                        newWildPokemon.Add(new
-                                        {
-                                            type = ProtoDataType.WildPokemon,
-                                            cell = mapCell.S2CellId,
-                                            data = wild,
-                                            timestampMs,
-                                            username,
-                                            isEvent = false, // TODO: IsEvent
-                                        });
-                                    }
-
-                                    foreach (var nearby in mapCell.NearbyPokemon)
-                                    {
-                                        newNearbyPokemon.Add(new
-                                        {
-                                            type = ProtoDataType.NearbyPokemon,
-                                            cell = mapCell.S2CellId,
-                                            data = nearby,
-                                            username,
-                                            isEvent = false,
-                                        });
-                                    }
-
-                                    foreach (var fort in mapCell.Fort)
-                                    {
-                                        newForts.Add(new
-                                        {
-                                            type = ProtoDataType.Fort,
-                                            cell = mapCell.S2CellId,
-                                            data = fort,
-                                            username,
-                                        });
-                                        if (ProcessMapPokemon && fort.ActivePokemon != null)
-                                        {
-                                            newMapPokemon.Add(new
-                                            {
-                                                type = ProtoDataType.MapPokemon,
-                                                cell = mapCell.S2CellId,
-                                                data = fort.ActivePokemon,
-                                                username,
-                                                isEvent = false,
-                                            });
-                                        }
-                                    }
-
-                                    newCells.Add(new
-                                    {
-                                        type = ProtoDataType.Cell,
-                                        cell = mapCell.S2CellId,
-                                    });
-                                }
-
-                                foreach (var weatherCell in gmo.ClientWeather)
-                                {
-                                    newClientWeather.Add(new
-                                    {
-                                        type = ProtoDataType.ClientWeather,
-                                        cell = weatherCell.S2CellId,
-                                        data = weatherCell,
-                                    });
-                                }
-
-                                if (newWildPokemon.Count == 0 && newNearbyPokemon.Count == 0 && newForts.Count == 0)
-                                {
-                                    foreach (var cell in newCells)
-                                    {
-                                        var cellId = cell.cell;
-                                        lock (_emptyCells)
-                                        {
-                                            if (!_emptyCells.ContainsKey(cellId))
-                                            {
-                                                _emptyCells.Add(cellId, 1);
-                                            }
-                                            else
-                                            {
-                                                _emptyCells[cellId]++;
-                                            }
-                                        }
-
-                                        var count = _emptyCells[cellId];
-                                        if (count == 3)
-                                        {
-                                            _logger.LogWarning($"[{uuid}] Cell {cellId} was empty 3 times in a row. Assuming empty.");
-                                            processedProtos.Add(cell);
-                                        }
-                                    }
-
-                                    //isEmptyGmo = true;
-                                    _logger.LogDebug($"[{uuid}] GMO is empty.");
-                                }
-                                else
-                                {
-                                    foreach (var cell in newCells)
-                                    {
-                                        lock (_emptyCells)
-                                        {
-                                            var cellId = cell.cell;
-                                            if (_emptyCells.ContainsKey(cellId))
-                                            {
-                                                _emptyCells[cellId] = 0;
-                                            }
-                                            else
-                                            {
-                                                _emptyCells.Add(cellId, 0);
-                                            }
-                                        }
-                                    }
-
-                                    //isEmptyGmo = false;
-                                }
-
-                                processedProtos.AddRange(newCells);
-                                processedProtos.AddRange(newClientWeather);
-                                processedProtos.AddRange(newForts);
-                                processedProtos.AddRange(newWildPokemon);
-                                processedProtos.AddRange(newNearbyPokemon);
-                                processedProtos.AddRange(newMapPokemon);
-                            }
-                            else
-                            {
-                                _logger.LogError($"[{uuid}] Malformed GetMapObjectsOutProto");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"[{uuid}] Unable to decode GetMapObjectsOutProto: {ex}");
+                            processedProtos.AddRange(gmo);
                         }
                         break;
                     case Method.GymGetInfo:
                         try
                         {
                             var ggi = GymGetInfoOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
-                            if (ggi != null)
-                            {
-                                processedProtos.Add(new
-                                {
-                                    type = ProtoDataType.GymInfo,
-                                    data = ggi,
-                                });
-
-                                if (ggi.GymStatusAndDefenders == null)
-                                {
-                                    _logger.LogWarning($"Invalid GymStatusAndDefenders provided, skipping...\n: {ggi}");
-                                    continue;
-                                }
-                                var fortId = ggi.GymStatusAndDefenders.PokemonFortProto.FortId;
-                                var gymDefenders = ggi.GymStatusAndDefenders.GymDefender;
-                                if (gymDefenders == null)
-                                    continue;
-
-                                foreach (var gymDefender in gymDefenders)
-                                {
-                                    if (gymDefender.TrainerPublicProfile != null)
-                                    {
-                                        processedProtos.Add(new
-                                        {
-                                            type = ProtoDataType.Trainer,
-                                            data = gymDefender.TrainerPublicProfile,
-                                        });
-                                    }
-                                    if (gymDefender.MotivatedPokemon != null)
-                                    {
-                                        processedProtos.Add(new
-                                        {
-                                            type = ProtoDataType.GymDefender,
-                                            fort = fortId,
-                                            data = gymDefender,
-                                        });
-                                    }
-                                }
-                            }
-                            else
+                            if (ggi == null)
                             {
                                 _logger.LogError($"[{uuid}] Malformed GymGetInfoOutProto");
+                                continue;
+                            }
+
+                            processedProtos.Add(new
+                            {
+                                type = ProtoDataType.GymInfo,
+                                data = ggi,
+                            });
+
+                            // TODO: Add ProcessGymDefenders and ProcessGymTrainers option to ProcessingOptions.Protos config
+                            if (ggi.GymStatusAndDefenders == null)
+                            {
+                                _logger.LogWarning($"Invalid GymStatusAndDefenders provided, skipping...\n: {ggi}");
+                                continue;
+                            }
+                            var fortId = ggi.GymStatusAndDefenders.PokemonFortProto.FortId;
+                            var gymDefenders = ggi.GymStatusAndDefenders.GymDefender;
+                            if (gymDefenders == null)
+                                continue;
+
+                            foreach (var gymDefender in gymDefenders)
+                            {
+                                if (gymDefender.TrainerPublicProfile != null)
+                                {
+                                    processedProtos.Add(new
+                                    {
+                                        type = ProtoDataType.Trainer,
+                                        data = gymDefender.TrainerPublicProfile,
+                                    });
+                                }
+                                if (gymDefender.MotivatedPokemon != null)
+                                {
+                                    processedProtos.Add(new
+                                    {
+                                        type = ProtoDataType.GymDefender,
+                                        fort = fortId,
+                                        data = gymDefender,
+                                    });
+                                }
                             }
                         }
                         catch (Exception ex)
@@ -588,25 +423,44 @@
                     xp,
                     level,
                 };
-                await _grpcClientService.SendRpcPayloadAsync(playerInfo, PayloadType.PlayerInfo, username);
-            }
-
-            stopwatch.Stop();
-
-            // Insert/upsert wildPokemon, nearbyPokemon, mapPokemon, forts, cells, clientWeather, etc into database
-            if (processedProtos.Count > 0)
-            {
-                // var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                // _logger.LogInformation($"[{uuid}] {processedProtos.Count:N0} protos parsed in {totalSeconds}s");
-
-                var storeData = await IsAllowedToSaveDataAsync(username);
-                if (storeData)
+                // Inform frontend/configurator via RPC of trainer account XP and Level for leveling instance stats
+                // TODO: Send in new thread
+                await _grpcProtoClient.SendAsync(new PayloadRequest
                 {
-                    await _dataProcessor.ConsumeDataAsync(username, processedProtos);
-                }
+                    PayloadType = PayloadType.PlayerInfo,
+                    Payload = playerInfo.ToJson(),
+                    Username = username,
+                });
             }
 
-            return stoppingToken;
+            if (!processedProtos.Any())
+                return;
+
+            if (string.IsNullOrEmpty(username))
+                return;
+
+            var storeData = await IsAllowedToSaveDataAsync(username);
+            if (!storeData)
+                return;
+
+            if (Options.ShowProcessingTimes)
+            {
+                sw.Stop();
+                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
+                _logger.LogInformation($"[{uuid}] Parsed {processedProtos.Count:N0} protos{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
+            }
+
+            ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;
+            var wasAdded = _dataQueue.TryAdd(new DataQueueItem
+            {
+                Username = username,
+                Data = processedProtos,
+            });
+            if (!wasAdded)
+            {
+                // Failed to enqueue item with proto queue
+                _logger.LogError($"Failed to enqueue entity data with data queue");
+            }
         }
 
         #endregion
@@ -615,31 +469,167 @@
 
         public static void SetArQuestTarget(string uuid, ulong timestamp, bool isAr)
         {
-            _arQuestTargetMap.Set(uuid, isAr, timestamp);
+            _arQuestTargetMap.SetValue(uuid, isAr, timestamp);
             if (isAr)
             {
                 // AR mode is sent to client -> client will clear ar quest
-                _arQuestActualMap.Set(uuid, false, timestamp);
+                _arQuestActualMap.SetValue(uuid, false, timestamp);
             }
         }
 
         private static bool GetArQuestMode(string uuid, ulong timestamp)
         {
             if (string.IsNullOrEmpty(uuid))
-            {
                 return true;
-            }
-            var targetMode = _arQuestTargetMap.Get(uuid, timestamp);
-            var actualMode = _arQuestActualMap.Get(uuid, timestamp);
-            if (!targetMode)
-            {
+
+            var actualMode = _arQuestActualMap.GetValueAt(uuid, timestamp) ?? false;
+            var targetMode = _arQuestTargetMap.GetValueAt(uuid, timestamp);
+            if (targetMode == null)
                 return true;
-            }
-            else if (targetMode)
-            {
+            else if (targetMode ?? false)
                 return false;
-            }
+
             return actualMode;
+        }
+
+        #endregion
+
+        #region Proto Parsing Methods
+
+        private IEnumerable<dynamic> ParseGetMapObjectsProto(string uuid, string username, string payload)
+        {
+            var results = new List<dynamic>();
+            try
+            {
+                //containsGmo = true;
+                var gmo = GetMapObjectsOutProto.Parser.ParseFrom(Convert.FromBase64String(payload));
+                if (gmo == null)
+                {
+                    return results;
+                }
+
+                //isInvalidGmo = false;
+                var gmoMapCells = gmo.MapCell;
+                if (gmoMapCells.Count == 0)
+                {
+                    _logger.LogDebug($"[{uuid}] Map cells are empty");
+                    return results;
+                }
+
+                var newWildPokemon = new List<dynamic>();
+                var newNearbyPokemon = new List<dynamic>();
+                var newMapPokemon = new List<dynamic>();
+                var newClientWeather = new List<dynamic>();
+                var newForts = new List<dynamic>();
+                var newCells = new List<dynamic>();
+
+                foreach (var mapCell in gmoMapCells)
+                {
+                    var timestampMs = Convert.ToUInt64(mapCell.AsOfTimeMs);
+                    foreach (var wild in mapCell.WildPokemon)
+                    {
+                        newWildPokemon.Add(new
+                        {
+                            type = ProtoDataType.WildPokemon,
+                            cell = mapCell.S2CellId,
+                            data = wild,
+                            timestampMs,
+                            username,
+                            isEvent = false, // TODO: IsEvent
+                        });
+                    }
+
+                    foreach (var nearby in mapCell.NearbyPokemon)
+                    {
+                        newNearbyPokemon.Add(new
+                        {
+                            type = ProtoDataType.NearbyPokemon,
+                            cell = mapCell.S2CellId,
+                            data = nearby,
+                            username,
+                            isEvent = false,
+                        });
+                    }
+
+                    foreach (var fort in mapCell.Fort)
+                    {
+                        newForts.Add(new
+                        {
+                            type = ProtoDataType.Fort,
+                            cell = mapCell.S2CellId,
+                            data = fort,
+                            username,
+                        });
+                        if (Options.ProcessMapPokemon && fort.ActivePokemon != null)
+                        {
+                            newMapPokemon.Add(new
+                            {
+                                type = ProtoDataType.MapPokemon,
+                                cell = mapCell.S2CellId,
+                                data = fort.ActivePokemon,
+                                username,
+                                isEvent = false,
+                            });
+                        }
+                    }
+
+                    newCells.Add(new
+                    {
+                        type = ProtoDataType.Cell,
+                        cell = mapCell.S2CellId,
+                    });
+                }
+
+                foreach (var weatherCell in gmo.ClientWeather)
+                {
+                    newClientWeather.Add(new
+                    {
+                        type = ProtoDataType.ClientWeather,
+                        cell = weatherCell.S2CellId,
+                        data = weatherCell,
+                    });
+                }
+
+                if (newWildPokemon.Count == 0 && newNearbyPokemon.Count == 0 && newForts.Count == 0)
+                {
+                    foreach (var cell in newCells)
+                    {
+                        ulong cellId = Convert.ToUInt64(cell.cell);
+                        _emptyCells.AddOrUpdate(cellId, 1, (key, oldValue) => ++oldValue);
+
+                        if (_emptyCells[cellId] == DefaultMaxEmptyCellsCount)
+                        {
+                            _logger.LogWarning($"[{uuid}] Cell {cellId} was empty 3 times in a row. Assuming empty.");
+                            results.Add(cell);
+                        }
+                    }
+
+                    //isEmptyGmo = true;
+                    _logger.LogDebug($"[{uuid}] GMO is empty.");
+                }
+                else
+                {
+                    foreach (var cell in newCells)
+                    {
+                        ulong cellId = Convert.ToUInt64(cell.cell);
+                        _emptyCells.AddOrUpdate(cellId, 0, (key, oldValue) => 0);
+                    }
+
+                    //isEmptyGmo = false;
+                }
+
+                results.AddRange(newCells);
+                results.AddRange(newClientWeather);
+                results.AddRange(newForts);
+                results.AddRange(newWildPokemon);
+                results.AddRange(newNearbyPokemon);
+                results.AddRange(newMapPokemon);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"[{uuid}] Unable to decode GetMapObjectsOutProto: {ex}");
+            }
+            return results;
         }
 
         #endregion
@@ -648,9 +638,17 @@
 
         private async Task<bool> IsAllowedToSaveDataAsync(string username)
         {
+            if (_canStoreData.ContainsKey(username))
+            {
+                return _canStoreData[username];
+            }
+
             // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
-            var levelingStatus = await _grpcClientService.GetTrainerLevelingStatusAsync(username);
-            if (levelingStatus.Status != TrainerInfoStatus.Ok)
+            var levelingStatus = await _grpcLevelingClient.SendAsync(new TrainerInfoRequest
+            {
+                Username = username,
+            });
+            if ((levelingStatus?.Status ?? TrainerInfoStatus.Error) != TrainerInfoStatus.Ok)
             {
                 // Failure occurred, return true to be safe
                 return true;
@@ -658,21 +656,25 @@
 
             // Only store data if trainer is not currently leveling or if trainer is leveling and instance is configured
             // to store leveling data found
-            var storeData = (levelingStatus.IsLeveling && levelingStatus.StoreLevelingData) ||
-                         !levelingStatus.IsLeveling;
+            var storeData = 
+                (levelingStatus!.IsLeveling && levelingStatus!.StoreLevelingData) ||
+                !levelingStatus!.IsLeveling;
+
+            _canStoreData.AddOrUpdate(username, storeData, (key, oldValue) => storeData);
+
             return storeData;
         }
 
         private void CheckQueueLength()
         {
-            var usage = $"{_taskQueue.Count:N0}/{Strings.MaximumQueueCapacity:N0}";
-            if (_taskQueue.Count == Strings.MaximumQueueCapacity)
+            var usage = $"{_protoQueue.Count:N0}/{Options.Queue.MaximumCapacity:N0}";
+            if (_protoQueue.Count >= Options.Queue.MaximumCapacity)
             {
-                _logger.LogWarning($"Proto processing queue is at maximum capacity! {usage}");
+                _logger.LogError($"Proto processing queue is at maximum capacity! {usage}");
             }
-            else if (_taskQueue.Count > Strings.MaximumQueueSizeWarning)
+            else if (_protoQueue.Count >= Options.Queue.MaximumSizeWarning)
             {
-                _logger.LogWarning($"Proto processing queue is over capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
+                _logger.LogWarning($"Proto processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
         }
 

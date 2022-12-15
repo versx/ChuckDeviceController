@@ -4,24 +4,34 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.6">
+    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="EntityFrameworkCore.Triggered" Version="3.2.1" />
+    <PackageReference Include="MicroOrm.Dapper.Repositories" Version="1.24.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.11">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
-    <PackageReference Include="POGOProtos.Core" Version="2.56.6" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.1" />
-    <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="6.14.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.11" />
+    <PackageReference Include="POGOProtos.Core" Version="2.57.5" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ChuckDeviceController.Collections\ChuckDeviceController.Collections.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Logging\ChuckDeviceController.Logging.csproj" />
   </ItemGroup>
 
 </Project>

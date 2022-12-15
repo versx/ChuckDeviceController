@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceController.Geometry.Extensions
 {
     using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
 
     public static class CoordinatesDistanceExtensions
     {
@@ -13,7 +14,7 @@
         /// </returns>
         /// <param name="from">The Coordinate for the location to calculate the distance from.</param>
         /// <param name="to">The Coordinate for the location to calculate the distance to.</param>
-        public static double DistanceTo(this Coordinate from, Coordinate to)
+        public static double DistanceTo(this ICoordinate from, ICoordinate to)
         {
             if (double.IsNaN(from.Latitude) || double.IsNaN(from.Longitude) ||
                 double.IsNaN(to.Latitude) || double.IsNaN(to.Longitude))
@@ -33,7 +34,7 @@
             return distance;
         }
 
-        public static BoundingBox GetBoundingBox(this List<Coordinate> coordinates)
+        public static IBoundingBox GetBoundingBox(this IEnumerable<ICoordinate> coordinates)
         {
             // Add checks here, if necessary, to make sure that points is not null,
             // and that it contains at least one (or perhaps two?) elements
@@ -50,7 +51,7 @@
             };
         }
 
-        public static bool IsValidCoordinate(this Coordinate coordinate) =>
+        public static bool IsValidCoordinate(this ICoordinate coordinate) =>
             IsValidCoordinate(coordinate.Latitude, coordinate.Longitude);
 
         public static bool IsValidCoordinate(this double latitude, double longitude)

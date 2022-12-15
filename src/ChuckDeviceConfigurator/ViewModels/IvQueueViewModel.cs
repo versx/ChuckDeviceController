@@ -2,6 +2,8 @@
 {
     using System.ComponentModel;
 
+    using static POGOProtos.Rpc.PokemonDisplayProto.Types;
+
     public class IvQueueViewModel
     {
         public string? Name { get; set; }
@@ -28,8 +30,17 @@
         [DisplayName("Form")]
         public string? PokemonForm { get; set; }
 
+        [DisplayName("Form ID")]
+        public ushort PokemonFormId { get; set; }
+
         [DisplayName("Costume")]
         public string? PokemonCostume { get; set; }
+
+        [DisplayName("Costume ID")]
+        public ushort PokemonCostumeId { get; set; }
+
+        [DisplayName("Gender")]
+        public Gender PokemonGender { get; set; }
 
         [DisplayName("Encounter ID")]
         public string? EncounterId { get; set; }

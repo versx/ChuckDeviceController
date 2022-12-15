@@ -4,8 +4,10 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using ChuckDeviceController.Common.Data.Contracts;
+
     [Table("device_group")]
-    public class DeviceGroup : BaseEntity
+    public class DeviceGroup : BaseEntity, IDeviceGroup
     {
         [
             DisplayName("Name"),

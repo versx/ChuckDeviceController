@@ -13,33 +13,41 @@
         }
     </li>
     <li class="nav-item">
-        <div class="dropdown">
-            <a href="#" class="nav-link dropdown-toggle text-light" id="dropdownMenuUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-user-circle"></i>
-                &nbsp;@User.Identity?.Name
-            </a>
-            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-lg-end" aria-labelledby="dropdownMenuUser">
-                <li>
-                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage Account">
-                        Account
-                    </a>
-                </li>
-                <li>
-                    <form class="form-inline dropdown-item" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                        <button type="submit" class="nav-link btn btn-link text-light" title="Logout">Logout</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
+        <a href="#" data-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#userSubmenu" aria-expanded="false" class="dropdown-toggle collpased">
+            <i class="fas fa-user-circle"></i>
+            &nbsp;@User.Identity?.Name
+        </a>
+        <ul class="collapse list-unstyled" id="userSubmenu">
+            <li>
+                <a class="dropdown-item account-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage Account">
+                    <i class="fa-solid fa-fw fa-address-card"></i>
+                    Account
+                </a>
+            </li>
+            <li>
+                <form class="form-inline dropdown-item" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="btn btn-sm account-link" title="Logout">
+                        <i class="fa-solid fa-fw fa-arrow-right-from-bracket"></i>
+                        Logout
+                    </button>
+                </form>
+            </li>
+        </ul>
     </li>
 }
 else
 {
     <li class="nav-item">
-        <a class="nav-link text-light" asp-area="Identity" asp-page="/Account/Register">Register</a>
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
+            <i class="fa-solid fa-fw fa-circle-plus"></i>
+            Register
+        </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link text-light" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+            <i class="fa-solid fa-fw fa-arrow-right-to-bracket"></i>
+            Login
+        </a>
     </li>
 }
 </ul>

@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
-@using ChuckDeviceController.Data.Entities
-@model ViewModelsModel<Instance>
+﻿@model ViewModelsModel<Instance>
 @{
     ViewData["Title"] = "Instances";
 }
@@ -38,7 +36,7 @@
             <th scope="col">
                 @Html.DisplayNameFor(model => model.Items[0].DeviceCount)
             </th>
-            <th scope="col">Action</th>
+            <th width="5%">Action</th>
         </tr>
     </thead>
     <tbody>
@@ -49,7 +47,7 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </th>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Type)
+                    @Utils.FormatInstanceType(item.Type)
                 </td>
                 <td>
                     @Html.Raw(item.Status)
@@ -85,7 +83,13 @@
         $(document).ready(function() {
             $('#table-instances').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 6 },
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 5, targets: 1 },
+                    { responsivePriority: 2, targets: 2 },
+                    { responsivePriority: 6, targets: 3 },
+                    { responsivePriority: 3, targets: 4 },
+                    { responsivePriority: 10, targets: 5 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -99,10 +103,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });

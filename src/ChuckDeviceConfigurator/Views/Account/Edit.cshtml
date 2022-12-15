@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceController.Data.Entities
-@model Account
+﻿@model Account
 @{
     ViewData["Title"] = "Edit Account " + Model?.Username;
 }
@@ -9,48 +8,42 @@
 <p>@Html.ValidationMessage("Account", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Account" asp-action="Index">Accounts</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Edit Account</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Account", ControllerText = "Accounts", CurrentPage = "Edit Account" })
 
 <h4>Account '@(Model?.Username)'</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Username" class="control-label"></label>
-                <input asp-for="Username" class="form-control" readonly />
+            <div class="form-floating mb-3">
+                <input asp-for="Username" class="form-control" placeholder="Account username" readonly />
+                <label asp-for="Username"></label>
                 <span asp-validation-for="Username" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Password" class="control-label"></label>
-                <input asp-for="Password" class="form-control" />
+            <div class="form-floating mb-3">
+                <input asp-for="Password" class="form-control" placeholder="Account password" />
+                <label asp-for="Password"></label>
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Level" class="control-label"></label>
-                <input asp-for="Level" class="form-control" min="0" max="50" />
+            <div class="form-floating mb-3">
+                <input asp-for="Level" class="form-control" min="0" max="50" placeholder="Account level" />
+                <label asp-for="Level"></label>
                 <span asp-validation-for="Level" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="GroupName" class="control-label"></label>
-                <input asp-for="GroupName" class="form-control" />
+            <div class="form-floating mb-3">
+                <input asp-for="GroupName" class="form-control" placeholder="Account group name" />
+                <label asp-for="GroupName"></label>
                 <span asp-validation-for="GroupName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Spins" class="control-label"></label>
-                <input asp-for="Spins" class="form-control" />
+            <div class="form-floating mb-3">
+                <input asp-for="Spins" class="form-control" placeholder="Account spins" />
+                <label asp-for="Spins"></label>
                 <span asp-validation-for="Spins" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Tutorial" class="control-label"></label>
-                <input asp-for="Tutorial" class="form-control" />
+            <div class="form-floating mb-3">
+                <input asp-for="Tutorial" class="form-control" placeholder="Account tutorial" />
+                <label asp-for="Tutorial"></label>
                 <span asp-validation-for="Tutorial" class="text-danger"></span>
             </div>
             <div class="form-group">

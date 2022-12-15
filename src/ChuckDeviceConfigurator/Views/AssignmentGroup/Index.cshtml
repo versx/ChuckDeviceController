@@ -22,7 +22,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].AssignmentIds)
             </th>
-            <th>Action</th>
+            <th width="5%">Action</th>
         </tr>
     </thead>
     <tbody>
@@ -42,7 +42,10 @@
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
                             <li><a class="dropdown-item" asp-action="Start" asp-route-id="@item.Name"><i class="fa-solid fa-play"></i>&nbsp;Start</a></li>
-                            <li><a class="dropdown-item" asp-action="ReQuest" asp-route-id="@item.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest</a></li>
+                            @if (ViewBag?.AssignmentGroupsWithQuests?.Contains(item.Name) ?? false)
+                            {
+                                <li><a class="dropdown-item" asp-action="ReQuest" asp-route-id="@item.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest</a></li>
+                            }
                             <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Name"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                             <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Name"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
@@ -59,7 +62,9 @@
         $(document).ready(function() {
             $('#table-assignment-groups').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 2 },
+                    { responsivePriority: 0, targets: 0 },
+                    { responsivePriority: 2, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -74,10 +79,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });

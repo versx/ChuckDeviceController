@@ -10,6 +10,8 @@
 
     public interface IPvpRankGenerator
     {
+        Task InitializeAsync();
+
         /// <summary>
         /// Generate all possible PVP rankings for all PVP leagues for a specific Pokemon.
         /// </summary>
@@ -24,6 +26,6 @@
 
         IReadOnlyList<PvpRank> GetPvpStats(HoloPokemonId pokemon, PokemonForm? form, IV iv, double level, PvpLeague league);
 
-        IReadOnlyList<PvpRank> GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm? form, PvpLeague league);
+        IReadOnlyList<PvpRank>? GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm? form, PvpLeague league);
     }
 }

@@ -3,13 +3,17 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Options;
 
     using ChuckDeviceConfigurator.Services.Geofences;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Converters;
     using ChuckDeviceController.Geometry.Models;
@@ -18,34 +22,37 @@
     public class GeofenceController : Controller
     {
         private readonly ILogger<GeofenceController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IGeofenceControllerService _geofenceService;
         private readonly IJobControllerService _jobControllerService;
+        private readonly LeafletMapConfig _mapConfig;
 
         public GeofenceController(
             ILogger<GeofenceController> logger,
-            DeviceControllerContext context,
+            ControllerDbContext context,
             IGeofenceControllerService geofenceService,
-            IJobControllerService jobControllerService)
+            IJobControllerService jobControllerService,
+            IOptions<LeafletMapConfig> mapConfig)
         {
             _logger = logger;
             _context = context;
             _geofenceService = geofenceService;
             _jobControllerService = jobControllerService;
+            _mapConfig = mapConfig.Value;
         }
 
         // GET: GeofenceController
         public ActionResult Index()
         {
             var geofences = _context.Geofences.ToList();
-            geofences.ForEach(geofence =>
+            foreach (var geofence in geofences)
             {
                 string area = Convert.ToString(geofence.Data.Area);
                 var areasCount = geofence.Type == GeofenceType.Circle
-                    ? area.FromJson<List<Coordinate>>().Count
-                    : area.FromJson<List<List<Coordinate>>>().Count;
+                    ? area?.FromJson<List<Coordinate>>()?.Count ?? 0
+                    : area?.FromJson<List<List<Coordinate>>>()?.Count ?? 0;
                 geofence.AreasCount = (uint)areasCount;
-            });
+            }
             return View(new ViewModelsModel<Geofence>
             {
                 Items = geofences,
@@ -63,12 +70,17 @@
                 return View();
             }
 
+            ViewData["GeofenceData"] = geofence.ConvertToIni();
+            ViewData["MapConfig"] = _mapConfig.ToJson();
             return View(geofence);
         }
 
         // GET: GeofenceController/Create
         public ActionResult Create()
         {
+            var geofenceNames = _context.Geofences.ToList().Select(x => x.Name);
+            ViewData["GeofenceNames"] = geofenceNames;
+            ViewData["MapConfig"] = _mapConfig.ToJson();
             return View();
         }
 
@@ -122,6 +134,7 @@
         // GET: GeofenceController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
+            var geofenceNames = _context.Geofences.ToList().Select(x => x.Name);
             var geofence = await _context.Geofences.FindAsync(id);
             if (geofence == null)
             {
@@ -130,13 +143,15 @@
                 return View();
             }
 
+            geofence.Data ??= new();
             var data = geofence.Data.Area;
             // Convert geofence area data to plain text to display
             dynamic area = geofence.Type == GeofenceType.Circle
                 ? AreaConverters.CoordinatesToAreaString(data)
                 : AreaConverters.MultiPolygonToAreaString(data);
             geofence.Data.Area = area;
-
+            ViewData["GeofenceNames"] = geofenceNames;
+            ViewData["MapConfig"] = _mapConfig.ToJson();
             return View(geofence);
         }
 
@@ -166,10 +181,7 @@
 
                 geofence.Name = name;
                 geofence.Type = type;
-                if (geofence.Data == null)
-                {
-                    geofence.Data = new GeofenceData();
-                }
+                geofence.Data ??= new();
                 geofence.Data.Area = area;
 
                 // Update geofence in database
@@ -179,8 +191,10 @@
                 _geofenceService.Edit(geofence, id);
 
                 // Get list of instances that have geofence
-                var instancesWithGeofence = _context.Instances.Where(instance => instance.Geofences.Contains(geofence.Name))
-                                                              .ToList();
+                var instancesWithGeofence = _context.Instances
+                    .AsEnumerable()
+                    .Where(instance => instance.Geofences.Contains(geofence.Name))
+                    .ToList();
                 foreach (var instance in instancesWithGeofence)
                 {
                     // Reload instance so updated geofence is applied
@@ -189,9 +203,9 @@
 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                ModelState.AddModelError("Geofence", $"Unknown error occurred while editing geofence '{id}'.");
+                ModelState.AddModelError("Geofence", $"Unknown error occurred while editing geofence '{id}': {ex.Message}");
                 return View();
             }
         }

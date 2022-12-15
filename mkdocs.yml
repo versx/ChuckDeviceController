@@ -1,0 +1,36 @@
+site_name: ChuckDeviceController
+site_url: https://github.com/versx/ChuckDeviceController
+site_description: ChuckDeviceController
+site_author: versx
+
+repo_url: https://github.com/versx/chuckdevicecontroller/
+edit_uri: ""
+
+theme:
+    name: readthedocs #mkdocs, bootstrap4, cinder, cosmo, cyborg, flatly, ivory, material, readthedocs, slate, yeti
+
+plugins:
+    - search:
+        separator: '[\s\-\.]+'
+        lang: en
+
+nav:
+    - General:
+        - Home: index.md
+        - Screenshots: screenshots.md
+        - Getting Started: getting-started.md
+    - Plugin System:
+        - Plugins: plugin-system/index.md
+        - API: plugin-system/api.md
+        - Examples: plugin-system/examples.md
+
+
+markdown_extensions:
+    - toc:
+        permalink: 
+
+copyright: Copyright &copy; 2021, Maintained by <a href="https://github.com/versx">versx</a>.
+
+extra_css:
+    - css/base.css
+    - css/bootstrap-custom.min.css

@@ -4,8 +4,8 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.Extensions;
     using ChuckDeviceConfigurator.ViewModels;
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -14,11 +14,11 @@
     public class DeviceGroupController : Controller
     {
         private readonly ILogger<DeviceGroupController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ControllerDbContext _context;
 
         public DeviceGroupController(
             ILogger<DeviceGroupController> logger,
-            DeviceControllerContext context)
+            ControllerDbContext context)
         {
             _logger = logger;
             _context = context;

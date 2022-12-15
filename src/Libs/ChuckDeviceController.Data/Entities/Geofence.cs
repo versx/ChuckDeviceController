@@ -4,8 +4,11 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Common.Data.Contracts;
+
     [Table("geofence")]
-    public class Geofence : BaseEntity
+    public class Geofence : BaseEntity, IGeofence
     {
         #region Properties
 
@@ -17,7 +20,7 @@
         public string Name { get; set; }
 
         [
-            DisplayName("Geofence Type"),
+            DisplayName("Type"),
             Column("type"),
             Required,
         ]
@@ -28,14 +31,16 @@
             Column("data"),
             Required,
         ]
-        public GeofenceData Data { get; set; }
+        public GeofenceData? Data { get; set; }
 
         [
-
             DisplayName("Count"),
             NotMapped,
         ]
         public uint AreasCount { get; set; }
+
+        [NotMapped]
+        IGeofenceData IGeofence.Data => Data;
 
         #endregion
 

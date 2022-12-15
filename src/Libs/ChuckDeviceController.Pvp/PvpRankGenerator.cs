@@ -1,49 +1,38 @@
 ﻿namespace ChuckDeviceController.Pvp
 {
-    using System.Text.Json;
     using System.Timers;
 
-    using ChuckDeviceController.Extensions.Json;
-    using ChuckDeviceController.Net.Utilities;
-    using ChuckDeviceController.Pvp.Extensions;
-    using ChuckDeviceController.Pvp.GameMaster;
-    using ChuckDeviceController.Pvp.Models;
-
+    using Microsoft.Extensions.Logging;
     using POGOProtos.Rpc;
     using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
     using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
     using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
+    using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.Logging;
+    using ChuckDeviceController.Net.Utilities;
+    using ChuckDeviceController.Pvp.Extensions;
+    using ChuckDeviceController.Pvp.GameMaster;
+    using ChuckDeviceController.Pvp.Models;
+
+    // Credits: https://github.com/Chuckleslove
     // Credits: https://github.com/RealDeviceMap/RealDeviceMap/blob/development/Sources/RealDeviceMapLib/Misc/PVPStatsManager.swift
     // Credits: https://github.com/WatWowMap/Chuck/blob/master/src/services/pvp.js
     // Credits: https://github.com/WatWowMap/Chuck/blob/master/src/services/pvp-core.js
-    // Credits: https://github.com/Chuckleslove
     public class PvpRankGenerator : IPvpRankGenerator
     {
         #region Variables
 
+        private static readonly ILogger<IPvpRankGenerator> _logger =
+            GenericLoggerFactory.CreateLogger<IPvpRankGenerator>();
         private Dictionary<PokemonWithFormAndGender, PokemonBaseStats> _pokemonBaseStats = new();
-        private readonly Dictionary<PokemonWithFormAndGender, List<PvpRank>> _rankingLittle = new();
-        private readonly Dictionary<PokemonWithFormAndGender, List<PvpRank>> _rankingGreat = new();
-        private readonly Dictionary<PokemonWithFormAndGender, List<PvpRank>> _rankingUltra = new();
-
-        private readonly object _littleLock = new();
-        private readonly object _greatLock = new();
-        private readonly object _ultraLock = new();
-
+        private readonly Dictionary<PvpLeague, Dictionary<PokemonWithFormAndGender, List<PvpRank>>> _ranking = new();
+        private readonly object _rankLock = new();
         private static readonly object _instanceLock = new();
 
         private readonly Timer _timer;
-
         private string? _lastETag;
-
-        private static readonly JsonSerializerOptions _jsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true,
-            AllowTrailingCommas = true,
-            WriteIndented = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-        };
+        private static bool _loading;
 
         #endregion
 
@@ -59,11 +48,10 @@
                 lock (_instanceLock)
                 {
                     _instance ??= new PvpRankGenerator();
+                    return _instance;
                 }
-                return _instance;
             }
         }
-
 
         #endregion
 
@@ -71,18 +59,23 @@
 
         public PvpRankGenerator()
         {
-            _timer = new Timer(Strings.FetchMasterFileIntervalS * 1000);
+            _timer = new Timer(Strings.FetchMasterFileIntervalM * 60 * 1000);
             _timer.Elapsed += async (sender, e) => await LoadMasterFileIfNeededAsync();
-            _timer.Start();
-
-            LoadMasterFileAsync().ConfigureAwait(false)
-                                 .GetAwaiter()
-                                 .GetResult();
         }
 
         #endregion
 
         #region Public Methods
+
+        public async Task InitializeAsync()
+        {
+            if (!_timer.Enabled)
+            {
+                _timer.Start();
+            }
+
+            await LoadMasterFileAsync();
+        }
 
         public IReadOnlyList<PvpRank> GetPvpStats(HoloPokemonId pokemon, PokemonForm? form, IV iv, double level, PvpLeague league)
         {
@@ -169,7 +162,7 @@
         public IReadOnlyDictionary<string, dynamic>? GetAllPvpLeagues(HoloPokemonId pokemon, PokemonForm? form, PokemonGender? gender, PokemonCostume? costume, IV iv, double level)
         {
             var pvp = new Dictionary<string, dynamic>();
-            foreach (var leagueId in Enum.GetValues(typeof(PvpLeague)))
+            foreach (var leagueId in System.Enum.GetValues(typeof(PvpLeague)))
             {
                 var league = (PvpLeague)leagueId;
                 var leagueName = league.ToString().ToLower();
@@ -219,75 +212,46 @@
                 : pvp;
         }
 
-        public IReadOnlyList<PvpRank> GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm? form, PvpLeague league)
+        public IReadOnlyList<PvpRank>? GetTopPvpRanks(HoloPokemonId pokemon, PokemonForm? form, PvpLeague league)
         {
             var info = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
             List<PvpRank>? cached = null;
 
-            switch (league)
+            lock (_rankLock)
             {
-                case PvpLeague.Little:
-                    lock (_littleLock)
+                if (_ranking.ContainsKey(league))
+                {
+                    if (_ranking[league].ContainsKey(info))
                     {
-                        if (_rankingLittle.ContainsKey(info))
-                        {
-                            cached = _rankingLittle[info];
-                        }
+                        cached = _ranking[league][info];
                     }
-                    break;
-                case PvpLeague.Great:
-                    lock (_greatLock)
-                    {
-                        if (_rankingGreat.ContainsKey(info))
-                        {
-                            cached = _rankingGreat[info];
-                        }
-                    }
-                    break;
-                case PvpLeague.Ultra:
-                    lock (_ultraLock)
-                    {
-                        if (_rankingUltra.ContainsKey(info))
-                        {
-                            cached = _rankingUltra[info];
-                        }
-                    }
-                    break;
+                }
             }
 
-            if (cached == null)
+            if (!(cached?.Any() ?? false))
             {
                 if (!_pokemonBaseStats.ContainsKey(info))
                 {
-                    Console.WriteLine($"Nope");
-                }
-                var baseStats = _pokemonBaseStats[info];
-                if (baseStats == null)
-                {
                     return null;
                 }
+                var baseStats = _pokemonBaseStats[info];
                 var values = CalculateAllRanks(baseStats, (ushort)league);
-                switch (league)
+                lock (_rankLock)
                 {
-                    case PvpLeague.Little:
-                        lock (_littleLock)
-                        {
-                            _rankingLittle[info] = values;
-                        }
-                        break;
-                    case PvpLeague.Great:
-                        lock (_greatLock)
-                        {
-                            _rankingGreat[info] = values;
-                        }
-                        break;
-                    case PvpLeague.Ultra:
-                        lock (_ultraLock)
-                        {
-                            _rankingUltra[info] = values;
-                        }
-                        break;
+                    if (!_ranking.ContainsKey(league))
+                    {
+                        _ranking.Add(league, new());
+                    }
+                    if (!_ranking[league].ContainsKey(info))
+                    {
+                        _ranking[league].Add(info, values);
+                    }
+                    else
+                    {
+                        _ranking[league][info] = values;
+                    }
                 }
+
                 return values;
             }
             return cached;
@@ -306,18 +270,18 @@
             var pkmn = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
             if (!_pokemonBaseStats.ContainsKey(pkmn))
             {
-                Console.WriteLine($"Nope");
+                _logger.LogWarning($"Pokemon base stats manifest does not contains Pokemon '{pkmn.Pokemon}_{pkmn.Form}_{pkmn.Gender}', skipping...");
+                return result;
+                //return null;
             }
             var baseStats = _pokemonBaseStats[pkmn];
-            var hasNoEvolveForm = costume!.ToString().ToLower().Contains(Strings.NoEvolveForm);
+            var hasNoEvolveForm = (costume ?? PokemonCostume.Unset).ToString().ToLower().Contains(Strings.NoEvolveForm);
             var hasCostumeEvoOverride = baseStats.CostumeEvolutionOverride != null &&
                 baseStats.CostumeEvolutionOverride.Count > 0 &&
                 costume != null && baseStats.CostumeEvolutionOverride.Contains(costume ?? null);
 
             // Check if Pokemon has evolutions but has form or costume that cannot evolve
-            if (baseStats != null && baseStats.Evolutions != null &&
-                baseStats.Evolutions.Count > 0 &&
-                (hasNoEvolveForm || hasCostumeEvoOverride))
+            if ((baseStats.Evolutions?.Count ?? 0) > 0 && (hasNoEvolveForm || hasCostumeEvoOverride))
             {
                 return result;
             }
@@ -409,12 +373,7 @@
         private static async Task<string?> GetETag(string url)
         {
             var request = await NetUtils.HeadAsync(url);
-            if (request == null)
-            {
-                Console.WriteLine($"Failed to get eTag for game master file");
-                return null;
-            }
-            var newETag = request.Headers.ETag?.Tag;
+            var newETag = request?.Headers?.ETag?.Tag;
             return newETag;
         }
 
@@ -424,27 +383,35 @@
 
         private async Task LoadMasterFileIfNeededAsync()
         {
+            if (_loading)
+                return;
+
             var newETag = await GetETag(Strings.MasterFileEndpoint);
             if (string.IsNullOrEmpty(newETag))
             {
-                Console.WriteLine($"Failed to get HTTP header ETag from game master file request");
+                _logger.LogWarning($"Failed to get HTTP header ETag from game master file request");
                 return;
             }
-            if (newETag != _lastETag)
-            {
-                Console.WriteLine($"Game master file changed, downloading new version...");
-                await LoadMasterFileAsync();
-            }
+
+            if (newETag == _lastETag)
+                return;
+
+            _logger.LogWarning($"Game master file changed, downloading new version...");
+            await LoadMasterFileAsync(newETag);
         }
 
-        private async Task LoadMasterFileAsync()
+        public async Task LoadMasterFileAsync(string? eTag = null)
         {
-            Console.WriteLine($"Checking if game master file needs to be downloaded...");
+            if (_loading)
+                return;
 
-            var newETag = await GetETag(Strings.MasterFileEndpoint);
+            _loading = true;
+            _logger.LogDebug($"Checking if game master file needs to be downloaded...");
+
+            var newETag = eTag ?? await GetETag(Strings.MasterFileEndpoint);
             if (string.IsNullOrEmpty(newETag))
             {
-                Console.WriteLine($"Failed to get HTTP header ETag from game master file request");
+                _logger.LogWarning($"Failed to get HTTP header ETag from game master file request");
                 return;
             }
             _lastETag = newETag;
@@ -452,16 +419,16 @@
             var requestData = await NetUtils.GetAsync(Strings.MasterFileEndpoint);
             if (string.IsNullOrEmpty(requestData))
             {
-                Console.WriteLine($"Failed to download latest game master file data.");
+                _logger.LogWarning($"Failed to download latest game master file data.");
                 return;
             }
 
-            Console.WriteLine($"Starting game master file parsing...");
+            _logger.LogInformation($"Starting game master file parsing...");
             var templates = requestData.FromJson<List<Dictionary<string, object>>>();
             if (templates == null)
             {
                 // Failed to parse templates
-                Console.WriteLine($"Failed to deserialize game master file");
+                _logger.LogError($"Failed to deserialize game master file");
                 return;
             }
 
@@ -500,11 +467,10 @@
                     var baseAttack = pokedexBaseStats.BaseAttack;
                     var baseDefense = pokedexBaseStats.BaseDefense;
                     var baseStamina = pokedexBaseStats.BaseStamina;
-                    var pokemon = GetPokemonFromName(pokemonName);
+                    var pokemon = pokemonName.GetPokemonFromName();
                     if (pokemon == HoloPokemonId.Missingno)
                     {
-                        Console.WriteLine($"Failed to get Pokemon for '{pokemonName}'");
-                        // TODO: Should we just continue to allow the rest or exit all together?
+                        _logger.LogDebug($"Failed to get Pokemon for '{pokemonName}'");
                         continue;
                     }
 
@@ -512,10 +478,10 @@
                     PokemonForm? form = null;
                     if (!string.IsNullOrEmpty(formName))
                     {
-                        var formId = GetFormFromName(formName);
+                        var formId = formName.GetFormFromName();
                         if (formId == PokemonForm.Unset)
                         {
-                            Console.WriteLine($"Failed to get form for '{formName}'");
+                            _logger.LogDebug($"Failed to get form for '{formName}'");
                             continue;
                         }
                         form = formId;
@@ -533,17 +499,17 @@
                                 // Skip
                                 continue;
                             }
-                            var evoPokemon = GetPokemonFromName(evoName);
+                            var evoPokemon = evoName.GetPokemonFromName();
                             if (!string.IsNullOrEmpty(evoName) && evoPokemon != HoloPokemonId.Missingno)
                             {
                                 var evoFormName = info.Form;
                                 var genderName = info.GenderRequirement;
                                 PokemonForm? evoForm = string.IsNullOrEmpty(evoFormName)
                                     ? null
-                                    : GetFormFromName(evoFormName);
+                                    : evoFormName.GetFormFromName();
                                 PokemonGender? evoGender = string.IsNullOrEmpty(genderName)
                                     ? null
-                                    : GetGenderFromName(genderName);
+                                    : genderName.GetGenderFromName();
                                 evolutions.Add(new PokemonWithFormAndGender { Pokemon = evoPokemon, Form = evoForm, Gender = evoGender });
                             }
                         }
@@ -552,10 +518,10 @@
                     var costumeEvolution = pokemonInfo.ObCostumeEvolution?
                         .Where(costumeName =>
                         {
-                            var costume = GetCostumeFromName(costumeName);
+                            var costume = costumeName.GetCostumeFromName();
                             return costume != PokemonCostume.Unset && costume != null;
                         })
-                        .Select(GetCostumeFromName)
+                        .Select(PokemonExtensions.GetCostumeFromName)
                         .ToList();
                     var baseStats = new PokemonBaseStats
                     {
@@ -565,76 +531,23 @@
                         Evolutions = evolutions,
                         BaseHeight = pokedexHeightM,
                         BaseWeight = pokedexWeightKg,
-                        CostumeEvolutionOverride = costumeEvolution,
+                        CostumeEvolutionOverride = costumeEvolution!,
                     };
                     pokemonBaseStats[new PokemonWithFormAndGender { Pokemon = pokemon, Form = form }] = baseStats;
                 }
             }
 
             _pokemonBaseStats = pokemonBaseStats;
-            lock (_littleLock)
+
+            lock (_rankLock)
             {
-                _rankingLittle.Clear();
-            }
-            lock (_greatLock)
-            {
-                _rankingGreat.Clear();
-            }
-            lock (_ultraLock)
-            {
-                _rankingUltra.Clear();
+                _ranking.Clear();
             }
 
-            Console.WriteLine($"New game master file parsed successfully");
+            _loading = false;
+            _logger.LogInformation($"New game master file parsed successfully");
         }
 
         #endregion
-
-        #region Helpers
-
-        // TODO: Move to separate class
-        private static HoloPokemonId GetPokemonFromName(string name)
-        {
-            var allPokemon = new List<HoloPokemonId>(Enum.GetValues<HoloPokemonId>());
-            var pokemon = GetEnumFromName(name, allPokemon);
-            return pokemon;
-        }
-
-        private static PokemonForm? GetFormFromName(string name)
-        {
-            var allForms = new List<PokemonForm>(Enum.GetValues<PokemonForm>());
-            var form = GetEnumFromName(name, allForms);
-            return form;
-        }
-
-        private static PokemonGender? GetGenderFromName(string name)
-        {
-            var allGenders = new List<PokemonGender>(Enum.GetValues<PokemonGender>());
-            var gender = GetEnumFromName(name, allGenders);
-            return gender;
-        }
-
-        private static PokemonCostume? GetCostumeFromName(string name)
-        {
-            var allCostumes = new List<PokemonCostume>(Enum.GetValues<PokemonCostume>());
-            var costume = GetEnumFromName(name, allCostumes);
-            return costume;
-        }
-
-        private static T? GetEnumFromName<T>(string name, List<T> values)
-        {
-            var lowerName = name.Replace("_", "").ToLower();
-            var result = values.FirstOrDefault(x => x.ToString().ToLower() == lowerName);
-            return result;
-        }
-
-        #endregion
-
-        /*
-        private class PvpRankComparer : IComparer<uint>
-        {
-            public int Compare(uint x, uint y) => x.CompareTo(y);
-        }
-        */
     }
 }

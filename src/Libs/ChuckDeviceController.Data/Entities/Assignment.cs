@@ -4,8 +4,10 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using ChuckDeviceController.Common.Data.Contracts;
+
     [Table("assignment")]
-    public class Assignment : BaseEntity
+    public class Assignment : BaseEntity, IAssignment
     {
         [
             Column("id"),

@@ -1,0 +1,20 @@
+﻿<link rel="stylesheet" href="~/lib/leaflet/leaflet.css" />
+<link rel="stylesheet" href="~/lib/leaflet-draw/leaflet.draw.css" />
+<link rel="stylesheet" href="~/lib/leaflet-locatecontrol/L.Control.Locate.min.css" />
+<link rel="stylesheet" href="~/lib/easy-button/easy-button.css" />
+
+<div id="map" style="height: 600px;"></div>
+
+<script src="~/lib/leaflet/leaflet.js"></script>
+<script src="~/lib/leaflet-draw/leaflet.draw.js"></script>
+<script src="~/lib/leaflet-locatecontrol/L.Control.Locate.min.js"></script>
+<script src="~/lib/leaflet-geometryutil/leaflet.geometryutil.js"></script>
+<script src="~/lib/easy-button/easy-button.js"></script>
+<script src="~/lib/turf/turf.min.js"></script>
+<script src="~/js/clipboard.js"></script>
+<script src="~/js/geofence-converters.js"></script>
+<script src="~/js/geofence-generator.js"></script>
+<script>
+    const options = JSON.parse(`@Html.Raw(Model.MapConfig)`);
+    initMap(true, options);
+</script>

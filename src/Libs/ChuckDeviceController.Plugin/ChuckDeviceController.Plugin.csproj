@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.11" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="UI\" />
+    <None Remove="Data\" />
+    <None Remove="EventBus\" />
+    <None Remove="EventBus\Events\" />
+    <None Remove="EventBus\Observer\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\" />
+    <Folder Include="EventBus\" />
+    <Folder Include="EventBus\Events\" />
+    <Folder Include="EventBus\Observer\" />
+  </ItemGroup>
+</Project>

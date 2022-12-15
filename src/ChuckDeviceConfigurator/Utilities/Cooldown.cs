@@ -2,6 +2,7 @@
 {
     using Microsoft.EntityFrameworkCore;
 
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
@@ -15,7 +16,7 @@
             return Math.Min(Convert.ToInt32(distanceM / 9.8), Strings.CooldownLimitS);
         }
 
-        public static Coordinate? GetLastLocation(Account? account, string uuid)
+        public static Coordinate? GetLastLocation(IAccount? account, string uuid)
         {
             double? lat = null;
             double? lon = null;
@@ -31,7 +32,7 @@
             return new Coordinate(lat.Value, lon.Value);
         }
 
-        public static CooldownResult SetCooldown(Account? account, Coordinate location)
+        public static CooldownResult SetCooldown(IAccount? account, Coordinate location)
         {
             double? lastLat = null;
             double? lastLon = null;
@@ -65,7 +66,7 @@
             return new CooldownResult(delay, encounterTime);
         }
 
-        public static async Task SetEncounterAsync(IDbContextFactory<DeviceControllerContext> factory, Account? account, Coordinate location, ulong encounterTime)
+        public static async Task SetEncounterAsync(IDbContextFactory<ControllerDbContext> factory, Account? account, Coordinate location, ulong encounterTime)
         {
             if (factory == null)
             {
@@ -93,7 +94,7 @@
             }
         }
 
-        public static async Task SetSpinCountAsync(IDbContextFactory<DeviceControllerContext> factory, string accountUsername)
+        public static async Task SetSpinCountAsync(IDbContextFactory<ControllerDbContext> factory, string accountUsername)
         {
             if (string.IsNullOrEmpty(accountUsername))
             {

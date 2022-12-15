@@ -1,11 +1,27 @@
 ﻿namespace ChuckDeviceConfigurator.Utilities
 {
+    using static POGOProtos.Rpc.PokemonDisplayProto.Types;
+
+    using ChuckDeviceConfigurator.Services.Icons;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Plugin;
 
-    public static class Utils
+    public static partial class Utils
     {
+        public static string FormatBenchmarkTime(double timeS, bool isHtml = false)
+        {
+            var color = timeS <= 3
+                ? "green"
+                : timeS > 3 && timeS < 10
+                    ? "orange"
+                    : "red";
+            return isHtml
+                ? $"<span style='color: {color}'>{timeS}</span>"
+                : timeS.ToString();
+        }
+
         public static string FormatAssignmentTime(uint timeS)
         {
             var times = TimeSpan.FromSeconds(timeS);
@@ -20,8 +36,8 @@
                 ? null
                 : assignment.SourceInstanceName;
             var deviceOrGroupName = string.IsNullOrEmpty(assignment.DeviceGroupName)
-                ? (includeIcons ? "<i class=\"fa-solid fa-layer-group\"></i>&nbsp;" : null) + assignment.DeviceUuid
-                : (includeIcons ? "<i class=\"fa-solid fa-mobile-screen-button\"></i>&nbsp;" : null) + assignment.DeviceGroupName;
+                ? (includeIcons ? "<i class=\"fa-solid fa-fw fa-mobile-screen-button\"></i>&nbsp;" : null) + assignment.DeviceUuid
+                : (includeIcons ? "<i class=\"fa-solid fa-fw fa-layer-group\"></i>&nbsp;" : null) + assignment.DeviceGroupName;
             var time = FormatAssignmentTime(assignment.Time);
 
             var sb = new System.Text.StringBuilder();
@@ -37,27 +53,58 @@
             return displayText;
         }
 
-        public static string FormatBoolean(bool isTrue)
+        public static string FormatBoolean(bool isTrue, bool html = false)
         {
-            return isTrue ? "Yes" : "No";
+            var status = isTrue ? "Yes" : "No";
+            if (!html)
+            {
+                return status;
+            }
+            var color = isTrue ? "green" : "red";
+            var displayText = $"<span style='color: {color}'>{status}</span>";
+            return displayText;
         }
 
-        public static string FormatEnabled(bool enabled)
+        public static string FormatNull(string? value, string defaultValue = "N/A")
         {
-            var status = FormatBoolean(enabled);
-            var color = enabled ? "green" : "red";
-            var displayText = $"<span style='color: {color}'>{status}</span>";
-            //var displayText = $"<span class=\"{(enabled ? "webhook-enabled" : "webhook-disabled")}\">{status}</span>";
-            return displayText;
+            if (string.IsNullOrEmpty(value))
+            {
+                return defaultValue;
+            }
+            return value;
+        }
+
+        public static string FormatInstanceType(InstanceType instanceType)
+        {
+            return instanceType switch
+            {
+                InstanceType.AutoQuest => "Auto Quest",
+                InstanceType.Bootstrap => "Bootstrap",
+                InstanceType.CirclePokemon => "Circle Pokemon",
+                InstanceType.CircleRaid => "Circle Raid",
+                InstanceType.Custom => "Custom",
+                InstanceType.DynamicRoute => "Dynamic Route",
+                InstanceType.FindTth => "Find TTH",
+                InstanceType.Leveling => "Leveling",
+                InstanceType.PokemonIV => "Pokemon IV",
+                InstanceType.SmartRaid => "Smart Raid",
+                _ => "Unknown",
+            };
         }
 
         public static string GetDeviceStatus(ulong lastSeen)
         {
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            var status = now - lastSeen <= Strings.DeviceOnlineThresholdS
+            var status = IsDeviceOnline(lastSeen)
                 ? Strings.DeviceOnlineIcon
                 : Strings.DeviceOfflineIcon;
             return status;
+        }
+
+        public static bool IsDeviceOnline(ulong lastSeen, uint onlineThresholdS = Strings.DeviceOnlineThresholdS)
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var isOnline = now - lastSeen <= onlineThresholdS;
+            return isOnline;
         }
 
         public static string GetLastUpdatedStatus(ulong updated, bool html = false)
@@ -71,7 +118,7 @@
                 ? updated == 0
                     ? "Never"
                     : lastUpdated
-                : TimeSpanUtils.ToReadableString(updated);
+                : updated.ToReadableString();
 
             var color = isMoreThanOneDay
                 ? updated == 0
@@ -83,7 +130,7 @@
                 : updatedTime;
         }
 
-        public static string GetAccountStatusColor(string status)
+        public static string GetAccountStatusColor(string? status)
         {
             var cssClass = "text-dark";
             switch (status)
@@ -95,8 +142,8 @@
                     cssClass = "account-banned";
                     break;
                 case "Warning":
-                case "Invalid":
                 case "Suspended":
+                case "Invalid":
                     cssClass = "account-warning";
                     break;
             }
@@ -104,9 +151,33 @@
             return string.Format(html, cssClass, status);
         }
 
-        public static string GetPokemonIcon(uint pokemonId, string width = "32", string height = "32", bool html = false)
+        public static string GetPluginStateColor(PluginState state)
         {
-            var url = $"{Strings.PokemonImageUrl}/{pokemonId}.png";
+            var color = "black";
+            switch (state)
+            {
+                case PluginState.Running:
+                    color = "green";
+                    break;
+                case PluginState.Stopped:
+                case PluginState.Disabled:
+                case PluginState.Error:
+                    color = "red";
+                    break;
+                case PluginState.Removed:
+                    color = "blue";
+                    break;
+                case PluginState.Unset: // should never hit
+                default:
+                    break;
+            }
+            var html = $"<span style='color: {color};'>{state}</span>";
+            return html;
+        }
+
+        public static string GetPokemonIcon(uint pokemonId, uint formId = 0, Gender gender = Gender.Unset, uint costumeId = 0, string width = "32", string height = "32", bool html = false)
+        {
+            var url = UIconsService.Instance.GetPokemonIcon(pokemonId, formId, 0, gender, costumeId);
             return html
                 ? $"<img src='{url}' width='{width}' height='{height}' />"
                 : url;
@@ -122,16 +193,6 @@
                 : link;
         }
 
-        public static string GetQueueLink(string ivInstanceName, string displayText = "Queue", string basePath = "/Instance/IvQueue", bool html = false)
-        {
-            var encodedName = Uri.EscapeDataString(ivInstanceName);
-            var url = $"{basePath}/{encodedName}";
-            var status = $"<a href='{url}'>{displayText}</a>";
-            return html
-                ? status
-                : url;
-        }
-
         public static double BenchmarkAction(Action action, ushort precision = 4)
         {
             var stopwatch = new System.Diagnostics.Stopwatch();
@@ -140,15 +201,8 @@
             stopwatch.Start();
 
             var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
-            Console.WriteLine($"Benchmark took {totalSeconds}s");
+            Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");
             return totalSeconds;
-        }
-
-        public static int CompareCoordinates(Coordinate coord1, Coordinate coord2)
-        {
-            var d1 = Math.Pow(coord1.Latitude, 2) + Math.Pow(coord1.Longitude, 2);
-            var d2 = Math.Pow(coord2.Latitude, 2) + Math.Pow(coord2.Longitude, 2);
-            return d1.CompareTo(d2);
         }
 
         // Credits: https://jasonwatmore.com/post/2018/10/17/c-pure-pagination-logic-in-c-aspnet
@@ -163,8 +217,8 @@
             }
             else
             {
-                var maxPagesBeforeCurrentPage = (int)Math.Floor((decimal)maxMiddlePage / (decimal)2);
-                var maxPagesAfterCurrentPage = (int)Math.Ceiling((decimal)maxMiddlePage / (decimal)2) - 1;
+                var maxPagesBeforeCurrentPage = (int)Math.Floor((decimal)maxMiddlePage / 2);
+                var maxPagesAfterCurrentPage = (int)Math.Ceiling((decimal)maxMiddlePage / 2) - 1;
                 if (page <= maxPagesBeforeCurrentPage)
                 {
                     // Current page near the start
@@ -188,6 +242,25 @@
             // Create an array of pages that can be looped over
             var result = Enumerable.Range(startPage, (endPage + 1) - startPage).ToList();
             return result;
+        }
+
+        public static async Task<Dictionary<SettingsPropertyGroup, List<SettingsProperty>>> GroupPropertiesAsync(List<SettingsProperty> properties)
+        {
+            var dict = new Dictionary<SettingsPropertyGroup, List<SettingsProperty>>();
+            foreach (var property in properties)
+            {
+                var group = property.Group ?? new();
+                if (!dict.ContainsKey(group))
+                {
+                    dict.Add(group, new() { property });
+                }
+                else
+                {
+                    dict[group].Add(property);
+                    dict[group].Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
+                }
+            }
+            return await Task.FromResult(dict);
         }
     }
 }

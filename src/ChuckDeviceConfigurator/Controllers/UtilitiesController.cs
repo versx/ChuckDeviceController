@@ -2,36 +2,41 @@
 {
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Options;
 
-    using ChuckDeviceConfigurator.Extensions;
-    using ChuckDeviceConfigurator.JobControllers;
     using ChuckDeviceConfigurator.Services.Jobs;
-    using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Configuration;
     using ChuckDeviceController.Data.Contexts;
-    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.JobControllers;
 
     [Authorize(Roles = RoleConsts.UtilitiesRole)]
     public class UtilitiesController : Controller
     {
         private readonly ILogger<UtilitiesController> _logger;
-        private readonly DeviceControllerContext _deviceContext;
-        private readonly MapDataContext _mapContext;
+        private readonly ControllerDbContext _deviceContext;
+        private readonly MapDbContext _mapContext;
         private readonly IJobControllerService _jobControllerService;
+        private readonly LeafletMapConfig _mapConfig;
 
         public UtilitiesController(
             ILogger<UtilitiesController> logger,
-            DeviceControllerContext deviceContext,
-            MapDataContext mapContext,
-            IJobControllerService jobControllerService)
+            ControllerDbContext deviceContext,
+            MapDbContext mapContext,
+            IJobControllerService jobControllerService,
+            IOptions<LeafletMapConfig> mapConfig)
         {
             _logger = logger;
             _deviceContext = deviceContext;
             _mapContext = mapContext;
             _jobControllerService = jobControllerService;
+            _mapConfig = mapConfig.Value;
         }
 
         // GET: UtilitiesController
@@ -126,12 +131,12 @@
             // Retrieve Pokestops/Gyms that have been upgraded/downgraded
             var pokestops = _mapContext.Pokestops.ToList();
             var gyms = _mapContext.Gyms.ToList();
-            var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
-                                                .ToList();
-            convertiblePokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
-            var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
-                                      .ToList();
-            convertibleGyms.ForEach(gym => gym.UpdatedTime = gym.Updated.GetLastUpdatedStatus());
+            var convertiblePokestops = pokestops
+                .Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
+                .ToList();
+            var convertibleGyms = gyms
+                .Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
+                .ToList();
 
             var model = new ConvertFortsViewModel
             {
@@ -150,10 +155,12 @@
             {
                 var pokestops = _mapContext.Pokestops.ToList();
                 var gyms = _mapContext.Gyms.ToList();
-                var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
-                                                    .ToList();
-                var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
-                                          .ToList();
+                var convertiblePokestops = pokestops
+                    .Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
+                    .ToList();
+                var convertibleGyms = gyms
+                    .Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
+                    .ToList();
 
                 foreach (var pokestop in convertiblePokestops)
                 {
@@ -297,8 +304,9 @@
                 // Convert all Pokestops to Gyms
                 var pokestops = _mapContext.Pokestops.ToList();
                 var gyms = _mapContext.Gyms.ToList();
-                var convertiblePokestops = pokestops.Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
-                                                    .ToList();
+                var convertiblePokestops = pokestops
+                    .Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
+                    .ToList();
 
                 foreach (var pokestop in convertiblePokestops)
                 {
@@ -327,8 +335,9 @@
                 // Convert all Gyms to Pokestops
                 var pokestops = _mapContext.Pokestops.ToList();
                 var gyms = _mapContext.Gyms.ToList();
-                var convertibleGyms = gyms.Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
-                                          .ToList();
+                var convertibleGyms = gyms
+                    .Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
+                    .ToList();
 
                 foreach (var gym in convertibleGyms)
                 {
@@ -356,10 +365,9 @@
         public ActionResult ClearStalePokestops()
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var pokestops = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
-                                                 .ToList();
-
-            pokestops.ForEach(pokestop => pokestop.UpdatedTime = pokestop.Updated.GetLastUpdatedStatus());
+            var pokestops = _mapContext.Pokestops
+                .Where(pokestop => Math.Abs((decimal)now - pokestop.Updated) > Strings.OneDayS)
+                .ToList();
             return View(pokestops);
         }
 
@@ -371,8 +379,9 @@
             try
             {
                 var now = DateTime.UtcNow.ToTotalSeconds();
-                var pokestopsToDelete = _mapContext.Pokestops.Where(pokestop => now - pokestop.Updated > Strings.OneDayS)
-                                                             .ToList();
+                var pokestopsToDelete = _mapContext.Pokestops
+                    .Where(pokestop => Math.Abs((decimal)now - pokestop.Updated) > Strings.OneDayS)
+                    .ToList();
 
                 await _mapContext.Pokestops.BulkDeleteAsync(pokestopsToDelete, options =>
                 {
@@ -432,19 +441,46 @@
 
         #region Truncate Data
 
-        // GET: UtilitiesController/TruncateData
-        public ActionResult TruncateData()
+        // GET: UtilitiesController/TruncateData[?timeSpan=1&dataType=Pokemon]
+        public ActionResult TruncateData(int? timeSpan = null, string? dataType = null)
         {
-            // TODO: Maybe setup schedules to truncate at an interval
-            // TODO: When a data type is selected, show the amount that'll be deleted based on the time span selected
-            ViewBag.PokemonCount = _mapContext.Pokemon.LongCount().ToString("N0");
-            ViewBag.IncidentsCount = _mapContext.Incidents.LongCount().ToString("N0");
-            ViewBag.DataTypes = new List<string>
+            if (timeSpan == null && dataType == null)
             {
-                "Pokemon",
-                "Incidents",
-            };
-            return View();
+                // TODO: Possibly setup schedules to truncate at an interval
+                ViewBag.PokemonCount = _mapContext.Pokemon.LongCount().ToString("N0");
+                ViewBag.IncidentsCount = _mapContext.Incidents.LongCount().ToString("N0");
+                ViewBag.DataTypes = new List<string>
+                {
+                    "Pokemon",
+                    "Incidents",
+                };
+                return View();
+            }
+
+            try
+            {
+                var now = DateTime.UtcNow.ToTotalSeconds();
+                var time = Convert.ToUInt64(timeSpan * Strings.SixtyMinutesS);
+                var count = 0;
+                switch (dataType)
+                {
+                    case "Pokemon":
+                        count = _mapContext.Pokemon.Count(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) >= time);
+                        break;
+                    case "Incidents":
+                        count = _mapContext.Incidents.Count(incident => Math.Abs((decimal)now - incident.Expiration) >= time);
+                        break;
+                    default:
+                        _logger.LogWarning($"Unknown data type provided '{dataType}', unable to truncate.");
+                        break;
+                }
+                return new JsonResult(count);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {ex}");
+            }
+            return new JsonResult(0);
         }
 
         // POST: UtilitiesController/TruncateData
@@ -461,24 +497,24 @@
                 {
                     case "Pokemon":
                         sw.Start();
-                        var pokemon = _mapContext.Pokemon.Where(pokemon => pokemon.ExpireTimestamp < now && now - pokemon.ExpireTimestamp > time).ToList();
-                        var pokemonCount = pokemon.Count;
-                        await _mapContext.Pokemon.BulkDeleteAsync(pokemon, options =>
-                        {
-                            options.UseTableLock = true;
-                        });
+                        var pokemonCount = await _mapContext.Pokemon
+                            .Where(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time)
+                            .DeleteFromQueryAsync(options =>
+                            {
+                                options.UseTableLock = true;
+                            });
                         sw.Stop();
                         var pkmnSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
                         _logger.LogInformation($"Successfully deleted {pokemonCount:N0} old Pokemon from the database in {pkmnSeconds}s");
                         break;
                     case "Incidents":
                         sw.Start();
-                        var invasions = _mapContext.Incidents.Where(incident => incident.Expiration < now && now - incident.Expiration > time).ToList();
-                        var invasionsCount = invasions.Count;
-                        await _mapContext.Incidents.BulkDeleteAsync(invasions, options =>
-                        {
-                            options.UseTableLock = true;
-                        });
+                        var invasionsCount = await _mapContext.Incidents
+                            .Where(incident => Math.Abs((decimal)now - incident.Expiration) > time)
+                            .DeleteFromQueryAsync(options =>
+                            {
+                                options.UseTableLock = true;
+                            });
                         sw.Stop();
                         var invasionSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
                         _logger.LogInformation($"Successfully deleted {invasionsCount:N0} old Invasions from the database in {invasionSeconds}s");
@@ -505,7 +541,7 @@
 
         #region ReQuest
 
-        // POST: UtilitiesController/ReQuest
+        // GET: UtilitiesController/ReQuest
         public ActionResult ReQuest()
         {
             return View();
@@ -516,6 +552,19 @@
         [ValidateAntiForgeryToken]
         public ActionResult ReQuest(string instanceName)
         {
+            return View();
+        }
+
+        #endregion
+
+        #region Route Generator
+
+        // GET: UtilitiesController/RouteGenerator
+        public ActionResult RouteGenerator()
+        {
+            var geofenceNames = _deviceContext.Geofences.ToList().Select(x => x.Name);
+            ViewData["GeofenceNames"] = geofenceNames;
+            ViewData["MapConfig"] = _mapConfig.ToJson();
             return View();
         }
 
@@ -540,25 +589,58 @@
                     needsUpdate = true;
                 }
 
-                // Delete old Pokestop
-                _mapContext.Pokestops.Remove(pokestop);
-                await _mapContext.SaveChangesAsync();
-
-                if (needsUpdate)
+                try
                 {
-                    // Update Gym details
-                    gym.IsEnabled = true;
-                    gym.IsDeleted = false;
-                    _mapContext.Gyms.Update(gym);
+                    // Delete old Pokestop
+                    _mapContext.Pokestops.Remove(pokestop);
+
+                    if (needsUpdate)
+                    {
+                        // Update Gym details
+                        gym.IsEnabled = true;
+                        gym.IsDeleted = false;
+                        _mapContext.Gyms.Update(gym);
+                    }
                     await _mapContext.SaveChangesAsync();
+                    return true;
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"An error occurred while trying to convert Pokestop ('{pokestop.Id}') to Gym: {ex}");
+                    return false;
+                }
+            }
+
+            // Insert new gym with pokestop properties
+            gym = new Gym
+            {
+                Id = pokestop.Id,
+                Name = pokestop.Name,
+                Url = pokestop.Url,
+                Latitude = pokestop.Latitude,
+                Longitude = pokestop.Longitude,
+                IsArScanEligible = pokestop.IsArScanEligible,
+                IsEnabled = true,
+                SponsorId = pokestop.SponsorId,
+                PowerUpEndTimestamp = pokestop.PowerUpEndTimestamp,
+                PowerUpLevel = pokestop.PowerUpLevel,
+                PowerUpPoints = pokestop.PowerUpPoints,
+                FirstSeenTimestamp = pokestop.FirstSeenTimestamp,
+                LastModifiedTimestamp = pokestop.LastModifiedTimestamp,
+                Updated = pokestop.Updated,
+                CellId = pokestop.CellId,
+            };
+
+            try
+            {
+                await _mapContext.Gyms.AddAsync(gym);
+                await _mapContext.SaveChangesAsync();
                 return true;
             }
-            else
+            catch (Exception ex)
             {
-                // TODO: Insert new gym from pokestop properties
+                _logger.LogError($"An error occurred while trying to convert Pokestop ('{pokestop.Id}') to Gym: {ex}");
             }
-
             return false;
         }
 
@@ -579,25 +661,61 @@
                     needsUpdate = true;
                 }
 
-                // Delete old Gym
-                _mapContext.Gyms.Remove(gym);
-                await _mapContext.SaveChangesAsync();
-
-                if (needsUpdate)
+                try
                 {
-                    // Update Pokestop details
-                    pokestop.IsEnabled = true;
-                    pokestop.IsDeleted = false;
-                    _mapContext.Pokestops.Update(pokestop);
+                    // Delete old Gym
+                    _mapContext.Gyms.Remove(gym);
+
+                    if (needsUpdate)
+                    {
+                        // Update Pokestop details
+                        pokestop.IsEnabled = true;
+                        pokestop.IsDeleted = false;
+                        _mapContext.Pokestops.Update(pokestop);
+                    }
                     await _mapContext.SaveChangesAsync();
+                    return true;
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"An error occurred while trying to convert Gym ('{gym.Id}') to Pokestop: {ex}");
+                    return false;
+                }
+            }
+
+            // Delete old Pokestop
+            _mapContext.Gyms.Remove(gym);
+
+            // Insert new pokestop with gym properties
+            pokestop = new Pokestop
+            {
+                Id = gym.Id,
+                Name = gym.Name,
+                Url = gym.Url,
+                Latitude = gym.Latitude,
+                Longitude = gym.Longitude,
+                IsArScanEligible = gym.IsArScanEligible ?? false,
+                IsEnabled = true,
+                SponsorId = gym.SponsorId,
+                PowerUpEndTimestamp = gym.PowerUpEndTimestamp,
+                PowerUpLevel = gym.PowerUpLevel,
+                PowerUpPoints = gym.PowerUpPoints,
+                FirstSeenTimestamp = gym.FirstSeenTimestamp,
+                LastModifiedTimestamp = gym.LastModifiedTimestamp,
+                Updated = gym.Updated,
+                CellId = gym.CellId,
+            };
+
+            try
+            {
+                await _mapContext.Pokestops.AddAsync(pokestop);
+                await _mapContext.SaveChangesAsync();
                 return true;
             }
-            else
+            catch (Exception ex)
             {
-                // TODO: Insert new pokestop from gym properties
+                _logger.LogError($"An error occurred while trying to convert Gym ('{gym.Id}') to Pokestop: {ex}");
             }
-
             return false;
         }
 

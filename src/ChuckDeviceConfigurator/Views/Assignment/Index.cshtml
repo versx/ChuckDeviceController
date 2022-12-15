@@ -1,7 +1,4 @@
-﻿@using ChuckDeviceConfigurator.Utilities;
-@using ChuckDeviceConfigurator.ViewModels
-@using ChuckDeviceController.Data.Entities
-@model ViewModelsModel<Assignment>
+﻿@model ViewModelsModel<Assignment>
 @{
     ViewData["Title"] = "Assignments";
 }
@@ -9,9 +6,16 @@
 <h1>Assignments</h1>
 <br />
 
-<p>
+<p>@Html.ValidationMessage("Assignment", new { @class = "text-danger" })</p>
+
+<div class="float-start">
     <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
-</p>
+</div>
+<div class="float-end">
+    <a class="btn btn-danger btn-sm" asp-action="DeleteAll">Delete All</a>
+</div>
+<br />
+<br />
 
 <table id="table-assignments" class="table table-striped table-bordered dt-responsive nowrap">
     <thead class="table-dark">
@@ -40,7 +44,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Enabled)
             </th>
-            <th>Action</th>
+            <th width="5%">Action</th>
         </tr>
     </thead>
     <tbody>
@@ -69,7 +73,7 @@
                     @Utils.FormatAssignmentTime(item.Time)
                 </td>
                 <td>
-                    @Html.Raw(Utils.FormatEnabled(item.Enabled))
+                    @Html.Raw(Utils.FormatBoolean(item.Enabled, html: true))
                 </td>
                 <td>
                     <div class="dropdown">
@@ -78,8 +82,11 @@
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
                             <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="Start" asp-route-id="@item.Id"><i class="fa-solid fa-play"></i>&nbsp;Start</a></li>
-                            @* TODO: Check if target instance is quest, otherwise remove button *@
-                            <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Id"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest</a></li>
+                            @if (ViewBag?.QuestInstances?.Contains(item.InstanceName) ?? false)
+                            {
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ClearQuests" asp-route-id="@item.Id"><i class="fa-solid fa-broom"></i>&nbsp;Clear Quests</a></li>
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Id"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest</a></li>
+                            }
                             <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                             <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
@@ -96,7 +103,18 @@
         $(document).ready(function() {
             $('#table-assignments').DataTable({
                 columnDefs: [
-                    { orderable: false, targets: 8 },
+                    // Id Source Target Device Device Group Date Time Enabled Action
+                    // 0  1      2      3      4            5    6    7       8
+                    // 8  7      0      3      4            6    5    2       1
+                    { responsivePriority: 10, targets: 0 },
+                    { responsivePriority: 7, targets: 1 },
+                    { responsivePriority: 0, targets: 2 },
+                    { responsivePriority: 3, targets: 3 },
+                    { responsivePriority: 4, targets: 4 },
+                    { responsivePriority: 6, targets: 5 },
+                    { responsivePriority: 5, targets: 6 },
+                    { responsivePriority: 2, targets: 7 },
+                    { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
                 stateSave: true,
@@ -108,10 +126,7 @@
                 fixedHeader: {
                     header: true,
                 },
-                responsive: {
-                    //breakpoints: '',
-                    details: true,
-                },
+                responsive: true,
                 info: true,
             });
         });

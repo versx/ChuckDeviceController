@@ -398,4 +398,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 .DS_Store
-config.json
+
+NOTES.txt

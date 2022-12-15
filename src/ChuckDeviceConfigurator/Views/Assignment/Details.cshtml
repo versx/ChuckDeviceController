@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceController.Data.Entities
-@model Assignment
+﻿@model Assignment
 @{
     ViewData["Title"] = "Assignment Details " + Model?.Id;
 }
@@ -10,13 +8,7 @@
 <p>@Html.ValidationMessage("Assignment", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Assignment" asp-action="Index">Assignments</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Assignment Details</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Assignment", ControllerText = "Assignments", CurrentPage = "Assignment Details" })
 
 <div>
     <h4>Assignment '@Model?.Id'</h4>
@@ -24,7 +16,7 @@
         <a asp-action="Start" asp-route-id="@Model?.Id" class="btn btn-success @(Model?.Enabled ?? false ? "" : "disabled")">
             <i class="fa-solid fa-play"></i>&nbsp;Start
         </a>
-        @if (ViewBag.IsQuest)
+        @if (ViewBag?.IsQuest ?? false)
         {
             <a asp-action="ReQuest" asp-route-id="@Model?.Id" class="btn btn-warning @(Model?.Enabled ?? false ? "" : "disabled")">
                 <i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest
@@ -44,53 +36,4 @@
 }
 
 <hr />
-<dl class="row">
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.SourceInstanceName)
-    </dt>
-    <dd class="col-sm-10">
-        @(string.IsNullOrEmpty(Model?.SourceInstanceName) ? "Any" : Model.SourceInstanceName)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.InstanceName)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.InstanceName)
-    </dd>
-    @if (!string.IsNullOrEmpty(Model?.DeviceUuid))
-    {
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DeviceUuid)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DeviceUuid)
-        </dd>
-    }
-    @if (!string.IsNullOrEmpty(Model?.DeviceGroupName))
-    {
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.DeviceGroupName)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.DeviceGroupName)
-        </dd>
-    }
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Date)
-    </dt>
-    <dd class="col-sm-10">
-        @(Model?.Date == null ? "Any" : Model?.Date)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Time)
-    </dt>
-    <dd class="col-sm-10">
-        @Utils.FormatAssignmentTime(Model?.Time ?? 0)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Enabled)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.Raw(Utils.FormatEnabled(Model?.Enabled ?? false))
-    </dd>
-</dl>
+@Html.DisplayForModel("AssignmentDetails")

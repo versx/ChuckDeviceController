@@ -1,20 +1,31 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
+﻿@using ChuckDeviceConfigurator.Extensions
+@using ChuckDeviceController.Extensions.Json
+@using ChuckDeviceController.Plugin
 @model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
+
+    var data = Html.RenderAction("GetTiles", "Helper");
+    var dashboardTiles = Convert.ToString(data)?.FromJson<List<DashboardTile>>();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Dashboard</h1>
-</div>
-
+<h1 class="display-4 text-center">Dashboard</h1>
 <div class="w-75" style="float: none; margin: 0 auto;">
     <div class="card text-center">
-        <div class="card-header bg-dark text-light text-center"><b>General</b></div>
+        <div class="card-header text-center"><b>General</b></div>
         <div class="card-body">
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-md-4 p-1">
+                    <div class="col-md-3 p-1">
+                        <div class="list-group">
+                            <a class="list-group-item" asp-controller="Plugin" asp-action="Index">
+                                <h3 class="pull-right"><i class="fas fa-puzzle-piece"></i></h3>
+                                <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Plugins)</h4>
+                                <p class="list-group-item-text">@Html.DisplayNameFor(model => model.Plugins)</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Device" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-mobile-alt"></i></h3>
@@ -23,16 +34,16 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-4 p-1">
+                    <div class="col-md-3 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="DeviceGroup" asp-action="Index">
-                                <h3 class="pull-right"><i class="fas fa-mobile-alt"></i></h3>
+                                <h3 class="pull-right"><i class="fas fa-layer-group"></i></h3>
                                 <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.DeviceGroups)</h4>
                                 <p class="list-group-item-text">@Html.DisplayNameFor(model => model.DeviceGroups)</p>
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-4 p-1">
+                    <div class="col-md-3 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Instance" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-cubes-stacked"></i></h3>
@@ -109,12 +120,29 @@
                         </div>
                     </div>
                 </div>
+                @if (dashboardTiles != null)
+                {
+                    <div class="row justify-content-center">
+                    @foreach (var tile in dashboardTiles)
+                    {
+                        <div class="col-md-3 p-1">
+                            <div class="list-group">
+                                <a class="list-group-item" asp-controller="@tile.ControllerName" asp-action="@tile.ActionName">
+                                    <h3 class="pull-right"><i class="@tile.Icon"></i></h3>
+                                    <h4 class="list-group-item-heading">@tile.Value</h4>
+                                    <p class="list-group-item-text">@tile.Text</p>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    </div>
+                }
             </div>
         </div>
     </div>
     <br>
     <div class="card text-center">
-        <div class="card-header bg-dark text-light text-center"><b>Statistics</b></div>
+        <div class="card-header text-center"><b>Statistics</b></div>
         <div class="card-body">
             <div class="container">
                 <ul class="list-group">
@@ -166,11 +194,33 @@
                         @Html.DisplayNameFor(model => model.Weather)
                         <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Weather)</span>
                     </li>
+                    @foreach (var statsItem in Model.PluginDashboardStats)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            @(statsItem.IsHtml ? Html.Raw(statsItem.Name) : statsItem.Name)
+                            <span class="badge rounded-pill bg-primary">
+                                @(statsItem.IsHtml ? Html.Raw(statsItem.Value) : @statsItem.Value)
+                            </span>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
     </div>
     <br>
-    <span class="text-center"><b>Start Time:</b> <span id="started-value">March 23rd, 2022 10:10:10 AM</span></span>
 
+    <dl class="row">
+        <dt class = "col-sm-4">
+            @Html.DisplayNameFor(model => model.Started)
+        </dt>
+        <dd class = "col-sm-8">
+            @Html.DisplayFor(model => model.Started)
+        </dd>
+        <dt class="col-sm-4">
+            @Html.DisplayNameFor(model => model.Uptime)
+        </dt>
+        <dd class="col-sm-8">
+            @Html.DisplayFor(model => model.Uptime)
+        </dd>
+    </dl>
 </div>

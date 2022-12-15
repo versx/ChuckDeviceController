@@ -1,17 +1,20 @@
 ﻿namespace ChuckDeviceController.Data.Entities
 {
-    using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using MySqlConnector;
     using POGOProtos.Rpc;
 
-    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Extensions.Http.Caching;
 
     [Table("incident")]
-    public class Incident : BaseEntity, IWebhookEntity
+    public class Incident : BaseEntity, IIncident, IWebhookEntity
     {
         public const string UnknownPokestopName = "Unknown";
 
@@ -24,8 +27,15 @@
         ]
         public string Id { get; set; }
 
-        [Column("pokestop_id")]
+        [
+            Column("pokestop_id"),
+            //ForeignKey(nameof(Pokestop)),
+            ForeignKey("pokestop_id"),
+            //ForeignKey("FK_incident_pokestop_pokestop_id"),
+        ]
         public string PokestopId { get; set; }
+
+        public virtual Pokestop? Pokestop { get; set; }
 
         [Column("start")]
         public ulong Start { get; set; }
@@ -40,7 +50,7 @@
         public uint Style { get; set; }
 
         [Column("character")]
-        public uint Character { get; set; }
+        public ushort Character { get; set; }
 
         [Column("updated")]
         public ulong Updated { get; set; }
@@ -57,6 +67,7 @@
 
         public Incident()
         {
+            Id = string.Empty;
         }
 
         public Incident(ulong now, string pokestopId, PokestopIncidentDisplayProto pokestopDisplay)
@@ -75,83 +86,40 @@
 
         #region Public Methods
 
-        // TODO: Instead of relying on SendWebhook property, possibly have UpdateAsync return list/dict of webhook payloads
-        // This would be especially needed for Gyms/Pokestops that could return multiple webhook types
-        // Maybe return just the WebhookHeaders for the entity and compose the payload in the DataProcessorService <- sounds good/much better
-        //public async Task<Dictionary<WebhookType, (Pokestop, Incident)>> UpdateAsync(MapDataContext context)
-        public async Task UpdateAsync(MapDataContext context)
+        //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipLookup = false)
+        public async Task UpdateAsync(Incident? oldIncident, IMemoryCacheHostedService memCache)
         {
-            Incident? oldIncident = null;
-            try
-            {
-                oldIncident = await context.Incidents.FindAsync(Id);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Pokestop: {ex}");
-            }
-
-            if (oldIncident != null)
-            {
-                // TODO: shouldUpdate
-            }
-
-            var now = DateTime.UtcNow.ToTotalSeconds();
-            Updated = now;
+            //var oldIncident = skipLookup
+            //    ? null
+            //    : await EntityRepository.GetEntityAsync<string, Incident>(connection, Id, memCache);
+            Updated = DateTime.UtcNow.ToTotalSeconds();
 
             if (oldIncident == null)
             {
-                /*
-                Pokestop? pokestop = null;
-                try
-                {
-                    pokestop = await context.Pokestops.FindAsync(PokestopId);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Incident: {ex}");
-                }
-
-                if (pokestop != null)
-                {
-                    SendWebhook = true;
-                }
-                */
-
                 SendWebhook = true;
+                HasChanges = true;
             }
             else
             {
                 if (oldIncident.Expiration < Expiration || oldIncident.Character != Character)
                 {
-                    /*
-                    Pokestop? pokestop = null;
-                    try
-                    {
-                        pokestop = await context.Pokestops.FindAsync(PokestopId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Incident: {ex}");
-                    }
-
-                    if (pokestop != null)
-                    {
-                        SentWebhook = true;
-                    }
-                    */
-
                     SendWebhook = true;
+                    HasChanges = true;
                 }
             }
+
+            // Cache pokestop incident entity by id
+            memCache.Set(Id, this);
+
+            await Task.CompletedTask;
         }
 
-        public dynamic GetWebhookData(string type)
+        public dynamic? GetWebhookData(string type)
         {
             throw new NotImplementedException();
         }
 
-        public dynamic GetWebhookData(string type, Pokestop pokestop)
+        public dynamic? GetWebhookData(string type, Pokestop pokestop)
         {
             switch (type.ToLower())
             {

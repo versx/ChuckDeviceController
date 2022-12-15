@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceController.Data.Entities;
-@model Geofence
+﻿@model Geofence
 @{
     ViewData["Title"] = "Geofence Details " + Model?.Name;
 }
@@ -9,13 +8,7 @@
 <p>@Html.ValidationMessage("Geofence", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Geofence" asp-action="Index">Geofences</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Geofence Details</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Geofence", ControllerText = "Geofences", CurrentPage = "Geofence Details" })
 
 <div>
     <h4>Geofence '@Model?.Name'</h4>
@@ -30,23 +23,22 @@
 </div>
 
 <hr />
-<dl class="row">
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Name)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Name)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Type)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Type)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Data.Area)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Data.Area)
-    </dd>
-</dl>
+@Html.DisplayForModel("GeofenceDetails")
+
+@await Html.PartialAsync("_ViewOnlyGeofenceRoutePartial", new { MapConfig = ViewData["MapConfig"] })
+
+<script>
+    const type = "@Model?.Type";
+    let area = ("@ViewData["GeofenceData"]" || '').replace(/&#xD;/g, '').replace(/&#xA;/g, '\n'); // <- TODO: Fix
+    if (type === 'Circle' && area) {
+        // Circles
+        if (!(area.includes('[') && area.includes(']'))) {
+            area = `[{@Model?.Name}]\n${area}`;
+        }
+        loadCircles(area);
+    } else {
+        // Geofences
+        setReturnGeofenceType(true);
+        loadGeofence(area, true);
+    }
+</script>

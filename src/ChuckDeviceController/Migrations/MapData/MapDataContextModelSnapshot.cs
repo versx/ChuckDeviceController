@@ -9,14 +9,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChuckDeviceController.Migrations.MapData
 {
-    [DbContext(typeof(MapDataContext))]
+    [DbContext(typeof(MapDbContext))]
     partial class MapDataContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.6")
+                .HasAnnotation("ProductVersion", "6.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Cell", b =>
@@ -26,6 +26,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("id");
 
                     b.Property<double>("Latitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("center_lat");
 
@@ -34,6 +35,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("level");
 
                     b.Property<double>("Longitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("center_lon");
 
@@ -42,6 +44,10 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("updated");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Latitude");
+
+                    b.HasIndex("Longitude");
 
                     b.ToTable("s2cell");
                 });
@@ -93,10 +99,12 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("last_modified_timestamp");
 
                     b.Property<double>("Latitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("lat");
 
                     b.Property<double>("Longitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("lon");
 
@@ -190,6 +198,20 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CellId");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("IsEnabled");
+
+                    b.HasIndex("Latitude");
+
+                    b.HasIndex("Longitude");
+
+                    b.HasIndex("RaidEndTimestamp");
+
+                    b.HasIndex("Updated");
+
                     b.ToTable("gym");
                 });
 
@@ -220,6 +242,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("battles_won");
 
                     b.Property<double>("BerryValue")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("berry_value");
 
@@ -228,6 +251,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("buddy_candy_awarded");
 
                     b.Property<double>("BuddyKmWalked")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("buddy_km_walked");
 
@@ -268,8 +292,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("form");
 
                     b.Property<string>("FortId")
-                        .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("fort_id");
 
                     b.Property<bool>("FromFort")
@@ -285,6 +308,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("hatched_from_egg");
 
                     b.Property<double>("HeightM")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("height_m");
 
@@ -350,8 +374,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("times_fed");
 
                     b.Property<string>("TrainerName")
-                        .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("trainer_name");
 
                     b.Property<ulong>("Updated")
@@ -359,10 +382,15 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("updated");
 
                     b.Property<double>("WeightKg")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("weight_kg");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FortId");
+
+                    b.HasIndex("TrainerName");
 
                     b.ToTable("gym_defender");
                 });
@@ -398,6 +426,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("has_shared_ex_pass");
 
                     b.Property<double>("KmWalked")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("km_walked");
 
@@ -419,6 +448,8 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasKey("Name");
 
+                    b.HasIndex("Name");
+
                     b.ToTable("gym_trainer");
                 });
 
@@ -428,8 +459,8 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnType("varchar(255)")
                         .HasColumnName("id");
 
-                    b.Property<uint>("Character")
-                        .HasColumnType("int unsigned")
+                    b.Property<ushort>("Character")
+                        .HasColumnType("smallint unsigned")
                         .HasColumnName("character");
 
                     b.Property<uint>("DisplayType")
@@ -459,6 +490,8 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Expiration");
+
                     b.HasIndex("PokestopId");
 
                     b.ToTable("incident");
@@ -475,10 +508,12 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("atk_iv");
 
                     b.Property<double>("BaseHeight")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("base_height");
 
                     b.Property<double>("BaseWeight")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("base_weight");
 
@@ -487,14 +522,17 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("cp");
 
                     b.Property<double?>("Capture1")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("capture_1");
 
                     b.Property<double?>("Capture2")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("capture_2");
 
                     b.Property<double?>("Capture3")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("capture_3");
 
@@ -536,6 +574,7 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.Property<double?>("IV")
                         .ValueGeneratedOnAddOrUpdate()
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("iv")
                         .HasComputedColumnSql("(`atk_iv` + `def_iv` + `sta_iv`) * 100 / 45");
@@ -557,6 +596,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("shiny");
 
                     b.Property<double>("Latitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("lat");
 
@@ -565,6 +605,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("level");
 
                     b.Property<double>("Longitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("lon");
 
@@ -581,7 +622,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("pokemon_id");
 
                     b.Property<string>("PokestopId")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("pokestop_id");
 
                     b.Property<string>("PvpRankings")
@@ -594,6 +635,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("seen_type");
 
                     b.Property<double?>("Size")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("size");
 
@@ -610,7 +652,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("updated");
 
                     b.Property<string>("Username")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("username");
 
                     b.Property<ushort?>("Weather")
@@ -618,12 +660,142 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("weather");
 
                     b.Property<double?>("Weight")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("weight");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AttackIV");
+
+                    b.HasIndex("CellId");
+
+                    b.HasIndex("DefenseIV");
+
+                    b.HasIndex("ExpireTimestamp");
+
+                    b.HasIndex("FirstSeenTimestamp");
+
+                    b.HasIndex("Latitude");
+
+                    b.HasIndex("Level");
+
+                    b.HasIndex("Longitude");
+
+                    b.HasIndex("PokemonId");
+
+                    b.HasIndex("PokestopId");
+
+                    b.HasIndex("SpawnId");
+
+                    b.HasIndex("StaminaIV");
+
+                    b.HasIndex("Updated");
+
+                    b.HasIndex("Username");
+
+                    b.HasIndex(new[] { "Latitude", "Longitude" }, "ix_coords");
+
+                    b.HasIndex(new[] { "AttackIV", "DefenseIV", "StaminaIV" }, "ix_iv");
+
                     b.ToTable("pokemon");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonHundoStats", b =>
+                {
+                    b.Property<string>("Date")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("date");
+
+                    b.Property<uint>("PokemonId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("pokemon_id");
+
+                    b.Property<ushort>("FormId")
+                        .HasColumnType("smallint unsigned")
+                        .HasColumnName("form_id");
+
+                    b.Property<ulong>("Count")
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("count");
+
+                    b.HasKey("Date", "PokemonId", "FormId");
+
+                    b.ToTable("pokemon_hundo_stats");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonIvStats", b =>
+                {
+                    b.Property<string>("Date")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("date");
+
+                    b.Property<uint>("PokemonId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("pokemon_id");
+
+                    b.Property<ushort>("FormId")
+                        .HasColumnType("smallint unsigned")
+                        .HasColumnName("form_id");
+
+                    b.Property<double>("IV")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("double")
+                        .HasColumnName("iv");
+
+                    b.Property<ulong>("Count")
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("count");
+
+                    b.HasKey("Date", "PokemonId", "FormId", "IV");
+
+                    b.ToTable("pokemon_iv_stats");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonShinyStats", b =>
+                {
+                    b.Property<string>("Date")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("date");
+
+                    b.Property<uint>("PokemonId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("pokemon_id");
+
+                    b.Property<ushort>("FormId")
+                        .HasColumnType("smallint unsigned")
+                        .HasColumnName("form_id");
+
+                    b.Property<ulong>("Count")
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("count");
+
+                    b.HasKey("Date", "PokemonId", "FormId");
+
+                    b.ToTable("pokemon_shiny_stats");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.PokemonStats", b =>
+                {
+                    b.Property<string>("Date")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("date");
+
+                    b.Property<uint>("PokemonId")
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("pokemon_id");
+
+                    b.Property<ushort>("FormId")
+                        .HasColumnType("smallint unsigned")
+                        .HasColumnName("form_id");
+
+                    b.Property<ulong>("Count")
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("count");
+
+                    b.HasKey("Date", "PokemonId", "FormId");
+
+                    b.ToTable("pokemon_stats");
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Pokestop", b =>
@@ -633,7 +805,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("id");
 
                     b.Property<string>("AlternativeQuestConditions")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("alternative_quest_conditions");
 
                     b.Property<ushort?>("AlternativeQuestItemId")
@@ -661,7 +833,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasComputedColumnSql("json_extract(json_extract(`alternative_quest_rewards`,'$[*].type'),'$[0]')");
 
                     b.Property<string>("AlternativeQuestRewards")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("alternative_quest_rewards");
 
                     b.Property<ushort?>("AlternativeQuestTarget")
@@ -669,7 +841,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("alternative_quest_target");
 
                     b.Property<string>("AlternativeQuestTemplate")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("alternative_quest_template");
 
                     b.Property<ulong?>("AlternativeQuestTimestamp")
@@ -677,7 +849,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("alternative_quest_timestamp");
 
                     b.Property<string>("AlternativeQuestTitle")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("alternative_quest_title");
 
                     b.Property<uint?>("AlternativeQuestType")
@@ -709,10 +881,12 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("last_modified_timestamp");
 
                     b.Property<double>("Latitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("lat");
 
                     b.Property<double>("Longitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("lon");
 
@@ -720,8 +894,8 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnType("bigint unsigned")
                         .HasColumnName("lure_expire_timestamp");
 
-                    b.Property<uint>("LureId")
-                        .HasColumnType("int unsigned")
+                    b.Property<ushort>("LureId")
+                        .HasColumnType("smallint unsigned")
                         .HasColumnName("lure_id");
 
                     b.Property<string>("Name")
@@ -741,7 +915,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("power_up_points");
 
                     b.Property<string>("QuestConditions")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("quest_conditions");
 
                     b.Property<ushort?>("QuestItemId")
@@ -769,7 +943,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasComputedColumnSql("json_extract(json_extract(`quest_rewards`,'$[*].type'),'$[0]')");
 
                     b.Property<string>("QuestRewards")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("quest_rewards");
 
                     b.Property<ushort?>("QuestTarget")
@@ -777,7 +951,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("quest_target");
 
                     b.Property<string>("QuestTemplate")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("quest_template");
 
                     b.Property<ulong?>("QuestTimestamp")
@@ -785,7 +959,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("quest_timestamp");
 
                     b.Property<string>("QuestTitle")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("quest_title");
 
                     b.Property<uint?>("QuestType")
@@ -806,6 +980,46 @@ namespace ChuckDeviceController.Migrations.MapData
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AlternativeQuestConditions");
+
+                    b.HasIndex("AlternativeQuestRewards");
+
+                    b.HasIndex("AlternativeQuestTarget");
+
+                    b.HasIndex("AlternativeQuestTemplate");
+
+                    b.HasIndex("AlternativeQuestTimestamp");
+
+                    b.HasIndex("AlternativeQuestTitle");
+
+                    b.HasIndex("AlternativeQuestType");
+
+                    b.HasIndex("CellId");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("IsEnabled");
+
+                    b.HasIndex("Latitude");
+
+                    b.HasIndex("Longitude");
+
+                    b.HasIndex("QuestConditions");
+
+                    b.HasIndex("QuestRewards");
+
+                    b.HasIndex("QuestTarget");
+
+                    b.HasIndex("QuestTemplate");
+
+                    b.HasIndex("QuestTimestamp");
+
+                    b.HasIndex("QuestTitle");
+
+                    b.HasIndex("QuestType");
+
+                    b.HasIndex("Updated");
+
                     b.ToTable("pokestop");
                 });
 
@@ -824,10 +1038,12 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("last_seen");
 
                     b.Property<double>("Latitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("lat");
 
                     b.Property<double>("Longitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("lon");
 
@@ -836,6 +1052,12 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("updated");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DespawnSecond");
+
+                    b.HasIndex("Latitude");
+
+                    b.HasIndex("Longitude");
 
                     b.ToTable("spawnpoint");
                 });
@@ -859,6 +1081,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("gameplay_condition");
 
                     b.Property<double>("Latitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("latitude");
 
@@ -867,6 +1090,7 @@ namespace ChuckDeviceController.Migrations.MapData
                         .HasColumnName("level");
 
                     b.Property<double>("Longitude")
+                        .HasPrecision(18, 6)
                         .HasColumnType("double")
                         .HasColumnName("longitude");
 
@@ -907,18 +1131,88 @@ namespace ChuckDeviceController.Migrations.MapData
                     b.ToTable("weather");
                 });
 
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.Gym", b =>
+                {
+                    b.HasOne("ChuckDeviceController.Data.Entities.Cell", "Cell")
+                        .WithMany()
+                        .HasForeignKey("CellId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cell");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.GymDefender", b =>
+                {
+                    b.HasOne("ChuckDeviceController.Data.Entities.Gym", "Fort")
+                        .WithMany("Defenders")
+                        .HasForeignKey("FortId");
+
+                    b.HasOne("ChuckDeviceController.Data.Entities.GymTrainer", "Trainer")
+                        .WithMany("Defenders")
+                        .HasForeignKey("TrainerName")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Fort");
+
+                    b.Navigation("Trainer");
+                });
+
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Incident", b =>
                 {
-                    b.HasOne("ChuckDeviceController.Data.Entities.Pokestop", null)
+                    b.HasOne("ChuckDeviceController.Data.Entities.Pokestop", "Pokestop")
                         .WithMany("Incidents")
                         .HasForeignKey("PokestopId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Pokestop");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.Pokemon", b =>
+                {
+                    b.HasOne("ChuckDeviceController.Data.Entities.Cell", "Cell")
+                        .WithMany()
+                        .HasForeignKey("CellId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ChuckDeviceController.Data.Entities.Pokestop", "Pokestop")
+                        .WithMany("Pokemon")
+                        .HasForeignKey("PokestopId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Cell");
+
+                    b.Navigation("Pokestop");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.Pokestop", b =>
+                {
+                    b.HasOne("ChuckDeviceController.Data.Entities.Cell", "Cell")
+                        .WithMany()
+                        .HasForeignKey("CellId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cell");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.Gym", b =>
+                {
+                    b.Navigation("Defenders");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.GymTrainer", b =>
+                {
+                    b.Navigation("Defenders");
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Pokestop", b =>
                 {
                     b.Navigation("Incidents");
+
+                    b.Navigation("Pokemon");
                 });
 #pragma warning restore 612, 618
         }

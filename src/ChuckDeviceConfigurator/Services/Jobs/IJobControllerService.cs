@@ -2,14 +2,34 @@
 {
     using POGOProtos.Rpc;
 
-    using ChuckDeviceConfigurator.JobControllers;
+    using ChuckDeviceConfigurator.Services.Rpc.Models;
+    using ChuckDeviceController.Common.Jobs;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Plugin;
 
     /// <summary>
     /// Service to manage all <see cref="IJobController"/> instances.
     /// </summary>
-    public interface IJobControllerService
+    public interface IJobControllerService : IJobControllerServiceHost, IQueueManager
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets a dictionary of active and configured devices.
+        /// </summary>
+        //IReadOnlyDictionary<string, Device> Devices { get; }
+
+        /// <summary>
+        /// Gets a dictionary of all loaded job controller instances.
+        /// </summary>
+        //IReadOnlyDictionary<string, IJobController> Instances { get; }
+
+        #endregion
+
+        #region Public
+
+        void LoadDevices();
+
         /// <summary>
         /// Starts the <see cref="IJobControllerService"/>.
         /// </summary>
@@ -19,6 +39,8 @@
         /// Stops the <see cref="IJobControllerService"/>.
         /// </summary>
         void Stop();
+
+        #endregion
 
         #region Instances
 
@@ -110,40 +132,9 @@
         /// Instance name to retrieve assigned devices from.
         /// </param>
         /// <returns>Returns a list of device UUIDs assigned to instance.</returns>
-        List<string> GetDeviceUuidsInInstance(string instanceName);
+        IEnumerable<string> GetDeviceUuidsInInstance(string instanceName);
 
         #endregion
-
-        #region IV Queue
-
-        /// <summary>
-        /// Gets the Pokemon IV queue by instance name. (Must be Pokemon IV job controller instance)
-        /// </summary>
-        /// <param name="instanceName">
-        /// Name of the Pokemon IV instance to get the queue from.
-        /// </param>
-        /// <returns>
-        /// Returns a read only list of pending queued Pokemon from an IV queue.
-        /// </returns>
-        IReadOnlyList<Pokemon> GetIvQueue(string instanceName);
-
-        /// <summary>
-        /// Removes a queued Pokemon encounter from the specified IV queue by
-        /// encounter ID.
-        /// </summary>
-        /// <param name="instanceName">Name of Pokemon IV instance.</param>
-        /// <param name="encounterId">Pokemon encounter ID to remove.</param>
-        void RemoveFromIvQueue(string instanceName, string encounterId);
-
-        /// <summary>
-        /// Clears all pending encounters from the specified Pokemon IV job controller instance queue
-        /// </summary>
-        /// <param name="instanceName">Name of the Pokemon IV instance queue to clear</param>
-        void ClearIvQueue(string instanceName);
-
-        #endregion
-
-        IReadOnlyList<PokestopWithMode> GetQuestQueue(string instanceName);
 
         #region Receivers
 

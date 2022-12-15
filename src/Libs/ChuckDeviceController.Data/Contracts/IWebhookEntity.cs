@@ -2,6 +2,6 @@
 {
     public interface IWebhookEntity
     {
-        dynamic GetWebhookData(string type);
+        dynamic? GetWebhookData(string type);
     }
 }

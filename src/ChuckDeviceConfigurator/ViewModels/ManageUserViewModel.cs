@@ -5,10 +5,10 @@
     public class ManageUserViewModel
     {
         [DisplayName("Username")]
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
         [DisplayName("Email Address")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [DisplayName("Password")]
         public string? Password { get; set; }

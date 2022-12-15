@@ -9,14 +9,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChuckDeviceConfigurator.Migrations
 {
-    [DbContext(typeof(DeviceControllerContext))]
+    [DbContext(typeof(ControllerDbContext))]
     partial class DeviceControllerContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.6")
+                .HasAnnotation("ProductVersion", "6.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Account", b =>
@@ -25,16 +25,12 @@ namespace ChuckDeviceConfigurator.Migrations
                         .HasColumnType("varchar(255)")
                         .HasColumnName("username");
 
-                    b.Property<bool?>("Banned")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("banned");
-
                     b.Property<ulong?>("CreationTimestamp")
                         .HasColumnType("bigint unsigned")
                         .HasColumnName("creation_timestamp");
 
                     b.Property<string>("Failed")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("failed");
 
                     b.Property<ulong?>("FailedTimestamp")
@@ -46,8 +42,16 @@ namespace ChuckDeviceConfigurator.Migrations
                         .HasColumnName("first_warning_timestamp");
 
                     b.Property<string>("GroupName")
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("group");
+
+                    b.Property<bool?>("HasWarn")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("warn");
+
+                    b.Property<bool?>("IsBanned")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("banned");
 
                     b.Property<double?>("LastEncounterLatitude")
                         .HasColumnType("double")
@@ -86,10 +90,6 @@ namespace ChuckDeviceConfigurator.Migrations
                         .HasColumnType("smallint unsigned")
                         .HasColumnName("tutorial");
 
-                    b.Property<bool?>("Warn")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("warn");
-
                     b.Property<ulong?>("WarnExpireTimestamp")
                         .HasColumnType("bigint unsigned")
                         .HasColumnName("warn_expire_timestamp");
@@ -104,7 +104,60 @@ namespace ChuckDeviceConfigurator.Migrations
 
                     b.HasKey("Username");
 
+                    b.HasIndex("Failed");
+
+                    b.HasIndex("FailedTimestamp");
+
+                    b.HasIndex("FirstWarningTimestamp");
+
+                    b.HasIndex("GroupName");
+
+                    b.HasIndex("HasWarn");
+
+                    b.HasIndex("Level");
+
+                    b.HasIndex("WarnExpireTimestamp");
+
+                    b.HasIndex("WasSuspended");
+
                     b.ToTable("account");
+                });
+
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.ApiKey", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int unsigned")
+                        .HasColumnName("id");
+
+                    b.Property<ulong>("ExpirationTimestamp")
+                        .HasColumnType("bigint unsigned")
+                        .HasColumnName("expiration_timestamp");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("enabled");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("key");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("scope");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpirationTimestamp");
+
+                    b.ToTable("api_key");
                 });
 
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Assignment", b =>
@@ -132,7 +185,7 @@ namespace ChuckDeviceConfigurator.Migrations
 
                     b.Property<string>("InstanceName")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("instance_name");
 
                     b.Property<string>("SourceInstanceName")
@@ -144,6 +197,8 @@ namespace ChuckDeviceConfigurator.Migrations
                         .HasColumnName("time");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InstanceName");
 
                     b.ToTable("assignment");
                 });
@@ -247,7 +302,6 @@ namespace ChuckDeviceConfigurator.Migrations
                         .HasColumnName("name");
 
                     b.Property<string>("Data")
-                        .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("data");
 
@@ -290,6 +344,22 @@ namespace ChuckDeviceConfigurator.Migrations
                     b.ToTable("iv_list");
                 });
 
+            modelBuilder.Entity("ChuckDeviceController.Data.Entities.Plugin", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("state");
+
+                    b.HasKey("Name");
+
+                    b.ToTable("plugin");
+                });
+
             modelBuilder.Entity("ChuckDeviceController.Data.Entities.Webhook", b =>
                 {
                     b.Property<string>("Name")
@@ -297,7 +367,6 @@ namespace ChuckDeviceConfigurator.Migrations
                         .HasColumnName("name");
 
                     b.Property<string>("Data")
-                        .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("data");
 

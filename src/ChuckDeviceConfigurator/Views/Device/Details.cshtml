@@ -1,22 +1,16 @@
-﻿@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceController.Data.Entities
-@model Device
+﻿@model Device
 @{
     ViewData["Title"] = "Device Details " + Model?.Uuid;
 }
 
 <h1>Device Details</h1>
 
+<div id="device-status"></div>
+
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Device" asp-action="Index">Devices</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Device Details</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Device", ControllerText = "Devices", CurrentPage = "Device Details" })
 
 <div>
     <h4>@Utils.GetDeviceStatus(Model?.LastSeen ?? 0) Device '@Model?.Uuid'</h4>
@@ -30,45 +24,17 @@
         <a asp-action="Delete" asp-route-id="@Model?.Uuid" class="btn btn-danger">
             <i class="fa-solid fa-trash"></i>&nbsp;Delete
         </a>
+        <a href="#" class="btn btn-warning" onclick="restartGame('@Model?.LastHost');">
+            <i class="fa-solid fa-power-off"></i>&nbsp;Restart Game
+        </a>
+        <a href="#" class="btn btn-warning" onclick="getScreenshot('@Model?.LastHost');">
+            <i class="fa-solid fa-image"></i>&nbsp;Get Screenshot
+        </a>
     </div>
 </div>
 
 <hr />
-<dl class="row">
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Uuid)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.Uuid)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.InstanceName)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.InstanceName)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.AccountUsername)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.AccountUsername)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.LastHost)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.LastHost)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.LastSeen)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.Raw(Utils.GetLastUpdatedStatus(Model?.LastSeen ?? 0, html: true))
-    </dd>
-    <dt class="col-sm-2">
-        Last Location
-    </dt>
-    <dd class="col-sm-10">
-        @Html.Raw(Utils.GetGoogleMapsLink(Model?.LastLatitude ?? 0, Model?.LastLongitude ?? 0, html: true))
-    </dd>
-</dl>
+<img id="screenshot" src="#" class="d-none" />
+@Html.DisplayForModel("DeviceDetails")
+
+<script src="~/js/device-requests.js"></script>

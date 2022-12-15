@@ -1,7 +1,4 @@
-﻿@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceController.Data
-@using ChuckDeviceController.Data.Entities
-@model Device
+﻿@model Device
 @{
     ViewData["Title"] = "Edit Device " + Model?.Uuid;
 }
@@ -11,37 +8,31 @@
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Device" asp-action="Index">Devices</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Edit Device</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Device", ControllerText = "Devices", CurrentPage = "Edit Device" })
 
 <h4>@Utils.GetDeviceStatus(Model?.LastSeen ?? 0) Device '@Model?.Uuid'</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Uuid" class="control-label"></label>
-                <input asp-for="Uuid" class="form-control" readonly />
+            <div class="form-floating mb-3">
+                <input asp-for="Uuid" class="form-control" placeholder="Account username" readonly />
+                <label asp-for="Uuid"></label>
                 <span asp-validation-for="Uuid" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="InstanceName" class="control-label"></label>
-                <select asp-for="InstanceName" class="form-control" asp-items="@(ViewBag.Instances)">
-                    <option value="">Please select one</option>
+            <div class="form-floating mb-3">
+                <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Device instance name">
+                    <option value="" disabled selected>Please select one</option>
                 </select>
+                <label asp-for="InstanceName"></label>
                 <span asp-validation-for="InstanceName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="AccountUsername" class="control-label"></label>
-                <select asp-for="AccountUsername" class="form-control" asp-items="@(ViewBag.Accounts)">
-                    <option value="">Please select one</option>
+            <div class="form-floating mb-3">
+                <select asp-for="AccountUsername" class="form-control" asp-items="@(new SelectList(ViewBag.Accounts, "Username", "Username"))" placeholder="Account username">
+                    <option value="" disabled selected>Please select one</option>
                 </select>
+                <label asp-for="AccountUsername"></label>
                 <span asp-validation-for="AccountUsername" class="text-danger"></span>
             </div>
             <div class="form-group">

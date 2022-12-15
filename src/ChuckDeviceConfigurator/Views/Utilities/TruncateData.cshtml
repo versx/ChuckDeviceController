@@ -9,13 +9,7 @@
 <h4>Truncate Data</h4>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Utilities" asp-action="Index">Utilities</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Truncate Data</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Truncate Data" })
 
 <hr />
 <div class="row">
@@ -34,26 +28,57 @@
             </div>
             <br />
 
-            <div class="form-group">
-                <label for="TimeSpan" class="control-label">Time Span (hours - older than)</label>
+            <div class="form-floating mb-3">
                 <input id="TimeSpan" type="number" name="TimeSpan" class="form-control" min="0" max="720" value="24" required />
+                <label for="TimeSpan">Time Span (hours - older than)</label>
                 <span validation-for="TimeSpan" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label for="DataType" class="control-label">Data Type</label>
+            <div class="form-floating mb-3">
                 <select id="DataType" name="DataType" class="form-control" asp-items="@(new SelectList(ViewBag.DataTypes))" required>
                     <option value="">Please select a data type</option>
                 </select>
+                <label for="DataType">Data Type</label>
                 <span validation-for="DataType" class="text-danger"></span>
             </div>
-            <br />
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <input type="submit" value="Truncate" class="btn btn-danger" />
             </div>
         </form>
+        <div id="count-response">
+        </div>
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $('#TimeSpan').on('change', function(e) {
+            const timeSpan = this.value;
+            const dataType = $('#DataType').val();
+            showAmountDeletable(timeSpan, dataType);
+        });
+        $('#DataType').on('change', function(e) {
+            const timeSpan = $('#TimeSpan').val();
+            const dataType = this.value;
+            showAmountDeletable(timeSpan, dataType);
+        });
+
+        const showAmountDeletable = (timeSpan, dataType) => {
+            if (!timeSpan || !dataType) {
+                return;
+            }
+
+            const url = `/Utilities/TruncateData?${timeSpan}&dataType=${dataType}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(response => {
+                    //console.log('response:', response);
+                    const count = (response || 0).toLocaleString();
+                    $('#count-response').html(`<p>${count} ${dataType} can be deleted in the selected time frame.</p>`);
+                })
+                .catch(err => {
+                    console.error('error:', err);
+                });
+        };
+    </script>
 }

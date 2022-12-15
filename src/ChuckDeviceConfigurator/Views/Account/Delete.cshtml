@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceController.Data.Entities
-@model Account
+﻿@model Account
 @{
     ViewData["Title"] = "Delete Account " + Model.Username;
 }
@@ -10,13 +8,7 @@
 <p>@Html.ValidationMessage("Account", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Account" asp-action="Index">Accounts</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Delete Account</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Account", ControllerText = "Accounts", CurrentPage = "Delete Account" })
 
 <h3>Are you sure you want to delete this account?</h3>
 <div>
@@ -31,134 +23,4 @@
 </div>
 
 <hr />
-<dl class="row">
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Username)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.Username)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Password)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.Password)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Level)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.Level)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Status)
-    </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.Status)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Spins)
-    </dt>
-    <dd class="col-sm-10">
-        @((Model?.Spins ?? 0).ToString("N0"))
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.Tutorial)
-    </dt>
-    <dd class="col-sm-10">
-        @Utils.FormatBoolean(Model?.Tutorial == 1)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.GroupName)
-    </dt>
-    <dd class="col-sm-10">
-        @(Model?.GroupName ?? "N/A")
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.LastEncounterTime)
-    </dt>
-    <dd class="col-sm-10">
-        @Utils.GetLastUpdatedStatus(Model?.LastEncounterTime ?? 0)
-    </dd>
-    <dt class="col-sm-2">
-        Last Encounter Location
-    </dt>
-    <dd class="col-sm-10">
-        @Html.Raw(Utils.GetGoogleMapsLink(Model?.LastEncounterLatitude ?? 0, Model?.LastEncounterLongitude ?? 0, html: true))
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.LastUsedTimestamp)
-    </dt>
-    <dd class="col-sm-10">
-        @Utils.GetLastUpdatedStatus(Model?.LastUsedTimestamp ?? 0)
-    </dd>
-    <dt class="col-sm-2">
-        @Html.DisplayNameFor(model => model.CreationTimestamp)
-    </dt>
-    <dd class="col-sm-10">
-        @Utils.GetLastUpdatedStatus(Model?.CreationTimestamp ?? 0)
-    </dd>
-    @if (Model?.Status != "Good")
-    {
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Failed)
-        </dt>
-        <dd class="col-sm-10">
-            @(Model?.Failed ?? "N/A")
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.FailedTimestamp)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.FailedTimestamp)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.FirstWarningTimestamp)
-        </dt>
-        <dd class="col-sm-10">
-            @Utils.GetLastUpdatedStatus(Model?.FirstWarningTimestamp ?? 0)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Banned)
-        </dt>
-        <dd class="col-sm-10">
-            @Utils.FormatBoolean(Model?.Banned ?? false)
-        </dd>
-        @if (Model?.Warn ?? false)
-        {
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.Warn)
-            </dt>
-            <dd class="col-sm-10">
-                @Utils.FormatBoolean(Model?.Warn ?? false)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.WarnExpireTimestamp)
-            </dt>
-            <dd class="col-sm-10">
-                @Utils.GetLastUpdatedStatus(Model?.WarnExpireTimestamp ?? 0)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.WarnMessageAcknowledged)
-            </dt>
-            <dd class="col-sm-10">
-                @Utils.FormatBoolean(Model?.WarnMessageAcknowledged ?? false)
-            </dd>
-        }
-        @if (Model?.WasSuspended ?? false)
-        {
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.WasSuspended)
-            </dt>
-            <dd class="col-sm-10">
-                @Utils.FormatBoolean(Model?.WasSuspended ?? false)
-            </dd>
-            <dt class="col-sm-2">
-                @Html.DisplayNameFor(model => model.SuspendedMessageAcknowledged)
-            </dt>
-            <dd class="col-sm-10">
-                @Utils.FormatBoolean(Model?.SuspendedMessageAcknowledged ?? false)
-            </dd>
-        }
-    }
-</dl>
+@Html.DisplayForModel("AccountDetails")

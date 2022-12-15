@@ -9,7 +9,7 @@
         public string? PokemonEncounterId { get; set; }
 
         [JsonPropertyName("uuid")]
-        public string Uuid { get; set; }
+        public string Uuid { get; set; } = null!;
 
         [JsonPropertyName("devicename")]
         public string? DeviceName { get; set; }
@@ -24,10 +24,10 @@
         public double LongitudeTarget { get; set; }
 
         [JsonPropertyName("contents")]
-        public IReadOnlyList<ProtoData> Contents { get; set; }
+        public IReadOnlyList<ProtoData>? Contents { get; set; }
 
         [JsonPropertyName("username")]
-        public string Username { get; set; }
+        public string? Username { get; set; }
 
         [JsonPropertyName("trainerlvl")]
         public ushort Level { get; set; }
@@ -54,7 +54,7 @@
         public int Method { get; set; }
 
         [JsonPropertyName("data")]
-        public string Data { get; set; }
+        public string? Data { get; set; }
 
         [JsonPropertyName("have_ar")]
         public bool? HaveAr { get; set; }

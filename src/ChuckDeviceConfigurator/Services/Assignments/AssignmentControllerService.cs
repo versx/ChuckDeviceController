@@ -5,19 +5,26 @@
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
+    using ChuckDeviceConfigurator.Services.Geofences;
+    using ChuckDeviceController.Collections;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Extensions;
 
     public class AssignmentControllerService : IAssignmentControllerService
     {
+        private const ushort CheckAssignmentsIntervalS = 5;
+
         #region Variables
 
-        private readonly IDbContextFactory<DeviceControllerContext> _factory;
+        private readonly IDbContextFactory<ControllerDbContext> _controllerFactory;
+        private readonly IDbContextFactory<MapDbContext> _mapFactory;
         private readonly ILogger<IAssignmentControllerService> _logger;
+        private readonly IGeofenceControllerService _geofenceService;
 
-        private readonly object _assignmentsLock = new();
         private readonly System.Timers.Timer _timer;
-        private List<Assignment> _assignments;
+        private SafeCollection<Assignment> _assignments;
         private bool _initialized;
         private long _lastUpdated;
 
@@ -31,21 +38,32 @@
             DeviceReloaded?.Invoke(this, new AssignmentDeviceReloadedEventArgs(device));
         }
 
+        public event EventHandler<ReloadInstanceEventArgs>? ReloadInstance;
+        private void OnReloadInstance(Instance instance)
+        {
+            ReloadInstance?.Invoke(this, new ReloadInstanceEventArgs(instance));
+        }
+
         #endregion
 
         #region Constructor
 
         public AssignmentControllerService(
             ILogger<IAssignmentControllerService> logger,
-            IDbContextFactory<DeviceControllerContext> factory)
+            IDbContextFactory<ControllerDbContext> controllerFactory,
+            IDbContextFactory<MapDbContext> mapFactory,
+            IGeofenceControllerService geofenceService)
         {
             _logger = logger;
-            _factory = factory;
+            _controllerFactory = controllerFactory;
+            _mapFactory = mapFactory;
 
             _lastUpdated = -2;
-            _assignments = new List<Assignment>();
-            _timer = new System.Timers.Timer(5 * 1000); // 5 second interval
+            _assignments = new SafeCollection<Assignment>();
+            _timer = new System.Timers.Timer(CheckAssignmentsIntervalS * 1000);
             _timer.Elapsed += async (sender, e) => await CheckAssignmentsAsync();
+            _mapFactory = mapFactory;
+            _geofenceService = geofenceService;
         }
 
         #endregion
@@ -73,17 +91,19 @@
         {
             // Reload all available device assignments
             var assignments = GetAssignments();
-            lock (_assignmentsLock)
-            {
-                _assignments = assignments;
-            }
+            _assignments = new(assignments);
         }
 
         public void Add(Assignment assignment)
         {
-            lock (_assignmentsLock)
+            if (_assignments.Contains(assignment))
             {
-                _assignments.Add(assignment);
+                // Already exists
+                return;
+            }
+            if (!_assignments.TryAdd(assignment))
+            {
+                _logger.LogError($"Failed to add assignment with id '{assignment.Id}'");
             }
         }
 
@@ -100,19 +120,182 @@
 
         public void Delete(uint id)
         {
-            lock (_assignmentsLock)
+            if (!_assignments.Remove(x => x.Id == id))
             {
-                _assignments = _assignments.Where(x => x.Id != id)
-                                           .ToList();
+                _logger.LogError($"Failed to remove assignment with id '{id}'");
             }
         }
+
+        public Assignment GetByName(uint id)
+        {
+            var assignment = _assignments.Get(x => x.Id == id);
+            return assignment;
+        }
+
+        public IReadOnlyList<Assignment> GetByNames(IReadOnlyList<uint> names)
+        {
+            var assignments = names
+                .Select(name => GetByName(name))
+                .ToList();
+            return assignments;
+        }
+
+        #region Start Assignments
 
         public async Task StartAssignmentAsync(Assignment assignment)
         {
             await TriggerAssignmentAsync(assignment, force: true);
         }
 
-        public List<string> ResolveAssignmentChain(Assignment assignment)
+        public async Task StartAssignmentGroupAsync(AssignmentGroup assignmentGroup)
+        {
+            var assignmentIds = assignmentGroup.AssignmentIds;
+            var assignments = _assignments
+                .Where(assignment => assignmentIds.Contains(assignment.Id))
+                .ToList();
+
+            foreach (var assignment in assignments)
+            {
+                await StartAssignmentAsync(assignment);
+            }
+        }
+
+        #endregion
+
+        #region ReQuest Assignments
+
+        public async Task ReQuestAssignmentAsync(uint assignmentId)
+        {
+            await ReQuestAssignmentsAsync(new[] { assignmentId });
+        }
+
+        public async Task ReQuestAssignmentsAsync(IEnumerable<uint> assignmentIds)
+        {
+            var assignments = assignmentIds
+                .Select(id => _assignments.FirstOrDefault(a => a.Id == id))
+                .Where(assignment => assignment!.Enabled)
+                .ToList();
+
+            using var context = _controllerFactory.CreateDbContext();
+            var instances = context.Instances
+                .Where(instance => instance.Type == InstanceType.AutoQuest)
+                .ToList();
+
+            var geofenceNames = instances
+                .SelectMany(x => x.Geofences)
+                .ToList();
+            var geofences = _geofenceService.GetByNames(geofenceNames);
+            var instancesToClear = new List<Instance>();
+            foreach (var assignment in assignments)
+            {
+                var affectedInstanceNames = ResolveAssignmentChain(assignment!);
+                var affectedInstances = instances
+                    .Where(x => affectedInstanceNames.Contains(x.Name))
+                    .ToList();
+                var affectedInstanceNotAdded = affectedInstances.Where(x => !instancesToClear.Contains(x));
+                foreach (var instance in affectedInstanceNotAdded)
+                {
+                    instancesToClear.Add(instance);
+                }
+            }
+            _logger.LogInformation($"Re-Quest will clear quests for {instancesToClear.Count:N0} instances");
+
+            using var mapContext = _mapFactory.CreateDbContext();
+            foreach (var instance in instancesToClear)
+            {
+                var instanceGeofences = geofences.Where(geofence => instance.Geofences.Contains(geofence.Name))
+                                                 .ToList();
+                if (instanceGeofences?.Any() ?? false)
+                {
+                    _logger.LogInformation($"Clearing quests for geofences: {string.Join(", ", instanceGeofences.Select(x => x.Name))}");
+                    await mapContext.ClearQuestsAsync(instanceGeofences);
+                }
+
+                // Trigger event to reload quest instances
+                OnReloadInstance(instance);
+            }
+
+            // Trigger assignments
+            foreach (var assignment in assignments)
+            {
+                if (assignment == null)
+                    continue;
+
+                await TriggerAssignmentAsync(assignment, force: true);
+            }
+        }
+
+        #endregion
+
+        #region Clear Quests
+
+        public async Task ClearQuestsAsync(Assignment assignment)
+        {
+            // Clear quests for assignment
+            await ClearQuestsAsync(new[] { assignment });
+        }
+
+        public async Task ClearQuestsAsync(IEnumerable<uint> assignmentIds)
+        {
+            // Clear quests for assignments
+            var assignments = GetAssignments()
+                .Where(x => assignmentIds.Contains(x.Id))
+                .ToList();
+            await ClearQuestsAsync(assignments);
+        }
+
+        public async Task ClearQuestsAsync(IEnumerable<Assignment> assignments)
+        {
+            // Clear quests for assignments
+            using var controllerContext = _controllerFactory.CreateDbContext();
+            using var mapContext = _mapFactory.CreateDbContext();
+
+            foreach (var assignment in assignments)
+            {
+                var instance = await controllerContext.Instances.FindAsync(assignment.InstanceName);
+                if (instance == null)
+                {
+                    // Failed to retrieve instance from database, does it exist?
+                    _logger.LogError($"Assignment instance does not exist with name '{assignment.InstanceName}'.");
+                    return;
+                }
+
+                var geofences = _geofenceService.GetByNames(instance.Geofences);
+                if (!(geofences?.Any() ?? false))
+                {
+                    // Failed to retrieve assignment from database, does it exist?
+                    _logger.LogError($"Failed to retrieve geofence(s) ('{string.Join(", ", instance.Geofences)}') for assignment instance '{instance.Name}'.");
+                    return;
+                }
+
+                // Clear quests for all geofences assigned to instance
+                var geofenceNames = geofences.Select(x => x.Name);
+                _logger.LogInformation($"Clearing quests for geofences '{string.Join(", ", geofenceNames)}'");
+                await mapContext.ClearQuestsAsync(geofences);
+
+                _logger.LogInformation($"All quests have been cleared for assignment '{assignment.Id}' (Instance: {instance.Name}, Geofences: {string.Join(", ", instance.Geofences)})");
+            }
+        }
+
+        #endregion
+
+        public async Task InstanceControllerCompleteAsync(string instanceName)
+        {
+            // Only trigger enabled on-complete assignments
+            var assignments = _assignments
+                 .Where(x => x.Enabled && x.Time == 0)
+                 .ToList();
+            foreach (var assignment in assignments)
+            {
+                await TriggerAssignmentAsync(assignment, instanceName);
+            }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private List<string> ResolveAssignmentChain(Assignment assignment)
         {
             var result = new List<Assignment>();
             var assignments = _assignments.Where(a => a.Enabled).ToList();
@@ -148,81 +331,6 @@
             return instanceNames;
         }
 
-        public async Task StartAssignmentGroupAsync(AssignmentGroup assignmentGroup)
-        {
-            var assignments = _assignments.Where(assignment => assignmentGroup.AssignmentIds.Contains(assignment.Id))
-                                          .ToList();
-
-            foreach (var assignment in assignments)
-            {
-                await StartAssignmentAsync(assignment);
-            }
-        }
-
-        public async Task ReQuestAssignmentGroupAsync(AssignmentGroup assignmentGroup)
-        {
-            var assignmentIds = assignmentGroup.AssignmentIds;
-            var assignments = assignmentIds.Select(id => _assignments.FirstOrDefault(a => a.Id == id))
-                                           .Where(assignment => assignment.Enabled)
-                                           .ToList();
-            using var context = _factory.CreateDbContext();
-            var instances = context.Instances
-                                   .Where(instance => instance.Type == ChuckDeviceController.Data.InstanceType.AutoQuest)
-                                   .ToList();
-            var geofences = context.Geofences.ToList()
-                                             .Where(geofence => instances.Any(i => i.Geofences.Contains(geofence.Name)))
-                                             .ToList();
-            var instancesToClear = new List<Instance>();
-            foreach (var assignment in assignments)
-            {
-                var affectedInstanceNames = ResolveAssignmentChain(assignment);
-                var affectedInstances = instances.Where(x => affectedInstanceNames.Contains(x.Name)).ToList();
-                var affectedInstanceNotAdded = affectedInstances.Where(x => !instancesToClear.Contains(x));
-                foreach (var instance in affectedInstanceNotAdded)
-                {
-                    instancesToClear.Add(instance);
-                }
-            }
-            _logger.LogInformation($"Re-Quest will clear quests for {instancesToClear.Count:N0} instances");
-
-            foreach (var instance in instancesToClear)
-            {
-                var instanceGeofences = geofences.Where(geofence => instance.Geofences.Contains(geofence.Name)).ToList();
-                foreach (var geofence in instanceGeofences)
-                {
-                    Console.WriteLine($"Clearing quests for geofence: {geofence.Name}");
-                }
-            }
-
-            await Task.CompletedTask;
-        }
-
-        public Assignment GetByName(uint name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IReadOnlyList<Assignment> GetByNames(IReadOnlyList<uint> names)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task InstanceControllerCompleteAsync(string instanceName)
-        {
-            foreach (var assignment in _assignments)
-            {
-                // Only trigger enabled on-complete assignments
-                if (assignment.Enabled && assignment.Time == 0)
-                {
-                    await TriggerAssignmentAsync(assignment, instanceName);
-                }
-            }
-        }
-
-        #endregion
-
-        #region Private Methods
-
         private async Task CheckAssignmentsAsync()
         {
             var dateNow = DateTime.Now;
@@ -236,12 +344,7 @@
                 _lastUpdated = -1;
             }
 
-            var assignments = new List<Assignment>();
-            lock (_assignmentsLock)
-            {
-                assignments = _assignments;
-            }
-            foreach (var assignment in assignments)
+            foreach (var assignment in _assignments)
             {
                 if (assignment.Enabled && assignment.Time != 0 && now >= assignment.Time && _lastUpdated < assignment.Time)
                 {
@@ -298,7 +401,7 @@
             var devices = new List<Device>();
             try
             {
-                using (var context = _factory.CreateDbContext())
+                using (var context = _controllerFactory.CreateDbContext())
                 {
                     // If assignment assigned to device, pull from database and add to devices list.
                     if (!string.IsNullOrEmpty(assignment.DeviceUuid))
@@ -327,8 +430,9 @@
                         if ((deviceGroup?.DeviceUuids?.Count ?? 0) > 0)
                         {
                             // Get device entities from uuids.
-                            var devicesInGroup = context.Devices.Where(d => deviceGroup.DeviceUuids.Contains(d.Uuid))
-                                                                .ToList();
+                            var devicesInGroup = context.Devices
+                                .Where(d => deviceGroup!.DeviceUuids.Contains(d.Uuid))
+                                .ToList();
                             if (devicesInGroup != null && devicesInGroup?.Count > 0)
                             {
                                 devices.AddRange(devicesInGroup);
@@ -346,21 +450,24 @@
 
         private async Task SaveDevicesAsync(List<Device> devices)
         {
-            using (var context = _factory.CreateDbContext())
+            using (var context = _controllerFactory.CreateDbContext())
             {
-                context.UpdateRange(devices);
-                await context.SaveChangesAsync();
-                // TODO: await context.Devices.BulkMergeAsync(devices);
+                await context.Devices.BulkMergeAsync(devices, options =>
+                {
+                    options.UseTableLock = true;
+                    options.OnMergeUpdateInputExpression = p => new
+                    {
+                        p.InstanceName,
+                    };
+                });
             }
         }
 
         private List<Assignment> GetAssignments()
         {
-            using (var context = _factory.CreateDbContext())
-            {
-                var assignments = context.Assignments.ToList();
-                return assignments;
-            }
+            using var context = _controllerFactory.CreateDbContext();
+            var assignments = context.Assignments.ToList();
+            return assignments;
         }
 
         #endregion

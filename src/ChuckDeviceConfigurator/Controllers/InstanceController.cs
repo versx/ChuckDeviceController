@@ -3,27 +3,31 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using static POGOProtos.Rpc.PokemonDisplayProto.Types;
 
+    using ChuckDeviceConfigurator.Localization;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.Services.TimeZone;
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
+    using ChuckDeviceController.JobControllers.Models;
 
     [Authorize(Roles = RoleConsts.InstancesRole)]
     public class InstanceController : Controller
     {
         private readonly ILogger<InstanceController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IJobControllerService _jobControllerService;
         private readonly ITimeZoneService _timeZoneService;
 
         public InstanceController(
             ILogger<InstanceController> logger,
-            DeviceControllerContext context,
+            ControllerDbContext context,
             IJobControllerService jobControllerService,
             ITimeZoneService timeZoneService)
         {
@@ -41,8 +45,12 @@
 
             foreach (var instance in instances)
             {
-                var deviceCount = devices.Count(device => device.InstanceName == instance.Name);
-                instance.DeviceCount += deviceCount;
+                var devicesAssigned = devices
+                    .Where(device => device.InstanceName == instance.Name)
+                    .ToList();
+                var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
+                var devicesOffline = devicesAssigned.Count - devicesOnline;
+                instance.DeviceCount = $"{devicesOnline}/{devicesAssigned.Count}|{devicesOffline}";
                 var status = await _jobControllerService.GetStatusAsync(instance);
                 instance.Status = status;
             }
@@ -54,8 +62,7 @@
             };
             if (autoRefresh)
             {
-                // TODO: Make table refresh configurable (implement server side table data fetch vs reloading actual page)
-                Response.Headers["Refresh"] = "10";
+                Response.Headers["Refresh"] = Strings.DefaultTableRefreshRateS;
             }
             ViewBag.AutoRefresh = autoRefresh;
             return View(model);
@@ -75,6 +82,8 @@
             // Get devices assigned to instance
             var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
                                                   .ToList();
+            var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
+            var devicesOffline = devicesAssigned.Count - devicesOnline;
             var status = await _jobControllerService.GetStatusAsync(instance);
             var model = new InstanceDetailsViewModel
             {
@@ -84,7 +93,7 @@
                 MaximumLevel = instance.MaximumLevel,
                 Geofences = instance.Geofences,
                 Data = instance.Data,
-                DeviceCount = devicesAssigned.Count,
+                DeviceCount = $"{devicesOnline}/{devicesAssigned.Count}|{devicesOffline}",
                 Devices = devicesAssigned,
                 Status = status,
             };
@@ -104,7 +113,13 @@
                 Data = PopulateViewModelFromInstanceData(),
             };
 
+            var accountGroups = _context.Accounts
+                .Select(x => x.GroupName)
+                .Distinct()
+                .ToList();
             var geofences = _context.Geofences.ToList();
+            ViewBag.AccountGroups = accountGroups;
+            ViewBag.CustomInstanceTypes = _jobControllerService.CustomInstanceTypes;
             ViewBag.Devices = _context.Devices.ToList();
             ViewBag.Geofences = geofences;
             ViewBag.GeofencesJson = geofences.ToJson();
@@ -170,9 +185,10 @@
                 return View();
             }
 
-            var assignedDevices = _context.Devices.Where(device => device.InstanceName == instance.Name)
-                                                  .Select(device => device.Uuid)
-                                                  .ToList();
+            var assignedDevices = _context.Devices
+                .Where(device => device.InstanceName == instance.Name)
+                .Select(device => device.Uuid)
+                .ToList();
 
             var model = new ManageInstanceViewModel
             {
@@ -185,7 +201,13 @@
                 AssignedDevices = assignedDevices,
             };
 
+            var accountGroups = _context.Accounts
+                .Select(x => x.GroupName)
+                .Distinct()
+                .ToList();
             var geofences = _context.Geofences.ToList();
+            ViewBag.AccountGroups = accountGroups;
+            ViewBag.CustomInstanceTypes = _jobControllerService.CustomInstanceTypes;
             ViewBag.Devices = _context.Devices.ToList();
             ViewBag.Geofences = geofences;
             ViewBag.GeofencesJson = geofences.ToJson();
@@ -264,10 +286,27 @@
             instance.Status = await _jobControllerService.GetStatusAsync(instance);
 
             // Get devices assigned to instance
-            var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
-                                                  .ToList();
+            var devicesAssigned = _context.Devices
+                .Where(device => device.InstanceName == instance.Name)
+                .ToList();
+            var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
+            var devicesOffline = devicesAssigned.Count - devicesOnline;
+            var status = await _jobControllerService.GetStatusAsync(instance);
+            var model = new InstanceDetailsViewModel
+            {
+                Name = instance.Name,
+                Type = instance.Type,
+                MinimumLevel = instance.MinimumLevel,
+                MaximumLevel = instance.MaximumLevel,
+                Geofences = instance.Geofences,
+                Data = instance.Data,
+                DeviceCount = $"{devicesOnline}/{devicesAssigned.Count}|{devicesOffline}",
+                Devices = devicesAssigned,
+                Status = status,
+            };
+
             ViewBag.Devices = devicesAssigned;
-            return View(instance);
+            return View(model);
         }
 
         // POST: InstanceController/Delete/5
@@ -302,28 +341,29 @@
         #region IV Queue Routes
 
         // GET: InstanceController/IvQueue/test
-        [Route("/Instance/IvQueue/{name}")]
+        [HttpGet("/Instance/IvQueue/{name}")]
         public ActionResult IvQueue(string name, bool autoRefresh = false)
         {
             try
             {
-                var ivQueue = _jobControllerService.GetIvQueue(name);
+                var ivQueue = _jobControllerService.GetQueue<Pokemon>(name);
                 var queueItems = ivQueue.Select(item =>
                 {
                     var lat = Math.Round(item.Latitude, 5);
                     var lon = Math.Round(item.Longitude, 5);
+                    var name = Translator.Instance.GetPokemonName(item.PokemonId);
+                    var form = Translator.Instance.GetFormName(item.Form ?? 0);
+                    var costume = Translator.Instance.GetCostumeName(item.Costume ?? 0);
                     return new IvQueueItemViewModel
                     {
-                        // TODO: Make image url configurable
                         EncounterId = item.Id,
                         PokemonId = item.PokemonId,
-                        PokemonName = item.PokemonId.ToString(), // TODO: Get pokemon name
-                        PokemonForm = (item.Form ?? 0) == 0 // TODO: Get form name
-                            ? "--"
-                            : Convert.ToString(item.Form),
-                        PokemonCostume = (item.Costume ?? 0) == 0 // TODO: Get costume name
-                            ? "--"
-                            : Convert.ToString(item.Costume),
+                        PokemonName = name,
+                        PokemonForm = form,
+                        PokemonFormId = item.Form ?? 0,
+                        PokemonCostume = costume,
+                        PokemonCostumeId = item.Costume ?? 0,
+                        PokemonGender = (Gender)(item.Gender ?? 0),
                         Latitude = lat,
                         Longitude = lon,
                     };
@@ -336,7 +376,7 @@
                 };
                 if (autoRefresh)
                 {
-                    Response.Headers["Refresh"] = "10";
+                    Response.Headers["Refresh"] = Strings.DefaultTableRefreshRateS;
                 }
                 return View(model);
             }
@@ -348,13 +388,13 @@
         }
 
         // GET: InstanceController/IvQueue/test/Remove/5
-        [Route("/Instance/IvQueue/{name}/Remove/{id}")]
+        [HttpGet("/Instance/IvQueue/{name}/Remove/{id}")]
         public ActionResult IvQueueRemove(string name, string id)
         {
             try
             {
                 // Remove Pokemon with index from IV queue list by name
-                _jobControllerService.RemoveFromIvQueue(name, id);
+                _jobControllerService.RemoveFromQueue(name, id);
             }
             catch
             {
@@ -363,13 +403,14 @@
             return RedirectToAction(nameof(IvQueue), new { name });
         }
 
-        [Route("/Instance/IvQueue/ClearQueue/{name}")]
+        // GET: InstanceController/IvQueue/test/Clear
+        [HttpGet("/Instance/IvQueue/{name}/Clear")]
         public ActionResult ClearQueue(string name)
         {
             try
             {
                 // Clear all pending Pokemon encounters from the specified IV queue
-                _jobControllerService.ClearIvQueue(name);
+                _jobControllerService.ClearQueue(name);
             }
             catch
             {
@@ -380,23 +421,25 @@
 
         #endregion
 
+        #region Quest Queue Routes
+
         // GET: InstanceController/QuestQueue/test
-        [Route("/Instance/QuestQueue/{name}")]
+        [HttpGet("/Instance/QuestQueue/{name}")]
         public ActionResult QuestQueue(string name, bool autoRefresh = false)
         {
             try
             {
-                var questQueue = _jobControllerService.GetQuestQueue(name);
+                var questQueue = _jobControllerService.GetQueue<PokestopWithMode>(name);
                 var queueItems = questQueue.Select(item =>
                 {
-                    var lat = Math.Round(item.Pokestop.Latitude, 5);
-                    var lon = Math.Round(item.Pokestop.Longitude, 5);
+                    var pokestop = item.Pokestop!;
+                    var lat = Math.Round(pokestop.Latitude, 5);
+                    var lon = Math.Round(pokestop.Longitude, 5);
                     return new QuestQueueItemViewModel
                     {
-                        // TODO: Make image url configurable
-                        Id = item.Pokestop.Id,
-                        Name = item.Pokestop.Name,
-                        Image = $"<img src='{item.Pokestop.Url}' height='48' width='48' />",
+                        Id = pokestop.Id,
+                        Name = pokestop.Name,
+                        Image = $"<img src='{pokestop.Url}' height='48' width='48' />",
                         IsAlternative = item.IsAlternative,
                         Latitude = lat,
                         Longitude = lon,
@@ -410,7 +453,7 @@
                 };
                 if (autoRefresh)
                 {
-                    Response.Headers["Refresh"] = "10";
+                    Response.Headers["Refresh"] = Strings.DefaultTableRefreshRateS;
                 }
                 return View(model);
             }
@@ -420,6 +463,40 @@
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        // GET: InstanceController/QuestQueue/test/Remove/5
+        [HttpGet("/Instance/QuestQueue/{name}/Remove/{id}")]
+        public ActionResult QuestQueueRemove(string name, string id)
+        {
+            try
+            {
+                // Remove Pokestop from Quest queue list by name
+                _jobControllerService.RemoveFromQueue(name, id);
+            }
+            catch
+            {
+                _logger.LogError($"Unknown error occurred while removing Pokestop ({id}) from Quest queue '{name}'.");
+            }
+            return RedirectToAction(nameof(QuestQueue), new { name });
+        }
+
+        // GET: InstanceController/QuestQueue/test/Clear
+        [HttpGet("/Instance/QuestQueue/{name}/Clear")]
+        public ActionResult ClearQuestQueue(string name)
+        {
+            try
+            {
+                // Clear all pending Pokestop quests from the specified Quest queue
+                _jobControllerService.ClearQueue(name);
+            }
+            catch
+            {
+                _logger.LogError($"Unknown error occurred while clearing Quest queue '{name}'.");
+            }
+            return RedirectToAction(nameof(QuestQueue), new { name });
+        }
+
+        #endregion
 
         #region Private Methods
 
@@ -495,6 +572,8 @@
                 LevelingRadius = model?.LevelingRadius ?? Strings.DefaultLevelingRadius,
                 StoreLevelingData = model?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
                 StartingCoordinate = model?.StartingCoordinate ?? Strings.DefaultStartingCoordinate,
+
+                CustomInstanceType = model?.CustomInstanceType ?? Strings.DefaultCustomInstanceType,
             };
             return instanceData;
         }
@@ -542,6 +621,9 @@
                 LevelingRadius = data?.LevelingRadius ?? Strings.DefaultLevelingRadius,
                 StoreLevelingData = data?.StoreLevelingData ?? Strings.DefaultStoreLevelingData,
                 StartingCoordinate = data?.StartingCoordinate ?? Strings.DefaultStartingCoordinate,
+
+                // Custom
+                CustomInstanceType = data?.CustomInstanceType ?? Strings.DefaultCustomInstanceType,
             };
             return instanceDataModel;
         }

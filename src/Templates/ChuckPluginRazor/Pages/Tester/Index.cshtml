@@ -1,0 +1,11 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Razor Test";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Razor Test</h1>
+</div>
+
+@await Html.PartialAsync("_TestPartial")

@@ -17,7 +17,7 @@
             _webhookRelayService = webhookRelayService;
         }
 
-        public override async Task<WebhookPayloadResponse> ReceivedWebhookPayload(WebhookPayloadRequest request, ServerCallContext context)
+        public override async Task<WebhookPayloadResponse> HandleWebhookPayload(WebhookPayloadRequest request, ServerCallContext context)
         {
             var json = request.Payload;
             if (string.IsNullOrEmpty(json))
@@ -29,9 +29,7 @@
                 };
             }
 
-            // TODO: Decide whether to deserialize webhook payload json here or in relay service
             await _webhookRelayService.EnqueueAsync(request.PayloadType, request.Payload);
-
             return new WebhookPayloadResponse
             {
                 Status = WebhookPayloadStatus.Ok,

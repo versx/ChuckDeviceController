@@ -2,8 +2,9 @@
 {
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceConfigurator.JobControllers.Contracts;
     using ChuckDeviceConfigurator.Services.Jobs;
+    using ChuckDeviceController.Common.Jobs;
+    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Geometry.Models;
 
@@ -14,6 +15,7 @@
 
         private readonly ILogger<IJobControllerService> _logger;
         private readonly IJobControllerService _jobControllerService;
+        private readonly ControllerDbContext _controllerContext;
 
         #endregion
 
@@ -21,10 +23,12 @@
 
         public ApiController(
             ILogger<IJobControllerService> logger,
-            IJobControllerService jobControllerService)
+            IJobControllerService jobControllerService,
+            ControllerDbContext controllerContext)
         {
             _logger = logger;
             _jobControllerService = jobControllerService;
+            _controllerContext = controllerContext;
         }
 
         #endregion
@@ -60,13 +64,13 @@
             }
 
             var devices = _jobControllerService.GetDeviceUuidsInInstance(jobController.Name);
-            if ((devices?.Count ?? 0) == 0)
+            if (!(devices?.Any() ?? false))
             {
                 _logger.LogWarning($"[{jobController.Name}] Job controller instance does not have any devices assigned to it, unable to complete ScanNext API request");
                 return new JsonResult(new BadRequestResult());
             }
 
-            foreach (var coord in coords)
+            foreach (var coord in coords!)
             {
                 _logger.LogInformation($"[{jobController.Name}] Queuing coordinate '{coord}' to ScanNext job controller instance");
                 scanNextController.ScanNextCoordinates.Enqueue(coord);

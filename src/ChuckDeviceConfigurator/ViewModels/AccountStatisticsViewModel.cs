@@ -10,10 +10,16 @@
         public List<Account> Accounts { get; set; } = new();
 
         [
-            DisplayName("New"),
+            DisplayName("Clean"),
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]
-        public ulong NewAccounts { get; set; }
+        public ulong CleanAccounts { get; set; }
+
+        [
+            DisplayName("Fresh"),
+            DisplayFormat(DataFormatString = "{0:N0}"),
+        ]
+        public ulong FreshAccounts { get; set; }
 
         [
             DisplayName("In Use"),
@@ -22,16 +28,28 @@
         public ulong AccountsInUse { get; set; }
 
         [
+            DisplayName("Clean Level 40"),
+            DisplayFormat(DataFormatString = "{0:N0}"),
+        ]
+        public ulong CleanLevel40s { get; set; }
+
+        [
             DisplayName("Clean Level 30"),
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]
         public ulong CleanLevel30s { get; set; }
 
         [
+            DisplayName("Level 40+"),
+            DisplayFormat(DataFormatString = "{0:N0}"),
+        ]
+        public ulong Level40OrHigher { get; set; }
+
+        [
             DisplayName("Level 30+"),
             DisplayFormat(DataFormatString = "{0:N0}"),
         ]
-        public ulong OverLevel30 { get; set; }
+        public ulong Level30OrHigher { get; set; }
 
         [
             DisplayName("Suspended"),
@@ -57,16 +75,16 @@
         ]
         public ulong OverSpinLimit { get; set; }
 
-        public AccountWarningsBansViewModel Bans { get; set; } = new();
+        public AccountPunishmentsViewModel Bans { get; set; } = new();
 
-        public AccountWarningsBansViewModel Warnings { get; set; } = new();
+        public AccountPunishmentsViewModel Warnings { get; set; } = new();
 
-        public AccountWarningsBansViewModel Suspended { get; set; } = new();
+        public AccountPunishmentsViewModel Suspensions { get; set; } = new();
 
         public List<AccountLevelStatisticsViewModel> AccountLevelStatistics { get; set; } = new();
     }
 
-    public class AccountWarningsBansViewModel
+    public class AccountPunishmentsViewModel
     {
         [
             DisplayName("Last 24 Hours"),

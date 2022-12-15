@@ -101,7 +101,7 @@
                     var longitude = double.Parse(split[1].Trim('\0'), nfi);
                     coords[index].Add(new Coordinate(latitude, longitude));
                 }
-                else if (row.Contains("[") && row.Contains("]") && coords.Count > index && coords[index].Count > 0)
+                else if (row.Contains('[') && row.Contains(']') && coords.Count > index && coords[index].Count > 0)
                 {
                     coords.Add(new List<Coordinate>());
                     index++;

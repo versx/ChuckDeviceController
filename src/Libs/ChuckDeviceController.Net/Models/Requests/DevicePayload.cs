@@ -12,5 +12,14 @@
 
         [JsonPropertyName("username")]
         public string? Username { get; set; }
+
+        [JsonPropertyName("trainerlvl")]
+        public ushort TrainerLevel { get; set; }
+
+        [JsonPropertyName("trainerexp")]
+        public uint TrainerExperience { get; set; }
+
+        [JsonPropertyName("timestamp")]
+        public ulong Timestamp { get; set; }
     }
 }

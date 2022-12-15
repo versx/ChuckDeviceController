@@ -3,11 +3,14 @@
     using Grpc.Core;
     using POGOProtos.Rpc;
 
+    using ChuckDeviceConfigurator.Attributes;
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
 
+    [JwtAuthorize]
+    //[Authorize(Policy = "GrpcAuthenticationServices")]
     public class ProtoPayloadServerService : Payload.PayloadBase
     {
         #region Variables
@@ -31,7 +34,7 @@
 
         #region Event Handlers
 
-        public override async Task<PayloadResponse> ReceivedPayload(PayloadRequest request, ServerCallContext context)
+        public override async Task<PayloadResponse> HandlePayload(PayloadRequest request, ServerCallContext context)
         {
             //_logger.LogDebug($"Received {request.PayloadType} proto message");
 
@@ -54,10 +57,10 @@
                     HandlePokemonListPayload(json, request.HasIV);
                     break;
                 case PayloadType.Fort:
-                    HandleFortPayload(json, request.Username);
+                    HandleFortPayload(json);
                     break;
                 case PayloadType.FortList:
-                    HandleFortListPayload(json, request.Username);
+                    HandleFortListPayload(json);
                     break;
                 case PayloadType.PlayerInfo:
                     HandlePlayerInfoPayload(json);
@@ -84,6 +87,8 @@
                 return;
             }
 
+            _logger.LogDebug($"Received 1 {PayloadType.Pokemon} proto message");
+
             _jobControllerService.GotPokemon(pokemon, hasIv);
         }
 
@@ -97,7 +102,7 @@
                 return;
             }
 
-            _logger.LogInformation($"Received {pokemon.Count:N0} {PayloadType.Pokemon} proto messages");
+            _logger.LogDebug($"Received {pokemon.Count:N0} {PayloadType.Pokemon} proto messages");
 
             foreach (var pkmn in pokemon)
             {
@@ -105,22 +110,27 @@
             }
         }
 
-        private void HandleFortPayload(string json, string username)
+        private void HandleFortPayload(string json)
         {
-            var fort = json.FromJson<PokemonFortProto>();
-            if (fort == null)
+            //var fort = json.FromJson<PokemonFortProto>();
+            var fortData = json.FromJson<dynamic>();
+            if (fortData == null)
             {
                 // Failed to deserialize payload to PokemonFortProto
                 _logger.LogError($"Failed to deserialize JSON payload to PokemonFortProto proto: {json}");
                 return;
             }
 
+            _logger.LogDebug($"Received 1 {PayloadType.Fort} proto message");
+
+            var fort = (PokemonFortProto)fortData.data;
+            var username = (string)fortData.username;
             _jobControllerService.GotFort(fort, username);
         }
 
-        private void HandleFortListPayload(string json, string username)
+        private void HandleFortListPayload(string json)
         {
-            var forts = json.FromJson<List<PokemonFortProto>>();
+            var forts = json.FromJson<List<FortData>>();
             if (forts == null)
             {
                 // Failed to deserialize payload to list of PokemonFortProto
@@ -128,11 +138,11 @@
                 return;
             }
 
-            _logger.LogInformation($"Received {forts.Count:N0} {PayloadType.Fort} proto messages");
+            _logger.LogDebug($"Received {forts.Count:N0} {PayloadType.Fort} proto messages");
 
             foreach (var fort in forts)
             {
-                _jobControllerService.GotFort(fort, username);
+                _jobControllerService.GotFort(fort.Data, fort.Username);
             }
         }
 
@@ -146,15 +156,22 @@
                 return;
             }
 
-            _logger.LogInformation($"Received {PayloadType.PlayerInfo} proto message");
+            _logger.LogDebug($"Received {PayloadType.PlayerInfo} proto message");
 
             var username = Convert.ToString(data["username"]);
             var level = Convert.ToUInt16(Convert.ToString(data["level"]));
             var xp = Convert.ToUInt64(Convert.ToString(data["xp"]));
 
-            _jobControllerService.GotPlayerInfo(username, level, xp);
+            _jobControllerService.GotPlayerInfo(username!, level, xp);
         }
 
         #endregion
+
+        private class FortData
+        {
+            public PokemonFortProto Data { get; set; } = null!;
+
+            public string Username { get; set; } = null!;
+        }
     }
 }

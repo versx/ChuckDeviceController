@@ -2,10 +2,12 @@
 {
     using Grpc.Core;
 
+    using ChuckDeviceConfigurator.Attributes;
     using ChuckDeviceConfigurator.Services.Webhooks;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Protos;
 
+    [JwtAuthorize]
     public class WebhookEndpointServerService : WebhookEndpoint.WebhookEndpointBase
     {
         #region Variables
@@ -29,7 +31,7 @@
 
         #region Event Handlers
 
-        public override async Task<WebhookEndpointResponse> ReceivedWebhookEndpoint(WebhookEndpointRequest request, ServerCallContext context)
+        public override async Task<WebhookEndpointResponse> HandleWebhookEndpoint(WebhookEndpointRequest request, ServerCallContext context)
         {
             _logger.LogDebug($"Received fetch webhook endpoints request from: {context.Host}");
 

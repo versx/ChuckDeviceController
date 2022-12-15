@@ -1,6 +1,4 @@
-﻿@using ChuckDeviceConfigurator.Utilities
-@using ChuckDeviceConfigurator.ViewModels
-@model InstanceDetailsViewModel
+﻿@model InstanceDetailsViewModel
 @{
     ViewData["Title"] = "Instance Details " + Model?.Name;
 }
@@ -10,13 +8,7 @@
 <p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Instance" asp-action="Index">Instances</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Instance Details</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = "Instances", CurrentPage = "Instance Details" })
 
 <div>
     <h4>Instance '@Model?.Name'</h4>
@@ -31,69 +23,4 @@
 </div>
 
 <hr />
-<dl class="row">
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Name)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Name)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Type)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.DisplayFor(model => model.Type)
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Status)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.Raw(Model?.Status)
-    </dd>
-    <dt class = "col-sm-2">
-        Level Requirements
-    </dt>
-    <dd class = "col-sm-10">
-        @($"{Model?.MinimumLevel}-{Model?.MaximumLevel}")
-    </dd>
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Geofences)
-    </dt>
-    <dd class = "col-sm-10">
-        @Html.Raw(string.Join("<br>", Model?.Geofences ?? new()))
-    </dd>
-    @if (Model?.Data?.IsEvent ?? false)
-    {
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Data.AccountGroup)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Data.AccountGroup)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Data.IsEvent)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Data.IsEvent)
-        </dd>
-    }
-    <dt class = "col-sm-2">
-        @Html.DisplayNameFor(model => model.Devices)
-    </dt>
-    <dd class = "col-sm-10">
-        @if ((Model?.Devices?.Count ?? 0) > 0)
-        {
-            <ul class="list-group">
-                @foreach (var device in Model!.Devices)
-                {
-                    var status = Utils.GetDeviceStatus(device.LastSeen ?? 0);
-                    <li class="list-group-item">@Html.Raw($"{status} {device.Uuid}")</li>
-                }
-            </ul>
-        }
-        else
-        {
-            <p>None</p>
-        }
-    </dd>
-</dl>
+@Html.DisplayForModel("InstanceDetails")

@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceController.Data.Entities
-@model Assignment
+﻿@model Assignment
 @{
     ViewData["Title"] = "Create Assignment";
 }
@@ -9,49 +8,43 @@
 <p>@Html.ValidationMessage("Assignment", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Assignment" asp-action="Index">Assignments</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Create Assignment</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Assignment", ControllerText = "Assignments", CurrentPage = "Create Assignment" })
 
 <h4>Assignment</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="DeviceUuid" class="control-label"></label>
-                <select asp-for="DeviceUuid" class="form-control" asp-items="@(ViewBag.Devices)">
-                    <option value="">Please select one</option>
+            <div class="form-floating mb-3">
+                <select asp-for="DeviceUuid" class="form-control" asp-items="@(ViewBag.Devices)" placeholder="Assignment device UUID">
+                    <option value="" disabled selected>Please select one</option>
                 </select>
+                <label asp-for="DeviceUuid"></label>
                 <span asp-validation-for="DeviceUuid" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="SourceInstanceName" class="control-label"></label>
-                <select asp-for="SourceInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))">
-                    <option value="">Please select one</option>
+            <div class="form-floating mb-3">
+                <select asp-for="SourceInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Assignment source instance">
+                    <option value="" disabled selected>Please select one</option>
                 </select>
+                <label asp-for="SourceInstanceName"></label>
                 <span asp-validation-for="SourceInstanceName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="InstanceName" class="control-label"></label>
-                <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))">
-                    <option value="">Please select one</option>
+            <div class="form-floating mb-3">
+                <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Assignment instance">
+                    <option value="" disabled selected>Please select one</option>
                 </select>
+                <label asp-for="InstanceName"></label>
                 <span asp-validation-for="InstanceName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Time" class="control-label"></label> <small class="text-muted"><i>(Set to 12am to create "On-Complete" assignment)</i></small>
-                <input asp-for="Time" class="form-control" type="time" />
+            <div class="form-floating mb-3">
+                <input asp-for="Time" class="form-control" type="time" placeholder="Assignment time" />
+                <label asp-for="Time"></label> <small class="text-muted"><i>(Set to 12am to create "On-Complete" assignment)</i></small>
                 <span asp-validation-for="Time" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Date" class="control-label"></label> <small class="text-muted"><i>(Leave empty for any date)</i></small>
-                <input asp-for="Date" class="form-control" type="date" />
+            <div class="form-floating mb-3">
+                <input asp-for="Date" class="form-control" type="date" placeholder="Assignment date" />
+                <label asp-for="Date"></label> <small class="text-muted"><i>(Leave empty for any date)</i></small>
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
             <div class="checkbox">

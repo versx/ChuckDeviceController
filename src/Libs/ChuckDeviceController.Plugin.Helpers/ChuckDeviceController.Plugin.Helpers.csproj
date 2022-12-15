@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -13,14 +13,11 @@
 
     public class QuestQueueItemViewModel
     {
-        [DisplayName("#")]
-        public uint Index { get; set; }
-
         [DisplayName("Image")]
         public string? Image { get; set; }
 
         [DisplayName("ID")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [DisplayName("Name")]
         public string? Name { get; set; }

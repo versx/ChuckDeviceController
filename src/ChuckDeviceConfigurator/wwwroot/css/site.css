@@ -1,22 +1,17 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
-
-body {
-  margin-bottom: 60px;
-}
-
 
 
 .btn-google:hover {
@@ -84,12 +79,13 @@ body {
     color: #fff;
 }
 
-/* Remove hyperlink color from table columns and from footer About link */
-th > a,
-footer > div > div > a {
+/* Remove hyperlink color from footer About link */
+/*
+footer > div > a {
     color: inherit;
     text-decoration: none !important;
 }
+*/
 
 .account-warning, .account-suspended,
 .account-cooldown, .account-spinlimit {
@@ -128,4 +124,19 @@ footer > div > div > a {
 .pokestop-disabled,
 .webhook-disabled {
     color: red;
+}
+
+/* Breadcrumbs */
+nav > ol > li > a {
+    text-decoration: none;
+}
+
+.card-header {
+    background-color: #212529;
+    color: #fff;
+}
+
+.card,
+.card-body {
+    border: 1px solid rgba(0, 0, 0, 0.500);
 }

@@ -1,0 +1,57 @@
+﻿@using ChuckDeviceController.Common.Data.Contracts
+@model ManageApiKeyViewModel
+@{
+    ViewData["Title"] = "Create API Key";
+}
+
+<h1>Create API Key</h1>
+
+<p>@Html.ValidationMessage("ApiKey", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Plugin", ControllerText = "Api Keys", Fragment = "apikeys", CurrentPage = "Create API Key" })
+
+<h4>API Key</h4>
+<hr />
+
+<form asp-action="Create">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-floating mb-3">
+        <input asp-for="Name" class="form-control" placeholder="API key name description" />
+        <label asp-for="Name"></label>
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="form-floating mb-3">
+        <input asp-for="Expiration" class="form-control" type="date" placeholder="API key expiration date" />
+        <label asp-for="Expiration"></label> <small class="text-muted"><i>(Leave empty for no expiration)</i></small>
+        <span asp-validation-for="Expiration" class="text-danger"></span>
+    </div>
+    <div class="card">
+        <div class="card-header"><b>API Scope</b></div>
+        <div class="card-body">
+            @for (var i = 0; i < Model.Scope.Count; i++)
+            {
+                <div class="form-check">
+                    <input type="hidden" asp-for="@Model.Scope[i].Scope" />
+                    <input asp-for="@Model.Scope[i].Selected" class="form-check-input" />
+                    <label class="form-check-label" asp-for="@Model.Scope[i].Selected">
+                        @Model.Scope[i].Scope
+                    </label>
+                </div>
+            }
+        </div>
+    </div>
+    <br />
+    <div class="checkbox mb-3">
+        <label><input type="checkbox" asp-for="IsEnabled" checked> Enabled</label>
+    </div>
+    <div class="form-group mb-3">
+        <input type="submit" value="Create" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

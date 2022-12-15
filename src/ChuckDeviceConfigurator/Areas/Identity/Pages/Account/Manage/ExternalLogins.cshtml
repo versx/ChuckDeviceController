@@ -1,8 +1,10 @@
 ﻿@page
 @model ExternalLoginsModel
+@using ChuckDeviceConfigurator.Configuration
 @{
     ViewData["Title"] = "Manage your external logins";
     ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
+    var authProviderIcons = AuthProviderConfig.AuthProviderIcons;
 }
 
 <partial name="_StatusMessage" for="StatusMessage" />
@@ -15,17 +17,10 @@
             {
                 <tr>
                     <td id="@($"login-provider-{login.LoginProvider}")">
-                        @if (login.ProviderDisplayName == "GitHub")
+                        @if (authProviderIcons.ContainsKey(login.ProviderDisplayName))
                         {
-                            <i class="fab fa-github fa-align-left social-icon"></i> @login.ProviderDisplayName
-                        }
-                        else if (login.ProviderDisplayName == "Google")
-                        {
-                            <i class="fab fa-google fa-align-left social-icon"></i> @login.ProviderDisplayName
-                        }
-                        else if (login.ProviderDisplayName == "Discord")
-                        {
-                            <i class="fab fa-discord fa-align-left social-icon"></i> @login.ProviderDisplayName
+                            var icon = authProviderIcons[login.ProviderDisplayName];
+                            <i class="@icon.Icon"></i> @login.ProviderDisplayName
                         }
                         else
                         {
@@ -39,7 +34,9 @@
                                 <div>
                                     <input asp-for="@login.LoginProvider" name="LoginProvider" type="hidden" />
                                     <input asp-for="@login.ProviderKey" name="ProviderKey" type="hidden" />
-                                    <button type="submit" class="btn btn-primary" title="Remove this @login.ProviderDisplayName login from your account">Remove</button>
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Remove this @login.ProviderDisplayName login from your account">
+                                        <i class="fa-solid fa-fw fa-trash-can"></i>
+                                    </button>
                                 </div>
                             </form>
                         }
@@ -62,25 +59,12 @@
             <p>
                 @foreach (var provider in Model.OtherLogins)
                 {
-                    if (provider.Name == "GitHub")
+                    if (authProviderIcons.ContainsKey(provider.Name))
                     {
+                        var icon = authProviderIcons[provider.Name];
                         <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
-                                title="Log in using your @provider.DisplayName account">
-                            <i class="fab fa-github fa-align-left social-icon"></i> @provider.DisplayName
-                        </button>
-                    }
-                    else if (provider.Name == "Google")
-                    {
-                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
-                                title="Log in using your @provider.DisplayName account">
-                            <i class="fab fa-google fa-align-left social-icon"></i> @provider.DisplayName
-                        </button>
-                    }
-                    else if (provider.Name == "Discord")
-                    {
-                        <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
-                                title="Log in using your @provider.DisplayName account">
-                            <i class="fab fa-discord fa-align-left social-icon"></i> @provider.DisplayName
+                                title="Log in using your @provider.DisplayName account" style="@icon.Style">
+                            <i class="@icon.Icon"></i> @provider.DisplayName
                         </button>
                     }
                     else

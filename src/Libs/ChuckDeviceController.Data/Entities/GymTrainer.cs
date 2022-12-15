@@ -4,10 +4,15 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
+    using Microsoft.EntityFrameworkCore;
     using POGOProtos.Rpc;
 
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Data.Contracts;
+
     [Table("gym_trainer")]
-    public class GymTrainer : BaseEntity
+    public class GymTrainer : BaseEntity, IGymTrainer, IWebhookEntity
     {
         #region Properties
 
@@ -27,7 +32,10 @@
         [Column("battles_won")]
         public uint BattlesWon { get; set; }
 
-        [Column("km_walked")]
+        [
+            Column("km_walked"),
+            Precision(18, 2),
+        ]
         public double KmWalked { get; set; }
 
         [Column("pokemon_caught")]
@@ -51,12 +59,15 @@
         [Column("updated")]
         public ulong Updated { get; set; }
 
+        public ICollection<GymDefender>? Defenders { get; set; }
+
         #endregion
 
         #region Constructors
 
         public GymTrainer()
         {
+            Name = string.Empty;
         }
 
         public GymTrainer(PlayerPublicProfileProto profileData)
@@ -74,6 +85,47 @@
             CombatRating = Convert.ToUInt64(profileData.CombatRating);
             HasSharedExPass = profileData.HasSharedExPass;
             GymBadgeType = Convert.ToUInt16(profileData.GymBadgeType);
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public dynamic? GetWebhookData(string type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public dynamic? GetWebhookData(string type, Gym gym)
+        {
+            return type.ToLower() switch
+            {
+                "gym-trainer" or _ => new
+                {
+                    type = WebhookHeaders.GymTrainer,
+                    message = new
+                    {
+                        name = Name,
+                        level = Level,
+                        fort_id = gym?.Id,
+                        gym_id = gym?.Id,
+                        gym_name = gym?.Name ?? Gym.UnknownGymName,
+                        gym_url = gym?.Url,
+                        latitude = gym?.Latitude,
+                        longitude = gym?.Longitude,
+                        team_id = Convert.ToUInt16(TeamId),
+                        battles_won = BattlesWon,
+                        km_walked = KmWalked,
+                        pokemon_caught = PokemonCaught,
+                        experience = Experience,
+                        combat_rank = CombatRank,
+                        combat_rating = CombatRating,
+                        has_shared_ex_pass = HasSharedExPass,
+                        gym_badge_type = GymBadgeType,
+                        updated = Updated,
+                    },
+                },
+            };
         }
 
         #endregion

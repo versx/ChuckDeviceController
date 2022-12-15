@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceConfigurator.ViewModels
-@model ClearQuestsViewModel
+﻿@model ClearQuestsViewModel
 @{
     ViewData["Title"] = "Utilities - Clear Quests";
 }
@@ -16,34 +15,27 @@
 </p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Utilities" asp-action="Index">Utilities</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Clear Quests</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Clear Quests" })
 
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-controller="Utilities" asp-action="ClearQuests">
-            <div class="form-group">
-                <label asp-for="InstanceName" class="control-label"></label>
+            <div class="form-floating mb-3">
                 <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances))">
                     <option value="">Please select an instance</option>
                 </select>
+                <label asp-for="InstanceName"></label>
                 <span asp-validation-for="InstanceName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="GeofenceName" class="control-label"></label>
+            <div class="form-floating mb-3">
                 <select asp-for="GeofenceName" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences))">
                     <option value="">Please select a geofence</option>
                 </select>
+                <label asp-for="GeofenceName"></label>
                 <span asp-validation-for="GeofenceName" class="text-danger"></span>
             </div>
-            <br />
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <input type="submit" value="Clear Quests" class="btn btn-danger"/>
                 <input type="submit" value="Clear All Quests" class="btn btn-danger" onclick="return confirm('You are about to clear all quests, are you sure this is what you want to do?');" />
             </div>

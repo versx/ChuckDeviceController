@@ -1,16 +1,18 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers
 {
+    using System.Text;
+    using System.Text.Encodings.Web;
+
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.UI.Services;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.WebUtilities;
     using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Data;
     using ChuckDeviceConfigurator.ViewModels;
-    using System.Text.Encodings.Web;
-    using Microsoft.AspNetCore.WebUtilities;
-    using System.Text;
+    using ChuckDeviceController.Common;
 
     [Authorize(Roles = RoleConsts.UsersRole)]
     public class UserController : Controller
@@ -106,14 +108,16 @@
                 var userResult = await _userManager.CreateAsync(user, model.Password);
                 if (!userResult.Succeeded)
                 {
-                    var errors = string.Join("\n", userResult.Errors.Select(err => err.Description));
-                    ModelState.AddModelError("User", errors);
+                    var errors = userResult.Errors.Select(err => err.Description);
+                    foreach (var error in errors)
+                    {
+                        ModelState.AddModelError("User", error);
+                    }
                     return View(model);
                 }
 
                 // Send confirmation email so user can login, since we have non-confirmed
                 // accounts set unable to login unless confirmed.
-                // TODO: Need to confirm above
                 var callbackUrl = await BuildConfirmEmailCallbackUrl(user);
                 if (string.IsNullOrEmpty(callbackUrl))
                 {
@@ -142,8 +146,13 @@
                     var rolesResult = await _userManager.AddToRolesAsync(user, roleNames);
                     if (!rolesResult.Succeeded)
                     {
-                        var errors = string.Join("\n", rolesResult.Errors.Select(err => err.Description));
-                        _logger.LogError($"Failed to assign roles to user account '{model.UserName}'. Returned errors: {errors}");
+                        var errors = rolesResult.Errors.Select(err => err.Description);
+                        _logger.LogError($"Failed to assign roles to user account '{model.UserName}'. Returned errors: {string.Join("\n", errors)}");
+                        foreach (var error in errors)
+                        {
+                            ModelState.AddModelError("User", error);
+                        }
+                        return View(model);
                     }
 
                     // REVIEW: Make assigning default 'Registered' role configurable
@@ -169,8 +178,7 @@
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                ViewBag.ErrorMessage = $"User account with Id '{userId}' does not exist";
-                return View("NotFound");
+                return View("Error");
             }
 
             var model = new ManageUserViewModel
@@ -204,14 +212,14 @@
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                ModelState.AddModelError("", $"User account with id '{userId}' does not exist");
+                ModelState.AddModelError("User", $"User account with id '{userId}' does not exist");
                 return View(model);
             }
 
             // Check if any existing user accounts are registered with new email that are not the existing user
             if (_userManager.Users.FirstOrDefault(user => user.Email == model.Email && user.Id != userId) != null)
             {
-                ModelState.AddModelError("", $"User account with email '{model.Email}' already exists, please use a different email address.");
+                ModelState.AddModelError("User", $"User account with email '{model.Email}' already exists, please use a different email address.");
                 return View(model);
             }
 
@@ -221,7 +229,7 @@
                 if (model.Password != model.ConfirmPassword)
                 {
                     // Passwords do not match
-                    ModelState.AddModelError("", $"Provided password and confirm password do not match.");
+                    ModelState.AddModelError("User", $"Provided password and confirm password do not match.");
                     return View(model);
                 }
                 else
@@ -244,8 +252,11 @@
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
                 {
-                    var errors = string.Join("\n", result.Errors.Select(err => err.Description));
-                    ModelState.AddModelError("", errors);
+                    var errors = result.Errors.Select(err => err.Description);
+                    foreach (var error in errors)
+                    {
+                        ModelState.AddModelError("User", error);
+                    }
                     return View(model);
                 }
             }
@@ -276,7 +287,7 @@
             var removeResult = await _userManager.RemoveFromRolesAsync(user, roles);
             if (!removeResult.Succeeded)
             {
-                ModelState.AddModelError("", $"Cannot remove already assigned roles from user account '{model.UserName}'");
+                ModelState.AddModelError("User", $"Cannot remove already assigned roles from user account '{model.UserName}'");
                 return View(model);
             }
 
@@ -284,7 +295,7 @@
             var addResult = await _userManager.AddToRolesAsync(user, selectedRoles);
             if (!addResult.Succeeded)
             {
-                ModelState.AddModelError("", $"Cannot assign selected roles to user account '{model.UserName}'");
+                ModelState.AddModelError("User", $"Cannot assign selected roles to user account '{model.UserName}'");
                 return View(model);
             }
 
@@ -301,6 +312,13 @@
                 ModelState.AddModelError("User", $"User account does not exist with username '{userId}'.");
                 return View();
             }
+
+            if (user.UserName == Strings.DefaultUserName)
+            {
+                ModelState.AddModelError($"User", $"Default 'root' user account cannot be deleted");
+                return View();
+            }
+
             return View(user);
         }
 
@@ -319,12 +337,21 @@
                     return View(user);
                 }
 
+                if (userAccount.UserName == Strings.DefaultUserName)
+                {
+                    ModelState.AddModelError($"User", $"Default '{Strings.DefaultUserName}' user account cannot be deleted");
+                    return View();
+                }
+
                 // Delete user account from database
                 var result = await _userManager.DeleteAsync(userAccount);
                 if (!result.Succeeded)
                 {
-                    var errors = string.Join("\n", result.Errors.Select(err => err.Description));
-                    ModelState.AddModelError("User", errors);
+                    var errors = result.Errors.Select(err => err.Description);
+                    foreach (var error in errors)
+                    {
+                        ModelState.AddModelError("User", error);
+                    }
                     return View(userAccount);
                 }
 

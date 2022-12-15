@@ -1,0 +1,25 @@
+﻿@model RouteGeneratorViewModel
+@{
+    ViewData["Title"] = "Utilities - Route Generator";
+}
+
+<h1>Utilities</h1>
+
+<p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
+
+<h4>Route Generator</h4>
+
+<p>
+    Leaflet based map to manually create, automatically generator, or optimize coordinate routes as well as boundary geofences.
+</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Route Generator" })
+
+<hr />
+
+@await Html.PartialAsync("_GeofenceRouteGeneratorPartial", new { MapConfig = ViewData["MapConfig"], GeofenceNames = ViewData["GeofenceNames"] })
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

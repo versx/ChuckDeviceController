@@ -5,18 +5,18 @@
     public class CreateUserViewModel
     {
         [DisplayName("Username")]
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
         [DisplayName("Email Address")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [DisplayName("Password")]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [DisplayName("Confirm Password")]
-        public string ConfirmPassword { get; set; }
+        public string? ConfirmPassword { get; set; }
 
         [DisplayName("Roles")]
-        public List<ManageUserRolesViewModel> Roles { get; set; }
+        public List<ManageUserRolesViewModel> Roles { get; set; } = new();
     }
 }

@@ -7,7 +7,8 @@
 
     using ChuckDeviceConfigurator.Services.Assignments;
     using ChuckDeviceConfigurator.ViewModels;
-    using ChuckDeviceController.Data;
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -15,16 +16,16 @@
     public class AssignmentController : Controller
     {
         private readonly ILogger<AssignmentController> _logger;
-        private readonly DeviceControllerContext _context;
+        private readonly ControllerDbContext _context;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentController(
             ILogger<AssignmentController> logger,
-            DeviceControllerContext context,
+            ControllerDbContext controllerContext,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;
-            _context = context;
+            _context = controllerContext;
             _assignmentService = assignmentService;
         }
 
@@ -32,7 +33,11 @@
         public ActionResult Index()
         {
             var assignments = _context.Assignments.ToList();
-            // TODO: Include instance type for removing Re-Quest button
+            // Include instance type for removing Re-Quest button
+            var questInstances = _context.Instances.Where(x => x.Type == InstanceType.AutoQuest)
+                                                   .Select(x => x.Name)
+                                                   .ToList();
+            ViewBag.QuestInstances = questInstances;
             return View(new ViewModelsModel<Assignment>
             {
                 Items = assignments,
@@ -165,8 +170,6 @@
             var devices = BuildDevicesSelectList(assignment);
             var instances = _context.Instances.ToList();
 
-            // TODO: Fix loading time value into element
-
             ViewBag.Devices = devices;
             ViewBag.Instances = instances;
             return View(assignment);
@@ -285,6 +288,27 @@
             }
         }
 
+        // GET: AssignmentController/DeleteAll
+        [HttpGet]
+        public async Task<ActionResult> DeleteAll()
+        {
+            try
+            {
+                _context.Assignments.RemoveRange(_context.Assignments);
+                await _context.SaveChangesAsync();
+
+                // Reload assignments in the assignment service to reflect the changes.
+                _assignmentService.Reload();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                ModelState.AddModelError("Assignment", $"Unknown error occurred while deleting all assignments.");
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
         // GET: AssignmentController/Start/5
         public async Task<ActionResult> Start(uint id)
         {
@@ -309,6 +333,50 @@
                 return View();
             }
         }
+
+        // GET: AssignmentController/ReQuest/test
+        public async Task<ActionResult> ReQuest(uint id)
+        {
+            try
+            {
+                var assignment = await _context.Assignments.FindAsync(id);
+                if (assignment == null)
+                {
+                    // Failed to retrieve assignment from database, does it exist?
+                    ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+                    return View();
+                }
+
+                // Start re-quest for assignment
+                await _assignmentService.ReQuestAssignmentAsync(assignment.Id);
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch //(Exception ex)
+            {
+                ModelState.AddModelError("Assignment", $"Unknown error occurred while starting re-quest for assignment {id}.");
+                return View();
+            }
+        }
+
+        // GET: AssignmentController/ClearQuests/test
+        public async Task<ActionResult> ClearQuests(uint id)
+        {
+            // Clear quests for assignment
+            var assignment = await _context.Assignments.FindAsync(id);
+            if (assignment == null)
+            {
+                // Failed to retrieve assignment from database, does it exist?
+                ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+                return View();
+            }
+
+            await _assignmentService.ClearQuestsAsync(assignment);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        #region Helper Methods
 
         private uint GetTimeNumeric(string time)
         {
@@ -371,5 +439,7 @@
             });
             return devicesAndDeviceGroups;
         }
+
+        #endregion
     }
 }

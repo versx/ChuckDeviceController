@@ -2,6 +2,7 @@
 {
     using Microsoft.EntityFrameworkCore;
 
+	using ChuckDeviceController.Collections;
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
 
@@ -9,51 +10,48 @@
 	{
         #region Variables
 
-        //private readonly ILogger<IGeofenceControllerService> _logger;
-        private readonly IDbContextFactory<DeviceControllerContext> _factory;
+        private readonly ILogger<IGeofenceControllerService> _logger;
+        private readonly IDbContextFactory<ControllerDbContext> _factory;
 
-		private readonly object _geofencesLock = new();
-        private List<Geofence> _geofences;
+        private SafeCollection<Geofence> _geofences;
 
         #endregion
 
         #region Constructor
 
         public GeofenceControllerService(
-			//ILogger<IGeofenceControllerService> logger,
-            IDbContextFactory<DeviceControllerContext> factory)
+			ILogger<IGeofenceControllerService> logger,
+            IDbContextFactory<ControllerDbContext> factory)
         {
-            //_logger = logger;
+            _logger = logger;
             _factory = factory;
 			_geofences = new();
 
             Reload();
         }
 
-        #endregion
+		#endregion
 
-        #region Public Methods
+		#region Public Methods
 
-        public void Reload()
+		public void Reload()
 		{
-			lock (_geofencesLock)
-            {
-				_geofences = GetGeofences();
-            }
+			var geofences = GetGeofences();
+			_geofences = new(geofences);
 		}
 
 		public void Add(Geofence geofence)
 		{
-			lock (_geofencesLock)
-			{
-				if (_geofences.Contains(geofence))
-				{
-					// Already exists
-					return;
-				}
-				_geofences.Add(geofence);
-			}
-		}
+            if (_geofences.Contains(geofence))
+            {
+				// Already exists
+				return;
+            }
+            if (!_geofences.TryAdd(geofence))
+            {
+                _logger.LogError($"Failed to add geofence with name '{geofence.Name}'");
+            }
+        }
 
 		public void Edit(Geofence newGeofence, string oldGeofenceName)
 		{
@@ -63,27 +61,24 @@
 
 		public void Delete(string name)
 		{
-			lock (_geofencesLock)
-			{
-				_geofences = _geofences.Where(x => x.Name != name)
-									   .ToList();
-			}
-		}
+            if (!_geofences.Remove(x => x.Name == name))
+            {
+                _logger.LogError($"Failed to remove geofence with name '{name}'");
+            }
+        }
 
 		public Geofence GetByName(string name)
 		{
-			Geofence? geofence = null;
-			lock (_geofencesLock)
-			{
-				geofence = _geofences.Find(x => x.Name == name);
-			}
-			return geofence;
-		}
+            var geofence = _geofences.TryGet(x => x.Name == name);
+            return geofence;
+        }
 
 		public IReadOnlyList<Geofence> GetByNames(IReadOnlyList<string> names)
         {
-			return names.Select(name => GetByName(name))
-						.ToList();
+            var geofences = names
+                .Select(name => GetByName(name))
+                .ToList();
+            return geofences;
         }
 
         #endregion
@@ -92,11 +87,9 @@
 
         private List<Geofence> GetGeofences()
 		{
-			using (var context = _factory.CreateDbContext())
-            {
-				var geofences = context.Geofences.ToList();
-				return geofences;
-            }
+			using var context = _factory.CreateDbContext();
+			var geofences = context.Geofences.ToList();
+			return geofences;
 		}
 
 		#endregion

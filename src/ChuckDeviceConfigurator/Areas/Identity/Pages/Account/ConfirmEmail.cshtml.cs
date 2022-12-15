@@ -12,6 +12,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
     using Microsoft.AspNetCore.WebUtilities;
 
     using ChuckDeviceConfigurator.Data;
+    using ChuckDeviceController.Common;
 
     public class ConfirmEmailModel : PageModel
     {

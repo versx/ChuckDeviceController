@@ -1,0 +1,14 @@
+﻿<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        @if (ViewData.ContainsKey("Fragment"))
+        {
+            <li class="breadcrumb-item"><a asp-controller="@ViewData["Controller"]" asp-action="Index" asp-fragment="@ViewData["Fragment"]">@ViewData["ControllerText"]</a></li>
+        }
+        else
+        {
+            <li class="breadcrumb-item"><a asp-controller="@ViewData["Controller"]" asp-action="Index">@ViewData["ControllerText"]</a></li>
+        }
+        <li class="breadcrumb-item active" aria-current="page">@ViewData["CurrentPage"]</li>
+    </ol>
+</nav>

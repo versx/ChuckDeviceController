@@ -1,46 +1,69 @@
 ﻿namespace ChuckDeviceController.Collections.Queues
 {
-    using System.Threading.Channels;
+    using System.Collections.Concurrent;
 
-    using ChuckDeviceController.Collections.Extensions;
-
-    public class DefaultBackgroundTaskQueue : IBackgroundTaskQueue
+    public class DefaultBackgroundTaskQueue<T> : IBackgroundTaskQueue<T> where T : class
     {
-        private readonly Channel<Func<CancellationToken, ValueTask>> _queue;
+        private readonly ConcurrentQueue<Func<CancellationToken, Task>> _queue = new();
+        private readonly SemaphoreSlim _signal = new(0);
 
-        public uint Count => Convert.ToUInt32(_queue?.Reader?.Count ?? 0);
+        public uint Count => Convert.ToUInt32(_queue.Count);
 
         public DefaultBackgroundTaskQueue(int capacity = 4096)
         {
-            var options = new BoundedChannelOptions(capacity)
-            {
-                FullMode = BoundedChannelFullMode.DropOldest,//Wait,
-                Capacity = capacity,
-            };
-            _queue = Channel.CreateBounded<Func<CancellationToken, ValueTask>>(options);
         }
 
-        public async ValueTask EnqueueAsync(Func<CancellationToken, ValueTask> workItem)
+        public async Task EnqueueAsync(Func<CancellationToken, Task> workItem)
         {
             if (workItem is null)
             {
                 throw new ArgumentNullException(nameof(workItem));
             }
-            await _queue.Writer.WriteAsync(workItem);
+
+            _queue.Enqueue(workItem);
+            _signal.Release();
+
+            await Task.CompletedTask;
         }
 
-        public async ValueTask<Func<CancellationToken, ValueTask>> DequeueAsync(
+        public async Task<Func<CancellationToken, Task>?> DequeueAsync(
             CancellationToken cancellationToken)
         {
-            var workItem = await _queue.Reader.ReadAsync(cancellationToken);
+            if (Count == 0)
+            {
+                return null;
+            }
+
+            await _signal.WaitAsync(cancellationToken);
+
+            _queue.TryDequeue(out var workItem);
             return workItem;
         }
 
-        public async Task<List<Func<CancellationToken, ValueTask>>> DequeueMultipleAsync(
+        public async Task<List<Func<CancellationToken, Task>>?> DequeueMultipleAsync(
             int maxBatchSize,
             CancellationToken cancellationToken)
         {
-            var workItems = await _queue.Reader.ReadMultipleAsync(maxBatchSize, cancellationToken);
+            if (Count == 0)
+            {
+                return null;
+            }
+
+            await _signal.WaitAsync(cancellationToken);
+
+            var workItems = new List<Func<CancellationToken, Task>>();
+            for (var i = 0; i < maxBatchSize; i++)
+            {
+                if (_queue.IsEmpty)
+                    break;
+
+                _queue.TryDequeue(out var workItem);
+                if (workItem is not null)
+                {
+                    workItems.Add(workItem);
+                }
+            }
+
             return workItems;
         }
     }

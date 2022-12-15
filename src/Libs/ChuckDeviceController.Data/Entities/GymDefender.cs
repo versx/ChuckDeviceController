@@ -7,10 +7,14 @@
     using POGOProtos.Rpc;
     using Gender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
+    using ChuckDeviceController.Common;
+    using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Extensions;
+    using Microsoft.EntityFrameworkCore;
 
     [Table("gym_defender")]
-    public class GymDefender : BaseEntity
+    public class GymDefender : BaseEntity, IGymDefender, IWebhookEntity
     {
         #region Properties
 
@@ -54,7 +58,10 @@
         [Column("battles_lost")]
         public uint BattlesLost { get; set; }
 
-        [Column("berry_value")]
+        [
+            Column("berry_value"),
+            Precision(18, 2),
+        ]
         public double BerryValue { get; set; }
 
         [Column("times_fed")]
@@ -63,11 +70,21 @@
         [Column("deployment_duration")]
         public ulong DeploymentDuration { get; set; }
 
-        [Column("trainer_name")]
-        public string TrainerName { get; set; }
+        [
+            Column("trainer_name"),
+            ForeignKey("trainer_name"),
+        ]
+        public string? TrainerName { get; set; }
 
-        [Column("fort_id")]
-        public string FortId { get; set; }
+        public virtual GymTrainer? Trainer { get; set; }
+
+        [
+            Column("fort_id"),
+            ForeignKey("fort_id"),
+        ]
+        public string? FortId { get; set; }
+
+        public virtual Gym? Fort { get; set; }
 
         [Column("atk_iv")]
         public ushort AttackIV { get; set; }
@@ -132,10 +149,16 @@
         [Column("npc_combat_total")]
         public uint NpcCombatTotal { get; set; }
 
-        [Column("height_m")]
+        [
+            Column("height_m"),
+            Precision(18, 2),
+        ]
         public double HeightM { get; set; }
 
-        [Column("weight_kg")]
+        [
+            Column("weight_kg"),
+            Precision(18, 2),
+        ]
         public double WeightKg { get; set; }
 
         [Column("updated")]
@@ -143,8 +166,11 @@
 
         #endregion
 
+        #region Constructors
+
         public GymDefender()
         {
+            Nickname = string.Empty;
         }
 
         public GymDefender(GymDefenderProto gymDefenderData, string fortId)
@@ -162,23 +188,23 @@
             CpNow = Convert.ToUInt32(pokemon.CpNow);
             Cp = Convert.ToUInt32(pokemon.Pokemon?.Cp ?? 0);
             BerryValue = pokemon.BerryValue;
-            BuddyKmWalked = pokemon.Pokemon.BuddyKmWalked;
-            BuddyCandyAwarded = Convert.ToUInt32(pokemon.Pokemon.BuddyCandyAwarded);
-            CoinsReturned = Convert.ToUInt32(pokemon.Pokemon.CoinsReturned);
+            BuddyKmWalked = pokemon.Pokemon?.BuddyKmWalked ?? 0;
+            BuddyCandyAwarded = Convert.ToUInt32(pokemon.Pokemon?.BuddyCandyAwarded ?? 0);
+            CoinsReturned = Convert.ToUInt32(pokemon.Pokemon?.CoinsReturned ?? 0);
             BattlesWon = Convert.ToUInt32(deployment.BattlesWon);
             BattlesLost = Convert.ToUInt32(deployment.BattlesLost);
             TimesFed = Convert.ToUInt32(deployment?.TimesFed);
             DeploymentDuration = Convert.ToUInt64(deployment?.DeploymentDurationMs / 1000);
             //Favorite = pokemon.Pokemon.Favorite;
-            FromFort = pokemon.Pokemon.FromFort;
-            IsBad = pokemon.Pokemon.IsBad;
-            IsEgg = pokemon.Pokemon.IsEgg;
-            IsLucky = pokemon.Pokemon.IsLucky;
-            IsShiny = pokemon.Pokemon.PokemonDisplay.Shiny;
-            HeightM = pokemon.Pokemon.HeightM;
-            WeightKg = pokemon.Pokemon.WeightKg;
-            HatchedFromEgg = pokemon.Pokemon.HatchedFromEgg;
-            TrainerName = pokemon.Pokemon.OwnerName;
+            FromFort = pokemon.Pokemon?.FromFort ?? false;
+            IsBad = pokemon.Pokemon?.IsBad ?? false;
+            IsEgg = pokemon.Pokemon?.IsEgg ?? false;
+            IsLucky = pokemon.Pokemon?.IsLucky ?? false;
+            IsShiny = pokemon.Pokemon?.PokemonDisplay?.Shiny ?? false;
+            HeightM = pokemon.Pokemon?.HeightM ?? 0;
+            WeightKg = pokemon.Pokemon?.WeightKg ?? 0;
+            HatchedFromEgg = pokemon.Pokemon?.HatchedFromEgg ?? false;
+            TrainerName = pokemon.Pokemon?.OwnerName ?? null;
             FortId = fortId;
             AttackIV = Convert.ToUInt16(pokemon.Pokemon?.IndividualAttack);
             DefenseIV = Convert.ToUInt16(pokemon.Pokemon?.IndividualDefense);
@@ -234,5 +260,90 @@
             //pokemon.Pokemon.TradedTimeMs
             //pokemon.Pokemon.TradingOriginalOwnerHash
         }
+
+        #endregion
+
+        #region Public Methods
+
+        public dynamic? GetWebhookData(string type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public dynamic? GetWebhookData(string type, Gym gym)
+        {
+            return type.ToLower() switch
+            {
+                "gym-defender" or _ => new
+                {
+                    type = WebhookHeaders.GymDefender,
+                    message = new
+                    {
+                        id = Id,
+                        nickname = Nickname,
+                        trainer_name = TrainerName,
+                        move_1 = Move1,
+                        move_2 = Move2,
+                        move_3 = Move3,
+                        fort_id = FortId,
+                        gym_id = FortId,
+                        gym_name = gym?.Name ?? Gym.UnknownGymName,
+                        gym_url = gym?.Url,
+                        latitude = gym?.Latitude,
+                        longitude = gym?.Longitude,
+                        pokemon_id = PokemonId,
+                        form = Form,
+                        costume = Costume,
+                        gender = Gender,
+                        individual_attack = AttackIV,
+                        individual_defense = DefenseIV,
+                        individual_stamina = StaminaIV,
+                        cp = Cp,
+                        cp_now = CpNow,
+                        cp_when_deployed = CpWhenDeployed,
+                        coins_returned = CoinsReturned,
+                        times_fed = TimesFed,
+                        berry_value = BerryValue,
+                        deployment_duration = DeploymentDuration,
+                        display_pokemon_id = DisplayPokemonId,
+                        from_raid = FromFort,
+                        from_fort = FromFort,
+                        hatched_from_egg = HatchedFromEgg,
+                        is_egg = IsEgg,
+                        is_shiny = IsShiny,
+                        is_bad = IsBad,
+                        is_striked = IsBad,
+                        is_lucky = IsLucky,
+                        buddy = new
+                        {
+                            candy_awarded = BuddyCandyAwarded,
+                            km_walked = BuddyKmWalked,
+                        },
+                        battles = new
+                        {
+                            attacked = BattlesAttacked,
+                            defended = BattlesDefended,
+                            won = BattlesWon,
+                            lost = BattlesLost,
+                        },
+                        pvp_combat = new
+                        {
+                            won = PvpCombatWon,
+                            total = PvpCombatTotal,
+                        },
+                        npm_combat = new
+                        {
+                            won = NpcCombatWon,
+                            total = NpcCombatTotal,
+                        },
+                        height_m = HeightM,
+                        weight_kb = WeightKg,
+                        updated = Updated,
+                    },
+                },
+            };
+        }
+
+        #endregion
     }
 }

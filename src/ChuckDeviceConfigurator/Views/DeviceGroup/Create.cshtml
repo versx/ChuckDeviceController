@@ -1,5 +1,4 @@
-﻿@using ChuckDeviceController.Data.Entities
-@model DeviceGroup
+﻿@model DeviceGroup
 @{
     ViewData["Title"] = "Create Device Group";
 }
@@ -9,31 +8,27 @@
 <p>@Html.ValidationMessage("DeviceGroup", new { @class = "text-danger" })</p>
 
 <br />
-<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-        <li class="breadcrumb-item"><a asp-controller="DeviceGroup" asp-action="Index">Device Groups</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Create Device Group</li>
-    </ol>
-</nav>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "DeviceGroup", ControllerText = "Device Groups", CurrentPage = "Create Device Group" })
 
 <h4>Device Group</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+            <div class="form-floating mb-3">
                 <input asp-for="Name" class="form-control" />
+                <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mb-3">
                 <label asp-for="DeviceUuids" class="control-label"></label>
                 <select asp-for="DeviceUuids" class="form-control" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))">
+                    <option value="" disabled selected>Please select one or more</option>
                 </select>
                 <span asp-validation-for="DeviceUuids" class="text-danger"></span>
             </div>
+            <br />
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
