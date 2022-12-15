@@ -15,6 +15,7 @@ TODO: Create separate page for prerequisites
 1. Fill out [`appsettings.json`](./configs/configurator.md) config  
 1. Start ChuckDeviceConfigurator `dotnet ChuckDeviceConfigurator.dll`  
 1. Visit `http://127.0.0.1:8881` (default, change accordingly to your config options) to begin configuring your devices.  
+1. Default username is `root` and password is `123Pa$$word.`  
 
 
 ## ChuckDeviceController  
