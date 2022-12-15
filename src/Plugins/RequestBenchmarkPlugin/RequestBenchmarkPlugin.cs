@@ -4,6 +4,7 @@ namespace RequestBenchmarkPlugin
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
@@ -15,6 +16,8 @@ namespace RequestBenchmarkPlugin
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class RequestBenchmarkPlugin : IPlugin
     {
+        public const string RequestBenchmarkRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},RequestBenchmark";
+
         private const string DbName = "timing";
 
         private readonly IUiHost _uiHost;

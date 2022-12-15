@@ -123,6 +123,8 @@
                 var assemblyName = assembly.GetName();
                 Load(assemblyName);
             }
+
+            _loaded = true;
         }
 
         public void Reload()
@@ -144,7 +146,7 @@
             if (string.IsNullOrEmpty(assemblyPath))
                 return null;
 
-            _loaded = true;
+            //_loaded = true;
 
             return LoadFromAssemblyPath(assemblyPath);
         }

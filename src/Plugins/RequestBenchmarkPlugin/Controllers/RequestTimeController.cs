@@ -1,10 +1,12 @@
 ﻿namespace RequestBenchmarkPlugin.Controllers
 {
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
     using Data.Contexts;
     using Services;
 
+    [Authorize(Roles = RequestBenchmarkPlugin.RequestBenchmarkRole)]
     public class RequestTimeController : Controller
     {
         //private readonly ILogger<RequestTimeController> _logger;
