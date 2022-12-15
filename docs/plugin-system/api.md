@@ -18,9 +18,17 @@
 - [DatabaseConnectionState](#T-ChuckDeviceController-Plugin-DatabaseConnectionState 'ChuckDeviceController.Plugin.DatabaseConnectionState')
     - [Connected](#F-ChuckDeviceController-Plugin-DatabaseConnectionState-Connected 'ChuckDeviceController.Plugin.DatabaseConnectionState.Connected')
     - [Disconnected](#F-ChuckDeviceController-Plugin-DatabaseConnectionState-Disconnected 'ChuckDeviceController.Plugin.DatabaseConnectionState.Disconnected')
+- [EventExecutionResult](#T-ChuckDeviceController-Plugin-EventBus-EventExecutionResult 'ChuckDeviceController.Plugin.EventBus.EventExecutionResult')
+    - [Executed](#F-ChuckDeviceController-Plugin-EventBus-EventExecutionResult-Executed 'ChuckDeviceController.Plugin.EventBus.EventExecutionResult.Executed')
+    - [UnhandledException](#F-ChuckDeviceController-Plugin-EventBus-EventExecutionResult-UnhandledException 'ChuckDeviceController.Plugin.EventBus.EventExecutionResult.UnhandledException')
+- [GeofenceTypeAttribute](#T-ChuckDeviceController-Plugin-GeofenceTypeAttribute 'ChuckDeviceController.Plugin.GeofenceTypeAttribute')
+    - [#ctor(type)](#M-ChuckDeviceController-Plugin-GeofenceTypeAttribute-#ctor-ChuckDeviceController-Common-Data-GeofenceType- 'ChuckDeviceController.Plugin.GeofenceTypeAttribute.#ctor(ChuckDeviceController.Common.Data.GeofenceType)')
+    - [Type](#P-ChuckDeviceController-Plugin-GeofenceTypeAttribute-Type 'ChuckDeviceController.Plugin.GeofenceTypeAttribute.Type')
 - [IConfigurationHost](#T-ChuckDeviceController-Plugin-IConfigurationHost 'ChuckDeviceController.Plugin.IConfigurationHost')
     - [GetConfiguration(jsonFileName,sectionName)](#M-ChuckDeviceController-Plugin-IConfigurationHost-GetConfiguration-System-String,System-String- 'ChuckDeviceController.Plugin.IConfigurationHost.GetConfiguration(System.String,System.String)')
     - [GetValue\`\`1(name,defaultValue,sectionName)](#M-ChuckDeviceController-Plugin-IConfigurationHost-GetValue``1-System-String,``0,System-String- 'ChuckDeviceController.Plugin.IConfigurationHost.GetValue``1(System.String,``0,System.String)')
+- [ICustomObserver\`1](#T-ChuckDeviceController-Plugin-EventBus-ICustomObserver`1 'ChuckDeviceController.Plugin.EventBus.ICustomObserver`1')
+    - [Unsubscribe()](#M-ChuckDeviceController-Plugin-EventBus-ICustomObserver`1-Unsubscribe 'ChuckDeviceController.Plugin.EventBus.ICustomObserver`1.Unsubscribe')
 - [IDashboardStatsItem](#T-ChuckDeviceController-Plugin-IDashboardStatsItem 'ChuckDeviceController.Plugin.IDashboardStatsItem')
     - [IsHtml](#P-ChuckDeviceController-Plugin-IDashboardStatsItem-IsHtml 'ChuckDeviceController.Plugin.IDashboardStatsItem.IsHtml')
     - [Name](#P-ChuckDeviceController-Plugin-IDashboardStatsItem-Name 'ChuckDeviceController.Plugin.IDashboardStatsItem.Name')
@@ -37,13 +45,28 @@
     - [OnEntityModified\`\`1(oldEntity,newEntity)](#M-ChuckDeviceController-Plugin-IDatabaseEvents-OnEntityModified``1-``0,``0- 'ChuckDeviceController.Plugin.IDatabaseEvents.OnEntityModified``1(``0,``0)')
     - [OnStateChanged(state)](#M-ChuckDeviceController-Plugin-IDatabaseEvents-OnStateChanged-ChuckDeviceController-Plugin-DatabaseConnectionState- 'ChuckDeviceController.Plugin.IDatabaseEvents.OnStateChanged(ChuckDeviceController.Plugin.DatabaseConnectionState)')
 - [IDatabaseHost](#T-ChuckDeviceController-Plugin-IDatabaseHost 'ChuckDeviceController.Plugin.IDatabaseHost')
-    - [GetByIdAsync\`\`2(id)](#M-ChuckDeviceController-Plugin-IDatabaseHost-GetByIdAsync``2-``1- 'ChuckDeviceController.Plugin.IDatabaseHost.GetByIdAsync``2(``1)')
-    - [GetListAsync\`\`1()](#M-ChuckDeviceController-Plugin-IDatabaseHost-GetListAsync``1 'ChuckDeviceController.Plugin.IDatabaseHost.GetListAsync``1')
+    - [FindAsync\`\`2(id)](#M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-``1- 'ChuckDeviceController.Plugin.IDatabaseHost.FindAsync``2(``1)')
+    - [FindAsync\`\`2(predicate,order,sortDirection,limit)](#M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-System-Linq-Expressions-Expression{System-Func{``0,System-Boolean}},System-Linq-Expressions-Expression{System-Func{``0,``1}},ChuckDeviceController-Common-Data-SortOrderDirection,System-Int32- 'ChuckDeviceController.Plugin.IDatabaseHost.FindAsync``2(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,``1}},ChuckDeviceController.Common.Data.SortOrderDirection,System.Int32)')
+    - [GetAllAsync\`\`1()](#M-ChuckDeviceController-Plugin-IDatabaseHost-GetAllAsync``1 'ChuckDeviceController.Plugin.IDatabaseHost.GetAllAsync``1')
+- [IEvent](#T-ChuckDeviceController-Plugin-EventBus-IEvent 'ChuckDeviceController.Plugin.EventBus.IEvent')
+    - [Payload](#P-ChuckDeviceController-Plugin-EventBus-IEvent-Payload 'ChuckDeviceController.Plugin.EventBus.IEvent.Payload')
+- [IEventAggregatorHost](#T-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost 'ChuckDeviceController.Plugin.EventBus.IEventAggregatorHost')
+    - [Publish(message)](#M-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost-Publish-ChuckDeviceController-Plugin-EventBus-IEvent- 'ChuckDeviceController.Plugin.EventBus.IEventAggregatorHost.Publish(ChuckDeviceController.Plugin.EventBus.IEvent)')
+    - [Subscribe(observer)](#M-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost-Subscribe-ChuckDeviceController-Plugin-EventBus-ICustomObserver{ChuckDeviceController-Plugin-EventBus-IEvent}- 'ChuckDeviceController.Plugin.EventBus.IEventAggregatorHost.Subscribe(ChuckDeviceController.Plugin.EventBus.ICustomObserver{ChuckDeviceController.Plugin.EventBus.IEvent})')
+    - [Subscribe\`\`1(observer)](#M-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost-Subscribe``1-ChuckDeviceController-Plugin-EventBus-ICustomObserver{``0}- 'ChuckDeviceController.Plugin.EventBus.IEventAggregatorHost.Subscribe``1(ChuckDeviceController.Plugin.EventBus.ICustomObserver{``0})')
 - [IFileStorageHost](#T-ChuckDeviceController-Plugin-IFileStorageHost 'ChuckDeviceController.Plugin.IFileStorageHost')
+- [IGeofenceServiceHost](#T-ChuckDeviceController-Plugin-IGeofenceServiceHost 'ChuckDeviceController.Plugin.IGeofenceServiceHost')
+    - [CreateGeofenceAsync(options)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-CreateGeofenceAsync-ChuckDeviceController-Common-Data-Contracts-IGeofence- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.CreateGeofenceAsync(ChuckDeviceController.Common.Data.Contracts.IGeofence)')
+    - [IsPointInMultiPolygon(coord,multiPolygon)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInMultiPolygon-ChuckDeviceController-Geometry-Models-Contracts-ICoordinate,ChuckDeviceController-Geometry-Models-Contracts-IMultiPolygon- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.IsPointInMultiPolygon(ChuckDeviceController.Geometry.Models.Contracts.ICoordinate,ChuckDeviceController.Geometry.Models.Contracts.IMultiPolygon)')
+    - [IsPointInMultiPolygons(coord,multiPolygons)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInMultiPolygons-ChuckDeviceController-Geometry-Models-Contracts-ICoordinate,System-Collections-Generic-IEnumerable{ChuckDeviceController-Geometry-Models-Contracts-IMultiPolygon}- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.IsPointInMultiPolygons(ChuckDeviceController.Geometry.Models.Contracts.ICoordinate,System.Collections.Generic.IEnumerable{ChuckDeviceController.Geometry.Models.Contracts.IMultiPolygon})')
+    - [IsPointInPolygon(coord,coordinates)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInPolygon-ChuckDeviceController-Geometry-Models-Contracts-ICoordinate,System-Collections-Generic-IEnumerable{ChuckDeviceController-Geometry-Models-Contracts-ICoordinate}- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.IsPointInPolygon(ChuckDeviceController.Geometry.Models.Contracts.ICoordinate,System.Collections.Generic.IEnumerable{ChuckDeviceController.Geometry.Models.Contracts.ICoordinate})')
+- [IInstanceServiceHost](#T-ChuckDeviceController-Plugin-IInstanceServiceHost 'ChuckDeviceController.Plugin.IInstanceServiceHost')
+    - [CreateInstanceAsync(options)](#M-ChuckDeviceController-Plugin-IInstanceServiceHost-CreateInstanceAsync-ChuckDeviceController-Common-Data-Contracts-IInstance- 'ChuckDeviceController.Plugin.IInstanceServiceHost.CreateInstanceAsync(ChuckDeviceController.Common.Data.Contracts.IInstance)')
 - [IJobControllerServiceEvents](#T-ChuckDeviceController-Plugin-IJobControllerServiceEvents 'ChuckDeviceController.Plugin.IJobControllerServiceEvents')
 - [IJobControllerServiceHost](#T-ChuckDeviceController-Plugin-IJobControllerServiceHost 'ChuckDeviceController.Plugin.IJobControllerServiceHost')
-    - [AddJobControllerAsync(name,controller)](#M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AddJobControllerAsync-System-String,ChuckDeviceController-Common-Jobs-IJobController- 'ChuckDeviceController.Plugin.IJobControllerServiceHost.AddJobControllerAsync(System.String,ChuckDeviceController.Common.Jobs.IJobController)')
-    - [AssignDeviceToJobControllerAsync(device,jobControllerName)](#M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AssignDeviceToJobControllerAsync-ChuckDeviceController-Common-Data-Contracts-IDevice,System-String- 'ChuckDeviceController.Plugin.IJobControllerServiceHost.AssignDeviceToJobControllerAsync(ChuckDeviceController.Common.Data.Contracts.IDevice,System.String)')
+    - [CustomInstanceTypes](#P-ChuckDeviceController-Plugin-IJobControllerServiceHost-CustomInstanceTypes 'ChuckDeviceController.Plugin.IJobControllerServiceHost.CustomInstanceTypes')
+    - [AssignDeviceToJobControllerAsync(device,instanceName)](#M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AssignDeviceToJobControllerAsync-ChuckDeviceController-Common-Data-Contracts-IDevice,System-String- 'ChuckDeviceController.Plugin.IJobControllerServiceHost.AssignDeviceToJobControllerAsync(ChuckDeviceController.Common.Data.Contracts.IDevice,System.String)')
+    - [RegisterJobControllerAsync\`\`1(customInstanceType)](#M-ChuckDeviceController-Plugin-IJobControllerServiceHost-RegisterJobControllerAsync``1-System-String- 'ChuckDeviceController.Plugin.IJobControllerServiceHost.RegisterJobControllerAsync``1(System.String)')
 - [ILoadData](#T-ChuckDeviceController-Plugin-ILoadData 'ChuckDeviceController.Plugin.ILoadData')
     - [Load\`\`1(folderName,fileName)](#M-ChuckDeviceController-Plugin-ILoadData-Load``1-System-String,System-String- 'ChuckDeviceController.Plugin.ILoadData.Load``1(System.String,System.String)')
 - [ILocalizationHost](#T-ChuckDeviceController-Plugin-ILocalizationHost 'ChuckDeviceController.Plugin.ILocalizationHost')
@@ -64,8 +87,6 @@
     - [Translate(key)](#M-ChuckDeviceController-Plugin-ILocalizationHost-Translate-System-String- 'ChuckDeviceController.Plugin.ILocalizationHost.Translate(System.String)')
     - [Translate(keyWithArgs,args)](#M-ChuckDeviceController-Plugin-ILocalizationHost-Translate-System-String,System-Object[]- 'ChuckDeviceController.Plugin.ILocalizationHost.Translate(System.String,System.Object[])')
 - [ILoggingHost](#T-ChuckDeviceController-Plugin-ILoggingHost 'ChuckDeviceController.Plugin.ILoggingHost')
-    - [LogException(ex)](#M-ChuckDeviceController-Plugin-ILoggingHost-LogException-System-Exception- 'ChuckDeviceController.Plugin.ILoggingHost.LogException(System.Exception)')
-    - [LogMessage(text,args)](#M-ChuckDeviceController-Plugin-ILoggingHost-LogMessage-System-String,System-Object[]- 'ChuckDeviceController.Plugin.ILoggingHost.LogMessage(System.String,System.Object[])')
 - [IMetadata](#T-ChuckDeviceController-Plugin-IMetadata 'ChuckDeviceController.Plugin.IMetadata')
     - [Author](#P-ChuckDeviceController-Plugin-IMetadata-Author 'ChuckDeviceController.Plugin.IMetadata.Author')
     - [Description](#P-ChuckDeviceController-Plugin-IMetadata-Description 'ChuckDeviceController.Plugin.IMetadata.Description')
@@ -86,9 +107,13 @@
     - [Provider](#P-ChuckDeviceController-Plugin-Services-IPluginServiceAttribute-Provider 'ChuckDeviceController.Plugin.Services.IPluginServiceAttribute.Provider')
     - [ProxyType](#P-ChuckDeviceController-Plugin-Services-IPluginServiceAttribute-ProxyType 'ChuckDeviceController.Plugin.Services.IPluginServiceAttribute.ProxyType')
     - [ServiceType](#P-ChuckDeviceController-Plugin-Services-IPluginServiceAttribute-ServiceType 'ChuckDeviceController.Plugin.Services.IPluginServiceAttribute.ServiceType')
+- [IPublisher](#T-ChuckDeviceController-Plugin-EventBus-IPublisher 'ChuckDeviceController.Plugin.EventBus.IPublisher')
+    - [Publish(payload)](#M-ChuckDeviceController-Plugin-EventBus-IPublisher-Publish-System-String- 'ChuckDeviceController.Plugin.EventBus.IPublisher.Publish(System.String)')
 - [IRepository\`2](#T-ChuckDeviceController-Plugin-IRepository`2 'ChuckDeviceController.Plugin.IRepository`2')
     - [GetByIdAsync(id)](#M-ChuckDeviceController-Plugin-IRepository`2-GetByIdAsync-`1- 'ChuckDeviceController.Plugin.IRepository`2.GetByIdAsync(`1)')
     - [GetListAsync()](#M-ChuckDeviceController-Plugin-IRepository`2-GetListAsync 'ChuckDeviceController.Plugin.IRepository`2.GetListAsync')
+- [IRoutingHost](#T-ChuckDeviceController-Plugin-IRoutingHost 'ChuckDeviceController.Plugin.IRoutingHost')
+    - [GenerateRoute(options)](#M-ChuckDeviceController-Plugin-IRoutingHost-GenerateRoute-ChuckDeviceController-Plugin-RouteGeneratorOptions- 'ChuckDeviceController.Plugin.IRoutingHost.GenerateRoute(ChuckDeviceController.Plugin.RouteGeneratorOptions)')
 - [ISaveData](#T-ChuckDeviceController-Plugin-ISaveData 'ChuckDeviceController.Plugin.ISaveData')
     - [Save\`\`1(data,folderName,name,prettyPrint)](#M-ChuckDeviceController-Plugin-ISaveData-Save``1-``0,System-String,System-String,System-Boolean- 'ChuckDeviceController.Plugin.ISaveData.Save``1(``0,System.String,System.String,System.Boolean)')
 - [ISettingsProperty](#T-ChuckDeviceController-Plugin-ISettingsProperty 'ChuckDeviceController.Plugin.ISettingsProperty')
@@ -104,9 +129,7 @@
     - [Validate](#P-ChuckDeviceController-Plugin-ISettingsProperty-Validate 'ChuckDeviceController.Plugin.ISettingsProperty.Validate')
     - [Value](#P-ChuckDeviceController-Plugin-ISettingsProperty-Value 'ChuckDeviceController.Plugin.ISettingsProperty.Value')
 - [ISettingsPropertyEvents](#T-ChuckDeviceController-Plugin-ISettingsPropertyEvents 'ChuckDeviceController.Plugin.ISettingsPropertyEvents')
-    - [OnClick()](#M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnClick-ChuckDeviceController-Plugin-ISettingsProperty- 'ChuckDeviceController.Plugin.ISettingsPropertyEvents.OnClick(ChuckDeviceController.Plugin.ISettingsProperty)')
-    - [OnSave()](#M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnSave-ChuckDeviceController-Plugin-ISettingsProperty- 'ChuckDeviceController.Plugin.ISettingsPropertyEvents.OnSave(ChuckDeviceController.Plugin.ISettingsProperty)')
-    - [OnToggle()](#M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnToggle-ChuckDeviceController-Plugin-ISettingsProperty- 'ChuckDeviceController.Plugin.ISettingsPropertyEvents.OnToggle(ChuckDeviceController.Plugin.ISettingsProperty)')
+    - [OnSave()](#M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnSave-System-Collections-Generic-IReadOnlyDictionary{System-String,System-Collections-Generic-List{ChuckDeviceController-Plugin-ISettingsProperty}}- 'ChuckDeviceController.Plugin.ISettingsPropertyEvents.OnSave(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Collections.Generic.List{ChuckDeviceController.Plugin.ISettingsProperty}})')
 - [ISettingsPropertyGroup](#T-ChuckDeviceController-Plugin-ISettingsPropertyGroup 'ChuckDeviceController.Plugin.ISettingsPropertyGroup')
     - [DisplayIndex](#P-ChuckDeviceController-Plugin-ISettingsPropertyGroup-DisplayIndex 'ChuckDeviceController.Plugin.ISettingsPropertyGroup.DisplayIndex')
     - [Id](#P-ChuckDeviceController-Plugin-ISettingsPropertyGroup-Id 'ChuckDeviceController.Plugin.ISettingsPropertyGroup.Id')
@@ -149,23 +172,22 @@
     - [Configure(appBuilder)](#M-ChuckDeviceController-Plugin-IWebPlugin-Configure-Microsoft-AspNetCore-Builder-WebApplication- 'ChuckDeviceController.Plugin.IWebPlugin.Configure(Microsoft.AspNetCore.Builder.WebApplication)')
     - [ConfigureMvcBuilder(mvcBuilder)](#M-ChuckDeviceController-Plugin-IWebPlugin-ConfigureMvcBuilder-Microsoft-Extensions-DependencyInjection-IMvcBuilder- 'ChuckDeviceController.Plugin.IWebPlugin.ConfigureMvcBuilder(Microsoft.Extensions.DependencyInjection.IMvcBuilder)')
     - [ConfigureServices(services)](#M-ChuckDeviceController-Plugin-IWebPlugin-ConfigureServices-Microsoft-Extensions-DependencyInjection-IServiceCollection- 'ChuckDeviceController.Plugin.IWebPlugin.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)')
+- [PluginApiKeyAttribute](#T-ChuckDeviceController-Plugin-PluginApiKeyAttribute 'ChuckDeviceController.Plugin.PluginApiKeyAttribute')
+    - [#ctor(apiKey)](#M-ChuckDeviceController-Plugin-PluginApiKeyAttribute-#ctor-System-String- 'ChuckDeviceController.Plugin.PluginApiKeyAttribute.#ctor(System.String)')
+    - [ApiKey](#P-ChuckDeviceController-Plugin-PluginApiKeyAttribute-ApiKey 'ChuckDeviceController.Plugin.PluginApiKeyAttribute.ApiKey')
 - [PluginBootstrapperServiceAttribute](#T-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute 'ChuckDeviceController.Plugin.Services.PluginBootstrapperServiceAttribute')
     - [#ctor(serviceType)](#M-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute-#ctor-System-Type- 'ChuckDeviceController.Plugin.Services.PluginBootstrapperServiceAttribute.#ctor(System.Type)')
     - [#ctor(serviceType,proxyType)](#M-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute-#ctor-System-Type,System-Type- 'ChuckDeviceController.Plugin.Services.PluginBootstrapperServiceAttribute.#ctor(System.Type,System.Type)')
     - [ProxyType](#P-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute-ProxyType 'ChuckDeviceController.Plugin.Services.PluginBootstrapperServiceAttribute.ProxyType')
     - [ServiceType](#P-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute-ServiceType 'ChuckDeviceController.Plugin.Services.PluginBootstrapperServiceAttribute.ServiceType')
-- [PluginPermissions](#T-ChuckDeviceController-Plugin-PluginPermissions 'ChuckDeviceController.Plugin.PluginPermissions')
-    - [AddControllers](#F-ChuckDeviceController-Plugin-PluginPermissions-AddControllers 'ChuckDeviceController.Plugin.PluginPermissions.AddControllers')
-    - [AddInstances](#F-ChuckDeviceController-Plugin-PluginPermissions-AddInstances 'ChuckDeviceController.Plugin.PluginPermissions.AddInstances')
-    - [AddJobControllers](#F-ChuckDeviceController-Plugin-PluginPermissions-AddJobControllers 'ChuckDeviceController.Plugin.PluginPermissions.AddJobControllers')
-    - [All](#F-ChuckDeviceController-Plugin-PluginPermissions-All 'ChuckDeviceController.Plugin.PluginPermissions.All')
-    - [DeleteDatabase](#F-ChuckDeviceController-Plugin-PluginPermissions-DeleteDatabase 'ChuckDeviceController.Plugin.PluginPermissions.DeleteDatabase')
-    - [None](#F-ChuckDeviceController-Plugin-PluginPermissions-None 'ChuckDeviceController.Plugin.PluginPermissions.None')
-    - [ReadDatabase](#F-ChuckDeviceController-Plugin-PluginPermissions-ReadDatabase 'ChuckDeviceController.Plugin.PluginPermissions.ReadDatabase')
-    - [WriteDatabase](#F-ChuckDeviceController-Plugin-PluginPermissions-WriteDatabase 'ChuckDeviceController.Plugin.PluginPermissions.WriteDatabase')
-- [PluginPermissionsAttribute](#T-ChuckDeviceController-Plugin-PluginPermissionsAttribute 'ChuckDeviceController.Plugin.PluginPermissionsAttribute')
-    - [#ctor(permissions)](#M-ChuckDeviceController-Plugin-PluginPermissionsAttribute-#ctor-ChuckDeviceController-Plugin-PluginPermissions- 'ChuckDeviceController.Plugin.PluginPermissionsAttribute.#ctor(ChuckDeviceController.Plugin.PluginPermissions)')
-    - [Permissions](#P-ChuckDeviceController-Plugin-PluginPermissionsAttribute-Permissions 'ChuckDeviceController.Plugin.PluginPermissionsAttribute.Permissions')
+- [PluginEvent](#T-ChuckDeviceController-Plugin-EventBus-Events-PluginEvent 'ChuckDeviceController.Plugin.EventBus.Events.PluginEvent')
+    - [#ctor(payload)](#M-ChuckDeviceController-Plugin-EventBus-Events-PluginEvent-#ctor-System-String- 'ChuckDeviceController.Plugin.EventBus.Events.PluginEvent.#ctor(System.String)')
+    - [Payload](#P-ChuckDeviceController-Plugin-EventBus-Events-PluginEvent-Payload 'ChuckDeviceController.Plugin.EventBus.Events.PluginEvent.Payload')
+- [PluginObserver](#T-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver 'ChuckDeviceController.Plugin.EventBus.Observer.PluginObserver')
+    - [OnCompleted()](#M-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver-OnCompleted 'ChuckDeviceController.Plugin.EventBus.Observer.PluginObserver.OnCompleted')
+    - [OnError(error)](#M-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver-OnError-System-Exception- 'ChuckDeviceController.Plugin.EventBus.Observer.PluginObserver.OnError(System.Exception)')
+    - [OnNext(value)](#M-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver-OnNext-ChuckDeviceController-Plugin-EventBus-IEvent- 'ChuckDeviceController.Plugin.EventBus.Observer.PluginObserver.OnNext(ChuckDeviceController.Plugin.EventBus.IEvent)')
+    - [Unsubscribe()](#M-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver-Unsubscribe 'ChuckDeviceController.Plugin.EventBus.Observer.PluginObserver.Unsubscribe')
 - [PluginServiceAttribute](#T-ChuckDeviceController-Plugin-Services-PluginServiceAttribute 'ChuckDeviceController.Plugin.Services.PluginServiceAttribute')
     - [#ctor()](#M-ChuckDeviceController-Plugin-Services-PluginServiceAttribute-#ctor 'ChuckDeviceController.Plugin.Services.PluginServiceAttribute.#ctor')
     - [#ctor(serviceType,proxyType,provider,lifetime)](#M-ChuckDeviceController-Plugin-Services-PluginServiceAttribute-#ctor-System-Type,System-Type,ChuckDeviceController-Plugin-Services-PluginServiceProvider,Microsoft-Extensions-DependencyInjection-ServiceLifetime- 'ChuckDeviceController.Plugin.Services.PluginServiceAttribute.#ctor(System.Type,System.Type,ChuckDeviceController.Plugin.Services.PluginServiceProvider,Microsoft.Extensions.DependencyInjection.ServiceLifetime)')
@@ -176,20 +198,15 @@
 - [PluginServiceProvider](#T-ChuckDeviceController-Plugin-Services-PluginServiceProvider 'ChuckDeviceController.Plugin.Services.PluginServiceProvider')
     - [Host](#F-ChuckDeviceController-Plugin-Services-PluginServiceProvider-Host 'ChuckDeviceController.Plugin.Services.PluginServiceProvider.Host')
     - [Plugin](#F-ChuckDeviceController-Plugin-Services-PluginServiceProvider-Plugin 'ChuckDeviceController.Plugin.Services.PluginServiceProvider.Plugin')
-- [RequestTimings](#T-ChuckDeviceController-Plugin-RequestTimings 'ChuckDeviceController.Plugin.RequestTimings')
-    - [#ctor()](#M-ChuckDeviceController-Plugin-RequestTimings-#ctor 'ChuckDeviceController.Plugin.RequestTimings.#ctor')
-    - [Average](#P-ChuckDeviceController-Plugin-RequestTimings-Average 'ChuckDeviceController.Plugin.RequestTimings.Average')
-    - [DecimalPlaces](#P-ChuckDeviceController-Plugin-RequestTimings-DecimalPlaces 'ChuckDeviceController.Plugin.RequestTimings.DecimalPlaces')
-    - [Fastest](#P-ChuckDeviceController-Plugin-RequestTimings-Fastest 'ChuckDeviceController.Plugin.RequestTimings.Fastest')
-    - [IsCloned](#P-ChuckDeviceController-Plugin-RequestTimings-IsCloned 'ChuckDeviceController.Plugin.RequestTimings.IsCloned')
-    - [LogTimings](#P-ChuckDeviceController-Plugin-RequestTimings-LogTimings 'ChuckDeviceController.Plugin.RequestTimings.LogTimings')
-    - [Requests](#P-ChuckDeviceController-Plugin-RequestTimings-Requests 'ChuckDeviceController.Plugin.RequestTimings.Requests')
-    - [Slowest](#P-ChuckDeviceController-Plugin-RequestTimings-Slowest 'ChuckDeviceController.Plugin.RequestTimings.Slowest')
-    - [Total](#P-ChuckDeviceController-Plugin-RequestTimings-Total 'ChuckDeviceController.Plugin.RequestTimings.Total')
-    - [TrimmedAverage](#P-ChuckDeviceController-Plugin-RequestTimings-TrimmedAverage 'ChuckDeviceController.Plugin.RequestTimings.TrimmedAverage')
-    - [Clone()](#M-ChuckDeviceController-Plugin-RequestTimings-Clone 'ChuckDeviceController.Plugin.RequestTimings.Clone')
-    - [Increment(stopWatch)](#M-ChuckDeviceController-Plugin-RequestTimings-Increment-System-Diagnostics-Stopwatch- 'ChuckDeviceController.Plugin.RequestTimings.Increment(System.Diagnostics.Stopwatch)')
-    - [Increment(totalTicks)](#M-ChuckDeviceController-Plugin-RequestTimings-Increment-System-Int64- 'ChuckDeviceController.Plugin.RequestTimings.Increment(System.Int64)')
+- [RouteGenerationType](#T-ChuckDeviceController-Plugin-RouteGenerationType 'ChuckDeviceController.Plugin.RouteGenerationType')
+    - [Bootstrap](#F-ChuckDeviceController-Plugin-RouteGenerationType-Bootstrap 'ChuckDeviceController.Plugin.RouteGenerationType.Bootstrap')
+    - [Optimized](#F-ChuckDeviceController-Plugin-RouteGenerationType-Optimized 'ChuckDeviceController.Plugin.RouteGenerationType.Optimized')
+    - [Randomized](#F-ChuckDeviceController-Plugin-RouteGenerationType-Randomized 'ChuckDeviceController.Plugin.RouteGenerationType.Randomized')
+- [RouteGeneratorOptions](#T-ChuckDeviceController-Plugin-RouteGeneratorOptions 'ChuckDeviceController.Plugin.RouteGeneratorOptions')
+    - [MaximumPoints](#P-ChuckDeviceController-Plugin-RouteGeneratorOptions-MaximumPoints 'ChuckDeviceController.Plugin.RouteGeneratorOptions.MaximumPoints')
+    - [MultiPolygons](#P-ChuckDeviceController-Plugin-RouteGeneratorOptions-MultiPolygons 'ChuckDeviceController.Plugin.RouteGeneratorOptions.MultiPolygons')
+    - [RadiusM](#P-ChuckDeviceController-Plugin-RouteGeneratorOptions-RadiusM 'ChuckDeviceController.Plugin.RouteGeneratorOptions.RadiusM')
+    - [RouteType](#P-ChuckDeviceController-Plugin-RouteGeneratorOptions-RouteType 'ChuckDeviceController.Plugin.RouteGeneratorOptions.RouteType')
 - [SettingsProperty](#T-ChuckDeviceController-Plugin-SettingsProperty 'ChuckDeviceController.Plugin.SettingsProperty')
     - [#ctor()](#M-ChuckDeviceController-Plugin-SettingsProperty-#ctor 'ChuckDeviceController.Plugin.SettingsProperty.#ctor')
     - [#ctor(text,name,type,value,defaultValue,displayIndex,isRequired,validate,className,style,group)](#M-ChuckDeviceController-Plugin-SettingsProperty-#ctor-System-String,System-String,ChuckDeviceController-Plugin-SettingsPropertyType,System-Object,System-Object,System-UInt32,System-Boolean,System-Boolean,System-String,System-String,ChuckDeviceController-Plugin-SettingsPropertyGroup- 'ChuckDeviceController.Plugin.SettingsProperty.#ctor(System.String,System.String,ChuckDeviceController.Plugin.SettingsPropertyType,System.Object,System.Object,System.UInt32,System.Boolean,System.Boolean,System.String,System.String,ChuckDeviceController.Plugin.SettingsPropertyGroup)')
@@ -389,6 +406,62 @@ Database is in the connected state.
 
 Database is in the disconnected state.
 
+<a name='T-ChuckDeviceController-Plugin-EventBus-EventExecutionResult'></a>
+## EventExecutionResult `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin.EventBus
+
+##### Summary
+
+Indicates the result status of an observable emitted event.
+
+<a name='F-ChuckDeviceController-Plugin-EventBus-EventExecutionResult-Executed'></a>
+### Executed `constants`
+
+##### Summary
+
+Event was executed successfully.
+
+<a name='F-ChuckDeviceController-Plugin-EventBus-EventExecutionResult-UnhandledException'></a>
+### UnhandledException `constants`
+
+##### Summary
+
+Unhandled exception occurred while emitting the event.
+
+<a name='T-ChuckDeviceController-Plugin-GeofenceTypeAttribute'></a>
+## GeofenceTypeAttribute `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugin-GeofenceTypeAttribute-#ctor-ChuckDeviceController-Common-Data-GeofenceType-'></a>
+### #ctor(type) `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| type | [ChuckDeviceController.Common.Data.GeofenceType](#T-ChuckDeviceController-Common-Data-GeofenceType 'ChuckDeviceController.Common.Data.GeofenceType') |  |
+
+<a name='P-ChuckDeviceController-Plugin-GeofenceTypeAttribute-Type'></a>
+### Type `property`
+
+##### Summary
+
+
+
 <a name='T-ChuckDeviceController-Plugin-IConfigurationHost'></a>
 ## IConfigurationHost `type`
 
@@ -404,7 +477,7 @@ This interface contract can be used by all plugin modules to load setting and co
     appsettings.json to store configuration data to be used by Plugins.
 
     An instance of this interface is available via the DI container, any custom implementations
-    must be configured to be used in the DI contaner when being initialised.
+    must be configured to be used in the DI contaner when being initialized.
 
 ##### Remarks
 
@@ -420,40 +493,69 @@ Retrieves a configuration instance.
 
 ##### Returns
 
-Configuration file instance initialised with the required settings.
+Configuration file instance initialized with the required settings.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| jsonFileName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of JSON file name to be used. If a JSON cofiguration file is not provided, the default
+| jsonFileName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of the JSON file name to be used. If a JSON cofiguration file is not provided, the default
     'appsettings.json' will be loaded from the calling plugin's root folder. |
-| sectionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of configuration data section required. |
+| sectionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The name of the configuration section that might be required. |
 
 <a name='M-ChuckDeviceController-Plugin-IConfigurationHost-GetValue``1-System-String,``0,System-String-'></a>
 ### GetValue\`\`1(name,defaultValue,sectionName) `method`
 
 ##### Summary
 
-
+Retrieves a value from a JSON configuration file.
 
 ##### Returns
 
-
+Returns the value related to the named configuration property.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| defaultValue | [\`\`0](#T-``0 '``0') |  |
-| sectionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of the property to retrieve the value for. |
+| defaultValue | [\`\`0](#T-``0 '``0') | Default value to return. |
+| sectionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The name of the configuration section that might be required. |
 
 ##### Generic Types
 
 | Name | Description |
 | ---- | ----------- |
-| T | Class who's settings are being requested. |
+| T | The class related to the settings being requested. |
+
+<a name='T-ChuckDeviceController-Plugin-EventBus-ICustomObserver`1'></a>
+## ICustomObserver\`1 `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin.EventBus
+
+##### Summary
+
+Typed observer implementation.
+
+##### Generic Types
+
+| Name | Description |
+| ---- | ----------- |
+| T | The event type the observer should expect. |
+
+<a name='M-ChuckDeviceController-Plugin-EventBus-ICustomObserver`1-Unsubscribe'></a>
+### Unsubscribe() `method`
+
+##### Summary
+
+Unsubscribes from the inherited 
+type indicated.
+
+##### Parameters
+
+This method has no parameters.
 
 <a name='T-ChuckDeviceController-Plugin-IDashboardStatsItem'></a>
 ## IDashboardStatsItem `type`
@@ -498,7 +600,7 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-
+Dashboard tile interface contract.
 
 <a name='P-ChuckDeviceController-Plugin-IDashboardTile-ActionName'></a>
 ### ActionName `property`
@@ -634,8 +736,8 @@ ChuckDeviceController.Plugin
 
 Plugin host handler contract used to interact with the database entities.
 
-<a name='M-ChuckDeviceController-Plugin-IDatabaseHost-GetByIdAsync``2-``1-'></a>
-### GetByIdAsync\`\`2(id) `method`
+<a name='M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-``1-'></a>
+### FindAsync\`\`2(id) `method`
 
 ##### Summary
 
@@ -655,11 +757,38 @@ Returns a database entity.
 
 | Name | Description |
 | ---- | ----------- |
-| T | Database entity contract type. |
-| TId | Database entity primary key type. |
+| TEntity | Database entity contract type. |
+| TKey | Database entity primary key type. |
 
-<a name='M-ChuckDeviceController-Plugin-IDatabaseHost-GetListAsync``1'></a>
-### GetListAsync\`\`1() `method`
+<a name='M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-System-Linq-Expressions-Expression{System-Func{``0,System-Boolean}},System-Linq-Expressions-Expression{System-Func{``0,``1}},ChuckDeviceController-Common-Data-SortOrderDirection,System-Int32-'></a>
+### FindAsync\`\`2(predicate,order,sortDirection,limit) `method`
+
+##### Summary
+
+Gets a list of database entities matching the specified criteria.
+
+##### Returns
+
+Returns a list of database entities.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| predicate | [System.Linq.Expressions.Expression{System.Func{\`\`0,System.Boolean}}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Linq.Expressions.Expression 'System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}}') | Predicate used to determine if a database entity matches. |
+| order | [System.Linq.Expressions.Expression{System.Func{\`\`0,\`\`1}}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Linq.Expressions.Expression 'System.Linq.Expressions.Expression{System.Func{``0,``1}}') | Sort order expression. (Optional) |
+| sortDirection | [ChuckDeviceController.Common.Data.SortOrderDirection](#T-ChuckDeviceController-Common-Data-SortOrderDirection 'ChuckDeviceController.Common.Data.SortOrderDirection') | Sort ordering direction. |
+| limit | [System.Int32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Int32 'System.Int32') | Limit the returned number of results. |
+
+##### Generic Types
+
+| Name | Description |
+| ---- | ----------- |
+| TKey | Entity property type when sorting. |
+| TEntity | Database entity contract type. |
+
+<a name='M-ChuckDeviceController-Plugin-IDatabaseHost-GetAllAsync``1'></a>
+### GetAllAsync\`\`1() `method`
 
 ##### Summary
 
@@ -677,7 +806,89 @@ This method has no parameters.
 
 | Name | Description |
 | ---- | ----------- |
-| T | Database entity contract type. |
+| TEntity | Database entity contract type. |
+
+<a name='T-ChuckDeviceController-Plugin-EventBus-IEvent'></a>
+## IEvent `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin.EventBus
+
+##### Summary
+
+Interface contract for event bus events.
+
+<a name='P-ChuckDeviceController-Plugin-EventBus-IEvent-Payload'></a>
+### Payload `property`
+
+##### Summary
+
+Gets or sets the payload data included in the event.
+
+<a name='T-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost'></a>
+## IEventAggregatorHost `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin.EventBus
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost-Publish-ChuckDeviceController-Plugin-EventBus-IEvent-'></a>
+### Publish(message) `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| message | [ChuckDeviceController.Plugin.EventBus.IEvent](#T-ChuckDeviceController-Plugin-EventBus-IEvent 'ChuckDeviceController.Plugin.EventBus.IEvent') |  |
+
+<a name='M-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost-Subscribe-ChuckDeviceController-Plugin-EventBus-ICustomObserver{ChuckDeviceController-Plugin-EventBus-IEvent}-'></a>
+### Subscribe(observer) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| observer | [ChuckDeviceController.Plugin.EventBus.ICustomObserver{ChuckDeviceController.Plugin.EventBus.IEvent}](#T-ChuckDeviceController-Plugin-EventBus-ICustomObserver{ChuckDeviceController-Plugin-EventBus-IEvent} 'ChuckDeviceController.Plugin.EventBus.ICustomObserver{ChuckDeviceController.Plugin.EventBus.IEvent}') |  |
+
+<a name='M-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost-Subscribe``1-ChuckDeviceController-Plugin-EventBus-ICustomObserver{``0}-'></a>
+### Subscribe\`\`1(observer) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| observer | [ChuckDeviceController.Plugin.EventBus.ICustomObserver{\`\`0}](#T-ChuckDeviceController-Plugin-EventBus-ICustomObserver{``0} 'ChuckDeviceController.Plugin.EventBus.ICustomObserver{``0}') |  |
+
+##### Generic Types
+
+| Name | Description |
+| ---- | ----------- |
+| T |  |
 
 <a name='T-ChuckDeviceController-Plugin-IFileStorageHost'></a>
 ## IFileStorageHost `type`
@@ -691,6 +902,116 @@ ChuckDeviceController.Plugin
 Interface contract used for reading data from as well as
     persisting data to storage. The type of storage used will
     depend on the implementation.
+
+<a name='T-ChuckDeviceController-Plugin-IGeofenceServiceHost'></a>
+## IGeofenceServiceHost `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-CreateGeofenceAsync-ChuckDeviceController-Common-Data-Contracts-IGeofence-'></a>
+### CreateGeofenceAsync(options) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| options | [ChuckDeviceController.Common.Data.Contracts.IGeofence](#T-ChuckDeviceController-Common-Data-Contracts-IGeofence 'ChuckDeviceController.Common.Data.Contracts.IGeofence') |  |
+
+<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInMultiPolygon-ChuckDeviceController-Geometry-Models-Contracts-ICoordinate,ChuckDeviceController-Geometry-Models-Contracts-IMultiPolygon-'></a>
+### IsPointInMultiPolygon(coord,multiPolygon) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| coord | [ChuckDeviceController.Geometry.Models.Contracts.ICoordinate](#T-ChuckDeviceController-Geometry-Models-Contracts-ICoordinate 'ChuckDeviceController.Geometry.Models.Contracts.ICoordinate') |  |
+| multiPolygon | [ChuckDeviceController.Geometry.Models.Contracts.IMultiPolygon](#T-ChuckDeviceController-Geometry-Models-Contracts-IMultiPolygon 'ChuckDeviceController.Geometry.Models.Contracts.IMultiPolygon') |  |
+
+<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInMultiPolygons-ChuckDeviceController-Geometry-Models-Contracts-ICoordinate,System-Collections-Generic-IEnumerable{ChuckDeviceController-Geometry-Models-Contracts-IMultiPolygon}-'></a>
+### IsPointInMultiPolygons(coord,multiPolygons) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| coord | [ChuckDeviceController.Geometry.Models.Contracts.ICoordinate](#T-ChuckDeviceController-Geometry-Models-Contracts-ICoordinate 'ChuckDeviceController.Geometry.Models.Contracts.ICoordinate') |  |
+| multiPolygons | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Geometry.Models.Contracts.IMultiPolygon}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Geometry.Models.Contracts.IMultiPolygon}') |  |
+
+<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInPolygon-ChuckDeviceController-Geometry-Models-Contracts-ICoordinate,System-Collections-Generic-IEnumerable{ChuckDeviceController-Geometry-Models-Contracts-ICoordinate}-'></a>
+### IsPointInPolygon(coord,coordinates) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| coord | [ChuckDeviceController.Geometry.Models.Contracts.ICoordinate](#T-ChuckDeviceController-Geometry-Models-Contracts-ICoordinate 'ChuckDeviceController.Geometry.Models.Contracts.ICoordinate') |  |
+| coordinates | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Geometry.Models.Contracts.ICoordinate}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Geometry.Models.Contracts.ICoordinate}') |  |
+
+<a name='T-ChuckDeviceController-Plugin-IInstanceServiceHost'></a>
+## IInstanceServiceHost `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugin-IInstanceServiceHost-CreateInstanceAsync-ChuckDeviceController-Common-Data-Contracts-IInstance-'></a>
+### CreateInstanceAsync(options) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| options | [ChuckDeviceController.Common.Data.Contracts.IInstance](#T-ChuckDeviceController-Common-Data-Contracts-IInstance 'ChuckDeviceController.Common.Data.Contracts.IInstance') |  |
 
 <a name='T-ChuckDeviceController-Plugin-IJobControllerServiceEvents'></a>
 ## IJobControllerServiceEvents `type`
@@ -716,22 +1037,15 @@ ChuckDeviceController.Plugin
 Plugin host handler contract used to interact with and manage the
 job controller service.
 
-<a name='M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AddJobControllerAsync-System-String,ChuckDeviceController-Common-Jobs-IJobController-'></a>
-### AddJobControllerAsync(name,controller) `method`
+<a name='P-ChuckDeviceController-Plugin-IJobControllerServiceHost-CustomInstanceTypes'></a>
+### CustomInstanceTypes `property`
 
 ##### Summary
 
-
-
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| controller | [ChuckDeviceController.Common.Jobs.IJobController](#T-ChuckDeviceController-Common-Jobs-IJobController 'ChuckDeviceController.Common.Jobs.IJobController') |  |
+Gets a list of all registered custom job controller instance types.
 
 <a name='M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AssignDeviceToJobControllerAsync-ChuckDeviceController-Common-Data-Contracts-IDevice,System-String-'></a>
-### AssignDeviceToJobControllerAsync(device,jobControllerName) `method`
+### AssignDeviceToJobControllerAsync(device,instanceName) `method`
 
 ##### Summary
 
@@ -743,7 +1057,30 @@ instance by name.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | device | [ChuckDeviceController.Common.Data.Contracts.IDevice](#T-ChuckDeviceController-Common-Data-Contracts-IDevice 'ChuckDeviceController.Common.Data.Contracts.IDevice') | Device entity. |
-| jobControllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Job controller instance name. |
+| instanceName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Job controller instance name. |
+
+<a name='M-ChuckDeviceController-Plugin-IJobControllerServiceHost-RegisterJobControllerAsync``1-System-String-'></a>
+### RegisterJobControllerAsync\`\`1(customInstanceType) `method`
+
+##### Summary
+
+
+
+##### Returns
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| customInstanceType | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+
+##### Generic Types
+
+| Name | Description |
+| ---- | ----------- |
+| T |  |
 
 <a name='T-ChuckDeviceController-Plugin-ILoadData'></a>
 ## ILoadData `type`
@@ -1054,34 +1391,6 @@ ChuckDeviceController.Plugin
 
 Plugin host handler for logging messages from plugins.
 
-<a name='M-ChuckDeviceController-Plugin-ILoggingHost-LogException-System-Exception-'></a>
-### LogException(ex) `method`
-
-##### Summary
-
-Log an exception that has been thrown to the
-host application.
-
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| ex | [System.Exception](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Exception 'System.Exception') | Exception that was thrown. |
-
-<a name='M-ChuckDeviceController-Plugin-ILoggingHost-LogMessage-System-String,System-Object[]-'></a>
-### LogMessage(text,args) `method`
-
-##### Summary
-
-Log a message to the host application.
-
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Formatted log message string. |
-| args | [System.Object[]](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object[] 'System.Object[]') | Arguments to parse with log message. |
-
 <a name='T-ChuckDeviceController-Plugin-IMetadata'></a>
 ## IMetadata `type`
 
@@ -1274,6 +1583,31 @@ Gets or sets the service implementation type.
 
 Gets or sets the Service contract type.
 
+<a name='T-ChuckDeviceController-Plugin-EventBus-IPublisher'></a>
+## IPublisher `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin.EventBus
+
+##### Summary
+
+An interface contract for publishing data to the event bus
+aggregator service which all subscribers will receive.
+
+<a name='M-ChuckDeviceController-Plugin-EventBus-IPublisher-Publish-System-String-'></a>
+### Publish(payload) `method`
+
+##### Summary
+
+Publish data to all subscriptions via event bus aggregator host.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| payload | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Payload data to publish to subscribers. |
+
 <a name='T-ChuckDeviceController-Plugin-IRepository`2'></a>
 ## IRepository\`2 `type`
 
@@ -1323,6 +1657,34 @@ Returns a list of database entities.
 ##### Parameters
 
 This method has no parameters.
+
+<a name='T-ChuckDeviceController-Plugin-IRoutingHost'></a>
+## IRoutingHost `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+Route generator plugin host.
+
+<a name='M-ChuckDeviceController-Plugin-IRoutingHost-GenerateRoute-ChuckDeviceController-Plugin-RouteGeneratorOptions-'></a>
+### GenerateRoute(options) `method`
+
+##### Summary
+
+Generates a route using the specified route generator options.
+
+##### Returns
+
+Returns a list of coordinates of the generated route.
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| options | [ChuckDeviceController.Plugin.RouteGeneratorOptions](#T-ChuckDeviceController-Plugin-RouteGeneratorOptions 'ChuckDeviceController.Plugin.RouteGeneratorOptions') | Routing generation options to use. |
 
 <a name='T-ChuckDeviceController-Plugin-ISaveData'></a>
 ## ISaveData `type`
@@ -1481,30 +1843,8 @@ ChuckDeviceController.Plugin
 
 
 
-<a name='M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnClick-ChuckDeviceController-Plugin-ISettingsProperty-'></a>
-### OnClick() `method`
-
-##### Summary
-
-
-
-##### Parameters
-
-This method has no parameters.
-
-<a name='M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnSave-ChuckDeviceController-Plugin-ISettingsProperty-'></a>
+<a name='M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnSave-System-Collections-Generic-IReadOnlyDictionary{System-String,System-Collections-Generic-List{ChuckDeviceController-Plugin-ISettingsProperty}}-'></a>
 ### OnSave() `method`
-
-##### Summary
-
-
-
-##### Parameters
-
-This method has no parameters.
-
-<a name='M-ChuckDeviceController-Plugin-ISettingsPropertyEvents-OnToggle-ChuckDeviceController-Plugin-ISettingsProperty-'></a>
-### OnToggle() `method`
 
 ##### Summary
 
@@ -1946,6 +2286,37 @@ Register services into the IServiceCollection to use with Dependency Injection.
 | ---- | ---- | ----------- |
 | services | [Microsoft.Extensions.DependencyInjection.IServiceCollection](#T-Microsoft-Extensions-DependencyInjection-IServiceCollection 'Microsoft.Extensions.DependencyInjection.IServiceCollection') | Specifies the contract for a collection of service descriptors. |
 
+<a name='T-ChuckDeviceController-Plugin-PluginApiKeyAttribute'></a>
+## PluginApiKeyAttribute `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugin-PluginApiKeyAttribute-#ctor-System-String-'></a>
+### #ctor(apiKey) `constructor`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| apiKey | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+
+<a name='P-ChuckDeviceController-Plugin-PluginApiKeyAttribute-ApiKey'></a>
+### ApiKey `property`
+
+##### Summary
+
+
+
 <a name='T-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute'></a>
 ## PluginBootstrapperServiceAttribute `type`
 
@@ -1999,104 +2370,95 @@ Gets or sets the bootstrap service implementation type.
 
 Gets or sets the bootstrap service contract type.
 
-<a name='T-ChuckDeviceController-Plugin-PluginPermissions'></a>
-## PluginPermissions `type`
+<a name='T-ChuckDeviceController-Plugin-EventBus-Events-PluginEvent'></a>
+## PluginEvent `type`
 
 ##### Namespace
 
-ChuckDeviceController.Plugin
+ChuckDeviceController.Plugin.EventBus.Events
 
 ##### Summary
 
-Enumeration of available permissions a plugin can request.
+Plugin event for event bus service.
 
-<a name='F-ChuckDeviceController-Plugin-PluginPermissions-AddControllers'></a>
-### AddControllers `constants`
-
-##### Summary
-
-Add new ASP.NET Mvc controller routes
-
-<a name='F-ChuckDeviceController-Plugin-PluginPermissions-AddInstances'></a>
-### AddInstances `constants`
+<a name='M-ChuckDeviceController-Plugin-EventBus-Events-PluginEvent-#ctor-System-String-'></a>
+### #ctor(payload) `constructor`
 
 ##### Summary
 
-Add new instances
 
-<a name='F-ChuckDeviceController-Plugin-PluginPermissions-AddJobControllers'></a>
-### AddJobControllers `constants`
-
-##### Summary
-
-Add new job controller instances for devices
-
-<a name='F-ChuckDeviceController-Plugin-PluginPermissions-All'></a>
-### All `constants`
-
-##### Summary
-
-All available permissions
-
-<a name='F-ChuckDeviceController-Plugin-PluginPermissions-DeleteDatabase'></a>
-### DeleteDatabase `constants`
-
-##### Summary
-
-Delete database entities (NOTE: Should probably remove since Delete == Write essentially but would be nice to separate it)
-
-<a name='F-ChuckDeviceController-Plugin-PluginPermissions-None'></a>
-### None `constants`
-
-##### Summary
-
-No extra permissions
-
-<a name='F-ChuckDeviceController-Plugin-PluginPermissions-ReadDatabase'></a>
-### ReadDatabase `constants`
-
-##### Summary
-
-Read database entities
-
-<a name='F-ChuckDeviceController-Plugin-PluginPermissions-WriteDatabase'></a>
-### WriteDatabase `constants`
-
-##### Summary
-
-Write database entities
-
-<a name='T-ChuckDeviceController-Plugin-PluginPermissionsAttribute'></a>
-## PluginPermissionsAttribute `type`
-
-##### Namespace
-
-ChuckDeviceController.Plugin
-
-##### Summary
-
-Defines which permissions the plugin is going to request
-in order to operate correctly.
-
-<a name='M-ChuckDeviceController-Plugin-PluginPermissionsAttribute-#ctor-ChuckDeviceController-Plugin-PluginPermissions-'></a>
-### #ctor(permissions) `constructor`
-
-##### Summary
-
-Instantiates a new plugin permissions attribute.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| permissions | [ChuckDeviceController.Plugin.PluginPermissions](#T-ChuckDeviceController-Plugin-PluginPermissions 'ChuckDeviceController.Plugin.PluginPermissions') | Plugin permissions to request upon load. |
+| payload | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Plugin event payload to send. |
 
-<a name='P-ChuckDeviceController-Plugin-PluginPermissionsAttribute-Permissions'></a>
-### Permissions `property`
+<a name='P-ChuckDeviceController-Plugin-EventBus-Events-PluginEvent-Payload'></a>
+### Payload `property`
 
 ##### Summary
 
-Gets the requested permissions of the plugin.
+Gets or sets the payload data included in the event.
+
+<a name='T-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver'></a>
+## PluginObserver `type`
+
+##### Namespace
+
+ChuckDeviceController.Plugin.EventBus.Observer
+
+##### Summary
+
+
+
+<a name='M-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver-OnCompleted'></a>
+### OnCompleted() `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+This method has no parameters.
+
+<a name='M-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver-OnError-System-Exception-'></a>
+### OnError(error) `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| error | [System.Exception](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Exception 'System.Exception') |  |
+
+<a name='M-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver-OnNext-ChuckDeviceController-Plugin-EventBus-IEvent-'></a>
+### OnNext(value) `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| value | [ChuckDeviceController.Plugin.EventBus.IEvent](#T-ChuckDeviceController-Plugin-EventBus-IEvent 'ChuckDeviceController.Plugin.EventBus.IEvent') |  |
+
+<a name='M-ChuckDeviceController-Plugin-EventBus-Observer-PluginObserver-Unsubscribe'></a>
+### Unsubscribe() `method`
+
+##### Summary
+
+
+
+##### Parameters
+
+This method has no parameters.
 
 <a name='T-ChuckDeviceController-Plugin-Services-PluginServiceAttribute'></a>
 ## PluginServiceAttribute `type`
@@ -2192,8 +2554,8 @@ Service was provided by the host application.
 
 Service was provided by the plugin.
 
-<a name='T-ChuckDeviceController-Plugin-RequestTimings'></a>
-## RequestTimings `type`
+<a name='T-ChuckDeviceController-Plugin-RouteGenerationType'></a>
+## RouteGenerationType `type`
 
 ##### Namespace
 
@@ -2201,125 +2563,71 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Used to contain timing data for requests.
+Routing generation type
 
-This stores the number of requests and total time in milleseconds
-serving the requests.
-
-<a name='M-ChuckDeviceController-Plugin-RequestTimings-#ctor'></a>
-### #ctor() `constructor`
+<a name='F-ChuckDeviceController-Plugin-RouteGenerationType-Bootstrap'></a>
+### Bootstrap `constants`
 
 ##### Summary
 
+Generates a bootstrap route based on the
+circle size.
 
-
-##### Parameters
-
-This constructor has no parameters.
-
-<a name='P-ChuckDeviceController-Plugin-RequestTimings-Average'></a>
-### Average `property`
+<a name='F-ChuckDeviceController-Plugin-RouteGenerationType-Optimized'></a>
+### Optimized `constants`
 
 ##### Summary
 
-Gets the average number of milliseconds per request.
+Generates an optimized route
 
-<a name='P-ChuckDeviceController-Plugin-RequestTimings-DecimalPlaces'></a>
-### DecimalPlaces `property`
-
-##### Summary
-
-Gets the number of decimal places the results should be rounded to, default is 5
-
-<a name='P-ChuckDeviceController-Plugin-RequestTimings-Fastest'></a>
-### Fastest `property`
+<a name='F-ChuckDeviceController-Plugin-RouteGenerationType-Randomized'></a>
+### Randomized `constants`
 
 ##### Summary
 
-Gets the total number of milliseconds used for the request that was quickest.
+Generates a randomized route
 
-<a name='P-ChuckDeviceController-Plugin-RequestTimings-IsCloned'></a>
-### IsCloned `property`
+<a name='T-ChuckDeviceController-Plugin-RouteGeneratorOptions'></a>
+## RouteGeneratorOptions `type`
 
-##### Summary
+##### Namespace
 
-Gets a value determining whether the timings have been cloned or not.
-
-<a name='P-ChuckDeviceController-Plugin-RequestTimings-LogTimings'></a>
-### LogTimings `property`
+ChuckDeviceController.Plugin
 
 ##### Summary
 
-Gets a value determining whether to log request times or not.
+Routing generation options
 
-<a name='P-ChuckDeviceController-Plugin-RequestTimings-Requests'></a>
-### Requests `property`
-
-##### Summary
-
-Gets the total number of requests made.
-
-<a name='P-ChuckDeviceController-Plugin-RequestTimings-Slowest'></a>
-### Slowest `property`
+<a name='P-ChuckDeviceController-Plugin-RouteGeneratorOptions-MaximumPoints'></a>
+### MaximumPoints `property`
 
 ##### Summary
 
-Gets the total number of milliseconds used for the request that was slowest.
+Gets or sets a value to limit the amount of coordinate
+points to return when generating the route.
 
-<a name='P-ChuckDeviceController-Plugin-RequestTimings-Total'></a>
-### Total `property`
-
-##### Summary
-
-Gets the total number of requests.
-
-<a name='P-ChuckDeviceController-Plugin-RequestTimings-TrimmedAverage'></a>
-### TrimmedAverage `property`
+<a name='P-ChuckDeviceController-Plugin-RouteGeneratorOptions-MultiPolygons'></a>
+### MultiPolygons `property`
 
 ##### Summary
 
-Gets the calculated trimmed average by removing the highest and lowest scores before averaging
+Gets or sets the list of (geofences)
+used to generate the route in.
 
-<a name='M-ChuckDeviceController-Plugin-RequestTimings-Clone'></a>
-### Clone() `method`
-
-##### Summary
-
-Clones an instance of a Timings class
-
-##### Returns
-
-Timings
-
-##### Parameters
-
-This method has no parameters.
-
-<a name='M-ChuckDeviceController-Plugin-RequestTimings-Increment-System-Diagnostics-Stopwatch-'></a>
-### Increment(stopWatch) `method`
+<a name='P-ChuckDeviceController-Plugin-RouteGeneratorOptions-RadiusM'></a>
+### RadiusM `property`
 
 ##### Summary
 
-Increments the total milliseconds
+Gets or sets a value used to determine the radius
+between each coordinate when generating the route.
 
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| stopWatch | [System.Diagnostics.Stopwatch](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Diagnostics.Stopwatch 'System.Diagnostics.Stopwatch') |  |
-
-<a name='M-ChuckDeviceController-Plugin-RequestTimings-Increment-System-Int64-'></a>
-### Increment(totalTicks) `method`
+<a name='P-ChuckDeviceController-Plugin-RouteGeneratorOptions-RouteType'></a>
+### RouteType `property`
 
 ##### Summary
 
-Increments the total ticks
-
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| totalTicks | [System.Int64](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Int64 'System.Int64') | Total number of ticks to increment by. |
+Gets or sets the route generation type to use.
 
 <a name='T-ChuckDeviceController-Plugin-SettingsProperty'></a>
 ## SettingsProperty `type`

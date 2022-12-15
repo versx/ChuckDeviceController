@@ -34,6 +34,8 @@ namespace TestPlugin
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Common.Data.Contracts;
+    using ChuckDeviceController.Geometry.Models;
+    using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugins;
 
     using Microsoft.AspNetCore.Builder;
@@ -380,33 +382,6 @@ namespace TestPlugin
         }
 
         #endregion
-    }
-
-    /// <summary>
-    ///     Default implementation of <seealso cref="ICoordinate"/> contract.
-    /// </summary>
-    public class Coordinate : ICoordinate
-    {
-        /// <summary>
-        ///     Gets or sets the geocoordinate latitude.
-        /// </summary>
-        public double Latitude { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the geocoordinate longitude.
-        /// </summary>
-        public double Longitude { get; set; }
-
-        /// <summary>
-        ///     Instantiates a new coordinate instance.
-        /// </summary>
-        /// <param name="latitude">Geocoordinate latitude.</param>
-        /// <param name="longitude">Geocoordinate longitude.</param>
-        public Coordinate(double latitude, double longitude)
-        {
-            Latitude = latitude;
-            Longitude = longitude;
-        }
     }
 
     /// <summary>
