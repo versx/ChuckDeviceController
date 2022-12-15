@@ -466,41 +466,39 @@ async void OnPluginHostStateChanged(object? sender, PluginHostStateChangedEventA
 
 async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
 {
-    using (var scope = serviceProvider.CreateScope())
+    using var scope = serviceProvider.CreateScope();
+    var services = scope.ServiceProvider;
+    try
     {
-        var services = scope.ServiceProvider;
-        try
+        // Migrate database to latest migration automatically if enabled
+        if (config.GetValue<bool>("AutomaticMigrations"))
         {
-            // Migrate database to latest migration automatically if enabled
-            if (config.GetValue<bool>("AutomaticMigrations"))
-            {
-                // Migrate the UserIdentity tables
-                await serviceProvider.MigrateDatabaseAsync<UserIdentityContext>();
+            // Migrate the UserIdentity tables
+            await serviceProvider.MigrateDatabaseAsync<UserIdentityContext>();
 
-                // Migrate the device controller tables
-                await serviceProvider.MigrateDatabaseAsync<ControllerDbContext>();
-            }
-
-            // TODO: Add database meta, local file, or something to determine if default entities have been seeded
-
-            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-            // Seed default user roles
-            await UserIdentityContextSeed.SeedRolesAsync(roleManager);
-
-            // Seed default SuperAdmin user
-            await UserIdentityContextSeed.SeedSuperAdminAsync(userManager);
-
-            var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
-
-            // Start assignment controller service
-            assignmentController.Start();
+            // Migrate the device controller tables
+            await serviceProvider.MigrateDatabaseAsync<ControllerDbContext>();
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "An error occurred while seeding the database.");
-        }
+
+        // TODO: Add database meta, local file, or something to determine if default entities have been seeded
+
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        // Seed default user roles
+        await UserIdentityContextSeed.SeedRolesAsync(roleManager);
+
+        // Seed default SuperAdmin user
+        await UserIdentityContextSeed.SeedSuperAdminAsync(userManager);
+
+        var assignmentController = services.GetRequiredService<IAssignmentControllerService>();
+
+        // Start assignment controller service
+        assignmentController.Start();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
 

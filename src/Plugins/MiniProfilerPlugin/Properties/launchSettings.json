@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ChuckDeviceControllerPluginMvc1": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:12761",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
