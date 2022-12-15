@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="POGOProtos.Core" Version="2.57.5" />
+    <PackageReference Include="POGOProtos.Core" Version="2.57.6" />
   </ItemGroup>
 
   <ItemGroup>
