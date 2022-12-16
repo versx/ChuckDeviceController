@@ -6,7 +6,7 @@
 
 ![](https://raw.githubusercontent.com/versx/ChuckDeviceController/net6/src/ChuckDeviceConfigurator/wwwroot/favicons/chuck.gif)
 
-# Chuck Device Controller  
+# ChuckDeviceController  
 ChuckDeviceController is a .NET based frontend and backend written in C# 11.0 using ASP.NET Core, EntityFramework Core, and Dapper.NET to control real devices and parse received protobuff proto data from iOS and Android mobile devices running Pokemon Go.
 
 **ChuckDeviceConfigurator:**  
