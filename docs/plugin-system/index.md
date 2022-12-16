@@ -12,10 +12,10 @@
 Microsoft's ASP.NET Core MVC Views and Razor Pages are very similar to Mustache, Handlebars.js, and other templating engines.  
 1. Open Visual Studio 2022  
 1. Select `Create a new project`  
-1. Click the search box showing `Search for templates`
-1. Enter the search keyword `chuck`
-1. Select the plugin type you want to use
-1. Start developing your plugin
+1. Click the search box showing `Search for templates`  
+1. Enter the search keyword `chuck`  
+1. Select the plugin type you want to use  
+1. Start developing your plugin  
 
 
 **Library References:**  
@@ -39,7 +39,7 @@ Adds health checks endpoint and UI
 - **MemoryBenchmarkPlugin:**  
 Displays basic memory usage information and chart  
 - **MicrosoftAuthProviderPlugin:**  
-Add Microsoft account authentication support
+Adds `Microsoft.com` account authentication support
 - **MiniProfilerPlugin:**  
 Adds basic profiling options and data.  
 - **PogoEventsPlugin:**  

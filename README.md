@@ -758,7 +758,7 @@ Adds health checks endpoint and UI
 - **MemoryBenchmarkPlugin:**  
 Displays basic memory usage information and chart  
 - **MicrosoftAuthProviderPlugin:**  
-Add Microsoft account authentication support
+Adds `Microsoft.com` account authentication support
 - **MiniProfilerPlugin:**  
 Adds basic profiling options and data.  
 - **PogoEventsPlugin:**  
