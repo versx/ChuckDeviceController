@@ -8,6 +8,7 @@
 ### Plugin Type Selection  
 
 **ASP.NET Core Razor Pages Documentation** (ChuckPluginRazor)  
+
 - [Overview](https://learn.microsoft.com/en-us/aspnet/core/razor-pages/?view=aspnetcore-7.0&tabs=visual-studio)
 - Tutorials
     - [Overview](https://learn.microsoft.com/en-us/aspnet/core/tutorials/razor-pages/?view=aspnetcore-7.0)
@@ -22,7 +23,9 @@
 - [Filters](https://learn.microsoft.com/en-us/aspnet/core/razor-pages/filter?view=aspnetcore-7.0)
 - [Route and app conventions](https://learn.microsoft.com/en-us/aspnet/core/razor-pages/razor-pages-conventions?view=aspnetcore-7.0)
 
+
 **ASP.NET Core MVC Web Apps Documentation** (ChuckPluginMvc)  
+
 - [Overview](https://docs.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-7.0)
 - [Controllers](https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-7.0)
 - [Views](https://docs.microsoft.com/en-us/aspnet/core/mvc/views/overview?view=aspnetcore-7.0)
@@ -30,15 +33,21 @@
 - [Routing](https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/routing?view=aspnetcore-7.0)
 - [Tutorial](https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-mvc-app/start-mvc?view=aspnetcore-7.0&tabs=visual-studio)
 
+
 **ASP.NET Core Web API Apps Documentation** (ChuckPluginMvc)  
+
 - [Overview](https://docs.microsoft.com/en-us/aspnet/core/web-api/?view=aspnetcore-7.0)
 - Tutorials
     - [Create a web API with controllers](https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-7.0&tabs=visual-studio)
     - [Create a minimal web API](https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-7.0&tabs=visual-studio)
     - [Create a web API](https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-7.0&tabs=visual-studio)
 
+
 **ASP.NET Core Blazor Apps Documentation** (Untested)  
+
 - [Overview](https://learn.microsoft.com/en-us/aspnet/core/blazor/?view=aspnetcore-7.0)
 
+
 **.NET Core Apps Documentation** (ChuckPlugin)  
+
 - [Create a library](https://learn.microsoft.com/en-us/dotnet/core/tutorials/library-with-visual-studio?pivots=dotnet-7-0)
