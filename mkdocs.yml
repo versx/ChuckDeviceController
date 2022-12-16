@@ -21,7 +21,7 @@ nav:
         - Requirements: requirements.md
         - Getting Started: getting-started.md
     - Plugin System:
-        - Visual Studio Templates: plugin-system/project-tempaltes.md
+        - Visual Studio Templates: plugin-system/project-templates.md
         - Plugins: plugin-system/index.md
         - API Documentation: plugin-system/api.md
         - Plugin Host Interfaces: plugin-system/interfaces.md

@@ -1,6 +1,5 @@
 # Getting Started
 
-
 ## [Requirements](./requirements.md)
 
 <hr>
