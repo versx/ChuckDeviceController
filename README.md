@@ -101,7 +101,7 @@ https://git-scm.com/download/win
 
 
 **macOS:**
-Homebreak:  
+Homebrew:  
 ```
 brew install git
 ```

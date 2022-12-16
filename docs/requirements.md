@@ -13,7 +13,7 @@ https://git-scm.com/download/win
 
 
 **macOS:**
-Homebreak:  
+Homebrew:  
 ```
 brew install git
 ```
@@ -52,9 +52,9 @@ https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-a
 <hr>
 
 ## Install MySQL Database
-https://dev.mysql.com/downloads/installer/  
+[Install](https://dev.mysql.com/downloads/installer)  
 
 or
 
 ## Install MariaDB Database
-https://mariadb.org/download/?t=mariadb
+[Install](https://mariadb.org/download/?t=mariadb)
