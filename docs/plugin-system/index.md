@@ -10,6 +10,7 @@
 
 ## <u>Creating a Plugin</u>  
 Microsoft's ASP.NET Core MVC Views and Razor Pages are very similar to Mustache, Handlebars.js, and other templating engines.  
+
 1. Open Visual Studio 2022  
 1. Select `Create a new project`  
 1. Click the search box showing `Search for templates`  
