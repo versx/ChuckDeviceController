@@ -76,6 +76,7 @@ Splits and proxies requests from Atlas devices to separate endpoints.
 * EntityFramework Core
 * Dapper
 * gRPC
+* POGOProtos.Rpc
 
 <hr>
 
