@@ -743,7 +743,7 @@ View all available API routes:
 
 <hr>
 
-## Included Plugins Available  
+## Plugins Included  
 - **BitbucketAuthProviderPlugin:**  
 Adds `Bitbucket.org` user authentication support    
 - **DeviceAuthPlugin:**  

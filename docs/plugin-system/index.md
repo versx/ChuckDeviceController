@@ -23,7 +23,7 @@ You may reference any of the existing `ChuckDeviceController.*.dll` project liba
 
 <hr>
 
-## <u>Included Plugins Available</u>  
+### Plugins Included  
 - **BitbucketAuthProviderPlugin:**  
 Adds `Bitbucket.org` user authentication support    
 - **DeviceAuthPlugin:**  
