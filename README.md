@@ -93,7 +93,7 @@ https://cdc.readthedocs.io/en/latest/plugin-system
     - MySQL 5.7 and MySQL 8.0
     - MariaDB 10.3-10.10
 
-### Git
+### Install Git
 **Debian-based:** `sudo apt install git-all`
 
 **Windows:**
@@ -108,7 +108,7 @@ brew install git
 
 **Other macOS Installations:** https://git-scm.com/download/mac  
 
-### .NET 7 SDK
+### Install .NET 7 SDK
 **Ubuntu:** (Replace `{22,20,18}` with your respective major OS version)  
 ```
 wget https://packages.microsoft.com/config/ubuntu/{22,20,18}.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
@@ -135,12 +135,12 @@ Apple Silicon:
 https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-arm64-installer
 ```
 
-### MySQL Database
+### Install MySQL Database
 https://dev.mysql.com/downloads/installer/  
 
 or
 
-### MariaDB Database
+### Install MariaDB Database
 https://mariadb.org/download/?t=mariadb
 
 <hr>

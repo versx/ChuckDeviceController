@@ -5,7 +5,7 @@
 - [MySQL](https://dev.mysql.com/downloads/mysql/) or [MariaDB](https://mariadb.org/download/?t=mariadb&p=mariadb)  
 
 
-## Git
+## Install Git
 **Debian-based:** `sudo apt install git-all`
 
 **Windows:**
@@ -22,7 +22,7 @@ brew install git
 
 <hr>
 
-## .NET 7 SDK
+## Install .NET 7 SDK
 **Ubuntu:** (Replace `{22,20,18}` with your respective major OS version)  
 ```
 wget https://packages.microsoft.com/config/ubuntu/{22,20,18}.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
@@ -51,12 +51,10 @@ https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-a
 
 <hr>
 
-## MySQL
+## Install MySQL Database
 https://dev.mysql.com/downloads/installer/  
 
 or
 
-## MariaDB
+## Install MariaDB Database
 https://mariadb.org/download/?t=mariadb
-
-<hr>
