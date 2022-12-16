@@ -3,6 +3,7 @@
 
 ## [Requirements](./requirements.md)
 
+<hr>
 
 ## Preparation
 1. Clone repository: `git clone https://github.com/versx/ChuckDeviceController`  

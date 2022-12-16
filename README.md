@@ -54,8 +54,11 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 11.0 us
 
 ## Documentation  
 
-### Getting Started  
+### Overview  
 https://cdc.rtfd.io
+
+### Getting Started  
+https://cdc.rtfd.io/en/latest/getting-started
 
 ### Plugin API Reference  
 https://cdc.rtfd.io/en/latest/plugin-system/api  
