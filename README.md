@@ -134,12 +134,12 @@ Apple Silicon:
 https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-arm64-installer
 ```
 
-### Install MySQL Database
+### MySQL Database
 [Install](https://dev.mysql.com/downloads/installer)  
 
 or
 
-### Install MariaDB Database
+### MariaDB Database
 [Install](https://mariadb.org/download/?t=mariadb)
 
 
