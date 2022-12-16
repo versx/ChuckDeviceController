@@ -1,19 +1,18 @@
 :: Plugin file full path
-SET targetPath="%~f1"
+SET targetPath=%~f1
 :: Plugin project name
-SET projectName="%2"
+SET projectName=%2
 :: Plugin file name with extension
-SET targetFileName="%3"
+SET targetFileName=%3
 :: Plugin output directory
-SET targetDir="%~f4"
+SET targetDir=%~f4
 :: Root projects solution directory
-SET solutionDir="%~f5"
-:: Root plugins bin directory
-SET pluginsBin=ChuckDeviceConfigurator/bin/debug/plugins
+SET solutionDir=%~f5
 :: Plugin specific bin directory
-SET pluginFolder=../../%pluginsBin%/%projectName%/
+SET pluginFolder=../../ChuckDeviceConfigurator/bin/Debug/plugins/%projectName%
 :: Plugin dependencies config file
 SET depsFileExt=.deps.json
+
 
 :: TODO: Create plugin folder if does not exist
 :: TODO: Copy all dependency files other than ChuckDeviceController.* libraries
