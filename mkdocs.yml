@@ -26,8 +26,8 @@ nav:
         - API Documentation: plugin-system/api.md
         - Plugin Host Interfaces: plugin-system/interfaces.md
         - Examples: plugin-system/examples.md
-    - Dedication:
-        - About: dedication.md
+    - About:
+        - Dedication: dedication.md
 
 
 markdown_extensions:
