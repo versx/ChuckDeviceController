@@ -57,14 +57,15 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 11.0 us
 ### Getting Started  
 https://cdc.rtfd.io
 
-### API Documentation  
-https://cdc.rtfd.io/en/latest/plugin-system/api/
+### Plugin API Reference  
+https://cdc.rtfd.io/en/latest/plugin-system/api  
+
+### Plugin Development  
+https://cdc.readthedocs.io/en/latest/plugin-system
 
 <hr>
 
-## Installation
-
-### Requirements
+## Requirements
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)  
 - [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)  
 - [MySQL](https://dev.mysql.com/downloads/mysql/) or [MariaDB](https://mariadb.org/download/?t=mariadb&p=mariadb)  
@@ -736,6 +737,8 @@ Adds `GitLab.com` user authentication support
 Adds health checks endpoint and UI  
 - **MemoryBenchmarkPlugin:**  
 Displays basic memory usage information and chart  
+- **MicrosoftAuthProviderPlugin:**  
+Add Microsoft account authentication support
 - **MiniProfilerPlugin:**  
 Adds basic profiling options and data.  
 - **PogoEventsPlugin:**  
