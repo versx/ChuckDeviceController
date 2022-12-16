@@ -6,19 +6,14 @@
 
 
 ## Install Git
-**Debian-based:** `sudo apt install git-all`
-
-**Windows:**
-https://git-scm.com/download/win
-
-
-**macOS:**
-Homebrew:  
+**Debian-based:** `sudo apt install git-all`  
+**Windows:** [https://git-scm.com/download/win](https://git-scm.com/download/win)  
+**macOS:**  
+Homebrew:
 ```
 brew install git
-```
-
-**Other macOS Installations:** https://git-scm.com/download/mac  
+```  
+[Other macOS Installations](https://git-scm.com/download/mac)  
 
 <hr>
 
@@ -33,11 +28,15 @@ sudo apt-get install -y apt-transport-https
 sudo apt-get update
 sudo apt-get install -y dotnet-sdk-7.0
 ```
-**Other Linux Distributions:** https://learn.microsoft.com/en-us/dotnet/core/install/linux  
+[Other Linux Distributions](https://learn.microsoft.com/en-us/dotnet/core/install/linux)  
 
 **Windows:**  
 ```
-https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-x64-installer
+x86: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-x86-installer
+
+x64: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-x64-installer
+
+ARM64: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-arm64-installer
 ```
 
 **macOS:**

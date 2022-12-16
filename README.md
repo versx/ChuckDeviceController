@@ -90,23 +90,18 @@ https://cdc.readthedocs.io/en/latest/plugin-system
 - [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)  
 - [MySQL](https://dev.mysql.com/downloads/mysql/) or [MariaDB](https://mariadb.org/download/?t=mariadb&p=mariadb)  
     Supported Databases  
-    - MySQL 5.7 and MySQL 8.0
-    - MariaDB 10.3-10.10
+    - MySQL 5.7 and MySQL 8.0  
+    - MariaDB 10.3-10.10  
 
 ### Install Git
-**Debian-based:** `sudo apt install git-all`
-
-**Windows:**
-https://git-scm.com/download/win
-
-
-**macOS:**
-Homebrew:  
+**Debian-based:** `sudo apt install git-all`  
+**Windows:** [https://git-scm.com/download/win](https://git-scm.com/download/win)  
+**macOS:**  
+Homebrew:
 ```
 brew install git
-```
-
-**Other macOS Installations:** https://git-scm.com/download/mac  
+```  
+[Other macOS Installations](https://git-scm.com/download/mac)   
 
 ### Install .NET 7 SDK
 **Ubuntu:** (Replace `{22,20,18}` with your respective major OS version)  
@@ -119,11 +114,15 @@ sudo apt-get install -y apt-transport-https
 sudo apt-get update
 sudo apt-get install -y dotnet-sdk-7.0
 ```
-**Other Linux Distributions:** https://learn.microsoft.com/en-us/dotnet/core/install/linux  
+[Other Linux Distributions](https://learn.microsoft.com/en-us/dotnet/core/install/linux)  
 
 **Windows:**  
 ```
-https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-x64-installer
+x86: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-x86-installer
+
+x64: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-x64-installer
+
+ARM64: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-arm64-installer
 ```
 
 **macOS:**
@@ -136,12 +135,13 @@ https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-a
 ```
 
 ### Install MySQL Database
-https://dev.mysql.com/downloads/installer/  
+[Install](https://dev.mysql.com/downloads/installer)  
 
 or
 
 ### Install MariaDB Database
-https://mariadb.org/download/?t=mariadb
+[Install](https://mariadb.org/download/?t=mariadb)
+
 
 <hr>
 
