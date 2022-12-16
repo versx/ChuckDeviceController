@@ -61,7 +61,7 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 10.0 us
 
 ### Requirements
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)  
-- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)  
+- [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)  
 - [MySQL](https://dev.mysql.com/downloads/mysql/) or [MariaDB](https://mariadb.org/download/?t=mariadb&p=mariadb)  
 
 **Ubuntu:** (Replace `{22,20,18}` with your respective major OS version)  
@@ -111,6 +111,12 @@ Apple Silicon: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-
 1. Change directories `cd bin/debug` and fill out `appsettings.json` configuration file  
 1. Run ChuckDeviceCommunicator `dotnet ChuckDeviceCommunicator.dll`  
 
+### ChuckProxy (optional)  
+1. Change directory: `cd src/ChuckProxy/bin/debug`  
+1. Fill out [`appsettings.json`](./configs/proxy.md) config  
+1. Start ChuckProxy `dotnet ChuckProxy.dll`  
+
+
 View all available API routes:  
 `http://LAN_MACHINE_IP:port/swagger`  
 
@@ -121,175 +127,614 @@ View all available API routes:
 ### ChuckDeviceController (Protobuf Proto Parser & Data Inserter)  
 ```json
 {
+  // Hosts allowed to access.
+  "AllowedHosts": "*",
+  // Determines whether automatic migrations are enabled when set to `true`.
+  // Otherwise manual migrations are required. i.e. `dotnet ef database update`.
+  "AutomaticMigrations": true,
+  "Cache": {
+    // Memory cache settings.
+    "CompactionPercentage": 0.25,
+    // Expiration time limit for entities in minutes.
+    "EntityExpiryLimitM": 30,
+    // Entity names to cache (leave as is if you don't know what you're doing).
+    "EntityTypeNames": [
+      "Account",
+      "Device",
+      "Cell",
+      "Gym",
+      "Incident",
+      "Pokemon",
+      "Pokestop",
+      "Spawnpoint",
+      "Weather"
+    ],
+    // Interval at which cached entities are checked to see if expired or not.
+    "ExpirationScanFrequencyM": 5,
+    // Size limit of memory cache.
+    "SizeLimit": 10240
+  },
+  // Database connection strings.
   "ConnectionStrings": {
-    // Database connection string
     "DefaultConnection": "Uid=cdcuser;Password=cdcpass123;Host=127.0.0.1;Port=3306;Database=cdcdb;old guids=true;Allow User Variables=true;"
   },
-  // Enables automatic migrations if set, otherwise `dotnet ef migrations` tool
-  // will need to be run manually to migrate database tables
-  "AutomaticMigrations": true,
-  // Enables database event triggers for historical Pokemon, Raid, Quest, and Invasion statistics
-  "StatisticTriggers": {
-    "Pokemon": false
+  // Determines whether to convert MAD proto data to compatible payload format.
+  "ConvertMadData": false,
+  // Database settings.
+  "Database": {
+    // Maximum timeout in seconds before a command is aborted.
+    "CommandTimeoutS": 30,
+    // Maximum timeout in seconds before a connection is determined as a leak.
+    // When a connection is assumed a leak, it is aborted.
+    "ConnectionLeakTimeoutS": 120,
+    // Maximum timeout in seconds before a connection is aborted.
+    "ConnectionTimeoutS": 30,
+    // Maximum amount of retries upon failed connection.
+    "MaximumRetryCount": 30,
+    // Connection pool size.
+    "PoolSize": 1024,
+    // Timeout in seconds between attemping failed connections.
+    "RetryIntervalS": 10
   },
-  // Proto data endpoint
-  "Urls": "http://*:8888",
-  // gRPC service used to communicate with the configurator
-  "GrpcConfiguratorServer": "http://localhost:5002",
-  // gRPC service used to communicate/relay webhooks to the webhook service
-  "GrpcWebhookServer": "http://localhost:5003",
+  // gRPC listener endpoints.
+  "Grpc": {
+    // gRPC listener endpoint of ChuckDeviceConfigurator. Used to relay scanned Pokemon statistics, trainer account information, as well as gym information.
+    "Configurator": "http://localhost:5002",
+    // gRPC listener endpoint of ChuckDeviceCommunicator. Used to relay processed data entities ready to send to configured webhook endpoints.
+    "Communicator": "http://localhost:5003"
+  },
+  /* Reference: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-7.0 */
   "Logging": {
     "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
+      "Default": "Debug",
+      "Grpc.Core": "None",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware": "None",
+      "Microsoft.EntityFrameworkCore": "Information",
+      "ChuckDeviceConfigurator": "Trace",
+      "ChuckDeviceController": "Trace",
+      "ChuckDeviceCommunicator": "Trace"
+    },
+    "ColorConsole": {
+      "LogLevel": {
+        "Default": "Trace",
+        "Grpc.Core": "None",
+        "Grpc.Net.Client": "Warning",
+        "Microsoft.AspNetCore": "Warning",
+        "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware": "None",
+        "Microsoft.EntityFrameworkCore": "Warning",
+        "Microsoft.Extensions": "Warning",
+        "System.Net.Http.HttpClient": "Warning",
+        "ChuckDeviceConfigurator": "Trace",
+        "ChuckDeviceController": "Trace",
+        "ChuckDeviceCommunicator": "Trace"
+      },
+      "LogLevelColorMap": {
+        "Trace": "Cyan",
+        "Debug": "DarkGray",
+        "Information": "White",
+        "Warning": "Yellow",
+        "Error": "Red",
+        "Critical": "DarkRed"
+      },
+      "UseTimestamp": true,
+      "UseUnix": false,
+      "TimestampFormat": "{0:HH}:{0:mm}:{0:ss}"
+    },
+    "Console": {
+      "LogLevel": {
+        "Default": "Debug",
+        "Microsoft.AspNetCore": "Warning",
+        "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware": "None",
+        "Microsoft.EntityFrameworkCore": "Information",
+        "Microsoft.Extensions": "Information",
+        "ChuckDeviceConfigurator": "Trace",
+        "ChuckDeviceController": "Trace",
+        "ChuckDeviceCommunicator": "Trace"
+      }
+    },
+    "File": {
+      "Path": "bin/debug/logs/{0:yyyy}-{0:MM}-{0:dd}.log",
+      "Append": true,
+      "MinLevel": "Debug",
+      "FileSizeLimitBytes": 0, // use to activate rolling file behaviour
+      "MaxRollingFiles": 0 // use to specify max number of log files
     }
   },
-  "Options": {
-    // When enabled, automatically clears (marks 'deleted') upgraded or downgraded
-    // Pokestops and Gyms
-    "ClearOldForts": true,
-    // Determines whether or not to process map (aka Lure) Pokemon spawns
-    "ProcessMapPokemon": true
+  "GymOptions": {
+    "ExRaidBossId": 150,
+    "ExRaidBossForm": 0
   },
-  // Converts incoming proto data from MAD devices to a compatible format
-  "ConvertMadData": false,
-  "AllowedHosts": "*"
+  "PokemonOptions": {
+    "EnablePvp": false,
+    "EnableMapPokemon": false,
+    "EnableWeatherIvClearing": false,
+    "SaveSpawnpointLastSeen": true
+  },
+  // Default Pokestop settings.
+  "PokestopOptions": {
+    // Lure time in seconds (Default: 30 seconds)
+    "LureTimeS": 1800
+  },
+  // Data processing settings.
+  "ProcessingOptions": {
+    // Proto processing service settings.
+    "Protos": {
+      // Interval in seconds between batch processing of received protos.
+      "IntervalS": 3,
+      "LogLevel": "Summary",
+      // Show processing benchmark times. (i.e. `Processed 64 protos in 1.234s`)
+      "ShowProcessingTimes": true,
+      // Show processing benchmark counts. (i.e. `Processed 1/20 weather cells`)
+      "ShowProcessingCount": true,
+      // Decimal precision of benchmark times when `ShowProcessingTimes` is enabled.
+      "DecimalPrecision": 5,
+      // Determines whether AR quests are allowed or not.
+      "AllowArQuests": true,
+      // Determines whether to process map/lure Pokemon encounters.
+      "ProcessMapPokemon": true,
+      // Proto processing queue settings.
+      "Queue": {
+        // Maximum amount of protos to batch when processing.
+        "MaximumBatchSize": 100,
+        // Maximum size of queue before warning message is shown.
+        "MaximumSizeWarning": 1024,
+        // Maximum queue capacity.
+        "MaximumQueueCapacity": 10240
+      }
+    },
+    // Data entities processing service settings.
+    "Data": {
+      // Soft delete any forts that have upgraded, downgraded, or removed.
+      "ClearOldForts": true,
+      // Interval in seconds between batch processing data entities.
+      "IntervalS": 3,
+      "LogLevel": "Summary",
+      // Show processing benchmark times. (i.e. `Processed 1422 entities in 1.234s`)
+      "ShowProcessingTimes": true,
+      // Show processing benchmark counts. (i.e. `Processed 1/20 weather cells`) Disabled by default and should only be used for debugging.
+      "ShowProcessingCount": false,
+      // Decimal precision of benchmark times when `ShowProcessingTimes` is enabled.
+      "DecimalPrecision": 4,
+      // Concurrency level for processing data entities. Basically how many parsers active at once.
+      "ParsingConcurrencyLevel": 15,
+      // Determines whether or not to process player account protos.
+      "ProcessPlayerData": true,
+      // Determines whether or not to process S2 cell protos.
+      "ProcessCells": true,
+      // Determines whether or not to process S2 client weather cell protos.
+      "ProcessWeather": true,
+      // Determines whether or not to process fort protos.
+      "ProcessForts": true,
+      // Determines whether or not to process fort details protos.
+      "ProcessFortDetails": true,
+      // Determines whether or not to process Gym info protos.
+      "ProcessGymInfo": true,
+      // Determines whether or not to process Gym defenders from `GymInfo`.
+      "ProcessGymDefenders": true,
+      // Determines whether or not to process Gym trainers from `GymInfo` protos.
+      "ProcessGymTrainers": true,
+      // Determines whether or not to process Pokestop incidents.
+      "ProcessIncidents": true,
+      // Determines whether or not to process wild Pokemon protos.
+      "ProcessWildPokemon": true,
+      // Determines whether or not to process nearby Pokemon protos.
+      "ProcessNearbyPokemon": true,
+      // Determines whether or not to process map/lure Pokemon protos.
+      "ProcessMapPokemon": true,
+      // Determines whether or not to process Pokestop quest protos.
+      "ProcessQuests": true,
+      // Determines whether or not to process Pokemon encounter protos.
+      "ProcessEncounters": true,
+      // Determines whether or not to process Pokemon disk encounter protos.
+      "ProcessDiskEncounters": true,
+      // Data entity processing queue settings.
+      "Queue": {
+        // Maximum amount of entities to batch when processing.
+        "MaximumBatchSize": 100,
+        // Maximum size of queue before warning message is shown.
+        "MaximumSizeWarning": 1024,
+        // Maximum queue capacity.
+        "MaximumQueueCapacity": 10240
+      }
+    },
+    // Data entity consumer service settings.
+    "Consumer": {
+      // Interval in seconds between batch insert/upsert of processed data entities.
+      "IntervalS": 5,
+      "LogLevel": "Summary",
+      // Show processing benchmark times. (i.e. `Consumed 1422 entities in 1.234s`)
+      "ShowProcessingTimes": true,
+      // Not currently used.
+      "ShowProcessingCount": true,
+      // Decimal precision of benchmark times when `ShowProcessingTimes` is enabled.
+      "DecimalPrecision": 3,
+      // Not currently used. Transactions are always used.
+      "UseTransactions": true,
+      // Data entity consumer processing queue settings.
+      "Queue": {
+        // Maximum amount of entities to batch upsert.
+        "MaximumBatchSize": 5000,
+        // Maximum size of queue before warning message is shown.
+        "MaximumSizeWarning": 10240,
+        // Maximum queue capacity.
+        "MaximumQueueCapacity": 1048576
+      },
+      // Concurrency level for consuming processed data entities. Basically how many parsers active at once * CPU core count.
+      "QueueConcurrencyLevelMultiplier": 10
+    }
+  },
+  // Statistics database triggers settings.
+  "StatisticTriggers": {
+    // Determines whether to enable Pokemon database triggers. (Not currently used)
+    "Pokemon": false
+  },
+  // Listening endpoint and port to receive proto data from devices. Multiple endpoints are supported, use semicolons (`;`) as delimiter between endpoints.
+  "Urls": "http://*:8888",
+  // Webhook settings.
+  "Webhooks": {
+    // Determines whether to relay webhook payloads to ChuckDeviceCommunicator.
+    "Enabled": false
+  }
 }
+
 ```
 
 ### ChuckDeviceConfigurator (Dashboard/Management UI & Device Controller)  
 ```json
 {
-{
-  "ConnectionStrings": {
-    // Database connection string
-    "DefaultConnection": "Uid=cdcuser;Password=cdcpass123;Host=127.0.0.1;Port=3306;Database=cdcdb;old guids=true;Allow User Variables=true;"
-  },
-  "Keys": {
-    // SendGrid API key, used for email service
-    "SendGridKey": ""
-  },
-  // Enables automatic migrations if set, otherwise `dotnet ef migrations` tool
-  // will need to be run manually to migrate database tables
-  "AutomaticMigrations": true,
-  // Available authentication providers
+  // Hosts allowed to access.
+  "AllowedHosts": "*",
+  // 3rd party authentication options.
   "Authentication": {
+    // Discord user authentication.
     "Discord": {
       "Enabled": false,
       "ClientId": "",
       "ClientSecret": ""
     },
+    // GitHub user authentication.
     "GitHub": {
       "Enabled": false,
       "ClientId": "",
       "ClientSecret": ""
     },
+    // Google user authentication.
     "Google": {
       "Enabled": false,
       "ClientId": "",
       "ClientSecret": ""
     }
   },
+  // Determines whether automatic migrations are enabled when set to `true`.
+  // Otherwise manual migrations are required. i.e. `dotnet ef database update`.
+  "AutomaticMigrations": true,
+  // Memory cache settings.
+  "Cache": {
+    // Compactions percentage for cached entities.
+    "CompactionPercentage": 0.25,
+    // Expiration time limit for entities in minutes.
+    "EntityExpiryLimitM": 15,
+    // Entity names to cache (leave as is if you don't know what you're doing).
+    "EntityTypeNames": [
+      "Account",
+      "Device"
+    ],
+    // Interval at which cached entities are checked to see if expired or not.
+    "ExpirationScanFrequencyM": 5,
+    // Size limit of memory cache.
+    "SizeLimit": 10240
+  },
+  // Database connection strings.
+  "ConnectionStrings": {
+    "DefaultConnection": "Uid=cdcuser;Password=cdcpass123;Host=127.0.0.1;Port=3306;Database=cdcdb;old guids=true;Allow User Variables=true;"
+  },
+  // Database settings.
+  "Database": {
+    // Maximum timeout in seconds before a command is aborted.
+    "CommandTimeoutS": 30,
+    // Maximum timeout in seconds before a connection is determined as a leak.
+    // When a connection is assumed a leak, it is aborted.
+    "ConnectionLeakTimeoutS": 120,
+    // Maximum timeout in seconds before a connection is aborted.
+    "ConnectionTimeoutS": 30,
+    // Maximum amount of retries upon failed connection.
+    "MaximumRetryCount": 30,
+    // Connection pool size.
+    "PoolSize": 1024,
+    // Timeout in seconds between attemping failed connections.
+    "RetryIntervalS": 10
+  },
+  // Json web tokens authentication settings.
+  "Jwt": {
+    // Determines whether JWT authentication is enabled or not.
+    "Enabled": false,
+    // Host of JWT issuer.
+    "Issuer": "http://127.0.0.1:8881/",
+    // Host of JWT audience.
+    "Audience": "http://127.0.0.1:8881/",
+    // JWT signing key.
+    "Key": "JwtExampleSecretKey_MakeSureYouChangeThisToA_SecureRandomizedValue",
+    // JWT token expiration time in minutes. (Default: 30 days)
+    "TokenValidityM": 43200
+  },
+  // Listening endpoints settings
   "Kestrel": {
     "EndpointDefaults": {
-        "Protocols": "Http1AndHttp2"
+      "Protocols": "Http1AndHttp2"
     },
     "Endpoints": {
-      // Endpoint used to access the Dashboard UI
       "Http": {
+        // Configurator listening endpoint and port.
         "Url": "http://*:8881"
       },
-      // Endpoint used for inter-process communication between controller and webhook relay service
       "Grpc": {
+        // gRPC listening endpoint and port to receive data from ChuckDeviceController.
         "Url": "http://*:5002",
         "Protocols": "Http2"
       }
     }
   },
+  // API keys.
+  "Keys": {
+    // SendGrid email service API key.
+    "SendGridKey": ""
+  },
+  // Locale to load and use.
+  "Locale": "en",
+  /* Reference: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-7.0 */
   "Logging": {
     "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
+      "Default": "Debug",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore": "Warning"
+    },
+    "ColorConsole": {
+      "LogLevel": {
+        "Default": "Debug",
+        "Grpc.Core": "None",
+        "Grpc.Net.Client": "Warning",
+        "Microsoft.AspNetCore": "Warning",
+        "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware": "None",
+        "Microsoft.EntityFrameworkCore": "Warning",
+        "Microsoft.Extensions": "Warning",
+        "System.Net.Http.HttpClient": "Warning",
+        "ChuckDeviceConfigurator": "Trace",
+        "ChuckDeviceController": "Trace",
+        "ChuckDeviceCommunicator": "Trace"
+      },
+      "LogLevelColorMap": {
+        "Trace": "Cyan",
+        "Debug": "DarkGray",
+        "Information": "White",
+        "Warning": "Yellow",
+        "Error": "Red",
+        "Critical": "DarkRed"
+      },
+      "UseTimestamp": true,
+      "UseUnix": false,
+      "TimestampFormat": "{0:HH}:{0:mm}:{0:ss}"
+    },
+    "Console": {
+      "LogLevel": {
+        "Default": "Debug",
+        "Microsoft.AspNetCore": "Warning",
+        "Microsoft.EntityFrameworkCore": "Warning",
+        "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware": "None"
+      }
+    },
+    "File": {
+      "Path": "bin/debug/logs/{0:yyyy}-{0:MM}-{0:dd}.log",
+      "Append": true,
+      "MinLevel": "Debug",
+      "FileSizeLimitBytes": 0, // use to activate rolling file behaviour
+      "MaxRollingFiles": 0 // use to specify max number of log files
     }
   },
+  // Default map settings for any leaflet map instances.
   "Map": {
+    // Starting latitude.
     "StartLatitude": 0,
+    // Starting longitude.
     "StartLongitude": 0,
+    // Starting zoom.
     "StartZoom": 13,
+    // Minimum zoom level.
     "MinimumZoom": 4,
+    // Maximum zoom level.
     "MaximumZoom": 18,
+    // Leaflet map tileserver url.
     "TileserverUrl": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
   },
-  // Possible theme values: dark, light
+  // Dashboard UI theme.
   "Theme": "dark",
-  "AllowedHosts": "*"
+  // User accounts settings
+  "UserAccounts": {
+    // User account lock out settings.
+    "Lockout": {
+      "AllowedForNewUsers": true,
+      "MaxFailedAccessAttempts": 5,
+      "DefaultLockoutTimeSpan": 15
+    },
+    // User account password settings.
+    "Password": {
+      "RequireDigit": true,
+      "RequiredLength": 8,
+      "RequiredUniqueChars": 1,
+      "RequireLowercase": true,
+      "RequireUppercase": true,
+      "RequireNonAlphanumeric": true
+    },
+    // User account sign-in settings.
+    "SignIn": {
+      "RequireConfirmedAccount": true,
+      "RequireConfirmedEmail": true,
+      "RequireConfirmedPhoneNumber": false
+    },
+    // User account settings.
+    "User": {
+      "AllowedUserNameCharacters": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+",
+      "RequireUniqueEmail": true
+    }
+  }
 }
 ```
 
 ### ChuckDeviceCommunicator (Webhook Relay Service)  
 ```json
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
+  // Hosts allowed to access.
   "AllowedHosts": "*",
-  // Endpoint of the configurator's gRPC service (used to request updated webhook endpoints)
-  "GrpcConfiguratorServer": "http://localhost:5002",
-  // Webhook relay settings
-  "Relay": {
-    // Maximum amount of attempts to try resending a webhook that initially failed before
-    // aborting the request entirely
-    "MaximumRetryCount": 3,
-    // Request timeout limit in seconds when sending the webhook to the endpoint before
-    // it aborts if no response
-    "RequestTimeout": 30
+  // gRPC listener endpoints.
+  "Grpc": {
+    // gRPC listener endpoint of ChuckDeviceConfigurator. Used to retrieve configured webhook endpoints.
+    "Configurator": "http://localhost:5002"
   },
+  // Listening endpoints settings
   "Kestrel": {
     "EndpointDefaults": {
       "Protocols": "Http1AndHttp2"
     },
     "Endpoints": {
       "Grpc": {
-        // Listening endpoint where webhooks will be sent via gRPC
+        // gRPC listening endpoint and port to receive webhook payloads from ChuckDeviceController.
         "Url": "http://*:5003",
         "Protocols": "Http2"
       }
     }
+  },
+  /* Reference: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-7.0 */
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware": "None"
+    },
+    "ColorConsole": {
+      "LogLevel": {
+        "Default": "Debug",
+        "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware": "None"
+      },
+      "LogLevelColorMap": {
+        "Trace": "Cyan",
+        "Debug": "DarkGray",
+        "Information": "White",
+        "Warning": "Yellow",
+        "Error": "Red",
+        "Critical": "DarkRed"
+      },
+      "UseTimestamp": true,
+      "UseUnix": false,
+      "TimestampFormat": "{0:HH}:{0:mm}:{0:ss}"
+    },
+    "Console": {
+      "LogLevel": {
+        "Default": "Debug",
+        "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware": "None"
+      }
+    },
+    "File": {
+      "Path": "bin/debug/logs/{0:yyyy}-{0:MM}-{0:dd}.log",
+      "Append": true,
+      "MinLevel": "Debug",
+      "FileSizeLimitBytes": 0, // use to activate rolling file behaviour
+      "MaxRollingFiles": 0 // use to specify max number of log files
+    }
+  },
+  // Webhook relay settings.
+  "Relay": {
+    // Webhook endpoints retrieval interval in seconds.
+    "EndpointsIntervalS": 60,
+    // Retry delay upon failed webhook relay.
+    "FailedRetryDelayS": 5,
+    // Maximum amount of retries when sending failed webhook payloads.
+    "MaximumRetryCount": 3,
+    // Interval in seconds between processing received webhook payloads.
+    "ProcessingIntervalS": 5,
+    // Timeout in seconds when sending webhook payload before aborting.
+    "RequestTimeoutS": 15
   }
 }
+
+```
+
+### ChuckProxy (Atlas Workaround)  
+```json
+{
+  // Listening endpoint and port to receive proto data from Atlas devices which
+  // will be relayed to the below configured endpoints.
+  // Multiple endpoints are supported, use semicolons (`;`) as delimiter
+  // between endpoints.
+  "Urls": "http://*:5151",
+  // ChuckDeviceConfigurator device controller endpoint to proxy.
+  "ControllerEndpoint": "http://127.0.0.1:8881/controler",
+  // ChuckDeviceController proto data endpoint to proxy.
+  "RawEndpoints": [
+    "http://127.0.0.1:8882/raw"
+  ],
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  // Hosts allowed to access.
+  "AllowedHosts": "*"
+}
+
 ```
 
 <hr>
 
 ## Available Plugins  
-- BitbucketAuthProviderPlugin: Adds `Bitbucket.org` user authentication support    
-- DeviceAuthPlugin: Adds device token and IP based device authentication support
-- Example.DotNetCorePlugin: Very basic 'Clock' plugin example  
-- GitLabAuthProviderPlugin: Adds `GitLab.com` user authentication support  
-- MemoryBenchmarkPlugin: Displays basic memory usage information and chart  
-- PogoEventsPlugin: Provides current and upcoming Pokemon Go events.  
-- RazorTestPlugin: Very basic Razor pages plugin example  
-- RedditAuthProviderPlugin: Adds `Reddit.com` user authentication support  
-- RequestBenchmarkPlugin: Displays web request benchmark times for routes used  
-- RobotsPlugin: Adds web crawler robots management based on specified UserAgent strings and routes which creates a dynamic `robots.txt` file  
-- TestPlugin: In-depth example plugin demonstrating all, if not most, possible functionality of the plugin system  
-- TodoPlugin: Basic TODO list plugin that adds support for keeping track of things to do  
-- VisualStudioAuthProviderPlugin: Adds `VisualStudioOnline.com` user authentication support  
-
-<hr>
-
-## TODO:  
-- Improve database performance  
-- Localization  
-- Finish TTH finder job controller
+- **BitbucketAuthProviderPlugin:**  
+Adds `Bitbucket.org` user authentication support    
+- **DeviceAuthPlugin:**  
+Adds device token and IP based device authentication support
+- **Example.DotNetCorePlugin:**  
+Very basic 'Clock' plugin example  
+- **FindyJumpyPlugin:**  
+Adds new Pokemon spawnpoint job controllers  
+- **GitLabAuthProviderPlugin:**  
+Adds `GitLab.com` user authentication support  
+- **HealthChecksPlugin:**  
+Adds health checks endpoint and UI  
+- **MemoryBenchmarkPlugin:**  
+Displays basic memory usage information and chart  
+- **MiniProfilerPlugin:**  
+Adds basic profiling options and data.  
+- **PogoEventsPlugin:**  
+Provides current and upcoming Pokemon Go events.  
+- **RazorTestPlugin:**  
+Very basic Razor Mvc pages plugin example  
+- **RedditAuthProviderPlugin:**  
+Adds `Reddit.com` user authentication support  
+- **RequestBenchmarkPlugin:**  
+Displays web request benchmark times for routes used  
+- **RobotsPlugin:**  
+Adds web crawler robots management based on specified UserAgent strings and routes which creates a dynamic `robots.txt` file  
+- **TestPlugin:**  
+In-depth example plugin demonstrating all, if not most, possible functionality of the plugin system  
+- **TodoPlugin:**  
+Basic TODO list plugin that adds support for keeping track of things to do  
+- **VisualStudioAuthProviderPlugin:**  
+Adds `VisualStudioOnline.com` user authentication support  
 
 <hr>
 
 ## Previews:  
-TODO  
+![Dashboard](docs/images/dashboard.png)  
+
+<hr>
+
+## TODO:  
+- [ ] Finish localization  
+- [ ] Finish TTH finder job controller  
+- [ ] Finish implementing permissions provided by API keys  
+- [ ] Finish documentation  
+- [ ] Finish plugin service event callbacks  
+- [ ] Finish event service bus  
+- [ ] Finish plugin build scripts  
+- [ ] Add more helper methods to ChuckDeviceController.Plugin.Helpers library  
 
 <hr>
 
