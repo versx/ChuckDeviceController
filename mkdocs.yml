@@ -34,7 +34,7 @@ markdown_extensions:
     - toc:
         permalink: 
 
-copyright: Copyright &copy; 2021, Maintained by <a href="https://github.com/versx">versx</a>.
+copyright: Copyright &copy; 2022, Maintained by <a href="https://github.com/versx">versx</a>.
 
 extra_css:
     - css/base.css
