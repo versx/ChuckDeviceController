@@ -18,10 +18,13 @@ nav:
     - General:
         - Home: index.md
         - Screenshots: screenshots.md
+        - Requirements: requirements.md
         - Getting Started: getting-started.md
     - Plugin System:
+        - Visual Studio Templates: plugin-system/project-tempaltes.md
         - Plugins: plugin-system/index.md
-        - API: plugin-system/api.md
+        - API Documentation: plugin-system/api.md
+        - Plugin Host Interfaces: plugin-system/interfaces.md
         - Examples: plugin-system/examples.md
 
 

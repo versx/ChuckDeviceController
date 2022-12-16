@@ -1,16 +1,16 @@
 # Getting Started
 
 
-TODO: Create separate page for prerequisites
-## Prerequisites
-- [.NET 7](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)  
-- [MySQL](https://dev.mysql.com/downloads/mysql/) or [MariaDB](https://mariadb.org/download/?t=mariadb)  
+## [Requirements](./requirements.md)
 
 
-## ChuckDeviceConfigurator  
+## Preparation
 1. Clone repository: `git clone https://github.com/versx/ChuckDeviceController`  
 1. Change directory: `cd ChuckDeviceController/src`  
 1. Build project and libraries: `dotnet build`  
+
+
+## ChuckDeviceConfigurator  
 1. Change directory: `cd ChuckDeviceConfigurator/bin/debug`  
 1. Fill out [`appsettings.json`](./configs/configurator.md) config  
 1. Start ChuckDeviceConfigurator `dotnet ChuckDeviceConfigurator.dll`  

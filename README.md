@@ -7,7 +7,7 @@
 ![](https://raw.githubusercontent.com/versx/ChuckDeviceController/net6/src/ChuckDeviceConfigurator/wwwroot/favicons/chuck.gif)
 
 # Chuck Device Controller  
-ChuckDeviceController is a .NET based frontend and backend written in C# 10.0 using ASP.NET Core and EntityFramework Core to control real devices and parse received protobuff data from iOS devices running Pokemon Go.
+ChuckDeviceController is a .NET based frontend and backend written in C# 11.0 using ASP.NET Core and EntityFramework Core to control real devices and parse received protobuff data from iOS devices running Pokemon Go.
 
 
 ## Features  
@@ -52,18 +52,42 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 10.0 us
 
 <hr>
 
-## Installation
+## Documentation  
 
-### Supported Databases  
-- MySQL 5.7
-- MySQL 8.0
-- MariaDB 10.3+
+### Getting Started  
+https://cdc.rtfd.io
+
+### API Documentation  
+https://cdc.rtfd.io/en/latest/plugin-system/api/
+
+<hr>
+
+## Installation
 
 ### Requirements
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)  
 - [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)  
 - [MySQL](https://dev.mysql.com/downloads/mysql/) or [MariaDB](https://mariadb.org/download/?t=mariadb&p=mariadb)  
+    Supported Databases  
+    - MySQL 5.7 and MySQL 8.0
+    - MariaDB 10.3-10.10
 
+### Git
+**Debian-based:** `sudo apt install git-all`
+
+**Windows:**
+https://git-scm.com/download/win
+
+
+**macOS:**
+Homebreak:  
+```
+brew install git
+```
+
+**Other macOS Installations:** https://git-scm.com/download/mac  
+
+### .NET 7 SDK
 **Ubuntu:** (Replace `{22,20,18}` with your respective major OS version)  
 ```
 wget https://packages.microsoft.com/config/ubuntu/{22,20,18}.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
@@ -72,19 +96,31 @@ rm packages-microsoft-prod.deb
 sudo apt-get update- 
 sudo apt-get install -y apt-transport-https
 sudo apt-get update
-sudo apt-get install -y dotnet-sdk-6.0
+sudo apt-get install -y dotnet-sdk-7.0
 ```
+**Other Linux Distributions:** https://learn.microsoft.com/en-us/dotnet/core/install/linux  
 
 **Windows:**  
 ```
-https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-6.0.301-windows-x64-installer
+https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-x64-installer
 ```
 
 **macOS:**
 ```
-Intel: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-6.0.301-macos-x64-installer
-Apple Silicon: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-6.0.301-macos-arm64-installer
+Intel:
+https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-x64-installer
+
+Apple Silicon:
+https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-arm64-installer
 ```
+
+### MySQL Database
+https://dev.mysql.com/downloads/installer/  
+
+or
+
+### MariaDB Database
+https://mariadb.org/download/?t=mariadb
 
 <hr>
 
