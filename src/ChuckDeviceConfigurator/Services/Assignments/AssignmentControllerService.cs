@@ -452,7 +452,6 @@
         {
             using var context = _controllerFactory.CreateDbContext();
             context.UpdateRange(devices);
-            // TODO: Update only device instance names
             await context.SaveChangesAsync();
         }
 

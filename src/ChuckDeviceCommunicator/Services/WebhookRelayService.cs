@@ -731,7 +731,6 @@
                     if (!GeofenceService.IsPointInPolygon(alternativeQuest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                         continue;
                 }
-                // TODO: Add alternative quest filtering
                 //if (endpoint.Data?.Quests.Any() ?? false)
                 //{
                 //}

@@ -4,8 +4,6 @@
 
     using ChuckDeviceController.Plugin;
 
-    // TODO: Move to ChuckDeviceController.Plugin.Helpers library
-
     public static class Utils
     {
         public static string FormatEventItems(IEnumerable<IEventItem> items)

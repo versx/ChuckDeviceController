@@ -35,7 +35,7 @@
         [JsonPropertyName("trainerexp")]
         public ulong? TrainerXp { get; set; }
 
-        [JsonPropertyName("target_max_distnace")] // TODO: Typflo, fix eventually
+        [JsonPropertyName("target_max_distnace")] // NOTE: Typflo, fix eventually
         public uint? TargetMaxDistance { get; set; }
 
         //[JsonPropertyName("pokemon_encounter_id_for_encounter")]

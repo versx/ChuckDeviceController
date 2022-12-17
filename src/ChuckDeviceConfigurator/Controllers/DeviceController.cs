@@ -36,8 +36,9 @@
         public async Task<ActionResult> Index()
         {
             var devices = await _uow.Devices.FindAllAsync();
+            var deviceNames = devices.Select(x => x.AccountUsername).ToList();
             var accountLevels = (await _uow.Accounts
-                .FindAsync(account => devices.Any(device => device.AccountUsername == account.Username)))
+                .FindAsync(account => deviceNames.Contains(account.Username)))
                 .ToDictionary(x => x.Username, y => y.Level);
             devices.ToList().ForEach(device =>
             {
