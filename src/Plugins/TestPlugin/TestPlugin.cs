@@ -686,16 +686,7 @@
 
         public List<string> Geofences { get; set; } = new();
 
-        public IInstanceData Data { get; set; } = new InstanceData();
-    }
-
-    public class InstanceData : Dictionary<string, object>, IInstanceData
-    {
-        public string? CustomInstanceType { get; set; }
-
-        public string? AccountGroup { get; set; }
-
-        public bool? IsEvent { get; set; }
+        public InstanceData? Data { get; set; } = new();
     }
 
     public class Geofence : IGeofence

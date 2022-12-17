@@ -1,18 +1,17 @@
-﻿namespace ChuckDeviceController.Data.Entities
+﻿namespace ChuckDeviceController.Common.Data
 {
     using System.ComponentModel;
     using System.Text.Json.Serialization;
-
-    using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Common.Data.Contracts;
 
     /* TODO: Possibly use the same `OptimizeRoute` property between Dynamic/Bootstrap/Spawnpoint
      * job controllers for ease. Can't think of any conflicts/issues unless someone edits an
      * existing instance the UI will display the previous value instead of using the default,
      * which is fine. :)
     */
-    public class InstanceData : Dictionary<string, object>, IInstanceData
+    public class InstanceData : Dictionary<string, object>
     {
+        //public object this[string key] => this[key];
+
         #region Pokemon Circle Instance
         [
             DisplayName("Circle Route Type"),

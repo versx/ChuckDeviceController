@@ -173,7 +173,7 @@
                 MinimumLevel = options.MinimumLevel,
                 MaximumLevel = options.MaximumLevel,
                 Geofences = options.Geofences,
-                Data = (InstanceData)options.Data,
+                Data = options.Data,
                 //Data = new InstanceData
                 //{
                 //    AccountGroup = options.Data.AccountGroup,
@@ -328,7 +328,7 @@
                     }
                     break;
                 case InstanceType.Custom:
-                    var customInstanceType = instance.Data?.CustomInstanceType;
+                    var customInstanceType = Convert.ToString(instance.Data?["custom_instance_type"]);//.CustomInstanceType;
                     if (string.IsNullOrEmpty(customInstanceType))
                     {
                         _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");

@@ -14,25 +14,6 @@
 
         List<string> Geofences { get; }
 
-        // TODO: IWebhookData Data { get; }
-    }
-
-    public interface IWebhookData
-    {
-        List<string> PokemonIds { get; }
-
-        List<string> PokestopIds { get; }
-
-        List<string> RaidPokemonIds { get; }
-
-        List<ushort> EggLevels { get; }
-
-        List<ushort> LureIds { get; }
-
-        List<ushort> InvasionIds { get; }
-
-        List<ushort> GymTeamIds { get; }
-
-        List<ushort> WeatherConditionIds { get; }
+        WebhookData? Data { get; }
     }
 }

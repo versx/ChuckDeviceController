@@ -12,15 +12,6 @@
 
         List<string> Geofences { get; }
 
-        IInstanceData Data { get; }
-    }
-
-    public interface IInstanceData : IDictionary<string, object>
-    {
-        string? CustomInstanceType { get; }
-
-        string? AccountGroup { get; }
-
-        bool? IsEvent { get; }
+        InstanceData? Data { get; }
     }
 }

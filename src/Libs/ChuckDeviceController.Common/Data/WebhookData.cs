@@ -1,11 +1,9 @@
-﻿namespace ChuckDeviceController.Data.Entities
+﻿namespace ChuckDeviceController.Common.Data
 {
     using System.ComponentModel;
     using System.Text.Json.Serialization;
 
-    using ChuckDeviceController.Common.Data.Contracts;
-
-    public class WebhookData : IWebhookData
+    public class WebhookData : Dictionary<string, object>
     {
         [
             DisplayName("Pokemon IDs"),
