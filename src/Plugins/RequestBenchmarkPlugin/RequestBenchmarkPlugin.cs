@@ -21,6 +21,7 @@ namespace RequestBenchmarkPlugin
         private const string DbName = "timings";
 
         private readonly IUiHost _uiHost;
+        private readonly IConfiguration _config;
 
         #region Plugin Metadata Properties
 
@@ -36,9 +37,10 @@ namespace RequestBenchmarkPlugin
 
         #region Constructor
 
-        public RequestBenchmarkPlugin(IUiHost uiHost)
+        public RequestBenchmarkPlugin(IUiHost uiHost, IConfigurationHost configHost)
         {
             _uiHost = uiHost;
+            _config = configHost.GetConfiguration();
         }
 
         #endregion
@@ -52,6 +54,7 @@ namespace RequestBenchmarkPlugin
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<RequestBenchmarkConfig>(_config);
             services.AddDbContext<RequestTimesDbContext>(options => options.UseInMemoryDatabase(DbName), ServiceLifetime.Scoped);
             services.AddSingleton<IRequestBenchmarkService, RequestBenchmarkService>();
         }

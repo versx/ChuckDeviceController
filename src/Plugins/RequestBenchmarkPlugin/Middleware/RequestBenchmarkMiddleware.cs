@@ -2,6 +2,7 @@
 {
     using Data.Contexts;
     using Data.Entities;
+    using Microsoft.Extensions.Options;
     using Services;
     using Utilities;
 
@@ -9,19 +10,19 @@
     {
         private readonly RequestDelegate _next;
         private readonly IRequestBenchmarkService _benchmarkService;
-        private readonly bool _ignoreGrpcRequests;
+        private readonly RequestBenchmarkConfig _config;
 
-        public RequestBenchmarkMiddleware(RequestDelegate next, IRequestBenchmarkService benchmarkService, IConfiguration config)
+        public RequestBenchmarkMiddleware(RequestDelegate next, IRequestBenchmarkService benchmarkService, IOptions<RequestBenchmarkConfig> options)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _benchmarkService = benchmarkService ?? throw new ArgumentNullException(nameof(benchmarkService));
-            _ignoreGrpcRequests = config.GetValue<bool>("IgnoreGrpcRequests");
+            _config = options?.Value ?? new();
         }
 
         public async Task InvokeAsync(HttpContext context, RequestTimesDbContext dbContext)
         {
             if (context.Request.ContentType == "application/grpc" &&
-                _ignoreGrpcRequests)
+                _config.IgnoreGrpcRequests)
             {
                 await _next(context);
                 return;
