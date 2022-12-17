@@ -9,5 +9,7 @@
         public const string AuthorizationHeader = "Authorization";
         public const string ClaimTypeNameRole = "role";
         //public const string IgnoreJwtValidationHeader = "IgnoreJwtValidation";
+
+        public const string JwtEndpoint = "/api/jwt/generate?identifier=Grpc";
     }
 }
