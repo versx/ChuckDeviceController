@@ -10,6 +10,7 @@
     using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http;
     using ChuckDeviceController.Extensions.Http.Caching;
@@ -21,11 +22,13 @@
     public class DeviceControlController : ControllerBase
     {
         private const string ContentTypeJson = "application/json";
+        private const ushort LastUsedM = 1800; // 30 minutes
 
         #region Variables
 
         private readonly ILogger<DeviceControlController> _logger;
-        private readonly ControllerDbContext _context;
+        //private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IJobControllerService _jobControllerService;
         private readonly IMemoryCacheHostedService _memCache;
 
@@ -35,12 +38,14 @@
 
         public DeviceControlController(
             ILogger<DeviceControlController> logger,
-            ControllerDbContext context,
+            //ControllerDbContext context,
+            IUnitOfWork uow,
             IJobControllerService jobControllerService,
             IMemoryCacheHostedService memCache)
         {
             _logger = logger;
-            _context = context;
+            //_context = context;
+            _uow = uow;
             _jobControllerService = jobControllerService;
             _memCache = memCache;
         }
@@ -95,7 +100,8 @@
                 return CreateErrorResponse($"Device UUID is not set in payload.");
             }
 
-            var device = await GetEntityAsync<string, Device>(_context, payload.Uuid);
+            //var device = await GetEntityAsync<string, Device>(_context, payload.Uuid);
+            var device = await _uow.Devices.FindByIdAsync(payload.Uuid);
 
             switch (payload!.Type!.ToLower())
             {
@@ -143,8 +149,10 @@
                     LastHost = ipAddr,
                 };
 
-                await _context.Devices.AddAsync(device);
-                await _context.SaveChangesAsync();
+                await _uow.Devices.AddAsync(device);
+                await _uow.CommitAsync();
+                //await _context.Devices.AddAsync(device);
+                //await _context.SaveChangesAsync();
                 _memCache.Set(uuid, device);
             }
 
@@ -176,7 +184,8 @@
                 if (device.LastHost != ipAddr)
                 {
                     device.LastHost = ipAddr;
-                    await SetEntityAsync(device.Uuid, device);
+                    //await SetEntityAsync(device.Uuid, device);
+                    await _uow.CommitAsync();
                 }
             }
             return new DeviceResponse
@@ -206,7 +215,8 @@
             Account? account = null;
             if (string.IsNullOrEmpty(device.AccountUsername))
             {
-                var devices = _context.Devices.ToList();
+                //var devices = _context.Devices.ToList();
+                var devices = await _uow.Devices.FindAllAsync();
                 var inUseAccounts = devices
                     .Where(d => !string.IsNullOrEmpty(d.AccountUsername))
                     .OrderBy(d => d.LastSeen)
@@ -214,7 +224,8 @@
                     .ToList();
 
                 // Get new account between min/max level and not in inUseAccount list
-                account = _context.GetNewAccount(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts!);
+                //account = _context.GetNewAccount(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts!);
+                account = await GetNewAccountAsync(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts!);
 
                 _logger.LogDebug($"[{device.Uuid}] GetNewAccount '{account?.Username}'");
                 if (account == null)
@@ -224,15 +235,18 @@
                 }
 
                 device.AccountUsername = account.Username;
-                await SetEntityAsync(device.Uuid, device);
+                //await SetEntityAsync(device.Uuid, device);
+                await _uow.Devices.UpdateAsync(device);
+                await _uow.CommitAsync();
             }
             else
             {
-                account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
+                //account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
+                account = await _uow.Accounts.FindByIdAsync(device.AccountUsername);
                 if (account == null)
                 {
                     // Failed to get account
-                    return CreateErrorResponse($"[{device.Uuid}] Failed to retrieve device's assigned account from database");
+                    return CreateErrorResponse($"[{device.Uuid}] Failed to retrieve account assigned to device from database");
                 }
 
                 _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}'");
@@ -242,7 +256,9 @@
 
                     // Current account does not meet requirements
                     device.AccountUsername = null;
-                    await SetEntityAsync(device.Uuid, device);
+                    //await SetEntityAsync(device.Uuid, device);
+                    await _uow.Devices.UpdateAsync(device);
+                    await _uow.CommitAsync();
 
                     // Remove account from cache
                     _memCache.Unset<string, Account>(account.Username);
@@ -257,7 +273,10 @@
                     _logger.LogDebug($"[{device.Uuid}] Pending manual account switch, reverting flag to prevent loop.");
 
                     device.IsPendingAccountSwitch = false;
-                    await SetEntityAsync(device.Uuid, device, skipCache: false);
+                    //await SetEntityAsync(device.Uuid, device, skipCache: false);
+                    await _uow.Devices.UpdateAsync(device);
+                    await _uow.CommitAsync();
+                    _memCache.Set(device.Uuid, device);
                 }
             }
 
@@ -308,11 +327,13 @@
             if (!string.IsNullOrEmpty(username))
             {
                 // Get account by username from request payload
-                account = await GetEntityAsync<string, Account>(_context, username);
+                //account = await GetEntityAsync<string, Account>(_context, username);
+                account = await _uow.Accounts.FindByIdAsync(username);
                 if (account == null)
                 {
                     // Unable to find account based on payload username, look for device's assigned account username instead
-                    account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
+                    //account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
+                    account = await _uow.Accounts.FindByIdAsync(device.AccountUsername);
                     if (account == null)
                     {
                         _logger.LogError($"[{device.Uuid}] Failed to lookup account {username} and {device.AccountUsername} in database, switching accounts...");
@@ -352,11 +373,12 @@
             // Check if device is assigned an account username
             if (string.IsNullOrEmpty(username))
             {
-                return CreateErrorResponse($"[{uuid}] Device is not assigned an account!");
+                return CreateErrorResponse($"[{uuid}] Device is not assigned to an account!");
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var account = await GetEntityAsync<string, Account>(_context, username);
+            //var account = await GetEntityAsync<string, Account>(_context, username);
+            var account = await _uow.Accounts.FindByIdAsync(username);
             if (account == null)
             {
                 return CreateErrorResponse($"Failed to retrieve account with username '{username}'");
@@ -404,7 +426,10 @@
                 _logger.LogInformation($"Status changed for account '{account.Username}' from '{oldStatus}' to '{account.Status}'.");
             }
 
-            await SetEntityAsync(account.Username, account, skipCache: false);
+            //await SetEntityAsync(account.Username, account, skipCache: false);
+            await _uow.Accounts.UpdateAsync(account);
+            await _uow.CommitAsync();
+            _memCache.Set(account.Username, account);
 
             return new DeviceResponse
             {
@@ -414,7 +439,8 @@
 
         private async Task<DeviceResponse> HandleTutorialStatusRequestAsync(string? username)
         {
-            var account = await GetEntityAsync<string, Account>(_context, username);
+            //var account = await GetEntityAsync<string, Account>(_context, username);
+            var account = await _uow.Accounts.FindByIdAsync(username);
             if (string.IsNullOrEmpty(username) || account == null)
             {
                 return CreateErrorResponse("Failed to get account.");
@@ -425,7 +451,10 @@
             }
             account.Tutorial = 1;
 
-            await SetEntityAsync(account.Username, account, skipCache: false);
+            //await SetEntityAsync(account.Username, account, skipCache: false);
+            await _uow.Accounts.UpdateAsync(account);
+            await _uow.CommitAsync();
+            _memCache.Set(account.Username, account);
 
             return new DeviceResponse
             {
@@ -459,7 +488,10 @@
             // otherwise this will lead to a continuous loop
             if (!device.IsPendingAccountSwitch)
             {
-                await SetEntityAsync(device.Uuid, device, skipCache: false);
+                //await SetEntityAsync(device.Uuid, device, skipCache: false);
+                await _uow.Devices.UpdateAsync(device);
+                await _uow.CommitAsync();
+                _memCache.Set(device.Uuid, device);
             }
 
             return new DeviceResponse
@@ -507,36 +539,56 @@
 
         #region Helper Methods
 
-        private async Task<TEntity?> GetEntityAsync<TKey, TEntity>(ControllerDbContext context, TKey? key, bool skipCache = true)
-            where TEntity : class
+        private async Task<Account?> GetNewAccountAsync(ushort minLevel, ushort maxLevel, uint maxSpins = 3500, IReadOnlyList<string>? accountsInUse = null)
         {
-            if (key == null)
-            {
-                return default;
-            }
-
-            TEntity? entity = null;
-            if (!skipCache)
-            {
-                entity = _memCache.Get<TKey, TEntity>(key);
-            }
-
-            entity ??= await context.Set<TEntity>().FindAsync(key);
-            return entity;
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            var accounts = await _uow.Accounts.FindAsync(x =>
+                x.Level >= minLevel && x.Level <= maxLevel &&
+                string.IsNullOrEmpty(x.Failed) &&
+                x.Spins < maxSpins &&
+                x.LastEncounterTime == null &&
+                (x.LastUsedTimestamp == null || (x.LastUsedTimestamp > 0 && now - x.LastUsedTimestamp >= LastUsedM)) &&
+                x.FirstWarningTimestamp == null &&
+                (x.HasWarn == null || !(x.HasWarn ?? false)) &&
+                (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
+                x.IsBanned == null &&
+                !((accountsInUse ?? new List<string>()).Contains(x.Username.ToLower()))
+            );
+            var account = accounts.FirstOrDefault();
+            return account;
         }
 
-        private async Task SetEntityAsync<TKey, TEntity>(TKey key, TEntity entity, bool skipCache = true)
-            where TEntity : class
-        {
-            _context.Set<TEntity>().Update(entity);
-            await _context.SaveChangesAsync();
+        //private async Task<TEntity?> GetEntityAsync<TKey, TEntity>(ControllerDbContext context, TKey? key, bool skipCache = true)
+        //    where TEntity : class
+        //{
+        //    if (key == null)
+        //    {
+        //        return default;
+        //    }
 
-            if (!skipCache)
-            {
-                // Update entity in cache
-                _memCache.Set(key, entity);
-            }
-        }
+        //    TEntity? entity = null;
+        //    if (!skipCache)
+        //    {
+        //        entity = _memCache.Get<TKey, TEntity>(key);
+        //    }
+
+        //    entity ??= await context.Set<TEntity>().FindAsync(key);
+        //    return entity;
+        //}
+
+        //private async Task SetEntityAsync<TKey, TEntity>(TKey key, TEntity entity, bool skipCache = true)
+        //    where TEntity : class
+        //{
+        //    //_context.Set<TEntity>().Update(entity);
+        //    //await _context.SaveChangesAsync();
+        //    await _uow.CommitAsync();
+
+        //    if (!skipCache)
+        //    {
+        //        // Update entity in cache
+        //        _memCache.Set(key, entity);
+        //    }
+        //}
 
         #endregion
     }

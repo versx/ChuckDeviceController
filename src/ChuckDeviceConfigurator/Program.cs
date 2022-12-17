@@ -28,6 +28,7 @@ using ChuckDeviceController.Authorization.Jwt.Middleware;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.Logging;
@@ -212,6 +213,11 @@ builder.Services.AddDbContextPool<MapDbContext>(options =>
 var sqliteConnectionString = $"Data Source={Strings.PluginsDatabasePath}";
 builder.Services.AddDbContextFactory<PluginDbContext>(options =>
     options.UseSqlite(sqliteConnectionString), ServiceLifetime.Singleton);
+
+//builder.Services.AddDbContext<ControllerDbContext>(options =>
+//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork<ControllerDbContext>>();
+//builder.Services.AddScoped<IUnitOfWork, UnitOfWork<MapDbContext>>();
 
 #endregion
 

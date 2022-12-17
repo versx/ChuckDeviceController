@@ -1,19 +1,51 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
-    // TODO: Finish IUnitOfWork repository pattern impl
+    using Microsoft.EntityFrameworkCore.Storage;
 
-    public interface IUnitOfWork
+    using ChuckDeviceController.Data.Entities;
+
+    public interface IUnitOfWork : IDisposable
     {
-        IEntityDataRepository Accounts { get; }
+        #region Properties
 
-        IEntityDataRepository Assignments { get; }
+        IGenericEntityRepository<Account> Accounts { get; }
 
-        IEntityDataRepository AssignmentGroups { get; }
+        IGenericEntityRepository<ApiKey> ApiKeys { get; }
 
-        IEntityDataRepository Devices { get; }
+        IGenericEntityRepository<Assignment> Assignments { get; }
 
-        IEntityDataRepository DeviceGroups { get; }
+        IGenericEntityRepository<AssignmentGroup> AssignmentGroups { get; }
 
-        // etc ...
+        IGenericEntityRepository<Device> Devices { get; }
+
+        IGenericEntityRepository<DeviceGroup> DeviceGroups { get; }
+
+        IGenericEntityRepository<Geofence> Geofences { get; }
+
+        IGenericEntityRepository<Instance> Instances { get; }
+
+        IGenericEntityRepository<IvList> IvLists { get; }
+
+        IGenericEntityRepository<Webhook> Webhooks { get; }
+
+        IDbContextTransaction? Transaction { get; }
+
+        #endregion
+
+        #region Methods
+
+        IDbContextTransaction BeginTransaction();
+
+        Task<IDbContextTransaction> BeginTransactionAsync();
+
+        bool Commit();
+
+        Task<bool> CommitAsync();
+
+        void Rollback();
+
+        Task RollbackAsync();
+
+        #endregion
     }
 }
