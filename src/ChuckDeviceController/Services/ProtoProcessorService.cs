@@ -371,7 +371,9 @@
                                 data = ggi,
                             });
 
-                            // TODO: Add ProcessGymDefenders and ProcessGymTrainers option to ProcessingOptions.Protos config
+                            if (!Options.ProcessGymDefenders && !Options.ProcessGymTrainers)
+                                continue;
+
                             if (ggi.GymStatusAndDefenders == null)
                             {
                                 _logger.LogWarning($"Invalid GymStatusAndDefenders provided, skipping...\n: {ggi}");
@@ -384,7 +386,7 @@
 
                             foreach (var gymDefender in gymDefenders)
                             {
-                                if (gymDefender.TrainerPublicProfile != null)
+                                if (Options.ProcessGymTrainers && gymDefender.TrainerPublicProfile != null)
                                 {
                                     processedProtos.Add(new
                                     {
@@ -392,7 +394,7 @@
                                         data = gymDefender.TrainerPublicProfile,
                                     });
                                 }
-                                if (gymDefender.MotivatedPokemon != null)
+                                if (Options.ProcessGymDefenders && gymDefender.MotivatedPokemon != null)
                                 {
                                     processedProtos.Add(new
                                     {

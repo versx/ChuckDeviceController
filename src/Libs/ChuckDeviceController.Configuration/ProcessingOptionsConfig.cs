@@ -43,6 +43,10 @@
 
         public bool ProcessMapPokemon { get; set; } = true;
 
+        public bool ProcessGymDefenders { get; set; } = true;
+
+        public bool ProcessGymTrainers { get; set; } = true;
+
         public ProcessingQueueConfig Queue { get; set; } = new();
 
         public ushort IntervalS { get; set; } = DefaultIntervalS;
