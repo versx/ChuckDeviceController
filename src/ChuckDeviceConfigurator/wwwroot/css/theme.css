@@ -67,3 +67,9 @@
     color: white;
     text-align: center;
 }
+
+/* Sidebar collapse toggler */
+.theme-dark #sidebarCollapse {
+    background-color: rgb(64, 64, 64);
+    color: white;
+}

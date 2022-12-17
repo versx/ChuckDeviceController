@@ -1,0 +1,40 @@
+﻿<div class="form-floating mb-3">
+    <select id="SelectedGroup" name="SelectedGroup" class="form-control" onChange="onAccountGroupChange(this);">
+        @if (string.IsNullOrEmpty(ViewBag.SelectedGroup))
+        {
+            <option value="" selected>All</option>
+        }
+        else
+        {
+            <option value="">All</option>
+        }
+        @if (ViewBag.SelectedGroup == "all_groups")
+        {
+            <option value="all_groups" selected>All Groups</option>
+        }
+        else
+        {
+            <option value="all_groups">All Groups</option>
+        }
+        @if (ViewBag.SelectedGroup == "no_groups")
+        {
+            <option value="no_groups" selected>No Groups</option>
+        }
+        else
+        {
+            <option value="no_groups">No Groups</option>
+        }
+        @foreach (var groupName in ViewBag.AccountGroups)
+        {
+            if (ViewBag.SelectedGroup == groupName)
+            {
+                <option value="@groupName" selected>@groupName</option>
+            }
+            else
+            {
+                <option value="@groupName">@groupName</option>
+            }
+        }
+    </select>
+    <label>Account Group Filtering:</label>
+</div>
