@@ -18,7 +18,7 @@ namespace RequestBenchmarkPlugin
     {
         public const string RequestBenchmarkRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},RequestBenchmark";
 
-        private const string DbName = "timing";
+        private const string DbName = "timings";
 
         private readonly IUiHost _uiHost;
 
