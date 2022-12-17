@@ -101,7 +101,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.JobCo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniProfilerPlugin", "Plugins\MiniProfilerPlugin\MiniProfilerPlugin.csproj", "{BFC6F221-4611-4F44-9672-2867DE5F4F10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecksPlugin", "Plugins\HealthChecksPlugin\HealthChecksPlugin.csproj", "{77D319A1-4FDD-42BB-AEC1-190B5822A632}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HealthChecksPlugin", "Plugins\HealthChecksPlugin\HealthChecksPlugin.csproj", "{77D319A1-4FDD-42BB-AEC1-190B5822A632}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

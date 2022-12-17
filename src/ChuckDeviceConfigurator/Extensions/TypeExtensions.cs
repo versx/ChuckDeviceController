@@ -49,6 +49,7 @@
                 // Failed to find 'GeofenceTypeAttribute' for job controller
                 return null;
             }
+
             switch (attr?.Type)
             {
                 case GeofenceType.Circle:

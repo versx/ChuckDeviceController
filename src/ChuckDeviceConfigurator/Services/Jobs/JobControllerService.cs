@@ -173,33 +173,32 @@
                 MinimumLevel = options.MinimumLevel,
                 MaximumLevel = options.MaximumLevel,
                 Geofences = options.Geofences,
-                Data = new InstanceData
-                {
-                    AccountGroup = options.Data.AccountGroup,
-                    IsEvent = options.Data.IsEvent,
-                    CustomInstanceType = options.Data.CustomInstanceType,
-                    // TODO: Allow for custom InstanceData properties from plugins
-                    // Maybe register the properties via the 'host' and keep track via dict like SettingsHost does ...
-                    // Load InstanceData properties from plugins as well as instances into a dictionary, loop properties for Create/Edit views. :thinking:
-                    // Sounds terrible... low priority
-                },
+                Data = (InstanceData)options.Data,
+                //Data = new InstanceData
+                //{
+                //    AccountGroup = options.Data.AccountGroup,
+                //    IsEvent = options.Data.IsEvent,
+                //    CustomInstanceType = options.Data.CustomInstanceType,
+                //    // TODO: Allow for custom InstanceData properties from plugins
+                //    // Maybe register the properties via the 'host' and keep track via dict like SettingsHost does ...
+                //    // Load InstanceData properties from plugins as well as instances into a dictionary, loop properties for Create/Edit views. :thinking:
+                //    // Sounds terrible... low priority
+                //},
             };
 
-            using (var context = _deviceFactory.CreateDbContext())
+            using var context = _deviceFactory.CreateDbContext();
+            await context.Instances.SingleMergeAsync(instance, options =>
             {
-                await context.Instances.SingleMergeAsync(instance, options =>
+                options.UseTableLock = true;
+                options.OnMergeUpdateInputExpression = p => new
                 {
-                    options.UseTableLock = true;
-                    options.OnMergeUpdateInputExpression = p => new
-                    {
-                        p.Type,
-                        p.MinimumLevel,
-                        p.MaximumLevel,
-                        p.Geofences,
-                        p.Data,
-                    };
-                });
-            }
+                    p.Type,
+                    p.MinimumLevel,
+                    p.MaximumLevel,
+                    p.Geofences,
+                    p.Data,
+                };
+            });
 
             await AddInstanceAsync(instance);
         }
@@ -536,8 +535,6 @@
         #endregion
 
         #region Receivers
-
-        // TODO: Move to separate class, expose as property in JobControllerService
 
         public void GotPokemon(Pokemon pokemon, bool hasIv)
         {

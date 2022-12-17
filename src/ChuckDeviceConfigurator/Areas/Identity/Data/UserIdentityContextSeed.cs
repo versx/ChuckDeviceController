@@ -20,26 +20,27 @@
                     EmailConfirmed = true,
                     PhoneNumberConfirmed = true,
                 };
-                if (userManager.Users.All(u => u.Id != defaultUser.Id))
-                {
-                    var user = await userManager.FindByNameAsync(defaultUser.UserName);
-                    if (user == null)
-                    {
-                        await userManager.CreateAsync(defaultUser, Strings.DefaultUserPassword);
-                        await userManager.AddToRolesAsync(defaultUser, new[]
-                        {
-                            Roles.Registered.ToString(),
-                            Roles.Admin.ToString(),
-                            Roles.SuperAdmin.ToString()
-                        });
+                // Check if root account already seeded, skip
+                if (userManager.Users.Any(u => u.UserName == defaultUser.UserName))
+                    return;
 
-                        if (!await userManager.IsInRoleAsync(defaultUser, Roles.Registered.ToString()) ||
-                            !await userManager.IsInRoleAsync(defaultUser, Roles.Admin.ToString()) ||
-                            !await userManager.IsInRoleAsync(defaultUser, Roles.SuperAdmin.ToString()))
-                        {
-                            Console.WriteLine($"FAILURE: An error occurred while assigning the default user account with necessary roles!");
-                        }
-                    }
+                var user = await userManager.FindByNameAsync(defaultUser.UserName);
+                if (user != null)
+                    return;
+
+                await userManager.CreateAsync(defaultUser, Strings.DefaultUserPassword);
+                await userManager.AddToRolesAsync(defaultUser, new[]
+                {
+                    Roles.Registered.ToString(),
+                    Roles.Admin.ToString(),
+                    Roles.SuperAdmin.ToString()
+                });
+
+                if (!await userManager.IsInRoleAsync(defaultUser, Roles.Registered.ToString()) ||
+                    !await userManager.IsInRoleAsync(defaultUser, Roles.Admin.ToString()) ||
+                    !await userManager.IsInRoleAsync(defaultUser, Roles.SuperAdmin.ToString()))
+                {
+                    Console.WriteLine($"FAILURE: An error occurred while assigning the default user account with necessary roles!");
                 }
             }
             catch (Exception ex)
@@ -57,11 +58,11 @@
                 // Seed Roles
                 foreach (var permission in Enum.GetNames<Roles>())
                 {
-                    if (!roleManager.Roles.Any(role => role.Name == permission.ToString()))
-                    {
-                        Console.WriteLine($"Role '{permission}' does not exist, inserting into database...");
-                        await roleManager.CreateAsync(new IdentityRole(permission));
-                    }
+                    if (roleManager.Roles.Any(role => role.Name == permission.ToString()))
+                        continue;
+
+                    Console.WriteLine($"Role '{permission}' does not exist, inserting into database...");
+                    await roleManager.CreateAsync(new IdentityRole(permission));
                 }
             }
             catch (Exception ex)

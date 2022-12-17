@@ -486,8 +486,6 @@ async Task SeedDefaultDataAsync(IServiceProvider serviceProvider)
             await serviceProvider.MigrateDatabaseAsync<ControllerDbContext>();
         }
 
-        // TODO: Add database meta, local file, or something to determine if default entities have been seeded
-
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 

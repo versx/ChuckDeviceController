@@ -11,7 +11,7 @@
      * existing instance the UI will display the previous value instead of using the default,
      * which is fine. :)
     */
-    public class InstanceData : IInstanceData
+    public class InstanceData : Dictionary<string, object>, IInstanceData
     {
         #region Pokemon Circle Instance
         [

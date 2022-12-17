@@ -15,7 +15,7 @@
         IInstanceData Data { get; }
     }
 
-    public interface IInstanceData //: IDictionary<string, object>
+    public interface IInstanceData : IDictionary<string, object>
     {
         string? CustomInstanceType { get; }
 
