@@ -18,7 +18,7 @@ SET depsFileExt=.deps.json
 :: TODO: Copy all dependency files other than ChuckDeviceController.* libraries
 
 if not exist "%pluginFolder%/appsettings.json" (
-  xcopy /Y "%targetDir%/appsettings.json" "%pluginFolder%/appsettings.json"
+  echo f | xcopy /Y /F "%targetDir%/appsettings.json" "%pluginFolder%/appsettings.json"
 )
 
 :: Copy all directories from plugin build output folder
