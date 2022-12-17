@@ -1,18 +1,18 @@
 ﻿namespace ChuckDeviceController.Extensions.Http.Caching
 {
+    using System.Collections.Concurrent;
+
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
-
-    // TODO: Clear method
 
     public class GenericMemoryCacheHostedService : BackgroundService, IMemoryCacheHostedService
     {
         #region Variables
 
         private readonly ILogger<IMemoryCacheHostedService> _logger;
-        private readonly Dictionary<string, IMemoryCache> _memCache = new();
+        private readonly ConcurrentDictionary<string, IMemoryCache> _memCache = new();
         private readonly EntityMemoryCacheConfig _options;
         private readonly TimeSpan _defaultEntityExpiry;
 
@@ -86,6 +86,22 @@
                 value = memCache.TryGetValue<TEntity>(key, out var _);
             }
             return value;
+        }
+
+        public bool Clear<TEntity>()
+        {
+            var name = typeof(TEntity).Name;
+            if (_memCache.TryGetValue(name, out IMemoryCache? value))
+            {
+                value?.Dispose();
+                _memCache.Remove(name, out var _);
+
+                var cache = new EntityMemoryCache(_options);
+                _memCache.AddOrUpdate(name, cache, (key, oldValue) => cache);
+
+                return true;
+            }
+            return false;
         }
 
         #endregion

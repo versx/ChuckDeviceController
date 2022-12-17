@@ -9,5 +9,7 @@
         void Unset<TKey, TEntity>(TKey key);
 
         bool IsSet<TKey, TEntity>(TKey key);
+
+        bool Clear<TEntity>();
     }
 }
