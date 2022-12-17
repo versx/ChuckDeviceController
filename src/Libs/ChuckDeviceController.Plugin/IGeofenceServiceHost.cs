@@ -18,6 +18,13 @@
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        Task<IGeofence> GetGeofenceAsync(string name);
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="coord"></param>
         /// <param name="multiPolygons"></param>
         /// <returns></returns>

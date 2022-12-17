@@ -10,8 +10,6 @@
     using ChuckDeviceController.Geometry.Models.Contracts;
     using ChuckDeviceController.Plugin;
 
-    // TODO: Retrieve geofence by name
-
     public class GeofenceServiceHost : IGeofenceServiceHost
     {
         private static readonly ILogger<IGeofenceServiceHost> _logger =
@@ -25,37 +23,42 @@
 
         public async Task CreateGeofenceAsync(IGeofence options)
         {
-            using (var context = DbContextFactory.CreateControllerContext(_connectionString))
+            using var context = DbContextFactory.CreateControllerContext(_connectionString);
+            /* TODO: Either keep this conditional check and create a separate Update method or remove it and reuse the same method
+            if (context.Geofences.Any(g => g.Name == options.Name))
             {
-                /* TODO: Either keep this conditional check and create a separate Update method or remove it and reuse the same method
-                if (context.Geofences.Any(g => g.Name == options.Name))
-                {
-                    _logger.LogError($"Geofence already exists with name '{options.Name}', failed to create geofence.");
-                    return;
-                }
-                */
-
-                var geofence = new Geofence
-                {
-                    Name = options.Name,
-                    Type = options.Type,
-                    Data = new GeofenceData
-                    {
-                        Area = options.Data?.Area,
-                    },
-                };
-
-                // TODO: Use Dapper or vanilla EfCore
-                await context.SingleMergeAsync(geofence, options =>
-                {
-                    options.UseTableLock = true;
-                    options.OnMergeUpdateInputExpression = p => new
-                    {
-                        p.Type,
-                        p.Data,
-                    };
-                });
+                _logger.LogError($"Geofence already exists with name '{options.Name}', failed to create geofence.");
+                return;
             }
+            */
+
+            var geofence = new Geofence
+            {
+                Name = options.Name,
+                Type = options.Type,
+                Data = new GeofenceData
+                {
+                    Area = options.Data?.Area,
+                },
+            };
+
+            // TODO: Use Dapper or vanilla EfCore
+            await context.SingleMergeAsync(geofence, options =>
+            {
+                options.UseTableLock = true;
+                options.OnMergeUpdateInputExpression = p => new
+                {
+                    p.Type,
+                    p.Data,
+                };
+            });
+        }
+
+        public async Task<IGeofence> GetGeofenceAsync(string name)
+        {
+            using var context = DbContextFactory.CreateControllerContext(_connectionString);
+            var geofence = await context.Geofences.FindAsync(name);
+            return geofence;
         }
 
         public bool IsPointInMultiPolygons(ICoordinate coord, IEnumerable<IMultiPolygon> multiPolygons)
