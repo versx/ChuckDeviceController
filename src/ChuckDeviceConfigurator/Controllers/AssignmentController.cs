@@ -9,52 +9,52 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
 
     [Authorize(Roles = RoleConsts.AssignmentsRole)]
     public class AssignmentController : Controller
     {
         private readonly ILogger<AssignmentController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentController(
             ILogger<AssignmentController> logger,
-            ControllerDbContext controllerContext,
+            IUnitOfWork uow,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;
-            _context = controllerContext;
+            _uow = uow;
             _assignmentService = assignmentService;
         }
 
         // GET: AssignmentController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var assignments = _context.Assignments.ToList();
+            var assignments = await _uow.Assignments.FindAllAsync();
             // Include instance type for removing Re-Quest button
-            var questInstances = _context.Instances.Where(x => x.Type == InstanceType.AutoQuest)
-                                                   .Select(x => x.Name)
-                                                   .ToList();
+            var questInstances = (await _uow.Instances.FindAsync(x => x.Type == InstanceType.AutoQuest))
+                .Select(x => x.Name)
+                .ToList();
             ViewBag.QuestInstances = questInstances;
             return View(new ViewModelsModel<Assignment>
             {
-                Items = assignments,
+                Items = assignments.ToList(),
             });
         }
 
         // GET: AssignmentController/Details/5
         public async Task<ActionResult> Details(uint id)
         {
-            var assignment = await _context.Assignments.FindAsync(id);
+            var assignment = await _uow.Assignments.FindByIdAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
                 ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
                 return View();
             }
-            var instance = await _context.Instances.FindAsync(assignment.InstanceName);
+            var instance = await _uow.Instances.FindByIdAsync(assignment.InstanceName);
             if (instance == null)
             {
                 _logger.LogWarning($"Failed to retrieve instance with name '{assignment.InstanceName}' for assignment '{id}'.");
@@ -64,10 +64,10 @@
         }
 
         // GET: AssignmentController/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
-            var instances = _context.Instances.ToList();
-            var devicesAndDeviceGroups = BuildDevicesSelectList();
+            var instances = await _uow.Instances.FindAllAsync();
+            var devicesAndDeviceGroups = await BuildDevicesSelectListAsync();
 
             ViewBag.Devices = devicesAndDeviceGroups;
             ViewBag.Instances = instances;
@@ -100,7 +100,7 @@
                 var createOnComplete = collection["OnComplete"].Contains("true");
                 var enabled = collection["Enabled"].Contains("true");
 
-                if (_context.Assignments.Any(a =>
+                if (_uow.Assignments.Any(a =>
                     a.DeviceUuid == uuid &&
                     a.DeviceGroupName == deviceGroupName &&
                     a.InstanceName == instanceName &&
@@ -125,7 +125,7 @@
                     Time = timeValue,
                     Enabled = enabled,
                 };
-                await _context.AddAsync(assignment);
+                await _uow.Assignments.AddAsync(assignment);
 
                 if (createOnComplete)
                 {
@@ -140,10 +140,10 @@
                         Time = 0,
                         Enabled = enabled,
                     };
-                    await _context.AddAsync(completeAssignment);
+                    await _uow.Assignments.AddAsync(completeAssignment);
                 }
 
-                await _context.SaveChangesAsync();
+                await _uow.CommitAsync();
 
                 _assignmentService.Add(assignment);
 
@@ -159,7 +159,7 @@
         // GET: AssignmentController/Edit/5
         public async Task<ActionResult> Edit(uint id)
         {
-            var assignment = await _context.Assignments.FindAsync(id);
+            var assignment = await _uow.Assignments.FindByIdAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
@@ -167,8 +167,8 @@
                 return View();
             }
 
-            var devices = BuildDevicesSelectList(assignment);
-            var instances = _context.Instances.ToList();
+            var devices = await BuildDevicesSelectListAsync(assignment);
+            var instances = await _uow.Instances.FindAllAsync();
 
             ViewBag.Devices = devices;
             ViewBag.Instances = instances;
@@ -182,7 +182,7 @@
         {
             try
             {
-                var assignment = await _context.Assignments.FindAsync(id);
+                var assignment = await _uow.Assignments.FindByIdAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve assignment from database, does it exist?
@@ -208,7 +208,7 @@
                 var timeValue = GetTimeNumeric(time);
                 var enabled = collection["Enabled"].Contains("on");
 
-                if (_context.Assignments.Any(a =>
+                if (_uow.Assignments.Any(a =>
                     a.DeviceUuid == uuid &&
                     a.DeviceGroupName == deviceGroupName &&
                     a.InstanceName == instanceName &&
@@ -231,8 +231,8 @@
                 assignment.Time = timeValue;
                 assignment.Enabled = enabled;
 
-                _context.Assignments.Update(assignment);
-                await _context.SaveChangesAsync();
+                await _uow.Assignments.UpdateAsync(assignment);
+                await _uow.CommitAsync();
 
                 _assignmentService.Edit(assignment, id);
 
@@ -248,7 +248,7 @@
         // GET: AssignmentController/Delete/5
         public async Task<ActionResult> Delete(uint id)
         {
-            var assignment = await _context.Assignments.FindAsync(id);
+            var assignment = await _uow.Assignments.FindByIdAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
@@ -265,7 +265,7 @@
         {
             try
             {
-                var assignment = await _context.Assignments.FindAsync(id);
+                var assignment = await _uow.Assignments.FindByIdAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve geofence from database, does it exist?
@@ -274,8 +274,8 @@
                 }
 
                 // Delete assignment from database
-                _context.Assignments.Remove(assignment);
-                await _context.SaveChangesAsync();
+                await _uow.Assignments.RemoveAsync(assignment);
+                await _uow.CommitAsync();
 
                 _assignmentService.Delete(assignment);
 
@@ -294,8 +294,9 @@
         {
             try
             {
-                _context.Assignments.RemoveRange(_context.Assignments);
-                await _context.SaveChangesAsync();
+                var assignments = await _uow.Assignments.FindAllAsync();
+                _uow.Assignments.RemoveRange(assignments);
+                await _uow.CommitAsync();
 
                 // Reload assignments in the assignment service to reflect the changes.
                 _assignmentService.Reload();
@@ -314,7 +315,7 @@
         {
             try
             {
-                var assignment = await _context.Assignments.FindAsync(id);
+                var assignment = await _uow.Assignments.FindByIdAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve assignment from database, does it exist?
@@ -339,7 +340,7 @@
         {
             try
             {
-                var assignment = await _context.Assignments.FindAsync(id);
+                var assignment = await _uow.Assignments.FindByIdAsync(id);
                 if (assignment == null)
                 {
                     // Failed to retrieve assignment from database, does it exist?
@@ -363,7 +364,7 @@
         public async Task<ActionResult> ClearQuests(uint id)
         {
             // Clear quests for assignment
-            var assignment = await _context.Assignments.FindAsync(id);
+            var assignment = await _uow.Assignments.FindByIdAsync(id);
             if (assignment == null)
             {
                 // Failed to retrieve assignment from database, does it exist?
@@ -406,10 +407,10 @@
             return value;
         }
 
-        private List<SelectListItem> BuildDevicesSelectList(Assignment? assignment = null)
+        private async Task<List<SelectListItem>> BuildDevicesSelectListAsync(Assignment? assignment = null)
         {
-            var devices = _context.Devices.ToList();
-            var deviceGroups = _context.DeviceGroups.ToList();
+            var devices = await _uow.Devices.FindAllAsync();
+            var deviceGroups = await _uow.DeviceGroups.FindAllAsync();
             var selectedDevice = assignment?.DeviceUuid;
             var selectedDeviceGroup = assignment?.DeviceGroupName;
 
@@ -417,7 +418,7 @@
             var devicesGroup = new SelectListGroup { Name = "Devices" };
             var deviceGroupsGroup = new SelectListGroup { Name = "Device Groups" };
 
-            devices.ForEach(device =>
+            devices.ToList().ForEach(device =>
             {
                 devicesAndDeviceGroups.Add(new SelectListItem
                 {
@@ -427,7 +428,7 @@
                     Group = devicesGroup,
                 });
             });
-            deviceGroups.ForEach(deviceGroup =>
+            deviceGroups.ToList().ForEach(deviceGroup =>
             {
                 devicesAndDeviceGroups.Add(new SelectListItem
                 {

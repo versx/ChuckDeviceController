@@ -3,13 +3,12 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.EntityFrameworkCore;
 
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
 
     //[FormatFilter]
@@ -17,14 +16,15 @@
     public class AccountController : Controller
     {
         private readonly ILogger<AccountController> _logger;
-        private readonly ControllerDbContext _context;
+        //private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
 
         public AccountController(
             ILogger<AccountController> logger,
-            ControllerDbContext context)
+            IUnitOfWork uow)
         {
             _logger = logger;
-            _context = context;
+            _uow = uow;
         }
 
         /*
@@ -42,7 +42,7 @@
         {
             var onlyGroups = accountGroup == "all_groups";
             var onlyNoGroups = accountGroup == "no_groups";
-            var allAccounts = await _context.Accounts.ToListAsync();
+            var allAccounts = await _uow.Accounts.FindAllAsync();
             var accounts = allAccounts
                 .Where(x =>
                     // All accounts with and without groups
@@ -55,8 +55,8 @@
                     (!string.IsNullOrEmpty(x.GroupName) && accountGroup == x.GroupName)
                 )
                 .ToList();
-            var devices = await _context.Devices.ToListAsync();
-
+            //var devices = await _uow.Devices.FindAllAsync();
+            var devices = await _uow.Devices.FindAsync(x => x.AccountUsername != null);
             var accountsInUse = devices
                 .Where(device => device.AccountUsername != null)
                 .Select(device => device.AccountUsername)
@@ -149,7 +149,7 @@
         {
             var onlyGroups = accountGroup == "all_groups";
             var onlyNoGroups = accountGroup == "no_groups";
-            var allAccounts = await _context.Accounts.ToListAsync();
+            var allAccounts = await _uow.Accounts.FindAllAsync();
             var accounts = allAccounts
                 .Where(x =>
                     // All accounts with and without groups
@@ -199,7 +199,7 @@
         // GET: AccountController/Details/5
         public async Task<ActionResult> Details(string id)
         {
-            var account = await _context.Accounts.FindAsync(id);
+            var account = await _uow.Accounts.FindByIdAsync(id);
             if (account == null)
             {
                 // Failed to retrieve account from database, does it exist?
@@ -253,7 +253,7 @@
                     var username = split[0];
                     var password = split[1];
 
-                    if (_context.Accounts.Any(acc => acc.Username == username))
+                    if (_uow.Accounts.Any(acc => acc.Username == username))
                     {
                         // Already exists, skip - or update? (TODO: Inform user)
                         continue;
@@ -269,8 +269,8 @@
                             : group,
                     };
 
-                    await _context.Accounts.AddAsync(account);
-                    await _context.SaveChangesAsync();
+                    await _uow.Accounts.AddAsync(account);
+                    await _uow.CommitAsync();
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -284,7 +284,7 @@
         // GET: AccountController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
-            var account = await _context.Accounts.FindAsync(id);
+            var account = await _uow.Accounts.FindByIdAsync(id);
             if (account == null)
             {
                 // Failed to retrieve account from database, does it exist?
@@ -301,7 +301,7 @@
         {
             try
             {
-                var account = await _context.Accounts.FindAsync(id);
+                var account = await _uow.Accounts.FindByIdAsync(id);
                 if (account == null)
                 {
                     // Failed to retrieve account from database, does it exist?
@@ -323,8 +323,8 @@
                 account.GroupName = string.IsNullOrEmpty(group)
                     ? null
                     : group;
-                _context.Update(account);
-                await _context.SaveChangesAsync();
+                await _uow.Accounts.UpdateAsync(account);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -338,7 +338,7 @@
         // GET: AccountController/Delete/5
         public async Task<ActionResult> Delete(string id)
         {
-            var account = await _context.Accounts.FindAsync(id);
+            var account = await _uow.Accounts.FindByIdAsync(id);
             if (account == null)
             {
                 // Failed to retrieve account from database, does it exist?
@@ -355,7 +355,7 @@
         {
             try
             {
-                var account = await _context.Accounts.FindAsync(id);
+                var account = await _uow.Accounts.FindByIdAsync(id);
                 if (account == null)
                 {
                     // Failed to retrieve account from database, does it exist?
@@ -364,8 +364,8 @@
                 }
 
                 // Delete account from database
-                _context.Accounts.Remove(account);
-                await _context.SaveChangesAsync();
+                await _uow.Accounts.RemoveAsync(account);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }

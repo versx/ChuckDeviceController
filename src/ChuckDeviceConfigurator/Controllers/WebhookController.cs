@@ -8,40 +8,40 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
 
     [Authorize(Roles = RoleConsts.WebhooksRole)]
     public class WebhookController : Controller
     {
         private readonly ILogger<WebhookController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IWebhookControllerService _webhookService;
 
         public WebhookController(
             ILogger<WebhookController> logger,
-            ControllerDbContext context,
+            IUnitOfWork uow,
             IWebhookControllerService webhookService)
         {
             _logger = logger;
-            _context = context;
+            _uow = uow;
             _webhookService = webhookService;
         }
 
         // GET: WebhookController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var webhooks = _context.Webhooks.ToList();
+            var webhooks = await _uow.Webhooks.FindAllAsync();
             return View(new ViewModelsModel<Webhook>
             {
-                Items = webhooks,
+                Items = webhooks.ToList(),
             });
         }
 
         // GET: WebhookController/Details/5
         public async Task<ActionResult> Details(string id)
         {
-            var webhook = await _context.Webhooks.FindAsync(id);
+            var webhook = await _uow.Webhooks.FindByIdAsync(id);
             if (webhook == null)
             {
                 // Failed to retrieve webhook from database, does it exist?
@@ -53,11 +53,9 @@
         }
 
         // GET: WebhookController/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
-            var geofences = _context.Geofences
-                .Where(geofence => geofence.Type == GeofenceType.Geofence)
-                .ToList();
+            var geofences = await _uow.Geofences.FindAsync(geofence => geofence.Type == GeofenceType.Geofence);
             ViewBag.Geofences = geofences;
             ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
             return View();
@@ -70,7 +68,7 @@
         {
             try
             {
-                if (_context.Webhooks.Any(webhook => webhook.Name == model.Name))
+                if (_uow.Webhooks.Any(webhook => webhook.Name == model.Name))
                 {
                     // Webhook already exists by name
                     ModelState.AddModelError("Webhook", $"Webhook with name '{model.Name}' already exists.");
@@ -121,8 +119,8 @@
                 };
 
                 // Add webhook to database
-                await _context.AddAsync(webhook);
-                await _context.SaveChangesAsync();
+                await _uow.Webhooks.AddAsync(webhook);
+                await _uow.CommitAsync();
 
                 _webhookService.Add(webhook);
 
@@ -138,7 +136,7 @@
         // GET: WebhookController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
-            var webhook = await _context.Webhooks.FindAsync(id);
+            var webhook = await _uow.Webhooks.FindByIdAsync(id);
             if (webhook == null)
             {
                 // Failed to retrieve webhook from database, does it exist?
@@ -146,8 +144,7 @@
                 return View();
             }
 
-            var geofences = _context.Geofences.Where(geofence => geofence.Type == GeofenceType.Geofence)
-                                              .ToList();
+            var geofences = await _uow.Geofences.FindAsync(geofence => geofence.Type == GeofenceType.Geofence);
             ViewBag.Geofences = geofences;
             ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
             return View(webhook);
@@ -160,7 +157,7 @@
         {
             try
             {
-                var webhook = await _context.Webhooks.FindAsync(id);
+                var webhook = await _uow.Webhooks.FindByIdAsync(id);
                 if (webhook == null)
                 {
                     // Failed to retrieve webhook from database, does it exist?
@@ -208,8 +205,8 @@
                     WeatherConditionIds = model.Data?.WeatherConditionIds ?? new(),
                 };
 
-                _context.Update(webhook);
-                await _context.SaveChangesAsync();
+                await _uow.Webhooks.UpdateAsync(webhook);
+                await _uow.CommitAsync();
 
                 _webhookService.Edit(webhook, id);
 
@@ -225,7 +222,7 @@
         // GET: WebhookController/Delete/5
         public async Task<ActionResult> Delete(string id)
         {
-            var webhook = await _context.Webhooks.FindAsync(id);
+            var webhook = await _uow.Webhooks.FindByIdAsync(id);
             if (webhook == null)
             {
                 // Failed to retrieve webhook from database, does it exist?
@@ -243,7 +240,7 @@
         {
             try
             {
-                var webhook = await _context.Webhooks.FindAsync(id);
+                var webhook = await _uow.Webhooks.FindByIdAsync(id);
                 if (webhook == null)
                 {
                     // Failed to retrieve webhook from database, does it exist?
@@ -252,8 +249,8 @@
                 }
 
                 // Delete webhook from database
-                _context.Webhooks.Remove(webhook);
-                await _context.SaveChangesAsync();
+                await _uow.Webhooks.RemoveAsync(webhook);
+                await _uow.CommitAsync();
 
                 _webhookService.Delete(id);
 

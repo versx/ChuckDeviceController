@@ -4,8 +4,8 @@
 
     using Microsoft.AspNetCore.Mvc;
 
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Extensions;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Plugin;
 
     [ApiController]
@@ -15,18 +15,18 @@
         private const string DefaultTheme = "light";
 
         //private readonly ILogger<HelperController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IConfiguration _configuration;
         private readonly IUiHost _uiHost;
 
         public HelperController(
             //ILogger<HelperController> logger,
-            ControllerDbContext context,
+            IUnitOfWork uow,
             IConfiguration configuration,
             IUiHost uiHost)
         {
             //_logger = logger;
-            _context = context;
+            _uow = uow;
             _configuration = configuration;
             _uiHost = uiHost;
         }
@@ -75,7 +75,7 @@
         [HttpGet("GetGeofenceData")]
         public async Task<IActionResult> GetGeofenceData(string name)
         {
-            var geofence = await _context.Geofences.FindAsync(name);
+            var geofence = await _uow.Geofences.FindByIdAsync(name);
             if (geofence == null)
             {
                 return null;

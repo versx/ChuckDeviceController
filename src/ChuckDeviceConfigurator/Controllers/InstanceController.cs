@@ -12,8 +12,8 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.JobControllers.Models;
 
@@ -21,18 +21,18 @@
     public class InstanceController : Controller
     {
         private readonly ILogger<InstanceController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IJobControllerService _jobControllerService;
         private readonly ITimeZoneService _timeZoneService;
 
         public InstanceController(
             ILogger<InstanceController> logger,
-            ControllerDbContext context,
+            IUnitOfWork uow,
             IJobControllerService jobControllerService,
             ITimeZoneService timeZoneService)
         {
             _logger = logger;
-            _context = context;
+            _uow = uow;
             _jobControllerService = jobControllerService;
             _timeZoneService = timeZoneService;
         }
@@ -40,8 +40,8 @@
         // GET: InstanceController
         public async Task<ActionResult> Index(bool autoRefresh = false)
         {
-            var instances = _context.Instances.ToList();
-            var devices = _context.Devices.ToList();
+            var instances = await _uow.Instances.FindAllAsync();
+            var devices = await _uow.Devices.FindAllAsync();
 
             foreach (var instance in instances)
             {
@@ -58,7 +58,7 @@
             var model = new ViewModelsModel<Instance>
             {
                 AutoRefresh = autoRefresh,
-                Items = instances,
+                Items = instances.ToList(),
             };
             if (autoRefresh)
             {
@@ -71,7 +71,7 @@
         // GET: InstanceController/Details/5
         public async Task<ActionResult> Details(string id)
         {
-            var instance = await _context.Instances.FindAsync(id);
+            var instance = await _uow.Instances.FindByIdAsync(id);
             if (instance == null)
             {
                 // Failed to retrieve instance from database, does it exist?
@@ -80,10 +80,10 @@
             }
 
             // Get devices assigned to instance
-            var devicesAssigned = _context.Devices.Where(device => device.InstanceName == instance.Name)
-                                                  .ToList();
+            var devicesAssigned = await _uow.Devices.FindAsync(device => device.InstanceName == instance.Name);
+            var devicesAssignedTotal = devicesAssigned.Count();
             var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
-            var devicesOffline = devicesAssigned.Count - devicesOnline;
+            var devicesOffline = devicesAssignedTotal - devicesOnline;
             var status = await _jobControllerService.GetStatusAsync(instance);
             var model = new InstanceDetailsViewModel
             {
@@ -93,8 +93,8 @@
                 MaximumLevel = instance.MaximumLevel,
                 Geofences = instance.Geofences,
                 Data = instance.Data,
-                DeviceCount = $"{devicesOnline}/{devicesAssigned.Count}|{devicesOffline}",
-                Devices = devicesAssigned,
+                DeviceCount = $"{devicesOnline}/{devicesAssignedTotal}|{devicesOffline}",
+                Devices = devicesAssigned.ToList(),
                 Status = status,
             };
 
@@ -102,7 +102,7 @@
         }
 
         // GET: InstanceController/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
             // Create dummy instance model to provide default properties
             var model = new ManageInstanceViewModel
@@ -113,18 +113,18 @@
                 Data = PopulateViewModelFromInstanceData(),
             };
 
-            var accountGroups = _context.Accounts
+            var accountGroups = (await _uow.Accounts.FindAllAsync())
                 .Select(x => x.GroupName)
                 .Distinct()
                 .ToList();
-            var geofences = _context.Geofences.ToList();
+            var geofences = await _uow.Geofences.FindAllAsync();
             ViewBag.AccountGroups = accountGroups;
             ViewBag.CustomInstanceTypes = _jobControllerService.CustomInstanceTypes;
-            ViewBag.Devices = _context.Devices.ToList();
+            ViewBag.Devices = await _uow.Devices.FindAllAsync();
             ViewBag.Geofences = geofences;
             ViewBag.GeofencesJson = geofences.ToJson();
-            ViewBag.Instances = _context.Instances.ToList();
-            ViewBag.IvLists = _context.IvLists.ToList();
+            ViewBag.Instances = await _uow.Instances.FindAllAsync();
+            ViewBag.IvLists = await _uow.IvLists.FindAllAsync();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key }).ToList();
             return View(model);
         }
@@ -136,7 +136,7 @@
         {
             try
             {
-                if (_context.Instances.Any(inst => inst.Name == model.Name))
+                if (_uow.Instances.Any(inst => inst.Name == model.Name))
                 {
                     // Instance exists already by name
                     ModelState.AddModelError("Instance", $"Instance with name '{model.Name}' already exists.");
@@ -154,8 +154,8 @@
                 };
 
                 // Add instance to database
-                await _context.Instances.AddAsync(instance);
-                await _context.SaveChangesAsync();
+                await _uow.Instances.AddAsync(instance);
+                await _uow.CommitAsync();
 
                 await _jobControllerService.AddInstanceAsync(instance);
 
@@ -177,7 +177,7 @@
         // GET: InstanceController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
-            var instance = await _context.Instances.FindAsync(id);
+            var instance = await _uow.Instances.FindByIdAsync(id);
             if (instance == null)
             {
                 // Failed to retrieve instance from database, does it exist?
@@ -185,8 +185,7 @@
                 return View();
             }
 
-            var assignedDevices = _context.Devices
-                .Where(device => device.InstanceName == instance.Name)
+            var assignedDevices = (await _uow.Devices.FindAsync(device => device.InstanceName == instance.Name))
                 .Select(device => device.Uuid)
                 .ToList();
 
@@ -201,18 +200,18 @@
                 AssignedDevices = assignedDevices,
             };
 
-            var accountGroups = _context.Accounts
+            var accountGroups = (await _uow.Accounts.FindAllAsync())
                 .Select(x => x.GroupName)
                 .Distinct()
                 .ToList();
-            var geofences = _context.Geofences.ToList();
+            var geofences = await _uow.Geofences.FindAllAsync();
             ViewBag.AccountGroups = accountGroups;
             ViewBag.CustomInstanceTypes = _jobControllerService.CustomInstanceTypes;
-            ViewBag.Devices = _context.Devices.ToList();
+            ViewBag.Devices = await _uow.Devices.FindAllAsync();
             ViewBag.Geofences = geofences;
             ViewBag.GeofencesJson = geofences.ToJson();
-            ViewBag.Instances = _context.Instances.ToList();
-            ViewBag.IvLists = _context.IvLists.ToList();
+            ViewBag.Instances = await _uow.Instances.FindAllAsync();
+            ViewBag.IvLists = await _uow.IvLists.FindAllAsync();
             ViewBag.TimeZones = _timeZoneService.TimeZones.Select(pair => new { Name = pair.Key });
             return View(model);
         }
@@ -224,7 +223,7 @@
         {
             try
             {
-                var instance = await _context.Instances.FindAsync(id);
+                var instance = await _uow.Instances.FindByIdAsync(id);
                 if (instance == null)
                 {
                     // Failed to retrieve instance from database, does it exist?
@@ -233,7 +232,7 @@
                 }
 
                 // Check if new name already exists and not current instance
-                if (_context.Instances.Any(inst => inst.Name == model.Name && inst.Name != id))
+                if (_uow.Instances.Any(inst => inst.Name == model.Name && inst.Name != id))
                 {
                     ModelState.AddModelError("Instance", $"Instance with name '{model.Name}' already exists, please choose a different name.");
                     return View(model);
@@ -247,8 +246,8 @@
                 instance.Data = PopulateInstanceDataFromModel(model.Data);
 
                 // Update instance in database
-                _context.Instances.Update(instance);
-                await _context.SaveChangesAsync();
+                await _uow.Instances.UpdateAsync(instance);
+                await _uow.CommitAsync();
 
                 // Reload instance cache
                 await _jobControllerService.ReloadInstanceAsync(instance, id);
@@ -276,7 +275,7 @@
         // GET: InstanceController/Delete/5
         public async Task<ActionResult> Delete(string id)
         {
-            var instance = await _context.Instances.FindAsync(id);
+            var instance = await _uow.Instances.FindByIdAsync(id);
             if (instance == null)
             {
                 // Failed to retrieve instance from database, does it exist?
@@ -286,11 +285,10 @@
             instance.Status = await _jobControllerService.GetStatusAsync(instance);
 
             // Get devices assigned to instance
-            var devicesAssigned = _context.Devices
-                .Where(device => device.InstanceName == instance.Name)
-                .ToList();
+            var devicesAssigned = await _uow.Devices.FindAsync(device => device.InstanceName == instance.Name);
+            var devicesAssignedTotal = devicesAssigned.Count();
             var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
-            var devicesOffline = devicesAssigned.Count - devicesOnline;
+            var devicesOffline = devicesAssignedTotal - devicesOnline;
             var status = await _jobControllerService.GetStatusAsync(instance);
             var model = new InstanceDetailsViewModel
             {
@@ -300,8 +298,8 @@
                 MaximumLevel = instance.MaximumLevel,
                 Geofences = instance.Geofences,
                 Data = instance.Data,
-                DeviceCount = $"{devicesOnline}/{devicesAssigned.Count}|{devicesOffline}",
-                Devices = devicesAssigned,
+                DeviceCount = $"{devicesOnline}/{devicesAssignedTotal}|{devicesOffline}",
+                Devices = devicesAssigned.ToList(),
                 Status = status,
             };
 
@@ -316,7 +314,7 @@
         {
             try
             {
-                var instance = await _context.Instances.FindAsync(id);
+                var instance = await _uow.Instances.FindByIdAsync(id);
                 if (instance == null)
                 {
                     // Failed to retrieve instance from database, does it exist?
@@ -324,8 +322,8 @@
                 }
 
                 // Delete instance from database
-                _context.Instances.Remove(instance);
-                await _context.SaveChangesAsync();
+                await _uow.Instances.RemoveAsync(instance);
+                await _uow.CommitAsync();
 
                 await _jobControllerService.RemoveInstanceAsync(id);
 
@@ -505,7 +503,7 @@
             foreach (var deviceUuid in deviceUuids)
             {
                 // Retrieve device by uuid from database
-                var device = await _context.Devices.FindAsync(deviceUuid);
+                var device = await _uow.Devices.FindByIdAsync(deviceUuid);
                 if (device == null)
                 {
                     _logger.LogWarning($"Failed to retrieve device from database with UUID '{deviceUuid}', unable to assign device to instance '{instanceName}'");
@@ -521,8 +519,8 @@
 
                 // Assign device to new instance
                 device.InstanceName = instanceName;
-                _context.Devices.Update(device);
-                await _context.SaveChangesAsync();
+                await _uow.Devices.UpdateAsync(device);
+                await _uow.CommitAsync();
 
                 // Reload device cache
                 _jobControllerService.ReloadDevice(device, deviceUuid);

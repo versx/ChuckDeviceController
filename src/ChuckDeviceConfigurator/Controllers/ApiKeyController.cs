@@ -7,9 +7,8 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.PluginManager;
 
     [Controller]
@@ -17,23 +16,23 @@
     public class ApiKeyController : Controller
     {
         private readonly ILogger<ApiKeyController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IApiKeyManagerService _apiKeyManager;
 
         public ApiKeyController(
             ILogger<ApiKeyController> logger,
-            ControllerDbContext context,
+            IUnitOfWork uow,
             IApiKeyManagerService apiKeyManager)
         {
             _logger = logger;
-            _context = context;
+            _uow = uow;
             _apiKeyManager = apiKeyManager;
         }
 
         // GET: ApiKeyController/Details/5
         public async Task<ActionResult> Details(uint id)
         {
-            var apiKey = await _context.ApiKeys.FindAsync(id);
+            var apiKey = await _uow.ApiKeys.FindByIdAsync(id);
             if (apiKey == null)
             {
                 // Failed to retrieve API key from database, does it exist?
@@ -104,8 +103,8 @@
                     Scope = scope,
                     IsEnabled = model.IsEnabled,
                 };
-                await _context.ApiKeys.AddAsync(apiKey);
-                await _context.SaveChangesAsync();
+                await _uow.ApiKeys.AddAsync(apiKey);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -119,7 +118,7 @@
         // GET: ApiKeyController/Edit/5
         public async Task<ActionResult> Edit(uint id)
         {
-            var apiKey = await _context.ApiKeys.FindAsync(id);
+            var apiKey = await _uow.ApiKeys.FindByIdAsync(id);
             if (apiKey == null)
             {
                 // Failed to retrieve API key from database, does it exist?
@@ -149,7 +148,7 @@
         {
             try
             {
-                var apiKey = await _context.ApiKeys.FindAsync(id);
+                var apiKey = await _uow.ApiKeys.FindByIdAsync(id);
                 if (apiKey == null)
                 {
                     // Failed to retrieve API key from database, does it exist?
@@ -169,8 +168,8 @@
                 apiKey.Scope = scope;
                 apiKey.IsEnabled = model?.IsEnabled ?? false;
 
-                _context.ApiKeys.Update(apiKey);
-                await _context.SaveChangesAsync();
+                await _uow.ApiKeys.UpdateAsync(apiKey);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -184,7 +183,7 @@
         // GET: ApiKeyController/Delete/5
         public async Task<ActionResult> Delete(uint id)
         {
-            var apiKey = await _context.ApiKeys.FindAsync(id);
+            var apiKey = await _uow.ApiKeys.FindByIdAsync(id);
             if (apiKey == null)
             {
                 // Failed to retrieve API key from database, does it exist?
@@ -219,7 +218,7 @@
         {
             try
             {
-                var apiKey = await _context.ApiKeys.FindAsync(id);
+                var apiKey = await _uow.ApiKeys.FindByIdAsync(id);
                 if (apiKey == null)
                 {
                     // Failed to retrieve API key from database, does it exist?
@@ -227,9 +226,9 @@
                     return View();
                 }
 
-                // Delete device from database
-                _context.ApiKeys.Remove(apiKey);
-                await _context.SaveChangesAsync();
+                // Delete API key from database
+                await _uow.ApiKeys.RemoveAsync(apiKey);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }

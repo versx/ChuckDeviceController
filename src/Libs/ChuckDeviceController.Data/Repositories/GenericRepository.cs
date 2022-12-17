@@ -15,6 +15,11 @@
             _context = context;
         }
 
+        public bool Any(Expression<Func<TEntity, bool>> expression)
+        {
+            return _context.Set<TEntity>().Any(expression);
+        }
+
         public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> expression)
         {
             return _context.Set<TEntity>().Where(expression);

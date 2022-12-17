@@ -10,48 +10,50 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
 
     [Controller]
     [Authorize(Roles = RoleConsts.AssignmentGroupsRole)]
     public class AssignmentGroupController : Controller
     {
         private readonly ILogger<AssignmentGroupController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IAssignmentControllerService _assignmentService;
 
         public AssignmentGroupController(
             ILogger<AssignmentGroupController> logger,
-            ControllerDbContext context,
+            IUnitOfWork uow,
             IAssignmentControllerService assignmentService)
         {
             _logger = logger;
-            _context = context;
+            _uow = uow;
             _assignmentService = assignmentService;
         }
 
         // GET: AssignmentGroupController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var assignmentGroups = _context.AssignmentGroups.ToList();
+            var assignmentGroups = await _uow.AssignmentGroups.FindAllAsync();
             var model = new ViewModelsModel<AssignmentGroup>
             {
-                Items = assignmentGroups,
+                Items = assignmentGroups.ToList(),
             };
 
             var assignmentGroupsWithQuests = new List<string>();
-            var questInstanceNames = _context.Instances.Where(x => x.Type == InstanceType.AutoQuest)
-                                                       .Select(x => x.Name)
-                                                       .ToList();
-            var assignments = _context.Assignments.ToList();
+            var questInstanceNames = (await _uow.Instances
+                .FindAsync(x => x.Type == InstanceType.AutoQuest))
+                .Select(x => x.Name)
+                .ToList();
+            var assignments = await _uow.Assignments.FindAllAsync();
             foreach (var assignmentGroup in assignmentGroups)
             {
                 var assignmentIds = assignmentGroup.AssignmentIds;
-                var groupAssignments = assignmentIds.Select(id => assignments.FirstOrDefault(a => a.Id == id))
-                                                    .Where(assignment => assignment!.Enabled)
-                                                    .Where(assignment => questInstanceNames.Contains(assignment!.InstanceName))
-                                                    .ToList();
+                var groupAssignments = assignmentIds
+                    .Select(id => assignments.FirstOrDefault(a => a.Id == id))
+                    .Where(assignment => assignment!.Enabled)
+                    .Where(assignment => questInstanceNames.Contains(assignment!.InstanceName))
+                    .ToList();
                 if ((groupAssignments?.Count ?? 0) > 0)
                 {
                     assignmentGroupsWithQuests.Add(assignmentGroup.Name);
@@ -64,7 +66,7 @@
         // GET: AssignmentGroupController/Details/5
         public async Task<ActionResult> Details(string id)
         {
-            var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
+            var assignmentGroup = await _uow.AssignmentGroups.FindByIdAsync(id);
             if (assignmentGroup == null)
             {
                 // Failed to retrieve assignment group from database, does it exist?
@@ -73,17 +75,17 @@
             }
 
             var hasQuestInstance = false;
-            var instances = _context.Instances.ToList();
+            var instances = await _uow.Instances.FindAllAsync();
             var assignments = new List<Assignment>();
             foreach (var assignmentId in assignmentGroup.AssignmentIds)
             {
-                var assignment = await _context.Assignments.FindAsync(assignmentId);
+                var assignment = await _uow.Assignments.FindByIdAsync(assignmentId);
                 if (assignment == null)
                 {
                     _logger.LogWarning($"Failed to retrieve assignment with id '{assignmentId}' for assignment group '{id}' details.");
                     continue;
                 }
-                if (instances.Exists(x => x.Name == assignment.InstanceName && x.Type == InstanceType.AutoQuest))
+                if (instances.Any(x => x.Name == assignment.InstanceName && x.Type == InstanceType.AutoQuest))
                 {
                     hasQuestInstance = true;
                 }
@@ -95,10 +97,10 @@
         }
 
         // GET: AssignmentGroupController/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
             var assignmentsList = new List<SelectListItem>();
-            var assignments = _context.Assignments.ToList();
+            var assignments = await _uow.Assignments.FindAllAsync();
             foreach (var assignment in assignments)
             {
                 var displayText = Utils.FormatAssignmentText(assignment);
@@ -124,7 +126,7 @@
                 var assignmentIds = assignments.Select(x => Convert.ToUInt32(x))
                                                .ToList();
 
-                if (_context.AssignmentGroups.Any(assignmentGroup => assignmentGroup.Name == name))
+                if (_uow.AssignmentGroups.Any(assignmentGroup => assignmentGroup.Name == name))
                 {
                     // Assignment group exists already by name
                     ModelState.AddModelError("AssignmentGroup", $"Assignment group with name '{name}' already exists.");
@@ -145,8 +147,8 @@
                 };
 
                 // Add assignment group to database
-                await _context.AssignmentGroups.AddAsync(assignmentGroup);
-                await _context.SaveChangesAsync();
+                await _uow.AssignmentGroups.AddAsync(assignmentGroup);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -160,7 +162,7 @@
         // GET: AssignmentGroupController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
-            var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
+            var assignmentGroup = await _uow.AssignmentGroups.FindByIdAsync(id);
             if (assignmentGroup == null)
             {
                 // Failed to retrieve assignment group from database, does it exist?
@@ -169,7 +171,7 @@
             }
 
             var assignmentsList = new List<SelectListItem>();
-            var assignments = _context.Assignments.ToList();
+            var assignments = await _uow.Assignments.FindAllAsync();
             foreach (var assignment in assignments)
             {
                 var displayText = Utils.FormatAssignmentText(assignment);
@@ -191,7 +193,7 @@
         {
             try
             {
-                var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
+                var assignmentGroup = await _uow.AssignmentGroups.FindByIdAsync(id);
                 if (assignmentGroup == null)
                 {
                     // Failed to retrieve assignment group from database, does it exist?
@@ -204,7 +206,7 @@
                 var assignmentIds = assignments.Select(x => Convert.ToUInt32(x))
                                                .ToList();
 
-                if (_context.AssignmentGroups.Any(assignmentGroup => assignmentGroup.Name == name && assignmentGroup.Name != id))
+                if (_uow.AssignmentGroups.Any(assignmentGroup => assignmentGroup.Name == name && assignmentGroup.Name != id))
                 {
                     // Assignment group exists already by name
                     ModelState.AddModelError("AssignmentGroup", $"Assignment group with name '{name}' already exists.");
@@ -222,8 +224,8 @@
                 assignmentGroup.AssignmentIds = assignmentIds;
 
                 // Update assignment group to database
-                _context.AssignmentGroups.Update(assignmentGroup);
-                await _context.SaveChangesAsync();
+                await _uow.AssignmentGroups.UpdateAsync(assignmentGroup);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -237,7 +239,7 @@
         // GET: AssignmentGroupController/Delete/5
         public async Task<ActionResult> Delete(string id)
         {
-            var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
+            var assignmentGroup = await _uow.AssignmentGroups.FindByIdAsync(id);
             if (assignmentGroup == null)
             {
                 // Failed to retrieve assignment group from database, does it exist?
@@ -254,7 +256,7 @@
         {
             try
             {
-                var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
+                var assignmentGroup = await _uow.AssignmentGroups.FindByIdAsync(id);
                 if (assignmentGroup == null)
                 {
                     // Failed to retrieve assignment group from database, does it exist?
@@ -263,8 +265,8 @@
                 }
 
                 // Delete assignment group from database
-                _context.AssignmentGroups.Remove(assignmentGroup);
-                await _context.SaveChangesAsync();
+                await _uow.AssignmentGroups.RemoveAsync(assignmentGroup);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -280,7 +282,7 @@
         {
             try
             {
-                var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
+                var assignmentGroup = await _uow.AssignmentGroups.FindByIdAsync(id);
                 if (assignmentGroup == null)
                 {
                     // Failed to retrieve assignment group from database, does it exist?
@@ -305,7 +307,7 @@
         {
             try
             {
-                var assignmentGroup = await _context.AssignmentGroups.FindAsync(id);
+                var assignmentGroup = await _uow.AssignmentGroups.FindByIdAsync(id);
                 if (assignmentGroup == null)
                 {
                     // Failed to retrieve assignment group from database, does it exist?

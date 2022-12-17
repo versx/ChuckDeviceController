@@ -7,8 +7,8 @@
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions.Http.Caching;
 
     [Controller]
@@ -16,31 +16,30 @@
     public class DeviceController : BaseMvcController
     {
         private readonly ILogger<DeviceController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IJobControllerService _jobControllerService;
         private readonly IMemoryCacheHostedService _memCache;
 
         public DeviceController(
             ILogger<DeviceController> logger,
-            ControllerDbContext context,
+            IUnitOfWork uow,
             IJobControllerService jobControllerService,
             IMemoryCacheHostedService memCache)
         {
             _logger = logger;
-            _context = context;
+            _uow = uow;
             _jobControllerService = jobControllerService;
             _memCache = memCache;
         }
 
         // GET: DeviceController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var devices = _context.Devices.ToList();
-            var accountLevels = _context.Accounts
-                .AsEnumerable()
-                .Where(account => devices.Any(device => device.AccountUsername == account.Username))
+            var devices = await _uow.Devices.FindAllAsync();
+            var accountLevels = (await _uow.Accounts
+                .FindAsync(account => devices.Any(device => device.AccountUsername == account.Username)))
                 .ToDictionary(x => x.Username, y => y.Level);
-            devices.ForEach(device =>
+            devices.ToList().ForEach(device =>
             {
                 device.AccountLevel = device.AccountUsername != null
                     ? accountLevels[device.AccountUsername]
@@ -48,7 +47,7 @@
             });
             var model = new ViewModelsModel<Device>
             {
-                Items = devices,
+                Items = devices.ToList(),
             };
             return View(model);
         }
@@ -56,7 +55,7 @@
         // GET: DeviceController/Details/5
         public async Task<ActionResult> Details(string id)
         {
-            var device = await _context.Devices.FindAsync(id);
+            var device = await _uow.Devices.FindByIdAsync(id);
             if (device == null)
             {
                 // Failed to retrieve device from database, does it exist?
@@ -72,15 +71,13 @@
         }
 
         // GET: DeviceController/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
-            var accountsInUse = _context.Devices
+            var accountsInUse = (await _uow.Devices.FindAllAsync())
                 .Select(device => device.AccountUsername)
                 .ToList();
-            var accounts = _context.Accounts
-                .Where(account => !accountsInUse.Contains(account.Username))
-                .ToList();
-            var instances = _context.Instances.ToList();
+            var accounts = await _uow.Accounts.FindAsync(account => !accountsInUse.Contains(account.Username));
+            var instances = await _uow.Instances.FindAllAsync();
             ViewBag.Instances = instances;
             ViewBag.Accounts = accounts;
             return View();
@@ -97,7 +94,7 @@
                 var instanceName = deviceModel.InstanceName;//Convert.ToString(collection["InstanceName"]);
                 var accountUsername = deviceModel.AccountUsername;//Convert.ToString(collection["AccountUsername"]);
 
-                if (_context.Devices.Any(device => device.Uuid == uuid))
+                if (_uow.Devices.Any(device => device.Uuid == uuid))
                 {
                     // Device exists already by name
                     ModelState.AddModelError("Device", $"Device with UUID '{uuid}' already exists.");
@@ -107,13 +104,11 @@
                         Icon = NotificationIcon.Error,
                     });
 
-                    var accountsInUse = _context.Devices
+                    var accountsInUse = (await _uow.Devices.FindAllAsync())
                         .Select(device => device.AccountUsername)
                         .ToList();
-                    var accounts = _context.Accounts
-                        .Where(account => !accountsInUse.Contains(account.Username))
-                        .ToList();
-                    var instances = _context.Instances.ToList();
+                    var accounts = await _uow.Accounts.FindAsync(account => !accountsInUse.Contains(account.Username));
+                    var instances = await _uow.Instances.FindAllAsync();
                     ViewBag.Instances = instances;
                     ViewBag.Accounts = accounts;
                     return View(deviceModel);
@@ -127,8 +122,8 @@
                 };
 
                 // Add device to database
-                await _context.Devices.AddAsync(device);
-                await _context.SaveChangesAsync();
+                await _uow.Devices.AddAsync(device);
+                await _uow.CommitAsync();
 
                 _memCache.Set(device.Uuid, device);
 
@@ -154,13 +149,11 @@
                     Icon = NotificationIcon.Error,
                 });
 
-                var accountsInUse = _context.Devices
+                var accountsInUse = (await _uow.Devices.FindAllAsync())
                     .Select(device => device.AccountUsername)
                     .ToList();
-                var accounts = _context.Accounts
-                    .Where(account => !accountsInUse.Contains(account.Username))
-                    .ToList();
-                var instances = _context.Instances.ToList();
+                var accounts = await _uow.Accounts.FindAsync(account => !accountsInUse.Contains(account.Username));
+                var instances = await _uow.Instances.FindAllAsync();
                 ViewBag.Instances = instances;
                 ViewBag.Accounts = accounts;
                 return View(deviceModel);
@@ -170,7 +163,7 @@
         // GET: DeviceController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
-            var device = await _context.Devices.FindAsync(id);
+            var device = await _uow.Devices.FindByIdAsync(id);
             if (device == null)
             {
                 // Failed to retrieve device from database, does it exist?
@@ -183,14 +176,12 @@
                 return View();
             }
 
-            var accountsInUse = _context.Devices
+            var accountsInUse = (await _uow.Devices.FindAllAsync())
                 .Select(device => device.AccountUsername)
                 .ToList();
             // Filter accounts that are not used by devices unless this device we are editing
-            var accounts = _context.Accounts
-                .Where(account => !accountsInUse.Contains(account.Username) || device.AccountUsername == account.Username)
-                .ToList();
-            var instances = _context.Instances.ToList();
+            var accounts = await _uow.Accounts.FindAsync(account => !accountsInUse.Contains(account.Username));
+            var instances = await _uow.Instances.FindAllAsync();
             ViewBag.Instances = instances;
             ViewBag.Accounts = accounts;
             return View(device);
@@ -203,7 +194,7 @@
         {
             try
             {
-                var device = await _context.Devices.FindAsync(id);
+                var device = await _uow.Devices.FindByIdAsync(id);
                 if (device == null)
                 {
                     // Failed to retrieve device from database, does it exist?
@@ -232,8 +223,8 @@
                     device.IsPendingAccountSwitch = true;
                 }
 
-                _context.Devices.Update(device);
-                await _context.SaveChangesAsync();
+                await _uow.Devices.UpdateAsync(device);
+                await _uow.CommitAsync();
 
                 _memCache.Set(device.Uuid, device);
 
@@ -265,7 +256,7 @@
         // GET: DeviceController/Delete/5
         public async Task<ActionResult> Delete(string id)
         {
-            var device = await _context.Devices.FindAsync(id);
+            var device = await _uow.Devices.FindByIdAsync(id);
             if (device == null)
             {
                 // Failed to retrieve device from database, does it exist?
@@ -287,7 +278,7 @@
         {
             try
             {
-                var device = await _context.Devices.FindAsync(id);
+                var device = await _uow.Devices.FindByIdAsync(id);
                 if (device == null)
                 {
                     // Failed to retrieve device from database, does it exist?
@@ -301,8 +292,8 @@
                 }
 
                 // Delete device from database
-                _context.Devices.Remove(device);
-                await _context.SaveChangesAsync();
+                await _uow.Devices.RemoveAsync(device);
+                await _uow.CommitAsync();
 
                 _memCache.Unset<string, Device>(id);
 
@@ -336,7 +327,7 @@
         {
             // Set Device.AccountUsername to null, GetJobTask will handle the
             // rest, no need for extra database column
-            var device = await _context.Devices.FindAsync(id);
+            var device = await _uow.Devices.FindByIdAsync(id);
             if (device == null)
             {
                 // Failed to retrieve device from database, does it exist?
@@ -353,8 +344,8 @@
             device.AccountUsername = null;
             device.IsPendingAccountSwitch = true;
 
-            _context.Update(device);
-            await _context.SaveChangesAsync();
+            await _uow.Devices.UpdateAsync(device);
+            await _uow.CommitAsync();
 
             CreateNotification(new NotificationViewModel
             {

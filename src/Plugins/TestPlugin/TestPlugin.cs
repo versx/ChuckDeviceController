@@ -637,6 +637,7 @@
                 Data = new InstanceData
                 {
                     CustomInstanceType = customInstanceType,
+                    ["test"] = "123", // <- Add custom properties
                 },
             };
             return instance;

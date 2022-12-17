@@ -5,6 +5,8 @@
     public interface IGenericRepository<TEntity>
         where TEntity : class
     {
+        bool Any(Expression<Func<TEntity, bool>> expression);
+
         IEnumerable<TEntity> FindAll();
 
         TEntity? FindById<TKey>(TKey id);

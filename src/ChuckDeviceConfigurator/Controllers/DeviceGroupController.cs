@@ -6,31 +6,31 @@
 
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
 
     [Controller]
     [Authorize(Roles = RoleConsts.DeviceGroupsRole)]
     public class DeviceGroupController : Controller
     {
         private readonly ILogger<DeviceGroupController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
 
         public DeviceGroupController(
             ILogger<DeviceGroupController> logger,
-            ControllerDbContext context)
+            IUnitOfWork uow)
         {
             _logger = logger;
-            _context = context;
+            _uow = uow;
         }
 
         // GET: DeviceGroupController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var deviceGroups = _context.DeviceGroups.ToList();
+            var deviceGroups = await _uow.DeviceGroups.FindAllAsync();
             var model = new ViewModelsModel<DeviceGroup>
             {
-                Items = deviceGroups,
+                Items = deviceGroups.ToList(),
             };
             return View(model);
         }
@@ -38,7 +38,7 @@
         // GET: DeviceGroupController/Details/5
         public async Task<ActionResult> Details(string id)
         {
-            var deviceGroup = await _context.DeviceGroups.FindAsync(id);
+            var deviceGroup = await _uow.DeviceGroups.FindByIdAsync(id);
             if (deviceGroup == null)
             {
                 // Failed to retrieve device group from database, does it exist?
@@ -47,22 +47,21 @@
             }
 
             // Get list of devices for device group from database and set their online/offline status
-            var devices = _context.Devices.Where(device => deviceGroup.DeviceUuids.Contains(device.Uuid))
-                                          .ToList();
+            var devices = await _uow.Devices.FindAsync(device => deviceGroup.DeviceUuids.Contains(device.Uuid));
             var model = new DeviceGroupDetailsViewModel
             {
                 Name = deviceGroup.Name,
                 DeviceUuids = deviceGroup.DeviceUuids,
-                Devices = devices,
+                Devices = devices.ToList(),
             };
             ViewBag.Devices = devices;
             return View(model);
         }
 
         // GET: DeviceGroupController/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
-            var devices = _context.Devices.ToList();
+            var devices = await _uow.Devices.FindAllAsync();
             ViewBag.Devices = devices;
             return View();
         }
@@ -77,7 +76,7 @@
                 var name = Convert.ToString(collection["Name"]);
                 var devices = collection["DeviceUuids"].ToList();
 
-                if (_context.DeviceGroups.Any(deviceGroup => deviceGroup.Name == name))
+                if (_uow.DeviceGroups.Any(deviceGroup => deviceGroup.Name == name))
                 {
                     // Device group exists already by name
                     ModelState.AddModelError("DeviceGroup", $"Device group with name '{name}' already exists.");
@@ -98,8 +97,8 @@
                 };
 
                 // Add device group to database
-                await _context.DeviceGroups.AddAsync(deviceGroup);
-                await _context.SaveChangesAsync();
+                await _uow.DeviceGroups.AddAsync(deviceGroup);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -113,7 +112,7 @@
         // GET: DeviceGroupController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
-            var deviceGroup = await _context.DeviceGroups.FindAsync(id);
+            var deviceGroup = await _uow.DeviceGroups.FindByIdAsync(id);
             if (deviceGroup == null)
             {
                 // Failed to retrieve device group from database, does it exist?
@@ -121,7 +120,7 @@
                 return View();
             }
 
-            var devices = _context.Devices.ToList();
+            var devices = await _uow.Devices.FindAllAsync();
             ViewBag.Devices = devices;
             return View(deviceGroup);
         }
@@ -133,7 +132,7 @@
         {
             try
             {
-                var deviceGroup = await _context.DeviceGroups.FindAsync(id);
+                var deviceGroup = await _uow.DeviceGroups.FindByIdAsync(id);
                 if (deviceGroup == null)
                 {
                     // Failed to retrieve device group from database, does it exist?
@@ -144,7 +143,7 @@
                 var name = Convert.ToString(collection["Name"]);
                 var devices = collection["DeviceUuids"].ToList();
 
-                if (_context.DeviceGroups.Any(deviceGroup => deviceGroup.Name == name && deviceGroup.Name != id))
+                if (_uow.DeviceGroups.Any(deviceGroup => deviceGroup.Name == name && deviceGroup.Name != id))
                 {
                     // Device group exists already by name
                     ModelState.AddModelError("DeviceGroup", $"Device group with name '{name}' already exists.");
@@ -162,8 +161,8 @@
                 deviceGroup.DeviceUuids = devices;
 
                 // Update device group to database
-                _context.DeviceGroups.Update(deviceGroup);
-                await _context.SaveChangesAsync();
+                await _uow.DeviceGroups.UpdateAsync(deviceGroup);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -177,7 +176,7 @@
         // GET: DeviceGroupController/Delete/5
         public async Task<ActionResult> Delete(string id)
         {
-            var deviceGroup = await _context.DeviceGroups.FindAsync(id);
+            var deviceGroup = await _uow.DeviceGroups.FindByIdAsync(id);
             if (deviceGroup == null)
             {
                 // Failed to retrieve device group from database, does it exist?
@@ -194,7 +193,7 @@
         {
             try
             {
-                var deviceGroup = await _context.DeviceGroups.FindAsync(id);
+                var deviceGroup = await _uow.DeviceGroups.FindByIdAsync(id);
                 if (deviceGroup == null)
                 {
                     // Failed to retrieve device group from database, does it exist?
@@ -203,8 +202,8 @@
                 }
 
                 // Delete device group from database
-                _context.DeviceGroups.Remove(deviceGroup);
-                await _context.SaveChangesAsync();
+                await _uow.DeviceGroups.RemoveAsync(deviceGroup);
+                await _uow.CommitAsync();
 
                 return RedirectToAction(nameof(Index));
             }

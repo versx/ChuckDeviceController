@@ -11,9 +11,9 @@
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Configuration;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Data.Extensions;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions.Json;
     using ChuckDeviceController.Geometry.Converters;
     using ChuckDeviceController.Geometry.Models;
@@ -22,29 +22,29 @@
     public class GeofenceController : Controller
     {
         private readonly ILogger<GeofenceController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IGeofenceControllerService _geofenceService;
         private readonly IJobControllerService _jobControllerService;
         private readonly LeafletMapConfig _mapConfig;
 
         public GeofenceController(
             ILogger<GeofenceController> logger,
-            ControllerDbContext context,
+            IUnitOfWork uow,
             IGeofenceControllerService geofenceService,
             IJobControllerService jobControllerService,
             IOptions<LeafletMapConfig> mapConfig)
         {
             _logger = logger;
-            _context = context;
+            _uow = uow;
             _geofenceService = geofenceService;
             _jobControllerService = jobControllerService;
             _mapConfig = mapConfig.Value;
         }
 
         // GET: GeofenceController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var geofences = _context.Geofences.ToList();
+            var geofences = await _uow.Geofences.FindAllAsync();
             foreach (var geofence in geofences)
             {
                 string area = Convert.ToString(geofence.Data.Area);
@@ -55,14 +55,14 @@
             }
             return View(new ViewModelsModel<Geofence>
             {
-                Items = geofences,
+                Items = geofences.ToList(),
             });
         }
 
         // GET: GeofenceController/Details/5
         public async Task<ActionResult> Details(string id)
         {
-            var geofence = await _context.Geofences.FindAsync(id);
+            var geofence = await _uow.Geofences.FindByIdAsync(id);
             if (geofence == null)
             {
                 // Failed to retrieve geofence from database, does it exist?
@@ -76,9 +76,9 @@
         }
 
         // GET: GeofenceController/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
-            var geofenceNames = _context.Geofences.ToList().Select(x => x.Name);
+            var geofenceNames = (await _uow.Geofences.FindAllAsync()).Select(x => x.Name);
             ViewData["GeofenceNames"] = geofenceNames;
             ViewData["MapConfig"] = _mapConfig.ToJson();
             return View();
@@ -100,7 +100,7 @@
                     ? AreaConverters.AreaStringToCoordinates(lines)
                     : AreaConverters.AreaStringToMultiPolygon(lines);
 
-                if (_context.Geofences.Any(fence => fence.Name == name))
+                if (_uow.Geofences.Any(fence => fence.Name == name))
                 {
                     // Geofence already exists by name
                     ModelState.AddModelError("Geofence", $"Geofence with name '{name}' already exists.");
@@ -117,8 +117,8 @@
                 };
 
                 // Add geofence to database
-                await _context.AddAsync(geofence);
-                await _context.SaveChangesAsync();
+                await _uow.Geofences.AddAsync(geofence);
+                await _uow.CommitAsync();
 
                 _geofenceService.Add(geofence);
 
@@ -134,8 +134,8 @@
         // GET: GeofenceController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
-            var geofenceNames = _context.Geofences.ToList().Select(x => x.Name);
-            var geofence = await _context.Geofences.FindAsync(id);
+            var geofenceNames = (await _uow.Geofences.FindAllAsync()).Select(x => x.Name);
+            var geofence = await _uow.Geofences.FindByIdAsync(id);
             if (geofence == null)
             {
                 // Failed to retrieve geofence from database, does it exist?
@@ -162,7 +162,7 @@
         {
             try
             {
-                var geofence = await _context.Geofences.FindAsync(id);
+                var geofence = await _uow.Geofences.FindByIdAsync(id);
                 if (geofence == null)
                 {
                     // Failed to retrieve geofence from database, does it exist?
@@ -185,16 +185,13 @@
                 geofence.Data.Area = area;
 
                 // Update geofence in database
-                _context.Update(geofence);
-                await _context.SaveChangesAsync();
+                await _uow.Geofences.UpdateAsync(geofence);
+                await _uow.CommitAsync();
 
                 _geofenceService.Edit(geofence, id);
 
                 // Get list of instances that have geofence
-                var instancesWithGeofence = _context.Instances
-                    .AsEnumerable()
-                    .Where(instance => instance.Geofences.Contains(geofence.Name))
-                    .ToList();
+                var instancesWithGeofence = await _uow.Instances.FindAsync(instance => instance.Geofences.Contains(geofence.Name));
                 foreach (var instance in instancesWithGeofence)
                 {
                     // Reload instance so updated geofence is applied
@@ -213,7 +210,7 @@
         // GET: GeofenceController/Delete/5
         public async Task<ActionResult> Delete(string id)
         {
-            var geofence = await _context.Geofences.FindAsync(id);
+            var geofence = await _uow.Geofences.FindByIdAsync(id);
             if (geofence == null)
             {
                 // Failed to retrieve geofence from database, does it exist?
@@ -231,7 +228,7 @@
         {
             try
             {
-                var geofence = await _context.Geofences.FindAsync(id);
+                var geofence = await _uow.Geofences.FindByIdAsync(id);
                 if (geofence == null)
                 {
                     // Failed to retrieve geofence from database, does it exist?
@@ -240,18 +237,17 @@
                 }
 
                 // Delete geofence from database
-                _context.Geofences.Remove(geofence);
-                await _context.SaveChangesAsync();
+                await _uow.Geofences.RemoveAsync(geofence);
+                await _uow.CommitAsync();
 
                 _geofenceService.Delete(id);
 
                 // Get list of instances that have geofence
-                var instancesWithGeofence = _context.Instances.Where(instance => instance.Geofences.Contains(geofence.Name))
-                                                              .ToList();
+                var instancesWithGeofence = await _uow.Instances.FindAsync(instance => instance.Geofences.Contains(geofence.Name));
                 foreach (var instance in instancesWithGeofence)
                 {
                     instance.Geofences.Remove(geofence.Name);
-                    await _context.SaveChangesAsync();
+                    await _uow.CommitAsync();
 
                     // Reload instance so removed geofence is not ignored
                     await _jobControllerService.ReloadInstanceAsync(instance, instance.Name);

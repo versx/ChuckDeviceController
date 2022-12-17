@@ -6,7 +6,7 @@
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.PluginManager;
 
@@ -15,27 +15,27 @@
     {
         private readonly ILogger<PluginController> _logger;
         private readonly IUiHost _uiHost;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
 
         public PluginController(
             ILogger<PluginController> logger,
             IUiHost uiHost,
-            ControllerDbContext context)
+            IUnitOfWork uow)
         {
             _logger = logger;
             _uiHost = uiHost;
-            _context = context;
+            _uow = uow;
         }
 
         // GET: PluginController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
             var plugins = PluginManager.Instance.Plugins.Values.ToList();
-            var apiKeys = _context.ApiKeys.ToList();
+            var apiKeys = await _uow.ApiKeys.FindAllAsync();
             var model = new PluginsViewModel
             {
                 Plugins = plugins,
-                ApiKeys = apiKeys,
+                ApiKeys = apiKeys.ToList(),
             };
             return View(model);
         }

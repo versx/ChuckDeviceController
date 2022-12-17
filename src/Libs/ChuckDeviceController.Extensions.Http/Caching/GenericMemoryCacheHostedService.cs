@@ -121,7 +121,7 @@
             {
                 if (!_memCache.ContainsKey(typeName))
                 {
-                    _memCache.Add(typeName, new EntityMemoryCache(_options));
+                    _memCache.AddOrUpdate(typeName, new EntityMemoryCache(_options), (key, oldValue) => oldValue);
                 }
             }
         }

@@ -9,8 +9,8 @@
     using ChuckDeviceConfigurator.Utilities;
     using ChuckDeviceConfigurator.ViewModels;
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Data.Contexts;
     using ChuckDeviceController.Data.Entities;
+    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
 
     [Authorize(Roles = RoleConsts.IvListsRole)]
@@ -25,7 +25,7 @@
             "Purified",
         };
         private readonly ILogger<IvListController> _logger;
-        private readonly ControllerDbContext _context;
+        private readonly IUnitOfWork _uow;
         private readonly IIvListControllerService _ivListService;
 
         #endregion
@@ -34,20 +34,20 @@
 
         public IvListController(
             ILogger<IvListController> logger,
-            ControllerDbContext context,
+            IUnitOfWork uow,
             IIvListControllerService ivListService)
         {
             _logger = logger;
-            _context = context;
+            _uow = uow;
             _ivListService = ivListService;
         }
 
         #endregion
 
         // GET: IvListController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            var ivLists = _context.IvLists.ToList();
+            var ivLists = await _uow.IvLists.FindAllAsync();
             var model = new List<IvListViewModel>();
             foreach (var ivList in ivLists)
             {
@@ -76,7 +76,7 @@
         // GET: IvListController/Details/5
         public async Task<ActionResult> Details(string id)
         {
-            var ivList = await _context.IvLists.FindAsync(id);
+            var ivList = await _uow.IvLists.FindByIdAsync(id);
             if (ivList == null)
             {
                 // Failed to retrieve IV list from database, does it exist?
@@ -105,7 +105,7 @@
                                         .Split(',')
                                         .ToList();
 
-                if (_context.IvLists.Any(iv => iv.Name == name))
+                if (_uow.IvLists.Any(iv => iv.Name == name))
                 {
                     // IV list exists already by name
                     ModelState.AddModelError("IvList", $"IV list with name '{name}' already exists.");
@@ -118,8 +118,8 @@
                     PokemonIds = pokemonIds,
                 };
 
-                await _context.IvLists.AddAsync(ivList);
-                await _context.SaveChangesAsync();
+                await _uow.IvLists.AddAsync(ivList);
+                await _uow.CommitAsync();
 
                 _ivListService.Add(ivList);
 
@@ -135,7 +135,7 @@
         // GET: IvListController/Edit/5
         public async Task<ActionResult> Edit(string id)
         {
-            var ivList = await _context.IvLists.FindAsync(id);
+            var ivList = await _uow.IvLists.FindByIdAsync(id);
             if (ivList == null)
             {
                 // Failed to retrieve IV list from database, does it exist?
@@ -153,7 +153,7 @@
         {
             try
             {
-                var ivList = await _context.IvLists.FindAsync(id);
+                var ivList = await _uow.IvLists.FindByIdAsync(id);
                 if (ivList == null)
                 {
                     // Failed to retrieve IV list from database, does it exist?
@@ -165,7 +165,7 @@
                 var name = Convert.ToString(collection["Name"]);
                 if (ivList.Name != name)
                 {
-                    if (_context.IvLists.Any(list => list.Name == name && list.Name != id))
+                    if (_uow.IvLists.Any(list => list.Name == name && list.Name != id))
                     {
                         ModelState.AddModelError("IvList", $"IV list by name '{name}' already exists, please choose another name.");
                         return View();
@@ -185,8 +185,8 @@
                     ivList.PokemonIds = pokemonIds;
                 }
 
-                _context.Update(ivList);
-                await _context.SaveChangesAsync();
+                await _uow.IvLists.UpdateAsync(ivList);
+                await _uow.CommitAsync();
 
                 _ivListService.Edit(ivList, id);
 
@@ -202,7 +202,7 @@
         // GET: IvListController/Delete/5
         public async Task<ActionResult> Delete(string id)
         {
-            var ivList = await _context.IvLists.FindAsync(id);
+            var ivList = await _uow.IvLists.FindByIdAsync(id);
             if (ivList == null)
             {
                 // Failed to retrieve IV list from database, does it exist?
@@ -219,7 +219,7 @@
         {
             try
             {
-                var ivList = await _context.IvLists.FindAsync(id);
+                var ivList = await _uow.IvLists.FindByIdAsync(id);
                 if (ivList == null)
                 {
                     // Failed to retrieve IV list from database, does it exist?
@@ -228,8 +228,8 @@
                 }
 
                 // Delete IV list from database
-                _context.IvLists.Remove(ivList);
-                await _context.SaveChangesAsync();
+                await _uow.IvLists.RemoveAsync(ivList);
+                await _uow.CommitAsync();
 
                 _ivListService.Delete(id);
 
