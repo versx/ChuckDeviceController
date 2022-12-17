@@ -2,7 +2,6 @@
 {
     using System.ComponentModel.DataAnnotations.Schema;
 
-    using MySqlConnector;
     using POGOProtos.Rpc;
     using ConditionType = POGOProtos.Rpc.QuestConditionProto.Types.ConditionType;
     using RewardType = POGOProtos.Rpc.QuestRewardProto.Types.Type;
@@ -12,7 +11,6 @@
     using ChuckDeviceController.Common.Data.Contracts;
     using ChuckDeviceController.Data.Contracts;
     using ChuckDeviceController.Data.Extensions;
-    using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http.Caching;
 

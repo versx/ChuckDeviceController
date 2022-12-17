@@ -747,7 +747,7 @@
                     _logger.LogDebug($"Found Pokemon disk encounter with id '{displayId}' in cache");
 
                     //var pokemon = new Pokemon(connection, _memCache, data, cellId, username, isEvent);
-                    // TODO: Lookup old pokemon first then if not null update properties from map proto
+                    // TODO: Lookup old pokemon first, if not null update properties from map proto
                     var pokemon = await Pokemon.ParsePokemonFromMap(connection, _memCache, data, cellId, username, isEvent);
                     pokemon.AddDiskEncounter(cachedDiskEncounter, username);
 
@@ -787,8 +787,8 @@
 
         private async Task UpdateFortsAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> forts)
         {
-            //var webhooks = new Dictionary<WebhookType, List<BaseEntity>>();
-            var webhooks = new Dictionary<WebhookType, List<BaseFort>>();
+            var webhooks = new Dictionary<WebhookType, List<BaseEntity>>();
+            var incidents = new Dictionary<Pokestop, List<Incident>>();
             var count = forts.Count();
             var index = 1;
             var sw = new Stopwatch();
@@ -827,12 +827,19 @@
 
                             if (pokestopWebhooks.Any())
                             {
-                                // TODO: GroupWebhooks(pokestopWebhooks, webhooks);
+                                GroupWebhooks(pokestopWebhooks, webhooks);
                             }
 
-                            if (Options.ProcessIncidents)
+                            if (Options.ProcessIncidents && (pokestop.Incidents?.Any() ?? false))
                             {
-                                await UpdateIncidentsAsync(requestId, connection, pokestop);
+                                if (incidents.ContainsKey(pokestop))
+                                {
+                                    incidents[pokestop].AddRange(pokestop.Incidents);
+                                }
+                                else
+                                {
+                                    incidents.Add(pokestop, pokestop.Incidents?.ToList() ?? new());
+                                }
                             }
                             break;
                         case FortType.Gym:
@@ -848,7 +855,7 @@
 
                             if (gymWebhooks.Any())
                             {
-                                // TODO: webhooks.Merge<WebhookType, List<Gym>>(gymWebhooks);
+                                GroupWebhooks(gymWebhooks, webhooks);
                             }
                             break;
                     }
@@ -872,6 +879,11 @@
                 await SendWebhooksAsync(webhooks);
             }
 
+            if (Options.ProcessIncidents)
+            {
+                await UpdateIncidentsAsync(requestId, connection, incidents);
+            }
+
             // Send found/nearby forts with gRPC service for leveling instance
             var lvlForts = forts
                 .Where(fort => ((PokemonFortProto)fort.data).FortType == FortType.Checkpoint)
@@ -884,7 +896,7 @@
 
         private async Task UpdateFortDetailsAsync(string requestId, MySqlConnection connection, IEnumerable<dynamic> fortDetails)
         {
-            var webhooks = new Dictionary<WebhookType, List<BaseEntity>>();
+            var webhooks = new Dictionary<WebhookType, List<object>>();
             var sw = new Stopwatch();
 
             if (Options.ShowProcessingCount)
@@ -930,7 +942,7 @@
 
                         if (pokestopWebhooks.Any())
                         {
-                            // TODO: GroupWebhooks(pokestopWebhooks, webhooks);
+                            GroupWebhooks(pokestopWebhooks, webhooks);
                         }
                     }
                     catch (Exception ex)
@@ -992,7 +1004,7 @@
 
                         if (gymWebhooks.Any())
                         {
-                            // TODO: GroupWebhooks(gymWebhooks, webhooks);
+                            GroupWebhooks(gymWebhooks, webhooks);
                         }
                     }
                     catch (Exception ex)
@@ -1056,7 +1068,7 @@
 
                     if (gymWebhooks.Any())
                     {
-                        // TODO: GroupWebhooks(gymWebhooks, webhooks);
+                        GroupWebhooks(gymWebhooks, webhooks);
                     }
 
                     if (Options.ProcessGymDefenders || Options.ProcessGymTrainers)
@@ -1237,10 +1249,6 @@
 
                     //var oldPokemon = isNew ? null : await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache);
                     //await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: true);
-                    if (pokemon.CellId == 0)
-                    {
-                        Console.WriteLine($"Nope");
-                    }
                     await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
                     ProtoDataStatistics.Instance.TotalPokemonEncountersProcessed++;
 
@@ -1347,60 +1355,59 @@
             }
         }
 
-        private async Task UpdateIncidentsAsync(string requestId, MySqlConnection connection, Pokestop pokestop)
+        private async Task UpdateIncidentsAsync(string requestId, MySqlConnection connection, Dictionary<Pokestop, List<Incident>> pokestopIncidents)
         {
-            if (!(pokestop.Incidents?.Any() ?? false))
-                return;
-
             var sw = new Stopwatch();
-            var incidents = pokestop.Incidents;
             var webhooks = new List<PokestopWithIncident>();
-            var count = incidents.Count;
+            var count = pokestopIncidents.Values.Count;
             var index = 1;
 
             if (Options.ShowProcessingTimes)
             {
                 sw.Start();
-                //_logger.LogInformation($"[{requestId}] Parsing {count:N0} pokestop incidents");
+                _logger.LogInformation($"[{requestId}] Parsing {count:N0} pokestop incidents");
             }
 
             // Loop incidents
-            foreach (var incident in incidents)
+            foreach (var (pokestop, incidents) in pokestopIncidents)
             {
-                if (Options.ShowProcessingCount)
+                foreach (var incident in incidents)
                 {
-                    _logger.LogInformation($"[{requestId}] Parsing pokestop incident {index:N0}/{count:N0}");
-                }
-
-                try
-                {
-                    //Incident? oldIncident = null;
-                    var oldIncident = await EntityRepository.GetEntityAsync<string, Incident>(connection, incident.Id, _memCache);
-                    await incident.UpdateAsync(oldIncident, _memCache);
-
-                    if (incident.HasChanges)
+                    if (Options.ShowProcessingCount)
                     {
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.IncidentOnMergeUpdate, incident);
-                        ProtoDataStatistics.Instance.TotalIncidentsProcessed++;
+                        _logger.LogInformation($"[{requestId}] Parsing pokestop incident {index:N0}/{count:N0}");
                     }
 
-                    if (incident.SendWebhook)
+                    try
                     {
-                        webhooks.Add(new PokestopWithIncident(pokestop, incident));
+                        //Incident? oldIncident = null;
+                        var oldIncident = await EntityRepository.GetEntityAsync<string, Incident>(connection, incident.Id, _memCache);
+                        await incident.UpdateAsync(oldIncident, _memCache);
+
+                        if (incident.HasChanges)
+                        {
+                            await _dataConsumerService.AddEntityAsync(SqlQueryType.IncidentOnMergeUpdate, incident);
+                            ProtoDataStatistics.Instance.TotalIncidentsProcessed++;
+                        }
+
+                        if (incident.SendWebhook)
+                        {
+                            webhooks.Add(new PokestopWithIncident(pokestop, incident));
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"UpdateIncidentsAsync: {ex.InnerException?.Message ?? ex.Message}");
+                    }
+                    index++;
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"UpdateIncidentsAsync: {ex.InnerException?.Message ?? ex.Message}");
-                }
-                index++;
             }
 
             if (Options.ShowProcessingTimes)
             {
                 sw.Stop();
-                //var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-                //_logger.LogInformation($"[{requestId}] {count:N0} pokemon incidents parsed in {totalSeconds}s");
+                var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
+                _logger.LogInformation($"[{requestId}] {count:N0} pokemon incidents parsed in {totalSeconds}s");
             }
 
             if (webhooks.Any())
@@ -1411,24 +1418,6 @@
         }
 
         #endregion
-
-        //private static void GroupWebhooks<T>(Dictionary<WebhookType, T> webhook, Dictionary<WebhookType, List<T>> output)
-        //    where T : BaseEntity
-        private static void GroupWebhooks<T1, T2>(Dictionary<WebhookType, T1> input, Dictionary<WebhookType, List<T2>> output)
-            where T2 : T1
-        {
-            foreach (var (key, value) in input)
-            {
-                if (output!.ContainsKey(key))
-                {
-                    output[key].Add((T2)value!);
-                }
-                else
-                {
-                    output.Add(key, new() { (T2)value! });
-                }
-            }
-        }
 
         #region Private Methods
 
@@ -1472,6 +1461,7 @@
 
         private static WebhookPayloadType ConvertWebhookType(WebhookType type)
         {
+            // TODO: Consolidate webhook type enumerations
             return type switch
             {
                 WebhookType.Pokemon => WebhookPayloadType.Pokemon,
@@ -1490,6 +1480,22 @@
                 WebhookType.Accounts => WebhookPayloadType.Account,
                 _ => WebhookPayloadType.Pokemon,
             };
+        }
+
+        private static void GroupWebhooks<T1, T2>(Dictionary<WebhookType, T1> input, Dictionary<WebhookType, List<T2>> output)
+            where T1 : class, T2
+        {
+            foreach (var (key, value) in input)
+            {
+                if (output!.ContainsKey(key))
+                {
+                    output[key].Add((T2)value);
+                }
+                else
+                {
+                    output.Add(key, new List<T2> { (T2)value });
+                }
+            }
         }
 
         #endregion
