@@ -450,17 +450,10 @@
 
         private async Task SaveDevicesAsync(List<Device> devices)
         {
-            using (var context = _controllerFactory.CreateDbContext())
-            {
-                await context.Devices.BulkMergeAsync(devices, options =>
-                {
-                    options.UseTableLock = true;
-                    options.OnMergeUpdateInputExpression = p => new
-                    {
-                        p.InstanceName,
-                    };
-                });
-            }
+            using var context = _controllerFactory.CreateDbContext();
+            context.UpdateRange(devices);
+            // TODO: Update only device instance names
+            await context.SaveChangesAsync();
         }
 
         private List<Assignment> GetAssignments()

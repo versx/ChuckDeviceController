@@ -383,10 +383,8 @@
                     .Where(pokestop => Math.Abs((decimal)now - pokestop.Updated) > Strings.OneDayS)
                     .ToList();
 
-                await _mapContext.Pokestops.BulkDeleteAsync(pokestopsToDelete, options =>
-                {
-                    options.UseTableLock = true;
-                });
+                _mapContext.Pokestops.RemoveRange(pokestopsToDelete);
+                await _mapContext.SaveChangesAsync();
 
                 _logger.LogInformation($"Deleted {pokestopsToDelete.Count:N0} stale Pokestops from the database.");
                 return RedirectToAction(nameof(ClearStalePokestops));
@@ -489,6 +487,7 @@
         {
             try
             {
+                // TODO: Use optimize delete
                 var now = DateTime.UtcNow.ToTotalSeconds();
                 var time = Convert.ToUInt64(timeSpan * Strings.SixtyMinutesS);
                 var sw = new System.Diagnostics.Stopwatch();
@@ -496,24 +495,20 @@
                 {
                     case "Pokemon":
                         sw.Start();
-                        var pokemonCount = await _mapContext.Pokemon
-                            .Where(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time)
-                            .DeleteFromQueryAsync(options =>
-                            {
-                                options.UseTableLock = true;
-                            });
+                        var pokemonToDelete = _mapContext.Pokemon.Where(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time);
+                        var pokemonCount = pokemonToDelete.Count();
+                        _mapContext.Pokemon.RemoveRange(pokemonToDelete);
+                        await _mapContext.SaveChangesAsync();
                         sw.Stop();
                         var pkmnSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
                         _logger.LogInformation($"Successfully deleted {pokemonCount:N0} old Pokemon from the database in {pkmnSeconds}s");
                         break;
                     case "Incidents":
                         sw.Start();
-                        var invasionsCount = await _mapContext.Incidents
-                            .Where(incident => Math.Abs((decimal)now - incident.Expiration) > time)
-                            .DeleteFromQueryAsync(options =>
-                            {
-                                options.UseTableLock = true;
-                            });
+                        var incidentsToDelete = _mapContext.Incidents.Where(incident => Math.Abs((decimal)now - incident.Expiration) > time);
+                        var invasionsCount = incidentsToDelete.Count();
+                        _mapContext.Incidents.RemoveRange(incidentsToDelete);
+                        await _mapContext.SaveChangesAsync();
                         sw.Stop();
                         var invasionSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
                         _logger.LogInformation($"Successfully deleted {invasionsCount:N0} old Invasions from the database in {invasionSeconds}s");

@@ -381,7 +381,6 @@ else
     app.UseHsts();
 }
 
-// TODO: app.UseMiddleware<UnhandledExceptionMiddleware>();
 if (jwtConfig.Enabled)
 {
     // Controls whether to protect the gRPC endpoints with JWT

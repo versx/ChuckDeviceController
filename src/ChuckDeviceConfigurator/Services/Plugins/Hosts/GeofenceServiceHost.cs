@@ -24,14 +24,6 @@
         public async Task CreateGeofenceAsync(IGeofence options)
         {
             using var context = DbContextFactory.CreateControllerContext(_connectionString);
-            /* TODO: Either keep this conditional check and create a separate Update method or remove it and reuse the same method
-            if (context.Geofences.Any(g => g.Name == options.Name))
-            {
-                _logger.LogError($"Geofence already exists with name '{options.Name}', failed to create geofence.");
-                return;
-            }
-            */
-
             var geofence = new Geofence
             {
                 Name = options.Name,
@@ -42,16 +34,15 @@
                 },
             };
 
-            // TODO: Use Dapper or vanilla EfCore
-            await context.SingleMergeAsync(geofence, options =>
+            if (context.Geofences.Any(x => x.Name == options.Name))
             {
-                options.UseTableLock = true;
-                options.OnMergeUpdateInputExpression = p => new
-                {
-                    p.Type,
-                    p.Data,
-                };
-            });
+                context.Geofences.Update(geofence);
+            }
+            else
+            {
+                await context.Geofences.AddAsync(geofence);
+            }
+            await context.SaveChangesAsync();
         }
 
         public async Task<IGeofence> GetGeofenceAsync(string name)

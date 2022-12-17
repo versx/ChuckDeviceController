@@ -67,7 +67,6 @@
         [Column("updated")]
         public ulong Updated { get; set; }
 
-        // TODO: Just use one condition for changes
         [NotMapped]
         public bool SendWebhook { get; set; }
 
@@ -109,14 +108,10 @@
 
         #region Public Methods
 
-        //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipLookup = false)
         public async Task UpdateAsync(Weather? oldWeather, IMemoryCacheHostedService memCache)
         {
             Updated = DateTime.UtcNow.ToTotalSeconds();
 
-            //var oldWeather = skipLookup
-            //    ? null
-            //    : await EntityRepository.GetEntityAsync<long, Weather>(connection, Id, memCache);
             if (oldWeather == null)
             {
                 SendWebhook = true;

@@ -174,30 +174,18 @@
                 MaximumLevel = options.MaximumLevel,
                 Geofences = options.Geofences,
                 Data = options.Data,
-                //Data = new InstanceData
-                //{
-                //    AccountGroup = options.Data.AccountGroup,
-                //    IsEvent = options.Data.IsEvent,
-                //    CustomInstanceType = options.Data.CustomInstanceType,
-                //    // Maybe register the properties via the 'host' and keep track via dict like SettingsHost does ...
-                //    // Load InstanceData properties from plugins as well as instances into a dictionary, loop properties for Create/Edit views. :thinking:
-                //    // Sounds terrible... low priority
-                //},
             };
 
             using var context = _deviceFactory.CreateDbContext();
-            await context.Instances.SingleMergeAsync(instance, options =>
+            if (context.Instances.Any(x => x.Name == options.Name))
             {
-                options.UseTableLock = true;
-                options.OnMergeUpdateInputExpression = p => new
-                {
-                    p.Type,
-                    p.MinimumLevel,
-                    p.MaximumLevel,
-                    p.Geofences,
-                    p.Data,
-                };
-            });
+                context.Instances.Update(instance);
+            }
+            else
+            {
+                await context.Instances.AddAsync(instance);
+            }
+            await context.SaveChangesAsync();
 
             await AddInstanceAsync(instance);
         }

@@ -9,7 +9,6 @@
             string assemblyName,
             MySqlResiliencyOptions resiliencyOptions)
         {
-            // TODO: options.MigrationsHistoryTable("");
             options.CommandTimeout(resiliencyOptions.CommandTimeoutS);
             options.EnableIndexOptimizedBooleanColumns(true);
             options.EnableRetryOnFailure(resiliencyOptions.MaximumRetryCount, TimeSpan.FromSeconds(resiliencyOptions.RetryIntervalS), null);

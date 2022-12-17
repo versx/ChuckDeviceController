@@ -9,17 +9,16 @@
     public interface IGeofenceServiceHost
     {
         /// <summary>
-        /// 
+        /// Create a new or update an existing geofence.
         /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
+        /// <param name="options">Geofence options used to create or update.</param>
         Task CreateGeofenceAsync(IGeofence options);
 
         /// <summary>
-        /// 
+        /// Retrieves a geofence from the database by name.
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <param name="name">Name of geofence to retrieve.</param>
+        /// <returns>Returns a geofence interface contract.</returns>
         Task<IGeofence> GetGeofenceAsync(string name);
 
         /// <summary>

@@ -1079,7 +1079,6 @@
 
                         foreach (var gymDefenderData in gymDefenders)
                         {
-                            // TODO: Implement webhook logic for GymDefender and GymTrainer
                             if (Options.ProcessGymTrainers && gymDefenderData.TrainerPublicProfile != null)
                             {
                                 var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);

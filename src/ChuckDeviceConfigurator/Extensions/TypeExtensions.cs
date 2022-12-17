@@ -25,13 +25,6 @@
                 { typeof(IReadOnlyList<IGeofence>), geofences }
             };
 
-            var attributes = jobControllerType.GetCustomAttributes(typeof(GeofenceTypeAttribute), false);
-            if (!(attributes?.Any() ?? false))
-            {
-                // No geofence attributes specified but is required
-                return null;
-            }
-
             var ctors = jobControllerType.GetPluginConstructors();
             if (!(ctors?.Any() ?? false))
             {
@@ -43,8 +36,8 @@
             var parameters = constructorInfo.GetParameters();
             var list = new List<object>(parameters.Length);
 
-            // TODO: Remove GeofenceTypeAttribute requirement
-            if (attributes!.FirstOrDefault() is not GeofenceTypeAttribute attr)
+            var attr = jobControllerType.GetCustomAttribute<GeofenceTypeAttribute>(false);
+            if (attr == null)
             {
                 // Failed to find 'GeofenceTypeAttribute' for job controller
                 return null;
