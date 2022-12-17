@@ -15,6 +15,7 @@
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Services;
+    using ChuckDeviceController.Services.DataProcessor;
 
     // TODO: Consider storing protos as Dictionary<string, List<ProtoPayload>> queue
 
@@ -420,20 +421,9 @@
 
             if (!string.IsNullOrEmpty(username) && xp > 0 && level > 0)
             {
-                var playerInfo = new
-                {
-                    username,
-                    xp,
-                    level,
-                };
                 // Inform frontend/configurator via RPC of trainer account XP and Level for leveling instance stats
-                // TODO: Send in new thread
-                await _grpcProtoClient.SendAsync(new PayloadRequest
-                {
-                    PayloadType = PayloadType.PlayerInfo,
-                    Payload = playerInfo.ToJson(),
-                    Username = username,
-                });
+                var json = new { username, xp, level }.ToJson();
+                await SendPlayerInfoAsync(username, json);
             }
 
             if (!processedProtos.Any())
@@ -679,6 +669,27 @@
             {
                 _logger.LogWarning($"Proto processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
             }
+        }
+
+        private async Task SendPlayerInfoAsync(string username, string json)
+        {
+            // Fire off gRPC request on a separate thread
+            await Task.Run(() =>
+            {
+                new Thread(async () =>
+                {
+                    // Send got trainer info proto message
+                    await _grpcProtoClient.SendAsync(new PayloadRequest
+                    {
+                        PayloadType = PayloadType.PlayerInfo,
+                        Payload = json,
+                        Username = username,
+                    });
+                })
+                { IsBackground = true }.Start();
+            });
+
+            await Task.CompletedTask;
         }
 
         #endregion

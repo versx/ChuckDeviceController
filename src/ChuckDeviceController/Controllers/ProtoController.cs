@@ -16,7 +16,7 @@
     using ChuckDeviceController.Extensions.Http.Caching;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Net.Models.Responses;
-    using ChuckDeviceController.Services;
+    using ChuckDeviceController.Services.ProtoProcessor;
 
     [ApiController]
     public class ProtoController : ControllerBase
