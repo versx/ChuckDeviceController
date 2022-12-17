@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace ChuckDeviceController.Services.DataConsumer
 {
     using System.Collections.Concurrent;
     using System.Collections.Generic;

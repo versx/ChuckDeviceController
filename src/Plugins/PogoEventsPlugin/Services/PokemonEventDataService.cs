@@ -30,7 +30,7 @@
 
         public PokemonEventDataService()
         {
-            FetchActiveEventsAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            Task.Run(async () => await FetchActiveEventsAsync()).Wait();
         }
 
         private async Task FetchActiveEventsAsync()

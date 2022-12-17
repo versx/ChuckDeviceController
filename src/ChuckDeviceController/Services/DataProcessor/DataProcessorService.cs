@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace ChuckDeviceController.Services.DataProcessor
 {
     using System.Data;
     using System.Diagnostics;
@@ -28,6 +28,7 @@
     using ChuckDeviceController.Protos;
     using ChuckDeviceController.Pvp;
     using ChuckDeviceController.Pvp.Models;
+    using ChuckDeviceController.Services.DataConsumer;
 
     // TODO: Add webhook sender service - add webhook items to queue
 
@@ -129,15 +130,15 @@
                     return;
                 }
 
-                var workItems = _taskQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
-                if (!(workItems?.Any() ?? false))
+                var protos = _taskQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
+                if (!(protos?.Any() ?? false))
                 {
                     _semParser.Release();
                     return;
                 }
 
-                var items = DataItems.ParseWorkItems(workItems);
-                //var result = ProcessWorkItemAsync(connection, items, stoppingToken);
+                var manifest = ProtoDataManifest.ParseProtoManifest(protos);
+                //var result = ProcessprotosAsync(connection, items, stoppingToken);
                 //while (!result.IsCompleted)
                 //{
                 //    //Console.WriteLine($"Waiting for DataProcessor to finish...");
@@ -147,13 +148,20 @@
                 //Console.WriteLine($"Finished data processing...");
                 new Thread(async () =>
                 {
-                    using var connection = await EntityRepository.CreateConnectionAsync($"{nameof(DataProcessorService)}::RunJobAsync", stoppingToken: stoppingToken);
+                    using var connection = await EntityRepository.CreateConnectionAsync(
+                        $"{nameof(DataProcessorService)}::RunJobAsync",
+                        openConnection: true,
+                        runLeakWatcher: true,
+                        waitTimeS: 30,
+                        connectionLeakTimeoutS: 300,
+                        stoppingToken
+                    );
                     if (connection == null)
                     {
                         _logger.LogError($"Failed to connect to MySQL database server!");
                         return;
                     }
-                    await ProcessWorkItemAsync(connection, items, stoppingToken);
+                    await ProcessprotosAsync(connection, manifest, stoppingToken);
                 })
                 { IsBackground = true }.Start();
             }
@@ -170,9 +178,9 @@
             Thread.Sleep(1);
         }
 
-        private async Task ProcessWorkItemAsync(MySqlConnection connection, DataItems workItem, CancellationToken stoppingToken = default)
+        private async Task ProcessprotosAsync(MySqlConnection connection, ProtoDataManifest protos, CancellationToken stoppingToken = default)
         {
-            if (workItem == null)
+            if (protos == null)
                 return;
 
             CheckQueueLength();
@@ -183,96 +191,96 @@
                 sw.Start();
             }
 
-            ProtoDataStatistics.Instance.TotalPlayerDataReceived += (uint)workItem.PlayerData.Count();
-            ProtoDataStatistics.Instance.TotalS2CellsReceived += (uint)workItem.Cells.Count();
-            ProtoDataStatistics.Instance.TotalClientWeatherCellsReceived += (uint)workItem.Weather.Count();
-            ProtoDataStatistics.Instance.TotalFortsReceived += (uint)workItem.Forts.Count();
-            ProtoDataStatistics.Instance.TotalFortDetailsReceived += (uint)workItem.FortDetails.Count();
-            ProtoDataStatistics.Instance.TotalGymInfoReceived += (uint)workItem.GymInfo.Count();
-            ProtoDataStatistics.Instance.TotalWildPokemonReceived += (uint)workItem.WildPokemon.Count();
-            ProtoDataStatistics.Instance.TotalNearbyPokemonReceived += (uint)workItem.NearbyPokemon.Count();
-            ProtoDataStatistics.Instance.TotalMapPokemonReceived += (uint)workItem.MapPokemon.Count();
-            ProtoDataStatistics.Instance.TotalQuestsReceived += (uint)workItem.Quests.Count();
-            ProtoDataStatistics.Instance.TotalPokemonEncountersReceived += (uint)workItem.Encounters.Count();
-            ProtoDataStatistics.Instance.TotalPokemonDiskEncountersReceived += (uint)workItem.DiskEncounters.Count();
+            ProtoDataStatistics.Instance.TotalPlayerDataReceived += (uint)protos.PlayerData.Count();
+            ProtoDataStatistics.Instance.TotalS2CellsReceived += (uint)protos.Cells.Count();
+            ProtoDataStatistics.Instance.TotalClientWeatherCellsReceived += (uint)protos.Weather.Count();
+            ProtoDataStatistics.Instance.TotalFortsReceived += (uint)protos.Forts.Count();
+            ProtoDataStatistics.Instance.TotalFortDetailsReceived += (uint)protos.FortDetails.Count();
+            ProtoDataStatistics.Instance.TotalGymInfoReceived += (uint)protos.GymInfo.Count();
+            ProtoDataStatistics.Instance.TotalWildPokemonReceived += (uint)protos.WildPokemon.Count();
+            ProtoDataStatistics.Instance.TotalNearbyPokemonReceived += (uint)protos.NearbyPokemon.Count();
+            ProtoDataStatistics.Instance.TotalMapPokemonReceived += (uint)protos.MapPokemon.Count();
+            ProtoDataStatistics.Instance.TotalQuestsReceived += (uint)protos.Quests.Count();
+            ProtoDataStatistics.Instance.TotalPokemonEncountersReceived += (uint)protos.Encounters.Count();
+            ProtoDataStatistics.Instance.TotalPokemonDiskEncountersReceived += (uint)protos.DiskEncounters.Count();
 
             var requestId = Guid.NewGuid().ToString()[..8];
             try
             {
                 // Parse player account data
-                if (Options.ProcessPlayerData && workItem.PlayerData.Any())
+                if (Options.ProcessPlayerData && protos.PlayerData.Any())
                 {
-                    await UpdatePlayerDataAsync(requestId, connection, workItem.PlayerData);
+                    await UpdatePlayerDataAsync(requestId, connection, protos.PlayerData);
                 }
 
                 // Parse S2 cells
-                if (Options.ProcessCells && workItem.Cells.Any())
+                if (Options.ProcessCells && protos.Cells.Any())
                 {
-                    await UpdateCellsAsync(requestId, workItem.Cells);
+                    await UpdateCellsAsync(requestId, protos.Cells);
                 }
 
                 // Parse weather cells
-                if (Options.ProcessWeather && workItem.Weather.Any())
+                if (Options.ProcessWeather && protos.Weather.Any())
                 {
-                    await UpdateClientWeatherAsync(requestId, connection, workItem.Weather);
+                    await UpdateClientWeatherAsync(requestId, connection, protos.Weather);
                 }
 
                 // Parse Pokestop and Gym forts
-                if (Options.ProcessForts && workItem.Forts.Any())
+                if (Options.ProcessForts && protos.Forts.Any())
                 {
-                    await UpdateFortsAsync(requestId, connection, workItem.Forts);
+                    await UpdateFortsAsync(requestId, connection, protos.Forts);
                 }
 
                 // Parse Fort Details
-                if (Options.ProcessFortDetails && workItem.FortDetails.Any())
+                if (Options.ProcessFortDetails && protos.FortDetails.Any())
                 {
-                    await UpdateFortDetailsAsync(requestId, connection, workItem.FortDetails);
+                    await UpdateFortDetailsAsync(requestId, connection, protos.FortDetails);
                 }
 
                 // Parse gym info
-                if (Options.ProcessGymInfo && workItem.GymInfo.Any())
+                if (Options.ProcessGymInfo && protos.GymInfo.Any())
                 {
-                    await UpdateGymInfoAsync(requestId, connection, workItem.GymInfo);
+                    await UpdateGymInfoAsync(requestId, connection, protos.GymInfo);
                 }
 
                 // Parse wild pokemon
-                if (Options.ProcessWildPokemon && workItem.WildPokemon.Any())
+                if (Options.ProcessWildPokemon && protos.WildPokemon.Any())
                 {
-                    await UpdateWildPokemonAsync(requestId, connection, workItem.WildPokemon);
+                    await UpdateWildPokemonAsync(requestId, connection, protos.WildPokemon);
                 }
 
                 // Parse nearby pokemon
-                if (Options.ProcessNearbyPokemon && workItem.NearbyPokemon.Any())
+                if (Options.ProcessNearbyPokemon && protos.NearbyPokemon.Any())
                 {
-                    await UpdateNearbyPokemonAsync(requestId, connection, workItem.NearbyPokemon);
+                    await UpdateNearbyPokemonAsync(requestId, connection, protos.NearbyPokemon);
                 }
 
                 // Parse map pokemon
-                if (Options.ProcessMapPokemon && workItem.MapPokemon.Any())
+                if (Options.ProcessMapPokemon && protos.MapPokemon.Any())
                 {
-                    await UpdateMapPokemonAsync(requestId, connection, workItem.MapPokemon);
+                    await UpdateMapPokemonAsync(requestId, connection, protos.MapPokemon);
                 }
 
                 // Parse pokemon encounters
-                if (Options.ProcessEncounters && workItem.Encounters.Any())
+                if (Options.ProcessEncounters && protos.Encounters.Any())
                 {
-                    await UpdateEncountersAsync(requestId, connection, workItem.Encounters);
+                    await UpdateEncountersAsync(requestId, connection, protos.Encounters);
                 }
 
                 // Parse pokemon disk encounters
-                if (Options.ProcessDiskEncounters && workItem.DiskEncounters.Any())
+                if (Options.ProcessDiskEncounters && protos.DiskEncounters.Any())
                 {
-                    await UpdateDiskEncountersAsync(requestId, connection, workItem.DiskEncounters);
+                    await UpdateDiskEncountersAsync(requestId, connection, protos.DiskEncounters);
                 }
 
                 // Parse pokestop quests
-                if (Options.ProcessQuests && workItem.Quests.Any())
+                if (Options.ProcessQuests && protos.Quests.Any())
                 {
-                    await UpdateQuestsAsync(requestId, connection, workItem.Quests);
+                    await UpdateQuestsAsync(requestId, connection, protos.Quests);
                 }
 
                 //Parallel.ForEach(tasks, async (task, token) => await task.ConfigureAwait(false));
-                ProtoDataStatistics.Instance.TotalEntitiesProcessed += (uint)workItem.Count;
+                ProtoDataStatistics.Instance.TotalEntitiesProcessed += (uint)protos.Count;
             }
             catch (Exception ex)
             {
@@ -283,7 +291,7 @@
             {
                 sw.Stop();
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-                _logger.LogInformation($"[{requestId}] Finished parsing {workItem.Count:N0} data entities{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
+                _logger.LogInformation($"[{requestId}] Finished parsing {protos.Count:N0} data entities{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
             }
 
             await Task.CompletedTask;
@@ -1453,32 +1461,9 @@
                 iv,
                 level
             );
-            pokemon.PvpRankings = pvpRanks != null && pvpRanks.Count > 0
+            pokemon.PvpRankings = pvpRanks != null && pvpRanks.Any()
                 ? (Dictionary<string, dynamic>)pvpRanks
                 : null;
-        }
-
-        private static WebhookPayloadType ConvertWebhookType(WebhookType type)
-        {
-            // TODO: Consolidate webhook type enumerations
-            return type switch
-            {
-                WebhookType.Pokemon => WebhookPayloadType.Pokemon,
-                WebhookType.Pokestops => WebhookPayloadType.Pokestop,
-                WebhookType.Lures => WebhookPayloadType.Lure,
-                WebhookType.Invasions => WebhookPayloadType.Invasion,
-                WebhookType.Quests => WebhookPayloadType.Quest,
-                WebhookType.AlternativeQuests => WebhookPayloadType.AlternativeQuest,
-                WebhookType.Gyms => WebhookPayloadType.Gym,
-                WebhookType.GymInfo => WebhookPayloadType.GymInfo,
-                WebhookType.GymDefenders => WebhookPayloadType.GymDefender,
-                WebhookType.GymTrainers => WebhookPayloadType.GymTrainer,
-                WebhookType.Eggs => WebhookPayloadType.Egg,
-                WebhookType.Raids => WebhookPayloadType.Raid,
-                WebhookType.Weather => WebhookPayloadType.Weather,
-                WebhookType.Accounts => WebhookPayloadType.Account,
-                _ => WebhookPayloadType.Pokemon,
-            };
         }
 
         private static void GroupWebhooks<T1, T2>(Dictionary<WebhookType, T1> input, Dictionary<WebhookType, List<T2>> output)
@@ -1508,7 +1493,7 @@
             {
                 new Thread(async () =>
                 {
-                    var webhookType = ConvertWebhookType(type);
+                    var webhookType = type.ConvertWebhookType();
                     foreach (var webhook in webhooks)
                     {
                         await SendWebhookAsync(webhookType, webhook);
@@ -1527,7 +1512,7 @@
                 {
                     foreach (var (type, entities) in webhooks)
                     {
-                        var webhookType = ConvertWebhookType(type);
+                        var webhookType = type.ConvertWebhookType();
                         foreach (var entity in entities)
                         {
                             await SendWebhookAsync(webhookType, entity);
@@ -1657,7 +1642,7 @@
         #endregion
     }
 
-    public class DataItems
+    public class ProtoDataManifest
     {
         public IEnumerable<dynamic> PlayerData { get; internal set; } = Array.Empty<dynamic>();
 
@@ -1700,7 +1685,7 @@
             Encounters.Count() +
             DiskEncounters.Count();
 
-        public DataItems(
+        public ProtoDataManifest(
             IEnumerable<dynamic> playerData,
             IEnumerable<ulong> cells,
             IEnumerable<ClientWeatherProto> weather,
@@ -1728,9 +1713,9 @@
             DiskEncounters = diskEncounters;
         }
 
-        public static DataItems ParseWorkItems(IEnumerable<DataQueueItem> workItems)
+        public static ProtoDataManifest ParseProtoManifest(IEnumerable<DataQueueItem> protoss)
         {
-            var items = workItems.SelectMany(x => x.Data!);
+            var items = protoss.SelectMany(x => x.Data!);
             var playerData = items
                 .Where(x => x.type == ProtoDataType.PlayerData)
                 .ToList();
@@ -1772,11 +1757,13 @@
                 .Where(x => x.type == ProtoDataType.DiskEncounter)
                 .ToList();
 
-            return new DataItems(
+            return new ProtoDataManifest
+            (
                 playerData, cells, clientWeather,
                 forts, fortDetails, gymInfos,
                 wildPokemon, nearbyPokemon, mapPokemon,
-                quests, encounters, diskEncounters);
+                quests, encounters, diskEncounters
+            );
         }
     }
 }

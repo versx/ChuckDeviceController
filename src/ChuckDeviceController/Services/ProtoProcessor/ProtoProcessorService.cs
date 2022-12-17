@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace ChuckDeviceController.Services.ProtoProcessor
 {
     using System.Collections.Concurrent;
     using System.Diagnostics;
@@ -14,6 +14,7 @@
     using ChuckDeviceController.HostedServices;
     using ChuckDeviceController.Net.Models.Requests;
     using ChuckDeviceController.Protos;
+    using ChuckDeviceController.Services;
 
     // TODO: Consider storing protos as Dictionary<string, List<ProtoPayload>> queue
 

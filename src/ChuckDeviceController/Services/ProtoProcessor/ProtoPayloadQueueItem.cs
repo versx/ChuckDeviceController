@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace ChuckDeviceController.Services.ProtoProcessor
 {
     using ChuckDeviceController.Data.Entities;
     using ChuckDeviceController.Net.Models.Requests;

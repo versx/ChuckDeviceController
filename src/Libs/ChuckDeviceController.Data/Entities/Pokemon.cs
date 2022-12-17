@@ -28,10 +28,6 @@
         public const ushort DittoStruggleChargeMove = (ushort)HoloPokemonMove.Struggle; // 133
         public const uint WeatherBoostMinLevel = 6;
         public const uint WeatherBoostMinIvStat = 4;
-        public const bool PvpEnabled = true; // TODO: Make 'EnablePvp' configurable via config
-        public const bool CellPokemonEnabled = true; // TODO: Make 'CellPokemonEnabled' configurable via config
-        public const bool SaveSpawnpointLastSeen = true; // TODO: Make 'SaveSpawnpointLastSeen' configurable via config
-        public const bool WeatherIvClearingEnabled = true; // TODO: Make 'WeatherIvClearingEnabled' configurable via config
 
         #endregion
 
@@ -249,7 +245,7 @@
             double lon;
             if (string.IsNullOrEmpty(pokestopId))
             {
-                if (!CellPokemonEnabled)
+                if (!EntityConfiguration.EnableMapPokemon)
                 {
                     return null;
                 }
@@ -595,7 +591,6 @@
             Changed = Updated;
         }
 
-        //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool updateIv = false, bool skipLookup = false)
         public async Task UpdateAsync(Pokemon? oldPokemon, IMemoryCacheHostedService memCache, bool updateIv = false)
         {
             var updateIV = updateIv;
@@ -757,7 +752,7 @@
                     setIvForWeather = false;
                     updateIV = true;
                 }
-                else if (weatherChanged && oldPokemon.AttackIV != null && WeatherIvClearingEnabled)
+                else if (weatherChanged && oldPokemon.AttackIV != null && EntityConfiguration.EnableWeatherIvClearing)
                 {
                     Console.WriteLine($"Pokemon {Id} changed weather boost state. Clearing IVs.");
                     setIvForWeather = true;
@@ -841,7 +836,7 @@
                     Latitude = Latitude,
                     Longitude = Longitude,
                     DespawnSecond = Convert.ToUInt16(secondOfHour),
-                    LastSeen = SaveSpawnpointLastSeen ? now : null,
+                    LastSeen = EntityConfiguration.SaveSpawnpointLastSeen ? now : null,
                     Updated = now,
                 };
                 await spawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
@@ -864,7 +859,7 @@
                         despawnOffset += 3600;
 
                     // Update spawnpoint last_seen if enabled
-                    if (SaveSpawnpointLastSeen)
+                    if (EntityConfiguration.SaveSpawnpointLastSeen)
                     {
                         oldSpawnpoint.LastSeen = now;
                     }
@@ -881,7 +876,7 @@
                         Latitude = Latitude,
                         Longitude = Longitude,
                         DespawnSecond = null,
-                        LastSeen = SaveSpawnpointLastSeen ? now : null,
+                        LastSeen = EntityConfiguration.SaveSpawnpointLastSeen ? now : null,
                         Updated = now,
                     };
                     await newSpawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);

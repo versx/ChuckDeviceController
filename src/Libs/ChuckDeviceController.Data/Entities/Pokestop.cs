@@ -19,7 +19,6 @@
     {
         #region Constants
 
-        public const ushort DefaultLureTimeS = 1800; // TODO: Make 'DefaultLureTimeS' configurable
         public const string UnknownPokestopName = "Unknown";
 
         private static readonly List<Item> AvailableLures = new()
@@ -194,9 +193,9 @@
 
             if (fortData.ActiveFortModifier != null)
             {
-                if (AvailableLures.Any(lure => fortData.ActiveFortModifier.Contains(lure)))
+                if (AvailableLures.Any(fortData.ActiveFortModifier.Contains))
                 {
-                    LureExpireTimestamp = lastModifiedTimestamp + DefaultLureTimeS;
+                    LureExpireTimestamp = lastModifiedTimestamp + EntityConfiguration.LureTimeS;
                     LureId = Convert.ToUInt16(fortData.ActiveFortModifier[0]);
                 }
             }
@@ -219,8 +218,9 @@
             if (incidents != null)
             {
                 var now = DateTime.UtcNow.ToTotalSeconds();
-                Incidents = incidents.Select(pokestopDisplay => new Incident(now, Id, pokestopDisplay))
-                                     .ToList();
+                Incidents = incidents
+                    .Select(pokestopDisplay => new Incident(now, Id, pokestopDisplay))
+                    .ToList();
             }
         }
 

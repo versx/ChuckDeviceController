@@ -534,7 +534,6 @@
             }
         }
 
-        // TODO: Add support for dictionary of forts by username
         public void GotFort(PokemonFortProto fort, string username)
         {
             foreach (var (_, jobController) in _instances)

@@ -12,6 +12,7 @@ using ChuckDeviceController;
 using ChuckDeviceController.Authorization.Jwt.Extensions;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Configuration;
+using ChuckDeviceController.Data;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
@@ -21,7 +22,9 @@ using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Logging;
 using ChuckDeviceController.Protos;
 using ChuckDeviceController.Pvp;
-using ChuckDeviceController.Services;
+using ChuckDeviceController.Services.DataConsumer;
+using ChuckDeviceController.Services.DataProcessor;
+using ChuckDeviceController.Services.ProtoProcessor;
 using ChuckDeviceController.Services.Rpc;
 
 
@@ -82,6 +85,16 @@ builder.Services.Configure<GrpcEndpointsConfig>(config.GetSection("Grpc"));
 builder.Services.Configure<ProtoProcessorOptionsConfig>(config.GetSection("ProcessingOptions:Protos"));
 builder.Services.Configure<DataProcessorOptionsConfig>(config.GetSection("ProcessingOptions:Data"));
 builder.Services.Configure<DataConsumerOptionsConfig>(config.GetSection("ProcessingOptions:Consumer"));
+
+var gymOptions = new GymOptions();
+var pokestopOptions = new PokestopOptions();
+var pokemonOptions = new PokemonOptions();
+config.Bind("GymOptions", gymOptions);
+config.Bind("PokestopOptions", pokestopOptions);
+config.Bind("PokemonOptions", pokemonOptions);
+EntityConfiguration.LoadGymOptions(gymOptions);
+EntityConfiguration.LoadPokestopOptions(pokestopOptions);
+EntityConfiguration.LoadPokemonOptions(pokemonOptions);
 
 #endregion
 

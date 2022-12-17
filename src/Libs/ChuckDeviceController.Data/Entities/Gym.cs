@@ -17,9 +17,6 @@
     {
         #region Constants
 
-        // TODO: Make 'ExRaidBossId' and 'ExRaidBossForm' configurable
-        public const ushort ExRaidBossId = 150;
-        public const ushort ExRaidBossFormId = 0;
         public const string UnknownGymName = "Unknown";
 
         #endregion
@@ -208,11 +205,11 @@
         {
             var webhooks = new Dictionary<WebhookType, Gym>();
 
-            if (RaidIsExclusive != null && (RaidIsExclusive ?? false) && ExRaidBossId > 0)
+            if (RaidIsExclusive != null && (RaidIsExclusive ?? false) && EntityConfiguration.ExRaidBossId > 0)
             {
                 // Set exclusive raid details
-                RaidPokemonId = ExRaidBossId;
-                RaidPokemonForm = ExRaidBossFormId;
+                RaidPokemonId = EntityConfiguration.ExRaidBossId;
+                RaidPokemonForm = EntityConfiguration.ExRaidBossFormId;
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();

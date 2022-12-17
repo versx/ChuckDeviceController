@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace ChuckDeviceController.Services.DataConsumer
 {
     using ChuckDeviceController.Data;
     using ChuckDeviceController.Data.Entities;
