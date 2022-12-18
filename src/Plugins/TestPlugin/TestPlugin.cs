@@ -619,7 +619,7 @@
         private async Task TestAuthorizeHost()
         {
             var roleName = "TestRole";
-            var result = await _authHost.RegisterRole(roleName);
+            var result = await _authHost.RegisterRole(roleName, 3);
             _loggingHost.LogInformation($"Role Result: {result}");
         }
 

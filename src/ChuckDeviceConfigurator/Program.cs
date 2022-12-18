@@ -12,6 +12,7 @@ using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Extensions;
 using ChuckDeviceConfigurator.Localization;
+using ChuckDeviceConfigurator.Services;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
@@ -238,7 +239,7 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     var memCache = new GenericMemoryCacheHostedService(
         GenericLoggerFactory.CreateLogger<IMemoryCacheHostedService>(),
         Options.Create(memCacheConfig)
-    ); ;
+    );
     return memCache;
 });
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
@@ -264,6 +265,7 @@ builder.Services.AddDistributedMemoryCache();
 
 #region Hosted Services
 
+builder.Services.AddHostedService<AccountStatusService>();
 builder.Services.AddHostedService<GenericMemoryCacheHostedService>();
 
 #endregion

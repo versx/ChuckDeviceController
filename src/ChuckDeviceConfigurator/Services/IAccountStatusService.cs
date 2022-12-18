@@ -3,8 +3,4 @@
     public interface IAccountStatusService
     {
     }
-
-    public class AccountStatusService : IAccountStatusService
-    {
-    }
 }

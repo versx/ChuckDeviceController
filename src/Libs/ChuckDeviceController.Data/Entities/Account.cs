@@ -254,7 +254,7 @@
             NotMapped,
             JsonPropertyName("is_account_in_cooldown"),
         ]
-        public bool IsAccountInCooldown => LastEncounterTime > 0 && CooldownPeriodS >= DateTime.UtcNow.ToTotalSeconds() - LastEncounterTime;
+        public bool IsAccountInCooldown => LastEncounterTime > 0 && LastEncounterTime >= DateTime.UtcNow.ToTotalSeconds() - CooldownPeriodS;
 
         [
             NotMapped,

@@ -17,8 +17,6 @@
     using ChuckDeviceController.Services;
     using ChuckDeviceController.Services.DataProcessor;
 
-    // TODO: Consider storing protos as Dictionary<string, List<ProtoPayload>> queue
-
     public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
     {
         #region Constants

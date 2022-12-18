@@ -129,7 +129,8 @@
             try
             {
                 //await _context.Database.CommitTransactionAsync();
-                var result = await _context.SaveChangesAsync() > 0;
+                var rowsAffected = await _context.SaveChangesAsync();
+                var result = rowsAffected > 0;
                 return result;
             }
             catch
