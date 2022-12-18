@@ -11,7 +11,10 @@
 
         TEntity? FindById<TKey>(TKey id);
 
-        IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> expression);
+        IQueryable<TEntity> Find(
+            Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null
+        );
 
         void Add(TEntity entity);
 

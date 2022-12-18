@@ -90,8 +90,6 @@
         /// <param name="tiles">List of dashboard statistic tiles to add.</param>
         Task AddDashboardTilesAsync(IEnumerable<IDashboardTile> tiles);
 
-        // TODO: UpdateDashboardTileAsync?
-
         /// <summary>
         /// 
         /// </summary>

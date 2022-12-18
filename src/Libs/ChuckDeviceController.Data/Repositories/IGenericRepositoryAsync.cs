@@ -9,7 +9,10 @@
 
         Task<TEntity?> FindByIdAsync<TKey>(TKey id);
 
-        Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> expression);
+        Task<IQueryable<TEntity>> FindAsync(
+            Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null
+        );
 
         Task AddAsync(TEntity entity);
 

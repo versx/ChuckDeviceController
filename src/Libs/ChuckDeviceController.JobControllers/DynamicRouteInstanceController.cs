@@ -8,8 +8,6 @@
     using ChuckDeviceController.Plugin;
     using ChuckDeviceController.Routing;
 
-    // TODO: Calculate proper status for DynamicRoute job controller instance
-
     public class DynamicRouteInstanceController : CircleInstanceController
     {
         #region Variables

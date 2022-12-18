@@ -30,8 +30,6 @@
     using ChuckDeviceController.Pvp.Models;
     using ChuckDeviceController.Services.DataConsumer;
 
-    // TODO: Add webhook sender service - add webhook items to queue
-
     public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
         #region Variables

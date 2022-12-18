@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Data.Repositories
 {
+    using System.Linq;
     using System.Linq.Expressions;
 
     using Microsoft.EntityFrameworkCore;
@@ -20,10 +21,18 @@
             return _context.Set<TEntity>().Any(expression);
         }
 
-        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> expression)
+        public IQueryable<TEntity> Find(
+            Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
-            return _context.Set<TEntity>().Where(expression);
+            IQueryable<TEntity> query = _context.Set<TEntity>();
+
+            if (filter != null) query = query.Where(filter);
+            if (orderBy != null) query = orderBy(query);
+
+            return query;
         }
+
         public IEnumerable<TEntity> FindAll()
         {
             return _context.Set<TEntity>().ToList();
@@ -61,9 +70,16 @@
         }
 
 
-        public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> expression)
+        public async Task<IQueryable<TEntity>> FindAsync(
+            Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
-            return _context.Set<TEntity>().Where(expression);
+            IQueryable<TEntity> query = _context.Set<TEntity>();
+
+            if (filter != null) query = query.Where(filter);
+            if (orderBy != null) query = orderBy(query);
+
+            return await Task.FromResult(query);
         }
         public async Task<IEnumerable<TEntity>> FindAllAsync()
         {

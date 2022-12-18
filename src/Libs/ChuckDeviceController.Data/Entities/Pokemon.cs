@@ -1044,13 +1044,11 @@
             AttackIV = null;
             DefenseIV = null;
             StaminaIV = null;
-            // Level = null;
             IsShiny = null;
             Capture1 = null;
             Capture2 = null;
             Capture3 = null;
             PvpRankings = null;
-            // TODO: Weather
         }
 
         private static bool HasWeatherBoostChanged(ushort? oldWeather, ushort? newWeather)
