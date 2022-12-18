@@ -22,7 +22,7 @@ namespace Dapper.Tests
     {
         private const int MaxInsertCount = 1000000;
         private const int DefaultMaxBatchSize = 1000;
-        private const string ConnectionString = ""; // TODO: Add connection string to environment vars
+        private const string ConnectionString = "";
 
         public const string CellOnMergeUpdate = @"
 INSERT INTO s2cell (id, level, center_lat, center_lon, updated)

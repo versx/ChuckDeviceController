@@ -13,7 +13,7 @@
 
     internal class PokemonTests
     {
-        private const string ConnectionString = ""; // TODO: Add connection string to environment vars
+        private const string ConnectionString = "";
 
         private MySqlConnection _connection = new(ConnectionString);
 

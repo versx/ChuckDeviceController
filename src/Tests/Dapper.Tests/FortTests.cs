@@ -11,7 +11,7 @@
 
     internal class FortTests
     {
-        private const string ConnectionString = ""; // TODO: Add connection string to environment vars
+        private const string ConnectionString = "";
         private const string GetPokestopById = "SELECT * FROM pokestop WHERE id=@id";
 
         private MySqlConnection _connection;

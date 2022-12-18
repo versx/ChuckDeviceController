@@ -3,7 +3,6 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
-    // TODO: Add metric and event counters
     // Reference: https://docs.microsoft.com/en-us/dotnet/core/diagnostics/compare-metric-apis?view=aspnetcore-6.0
 
     [Authorize(Roles = MemoryBenchmarkPlugin.MemoryBenchmarkRole)]

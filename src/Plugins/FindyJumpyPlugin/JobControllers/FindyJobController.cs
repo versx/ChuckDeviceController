@@ -76,7 +76,6 @@
             _geofenceHost = geofenceHost;
             _loggingHost = loggingHost;
 
-            // TODO: Get MemoryCache config
             _tthCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
 
             InitFindyCoordinates();

@@ -38,7 +38,6 @@
         [HttpGet("collect")]
         public IActionResult GetCollect()
         {
-            // TODO: Add generation and collection mode support
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();

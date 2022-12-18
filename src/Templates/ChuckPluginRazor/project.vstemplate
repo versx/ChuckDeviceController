@@ -4,7 +4,7 @@
     <Description>A project template used to create a ChuckDeviceController ASP.NET Core Razor plugin.</Description>
     <ProjectType>CSharp</ProjectType>
     <ProjectSubType></ProjectSubType>
-    <SortOrder>3</SortOrder>
+    <SortOrder>4</SortOrder>
     <CreateNewFolder>true</CreateNewFolder>
     <DefaultName>ChuckPluginRazor</DefaultName>
     <ProvideDefaultName>true</ProvideDefaultName>

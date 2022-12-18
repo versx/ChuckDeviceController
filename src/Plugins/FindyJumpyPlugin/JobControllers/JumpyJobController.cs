@@ -90,7 +90,6 @@
             _geofenceHost = geofenceHost;
             _loggingHost = loggingHost;
 
-            // TODO: Get MemoryCache config
             _pokemonCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
 
             InitJumpyCoordinates();
