@@ -95,9 +95,9 @@ var pokemonOptions = new PokemonOptions();
 config.Bind("GymOptions", gymOptions);
 config.Bind("PokestopOptions", pokestopOptions);
 config.Bind("PokemonOptions", pokemonOptions);
-EntityConfiguration.LoadGymOptions(gymOptions);
-EntityConfiguration.LoadPokestopOptions(pokestopOptions);
-EntityConfiguration.LoadPokemonOptions(pokemonOptions);
+EntityConfiguration.Instance.LoadGymOptions(gymOptions);
+EntityConfiguration.Instance.LoadPokestopOptions(pokestopOptions);
+EntityConfiguration.Instance.LoadPokemonOptions(pokemonOptions);
 
 #endregion
 

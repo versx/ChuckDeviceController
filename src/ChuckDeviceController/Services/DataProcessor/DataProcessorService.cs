@@ -574,13 +574,13 @@
 
                 try
                 {
-                    var cellId = wild.cell;
+                    var cellId = (ulong)wild.cell;
                     var data = (WildPokemonProto)wild.data;
-                    var timestampMs = wild.timestampMs;
-                    var username = wild.username;
-                    var isEvent = wild.isEvent;
-                    Pokemon pokemon = Pokemon.ParsePokemonFromWild(data, cellId, username, isEvent);
-                    Spawnpoint spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.TimeTillHiddenMs, timestampMs);
+                    var timestampMs = (ulong)wild.timestampMs;
+                    var username = (string)wild.username;
+                    var isEvent = (bool)wild.isEvent;
+                    var pokemon = Pokemon.ParsePokemonFromWild(data, cellId, username, isEvent);
+                    var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.TimeTillHiddenMs, timestampMs);
                     if (spawnpoint != null)
                     {
                         await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
@@ -1435,6 +1435,9 @@
 
         private static void SetPvpRankings(Pokemon pokemon)
         {
+            if (!EntityConfiguration.Instance.EnablePvp)
+                return;
+
             var pokemonId = (HoloPokemonId)pokemon.PokemonId;
             PokemonForm? formId = pokemon.Form != null && pokemon.Form != 0
                 ? (PokemonForm)(pokemon.Form ?? 0)

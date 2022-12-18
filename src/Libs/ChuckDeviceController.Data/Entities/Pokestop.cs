@@ -195,7 +195,7 @@
             {
                 if (AvailableLures.Any(fortData.ActiveFortModifier.Contains))
                 {
-                    LureExpireTimestamp = lastModifiedTimestamp + EntityConfiguration.LureTimeS;
+                    LureExpireTimestamp = lastModifiedTimestamp + EntityConfiguration.Instance.LureTimeS;
                     LureId = Convert.ToUInt16(fortData.ActiveFortModifier[0]);
                 }
             }

@@ -146,7 +146,7 @@
 
             // Check if Pokemon is close to expiring, if so fetch another
             // IV task from the Pokemon queue.
-            if (pokemon.IsExpirationSoon)
+            if (pokemon.IsExpiringSoon)
             {
                 return await GetTaskAsync(options);
             }

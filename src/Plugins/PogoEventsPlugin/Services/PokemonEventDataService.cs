@@ -16,7 +16,6 @@
      * - species-ids.json
      */
 
-    // TODO: Convert to HostedService?
     public class PokemonEventDataService : IPokemonEventDataService
     {
         private const string EventsEndpoint = "https://raw.githubusercontent.com/ccev/pogoinfo/v2/active/events.json";

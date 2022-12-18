@@ -205,11 +205,11 @@
         {
             var webhooks = new Dictionary<WebhookType, Gym>();
 
-            if (RaidIsExclusive != null && (RaidIsExclusive ?? false) && EntityConfiguration.ExRaidBossId > 0)
+            if (RaidIsExclusive != null && (RaidIsExclusive ?? false) && EntityConfiguration.Instance.ExRaidBossId > 0)
             {
                 // Set exclusive raid details
-                RaidPokemonId = EntityConfiguration.ExRaidBossId;
-                RaidPokemonForm = EntityConfiguration.ExRaidBossFormId;
+                RaidPokemonId = EntityConfiguration.Instance.ExRaidBossId;
+                RaidPokemonForm = EntityConfiguration.Instance.ExRaidBossFormId;
             }
 
             var now = DateTime.UtcNow.ToTotalSeconds();

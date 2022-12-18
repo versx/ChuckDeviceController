@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceConfigurator.Services
+﻿namespace ChuckDeviceConfigurator.HostedServices
 {
     using System.Timers;
 
@@ -15,7 +15,7 @@
         private const uint CooldownPeriodS = 7200;
         private const string FailedGprRedWarning = "GPR_RED_WARNING";
         private const string FailedSuspended = "suspended";
-        private const uint IntervalS = 1; // 10 seconds
+        private const uint IntervalS = 10; // 10 seconds
 
         #endregion
 
@@ -89,54 +89,53 @@
                 switch (account.Status)
                 {
                     case "Warning":
-                        if (IsAccountWarningExpired(account))
-                        {
-                            // Clear warning columns
-                            account.Failed = null;
-                            account.FailedTimestamp = null;
-                            account.FirstWarningTimestamp = null;
-                            account.WarnExpireTimestamp = null;
-                            account.HasWarn = null;
-                            accountsToClear.Add(account);
-                        }
+                        if (!IsAccountWarningExpired(account))
+                            continue;
+
+                        // Clear warning columns
+                        account.Failed = null;
+                        account.FailedTimestamp = null;
+                        account.FirstWarningTimestamp = null;
+                        account.WarnExpireTimestamp = null;
+                        account.HasWarn = null;
+                        accountsToClear.Add(account);
                         break;
                     case "Suspended":
-                        if (IsAccountSuspensionExpired(account))
-                        {
-                            // Clear suspension columns
-                            account.Failed = null;
-                            account.FailedTimestamp = null;
-                            account.WasSuspended = null;
-                            accountsToClear.Add(account);
-                        }
+                        if (!IsAccountSuspensionExpired(account))
+                            continue;
+
+                        // Clear suspension columns
+                        account.Failed = null;
+                        account.FailedTimestamp = null;
+                        account.WasSuspended = null;
+                        accountsToClear.Add(account);
                         break;
                     case "Cooldown":
-                        if (IsAccountCooldownExpired(account))
-                        {
-                            // Clear cooldown columns
-                            account.LastEncounterLatitude = null;
-                            account.LastEncounterLongitude = null;
-                            account.LastEncounterTime = null;
-                            accountsToClear.Add(account);
-                        }
+                        if (!IsAccountCooldownExpired(account))
+                            continue;
+
+                        // Clear cooldown columns
+                        account.LastEncounterLatitude = null;
+                        account.LastEncounterLongitude = null;
+                        account.LastEncounterTime = null;
+                        accountsToClear.Add(account);
                         break;
                 }
             }
 
-            if (accountsToClear.Any())
+            if (!accountsToClear.Any())
+                return;
+
+            _logger.LogDebug($"Clearing {accountsToClear.Count:N0} account punishment statuses...");
+            await uow.Accounts.UpdateRangeAsync(accountsToClear);
+            var status = await uow.CommitAsync();
+            if (!status)
             {
-                _logger.LogDebug($"Clearing {accountsToClear.Count:N0} account punishment statuses...");
-                await uow.Accounts.UpdateRangeAsync(accountsToClear);
-                var status = await uow.CommitAsync();
-                if (!status)
-                {
-                    _logger.LogError($"Failed to update account status...");
-                }
-                else
-                {
-                    _logger.LogInformation($"Cleared {accountsToClear.Count:N0} account punishment statuses");
-                }
+                _logger.LogError($"Failed to update account status...");
+                return;
             }
+
+            _logger.LogInformation($"Cleared {accountsToClear.Count:N0} account punishment statuses");
         }
 
         private static bool IsAccountWarningExpired(Account account)

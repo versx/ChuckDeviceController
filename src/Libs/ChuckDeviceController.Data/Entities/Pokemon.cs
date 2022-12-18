@@ -21,8 +21,6 @@
     {
         #region Constants
 
-        public const uint DefaultTimeUnseenS = 1200;
-        public const uint DefaultTimeReseenS = 600;
         public const uint DittoPokemonId = (ushort)HoloPokemonId.Ditto; // 132
         public const ushort DittoTransformFastMove = (ushort)HoloPokemonMove.TransformFast; // 242
         public const ushort DittoStruggleChargeMove = (ushort)HoloPokemonMove.Struggle; // 133
@@ -190,8 +188,8 @@
         /// than 10 minutes ago and is close to expiring.
         /// </summary>
         [NotMapped]
-        public bool IsExpirationSoon =>
-            DateTime.UtcNow.ToTotalSeconds() - FirstSeenTimestamp >= DefaultTimeReseenS;
+        public bool IsExpiringSoon =>
+            DateTime.UtcNow.ToTotalSeconds() - FirstSeenTimestamp >= EntityConfiguration.Instance.TimeReseenS;
 
         [NotMapped]
         public bool SendWebhook { get; set; }
@@ -240,37 +238,55 @@
             };
             pokemon.SetPokemonDisplay(nearbyPokemon.PokemonDisplay);
 
-            // Figure out where the Pokemon is
-            double lat;
-            double lon;
+            //if (pokemon.IsDitto)
+            //{
+            //    return pokemon;
+            //}
+
+            //if (oldWeather != null && oldPokemonId != 0)
+            //{
+            //    if (pokemon.SeenType == SeenType.Wild)
+            //    {
+            //        return pokemon;
+            //    }
+            //    else if (pokemon.SeenType == SeenType.Encounter)
+            //    {
+            //        pokemon.SeenType = SeenType.Wild;
+            //        // Pokemon changed or is weather boosted, reset encounter details
+            //        pokemon.ClearEncounterDetails();
+            //        Console.WriteLine($"Pokemon '{pokemon.Id}' cleared encounter details");
+            //        return pokemon;
+            //    }
+            //}
+
+            // Determine the location of the Pokemon
             if (string.IsNullOrEmpty(pokestopId))
             {
-                if (!EntityConfiguration.EnableMapPokemon)
+                if (!EntityConfiguration.Instance.EnableMapPokemon)
                 {
-                    return null;
+                    return null!;
                 }
                 // Set Pokemon location to S2 cell coordinate as an approximation
                 var latlng = cellId.ToCoordinate();
-                lat = latlng.Latitude;
-                lon = latlng.Longitude;
+                pokemon.Latitude = latlng.Latitude;
+                pokemon.Longitude = latlng.Longitude;
                 pokemon.SeenType = SeenType.NearbyCell;
             }
             else
             {
-                var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, nearbyPokemon.FortId, memCache);
+                var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestopId, memCache);
                 if (pokestop == null)
                 {
                     // Failed to fetch Pokestop for nearby Pokemon in order to find location, skipping
-                    return null;
+                    return null!;
                 }
-                lat = pokestop.Latitude;
-                lon = pokestop.Longitude;
+                pokemon.Latitude = pokestop.Latitude;
+                pokemon.Longitude = pokestop.Longitude;
                 pokemon.SeenType = SeenType.NearbyStop;
             }
 
-            pokemon.Latitude = lat;
-            pokemon.Longitude = lon;
-
+            pokemon.SetExpirationTimestamp();
+            pokemon.ClearEncounterDetails();
             return pokemon;
         }
 
@@ -294,7 +310,7 @@
             if (pokestop == null)
             {
                 Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{pokemon.Id}' to find location, skipping");
-                return null;
+                return null!;
             }
             pokemon.PokestopId = pokestop.Id;
             pokemon.Latitude = pokestop.Latitude;
@@ -638,7 +654,7 @@
                 setIvForWeather = false;
 
                 ExpireTimestamp = ExpireTimestamp == 0
-                    ? now + DefaultTimeUnseenS
+                    ? now + EntityConfiguration.Instance.TimeUnseenS
                     : ExpireTimestamp;
                 FirstSeenTimestamp = now;
                 Updated = now;
@@ -655,9 +671,9 @@
                 {
                     var changed = DateTime.UtcNow.ToTotalSeconds();
                     var oldExpireDate = oldPokemon.ExpireTimestamp;
-                    if (changed - oldExpireDate < DefaultTimeReseenS || /* TODO: Workaround -> */ oldPokemon.ExpireTimestamp == 0)
+                    if (changed - oldExpireDate < EntityConfiguration.Instance.TimeReseenS || /* TODO: Workaround -> */ oldPokemon.ExpireTimestamp == 0)
                     {
-                        ExpireTimestamp = changed + DefaultTimeReseenS;
+                        ExpireTimestamp = changed + EntityConfiguration.Instance.TimeReseenS;
                     }
                     else
                     {
@@ -718,10 +734,8 @@
                     Changed = oldPokemon.Changed;
                 }
 
-                var weatherChanged = ((oldPokemon.Weather == null || oldPokemon.Weather == 0) && (Weather > 0)) ||
-                    ((Weather == null || Weather == 0) && (oldPokemon.Weather > 0));
-
-                if (oldPokemon.AttackIV != null && AttackIV == null && !weatherChanged)
+                var weatherChanged = HasWeatherBoostChanged(oldPokemon?.Weather, Weather);
+                if (oldPokemon?.AttackIV != null && AttackIV == null && !weatherChanged)
                 {
                     setIvForWeather = false;
                     AttackIV = oldPokemon.AttackIV;
@@ -752,7 +766,7 @@
                     setIvForWeather = false;
                     updateIV = true;
                 }
-                else if (weatherChanged && oldPokemon.AttackIV != null && EntityConfiguration.EnableWeatherIvClearing)
+                else if (weatherChanged && oldPokemon.AttackIV != null && EntityConfiguration.Instance.EnableWeatherIvClearing)
                 {
                     Console.WriteLine($"Pokemon {Id} changed weather boost state. Clearing IVs.");
                     setIvForWeather = true;
@@ -827,7 +841,7 @@
             {
                 ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(timeTillHiddenMs)) / 1000);
                 IsExpireTimestampVerified = true;
-                var date = timestampMs.FromMilliseconds();
+                var date = ExpireTimestamp.FromMilliseconds();
                 var secondOfHour = date.Second + (date.Minute * 60);
 
                 var spawnpoint = new Spawnpoint
@@ -836,7 +850,7 @@
                     Latitude = Latitude,
                     Longitude = Longitude,
                     DespawnSecond = Convert.ToUInt16(secondOfHour),
-                    LastSeen = EntityConfiguration.SaveSpawnpointLastSeen ? now : null,
+                    LastSeen = EntityConfiguration.Instance.SaveSpawnpointLastSeen ? now : null,
                     Updated = now,
                 };
                 await spawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
@@ -845,7 +859,7 @@
 
             IsExpireTimestampVerified = false;
 
-            if (!IsExpireTimestampVerified && spawnId > 0)
+            if (spawnId > 0)
             {
                 var oldSpawnpoint = await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(connection, SpawnId ?? 0, memCache);
                 if (oldSpawnpoint != null && oldSpawnpoint.DespawnSecond != null)
@@ -859,7 +873,7 @@
                         despawnOffset += 3600;
 
                     // Update spawnpoint last_seen if enabled
-                    if (EntityConfiguration.SaveSpawnpointLastSeen)
+                    if (EntityConfiguration.Instance.SaveSpawnpointLastSeen)
                     {
                         oldSpawnpoint.LastSeen = now;
                     }
@@ -876,7 +890,7 @@
                         Latitude = Latitude,
                         Longitude = Longitude,
                         DespawnSecond = null,
-                        LastSeen = EntityConfiguration.SaveSpawnpointLastSeen ? now : null,
+                        LastSeen = EntityConfiguration.Instance.SaveSpawnpointLastSeen ? now : null,
                         Updated = now,
                     };
                     await newSpawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
@@ -972,6 +986,84 @@
                 : (ushort)0;
         }
 
+        private void SetExpirationTimestamp()
+        {
+            var now = DateTime.UtcNow.ToTotalSeconds();
+            if (ExpireTimestamp == 0)
+            {
+                ExpireTimestamp = now + EntityConfiguration.Instance.TimeUnseenS;
+            }
+            else
+            {
+                if (ExpireTimestamp < now)
+                {
+                    ExpireTimestamp = now + EntityConfiguration.Instance.TimeReseenS;
+                }
+            }
+        }
+
+        private void SetWeather(ushort weatherCondition)
+        {
+            if (PokemonId > 0 && Weather != weatherCondition)
+            {
+                if (IsDitto)
+                {
+                    if (weatherCondition == 3)
+                    {
+                        Console.WriteLine($"Both Ditto and disguised Pokemon are weather boosted but Ditto was not weather boosted: None -> Boosted");
+                        Level += 5;
+                        ClearEncounterDetails();
+                    }
+                    else if (Weather == 3)
+                    {
+                        Console.WriteLine($"Both Ditto and disguised Pokemon were weather boosted but Ditto is not weather boosted: Boosted -> None");
+                        if (Level >= 5)
+                        {
+                            Level -= 5;
+                        }
+                        ClearEncounterDetails();
+                    }
+                }
+                else if (HasWeatherBoostChanged(Weather, weatherCondition))
+                {
+                    Console.WriteLine($"Pokemon '{Id}' encounter details cleared from weather update");
+                    ClearEncounterDetails();
+                }
+            }
+
+            Weather = weatherCondition;
+        }
+
+        private void ClearEncounterDetails()
+        {
+            CP = null;
+            Move1 = null;
+            Move2 = null;
+            Size = null;
+            Weight = null;
+            AttackIV = null;
+            DefenseIV = null;
+            StaminaIV = null;
+            // Level = null;
+            IsShiny = null;
+            Capture1 = null;
+            Capture2 = null;
+            Capture3 = null;
+            PvpRankings = null;
+            // TODO: Weather
+        }
+
+        private static bool HasWeatherBoostChanged(ushort? oldWeather, ushort? newWeather)
+        {
+            if (oldWeather == null || newWeather == null)
+                return false;
+
+            var hasChanged =
+                (oldWeather == 0 && newWeather > 0) ||
+                (newWeather == 0 && oldWeather > 0);
+            return hasChanged;
+        }
+
         #endregion
 
         #region Ditto Detection
@@ -989,7 +1081,9 @@
             Weight = null;
             if (weather == 0 && level > 30)
             {
-                Console.WriteLine($"Pokemon {Id} weather boosted Ditto - reset IV is needed");
+                Console.WriteLine($"Pokemon {Id} is a weather boosted Ditto at level {level} - reset IV is needed");
+                Level -= 5;
+                ClearEncounterDetails();
             }
         }
 

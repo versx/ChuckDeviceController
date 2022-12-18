@@ -12,7 +12,7 @@ using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Extensions;
 using ChuckDeviceConfigurator.Localization;
-using ChuckDeviceConfigurator.Services;
+using ChuckDeviceConfigurator.HostedServices;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.IvLists;
