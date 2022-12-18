@@ -194,7 +194,7 @@
                 {
                     RoleId = role.Id,
                     RoleName = role.Name,
-                    Selected = roles.Contains(role.Name),
+                    Selected = roles.Contains(role?.Name),
                 };
                 model.Roles.Add(userRolesViewModel);
             }

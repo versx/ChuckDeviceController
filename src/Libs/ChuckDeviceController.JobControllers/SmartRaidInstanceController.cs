@@ -110,7 +110,7 @@
             {
                 // Unable to retrieve coordinate for next gym to check
                 _logger.LogWarning($"[{Name}] [{options.Uuid}] Failed to retrieve gym coordinates for next job task.");
-                return null;
+                return null!;
             }
 
             // Update smart raid statistics for Dashboard status

@@ -169,13 +169,13 @@
             if (string.IsNullOrEmpty(options.AccountUsername))
             {
                 _logger.LogError($"[{Name}] [{options.Uuid}] No account assigned to device, unable to fetch leveling task...");
-                return null;
+                return null!;
             }
 
             if (options.Account == null)
             {
                 _logger.LogError($"[{Name}] [{options.Uuid}] No account assigned to device, unable to fetch leveling task...");
-                return null;
+                return null!;
             }
 
             // Ensure player account level has not met maximum level, otherwise request account switch
@@ -188,7 +188,7 @@
             if (currentCoord == null)
             {
                 _logger.LogError($"[{Name}] [{options.Uuid}] Failed to get next scan location for leveling instance");
-                return null;
+                return null!;
             }
 
             _players[options.AccountUsername].LastSeen = DateTime.UtcNow.ToTotalSeconds();

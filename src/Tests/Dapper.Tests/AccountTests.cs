@@ -21,7 +21,7 @@
         }
 
         [Test]
-        public async Task TestAccount()
+        public void TestAccount()
         {
             var instance = Activator.CreateInstance(typeof(Account)) as Account;
             var columnNames = instance.GetPropertyNames();

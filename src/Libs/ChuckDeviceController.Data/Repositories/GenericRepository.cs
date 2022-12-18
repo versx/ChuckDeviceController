@@ -21,7 +21,7 @@
             return _context.Set<TEntity>().Any(expression);
         }
 
-        public IQueryable<TEntity> Find(
+        public IEnumerable<TEntity> Find(
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
@@ -70,7 +70,7 @@
         }
 
 
-        public async Task<IQueryable<TEntity>> FindAsync(
+        public async Task<IEnumerable<TEntity>> FindAsync(
             Expression<Func<TEntity, bool>>? filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
         {
