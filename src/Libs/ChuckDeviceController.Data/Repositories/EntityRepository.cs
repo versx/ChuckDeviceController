@@ -26,9 +26,9 @@
 
         private static readonly ILogger<EntityRepository> _logger =
             GenericLoggerFactory.CreateLogger<EntityRepository>(LogLevel.Debug);
-        private static readonly SemaphoreSlim _sem = new(5, 5);
-        private static readonly SemaphoreSlim _semEntity = new(10); // TODO: Make entity fetching concurrency level configurable
-        private static readonly TimeSpan _semWaitTime = TimeSpan.FromSeconds(15); // TODO: Make entity fetch lock wait time configurable
+        private static SemaphoreSlim _sem = new(5, 5);
+        private static SemaphoreSlim _semEntity = new(10);
+        private static TimeSpan _semWaitTime = TimeSpan.FromSeconds(15);
         private static readonly IEnumerable<ConnectionState> _invalidConnectionStates = new[]
         {
             ConnectionState.Broken,
@@ -55,13 +55,21 @@
         public static EntityRepository Instance =>
             _instance ?? throw new Exception($"{nameof(EntityRepository)} singleton has not been initialized");
 
-        public static EntityRepository InstanceWithOptions(string connectionString, bool openConnection = true)
+        public static EntityRepository InstanceWithOptions(
+            ushort insertConcurrencyLevel,
+            ushort queryConcurrencyLevel,
+            ushort queryWaitTimeS,
+            string connectionString,
+            bool openConnection = true)
         {
             if (_instance == null)
             {
                 lock (_mutex)
                 {
                     _instance ??= new EntityRepository(connectionString, openConnection);
+                    _sem = new SemaphoreSlim(insertConcurrencyLevel, insertConcurrencyLevel);
+                    _semEntity = new SemaphoreSlim(queryConcurrencyLevel, queryConcurrencyLevel);
+                    _semWaitTime = TimeSpan.FromSeconds(queryWaitTimeS);
                 }
             }
             return _instance;
@@ -80,7 +88,6 @@
 
             //_entityRepository = new EntityDataRepository(connectionString);
             _entityRepository = new EntityDataRepository();
-            //Task.Run(async () => _connection = await CreateConnectionAsync()).Wait();
         }
 
         #endregion

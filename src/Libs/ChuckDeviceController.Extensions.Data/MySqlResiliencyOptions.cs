@@ -7,7 +7,7 @@
         public const int DefaultRetryIntervalS = 10;
         public const int DefaultCommandTimeoutS = 30;
         public const int DefaultConnectionTimeoutS = 30;
-        public const int DefaultConnectionLeakTimeoutS = 120;
+        public const int DefaultConnectionLeakTimeoutS = 300;
 
         public ushort MaximumPoolSize { get; set; } = DefaultMaximumPoolSize;
 

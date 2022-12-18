@@ -106,7 +106,6 @@
                 return null;
             }
 
-            // TODO: Lock _lastIndex
             var currentIndex = _lastIndex;
             var currentCoord = SpawnpointCoordinates[currentIndex];
 

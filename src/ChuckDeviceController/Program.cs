@@ -86,6 +86,9 @@ builder.Services.Configure<ProtoProcessorOptionsConfig>(config.GetSection("Proce
 builder.Services.Configure<DataProcessorOptionsConfig>(config.GetSection("ProcessingOptions:Data"));
 builder.Services.Configure<DataConsumerOptionsConfig>(config.GetSection("ProcessingOptions:Consumer"));
 
+var dataOptions = new DataProcessorOptionsConfig();
+config.Bind("ProcessingOptions:Data", dataOptions);
+
 var gymOptions = new GymOptions();
 var pokestopOptions = new PokestopOptions();
 var pokemonOptions = new PokemonOptions();
@@ -243,7 +246,13 @@ app.MapControllers();
 // Open DB connection
 var sw = new Stopwatch();
 sw.Start();
-_ = EntityRepository.InstanceWithOptions(connectionString, openConnection: true);
+_ = EntityRepository.InstanceWithOptions(
+    dataOptions.EntityInsertConcurrencyLevel,
+    dataOptions.EntityQueryConcurrencyLevel,
+    dataOptions.EntityQueryWaitTimeS,
+    connectionString,
+    openConnection: true
+);
 sw.Stop();
 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
 logger.LogDebug($"Opening database connection took {totalSeconds}s");

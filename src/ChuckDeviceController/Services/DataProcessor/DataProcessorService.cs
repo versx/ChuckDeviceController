@@ -34,13 +34,6 @@
 
     public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
-        #region Constants
-
-        private const ushort CellScanIntervalS = 300; // REVIEW: Change to every 5 minutes vs 15 minutes
-        private const ushort WeatherCellScanIntervalS = CellScanIntervalS * 2; // Update every 30 minutes
-
-        #endregion
-
         #region Variables
 
         private static readonly TimeSpan _diskCacheExpiry = TimeSpan.FromMinutes(30);
@@ -383,7 +376,7 @@
                         // Filter cells not already cached, cached cells expire every 60 minutes.
                         // Once expired they will be updated when found again.
                         var now = DateTime.UtcNow.ToTotalSeconds();
-                        var needsUpdate = cached.Updated < now - CellScanIntervalS;
+                        var needsUpdate = cached.Updated < now - Options.CellScanIntervalS;
                         if (!needsUpdate)
                             continue;
                     }
@@ -440,7 +433,7 @@
                     // Filter cells not already cached, cached cells expire every 60 minutes.
                     // Once expired they will be updated when found again.
                     var now = DateTime.UtcNow.ToTotalSeconds();
-                    var needsUpdate = cached.Updated < now - CellScanIntervalS;
+                    var needsUpdate = cached.Updated < now - Options.CellScanIntervalS;
                     if (!needsUpdate)
                         return;
                 }
@@ -495,7 +488,7 @@
                         return true;
 
                     var now = DateTime.UtcNow.ToTotalSeconds();
-                    var needsUpdate = cached.Updated < now - WeatherCellScanIntervalS;
+                    var needsUpdate = cached.Updated < now - Options.WeatherCellScanIntervalS;
                     return needsUpdate;
                 })
                 .Select(wcell =>
@@ -754,7 +747,6 @@
                     // Thanks Fabio <3
                     _logger.LogDebug($"Found Pokemon disk encounter with id '{displayId}' in cache");
 
-                    //var pokemon = new Pokemon(connection, _memCache, data, cellId, username, isEvent);
                     // TODO: Lookup old pokemon first, if not null update properties from map proto
                     var pokemon = await Pokemon.ParsePokemonFromMap(connection, _memCache, data, cellId, username, isEvent);
                     pokemon.AddDiskEncounter(cachedDiskEncounter, username);

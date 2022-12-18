@@ -56,6 +56,11 @@
     {
         public const int DefaultIntervalS = 3;
         public const ushort DefaultConcurrencyLevel = 15;
+        public const ushort DefaultEntityInsertConcurrencyLevel = 5;
+        public const ushort DefaultEntityQueryConcurrencyLevel = 10;
+        public const ushort DefaultEntityQueryWaitTimeS = 15;
+        public const ushort DefaultCellScanIntervalS = 900; // 15 minutes
+        public const ushort DefaultWeatherCellScanIntervalS = 1800; // 30 minutes
 
         public bool ClearOldForts { get; set; } = true;
 
@@ -65,9 +70,15 @@
 
         public ushort ParsingConcurrencyLevel { get; set; } = DefaultConcurrencyLevel;
 
-        public ushort CellScanIntervalS { get; set; } = 900; // 15 seconds
+        public ushort CellScanIntervalS { get; set; } = DefaultCellScanIntervalS;
 
-        public ushort WeatherCellScanIntervalS { get; set; } = 1800; // 30 seconds
+        public ushort WeatherCellScanIntervalS { get; set; } = DefaultWeatherCellScanIntervalS;
+
+        public ushort EntityInsertConcurrencyLevel { get; set; } = DefaultEntityInsertConcurrencyLevel;
+
+        public ushort EntityQueryConcurrencyLevel { get; set; } = DefaultEntityQueryConcurrencyLevel;
+
+        public ushort EntityQueryWaitTimeS { get; set; } = DefaultEntityQueryWaitTimeS;
 
         #region Processing Options
 
