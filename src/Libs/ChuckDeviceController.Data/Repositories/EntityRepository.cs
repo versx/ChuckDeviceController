@@ -62,17 +62,14 @@
             string connectionString,
             bool openConnection = true)
         {
-            if (_instance == null)
+            lock (_mutex)
             {
-                lock (_mutex)
-                {
-                    _instance ??= new EntityRepository(connectionString, openConnection);
-                    _sem = new SemaphoreSlim(insertConcurrencyLevel, insertConcurrencyLevel);
-                    _semEntity = new SemaphoreSlim(queryConcurrencyLevel, queryConcurrencyLevel);
-                    _semWaitTime = TimeSpan.FromSeconds(queryWaitTimeS);
-                }
+                _instance ??= new EntityRepository(connectionString, openConnection);
+                _sem = new SemaphoreSlim(insertConcurrencyLevel, insertConcurrencyLevel);
+                _semEntity = new SemaphoreSlim(queryConcurrencyLevel, queryConcurrencyLevel);
+                _semWaitTime = TimeSpan.FromSeconds(queryWaitTimeS);
+                return _instance;
             }
-            return _instance;
         }
 
         #endregion

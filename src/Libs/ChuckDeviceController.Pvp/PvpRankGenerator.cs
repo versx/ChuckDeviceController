@@ -57,7 +57,7 @@
 
         #region Constructor
 
-        public PvpRankGenerator()
+        private PvpRankGenerator()
         {
             _timer = new Timer(Strings.FetchMasterFileIntervalM * 60 * 1000);
             _timer.Elapsed += async (sender, e) => await LoadMasterFileIfNeededAsync();
