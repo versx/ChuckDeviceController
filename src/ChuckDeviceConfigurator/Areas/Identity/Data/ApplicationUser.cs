@@ -4,7 +4,7 @@
 
     using Microsoft.AspNetCore.Identity;
 
-    public class ApplicationUser : IdentityUser
+    public class ApplicationUser : IdentityUser<string>
     {
         [Column("username_change_limit")]
         public int UsernameChangeLimit { get; set; } = 10;

@@ -1,10 +1,5 @@
 ﻿namespace ChuckDeviceController.Common
 {
-    // TODO: Add support for custom roles created by plugins
-    // - Plugin registers role with host
-    // - Host creates role in database table `AspNetRoles(Id[guid], Name[string], NormalizedName[STRING], ConcurrencyStamp[guid])`
-    // - Host pulls roles from database table
-
     // REVIEW: Setting to auto assign existing users to new plugin roles created after user created
 
     public static partial class RoleConsts

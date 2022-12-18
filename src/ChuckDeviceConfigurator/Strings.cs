@@ -2,6 +2,7 @@
 {
     using System.Reflection;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
 
     public static partial class Strings
@@ -43,6 +44,7 @@
         public const string DefaultUserPassword = "123Pa$$word.";
         public const string DefaultUserEmail = "admin@gmail.com";
         public const string DefaultSuccessLoginPath = "/Identity/Account/Manage";
+        public const string DefaultRootRoleName = RoleConsts.SuperAdminRole;
 
         #endregion
 

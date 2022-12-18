@@ -6,6 +6,7 @@ namespace RobotsPlugin
     using Configuration;
     using Extensions;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
@@ -13,19 +14,24 @@ namespace RobotsPlugin
     [StaticFilesLocation(StaticFilesLocation.External, StaticFilesLocation.External)]
     public class RobotsPlugin : IPlugin
     {
+        public const string RobotsRoleName = "RobotCrawlers";
+        public const string RobotsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{RobotsRoleName}";
+
         #region Variables
 
         private readonly IUiHost _uiHost;
         private readonly IConfiguration _config;
+        private readonly IAuthorizeHost _authHost;
 
         #endregion
 
         #region Constructor
 
-        public RobotsPlugin(IUiHost uiHost, IConfigurationHost configHost)
+        public RobotsPlugin(IUiHost uiHost, IConfigurationHost configHost, IAuthorizeHost authHost)
         {
             _uiHost = uiHost;
             _config = configHost.GetConfiguration();
+            _authHost = authHost;
         }
 
         #endregion
@@ -65,7 +71,7 @@ namespace RobotsPlugin
 
         #region Plugin Event Handlers
 
-        public void OnLoad()
+        public async void OnLoad()
         {
             _uiHost.AddSidebarItemAsync(new SidebarItem
             {
@@ -75,6 +81,8 @@ namespace RobotsPlugin
                 Icon = "fa-solid fa-fw fa-robot",
                 DisplayIndex = 999,
             });
+
+            await _authHost.RegisterRole(RobotsRoleName, 5);
         }
 
         public void OnReload()

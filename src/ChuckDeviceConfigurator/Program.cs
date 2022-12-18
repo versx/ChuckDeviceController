@@ -298,6 +298,10 @@ var serviceProvider = builder.Services.BuildServiceProvider();
 // Seed default user and roles
 await SeedDefaultDataAsync(serviceProvider);
 
+var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+var authHost = new AuthorizeHost(roleManager);
+builder.Services.AddSingleton<IAuthorizeHost>(authHost);
+
 var routeHost = serviceProvider.GetService<IRoutingHost>();
 var jobControllerService = serviceProvider.GetService<IJobControllerService>();
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
@@ -308,6 +312,7 @@ jobControllerService.LoadDevices();
 // TODO: Use builder.Services registered instead of 'sharedServiceHosts' - Fix issue with IDbContextFactory and eventually ILogger<T> parameters (just make static and use logger factory instead)
 var sharedServiceHosts = new Dictionary<Type, object>
 {
+    { typeof(IAuthorizeHost), authHost },
     { typeof(ILoggingHost), loggingHost },
     { typeof(IJobControllerServiceHost), jobControllerService },
     { typeof(IDatabaseHost), databaseHost },

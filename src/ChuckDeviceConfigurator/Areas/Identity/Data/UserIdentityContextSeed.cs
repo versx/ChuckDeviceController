@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Identity;
 
     using ChuckDeviceController.Common;
+    using ChuckDeviceConfigurator.Services.Plugins.Hosts;
 
     public static class UserIdentityContextSeed
     {

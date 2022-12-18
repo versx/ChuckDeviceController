@@ -6,6 +6,7 @@ namespace TodoPlugin
 
     using Data.Contexts;
 
+    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
@@ -13,9 +14,13 @@ namespace TodoPlugin
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class TodoPlugin : IPlugin
     {
+        public const string TodoRoleName = "RobotCrawlers";
+        public const string TodoRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{TodoRoleName}";
+
         #region Variables
 
         private readonly IUiHost _uiHost;
+        private readonly IAuthorizeHost _authHost;
 
         #endregion
 
@@ -33,9 +38,10 @@ namespace TodoPlugin
 
         #region Constructor
 
-        public TodoPlugin(IUiHost uiHost)
+        public TodoPlugin(IUiHost uiHost, IAuthorizeHost authHost)
         {
             _uiHost = uiHost;
+            _authHost = authHost;
         }
 
         #endregion
@@ -70,6 +76,8 @@ namespace TodoPlugin
                 Icon = "fa-solid fa-fw fa-list",
             };
             await _uiHost.AddSidebarItemAsync(navbarHeader);
+
+            await _authHost.RegisterRole(TodoRoleName, 2);
         }
 
         public void OnReload()

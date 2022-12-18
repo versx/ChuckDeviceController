@@ -4,7 +4,6 @@ namespace RequestBenchmarkPlugin
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.DependencyInjection;
 
-    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
@@ -16,12 +15,14 @@ namespace RequestBenchmarkPlugin
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class RequestBenchmarkPlugin : IPlugin
     {
-        public const string RequestBenchmarkRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},RequestBenchmark";
+        //public const string RequestBenchmarkRoleName = "RequestBenchmark";
+        //public const string RequestBenchmarkRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{RequestBenchmarkRoleName}";
 
         private const string DbName = "timings";
 
         private readonly IUiHost _uiHost;
         private readonly IConfiguration _config;
+        private readonly IAuthorizeHost _authHost;
 
         #region Plugin Metadata Properties
 
@@ -37,10 +38,11 @@ namespace RequestBenchmarkPlugin
 
         #region Constructor
 
-        public RequestBenchmarkPlugin(IUiHost uiHost, IConfigurationHost configHost)
+        public RequestBenchmarkPlugin(IUiHost uiHost, IConfigurationHost configHost, IAuthorizeHost authHost)
         {
             _uiHost = uiHost;
             _config = configHost.GetConfiguration();
+            _authHost = authHost;
         }
 
         #endregion
@@ -87,6 +89,8 @@ namespace RequestBenchmarkPlugin
                 },
             };
             await _uiHost.AddSidebarItemAsync(sidebarItem);
+
+            //await _authHost.RegisterRole(RequestBenchmarkRoleName);
         }
 
         public void OnReload()

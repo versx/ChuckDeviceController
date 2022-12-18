@@ -1,9 +1,10 @@
 ﻿namespace ChuckDeviceConfigurator.Data
 {
+    using Microsoft.AspNetCore.Identity;
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
 
-    public class UserIdentityContext : IdentityDbContext<ApplicationUser>
+    public class UserIdentityContext : IdentityDbContext<ApplicationUser, IdentityRole, string>
     {
         public UserIdentityContext(DbContextOptions<UserIdentityContext> options)
             : base(options)

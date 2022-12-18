@@ -3,10 +3,12 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
 
+    using ChuckDeviceController.Common;
+
     using Data.Contexts;
     using Services;
 
-    [Authorize(Roles = RequestBenchmarkPlugin.RequestBenchmarkRole)]
+    [Authorize(Roles = RoleConsts.BenchmarksRole)]
     public class RequestTimeController : Controller
     {
         //private readonly ILogger<RequestTimeController> _logger;

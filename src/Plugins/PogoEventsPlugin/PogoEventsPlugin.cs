@@ -16,11 +16,13 @@ namespace PogoEventsPlugin
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class PogoEventsPlugin : IPlugin
     {
-        public const string EventsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},Events";
+        public const string PogoEventsRoleName = "PogoEvents";
+        public const string PogoEventsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{PogoEventsRoleName}";
 
         #region Variables
 
         private readonly IUiHost _uiHost;
+        private readonly IAuthorizeHost _authHost;
 
         #endregion
 
@@ -38,9 +40,10 @@ namespace PogoEventsPlugin
 
         #region Constructor
 
-        public PogoEventsPlugin(IUiHost uiHost)
+        public PogoEventsPlugin(IUiHost uiHost, IAuthorizeHost authHost)
         {
             _uiHost = uiHost;
+            _authHost = authHost;
         }
 
         #endregion
@@ -75,6 +78,8 @@ namespace PogoEventsPlugin
                 Icon = "fa-solid fa-fw fa-calendar-day",
             };
             await _uiHost.AddSidebarItemAsync(navbarHeader);
+
+            await _authHost.RegisterRole(PogoEventsRoleName, 10);
         }
 
         public void OnReload()

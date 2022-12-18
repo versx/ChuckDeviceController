@@ -3,7 +3,6 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.Extensions.DependencyInjection;
 
-    using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Data;
     using ChuckDeviceController.Plugin;
 
@@ -11,11 +10,13 @@
     [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
     public class MemoryBenchmarkPlugin : IPlugin
     {
-        public const string MemoryBenchmarkRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},MemoryBenchmark";
+        //public const string MemoryBenchmarkRoleName = "MemoryBenchmark";
+        //public const string MemoryBenchmarkRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{MemoryBenchmarkRoleName}";
 
         #region Variables
 
         private readonly IUiHost _uiHost;
+        private readonly IAuthorizeHost _authHost;
 
         #endregion
 
@@ -33,9 +34,10 @@
 
         #region Constructor
 
-        public MemoryBenchmarkPlugin(IUiHost uiHost)
+        public MemoryBenchmarkPlugin(IUiHost uiHost, IAuthorizeHost authHost)
         {
             _uiHost = uiHost;
+            _authHost = authHost;
         }
 
         #endregion
@@ -78,6 +80,8 @@
                 },
             };
             await _uiHost.AddSidebarItemAsync(sidebarItem);
+
+            //await _authHost.RegisterRole(MemoryBenchmarkRoleName);
         }
 
         public void OnReload()

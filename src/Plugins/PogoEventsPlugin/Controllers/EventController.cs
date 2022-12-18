@@ -5,7 +5,7 @@
 
     using Services;
 
-    [Authorize(Roles = PogoEventsPlugin.EventsRole)]
+    [Authorize(Roles = PogoEventsPlugin.PogoEventsRole)]
     public class EventController : Controller
     {
         private readonly ILogger<EventController> _logger;

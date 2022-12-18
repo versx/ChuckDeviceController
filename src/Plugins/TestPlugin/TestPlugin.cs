@@ -90,6 +90,8 @@
 
         private readonly IEventAggregatorHost _eventAggregatorHost;
 
+        private readonly IAuthorizeHost _authHost;
+
         #endregion
 
         #region Plugin Metadata Properties
@@ -146,13 +148,19 @@
         /// </summary>
         /// <param name="loggingHost">Logging host handler.</param>
         /// <param name="localeHost">Localization host handler.</param>
+        /// <param name="jobControllerServiceHost"></param>
+        /// <param name="instanceServiceHost"></param>
+        /// <param name="geofenceServiceHost"></param>
+        /// <param name="eventAggregatorHost"></param>
+        /// <param name="authHost"></param>
         public TestPlugin(
             ILoggingHost loggingHost,
             ILocalizationHost localeHost,
             IJobControllerServiceHost jobControllerServiceHost,
             IInstanceServiceHost instanceServiceHost,
             IGeofenceServiceHost geofenceServiceHost,
-            IEventAggregatorHost eventAggregatorHost)
+            IEventAggregatorHost eventAggregatorHost,
+            IAuthorizeHost authHost)
         {
             _loggingHost = loggingHost;
             _localeHost = localeHost;
@@ -160,6 +168,7 @@
             _instanceServiceHost = instanceServiceHost;
             _geofenceServiceHost = geofenceServiceHost;
             _eventAggregatorHost = eventAggregatorHost;
+            _authHost = authHost;
 
             //_appHost.Restart();
         }
@@ -423,6 +432,8 @@
 
             //_eventAggregatorHost.Subscribe(new PluginObserver());
             _eventAggregatorHost.Publish(new PluginEvent("test message from plugin"));
+
+            await TestAuthorizeHost();
         }
 
         /// <summary>
@@ -603,6 +614,13 @@
             {
                 await _jobControllerHost.AssignDeviceToJobControllerAsync(device, instanceName);
             }
+        }
+
+        private async Task TestAuthorizeHost()
+        {
+            var roleName = "TestRole";
+            var result = await _authHost.RegisterRole(roleName);
+            _loggingHost.LogInformation($"Role Result: {result}");
         }
 
         private static Geofence CreateGeofence()

@@ -6,14 +6,13 @@
     using Data.Contracts;
     using ViewModels;
 
-    using ChuckDeviceController.Common;
     using ChuckDeviceController.Plugin.Helpers.Attributes;
 
-    [Authorize(Roles = RoleConsts.SuperAdminRole)]
+    [Authorize(Roles = RobotsPlugin.RobotsRole)]
     [DenyRobot]
     public class RobotController : Controller
     {
-        public const string Name = "Robot";
+        //public const string Name = "Robot";
 
         #region Variables
 
