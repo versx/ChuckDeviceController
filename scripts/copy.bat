@@ -1,3 +1,6 @@
+@echo off
+SETLOCAL EnableExtensions EnableDelayedExpansion
+
 :: Plugin file full path
 SET targetPath=%~f1
 :: Plugin project name
@@ -12,30 +15,46 @@ SET solutionDir=%~f5
 SET pluginFolder=../../ChuckDeviceConfigurator/bin/Debug/plugins/%projectName%
 :: Plugin dependencies config file
 SET depsFileExt=.deps.json
+:: Prefix of CDC libraries
+SET cdcLib=ChuckDeviceController
 
 
-:: TODO: Create plugin folder if does not exist
-:: TODO: Copy all dependency files other than ChuckDeviceController.* libraries
-
-if not exist "%pluginFolder%/appsettings.json" (
-  echo f | xcopy /Y /F "%targetDir%/appsettings.json" "%pluginFolder%/appsettings.json"
+if not exist "%pluginFolder%" (
+  echo Creating plugin directory...
+  mkdir "%pluginFolder%"
 )
 
-:: Copy all directories from plugin build output folder
-::xcopy /S /E /Y /I "%targetDir%/" "%pluginFolder%/"
+echo Copying 'appsettings.json' configuration file...
+if not exist "%pluginFolder%/appsettings.json" if exist "%targetFolder/appsettings.json" (
+  copy "%targetDir%/appsettings.json" "%pluginFolder%/appsettings.json"
+)
 
+echo Copying './Pages/*' Razor page files...
 if exist "%targetDir%/Pages/" (
   xcopy /S /E /Y /I "%targetDir%/Pages" "%pluginFolder%/Pages"
 )
+
+echo Copying './Views/*' MVC view files...
 if exist "%targetDir%/Views/" (
   xcopy /S /E /Y /I "%targetDir%/Views" "%pluginFolder%/Views"
 )
+
+echo Copying './wwwroot/*' static files...
 if exist "%targetDir%/wwwroot/" (
   xcopy /S /E /Y /I "%targetDir%/wwwroot" "%pluginFolder%/wwwroot"
 )
 
-:: Copy plugin library and dependencies config file
-copy "%targetPath%" "%pluginFolder%/%targetFileName%"
+echo Copying all libraries from plugin bin folder...
+for %%a in (%targetDir%*.dll) do (
+  SET name=%%~nxa
+  echo !name! | findstr /v /c:!cdcLib!>nul
+  if !errorlevel!==0 (
+    echo Copying library !name! to plugin folder...
+    copy "%%a" "%pluginFolder%"
+  )
+)
+
+echo Copying plugin dependencies config file '%projectName%.deps.json'...
 copy "%targetDir%/%projectName%%depsFileExt%" "%pluginFolder%/%projectName%%depsFileExt%"
 
-::"../../../scripts/copy.bat" "$(TargetPath)" "$(ProjectName)" "$(TargetFileName)" "$(TargetDir)" "$(SolutionDir)"
+:: pause
