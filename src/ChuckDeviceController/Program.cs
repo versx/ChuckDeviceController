@@ -56,25 +56,22 @@ builder.WebHost.UseUrls(config["Urls"]);
 #region Logging Filtering
 
 var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
-builder.WebHost.ConfigureLogging(configure =>
-{
-    configure.ClearProviders();
-    var loggingSection = config.GetSection("Logging");
+builder.Logging.ClearProviders();
     var loggingConfig = new ColorConsoleLoggerConfiguration();
+var loggingSection = config.GetSection("Logging");
     var colorLoggingSection = loggingSection.GetSection("ColorConsole");
     colorLoggingSection.Bind(loggingConfig);
-    configure.AddColorConsoleLogger(options =>
+builder.Logging.AddColorConsoleLogger(options =>
     {
         options.LogLevelColorMap = loggingConfig.LogLevelColorMap;
     });
-    configure.AddFile(loggingSection, options =>
+builder.Logging.AddFile(loggingSection, options =>
     {
         var time = loggingConfig.UseUnix ? DateTime.UtcNow : DateTime.Now;
         options.FormatLogFileName = fileName => string.Format(fileName, time);
         options.UseUtcTimestamp = true;
     });
-    configure.GetLoggingConfig(logLevel);
-});
+builder.Logging.GetLoggingConfig(logLevel);
 
 #endregion
 

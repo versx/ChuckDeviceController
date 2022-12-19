@@ -96,25 +96,22 @@ builder.WebHost.UseConfiguration(config);
 #region Logger Filtering
 
 var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
-builder.WebHost.ConfigureLogging(configure =>
+builder.Logging.ClearProviders();
+var loggingConfig = new ColorConsoleLoggerConfiguration();
+var loggingSection = config.GetSection("Logging");
+var colorLoggingSection = loggingSection.GetSection("ColorConsole");
+colorLoggingSection.Bind(loggingConfig);
+builder.Logging.AddColorConsoleLogger(options =>
 {
-    configure.ClearProviders();
-    var loggingSection = config.GetSection("Logging");
-    var loggingConfig = new ColorConsoleLoggerConfiguration();
-    var colorLoggingSection = loggingSection.GetSection("ColorConsole");
-    colorLoggingSection.Bind(loggingConfig);
-    configure.AddColorConsoleLogger(options =>
-    {
-        options.LogLevelColorMap = loggingConfig.LogLevelColorMap;
-    });
-    configure.AddFile(loggingSection, options =>
-    {
-        var time = loggingConfig.UseUnix ? DateTime.UtcNow : DateTime.Now;
-        options.FormatLogFileName = fileName => string.Format(fileName, time);
-        options.UseUtcTimestamp = true;
-    });
-    configure.GetLoggingConfig(logLevel);
+    options.LogLevelColorMap = loggingConfig.LogLevelColorMap;
 });
+builder.Logging.AddFile(loggingSection, options =>
+{
+    var time = loggingConfig.UseUnix ? DateTime.UtcNow : DateTime.Now;
+    options.FormatLogFileName = fileName => string.Format(fileName, time);
+    options.UseUtcTimestamp = true;
+});
+builder.Logging.GetLoggingConfig(logLevel);
 
 #endregion
 
