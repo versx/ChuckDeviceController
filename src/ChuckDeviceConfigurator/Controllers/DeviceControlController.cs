@@ -7,9 +7,8 @@
     using ChuckDeviceConfigurator.Services.Jobs;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Tasks;
-    using ChuckDeviceController.Data.Contexts;
+    using ChuckDeviceController.Data.Abstractions;
     using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Extensions;
     using ChuckDeviceController.Data.Repositories;
     using ChuckDeviceController.Extensions;
     using ChuckDeviceController.Extensions.Http;
@@ -27,7 +26,6 @@
         #region Variables
 
         private readonly ILogger<DeviceControlController> _logger;
-        //private readonly ControllerDbContext _context;
         private readonly IUnitOfWork _uow;
         private readonly IJobControllerService _jobControllerService;
         private readonly IMemoryCacheHostedService _memCache;
@@ -38,13 +36,11 @@
 
         public DeviceControlController(
             ILogger<DeviceControlController> logger,
-            //ControllerDbContext context,
             IUnitOfWork uow,
             IJobControllerService jobControllerService,
             IMemoryCacheHostedService memCache)
         {
             _logger = logger;
-            //_context = context;
             _uow = uow;
             _jobControllerService = jobControllerService;
             _memCache = memCache;
@@ -323,7 +319,7 @@
                 return CreateSwitchAccountTask(minLevel, maxLevel);
             }
 
-            Account? account = null;
+            IAccount? account = null;
             if (!string.IsNullOrEmpty(username))
             {
                 // Get account by username from request payload

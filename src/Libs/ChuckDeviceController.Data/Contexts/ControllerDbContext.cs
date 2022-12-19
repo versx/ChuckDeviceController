@@ -8,6 +8,9 @@ using ChuckDeviceController.Data.Factories;
 
 public class ControllerDbContext : DbContext
 {
+    private static ulong _instanceCount;
+    public static ulong InstanceCount => _instanceCount;
+
     #region DataSets
 
     public DbSet<Account> Accounts { get; set; } = null!;
@@ -39,6 +42,8 @@ public class ControllerDbContext : DbContext
     public ControllerDbContext(DbContextOptions<ControllerDbContext> options)
         : base(options)
     {
+        Interlocked.Increment(ref _instanceCount);
+
         base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 

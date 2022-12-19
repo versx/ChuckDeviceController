@@ -57,20 +57,20 @@ builder.WebHost.UseUrls(config["Urls"]);
 
 var logLevel = config.GetSection("Logging:LogLevel:Default").Get<LogLevel>();
 builder.Logging.ClearProviders();
-    var loggingConfig = new ColorConsoleLoggerConfiguration();
+var loggingConfig = new ColorConsoleLoggerConfiguration();
 var loggingSection = config.GetSection("Logging");
-    var colorLoggingSection = loggingSection.GetSection("ColorConsole");
-    colorLoggingSection.Bind(loggingConfig);
+var colorLoggingSection = loggingSection.GetSection("ColorConsole");
+colorLoggingSection.Bind(loggingConfig);
 builder.Logging.AddColorConsoleLogger(options =>
-    {
-        options.LogLevelColorMap = loggingConfig.LogLevelColorMap;
-    });
+{
+    options.LogLevelColorMap = loggingConfig.LogLevelColorMap;
+});
 builder.Logging.AddFile(loggingSection, options =>
-    {
-        var time = loggingConfig.UseUnix ? DateTime.UtcNow : DateTime.Now;
-        options.FormatLogFileName = fileName => string.Format(fileName, time);
-        options.UseUtcTimestamp = true;
-    });
+{
+    var time = loggingConfig.UseUnix ? DateTime.UtcNow : DateTime.Now;
+    options.FormatLogFileName = fileName => string.Format(fileName, time);
+    options.UseUtcTimestamp = true;
+});
 builder.Logging.GetLoggingConfig(logLevel);
 
 #endregion
@@ -270,7 +270,9 @@ static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
     {
         await Task.Delay(TimeSpan.FromSeconds(1));
 
-        var instanceCount = EntityRepository.InstanceCount;
+        var instanceCount = EntityRepository.InstanceCount +
+            MapDbContext.InstanceCount +
+            ControllerDbContext.InstanceCount;
         var requestCount = ProtoDataStatistics.Instance.TotalRequestsProcessed;
         var elapsed = stopwatch.Elapsed;
         var currentElapsed = elapsed - lastElapsed;
@@ -278,8 +280,8 @@ static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
 
         Console.WriteLine(
             $"[{DateTime.Now:HH:mm:ss.fff}] "
-            + $"Context creations/second: {instanceCount - lastInstanceCount} | "
-            + $"Requests/second: {Math.Round(currentRequests / currentElapsed.TotalSeconds)}");
+            + $"Database connections/s: {instanceCount - lastInstanceCount} | "
+            + $"Requests/s: {Math.Round(currentRequests / currentElapsed.TotalSeconds)}");
 
         lastInstanceCount = instanceCount;
         lastRequestCount = requestCount;
@@ -287,7 +289,7 @@ static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
     }
 
     Console.WriteLine();
-    Console.WriteLine($"Total context creations: {EntityRepository.InstanceCount}");
+    Console.WriteLine($"Total database connections created: {EntityRepository.InstanceCount}");
     Console.WriteLine(
         $"Requests per second:     {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds)}");
 

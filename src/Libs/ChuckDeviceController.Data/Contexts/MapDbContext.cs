@@ -10,6 +10,9 @@ using ChuckDeviceController.Data.Triggers;
 
 public class MapDbContext : DbContext
 {
+    private static ulong _instanceCount;
+    public static ulong InstanceCount => _instanceCount;
+
     #region DataSets
 
     public DbSet<Gym> Gyms { get; set; } = null!;
@@ -49,6 +52,8 @@ public class MapDbContext : DbContext
     public MapDbContext(DbContextOptions<MapDbContext> options)
         : base(options)
     {
+        Interlocked.Increment(ref _instanceCount);
+
         // Disable entity tracking for map entities for multiple reasons:
         // - It would be useful, but it's not worth the overhead and issues it could potentially introduce.
         // - Most data entities are consumable only for a certain time span.
