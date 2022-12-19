@@ -1,4 +1,4 @@
-namespace ChuckProxy;
+namespace ChuckDeviceProxy;
 
 public static class Strings
 {

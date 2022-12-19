@@ -1,7 +1,7 @@
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Http.Proxy.Configuration;
 using ChuckDeviceController.Http.Proxy.Extensions;
-using ChuckProxy;
+using ChuckDeviceProxy;
 
 #region Configuration
 
