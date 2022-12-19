@@ -91,7 +91,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FindyJumpyPlugin", "Plugins
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Geometry.Models", "Libs\ChuckDeviceController.Geometry.Models\ChuckDeviceController.Geometry.Models.csproj", "{95ED1091-166A-412F-B391-D05D13416E80}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceProxy", "ChuckProxy\ChuckDeviceProxy.csproj", "{50E79380-B33C-4661-BA7F-F8717672E70F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceProxy", "ChuckDeviceProxy\ChuckDeviceProxy.csproj", "{50E79380-B33C-4661-BA7F-F8717672E70F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Logging", "Libs\ChuckDeviceController.Logging\ChuckDeviceController.Logging.csproj", "{44366BA1-853F-4817-9515-ADB2319EDE6C}"
 EndProject
