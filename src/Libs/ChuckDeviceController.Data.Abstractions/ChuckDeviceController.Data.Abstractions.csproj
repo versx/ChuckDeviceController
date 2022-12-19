@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ChuckDeviceController.Data.Common\ChuckDeviceController.Data.Common.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Data.Common\ChuckDeviceController.Data.Common.csproj" />
   </ItemGroup>
 
