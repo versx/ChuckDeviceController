@@ -8,7 +8,7 @@ using ChuckDeviceController.Pvp.Models;
 
 public class PvpRankTests
 {
-    private readonly PvpRankGenerator _pvp = new();
+    private readonly IPvpRankGenerator _pvp = PvpRankGenerator.Instance;
 
     [SetUp]
     public void Setup()
