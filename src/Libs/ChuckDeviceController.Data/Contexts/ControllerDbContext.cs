@@ -145,10 +145,7 @@ public class ControllerDbContext : DbContext
                        x => Geofence.StringToGeofenceType(x)
                    );
             entity.Property(p => p.Data)
-                  .HasConversion(
-                       DbContextFactory.CreateJsonValueConverter<GeofenceData?>(),
-                       DbContextFactory.CreateValueComparer<GeofenceData?>()
-                   );
+                  .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData?>());
         });
 
         modelBuilder.Entity<Instance>(entity =>
@@ -159,10 +156,7 @@ public class ControllerDbContext : DbContext
                        x => Instance.StringToInstanceType(x)
                    );
             entity.Property(p => p.Data)
-                  .HasConversion(
-                       DbContextFactory.CreateJsonValueConverter<InstanceData?>(),
-                       DbContextFactory.CreateValueComparer<InstanceData?>()
-                   );
+                  .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData?>());
             entity.Property(p => p.Geofences)
                   .HasConversion(
                        DbContextFactory.CreateJsonValueConverter<List<string>>(),
@@ -197,10 +191,7 @@ public class ControllerDbContext : DbContext
                        DbContextFactory.CreateValueComparer<WebhookType>()
                    );
             entity.Property(p => p.Data)
-                  .HasConversion(
-                       DbContextFactory.CreateJsonValueConverter<WebhookData?>(),
-                       DbContextFactory.CreateValueComparer<WebhookData?>()
-                   );
+                  .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData?>());
             entity.Property(nameof(Webhook.Geofences))
                   .HasConversion(
                        DbContextFactory.CreateJsonValueConverter<List<string>>(),
