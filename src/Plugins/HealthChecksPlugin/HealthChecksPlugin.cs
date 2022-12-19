@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
 
+// Reference: https://github.com/Xabaril/AspNetCore.Diagnostics.HealthChecks/blob/master/samples/HealthChecks.UIAndApi/Startup.cs
+
 [
     PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT"),
     StaticFilesLocation(views: StaticFilesLocation.External, webRoot: StaticFilesLocation.External),

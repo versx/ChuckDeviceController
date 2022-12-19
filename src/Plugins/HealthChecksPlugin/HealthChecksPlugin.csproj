@@ -17,24 +17,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Update="wwwroot\**\*">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Update="Views\**\*">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Controllers\" />
-	  <Folder Include="Views\" />
-	  <Folder Include="wwwroot\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.5" />
 	  <PackageReference Include="AspNetCore.HealthChecks.UI" Version="6.0.5" />
 	  <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
@@ -43,7 +25,7 @@
 	  <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.1" />
 	</ItemGroup>
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
 	  <Exec Command="&quot;$(SolutionDir)../scripts/copy.bat&quot; &quot;$(TargetPath)&quot; &quot;$(ProjectName)&quot; &quot;$(TargetFileName)&quot; &quot;$(TargetDir)&quot; &quot;$(SolutionDir)&quot;" />
 	</Target>
 
