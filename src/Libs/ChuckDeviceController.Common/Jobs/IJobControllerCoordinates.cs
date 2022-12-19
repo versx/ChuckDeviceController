@@ -1,9 +1,8 @@
-﻿namespace ChuckDeviceController.Common.Jobs
-{
-    using ChuckDeviceController.Geometry.Models.Contracts;
+﻿namespace ChuckDeviceController.Common.Jobs;
 
-    public interface IJobControllerCoordinates
-    {
-        IReadOnlyList<ICoordinate> Coordinates { get; }
-    }
+using ChuckDeviceController.Geometry.Models.Abstractions;
+
+public interface IJobControllerCoordinates
+{
+    IReadOnlyList<ICoordinate> Coordinates { get; }
 }

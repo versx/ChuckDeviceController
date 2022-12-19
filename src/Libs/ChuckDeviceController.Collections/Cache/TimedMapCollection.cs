@@ -1,66 +1,65 @@
-﻿namespace ChuckDeviceController.Collections.Cache
+﻿namespace ChuckDeviceController.Collections.Cache;
+
+public record TimedMapEntry<TValue>(ulong Time, TValue Value);
+
+public class TimedMapCollection<TKey, TValue>
+    where TKey : IEquatable<TKey>
+    where TValue : struct
 {
-    public record TimedMapEntry<TValue>(ulong Time, TValue Value);
+    private readonly Dictionary<TKey, List<TimedMapEntry<TValue>>> _entries;
+    private readonly object _lock = new();
+    private readonly uint _length;
 
-    public class TimedMapCollection<TKey, TValue>
-        where TKey : IEquatable<TKey>
-        where TValue : struct
+    public uint Count => _length;
+
+    public TimedMapCollection(uint length)
     {
-        private readonly Dictionary<TKey, List<TimedMapEntry<TValue>>> _entries;
-        private readonly object _lock = new();
-        private readonly uint _length;
+        _length = length;
+        _entries = new Dictionary<TKey, List<TimedMapEntry<TValue>>>();
+    }
 
-        public uint Count => _length;
+    public void SetValue(TKey key, TimedMapEntry<TValue> entry)
+    {
+        SetValue(key, entry.Value, entry.Time);
+    }
 
-        public TimedMapCollection(uint length)
+    public void SetValue(TKey key, TValue value, ulong time)
+    {
+        lock (_lock )
         {
-            _length = length;
-            _entries = new Dictionary<TKey, List<TimedMapEntry<TValue>>>();
-        }
-
-        public void SetValue(TKey key, TimedMapEntry<TValue> entry)
-        {
-            SetValue(key, entry.Value, entry.Time);
-        }
-
-        public void SetValue(TKey key, TValue value, ulong time)
-        {
-            lock (_lock )
+            if (_entries.ContainsKey(key))
             {
-                if (_entries.ContainsKey(key))
+                var lastIndex = _entries[key]?.FindLastIndex(value => value.Time >= time);
+                if (lastIndex > -1)
                 {
-                    var lastIndex = _entries[key]?.FindLastIndex(value => value.Time >= time);
-                    if (lastIndex > -1)
-                    {
-                        _entries[key].Insert(lastIndex ?? 0, new(time, value));
-                    }
-                    else
-                    {
-                        _entries[key].Add(new(time, value));
-                    }
-                    if (_entries[key].Count > _length)
-                    {
-                        _entries[key].RemoveAt(0);
-                    }
+                    _entries[key].Insert(lastIndex ?? 0, new(time, value));
                 }
                 else
                 {
-                    _entries.Add(key, new() { new(time, value) });
+                    _entries[key].Add(new(time, value));
                 }
-            }
-        }
-
-        public TValue? GetValueAt(TKey key, ulong time)
-        {
-            TValue? value = null;
-            lock (_lock )
-            {
-                if (_entries.ContainsKey(key))
+                if (_entries[key].Count > _length)
                 {
-                    value = _entries[key].FindLast(x => x.Time >= time)?.Value;
+                    _entries[key].RemoveAt(0);
                 }
             }
-            return value;
+            else
+            {
+                _entries.Add(key, new() { new(time, value) });
+            }
         }
+    }
+
+    public TValue? GetValueAt(TKey key, ulong time)
+    {
+        TValue? value = null;
+        lock (_lock )
+        {
+            if (_entries.ContainsKey(key))
+            {
+                value = _entries[key].FindLast(x => x.Time >= time)?.Value;
+            }
+        }
+        return value;
     }
 }

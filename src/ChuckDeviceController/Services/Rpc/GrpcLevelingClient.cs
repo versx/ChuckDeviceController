@@ -1,32 +1,31 @@
-﻿namespace ChuckDeviceController.Services.Rpc
+﻿namespace ChuckDeviceController.Services.Rpc;
+
+using ChuckDeviceController.Protos;
+
+public class GrpcLevelingClient : IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>
 {
-    using ChuckDeviceController.Protos;
+    private readonly ILogger<GrpcLevelingClient> _logger;
+    private readonly Leveling.LevelingClient _client;
 
-    public class GrpcLevelingClient : IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>
+    public GrpcLevelingClient(
+        ILogger<GrpcLevelingClient> logger,
+        Leveling.LevelingClient client)
     {
-        private readonly ILogger<GrpcLevelingClient> _logger;
-        private readonly Leveling.LevelingClient _client;
+        _logger = logger;
+        _client = client;
+    }
 
-        public GrpcLevelingClient(
-            ILogger<GrpcLevelingClient> logger,
-            Leveling.LevelingClient client)
+    public async Task<TrainerInfoResponse?> SendAsync(TrainerInfoRequest payload)
+    {
+        try
         {
-            _logger = logger;
-            _client = client;
+            var response = await _client.HandleTrainerInfoAsync(payload);
+            return response;
         }
-
-        public async Task<TrainerInfoResponse?> SendAsync(TrainerInfoRequest payload)
+        catch (Exception)
         {
-            try
-            {
-                var response = await _client.HandleTrainerInfoAsync(payload);
-                return response;
-            }
-            catch (Exception)
-            {
-                //_logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
-            }
-            return null;
+            //_logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
         }
+        return null;
     }
 }

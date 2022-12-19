@@ -1,126 +1,125 @@
-﻿namespace ChuckDeviceConfigurator.ViewModels
+﻿namespace ChuckDeviceConfigurator.ViewModels;
+
+using System.ComponentModel;
+
+using ChuckDeviceController.Data.Common;
+
+public class ManageInstanceViewModel
 {
-    using System.ComponentModel;
+    [DisplayName("Name")]
+    public string Name { get; set; } = null!;
 
-    using ChuckDeviceController.Common.Data;
+    // NOTE: Set to nullable so default value when creating an instance isn't set to `0` aka CirclePokemon
+    [DisplayName("Instance Type")]
+    public InstanceType? Type { get; set; }
 
-    public class ManageInstanceViewModel
-    {
-        [DisplayName("Name")]
-        public string Name { get; set; }
+    [DisplayName("Minimum Level")]
+    public ushort MinimumLevel { get; set; }
 
-        // NOTE: Set to nullable so default value when creating an instance isn't set to `0` aka CirclePokemon
-        [DisplayName("Instance Type")]
-        public InstanceType? Type { get; set; }
+    [DisplayName("Maximum Level")]
+    public ushort MaximumLevel { get; set; }
 
-        [DisplayName("Minimum Level")]
-        public ushort MinimumLevel { get; set; }
+    [DisplayName("Geofences")]
+    public List<string> Geofences { get; set; } = new();
 
-        [DisplayName("Maximum Level")]
-        public ushort MaximumLevel { get; set; }
+    [DisplayName("Instance Data")]
+    public ManageInstanceDataViewModel Data { get; set; } = new();
 
-        [DisplayName("Geofences")]
-        public List<string> Geofences { get; set; } = new();
+    [DisplayName("Assigned Devices")]
+    public List<string>? AssignedDevices { get; set; } = new(); // optional
+}
 
-        [DisplayName("Instance Data")]
-        public ManageInstanceDataViewModel Data { get; set; } = new();
-
-        [DisplayName("Assigned Devices")]
-        public List<string>? AssignedDevices { get; set; } = new(); // optional
-    }
-
-    public class ManageInstanceDataViewModel
-    {
-        // Circle Instance
-        [DisplayName("Circle Route Type")]
-        public CircleInstanceRouteType? CircleRouteType { get; set; } = Strings.DefaultCircleRouteType;
+public class ManageInstanceDataViewModel
+{
+    // Circle Instance
+    [DisplayName("Circle Route Type")]
+    public CircleInstanceRouteType? CircleRouteType { get; set; } = Strings.DefaultCircleRouteType;
 
 
-        // Dynamic Route Instance
-        [DisplayName("Optimize Dynamic Route")]
-        public bool OptimizeDynamicRoute { get; set; } = Strings.DefaultOptimizeDynamicRoute;
+    // Dynamic Route Instance
+    [DisplayName("Optimize Dynamic Route")]
+    public bool OptimizeDynamicRoute { get; set; } = Strings.DefaultOptimizeDynamicRoute;
 
 
-        // Quest Instance
-        [DisplayName("Time Zone")]
-        public string? TimeZone { get; set; } = Strings.DefaultTimeZone;
+    // Quest Instance
+    [DisplayName("Time Zone")]
+    public string? TimeZone { get; set; } = Strings.DefaultTimeZone;
 
-        [DisplayName("Enable DST")]
-        public bool EnableDst { get; set; } = Strings.DefaultEnableDst;
+    [DisplayName("Enable DST")]
+    public bool EnableDst { get; set; } = Strings.DefaultEnableDst;
 
-        [DisplayName("Spin Limit")]
-        public ushort? SpinLimit { get; set; } = Strings.DefaultSpinLimit;
+    [DisplayName("Spin Limit")]
+    public ushort? SpinLimit { get; set; } = Strings.DefaultSpinLimit;
 
-        [DisplayName("Ignore S2 Cell Bootstrapping")]
-        public bool IgnoreS2CellBootstrap { get; set; } = Strings.DefaultIgnoreS2CellBootstrap;
+    [DisplayName("Ignore S2 Cell Bootstrapping")]
+    public bool IgnoreS2CellBootstrap { get; set; } = Strings.DefaultIgnoreS2CellBootstrap;
 
-        [DisplayName("Use Red Warning Accounts")]
-        public bool UseWarningAccounts { get; set; } = Strings.DefaultUseWarningAccounts;
+    [DisplayName("Use Red Warning Accounts")]
+    public bool UseWarningAccounts { get; set; } = Strings.DefaultUseWarningAccounts;
 
-        [DisplayName("Quest Mode")]
-        public QuestMode? QuestMode { get; set; } = Strings.DefaultQuestMode;
+    [DisplayName("Quest Mode")]
+    public QuestMode? QuestMode { get; set; } = Strings.DefaultQuestMode;
 
-        [DisplayName("Maximum Pokestop Spin Attempts")]
-        public byte? MaximumSpinAttempts { get; set; } = Strings.DefaultMaximumSpinAttempts;
+    [DisplayName("Maximum Pokestop Spin Attempts")]
+    public byte? MaximumSpinAttempts { get; set; } = Strings.DefaultMaximumSpinAttempts;
 
-        [DisplayName("Account Logout Delay")]
-        public ushort? LogoutDelay { get; set; } = Strings.DefaultLogoutDelay;
-
-
-        // IV Instance
-        [DisplayName("IV Queue Limit")]
-        public ushort? IvQueueLimit { get; set; } = Strings.DefaultIvQueueLimit;
-
-        [DisplayName("IV List")]
-        public string? IvList { get; set; } = Strings.DefaultIvList;
-
-        [DisplayName("Enable Lure Encounters")]
-        public bool EnableLureEncounters { get; set; } = Strings.DefaultEnableLureEncounters;
+    [DisplayName("Account Logout Delay")]
+    public ushort? LogoutDelay { get; set; } = Strings.DefaultLogoutDelay;
 
 
-        // Bootstrap Instance
-        [DisplayName("Fast Bootstrap Mode")]
-        public bool FastBootstrapMode { get; set; } = Strings.DefaultFastBootstrapMode;
+    // IV Instance
+    [DisplayName("IV Queue Limit")]
+    public ushort? IvQueueLimit { get; set; } = Strings.DefaultIvQueueLimit;
 
-        [DisplayName("Circle Size")]
-        public ushort? CircleSize { get; set; } = Strings.DefaultCircleSize;
+    [DisplayName("IV List")]
+    public string? IvList { get; set; } = Strings.DefaultIvList;
 
-        [DisplayName("Optimize Bootstrap Route")]
-        public bool OptimizeBootstrapRoute { get; set; } = Strings.DefaultOptimizeBootstrapRoute;
-
-        [DisplayName("Bootstrap Complete Instance Name")]
-        public string? BootstrapCompleteInstanceName { get; set; } = Strings.DefaultBootstrapCompleteInstanceName;
+    [DisplayName("Enable Lure Encounters")]
+    public bool EnableLureEncounters { get; set; } = Strings.DefaultEnableLureEncounters;
 
 
-        // Spawnpoint Instance
-        [DisplayName("Only Unknown Spawnpoints")]
-        public bool OnlyUnknownSpawnpoints { get; set; } = Strings.DefaultOnlyUnknownSpawnpoints;
+    // Bootstrap Instance
+    [DisplayName("Fast Bootstrap Mode")]
+    public bool FastBootstrapMode { get; set; } = Strings.DefaultFastBootstrapMode;
 
-        [DisplayName("Optimize Spawnpoints Route")]
-        public bool OptimizeSpawnpointsRoute { get; set; } = Strings.DefaultOptimizeBootstrapRoute;
+    [DisplayName("Circle Size")]
+    public ushort? CircleSize { get; set; } = Strings.DefaultCircleSize;
 
+    [DisplayName("Optimize Bootstrap Route")]
+    public bool OptimizeBootstrapRoute { get; set; } = Strings.DefaultOptimizeBootstrapRoute;
 
-        // Leveling Instance
-        [DisplayName("Leveling Radius")]
-        public uint LevelingRadius { get; set; } = Strings.DefaultLevelingRadius;
-
-        [DisplayName("Save Leveling Data")]
-        public bool StoreLevelingData { get; set; } = Strings.DefaultStoreLevelingData;
-
-        [DisplayName("Starting Coordinate")]
-        public string StartingCoordinate { get; set; } = Strings.DefaultStartingCoordinate;
+    [DisplayName("Bootstrap Complete Instance Name")]
+    public string? BootstrapCompleteInstanceName { get; set; } = Strings.DefaultBootstrapCompleteInstanceName;
 
 
-        // All
-        [DisplayName("Account Group")]
-        public string? AccountGroup { get; set; } = Strings.DefaultAccountGroup;
+    // Spawnpoint Instance
+    [DisplayName("Only Unknown Spawnpoints")]
+    public bool OnlyUnknownSpawnpoints { get; set; } = Strings.DefaultOnlyUnknownSpawnpoints;
 
-        [DisplayName("Is Unique Event")]
-        public bool IsEvent { get; set; } = Strings.DefaultIsEvent;
+    [DisplayName("Optimize Spawnpoints Route")]
+    public bool OptimizeSpawnpointsRoute { get; set; } = Strings.DefaultOptimizeBootstrapRoute;
 
 
-        // Custom
-        [DisplayName("Custom Instance Type")]
-        public string? CustomInstanceType { get; set; } = "custom";
-    }
+    // Leveling Instance
+    [DisplayName("Leveling Radius")]
+    public uint LevelingRadius { get; set; } = Strings.DefaultLevelingRadius;
+
+    [DisplayName("Save Leveling Data")]
+    public bool StoreLevelingData { get; set; } = Strings.DefaultStoreLevelingData;
+
+    [DisplayName("Starting Coordinate")]
+    public string StartingCoordinate { get; set; } = Strings.DefaultStartingCoordinate;
+
+
+    // All
+    [DisplayName("Account Group")]
+    public string? AccountGroup { get; set; } = Strings.DefaultAccountGroup;
+
+    [DisplayName("Is Unique Event")]
+    public bool IsEvent { get; set; } = Strings.DefaultIsEvent;
+
+
+    // Custom
+    [DisplayName("Custom Instance Type")]
+    public string? CustomInstanceType { get; set; } = "custom";
 }

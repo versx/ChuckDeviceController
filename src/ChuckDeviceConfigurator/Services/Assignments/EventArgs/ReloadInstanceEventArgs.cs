@@ -1,16 +1,15 @@
-﻿namespace ChuckDeviceConfigurator.Services.Assignments.EventArgs
+﻿namespace ChuckDeviceConfigurator.Services.Assignments.EventArgs;
+
+using System;
+
+using ChuckDeviceController.Data.Entities;
+
+public sealed class ReloadInstanceEventArgs : EventArgs
 {
-    using System;
+    public Instance Instance { get; }
 
-    using ChuckDeviceController.Data.Entities;
-
-    public sealed class ReloadInstanceEventArgs : EventArgs
+    public ReloadInstanceEventArgs(Instance instance)
     {
-        public Instance Instance { get; }
-
-        public ReloadInstanceEventArgs(Instance instance)
-        {
-            Instance = instance;
-        }
+        Instance = instance;
     }
 }

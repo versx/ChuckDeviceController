@@ -1,7 +1,6 @@
-﻿namespace PogoEventsPlugin.Models
+﻿namespace PogoEventsPlugin.Models;
+
+public class EventRaidItem : EventItem
 {
-    public class EventRaidItem : EventItem
-    {
-        public uint? Form { get; set; }
-    }
+    public uint? Form { get; set; }
 }

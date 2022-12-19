@@ -1,19 +1,18 @@
-﻿namespace ChuckDeviceController.Extensions
-{
-    using ChuckDeviceController.Middleware;
+﻿namespace ChuckDeviceController.Extensions;
 
-    public static class MiddlewareExtensions
+using ChuckDeviceController.Middleware;
+
+public static class MiddlewareExtensions
+{
+    public static void UseMadDataConverter(this IApplicationBuilder builder, params object?[] args)
     {
-        public static void UseMadDataConverter(this IApplicationBuilder builder, params object?[] args)
+        builder.UseWhen(context =>
+            context.IsRawDataRequest() &&
+            context.IsPostRequest() &&
+            context.IsOriginHeaderSet(),
+            appBuilder =>
         {
-            builder.UseWhen(context =>
-                context.IsRawDataRequest() &&
-                context.IsPostRequest() &&
-                context.IsOriginHeaderSet(),
-                appBuilder =>
-            {
-                appBuilder.UseMiddleware<MadDataMiddleware>(args);
-            });
-        }
+            appBuilder.UseMiddleware<MadDataMiddleware>(args);
+        });
     }
 }

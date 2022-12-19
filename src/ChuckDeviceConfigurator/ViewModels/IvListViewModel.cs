@@ -1,13 +1,12 @@
-﻿namespace ChuckDeviceConfigurator.ViewModels
+﻿namespace ChuckDeviceConfigurator.ViewModels;
+
+using System.ComponentModel;
+
+public class IvListViewModel
 {
-    using System.ComponentModel;
+    [DisplayName("Name")]
+    public string Name { get; set; }
 
-    public class IvListViewModel
-    {
-        [DisplayName("Name")]
-        public string Name { get; set; }
-
-        [DisplayName("Pokemon")]
-        public List<string> Pokemon { get; set; } = new();
-    }
+    [DisplayName("Pokemon")]
+    public List<string> Pokemon { get; set; } = new();
 }

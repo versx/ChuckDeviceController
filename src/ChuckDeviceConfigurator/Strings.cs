@@ -3,7 +3,7 @@
     using System.Reflection;
 
     using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Data;
+    using ChuckDeviceController.Data.Common;
 
     public static partial class Strings
     {

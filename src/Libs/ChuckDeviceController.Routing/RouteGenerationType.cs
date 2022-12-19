@@ -1,24 +1,23 @@
-﻿namespace ChuckDeviceController.Routing
-{
-    ///// <summary>
-    ///// Routing generation type
-    ///// </summary>
-    //public enum RouteGenerationType
-    //{
-    //    /// <summary>
-    //    /// Generates a bootstrap route based on the
-    //    /// circle size.
-    //    /// </summary>
-    //    Bootstrap,
+﻿namespace ChuckDeviceController.Routing;
 
-    //    /// <summary>
-    //    /// Generates a randomized route
-    //    /// </summary>
-    //    Randomized,
+///// <summary>
+///// Routing generation type
+///// </summary>
+//public enum RouteGenerationType
+//{
+//    /// <summary>
+//    /// Generates a bootstrap route based on the
+//    /// circle size.
+//    /// </summary>
+//    Bootstrap,
 
-    //    /// <summary>
-    //    /// Generates an optimized route
-    //    /// </summary>
-    //    Optimized,
-    //}
-}
+//    /// <summary>
+//    /// Generates a randomized route
+//    /// </summary>
+//    Randomized,
+
+//    /// <summary>
+//    /// Generates an optimized route
+//    /// </summary>
+//    Optimized,
+//}

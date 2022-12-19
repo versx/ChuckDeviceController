@@ -1,17 +1,16 @@
-﻿namespace ChuckDeviceController.Logging
-{
-    using Microsoft.Extensions.Logging;
+﻿namespace ChuckDeviceController.Logging;
 
-    public static class GenericLoggerFactory
+using Microsoft.Extensions.Logging;
+
+public static class GenericLoggerFactory
+{
+    public static Logger<T> CreateLogger<T>(LogLevel logLevel = LogLevel.Information)
     {
-        public static Logger<T> CreateLogger<T>(LogLevel logLevel = LogLevel.Information)
+        var factory = LoggerFactory.Create(options =>
         {
-            var factory = LoggerFactory.Create(options =>
-            {
-                options.GetLoggingConfig(logLevel);
-                options.AddColorConsoleLogger();
-            });
-            return new Logger<T>(factory);
-        }
+            options.GetLoggingConfig(logLevel);
+            options.AddColorConsoleLogger();
+        });
+        return new Logger<T>(factory);
     }
 }

@@ -1,25 +1,24 @@
-﻿namespace MemoryBenchmarkPlugin.Controllers
+﻿namespace MemoryBenchmarkPlugin.Controllers;
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+using ChuckDeviceController.Common;
+
+// Reference: https://docs.microsoft.com/en-us/dotnet/core/diagnostics/compare-metric-apis?view=aspnetcore-6.0
+
+[Authorize(Roles = RoleConsts.BenchmarksRole)]
+public class MemoryController : Controller
 {
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Mvc;
+    private readonly ILogger<MemoryController> _logger;
 
-    using ChuckDeviceController.Common;
-
-    // Reference: https://docs.microsoft.com/en-us/dotnet/core/diagnostics/compare-metric-apis?view=aspnetcore-6.0
-
-    [Authorize(Roles = RoleConsts.BenchmarksRole)]
-    public class MemoryController : Controller
+    public MemoryController(ILogger<MemoryController> logger)
     {
-        private readonly ILogger<MemoryController> _logger;
+        _logger = logger;
+    }
 
-        public MemoryController(ILogger<MemoryController> logger)
-        {
-            _logger = logger;
-        }
-
-        public IActionResult Index()
-        {
-            return View();
-        }
+    public IActionResult Index()
+    {
+        return View();
     }
 }

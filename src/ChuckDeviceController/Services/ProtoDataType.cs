@@ -1,21 +1,20 @@
-﻿namespace ChuckDeviceController.Services
+﻿namespace ChuckDeviceController.Services;
+
+public enum ProtoDataType
 {
-    public enum ProtoDataType
-    {
-        WildPokemon,
-        NearbyPokemon,
-        MapPokemon,
-        Encounter,
-        DiskEncounter,
-        Fort,
-        FortDetails,
-        GymInfo,
-        Quest,
-        Cell,
-        ClientWeather,
-        Trainer,
-        GymDefender,
-        PlayerData,
-        Inventory,
-    }
+    WildPokemon,
+    NearbyPokemon,
+    MapPokemon,
+    Encounter,
+    DiskEncounter,
+    Fort,
+    FortDetails,
+    GymInfo,
+    Quest,
+    Cell,
+    ClientWeather,
+    Trainer,
+    GymDefender,
+    PlayerData,
+    Inventory,
 }

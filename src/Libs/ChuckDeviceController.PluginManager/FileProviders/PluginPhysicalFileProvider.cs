@@ -1,16 +1,15 @@
-﻿namespace ChuckDeviceController.PluginManager.FileProviders
+﻿namespace ChuckDeviceController.PluginManager.FileProviders;
+
+using System.Reflection;
+
+using Microsoft.Extensions.FileProviders;
+
+using ChuckDeviceController.PluginManager.Extensions;
+
+public class PluginPhysicalFileProvider : PhysicalFileProvider
 {
-    using System.Reflection;
-
-    using Microsoft.Extensions.FileProviders;
-
-    using ChuckDeviceController.PluginManager.Extensions;
-
-    public class PluginPhysicalFileProvider : PhysicalFileProvider
+    public PluginPhysicalFileProvider(Assembly assembly, string webRoot)
+        : base(Path.Combine(assembly.Location.GetDirectoryName()!, webRoot))
     {
-        public PluginPhysicalFileProvider(Assembly assembly, string webRoot)
-            : base(Path.Combine(assembly.Location.GetDirectoryName()!, webRoot))
-        {
-        }
     }
 }

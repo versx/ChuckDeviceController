@@ -1,9 +1,8 @@
-﻿namespace ChuckDeviceController.PluginManager.Services.Loader
-{
-    using ChuckDeviceController.PluginManager.Services.Loader.Dependencies;
+﻿namespace ChuckDeviceController.PluginManager.Services.Loader;
 
-    public interface IPluginDependencyContextProvider
-    {
-        IPluginDependencyContext LoadFromPluginLoadContext(IPluginAssemblyLoadContext loadContext);
-    }
+using ChuckDeviceController.PluginManager.Services.Loader.Dependencies;
+
+public interface IPluginDependencyContextProvider
+{
+    IPluginDependencyContext LoadFromPluginLoadContext(IPluginAssemblyLoadContext loadContext);
 }

@@ -1,62 +1,61 @@
-﻿namespace ChuckDeviceController.PluginManager
+﻿namespace ChuckDeviceController.PluginManager;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+
+using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Data.Common;
+
+public interface IPluginManager
 {
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.DependencyInjection;
+    #region Properties
 
-    using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Common.Data.Contracts;
+    IReadOnlyDictionary<string, IPluginHost> Plugins { get; }
 
-    public interface IPluginManager
-    {
-        #region Properties
+    IPluginHost? this[string key] { get; }
 
-        IReadOnlyDictionary<string, IPluginHost> Plugins { get; }
+    IPluginManagerOptions Options { get; }
 
-        IPluginHost? this[string key] { get; }
+    IServiceCollection Services { get; }
 
-        IPluginManagerOptions Options { get; }
+    IWebHostEnvironment WebHostEnv { get; }
 
-        IServiceCollection Services { get; }
+    #endregion
 
-        IWebHostEnvironment WebHostEnv { get; }
+    #region Events
 
-        #endregion
+    event EventHandler<PluginHostAddedEventArgs>? PluginHostAdded;
 
-        #region Events
+    event EventHandler<PluginHostRemovedEventArgs>? PluginHostRemoved;
 
-        event EventHandler<PluginHostAddedEventArgs>? PluginHostAdded;
+    event EventHandler<PluginHostStateChangedEventArgs>? PluginHostStateChanged;
 
-        event EventHandler<PluginHostRemovedEventArgs>? PluginHostRemoved;
+    #endregion
 
-        event EventHandler<PluginHostStateChangedEventArgs>? PluginHostStateChanged;
+    #region Methods
 
-        #endregion
+    void Configure(WebApplication appBuilder);
 
-        #region Methods
+    Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env, IReadOnlyList<IApiKey> apiKeys);
 
-        void Configure(WebApplication appBuilder);
+    Task LoadPluginAsync(string filePath, IReadOnlyList<IApiKey> apiKeys);
 
-        Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env, IReadOnlyList<IApiKey> apiKeys);
+    Task RegisterPluginAsync(PluginHost pluginHost);
 
-        Task LoadPluginAsync(string filePath, IReadOnlyList<IApiKey> apiKeys);
+    Task StopAsync(string pluginName);
 
-        Task RegisterPluginAsync(PluginHost pluginHost);
+    Task StopAllAsync();
 
-        Task StopAsync(string pluginName);
+    Task ReloadAsync(string pluginName);
 
-        Task StopAllAsync();
+    Task ReloadAllAsync();
 
-        Task ReloadAsync(string pluginName);
+    Task RemoveAsync(string pluginName, bool unload = true);
 
-        Task ReloadAllAsync();
+    Task RemoveAllAsync();
 
-        Task RemoveAsync(string pluginName, bool unload = true);
+    Task SetStateAsync(string pluginName, PluginState state);
 
-        Task RemoveAllAsync();
-
-        Task SetStateAsync(string pluginName, PluginState state);
-
-        #endregion
-    }
+    #endregion
 }

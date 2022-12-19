@@ -1,7 +1,6 @@
-﻿namespace ChuckDeviceConfigurator.Services.Net.Mail
+﻿namespace ChuckDeviceConfigurator.Services.Net.Mail;
+
+public class AuthMessageSenderOptions
 {
-    public class AuthMessageSenderOptions
-    {
-        public string? SendGridKey { get; set; }
-    }
+    public string? SendGridKey { get; set; }
 }

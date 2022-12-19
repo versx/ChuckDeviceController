@@ -1,32 +1,31 @@
-﻿namespace ChuckDeviceController.Services.Rpc
+﻿namespace ChuckDeviceController.Services.Rpc;
+
+using ChuckDeviceController.Protos;
+
+public class GrpcProtoClient : IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse>
 {
-    using ChuckDeviceController.Protos;
+    private readonly ILogger<GrpcProtoClient> _logger;
+    private readonly Payload.PayloadClient _client;
 
-    public class GrpcProtoClient : IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse>
+    public GrpcProtoClient(
+        ILogger<GrpcProtoClient> logger,
+        Payload.PayloadClient client)
     {
-        private readonly ILogger<GrpcProtoClient> _logger;
-        private readonly Payload.PayloadClient _client;
+        _logger = logger;
+        _client = client;
+    }
 
-        public GrpcProtoClient(
-            ILogger<GrpcProtoClient> logger,
-            Payload.PayloadClient client)
+    public async Task<PayloadResponse?> SendAsync(PayloadRequest payload)
+    {
+        try
         {
-            _logger = logger;
-            _client = client;
+            var response = await _client.HandlePayloadAsync(payload);
+            return response;
         }
-
-        public async Task<PayloadResponse?> SendAsync(PayloadRequest payload)
+        catch (Exception ex)
         {
-            try
-            {
-                var response = await _client.HandlePayloadAsync(payload);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
-            }
-            return null;
+            _logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
         }
+        return null;
     }
 }

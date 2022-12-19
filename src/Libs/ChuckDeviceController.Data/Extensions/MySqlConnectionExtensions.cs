@@ -1,29 +1,28 @@
-﻿namespace ChuckDeviceController.Data.Extensions
+﻿namespace ChuckDeviceController.Data.Extensions;
+
+using System.Data;
+
+using MySqlConnector;
+
+public static class MySqlConnectionExtensions
 {
-    using System.Data;
+    private const uint DefaultConnectionWaitTimeS = 5;
 
-    using MySqlConnector;
-
-    public static class MySqlConnectionExtensions
+    public static async Task WaitForConnectionAsync(
+        this MySqlConnection connection,
+        uint waitTimeS = DefaultConnectionWaitTimeS,
+        CancellationToken stoppingToken = default)
     {
-        private const uint DefaultConnectionWaitTimeS = 5;
+        var maxAttempts = 3;
+        var attempts = 0;
 
-        public static async Task WaitForConnectionAsync(
-            this MySqlConnection connection,
-            uint waitTimeS = DefaultConnectionWaitTimeS,
-            CancellationToken stoppingToken = default)
+        while ((connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
         {
-            var maxAttempts = 3;
-            var attempts = 0;
+            if (attempts >= maxAttempts)
+                break;
 
-            while ((connection?.State ?? ConnectionState.Closed) != ConnectionState.Open)
-            {
-                if (attempts >= maxAttempts)
-                    break;
-
-                attempts++;
-                await Task.Delay(TimeSpan.FromSeconds(waitTimeS), stoppingToken);
-            }
+            attempts++;
+            await Task.Delay(TimeSpan.FromSeconds(waitTimeS), stoppingToken);
         }
     }
 }

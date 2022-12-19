@@ -1,62 +1,61 @@
-﻿namespace PogoEventsPlugin.Services
+﻿namespace PogoEventsPlugin.Services;
+
+using ChuckDeviceController.Extensions.Json;
+using ChuckDeviceController.Net.Utilities;
+
+using Models;
+
+/*
+ * 'active':
+ * - events.json
+ * - grunts.json
+ * - quests.json
+ * - raids.json
+ * 'nests':
+ * - last-regular-migration
+ * - species-ids.json
+ */
+
+public class PokemonEventDataService : IPokemonEventDataService
 {
-    using ChuckDeviceController.Extensions.Json;
-    using ChuckDeviceController.Net.Utilities;
+    private const string EventsEndpoint = "https://raw.githubusercontent.com/ccev/pogoinfo/v2/active/events.json";
+    //private const string EventsEndpoint = "https://github.com/WatWowMap/event-info";
 
-    using Models;
+    private static ILogger<IPokemonEventDataService> _logger =
+        new Logger<IPokemonEventDataService>(LoggerFactory.Create(x => x.AddConsole()));
+    private static List<ActiveEvent> _activeEvents = new();
 
-    /*
-     * 'active':
-     * - events.json
-     * - grunts.json
-     * - quests.json
-     * - raids.json
-     * 'nests':
-     * - last-regular-migration
-     * - species-ids.json
-     */
+    public IReadOnlyList<IActiveEvent> ActiveEvents => _activeEvents;
 
-    public class PokemonEventDataService : IPokemonEventDataService
+    public PokemonEventDataService()
     {
-        private const string EventsEndpoint = "https://raw.githubusercontent.com/ccev/pogoinfo/v2/active/events.json";
-        //private const string EventsEndpoint = "https://github.com/WatWowMap/event-info";
+        Task.Run(async () => await FetchActiveEventsAsync()).Wait();
+    }
 
-        private static ILogger<IPokemonEventDataService> _logger =
-            new Logger<IPokemonEventDataService>(LoggerFactory.Create(x => x.AddConsole()));
-        private static List<ActiveEvent> _activeEvents = new();
-
-        public IReadOnlyList<IActiveEvent> ActiveEvents => _activeEvents;
-
-        public PokemonEventDataService()
+    private async Task FetchActiveEventsAsync()
+    {
+        var data = await NetUtils.GetAsync(EventsEndpoint);
+        if (string.IsNullOrEmpty(data))
         {
-            Task.Run(async () => await FetchActiveEventsAsync()).Wait();
+            // Failed to fetch active events
+            _logger.LogError($"Failed to fetch active Pokemon Go events manifest.");
+            return;
         }
-
-        private async Task FetchActiveEventsAsync()
+        try
         {
-            var data = await NetUtils.GetAsync(EventsEndpoint);
-            if (string.IsNullOrEmpty(data))
+            var events = data.FromJson<List<ActiveEvent>>();
+            if (events == null)
             {
-                // Failed to fetch active events
-                _logger.LogError($"Failed to fetch active Pokemon Go events manifest.");
+                // Failed to deserialize fetched active events
+                _logger.LogError($"Failed to deserialize fetched active Pokemon Go events manifest.");
                 return;
             }
-            try
-            {
-                var events = data.FromJson<List<ActiveEvent>>();
-                if (events == null)
-                {
-                    // Failed to deserialize fetched active events
-                    _logger.LogError($"Failed to deserialize fetched active Pokemon Go events manifest.");
-                    return;
-                }
 
-                _activeEvents = events;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error: {ex}");
-            }
+            _activeEvents = events;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error: {ex}");
         }
     }
 }

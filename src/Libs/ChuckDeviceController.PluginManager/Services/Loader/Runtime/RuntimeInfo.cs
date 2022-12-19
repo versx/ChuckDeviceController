@@ -1,7 +1,6 @@
-﻿namespace ChuckDeviceController.PluginManager.Services.Loader.Runtime
+﻿namespace ChuckDeviceController.PluginManager.Services.Loader.Runtime;
+
+public class RuntimeInfo
 {
-    public class RuntimeInfo
-    {
-        public IEnumerable<Runtime> Runtimes { get; set; }
-    }
+    public IEnumerable<Runtime> Runtimes { get; set; } = Array.Empty<Runtime>();
 }

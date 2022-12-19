@@ -1,51 +1,50 @@
-﻿namespace ChuckDeviceController.Data.Repositories
+﻿namespace ChuckDeviceController.Data.Repositories;
+
+using Microsoft.EntityFrameworkCore.Storage;
+
+using ChuckDeviceController.Data.Entities;
+
+public interface IUnitOfWork : IDisposable
 {
-    using Microsoft.EntityFrameworkCore.Storage;
+    #region Properties
 
-    using ChuckDeviceController.Data.Entities;
+    IGenericEntityRepository<Account> Accounts { get; }
 
-    public interface IUnitOfWork : IDisposable
-    {
-        #region Properties
+    IGenericEntityRepository<ApiKey> ApiKeys { get; }
 
-        IGenericEntityRepository<Account> Accounts { get; }
+    IGenericEntityRepository<Assignment> Assignments { get; }
 
-        IGenericEntityRepository<ApiKey> ApiKeys { get; }
+    IGenericEntityRepository<AssignmentGroup> AssignmentGroups { get; }
 
-        IGenericEntityRepository<Assignment> Assignments { get; }
+    IGenericEntityRepository<Device> Devices { get; }
 
-        IGenericEntityRepository<AssignmentGroup> AssignmentGroups { get; }
+    IGenericEntityRepository<DeviceGroup> DeviceGroups { get; }
 
-        IGenericEntityRepository<Device> Devices { get; }
+    IGenericEntityRepository<Geofence> Geofences { get; }
 
-        IGenericEntityRepository<DeviceGroup> DeviceGroups { get; }
+    IGenericEntityRepository<Instance> Instances { get; }
 
-        IGenericEntityRepository<Geofence> Geofences { get; }
+    IGenericEntityRepository<IvList> IvLists { get; }
 
-        IGenericEntityRepository<Instance> Instances { get; }
+    IGenericEntityRepository<Webhook> Webhooks { get; }
 
-        IGenericEntityRepository<IvList> IvLists { get; }
+    IDbContextTransaction? Transaction { get; }
 
-        IGenericEntityRepository<Webhook> Webhooks { get; }
+    #endregion
 
-        IDbContextTransaction? Transaction { get; }
+    #region Methods
 
-        #endregion
+    IDbContextTransaction BeginTransaction();
 
-        #region Methods
+    Task<IDbContextTransaction> BeginTransactionAsync();
 
-        IDbContextTransaction BeginTransaction();
+    bool Commit();
 
-        Task<IDbContextTransaction> BeginTransactionAsync();
+    Task<bool> CommitAsync();
 
-        bool Commit();
+    void Rollback();
 
-        Task<bool> CommitAsync();
+    Task RollbackAsync();
 
-        void Rollback();
-
-        Task RollbackAsync();
-
-        #endregion
-    }
+    #endregion
 }

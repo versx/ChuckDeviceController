@@ -1,30 +1,29 @@
-﻿namespace ChuckDeviceController.PluginManager.Services.Finder
+﻿namespace ChuckDeviceController.PluginManager.Services.Finder;
+
+using System.Reflection;
+
+using ChuckDeviceController.PluginManager.Services.Loader;
+
+public class PluginFinderResult<TPlugin>
 {
-    using System.Reflection;
+    public Type PluginType { get; }
 
-    using ChuckDeviceController.PluginManager.Services.Loader;
+    public Type PluginTypeImplementation { get; }
 
-    public class PluginFinderResult<TPlugin>
+    public Assembly Assembly { get; }
+
+    public string? AssemblyPath => Assembly?.Location;
+
+    public PluginAssemblyLoadContext LoadContext { get; }
+
+    public PluginFinderResult(
+        Assembly assembly,
+        PluginAssemblyLoadContext loadContext,
+        Type pluginImplementation)
     {
-        public Type PluginType { get; }
-
-        public Type PluginTypeImplementation { get; }
-
-        public Assembly Assembly { get; }
-
-        public string? AssemblyPath => Assembly?.Location;
-
-        public PluginAssemblyLoadContext LoadContext { get; }
-
-        public PluginFinderResult(
-            Assembly assembly,
-            PluginAssemblyLoadContext loadContext,
-            Type pluginImplementation)
-        {
-            Assembly = assembly;
-            LoadContext = loadContext;
-            PluginType = typeof(TPlugin);
-            PluginTypeImplementation = pluginImplementation;
-        }
+        Assembly = assembly;
+        LoadContext = loadContext;
+        PluginType = typeof(TPlugin);
+        PluginTypeImplementation = pluginImplementation;
     }
 }

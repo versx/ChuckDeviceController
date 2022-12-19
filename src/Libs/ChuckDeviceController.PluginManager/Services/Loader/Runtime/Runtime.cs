@@ -1,23 +1,22 @@
-﻿namespace ChuckDeviceController.PluginManager.Services.Loader.Runtime
+﻿namespace ChuckDeviceController.PluginManager.Services.Loader.Runtime;
+
+/// <summary>
+/// Runtime information.
+/// </summary>
+public class Runtime
 {
     /// <summary>
-    /// Runtime information.
+    /// Gets or sets the runtime type.
     /// </summary>
-    public class Runtime
-    {
-        /// <summary>
-        /// Gets or sets the runtime type.
-        /// </summary>
-        public RuntimeType RuntimeType { get; set; }
+    public RuntimeType RuntimeType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the runtime version.
-        /// </summary>
-        public string Version { get; set; }
+    /// <summary>
+    /// Gets or sets the runtime version.
+    /// </summary>
+    public string Version { get; set; } = null!;
 
-        /// <summary>
-        /// Gets or sets the runtime version folder path.
-        /// </summary>
-        public string Location { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the runtime version folder path.
+    /// </summary>
+    public string Location { get; set; } = null!;
 }

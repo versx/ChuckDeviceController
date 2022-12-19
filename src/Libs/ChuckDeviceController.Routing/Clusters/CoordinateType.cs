@@ -1,8 +1,7 @@
-﻿namespace ChuckDeviceController.Routing.Clusters
+﻿namespace ChuckDeviceController.Routing.Clusters;
+
+public enum CoordinateType
 {
-    public enum CoordinateType
-    {
-        Point,
-        Cluster,
-    }
+    Point,
+    Cluster,
 }

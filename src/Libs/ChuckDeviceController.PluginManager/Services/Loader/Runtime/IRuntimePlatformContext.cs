@@ -1,13 +1,12 @@
-﻿namespace ChuckDeviceController.PluginManager.Services.Loader.Runtime
+﻿namespace ChuckDeviceController.PluginManager.Services.Loader.Runtime;
+
+public interface IRuntimePlatformContext
 {
-    public interface IRuntimePlatformContext
-    {
-        IEnumerable<string> GetPlatformExtensions();
+    IEnumerable<string> GetPlatformExtensions();
 
-        IEnumerable<string> GetPluginDependencyNames(string fileName);
+    IEnumerable<string> GetPluginDependencyNames(string fileName);
 
-        IEnumerable<string> GetPlatformDependencyNames(string fileName);
+    IEnumerable<string> GetPlatformDependencyNames(string fileName);
 
-        RuntimeInfo GetRuntimeInfo();
-    }
+    RuntimeInfo GetRuntimeInfo();
 }

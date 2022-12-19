@@ -1,13 +1,12 @@
-﻿namespace ChuckDeviceConfigurator.ViewModels
+﻿namespace ChuckDeviceConfigurator.ViewModels;
+
+using System.ComponentModel;
+
+public class ClearQuestsViewModel
 {
-    using System.ComponentModel;
+    [DisplayName("Instance Name")]
+    public string? InstanceName { get; set; }
 
-    public class ClearQuestsViewModel
-    {
-        [DisplayName("Instance Name")]
-        public string? InstanceName { get; set; }
-
-        [DisplayName("Geofence Name")]
-        public string? GeofenceName { get; set; }
-    }
+    [DisplayName("Geofence Name")]
+    public string? GeofenceName { get; set; }
 }

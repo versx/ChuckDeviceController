@@ -236,12 +236,12 @@ app.Use((context, next) =>
 app.UseAuthorization();
 app.MapControllers();
 
-//new Thread(async () =>
-//{
-//    var stopwatch = new Stopwatch();
-//    await MonitorResults(TimeSpan.FromMinutes(5), stopwatch);
-//})
-//{ IsBackground = true }.Start();
+new Thread(async () =>
+{
+    var stopwatch = new Stopwatch();
+    await MonitorResults(TimeSpan.FromMinutes(5), stopwatch);
+})
+{ IsBackground = true }.Start();
 
 // Open DB connection
 var sw = new Stopwatch();
@@ -273,7 +273,7 @@ static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
     {
         await Task.Delay(TimeSpan.FromSeconds(1));
 
-        var instanceCount = MapDbContext.InstanceCount;
+        var instanceCount = EntityRepository.InstanceCount;
         var requestCount = ProtoDataStatistics.Instance.TotalRequestsProcessed;
         var elapsed = stopwatch.Elapsed;
         var currentElapsed = elapsed - lastElapsed;
@@ -290,7 +290,7 @@ static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
     }
 
     Console.WriteLine();
-    Console.WriteLine($"Total context creations: {MapDbContext.InstanceCount}");
+    Console.WriteLine($"Total context creations: {EntityRepository.InstanceCount}");
     Console.WriteLine(
         $"Requests per second:     {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds)}");
 

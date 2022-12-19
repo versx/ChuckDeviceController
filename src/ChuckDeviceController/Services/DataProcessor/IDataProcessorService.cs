@@ -1,6 +1,5 @@
-﻿namespace ChuckDeviceController.Services.DataProcessor
+﻿namespace ChuckDeviceController.Services.DataProcessor;
+
+public interface IDataProcessorService
 {
-    public interface IDataProcessorService
-    {
-    }
 }

@@ -1,25 +1,24 @@
-﻿namespace ChuckDeviceController.JobControllers
+﻿namespace ChuckDeviceController.JobControllers;
+
+using ChuckDeviceController.Data.Common;
+
+public sealed class AutoInstanceCompleteEventArgs : EventArgs
 {
-    using ChuckDeviceController.Common.Data;
+    public string InstanceName { get; }
 
-    public sealed class AutoInstanceCompleteEventArgs : EventArgs
+    public ulong CompletionTimestamp { get; }
+
+    public AutoInstanceType InstanceType { get; }
+
+    public AutoInstanceCompleteEventArgs(string instanceName, ulong completionTimestamp)
+        : this(instanceName, completionTimestamp, AutoInstanceType.Quest)
     {
-        public string InstanceName { get; }
+    }
 
-        public ulong CompletionTimestamp { get; }
-
-        public AutoInstanceType InstanceType { get; }
-
-        public AutoInstanceCompleteEventArgs(string instanceName, ulong completionTimestamp)
-            : this(instanceName, completionTimestamp, AutoInstanceType.Quest)
-        {
-        }
-
-        public AutoInstanceCompleteEventArgs(string instanceName, ulong completionTimestamp, AutoInstanceType instanceType = AutoInstanceType.Quest)
-        {
-            InstanceName = instanceName;
-            CompletionTimestamp = completionTimestamp;
-            InstanceType = instanceType;
-        }
+    public AutoInstanceCompleteEventArgs(string instanceName, ulong completionTimestamp, AutoInstanceType instanceType = AutoInstanceType.Quest)
+    {
+        InstanceName = instanceName;
+        CompletionTimestamp = completionTimestamp;
+        InstanceType = instanceType;
     }
 }

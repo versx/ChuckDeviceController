@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Data.Common\ChuckDeviceController.Data.Common.csproj" />
     <ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin.Helpers\ChuckDeviceController.Plugin.Helpers.csproj" />
     <ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj">
       <Private>false</Private>

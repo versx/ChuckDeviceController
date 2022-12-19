@@ -1,157 +1,154 @@
-﻿namespace ChuckDeviceController.Data.Entities
+﻿namespace ChuckDeviceController.Data.Entities;
+
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+using MySqlConnector;
+using POGOProtos.Rpc;
+
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Extensions;
+using ChuckDeviceController.Extensions.Http.Caching;
+
+[Table("incident")]
+public class Incident : BaseEntity, IIncident, IWebhookEntity
 {
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
+    public const string UnknownPokestopName = "Unknown";
 
-    using MySqlConnector;
-    using POGOProtos.Rpc;
+    #region Properties
 
-    using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Contracts;
-    using ChuckDeviceController.Data.Repositories;
-    using ChuckDeviceController.Extensions;
-    using ChuckDeviceController.Extensions.Http.Caching;
+    [
+        Column("id"),
+        Key,
+        DatabaseGenerated(DatabaseGeneratedOption.None),
+    ]
+    public string Id { get; set; }
 
-    [Table("incident")]
-    public class Incident : BaseEntity, IIncident, IWebhookEntity
+    [
+        Column("pokestop_id"),
+        //ForeignKey(nameof(Pokestop)),
+        ForeignKey("pokestop_id"),
+        //ForeignKey("FK_incident_pokestop_pokestop_id"),
+    ]
+    public string PokestopId { get; set; }
+
+    public virtual Pokestop? Pokestop { get; set; }
+
+    [Column("start")]
+    public ulong Start { get; set; }
+
+    [Column("expiration")]
+    public ulong Expiration { get; set; }
+
+    [Column("display_type")]
+    public uint DisplayType { get; set; }
+
+    [Column("style")]
+    public uint Style { get; set; }
+
+    [Column("character")]
+    public ushort Character { get; set; }
+
+    [Column("updated")]
+    public ulong Updated { get; set; }
+
+    [NotMapped]
+    public bool HasChanges { get; set; }
+
+    [NotMapped]
+    public bool SendWebhook { get; set; }
+
+    #endregion
+
+    #region Constructor
+
+    public Incident()
     {
-        public const string UnknownPokestopName = "Unknown";
+        Id = string.Empty;
+    }
 
-        #region Properties
+    public Incident(ulong now, string pokestopId, PokestopIncidentDisplayProto pokestopDisplay)
+    {
+        Id = pokestopDisplay.IncidentId;
+        PokestopId = pokestopId;
+        Start = Convert.ToUInt64(pokestopDisplay.IncidentStartMs / 1000);
+        Expiration = Convert.ToUInt64(pokestopDisplay.IncidentExpirationMs / 1000);
+        DisplayType = Convert.ToUInt16(pokestopDisplay.IncidentDisplayType);
+        Style = Convert.ToUInt16(pokestopDisplay.CharacterDisplay.Style);
+        Character = Convert.ToUInt16(pokestopDisplay.CharacterDisplay.Character);
+        Updated = now;
+    }
 
-        [
-            Column("id"),
-            Key,
-            DatabaseGenerated(DatabaseGeneratedOption.None),
-        ]
-        public string Id { get; set; }
+    #endregion
 
-        [
-            Column("pokestop_id"),
-            //ForeignKey(nameof(Pokestop)),
-            ForeignKey("pokestop_id"),
-            //ForeignKey("FK_incident_pokestop_pokestop_id"),
-        ]
-        public string PokestopId { get; set; }
+    #region Public Methods
 
-        public virtual Pokestop? Pokestop { get; set; }
+    //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipLookup = false)
+    public async Task UpdateAsync(Incident? oldIncident, IMemoryCacheHostedService memCache)
+    {
+        //var oldIncident = skipLookup
+        //    ? null
+        //    : await EntityRepository.GetEntityAsync<string, Incident>(connection, Id, memCache);
+        Updated = DateTime.UtcNow.ToTotalSeconds();
 
-        [Column("start")]
-        public ulong Start { get; set; }
-
-        [Column("expiration")]
-        public ulong Expiration { get; set; }
-
-        [Column("display_type")]
-        public uint DisplayType { get; set; }
-
-        [Column("style")]
-        public uint Style { get; set; }
-
-        [Column("character")]
-        public ushort Character { get; set; }
-
-        [Column("updated")]
-        public ulong Updated { get; set; }
-
-        [NotMapped]
-        public bool HasChanges { get; set; }
-
-        [NotMapped]
-        public bool SendWebhook { get; set; }
-
-        #endregion
-
-        #region Constructor
-
-        public Incident()
+        if (oldIncident == null)
         {
-            Id = string.Empty;
+            SendWebhook = true;
+            HasChanges = true;
         }
-
-        public Incident(ulong now, string pokestopId, PokestopIncidentDisplayProto pokestopDisplay)
+        else
         {
-            Id = pokestopDisplay.IncidentId;
-            PokestopId = pokestopId;
-            Start = Convert.ToUInt64(pokestopDisplay.IncidentStartMs / 1000);
-            Expiration = Convert.ToUInt64(pokestopDisplay.IncidentExpirationMs / 1000);
-            DisplayType = Convert.ToUInt16(pokestopDisplay.IncidentDisplayType);
-            Style = Convert.ToUInt16(pokestopDisplay.CharacterDisplay.Style);
-            Character = Convert.ToUInt16(pokestopDisplay.CharacterDisplay.Character);
-            Updated = now;
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipLookup = false)
-        public async Task UpdateAsync(Incident? oldIncident, IMemoryCacheHostedService memCache)
-        {
-            //var oldIncident = skipLookup
-            //    ? null
-            //    : await EntityRepository.GetEntityAsync<string, Incident>(connection, Id, memCache);
-            Updated = DateTime.UtcNow.ToTotalSeconds();
-
-            if (oldIncident == null)
+            if (oldIncident.Expiration < Expiration || oldIncident.Character != Character)
             {
                 SendWebhook = true;
                 HasChanges = true;
             }
-            else
-            {
-                if (oldIncident.Expiration < Expiration || oldIncident.Character != Character)
-                {
-                    SendWebhook = true;
-                    HasChanges = true;
-                }
-            }
-
-            // Cache pokestop incident entity by id
-            memCache.Set(Id, this);
-
-            await Task.CompletedTask;
         }
 
-        public dynamic? GetWebhookData(string type)
-        {
-            throw new NotImplementedException();
-        }
+        // Cache pokestop incident entity by id
+        memCache.Set(Id, this);
 
-        public dynamic? GetWebhookData(string type, Pokestop pokestop)
-        {
-            switch (type.ToLower())
-            {
-                case "invasion":
-                    return new
-                    {
-                        type = WebhookHeaders.Invasion,
-                        message = new
-                        {
-                            id = Id,
-                            pokestop_id = PokestopId,
-                            latitude = pokestop.Latitude,
-                            longitude = pokestop.Longitude,
-                            pokestop_name = pokestop.Name ?? UnknownPokestopName,
-                            url = pokestop.Url ?? "",
-                            enabled = pokestop.IsEnabled,
-                            start = Start,
-                            expiration = Expiration,
-                            incident_expire_timestamp = Expiration, // deprecated: replaced with Incident.Expiration
-                            display_type = DisplayType,
-                            style = Style,
-                            grunt_type = Character, // deprecated: replaced with Incident.Character
-                            character = Character,
-                            updated = Updated,
-                        },
-                    };
-            }
-
-            Console.WriteLine($"Received unknown invasion webhook payload type: {type}, returning null");
-            return null;
-        }
-
-        #endregion
+        await Task.CompletedTask;
     }
+
+    public dynamic? GetWebhookData(string type)
+    {
+        throw new NotImplementedException();
+    }
+
+    public dynamic? GetWebhookData(string type, Pokestop pokestop)
+    {
+        switch (type.ToLower())
+        {
+            case "invasion":
+                return new
+                {
+                    type = WebhookHeaders.Invasion,
+                    message = new
+                    {
+                        id = Id,
+                        pokestop_id = PokestopId,
+                        latitude = pokestop.Latitude,
+                        longitude = pokestop.Longitude,
+                        pokestop_name = pokestop.Name ?? UnknownPokestopName,
+                        url = pokestop.Url ?? "",
+                        enabled = pokestop.IsEnabled,
+                        start = Start,
+                        expiration = Expiration,
+                        incident_expire_timestamp = Expiration, // deprecated: replaced with Incident.Expiration
+                        display_type = DisplayType,
+                        style = Style,
+                        grunt_type = Character, // deprecated: replaced with Incident.Character
+                        character = Character,
+                        updated = Updated,
+                    },
+                };
+        }
+
+        Console.WriteLine($"Received unknown invasion webhook payload type: {type}, returning null");
+        return null;
+    }
+
+    #endregion
 }

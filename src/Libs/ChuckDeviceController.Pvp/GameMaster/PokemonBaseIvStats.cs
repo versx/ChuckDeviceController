@@ -1,11 +1,10 @@
-﻿namespace ChuckDeviceController.Pvp.GameMaster
+﻿namespace ChuckDeviceController.Pvp.GameMaster;
+
+public class PokemonBaseIvStats
 {
-    public class PokemonBaseIvStats
-    {
-        public ushort BaseAttack { get; set; }
+    public ushort BaseAttack { get; set; }
 
-        public ushort BaseDefense { get; set; }
+    public ushort BaseDefense { get; set; }
 
-        public ushort BaseStamina { get; set; }
-    }
+    public ushort BaseStamina { get; set; }
 }

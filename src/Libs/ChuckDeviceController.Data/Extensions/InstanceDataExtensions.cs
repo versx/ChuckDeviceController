@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Data.Extensions;
 
-using ChuckDeviceController.Common.Data;
+using ChuckDeviceController.Data.Common;
 
 public static class InstanceDataExtensions
 {

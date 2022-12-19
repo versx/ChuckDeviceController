@@ -1,23 +1,22 @@
-﻿namespace ChuckDeviceController.Pvp
+﻿namespace ChuckDeviceController.Pvp;
+
+/// <summary>
+/// 
+/// </summary>
+public enum PvpRankType
 {
     /// <summary>
     /// 
     /// </summary>
-    public enum PvpRankType
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        Dense,
+    Dense,
 
-        /// <summary>
-        /// 
-        /// </summary>
-        Ordinal,
+    /// <summary>
+    /// 
+    /// </summary>
+    Ordinal,
 
-        /// <summary>
-        /// 
-        /// </summary>
-        Competition,
-    }
+    /// <summary>
+    /// 
+    /// </summary>
+    Competition,
 }

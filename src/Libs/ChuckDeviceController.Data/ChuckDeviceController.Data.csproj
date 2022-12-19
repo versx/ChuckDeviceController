@@ -27,6 +27,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChuckDeviceController.Collections\ChuckDeviceController.Collections.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Data.Abstractions\ChuckDeviceController.Data.Abstractions.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Data.Common\ChuckDeviceController.Data.Common.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />

@@ -1,21 +1,20 @@
-﻿namespace ChuckDeviceController.Routing.Clusters
+﻿namespace ChuckDeviceController.Routing.Clusters;
+
+using ChuckDeviceController.Geometry.Models.Abstractions;
+
+public class CoordinateCluster
 {
-    using ChuckDeviceController.Geometry.Models.Contracts;
+    public CoordinateType Type { get; set; }
 
-    public class CoordinateCluster
+    public ICoordinate Coordinate { get; set; } = null!;
+
+    public CoordinateCluster()
     {
-        public CoordinateType Type { get; set; }
+    }
 
-        public ICoordinate Coordinate { get; set; } = null!;
-
-        public CoordinateCluster()
-        {
-        }
-
-        public CoordinateCluster(CoordinateType type, ICoordinate coordinate)
-        {
-            Type = type;
-            Coordinate = coordinate;
-        }
+    public CoordinateCluster(CoordinateType type, ICoordinate coordinate)
+    {
+        Type = type;
+        Coordinate = coordinate;
     }
 }

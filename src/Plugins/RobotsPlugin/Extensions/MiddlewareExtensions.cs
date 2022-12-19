@@ -1,12 +1,11 @@
-﻿namespace RobotsPlugin.Extensions
-{
-    using Middleware;
+﻿namespace RobotsPlugin.Extensions;
 
-    public static class MiddlewareExtensions
+using Middleware;
+
+public static class MiddlewareExtensions
+{
+    public static IApplicationBuilder UseRobots(this IApplicationBuilder builder, params object?[] args)
     {
-        public static IApplicationBuilder UseRobots(this IApplicationBuilder builder, params object?[] args)
-        {
-            return builder.UseMiddleware<RobotsMiddleware>(args);
-        }
+        return builder.UseMiddleware<RobotsMiddleware>(args);
     }
 }

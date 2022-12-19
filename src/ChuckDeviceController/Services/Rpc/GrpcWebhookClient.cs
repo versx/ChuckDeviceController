@@ -1,40 +1,39 @@
-﻿namespace ChuckDeviceController.Services.Rpc
+﻿namespace ChuckDeviceController.Services.Rpc;
+
+using ChuckDeviceController.Protos;
+
+public class GrpcWebhookClient : IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse>
 {
-    using ChuckDeviceController.Protos;
+    private readonly ILogger<GrpcWebhookClient> _logger;
+    private readonly WebhookPayload.WebhookPayloadClient _client;
+    private readonly bool _webhooksEnabled;
 
-    public class GrpcWebhookClient : IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse>
+    public GrpcWebhookClient(
+        ILogger<GrpcWebhookClient> logger,
+        WebhookPayload.WebhookPayloadClient client,
+        IConfiguration configuration)
     {
-        private readonly ILogger<GrpcWebhookClient> _logger;
-        private readonly WebhookPayload.WebhookPayloadClient _client;
-        private readonly bool _webhooksEnabled;
+        _logger = logger;
+        _client = client;
+        _webhooksEnabled = configuration.GetValue<bool>("Webhooks:Enabled");
+    }
 
-        public GrpcWebhookClient(
-            ILogger<GrpcWebhookClient> logger,
-            WebhookPayload.WebhookPayloadClient client,
-            IConfiguration configuration)
+    public async Task<WebhookPayloadResponse?> SendAsync(WebhookPayloadRequest payload)
+    {
+        if (!_webhooksEnabled)
         {
-            _logger = logger;
-            _client = client;
-            _webhooksEnabled = configuration.GetValue<bool>("Webhooks:Enabled");
-        }
-
-        public async Task<WebhookPayloadResponse?> SendAsync(WebhookPayloadRequest payload)
-        {
-            if (!_webhooksEnabled)
-            {
-                return null;
-            }
-
-            try
-            {
-                var response = await _client.HandleWebhookPayloadAsync(payload);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
-            }
             return null;
         }
+
+        try
+        {
+            var response = await _client.HandleWebhookPayloadAsync(payload);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
+        }
+        return null;
     }
 }

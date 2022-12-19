@@ -1,17 +1,16 @@
-﻿namespace ChuckDeviceController.JobControllers.Models
+﻿namespace ChuckDeviceController.JobControllers.Models;
+
+using ChuckDeviceController.Data.Entities;
+
+internal class ScannedPokemon
 {
-    using ChuckDeviceController.Data.Entities;
+    public Pokemon Pokemon { get; set; }
 
-    internal class ScannedPokemon
+    public ulong DateScanned { get; set; }
+
+    public ScannedPokemon(Pokemon pokemon, ulong dateScanned)
     {
-        public Pokemon Pokemon { get; set; }
-
-        public ulong DateScanned { get; set; }
-
-        public ScannedPokemon(Pokemon pokemon, ulong dateScanned)
-        {
-            Pokemon = pokemon;
-            DateScanned = dateScanned;
-        }
+        Pokemon = pokemon;
+        DateScanned = dateScanned;
     }
 }

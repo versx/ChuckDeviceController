@@ -26,5 +26,9 @@
   <PropertyGroup Condition="'$(IsLinux)'=='true'">
     <DefineConstants>Linux</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Configuration\ChuckDeviceController.Configuration.csproj" />
+    <ProjectReference Include="..\Libs\ChuckDeviceController.Http.Proxy\ChuckDeviceController.Http.Proxy.csproj" />
+  </ItemGroup>
 
 </Project>

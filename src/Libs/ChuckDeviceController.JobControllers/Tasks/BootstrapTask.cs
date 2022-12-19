@@ -1,13 +1,12 @@
-﻿namespace ChuckDeviceController.JobControllers.Tasks
-{
-    using ChuckDeviceController.Common;
-	using ChuckDeviceController.Common.Tasks;
+﻿namespace ChuckDeviceController.JobControllers.Tasks;
 
-	public class BootstrapTask : BaseJobTask
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Tasks;
+
+public class BootstrapTask : BaseJobTask
+{
+	public BootstrapTask()
 	{
-		public BootstrapTask()
-		{
-			Action = DeviceActionType.ScanRaid;
-		}
+		Action = DeviceActionType.ScanRaid;
 	}
 }

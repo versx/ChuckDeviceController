@@ -1,9 +1,8 @@
-﻿namespace PogoEventsPlugin.Models
-{
-    public interface IEventBonusItem
-    {
-        string Text { get; }
+﻿namespace PogoEventsPlugin.Models;
 
-        string Template { get; }
-    }
+public interface IEventBonusItem
+{
+    string Text { get; }
+
+    string Template { get; }
 }

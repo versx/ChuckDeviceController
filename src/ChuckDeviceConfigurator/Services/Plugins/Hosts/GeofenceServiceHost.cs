@@ -1,79 +1,78 @@
-﻿namespace ChuckDeviceConfigurator.Services.Plugins.Hosts
+﻿namespace ChuckDeviceConfigurator.Services.Plugins.Hosts;
+
+using System.Threading.Tasks;
+
+using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Factories;
+using ChuckDeviceController.Geometry;
+using ChuckDeviceController.Geometry.Models;
+using ChuckDeviceController.Geometry.Models.Abstractions;
+using ChuckDeviceController.Plugin;
+
+public class GeofenceServiceHost : IGeofenceServiceHost
 {
-    using System.Threading.Tasks;
+    private static readonly ILogger<IGeofenceServiceHost> _logger =
+        new Logger<IGeofenceServiceHost>(LoggerFactory.Create(x => x.AddConsole()));
+    private readonly string _connectionString;
 
-    using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Factories;
-    using ChuckDeviceController.Geometry;
-    using ChuckDeviceController.Geometry.Models;
-    using ChuckDeviceController.Geometry.Models.Contracts;
-    using ChuckDeviceController.Plugin;
-
-    public class GeofenceServiceHost : IGeofenceServiceHost
+    public GeofenceServiceHost(string connectionString)
     {
-        private static readonly ILogger<IGeofenceServiceHost> _logger =
-            new Logger<IGeofenceServiceHost>(LoggerFactory.Create(x => x.AddConsole()));
-        private readonly string _connectionString;
+        _connectionString = connectionString;
+    }
 
-        public GeofenceServiceHost(string connectionString)
+    public async Task CreateGeofenceAsync(IGeofence options)
+    {
+        using var context = DbContextFactory.CreateControllerContext(_connectionString);
+        var geofence = new Geofence
         {
-            _connectionString = connectionString;
-        }
-
-        public async Task CreateGeofenceAsync(IGeofence options)
-        {
-            using var context = DbContextFactory.CreateControllerContext(_connectionString);
-            var geofence = new Geofence
+            Name = options.Name,
+            Type = options.Type,
+            Data = new GeofenceData
             {
-                Name = options.Name,
-                Type = options.Type,
-                Data = new GeofenceData
-                {
-                    Area = options.Data?.Area,
-                },
-            };
+                Area = options.Data?.Area,
+            },
+        };
 
-            if (context.Geofences.Any(x => x.Name == options.Name))
-            {
-                context.Geofences.Update(geofence);
-            }
-            else
-            {
-                await context.Geofences.AddAsync(geofence);
-            }
-            await context.SaveChangesAsync();
-        }
-
-        public async Task<IGeofence> GetGeofenceAsync(string name)
+        if (context.Geofences.Any(x => x.Name == options.Name))
         {
-            using var context = DbContextFactory.CreateControllerContext(_connectionString);
-            var geofence = await context.Geofences.FindAsync(name);
-            return geofence;
+            context.Geofences.Update(geofence);
         }
-
-        public bool IsPointInMultiPolygons(ICoordinate coord, IEnumerable<IMultiPolygon> multiPolygons)
+        else
         {
-            return GeofenceService.InMultiPolygon(
-                multiPolygons.ToList(),
-                new Coordinate(coord.Latitude, coord.Longitude)
-            );
+            await context.Geofences.AddAsync(geofence);
         }
+        await context.SaveChangesAsync();
+    }
 
-        public bool IsPointInMultiPolygon(ICoordinate coord, IMultiPolygon multiPolygon)
-        {
-            return GeofenceService.InPolygon(
-                multiPolygon,
-                new Coordinate(coord.Latitude, coord.Longitude)
-            );
-        }
+    public async Task<IGeofence> GetGeofenceAsync(string name)
+    {
+        using var context = DbContextFactory.CreateControllerContext(_connectionString);
+        var geofence = await context.Geofences.FindAsync(name);
+        return geofence;
+    }
 
-        public bool IsPointInPolygon(ICoordinate coord, IEnumerable<ICoordinate> coordinates)
-        {
-            return GeofenceService.IsPointInPolygon(
-                new Coordinate(coord.Latitude, coord.Longitude),
-                coordinates.ToList()
-            );
-        }
+    public bool IsPointInMultiPolygons(ICoordinate coord, IEnumerable<IMultiPolygon> multiPolygons)
+    {
+        return GeofenceService.InMultiPolygon(
+            multiPolygons.ToList(),
+            new Coordinate(coord.Latitude, coord.Longitude)
+        );
+    }
+
+    public bool IsPointInMultiPolygon(ICoordinate coord, IMultiPolygon multiPolygon)
+    {
+        return GeofenceService.InPolygon(
+            multiPolygon,
+            new Coordinate(coord.Latitude, coord.Longitude)
+        );
+    }
+
+    public bool IsPointInPolygon(ICoordinate coord, IEnumerable<ICoordinate> coordinates)
+    {
+        return GeofenceService.IsPointInPolygon(
+            new Coordinate(coord.Latitude, coord.Longitude),
+            coordinates.ToList()
+        );
     }
 }

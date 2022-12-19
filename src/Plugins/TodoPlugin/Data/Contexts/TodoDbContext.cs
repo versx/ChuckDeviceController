@@ -1,17 +1,16 @@
-﻿namespace TodoPlugin.Data.Contexts
+﻿namespace TodoPlugin.Data.Contexts;
+
+using Microsoft.EntityFrameworkCore;
+
+using Entities;
+
+public class TodoDbContext : DbContext
 {
-    using Microsoft.EntityFrameworkCore;
+    public DbSet<Todo> Todos => Set<Todo>();
 
-    using Entities;
-
-    public class TodoDbContext : DbContext
+    public TodoDbContext(DbContextOptions<TodoDbContext> options)
+        : base(options)
     {
-        public DbSet<Todo> Todos => Set<Todo>();
-
-        public TodoDbContext(DbContextOptions<TodoDbContext> options)
-            : base(options)
-        {
-            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        }
+        base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 }

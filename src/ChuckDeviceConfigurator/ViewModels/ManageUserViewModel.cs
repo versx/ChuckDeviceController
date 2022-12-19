@@ -1,22 +1,21 @@
-﻿namespace ChuckDeviceConfigurator.ViewModels
+﻿namespace ChuckDeviceConfigurator.ViewModels;
+
+using System.ComponentModel;
+
+public class ManageUserViewModel
 {
-    using System.ComponentModel;
+    [DisplayName("Username")]
+    public string? UserName { get; set; }
 
-    public class ManageUserViewModel
-    {
-        [DisplayName("Username")]
-        public string? UserName { get; set; }
+    [DisplayName("Email Address")]
+    public string? Email { get; set; }
 
-        [DisplayName("Email Address")]
-        public string? Email { get; set; }
+    [DisplayName("Password")]
+    public string? Password { get; set; }
 
-        [DisplayName("Password")]
-        public string? Password { get; set; }
+    [DisplayName("Confirm Password")]
+    public string? ConfirmPassword { get; set; }
 
-        [DisplayName("Confirm Password")]
-        public string? ConfirmPassword { get; set; }
-
-        [DisplayName("Roles")]
-        public List<ManageUserRolesViewModel> Roles { get; set; } = new();
-    }
+    [DisplayName("Roles")]
+    public List<ManageUserRolesViewModel> Roles { get; set; } = new();
 }

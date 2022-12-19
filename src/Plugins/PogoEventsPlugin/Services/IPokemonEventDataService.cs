@@ -1,9 +1,8 @@
-﻿namespace PogoEventsPlugin.Services
-{
-    using Models;
+﻿namespace PogoEventsPlugin.Services;
 
-    public interface IPokemonEventDataService
-    {
-        IReadOnlyList<IActiveEvent> ActiveEvents { get; }
-    }
+using Models;
+
+public interface IPokemonEventDataService
+{
+    IReadOnlyList<IActiveEvent> ActiveEvents { get; }
 }

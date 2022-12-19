@@ -1,11 +1,10 @@
-﻿namespace ChuckDeviceConfigurator.ViewModels
+﻿namespace ChuckDeviceConfigurator.ViewModels;
+
+using ChuckDeviceController.Data.Common;
+
+public class ApiKeyScopeViewModel
 {
-    using ChuckDeviceController.Common.Data;
+    public PluginApiKeyScope Scope { get; set; }
 
-    public class ApiKeyScopeViewModel
-    {
-        public PluginApiKeyScope Scope { get; set; }
-
-        public bool Selected { get; set; }
-    }
+    public bool Selected { get; set; }
 }

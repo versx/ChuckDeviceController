@@ -1,23 +1,22 @@
-﻿namespace ChuckDeviceController.Data.Contexts
+﻿namespace ChuckDeviceController.Data.Contexts;
+
+using Microsoft.EntityFrameworkCore;
+
+using ChuckDeviceController.Data.Entities;
+
+public class PluginDbContext : DbContext
 {
-    using Microsoft.EntityFrameworkCore;
+    public DbSet<Plugin> Plugins => Set<Plugin>();
 
-    using ChuckDeviceController.Data.Entities;
-
-    public class PluginDbContext : DbContext
+    public PluginDbContext(DbContextOptions<PluginDbContext> options)
+         : base(options)
     {
-        public DbSet<Plugin> Plugins => Set<Plugin>();
+        base.Database.EnsureCreated();
+        base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+    }
 
-        public PluginDbContext(DbContextOptions<PluginDbContext> options)
-             : base(options)
-        {
-            base.Database.EnsureCreated();
-            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-        }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
     }
 }

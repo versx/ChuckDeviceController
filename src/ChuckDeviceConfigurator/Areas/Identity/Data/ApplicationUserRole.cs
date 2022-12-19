@@ -1,16 +1,15 @@
-﻿namespace ChuckDeviceConfigurator.Areas.Identity.Data
+﻿namespace ChuckDeviceConfigurator.Areas.Identity.Data;
+
+using Microsoft.AspNetCore.Identity;
+
+// TODO: Use custom IdentityRole
+public class UserIdentityRole : IdentityRole<string> //Guid
 {
-    using Microsoft.AspNetCore.Identity;
+    public int DisplayIndex { get; set; }
 
-    // TODO: Use custom IdentityRole
-    public class UserIdentityRole : IdentityRole<string> //Guid
+    public UserIdentityRole(string name, int displayIndex = -1)
+        : base(name)
     {
-        public int DisplayIndex { get; set; }
-
-        public UserIdentityRole(string name, int displayIndex = -1)
-            : base(name)
-        {
-            DisplayIndex = displayIndex;
-        }
+        DisplayIndex = displayIndex;
     }
 }

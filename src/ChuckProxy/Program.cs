@@ -1,6 +1,7 @@
+using ChuckDeviceController.Configuration;
+using ChuckDeviceController.Http.Proxy.Configuration;
+using ChuckDeviceController.Http.Proxy.Extensions;
 using ChuckProxy;
-using ChuckProxy.Configuration;
-using ChuckProxy.Extensions;
 
 #region Configuration
 
@@ -29,7 +30,7 @@ builder.WebHost.UseConfiguration(config);
 builder.WebHost.UseUrls(proxyConfig.Urls);
 
 builder.Services
-    .AddHttpClient(Strings.ProxyHttpClientName, options =>
+    .AddHttpClient(HttpContextExtensions.DefaultProxyHttpClientName, options =>
     {
         options.Timeout = TimeSpan.FromSeconds(10);
     })
@@ -54,7 +55,6 @@ if (proxyConfig?.RawEndpoints?.Any() ?? false)
     app.UseWhen(
         context => Strings.RawEndpoint == context.Request.Path.ToString(),
         HandleProxiedEndpoint(proxyConfig.RawEndpoints.First())
-        //HandleProxiedEndpoints(proxyConfig.RawEndpoints)
     );
 }
 if (!string.IsNullOrEmpty(proxyConfig?.ControllerEndpoint))
@@ -113,7 +113,7 @@ Action<IApplicationBuilder> HandleProxiedEndpoint(string endpoint)
                 .ForwardTo(endpoint)
                 .AddXForwardedHeaders()
                 .Send();
-            Console.WriteLine($"Status: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+            logger.LogDebug($"Status: {response.StatusCode}, Reason: {response.ReasonPhrase}");
             return response;
         });
     return proxyHandler;

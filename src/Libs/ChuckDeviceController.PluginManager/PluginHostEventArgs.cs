@@ -1,37 +1,36 @@
-﻿namespace ChuckDeviceController.PluginManager
+﻿namespace ChuckDeviceController.PluginManager;
+
+using ChuckDeviceController.Data.Common;
+
+public sealed class PluginHostAddedEventArgs : EventArgs
 {
-    using ChuckDeviceController.Common.Data;
+    public IPluginHost PluginHost { get; }
 
-    public sealed class PluginHostAddedEventArgs : EventArgs
+    public PluginHostAddedEventArgs(IPluginHost pluginHost)
     {
-        public IPluginHost PluginHost { get; }
-
-        public PluginHostAddedEventArgs(IPluginHost pluginHost)
-        {
-            PluginHost = pluginHost;
-        }
+        PluginHost = pluginHost;
     }
+}
 
-    public sealed class PluginHostRemovedEventArgs : EventArgs
+public sealed class PluginHostRemovedEventArgs : EventArgs
+{
+    public IPluginHost PluginHost { get; }
+
+    public PluginHostRemovedEventArgs(IPluginHost pluginHost)
     {
-        public IPluginHost PluginHost { get; }
-
-        public PluginHostRemovedEventArgs(IPluginHost pluginHost)
-        {
-            PluginHost = pluginHost;
-        }
+        PluginHost = pluginHost;
     }
+}
 
-    public sealed class PluginHostStateChangedEventArgs : EventArgs
+public sealed class PluginHostStateChangedEventArgs : EventArgs
+{
+    public IPluginHost PluginHost { get; }
+
+    public PluginState PreviousState { get; }
+
+    public PluginHostStateChangedEventArgs(IPluginHost pluginHost, PluginState previousState)
     {
-        public IPluginHost PluginHost { get; }
-
-        public PluginState PreviousState { get; }
-
-        public PluginHostStateChangedEventArgs(IPluginHost pluginHost, PluginState previousState)
-        {
-            PluginHost = pluginHost;
-            PreviousState = previousState;
-        }
+        PluginHost = pluginHost;
+        PreviousState = previousState;
     }
 }
