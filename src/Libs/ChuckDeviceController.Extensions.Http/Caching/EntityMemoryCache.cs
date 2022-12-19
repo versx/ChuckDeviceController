@@ -1,12 +1,11 @@
-﻿namespace ChuckDeviceController.Extensions.Http.Caching
-{
-    using Microsoft.Extensions.Caching.Memory;
+﻿namespace ChuckDeviceController.Extensions.Http.Caching;
 
-    public class EntityMemoryCache : MemoryCache
+using Microsoft.Extensions.Caching.Memory;
+
+public class EntityMemoryCache : MemoryCache
+{
+    public EntityMemoryCache(EntityMemoryCacheConfig config)
+        : base(config)
     {
-        public EntityMemoryCache(EntityMemoryCacheConfig config)
-            : base(config)
-        {
-        }
     }
 }

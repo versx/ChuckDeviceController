@@ -1,31 +1,30 @@
-﻿namespace ChuckDeviceController.Collections.Queues
+﻿namespace ChuckDeviceController.Collections.Queues;
+
+public class PokemonPriorityQueue<T> : List<T>
 {
-    public class PokemonPriorityQueue<T> : List<T>
+    public PokemonPriorityQueue()
     {
-        public PokemonPriorityQueue()
-        {
-        }
+    }
 
-        public PokemonPriorityQueue(int maxCapacity)
-            : base(maxCapacity)
-        {
-            Capacity = maxCapacity;
-        }
+    public PokemonPriorityQueue(int maxCapacity)
+        : base(maxCapacity)
+    {
+        Capacity = maxCapacity;
+    }
 
-        public T? Pop()
-        {
-            var obj = this.FirstOrDefault();
-            RemoveAt(0);
+    public T? Pop()
+    {
+        var obj = this.FirstOrDefault();
+        RemoveAt(0);
 
-            return obj;
-        }
+        return obj;
+    }
 
-        public T? PopLast()
-        {
-            var obj = this.LastOrDefault();
-            RemoveAt(Count - 1);
+    public T? PopLast()
+    {
+        var obj = this.LastOrDefault();
+        RemoveAt(Count - 1);
 
-            return obj;
-        }
+        return obj;
     }
 }

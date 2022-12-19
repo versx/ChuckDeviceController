@@ -1,29 +1,28 @@
-﻿namespace ChuckDeviceController.Data.Repositories
+﻿namespace ChuckDeviceController.Data.Repositories;
+
+using System.Linq.Expressions;
+
+public interface IGenericRepositoryAsync<TEntity>
+    where TEntity : class
 {
-    using System.Linq.Expressions;
+    Task<IEnumerable<TEntity>> FindAllAsync();
 
-    public interface IGenericRepositoryAsync<TEntity>
-        where TEntity : class
-    {
-        Task<IEnumerable<TEntity>> FindAllAsync();
+    Task<TEntity?> FindByIdAsync<TKey>(TKey id);
 
-        Task<TEntity?> FindByIdAsync<TKey>(TKey id);
+    Task<IEnumerable<TEntity>> FindAsync(
+        Expression<Func<TEntity, bool>>? filter = null,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null
+    );
 
-        Task<IEnumerable<TEntity>> FindAsync(
-            Expression<Func<TEntity, bool>>? filter = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null
-        );
+    Task AddAsync(TEntity entity);
 
-        Task AddAsync(TEntity entity);
+    Task AddRangeAsync(IEnumerable<TEntity> entities);
 
-        Task AddRangeAsync(IEnumerable<TEntity> entities);
+    Task RemoveAsync(TEntity entity);
 
-        Task RemoveAsync(TEntity entity);
+    Task RemoveRangeAsync(IEnumerable<TEntity> entities);
 
-        Task RemoveRangeAsync(IEnumerable<TEntity> entities);
+    Task UpdateAsync(TEntity entity);
 
-        Task UpdateAsync(TEntity entity);
-
-        Task UpdateRangeAsync(IEnumerable<TEntity> entities);
-    }
+    Task UpdateRangeAsync(IEnumerable<TEntity> entities);
 }

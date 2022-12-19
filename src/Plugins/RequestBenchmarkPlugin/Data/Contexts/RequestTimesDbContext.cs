@@ -1,17 +1,16 @@
-﻿namespace RequestBenchmarkPlugin.Data.Contexts
+﻿namespace RequestBenchmarkPlugin.Data.Contexts;
+
+using Microsoft.EntityFrameworkCore;
+
+using Data.Entities;
+
+public class RequestTimesDbContext : DbContext
 {
-    using Microsoft.EntityFrameworkCore;
+    public DbSet<RequestTime> RequestTimes => Set<RequestTime>();
 
-    using Data.Entities;
-
-    public class RequestTimesDbContext : DbContext
+    public RequestTimesDbContext(DbContextOptions<RequestTimesDbContext> options)
+        : base(options)
     {
-        public DbSet<RequestTime> RequestTimes => Set<RequestTime>();
-
-        public RequestTimesDbContext(DbContextOptions<RequestTimesDbContext> options)
-            : base(options)
-        {
-            base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        }
+        base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 }

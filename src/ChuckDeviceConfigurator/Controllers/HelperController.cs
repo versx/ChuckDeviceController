@@ -1,93 +1,92 @@
-﻿namespace ChuckDeviceConfigurator.Controllers
+﻿namespace ChuckDeviceConfigurator.Controllers;
+
+using System.Net.Mime;
+
+using Microsoft.AspNetCore.Mvc;
+
+using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Plugin;
+
+[ApiController]
+[Produces(MediaTypeNames.Application.Json)]
+public class HelperController : ControllerBase
 {
-    using System.Net.Mime;
+    private const string DefaultTheme = "light";
 
-    using Microsoft.AspNetCore.Mvc;
+    //private readonly ILogger<HelperController> _logger;
+    private readonly IUnitOfWork _uow;
+    private readonly IConfiguration _configuration;
+    private readonly IUiHost _uiHost;
 
-    using ChuckDeviceController.Data.Extensions;
-    using ChuckDeviceController.Data.Repositories;
-    using ChuckDeviceController.Plugin;
-
-    [ApiController]
-    [Produces(MediaTypeNames.Application.Json)]
-    public class HelperController : ControllerBase
+    public HelperController(
+        //ILogger<HelperController> logger,
+        IUnitOfWork uow,
+        IConfiguration configuration,
+        IUiHost uiHost)
     {
-        private const string DefaultTheme = "light";
+        //_logger = logger;
+        _uow = uow;
+        _configuration = configuration;
+        _uiHost = uiHost;
+    }
 
-        //private readonly ILogger<HelperController> _logger;
-        private readonly IUnitOfWork _uow;
-        private readonly IConfiguration _configuration;
-        private readonly IUiHost _uiHost;
+    [HttpGet("GetSidebarItems")]
+    public IActionResult GetSidebarItems()
+    {
+        return new JsonResult(_uiHost.SidebarItems);
+    }
 
-        public HelperController(
-            //ILogger<HelperController> logger,
-            IUnitOfWork uow,
-            IConfiguration configuration,
-            IUiHost uiHost)
+    [HttpGet("GetTheme")]
+    public IActionResult GetTheme()
+    {
+        var theme = _configuration.GetValue<string>("Theme") ?? DefaultTheme;
+        return new JsonResult(theme);
+    }
+
+    [HttpGet("GetTiles")]
+    public IActionResult GetTiles()
+    {
+        return new JsonResult(_uiHost.DashboardTiles);
+    }
+
+    [HttpGet("GetSettingsTabs")]
+    public IActionResult GetSettingsTabs()
+    {
+        return new JsonResult(_uiHost.SettingsTabs);
+    }
+
+    [HttpGet("GetSettingsProperties")]
+    public IActionResult GetSettingsProperties()
+    {
+        foreach (var (key, value) in _uiHost.SettingsProperties)
         {
-            //_logger = logger;
-            _uow = uow;
-            _configuration = configuration;
-            _uiHost = uiHost;
-        }
-
-        [HttpGet("GetSidebarItems")]
-        public IActionResult GetSidebarItems()
-        {
-            return new JsonResult(_uiHost.SidebarItems);
-        }
-
-        [HttpGet("GetTheme")]
-        public IActionResult GetTheme()
-        {
-            var theme = _configuration.GetValue<string>("Theme") ?? DefaultTheme;
-            return new JsonResult(theme);
-        }
-
-        [HttpGet("GetTiles")]
-        public IActionResult GetTiles()
-        {
-            return new JsonResult(_uiHost.DashboardTiles);
-        }
-
-        [HttpGet("GetSettingsTabs")]
-        public IActionResult GetSettingsTabs()
-        {
-            return new JsonResult(_uiHost.SettingsTabs);
-        }
-
-        [HttpGet("GetSettingsProperties")]
-        public IActionResult GetSettingsProperties()
-        {
-            foreach (var (key, value) in _uiHost.SettingsProperties)
+            var properties = _uiHost.SettingsProperties[key];
+            var grouped = properties.GroupBy(g => g.Group, g => g, (group, settings) => new
             {
-                var properties = _uiHost.SettingsProperties[key];
-                var grouped = properties.GroupBy(g => g.Group, g => g, (group, settings) => new
-                {
-                    Group = group,
-                    Settings = settings,
-                });
-            }
-
-            return new JsonResult(_uiHost.SettingsProperties);
-        }
-
-        [HttpGet("GetGeofenceData")]
-        public async Task<IActionResult> GetGeofenceData(string name)
-        {
-            var geofence = await _uow.Geofences.FindByIdAsync(name);
-            if (geofence == null)
-            {
-                return null;
-            }
-
-            var type = Convert.ToInt32(geofence.Type);
-            var geofenceData = geofence.ConvertToIni();
-            return new JsonResult(new
-            {
-                type,
-                geofence = geofenceData,
+                Group = group,
+                Settings = settings,
             });
         }
+
+        return new JsonResult(_uiHost.SettingsProperties);
+    }
+
+    [HttpGet("GetGeofenceData")]
+    public async Task<IActionResult> GetGeofenceData(string name)
+    {
+        var geofence = await _uow.Geofences.FindByIdAsync(name);
+        if (geofence == null)
+        {
+            return null;
+        }
+
+        var type = Convert.ToInt32(geofence.Type);
+        var geofenceData = geofence.ConvertToIni();
+        return new JsonResult(new
+        {
+            type,
+            geofence = geofenceData,
+        });
     }
 }

@@ -1,24 +1,23 @@
-﻿namespace ChuckDeviceController.JobControllers.Tasks
+﻿namespace ChuckDeviceController.JobControllers.Tasks;
+
+using System.Text.Json.Serialization;
+
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Tasks;
+
+public class QuestTask : BaseJobTask
 {
-    using System.Text.Json.Serialization;
+    [JsonPropertyName("delay")]
+    public double Delay { get; set; }
 
-    using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Tasks;
+    [JsonPropertyName("deploy_egg")]
+    public bool DeployEgg { get; set; }
 
-    public class QuestTask : BaseJobTask
+    [JsonPropertyName("quest_type")]
+    public string? QuestType { get; set; }
+
+    public QuestTask()
     {
-        [JsonPropertyName("delay")]
-        public double Delay { get; set; }
-
-        [JsonPropertyName("deploy_egg")]
-        public bool DeployEgg { get; set; }
-
-        [JsonPropertyName("quest_type")]
-        public string? QuestType { get; set; }
-
-        public QuestTask()
-        {
-            Action = DeviceActionType.ScanQuest;
-        }
+        Action = DeviceActionType.ScanQuest;
     }
 }

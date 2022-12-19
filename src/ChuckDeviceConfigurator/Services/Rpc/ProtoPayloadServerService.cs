@@ -1,177 +1,176 @@
-﻿namespace ChuckDeviceConfigurator.Services.Rpc
+﻿namespace ChuckDeviceConfigurator.Services.Rpc;
+
+using Grpc.Core;
+using POGOProtos.Rpc;
+
+using ChuckDeviceConfigurator.Services.Jobs;
+using ChuckDeviceController.Authorization.Jwt.Attributes;
+using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Extensions.Json;
+using ChuckDeviceController.Protos;
+
+[JwtAuthorize(Strings.Identifier)]
+//[Authorize(Policy = "GrpcAuthenticationServices")]
+public class ProtoPayloadServerService : Payload.PayloadBase
 {
-    using Grpc.Core;
-    using POGOProtos.Rpc;
+    #region Variables
 
-    using ChuckDeviceConfigurator.Attributes;
-    using ChuckDeviceConfigurator.Services.Jobs;
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Extensions.Json;
-    using ChuckDeviceController.Protos;
+    private readonly ILogger<ProtoPayloadServerService> _logger;
+    private readonly IJobControllerService _jobControllerService;
 
-    [JwtAuthorize]
-    //[Authorize(Policy = "GrpcAuthenticationServices")]
-    public class ProtoPayloadServerService : Payload.PayloadBase
+    #endregion
+
+    #region Constructor
+
+    public ProtoPayloadServerService(
+        ILogger<ProtoPayloadServerService> logger,
+        IJobControllerService jobControllerService)
     {
-        #region Variables
+        _logger = logger;
+        _jobControllerService = jobControllerService;
+    }
 
-        private readonly ILogger<ProtoPayloadServerService> _logger;
-        private readonly IJobControllerService _jobControllerService;
+    #endregion
 
-        #endregion
+    #region Event Handlers
 
-        #region Constructor
+    public override async Task<PayloadResponse> HandlePayload(PayloadRequest request, ServerCallContext context)
+    {
+        //_logger.LogDebug($"Received {request.PayloadType} proto message");
 
-        public ProtoPayloadServerService(
-            ILogger<ProtoPayloadServerService> logger,
-            IJobControllerService jobControllerService)
+        var json = request.Payload;
+        if (string.IsNullOrEmpty(json))
         {
-            _logger = logger;
-            _jobControllerService = jobControllerService;
-        }
-
-        #endregion
-
-        #region Event Handlers
-
-        public override async Task<PayloadResponse> HandlePayload(PayloadRequest request, ServerCallContext context)
-        {
-            //_logger.LogDebug($"Received {request.PayloadType} proto message");
-
-            var json = request.Payload;
-            if (string.IsNullOrEmpty(json))
-            {
-                _logger.LogError($"JSON payload was null, unable to deserialize Pokemon entity");
-                return await Task.FromResult(new PayloadResponse
-                {
-                    Status = PayloadStatus.Error,
-                });
-            }
-
-            switch (request.PayloadType)
-            {
-                case PayloadType.Pokemon:
-                    HandlePokemonPayload(json, request.HasIV);
-                    break;
-                case PayloadType.PokemonList:
-                    HandlePokemonListPayload(json, request.HasIV);
-                    break;
-                case PayloadType.Fort:
-                    HandleFortPayload(json);
-                    break;
-                case PayloadType.FortList:
-                    HandleFortListPayload(json);
-                    break;
-                case PayloadType.PlayerInfo:
-                    HandlePlayerInfoPayload(json);
-                    break;
-            }
-
+            _logger.LogError($"JSON payload was null, unable to deserialize Pokemon entity");
             return await Task.FromResult(new PayloadResponse
             {
-                Status = PayloadStatus.Ok,
+                Status = PayloadStatus.Error,
             });
         }
 
-        #endregion
-
-        #region Payload Handlers
-
-        private void HandlePokemonPayload(string json, bool hasIv)
+        switch (request.PayloadType)
         {
-            var pokemon = json.FromJson<Pokemon>();
-            if (pokemon == null)
-            {
-                // Failed to deserialize payload to Pokemon
-                _logger.LogError($"Failed to deserialize JSON payload to Pokemon entity: {json}");
-                return;
-            }
-
-            _logger.LogDebug($"Received 1 {PayloadType.Pokemon} proto message");
-
-            _jobControllerService.GotPokemon(pokemon, hasIv);
+            case PayloadType.Pokemon:
+                HandlePokemonPayload(json, request.HasIV);
+                break;
+            case PayloadType.PokemonList:
+                HandlePokemonListPayload(json, request.HasIV);
+                break;
+            case PayloadType.Fort:
+                HandleFortPayload(json);
+                break;
+            case PayloadType.FortList:
+                HandleFortListPayload(json);
+                break;
+            case PayloadType.PlayerInfo:
+                HandlePlayerInfoPayload(json);
+                break;
         }
 
-        private void HandlePokemonListPayload(string json, bool hasIv)
+        return await Task.FromResult(new PayloadResponse
         {
-            var pokemon = json.FromJson<List<Pokemon>>();
-            if (pokemon == null)
-            {
-                // Failed to deserialize payload to list of PokemonFortProto
-                _logger.LogError($"Failed to deserialize JSON payload to list of PokemonFortProto proto: {json}");
-                return;
-            }
+            Status = PayloadStatus.Ok,
+        });
+    }
 
-            _logger.LogDebug($"Received {pokemon.Count:N0} {PayloadType.Pokemon} proto messages");
+    #endregion
 
-            foreach (var pkmn in pokemon)
-            {
-                _jobControllerService.GotPokemon(pkmn, hasIv);
-            }
+    #region Payload Handlers
+
+    private void HandlePokemonPayload(string json, bool hasIv)
+    {
+        var pokemon = json.FromJson<Pokemon>();
+        if (pokemon == null)
+        {
+            // Failed to deserialize payload to Pokemon
+            _logger.LogError($"Failed to deserialize JSON payload to Pokemon entity: {json}");
+            return;
         }
 
-        private void HandleFortPayload(string json)
+        _logger.LogDebug($"Received 1 {PayloadType.Pokemon} proto message");
+
+        _jobControllerService.GotPokemon(pokemon, hasIv);
+    }
+
+    private void HandlePokemonListPayload(string json, bool hasIv)
+    {
+        var pokemon = json.FromJson<List<Pokemon>>();
+        if (pokemon == null)
         {
-            //var fort = json.FromJson<PokemonFortProto>();
-            var fortData = json.FromJson<dynamic>();
-            if (fortData == null)
-            {
-                // Failed to deserialize payload to PokemonFortProto
-                _logger.LogError($"Failed to deserialize JSON payload to PokemonFortProto proto: {json}");
-                return;
-            }
-
-            _logger.LogDebug($"Received 1 {PayloadType.Fort} proto message");
-
-            var fort = (PokemonFortProto)fortData.data;
-            var username = (string)fortData.username;
-            _jobControllerService.GotFort(fort, username);
+            // Failed to deserialize payload to list of PokemonFortProto
+            _logger.LogError($"Failed to deserialize JSON payload to list of PokemonFortProto proto: {json}");
+            return;
         }
 
-        private void HandleFortListPayload(string json)
+        _logger.LogDebug($"Received {pokemon.Count:N0} {PayloadType.Pokemon} proto messages");
+
+        foreach (var pkmn in pokemon)
         {
-            var forts = json.FromJson<List<FortData>>();
-            if (forts == null)
-            {
-                // Failed to deserialize payload to list of PokemonFortProto
-                _logger.LogError($"Failed to deserialize JSON payload to list of PokemonFortProto proto: {json}");
-                return;
-            }
+            _jobControllerService.GotPokemon(pkmn, hasIv);
+        }
+    }
 
-            _logger.LogDebug($"Received {forts.Count:N0} {PayloadType.Fort} proto messages");
-
-            foreach (var fort in forts)
-            {
-                _jobControllerService.GotFort(fort.Data, fort.Username);
-            }
+    private void HandleFortPayload(string json)
+    {
+        //var fort = json.FromJson<PokemonFortProto>();
+        var fortData = json.FromJson<dynamic>();
+        if (fortData == null)
+        {
+            // Failed to deserialize payload to PokemonFortProto
+            _logger.LogError($"Failed to deserialize JSON payload to PokemonFortProto proto: {json}");
+            return;
         }
 
-        private void HandlePlayerInfoPayload(string json)
+        _logger.LogDebug($"Received 1 {PayloadType.Fort} proto message");
+
+        var fort = (PokemonFortProto)fortData.data;
+        var username = (string)fortData.username;
+        _jobControllerService.GotFort(fort, username);
+    }
+
+    private void HandleFortListPayload(string json)
+    {
+        var forts = json.FromJson<List<FortData>>();
+        if (forts == null)
         {
-            var data = json.FromJson<Dictionary<string, object>>();
-            if (data == null)
-            {
-                // Failed to deserialize payload to dictionary
-                _logger.LogError($"Failed to deserialize JSON payload to player data: {json}");
-                return;
-            }
-
-            _logger.LogDebug($"Received {PayloadType.PlayerInfo} proto message");
-
-            var username = Convert.ToString(data["username"]);
-            var level = Convert.ToUInt16(Convert.ToString(data["level"]));
-            var xp = Convert.ToUInt64(Convert.ToString(data["xp"]));
-
-            _jobControllerService.GotPlayerInfo(username!, level, xp);
+            // Failed to deserialize payload to list of PokemonFortProto
+            _logger.LogError($"Failed to deserialize JSON payload to list of PokemonFortProto proto: {json}");
+            return;
         }
 
-        #endregion
+        _logger.LogDebug($"Received {forts.Count:N0} {PayloadType.Fort} proto messages");
 
-        private class FortData
+        foreach (var fort in forts)
         {
-            public PokemonFortProto Data { get; set; } = null!;
-
-            public string Username { get; set; } = null!;
+            _jobControllerService.GotFort(fort.Data, fort.Username);
         }
+    }
+
+    private void HandlePlayerInfoPayload(string json)
+    {
+        var data = json.FromJson<Dictionary<string, object>>();
+        if (data == null)
+        {
+            // Failed to deserialize payload to dictionary
+            _logger.LogError($"Failed to deserialize JSON payload to player data: {json}");
+            return;
+        }
+
+        _logger.LogDebug($"Received {PayloadType.PlayerInfo} proto message");
+
+        var username = Convert.ToString(data["username"]);
+        var level = Convert.ToUInt16(Convert.ToString(data["level"]));
+        var xp = Convert.ToUInt64(Convert.ToString(data["xp"]));
+
+        _jobControllerService.GotPlayerInfo(username!, level, xp);
+    }
+
+    #endregion
+
+    private class FortData
+    {
+        public PokemonFortProto Data { get; set; } = null!;
+
+        public string Username { get; set; } = null!;
     }
 }

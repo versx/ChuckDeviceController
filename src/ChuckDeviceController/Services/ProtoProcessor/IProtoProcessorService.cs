@@ -1,6 +1,5 @@
-﻿namespace ChuckDeviceController.Services.ProtoProcessor
+﻿namespace ChuckDeviceController.Services.ProtoProcessor;
+
+public interface IProtoProcessorService
 {
-    public interface IProtoProcessorService
-    {
-    }
 }

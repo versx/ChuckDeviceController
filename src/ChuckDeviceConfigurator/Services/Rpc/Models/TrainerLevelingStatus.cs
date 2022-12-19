@@ -1,11 +1,10 @@
-﻿namespace ChuckDeviceConfigurator.Services.Rpc.Models
+﻿namespace ChuckDeviceConfigurator.Services.Rpc.Models;
+
+public class TrainerLevelingStatus
 {
-    public class TrainerLevelingStatus
-    {
-        public string? Username { get; internal set; }
+    public string? Username { get; internal set; }
 
-        public bool StoreLevelingData { get; internal set; } = true;
+    public bool StoreLevelingData { get; internal set; } = true;
 
-        public bool IsTrainerLeveling { get; internal set; }
-    }
+    public bool IsTrainerLeveling { get; internal set; }
 }

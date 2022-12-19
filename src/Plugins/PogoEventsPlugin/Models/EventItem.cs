@@ -1,9 +1,8 @@
-﻿namespace PogoEventsPlugin.Models
-{
-    public class EventItem : IEventItem
-    {
-        public uint Id { get; set; }
+﻿namespace PogoEventsPlugin.Models;
 
-        public string Template { get; set; }
-    }
+public class EventItem : IEventItem
+{
+    public uint Id { get; set; }
+
+    public string Template { get; set; } = null!;
 }

@@ -1,17 +1,16 @@
-﻿namespace ChuckDeviceController.JobControllers.Models
+﻿namespace ChuckDeviceController.JobControllers.Models;
+
+using ChuckDeviceController.Data.Entities;
+
+public class PokestopWithMode
 {
-    using ChuckDeviceController.Data.Entities;
+    public Pokestop Pokestop { get; set; }
 
-    public class PokestopWithMode
+    public bool IsAlternative { get; set; }
+
+    public PokestopWithMode(Pokestop pokestop, bool isAlternative)
     {
-        public Pokestop Pokestop { get; set; }
-
-        public bool IsAlternative { get; set; }
-
-        public PokestopWithMode(Pokestop pokestop, bool isAlternative)
-        {
-            Pokestop = pokestop;
-            IsAlternative = isAlternative;
-        }
+        Pokestop = pokestop;
+        IsAlternative = isAlternative;
     }
 }

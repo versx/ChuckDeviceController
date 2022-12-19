@@ -1,13 +1,12 @@
-﻿namespace ChuckDeviceConfigurator.Services.TimeZone
+﻿namespace ChuckDeviceConfigurator.Services.TimeZone;
+
+using System.Text.Json.Serialization;
+
+public class TimeZoneOffsetData
 {
-    using System.Text.Json.Serialization;
+    [JsonPropertyName("utc")]
+    public short Utc { get; set; }
 
-    public class TimeZoneOffsetData
-    {
-        [JsonPropertyName("utc")]
-        public short Utc { get; set; }
-
-        [JsonPropertyName("dst")]
-        public short Dst { get; set; }
-    }
+    [JsonPropertyName("dst")]
+    public short Dst { get; set; }
 }

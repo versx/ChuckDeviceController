@@ -1,13 +1,12 @@
-﻿namespace ChuckDeviceController.HostedServices
+﻿namespace ChuckDeviceController.HostedServices;
+
+public interface IClearFortsHostedService
 {
-    public interface IClearFortsHostedService
-    {
-        void AddPokestop(ulong cellId, string pokestopId);
+    void AddPokestop(ulong cellId, string pokestopId);
 
-        void AddGym(ulong cellId, string gymId);
+    void AddGym(ulong cellId, string gymId);
 
-        void ClearPokestops();
+    void ClearPokestops();
 
-        void ClearGyms();
-    }
+    void ClearGyms();
 }

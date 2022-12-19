@@ -1,28 +1,27 @@
-﻿namespace ChuckDeviceController.Data.TypeHandlers
+﻿namespace ChuckDeviceController.Data.TypeHandlers;
+
+using System.Data;
+
+using Dapper;
+
+using ChuckDeviceController.Data.Common;
+
+public class SeenTypeTypeHandler : SqlMapper.ITypeHandler
 {
-    using System.Data;
+    public static readonly SeenTypeTypeHandler Default = new();
 
-    using Dapper;
-
-    using ChuckDeviceController.Common.Data;
-
-    public class SeenTypeTypeHandler : SqlMapper.ITypeHandler
+    public object Parse(Type destinationType, object value)
     {
-        public static readonly SeenTypeTypeHandler Default = new();
-
-        public object Parse(Type destinationType, object value)
+        if (destinationType == typeof(SeenType))
         {
-            if (destinationType == typeof(SeenType))
-            {
-                return (SeenType)(string)value;
-            }
-            return SeenType.Unset;
+            return (SeenType)(string)value;
         }
+        return SeenType.Unset;
+    }
 
-        public void SetValue(IDbDataParameter parameter, object value)
-        {
-            parameter.DbType = DbType.String;
-            parameter.Value = (string)(dynamic)value;
-        }
+    public void SetValue(IDbDataParameter parameter, object value)
+    {
+        parameter.DbType = DbType.String;
+        parameter.Value = (string)(dynamic)value;
     }
 }

@@ -1,12 +1,11 @@
-﻿namespace ChuckDeviceController.Services.DataConsumer
+﻿namespace ChuckDeviceController.Services.DataConsumer;
+
+using ChuckDeviceController.Data;
+using ChuckDeviceController.Data.Entities;
+
+public interface IDataConsumerService
 {
-    using ChuckDeviceController.Data;
-    using ChuckDeviceController.Data.Entities;
+    Task AddEntityAsync(SqlQueryType type, BaseEntity entity);
 
-    public interface IDataConsumerService
-    {
-        Task AddEntityAsync(SqlQueryType type, BaseEntity entity);
-
-        Task AddEntitiesAsync(SqlQueryType type, IEnumerable<BaseEntity> entities);
-    }
+    Task AddEntitiesAsync(SqlQueryType type, IEnumerable<BaseEntity> entities);
 }

@@ -1,15 +1,14 @@
-﻿namespace ChuckDeviceController.Data.Entities
+﻿namespace ChuckDeviceController.Data.Entities;
+
+public class GymWithDefender
 {
-    public class GymWithDefender
+    public Gym Gym { get; set; }
+
+    public GymDefender Defender { get; set; }
+
+    public GymWithDefender(Gym gym, GymDefender defender)
     {
-        public Gym Gym { get; set; }
-
-        public GymDefender Defender { get; set; }
-
-        public GymWithDefender(Gym gym, GymDefender defender)
-        {
-            Gym = gym;
-            Defender = defender;
-        }
+        Gym = gym;
+        Defender = defender;
     }
 }

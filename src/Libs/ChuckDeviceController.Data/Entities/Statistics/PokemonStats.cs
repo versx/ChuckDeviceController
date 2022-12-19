@@ -1,9 +1,8 @@
-﻿namespace ChuckDeviceController.Data.Entities
-{
-    using System.ComponentModel.DataAnnotations.Schema;
+﻿namespace ChuckDeviceController.Data.Entities;
 
-    [Table("pokemon_stats")]
-    public class PokemonStats : BasePokemonStats
-    {
-    }
+using System.ComponentModel.DataAnnotations.Schema;
+
+[Table("pokemon_stats")]
+public class PokemonStats : BasePokemonStats
+{
 }

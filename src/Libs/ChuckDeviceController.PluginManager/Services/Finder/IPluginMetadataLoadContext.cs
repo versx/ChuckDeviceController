@@ -1,11 +1,10 @@
-﻿namespace ChuckDeviceController.PluginManager.Services.Finder
+﻿namespace ChuckDeviceController.PluginManager.Services.Finder;
+
+using System.Reflection;
+
+public interface IPluginMetadataLoadContext : IDisposable
 {
-    using System.Reflection;
+    IAssemblyShim LoadFromAssemblyName(AssemblyName assemblyName);
 
-    public interface IPluginMetadataLoadContext : IDisposable
-    {
-        IAssemblyShim LoadFromAssemblyName(AssemblyName assemblyName);
-
-        IAssemblyShim LoadFromAssemblyPath(string assemblyFullPath);
-    }
+    IAssemblyShim LoadFromAssemblyPath(string assemblyFullPath);
 }

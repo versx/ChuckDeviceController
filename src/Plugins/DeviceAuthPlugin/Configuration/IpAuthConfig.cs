@@ -1,9 +1,8 @@
-﻿namespace DeviceAuthPlugin.Configuration
-{
-    public class IpAuthConfig
-    {
-        public bool Enabled { get; set; }
+﻿namespace DeviceAuthPlugin.Configuration;
 
-        public List<string> IpAddresses { get; set; } = new();
-    }
+public class IpAuthConfig
+{
+    public bool Enabled { get; set; }
+
+    public List<string> IpAddresses { get; set; } = new();
 }

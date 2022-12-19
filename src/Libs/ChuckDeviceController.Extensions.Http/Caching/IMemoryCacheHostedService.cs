@@ -1,15 +1,14 @@
-﻿namespace ChuckDeviceController.Extensions.Http.Caching
+﻿namespace ChuckDeviceController.Extensions.Http.Caching;
+
+public interface IMemoryCacheHostedService
 {
-    public interface IMemoryCacheHostedService
-    {
-        TEntity? Get<TKey, TEntity>(TKey key);
+    TEntity? Get<TKey, TEntity>(TKey key);
 
-        void Set<TKey, TEntity>(TKey key, TEntity obj, TimeSpan? expiry = null);
+    void Set<TKey, TEntity>(TKey key, TEntity obj, TimeSpan? expiry = null);
 
-        void Unset<TKey, TEntity>(TKey key);
+    void Unset<TKey, TEntity>(TKey key);
 
-        bool IsSet<TKey, TEntity>(TKey key);
+    bool IsSet<TKey, TEntity>(TKey key);
 
-        bool Clear<TEntity>();
-    }
+    bool Clear<TEntity>();
 }

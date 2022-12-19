@@ -1,15 +1,14 @@
-﻿namespace ChuckDeviceController.PluginManager.Services.Loader
+﻿namespace ChuckDeviceController.PluginManager.Services.Loader;
+
+/// <summary>
+/// 
+/// </summary>
+public interface IPluginLoader
 {
+    event EventHandler<PluginLoadedEventArgs> PluginLoaded;
+
     /// <summary>
     /// 
     /// </summary>
-    public interface IPluginLoader
-    {
-        event EventHandler<PluginLoadedEventArgs> PluginLoaded;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        IEnumerable<PluginHost> LoadedPlugins { get; }
-    }
+    IEnumerable<PluginHost> LoadedPlugins { get; }
 }

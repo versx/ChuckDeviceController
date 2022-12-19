@@ -1,89 +1,88 @@
-﻿namespace ChuckDeviceController.JobControllers
+﻿namespace ChuckDeviceController.JobControllers;
+
+using Microsoft.Extensions.Logging;
+
+using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Geometry.Models.Abstractions;
+using ChuckDeviceController.Plugin;
+using ChuckDeviceController.Routing;
+
+public class DynamicRouteInstanceController : CircleInstanceController
 {
-    using Microsoft.Extensions.Logging;
+    #region Variables
 
-    using ChuckDeviceController.Common.Data;
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Geometry.Models.Contracts;
-    using ChuckDeviceController.Plugin;
-    using ChuckDeviceController.Routing;
+    private readonly ILogger<DynamicRouteInstanceController> _logger;
+    private readonly IRoutingHost _routeGenerator;
+    private readonly IRouteCalculator _routeCalculator;
 
-    public class DynamicRouteInstanceController : CircleInstanceController
+    #endregion
+
+    #region Properties
+
+    public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
+
+    public bool OptimizeDynamicRoute { get; }
+
+    #endregion
+
+    #region Constructor
+
+    public DynamicRouteInstanceController(
+        Instance instance,
+        List<IMultiPolygon> multiPolygons,
+        IRoutingHost routeGenerator,
+        IRouteCalculator routeCalculator)
+        : base(instance, new(), CircleInstanceType.Pokemon)
     {
-        #region Variables
+        _logger = new Logger<DynamicRouteInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+        _routeGenerator = routeGenerator;
+        _routeCalculator = routeCalculator;
 
-        private readonly ILogger<DynamicRouteInstanceController> _logger;
-        private readonly IRoutingHost _routeGenerator;
-        private readonly IRouteCalculator _routeCalculator;
+        MultiPolygons = multiPolygons;
+        OptimizeDynamicRoute = instance.Data?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute;
+        Coordinates = GenerateDynamicRoute();
+    }
 
-        #endregion
+    #endregion
 
-        #region Properties
+    #region Private Methods
 
-        public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
+    private List<ICoordinate> GenerateDynamicRoute()
+    {
+        _logger.LogInformation($"[{Name}] Generating dynamic route...");
 
-        public bool OptimizeDynamicRoute { get; }
+        var stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
 
-        #endregion
-
-        #region Constructor
-
-        public DynamicRouteInstanceController(
-            Instance instance,
-            List<IMultiPolygon> multiPolygons,
-            IRoutingHost routeGenerator,
-            IRouteCalculator routeCalculator)
-            : base(instance, new(), CircleInstanceType.Pokemon)
+        var options = new RouteGeneratorOptions
         {
-            _logger = new Logger<DynamicRouteInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-            _routeGenerator = routeGenerator;
-            _routeCalculator = routeCalculator;
+            RadiusM = Strings.DefaultCircleSize,
+            RouteType = RouteGenerationType.Randomized,
+            MultiPolygons = (List<IMultiPolygon>)MultiPolygons,
+            MaximumPoints = 500,
+        };
+        var route = _routeGenerator.GenerateRoute(options);
 
-            MultiPolygons = multiPolygons;
-            OptimizeDynamicRoute = instance.Data?.OptimizeDynamicRoute ?? Strings.DefaultOptimizeDynamicRoute;
-            Coordinates = GenerateDynamicRoute();
-        }
+        stopwatch.Stop();
+        var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+        _logger.LogInformation($"[{Name}] Dynamic route generation took {totalSeconds}s");
 
-        #endregion
-
-        #region Private Methods
-
-        private List<ICoordinate> GenerateDynamicRoute()
+        if (OptimizeDynamicRoute)
         {
-            _logger.LogInformation($"[{Name}] Generating dynamic route...");
-
-            var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
-            var options = new RouteGeneratorOptions
-            {
-                RadiusM = Strings.DefaultCircleSize,
-                RouteType = RouteGenerationType.Randomized,
-                MultiPolygons = (List<IMultiPolygon>)MultiPolygons,
-                MaximumPoints = 500,
-            };
-            var route = _routeGenerator.GenerateRoute(options);
+            _routeCalculator.AddCoordinates(route);
+            var optimized = _routeCalculator.CalculateShortestRoute();
 
             stopwatch.Stop();
-            var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-            _logger.LogInformation($"[{Name}] Dynamic route generation took {totalSeconds}s");
+            totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
+            _logger.LogInformation($"[{Name}] Dynamic route optimization took {totalSeconds}s");
 
-            if (OptimizeDynamicRoute)
-            {
-                stopwatch.Start();
-
-                _routeCalculator.AddCoordinates(route);
-                var optimized = _routeCalculator.CalculateShortestRoute();
-
-                stopwatch.Stop();
-                totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-                _logger.LogInformation($"[{Name}] Dynamic route optimization took {totalSeconds}s");
-
-                return optimized.ToList();
-            }
-            return route;
+            return optimized.ToList();
         }
-
-        #endregion
+        return route;
     }
+
+    #endregion
 }

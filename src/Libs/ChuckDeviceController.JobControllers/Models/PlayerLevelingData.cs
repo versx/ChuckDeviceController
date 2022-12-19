@@ -1,28 +1,27 @@
-﻿namespace ChuckDeviceController.JobControllers.Models
+﻿namespace ChuckDeviceController.JobControllers.Models;
+
+using System.Collections.Concurrent;
+
+using POGOProtos.Rpc;
+
+using ChuckDeviceController.Collections.Queues;
+using ChuckDeviceController.Geometry.Models.Abstractions;
+
+internal class PlayerLevelingData
 {
-    using System.Collections.Concurrent;
+    public ConcurrentDictionary<string, PokemonFortProto> UnspunPokestops { get; } = new();
 
-    using POGOProtos.Rpc;
+    //public object UnspunPokestopsLock { get; } = new();
 
-    using ChuckDeviceController.Collections.Queues;
-    using ChuckDeviceController.Geometry.Models.Contracts;
+    public ConcurrentDictionary<string, ICoordinate> LastPokestopsSpun { get; } = new();
 
-    internal class PlayerLevelingData
-    {
-        public ConcurrentDictionary<string, PokemonFortProto> UnspunPokestops { get; } = new();
+    public ulong LastSeen { get; set; }
 
-        //public object UnspunPokestopsLock { get; } = new();
+    public ulong XP { get; set; }
 
-        public ConcurrentDictionary<string, ICoordinate> LastPokestopsSpun { get; } = new();
+    public ushort Level { get; set; }
 
-        public ulong LastSeen { get; set; }
+    public PokemonPriorityQueue<(ulong, ulong)> XpPerTime { get; } = new(); // timestamp, xp
 
-        public ulong XP { get; set; }
-
-        public ushort Level { get; set; }
-
-        public PokemonPriorityQueue<(ulong, ulong)> XpPerTime { get; } = new(); // timestamp, xp
-
-        public ICoordinate? LastLocation { get; set; }
-    }
+    public ICoordinate? LastLocation { get; set; }
 }

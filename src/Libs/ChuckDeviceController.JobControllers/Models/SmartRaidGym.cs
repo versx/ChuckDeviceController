@@ -1,21 +1,20 @@
-﻿namespace ChuckDeviceController.JobControllers.Models
+﻿namespace ChuckDeviceController.JobControllers.Models;
+
+using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Geometry.Models.Abstractions;
+
+internal class SmartRaidGym
 {
-    using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.Geometry.Models.Contracts;
+    public IGym Gym { get; set; }
 
-    internal class SmartRaidGym
+    public ulong Updated { get; set; }
+
+    public ICoordinate Coordinate { get; set; }
+
+    public SmartRaidGym(IGym gym, ulong updated, ICoordinate coordinate)
     {
-        public IGym Gym { get; set; }
-
-        public ulong Updated { get; set; }
-
-        public ICoordinate Coordinate { get; set; }
-
-        public SmartRaidGym(IGym gym, ulong updated, ICoordinate coordinate)
-        {
-            Gym = gym;
-            Updated = updated;
-            Coordinate = coordinate;
-        }
+        Gym = gym;
+        Updated = updated;
+        Coordinate = coordinate;
     }
 }

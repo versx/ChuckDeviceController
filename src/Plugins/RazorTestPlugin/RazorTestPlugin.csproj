@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\Libs\ChuckDeviceController.Data.Common\ChuckDeviceController.Data.Common.csproj" />
 		<ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj">
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>
@@ -27,7 +28,7 @@
 		</Content>
 	</ItemGroup>
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
 		<Exec Command="&quot;$(SolutionDir)../scripts/copy.bat&quot; &quot;$(TargetPath)&quot; &quot;$(ProjectName)&quot; &quot;$(TargetFileName)&quot; &quot;$(TargetDir)&quot; &quot;$(SolutionDir)&quot;" />
 	</Target>
 </Project>

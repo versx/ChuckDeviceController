@@ -1,18 +1,17 @@
-﻿namespace ChuckDeviceController.JobControllers.Tasks
+﻿namespace ChuckDeviceController.JobControllers.Tasks;
+
+using System.Text.Json.Serialization;
+
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Tasks;
+
+public class CircleTask : BaseJobTask
 {
-	using System.Text.Json.Serialization;
+    [JsonPropertyName("lure_encounter")]
+	public bool? LureEncounter { get; set; }
 
-	using ChuckDeviceController.Common;
-	using ChuckDeviceController.Common.Tasks;
-
-	public class CircleTask : BaseJobTask
-	{
-        [JsonPropertyName("lure_encounter")]
-		public bool? LureEncounter { get; set; }
-
-		public CircleTask()
-        {
-			Action = DeviceActionType.ScanPokemon;
-        }
-	}
+	public CircleTask()
+    {
+	    Action = DeviceActionType.ScanPokemon;
+    }
 }

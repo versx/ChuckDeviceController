@@ -1,19 +1,18 @@
-﻿namespace RequestBenchmarkPlugin.Services
+﻿namespace RequestBenchmarkPlugin.Services;
+
+using Data.Contexts;
+using Data.Entities;
+using Utilities;
+
+public interface IRequestBenchmarkService
 {
-    using Data.Contexts;
-    using Data.Entities;
-    using Utilities;
+    IReadOnlyDictionary<string, RequestBenchmark> Benchmarks { get; }
 
-    public interface IRequestBenchmarkService
-    {
-        IReadOnlyDictionary<string, RequestBenchmark> Benchmarks { get; }
+    Task SaveRouteBenchmark(RequestTimesDbContext context, string route, RequestTime timing);
 
-        Task SaveRouteBenchmark(RequestTimesDbContext context, string route, RequestTime timing);
+    void UpdateRouteBenchmark(string route, RequestBenchmark benchmark);
 
-        void UpdateRouteBenchmark(string route, RequestBenchmark benchmark);
+    void Delete(string route);
 
-        void Delete(string route);
-
-        void ClearBenchmarks();
-    }
+    void ClearBenchmarks();
 }

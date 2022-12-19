@@ -1,8 +1,7 @@
-﻿namespace ChuckDeviceConfigurator.ViewModels
-{
-    using ChuckDeviceController.Common;
+﻿namespace ChuckDeviceConfigurator.ViewModels;
 
-    public class ProtoDataStatisticsViewModel : BaseProtoDataStatistics
-    {
-    }
+using ChuckDeviceController.Common;
+
+public class ProtoDataStatisticsViewModel : BaseProtoDataStatistics
+{
 }

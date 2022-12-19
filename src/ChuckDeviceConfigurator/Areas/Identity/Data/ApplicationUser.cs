@@ -1,15 +1,14 @@
-﻿namespace ChuckDeviceConfigurator.Data
+﻿namespace ChuckDeviceConfigurator.Data;
+
+using System.ComponentModel.DataAnnotations.Schema;
+
+using Microsoft.AspNetCore.Identity;
+
+public class ApplicationUser : IdentityUser<string>
 {
-    using System.ComponentModel.DataAnnotations.Schema;
+    [Column("username_change_limit")]
+    public int UsernameChangeLimit { get; set; } = 10;
 
-    using Microsoft.AspNetCore.Identity;
-
-    public class ApplicationUser : IdentityUser<string>
-    {
-        [Column("username_change_limit")]
-        public int UsernameChangeLimit { get; set; } = 10;
-
-        [Column("profile_picture")]
-        public byte[]? ProfilePicture { get; set; }
-    }
+    [Column("profile_picture")]
+    public byte[]? ProfilePicture { get; set; }
 }

@@ -1,8 +1,7 @@
-﻿namespace ChuckDeviceController.Authorization.Jwt
+﻿namespace ChuckDeviceController.Authorization.Jwt;
+
+public enum JwtStatus
 {
-    public enum JwtStatus
-    {
-        Ok = 0,
-        Error,
-    }
+    Ok = 0,
+    Error,
 }

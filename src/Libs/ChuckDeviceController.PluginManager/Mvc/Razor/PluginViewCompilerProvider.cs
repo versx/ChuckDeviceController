@@ -1,22 +1,21 @@
-﻿namespace ChuckDeviceController.PluginManager.Mvc.Razor
+﻿namespace ChuckDeviceController.PluginManager.Mvc.Razor;
+
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+
+public class PluginViewCompilerProvider : IViewCompilerProvider
 {
-    using Microsoft.AspNetCore.Mvc.ApplicationParts;
-    using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+    private readonly ApplicationPartManager _applicationPartManager;
+    private readonly PluginViewCompiler _compiler;
 
-    public class PluginViewCompilerProvider : IViewCompilerProvider
+    public PluginViewCompilerProvider(ApplicationPartManager applicationPartManager)
     {
-        private readonly ApplicationPartManager _applicationPartManager;
-        private readonly PluginViewCompiler _compiler;
+        _applicationPartManager = applicationPartManager;
 
-        public PluginViewCompilerProvider(ApplicationPartManager applicationPartManager)
-        {
-            _applicationPartManager = applicationPartManager;
-
-            var feature = new ViewsFeature();
-            _applicationPartManager.PopulateFeature(feature);
-            _compiler = new PluginViewCompiler(feature.ViewDescriptors);
-        }
-
-        public IViewCompiler GetCompiler() => _compiler;
+        var feature = new ViewsFeature();
+        _applicationPartManager.PopulateFeature(feature);
+        _compiler = new PluginViewCompiler(feature.ViewDescriptors);
     }
+
+    public IViewCompiler GetCompiler() => _compiler;
 }

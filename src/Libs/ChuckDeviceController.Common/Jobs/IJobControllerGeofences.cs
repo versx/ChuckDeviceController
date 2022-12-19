@@ -1,9 +1,8 @@
-﻿namespace ChuckDeviceController.Common.Jobs
-{
-    using ChuckDeviceController.Geometry.Models.Contracts;
+﻿namespace ChuckDeviceController.Common.Jobs;
 
-    public interface IJobControllerGeofences
-    {
-        IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
-    }
+using ChuckDeviceController.Geometry.Models.Abstractions;
+
+public interface IJobControllerGeofences
+{
+    IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 }

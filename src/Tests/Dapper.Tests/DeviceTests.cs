@@ -1,44 +1,43 @@
-﻿namespace Dapper.Tests
+﻿namespace Dapper.Tests;
+
+using System.ComponentModel.DataAnnotations.Schema;
+
+using MySqlConnector;
+
+using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories;
+
+internal class DeviceTests
 {
-    using System.ComponentModel.DataAnnotations.Schema;
+    private const string ConnectionString = "";
 
-    using MySqlConnector;
+    private MySqlConnection _connection;
 
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Data.Repositories;
-
-    internal class DeviceTests
+    [SetUp]
+    public void Setup()
     {
-        private const string ConnectionString = "";
+        _connection = new MySqlConnection(ConnectionString);
+        Task.Run(async () => await _connection.OpenAsync()).Wait();
+    }
 
-        private MySqlConnection _connection;
+    [TestCase("atv08")]
+    public async Task TestDevice(string uuid)
+    {
+        SetTypeMap<Device>();
+        var device = await EntityRepository.GetEntityAsync<string, Device>(_connection, uuid, null, skipCache: true, setCache: false);
+        Assert.That(device, Is.Not.Null);
+    }
 
-        [SetUp]
-        public void Setup()
-        {
-            _connection = new MySqlConnection(ConnectionString);
-            Task.Run(async () => await _connection.OpenAsync()).Wait();
-        }
-
-        [TestCase("atv08")]
-        public async Task TestDevice(string uuid)
-        {
-            SetTypeMap<Device>();
-            var device = await EntityRepository.GetEntityAsync<string, Device>(_connection, uuid, null, skipCache: true, setCache: false);
-            Assert.That(device, Is.Not.Null);
-        }
-
-        private static void SetTypeMap<TEntity>()
-        {
-            SqlMapper.SetTypeMap(
+    private static void SetTypeMap<TEntity>()
+    {
+        SqlMapper.SetTypeMap(
+            typeof(TEntity),
+            new CustomPropertyTypeMap(
                 typeof(TEntity),
-                new CustomPropertyTypeMap(
-                    typeof(TEntity),
-                    (type, columnName) =>
-                        type.GetProperties().FirstOrDefault(prop =>
-                            prop.GetCustomAttributes(false)
-                                .OfType<ColumnAttribute>()
-                                .Any(attr => attr.Name == columnName))));
-        }
+                (type, columnName) =>
+                    type.GetProperties().FirstOrDefault(prop =>
+                        prop.GetCustomAttributes(false)
+                            .OfType<ColumnAttribute>()
+                            .Any(attr => attr.Name == columnName))));
     }
 }

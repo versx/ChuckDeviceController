@@ -1,16 +1,15 @@
-﻿namespace ChuckDeviceController.PluginManager
+﻿namespace ChuckDeviceController.PluginManager;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+public interface IPluginManagerOptions
 {
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.DependencyInjection;
+    string RootPluginsDirectory { get; }
 
-    public interface IPluginManagerOptions
-    {
-        string RootPluginsDirectory { get; }
+    IConfiguration? Configuration { get; }
 
-        IConfiguration? Configuration { get; }
+    IServiceCollection? Services { get; }
 
-        IServiceCollection? Services { get; }
-
-        IReadOnlyDictionary<Type, object> SharedServiceHosts { get; }
-    }
+    IReadOnlyDictionary<Type, object> SharedServiceHosts { get; }
 }

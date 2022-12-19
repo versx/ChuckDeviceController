@@ -1,12 +1,11 @@
-﻿namespace ChuckDeviceController.Services.ProtoProcessor
+﻿namespace ChuckDeviceController.Services.ProtoProcessor;
+
+using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Net.Models.Requests;
+
+public class ProtoPayloadQueueItem
 {
-    using ChuckDeviceController.Data.Entities;
-    using ChuckDeviceController.Net.Models.Requests;
+    public ProtoPayload? Payload { get; set; }
 
-    public class ProtoPayloadQueueItem
-    {
-        public ProtoPayload? Payload { get; set; }
-
-        public Device? Device { get; set; }
-    }
+    public Device? Device { get; set; }
 }

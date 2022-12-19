@@ -1,28 +1,27 @@
-﻿namespace ChuckDeviceController.Middleware
+﻿namespace ChuckDeviceController.Middleware;
+
+using ChuckDeviceController.Extensions;
+
+public sealed class MadDataMiddleware
 {
-    using ChuckDeviceController.Extensions;
+    private readonly RequestDelegate _next;
 
-    public sealed class MadDataMiddleware
+    public MadDataMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next ?? throw new ArgumentNullException(nameof(next));
+    }
 
-        public MadDataMiddleware(RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            _next = next ?? throw new ArgumentNullException(nameof(next));
+            await context.ConvertPayloadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error - MadDataMiddleware: {ex.Message}");
         }
 
-        public async Task InvokeAsync(HttpContext context)
-        {
-            try
-            {
-                await context.ConvertPayloadDataAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error - MadDataMiddleware: {ex.Message}");
-            }
-
-            await _next(context);
-        }
+        await _next(context);
     }
 }

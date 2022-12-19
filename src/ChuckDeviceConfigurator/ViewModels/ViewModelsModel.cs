@@ -1,9 +1,8 @@
-﻿namespace ChuckDeviceConfigurator.ViewModels
-{
-    public class ViewModelsModel<T>
-    {
-        public bool AutoRefresh { get; set; }
+﻿namespace ChuckDeviceConfigurator.ViewModels;
 
-        public List<T> Items { get; set; } = new();
-    }
+public class ViewModelsModel<T>
+{
+    public bool AutoRefresh { get; set; }
+
+    public List<T> Items { get; set; } = new();
 }

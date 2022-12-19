@@ -1,11 +1,10 @@
-﻿namespace ChuckDeviceController.PluginManager.Services.Loader.Dependencies
+﻿namespace ChuckDeviceController.PluginManager.Services.Loader.Dependencies;
+
+using System.Reflection;
+
+public class RemoteDependency
 {
-    using System.Reflection;
+    public AssemblyName DependencyName { get; set; } = null!;
 
-    public class RemoteDependency
-    {
-        public AssemblyName DependencyName { get; set; }
-
-        public Version Version => DependencyName?.Version;
-    }
+    public Version? Version => DependencyName?.Version;
 }

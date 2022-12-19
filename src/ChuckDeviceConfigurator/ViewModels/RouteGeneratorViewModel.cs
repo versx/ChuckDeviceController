@@ -1,6 +1,5 @@
-﻿namespace ChuckDeviceConfigurator.ViewModels
+﻿namespace ChuckDeviceConfigurator.ViewModels;
+
+public class RouteGeneratorViewModel
 {
-    public class RouteGeneratorViewModel
-    {
-    }
 }

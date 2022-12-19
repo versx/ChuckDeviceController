@@ -1,12 +1,11 @@
-﻿namespace ChuckDeviceConfigurator.ViewModels
+﻿namespace ChuckDeviceConfigurator.ViewModels;
+
+using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.PluginManager;
+
+public class PluginsViewModel
 {
-    using ChuckDeviceController.Common.Data.Contracts;
-    using ChuckDeviceController.PluginManager;
+    public IReadOnlyList<IPluginHost> Plugins { get; set; } = new List<IPluginHost>();
 
-    public class PluginsViewModel
-    {
-        public IReadOnlyList<IPluginHost> Plugins { get; set; } = new List<IPluginHost>();
-
-        public IReadOnlyList<IApiKey> ApiKeys { get; set; } = new List<IApiKey>();
-    }
+    public IReadOnlyList<IApiKey> ApiKeys { get; set; } = new List<IApiKey>();
 }

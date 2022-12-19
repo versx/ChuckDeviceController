@@ -1,25 +1,24 @@
-﻿namespace ChuckDeviceController.Logging
+﻿namespace ChuckDeviceController.Logging;
+
+using Microsoft.Extensions.Logging;
+
+public sealed class ColorConsoleLoggerConfiguration
 {
-    using Microsoft.Extensions.Logging;
+    public int EventId { get; set; }
 
-    public sealed class ColorConsoleLoggerConfiguration
+    public Dictionary<LogLevel, ConsoleColor> LogLevelColorMap { get; set; } = new()
     {
-        public int EventId { get; set; }
+        [LogLevel.Trace] = ConsoleColor.Cyan,
+        [LogLevel.Information] = ConsoleColor.White,
+        [LogLevel.Debug] = ConsoleColor.DarkGray,
+        [LogLevel.Warning] = ConsoleColor.Yellow,
+        [LogLevel.Error] = ConsoleColor.Red,
+        [LogLevel.Critical] = ConsoleColor.DarkRed,
+    };
 
-        public Dictionary<LogLevel, ConsoleColor> LogLevelColorMap { get; set; } = new()
-        {
-            [LogLevel.Trace] = ConsoleColor.Cyan,
-            [LogLevel.Information] = ConsoleColor.White,
-            [LogLevel.Debug] = ConsoleColor.DarkGray,
-            [LogLevel.Warning] = ConsoleColor.Yellow,
-            [LogLevel.Error] = ConsoleColor.Red,
-            [LogLevel.Critical] = ConsoleColor.DarkRed,
-        };
+    public bool UseTimestamp { get; set; } = true;
 
-        public bool UseTimestamp { get; set; } = true;
+    public bool UseUnix { get; set; } = false;
 
-        public bool UseUnix { get; set; } = false;
-
-        public string TimestampFormat { get; set; } = "{0:HH}:{0:mm}:{0:ss}";
-    }
+    public string TimestampFormat { get; set; } = "{0:HH}:{0:mm}:{0:ss}";
 }

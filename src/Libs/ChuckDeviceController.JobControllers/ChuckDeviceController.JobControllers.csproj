@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChuckDeviceController.Common\ChuckDeviceController.Common.csproj" />
+    <ProjectReference Include="..\ChuckDeviceController.Data.Abstractions\ChuckDeviceController.Data.Abstractions.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Extensions\ChuckDeviceController.Extensions.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Geometry.Models\ChuckDeviceController.Geometry.Models.csproj" />

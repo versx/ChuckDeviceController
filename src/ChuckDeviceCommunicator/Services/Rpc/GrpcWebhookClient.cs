@@ -1,32 +1,31 @@
-﻿namespace ChuckDeviceCommunicator.Services.Rpc
+﻿namespace ChuckDeviceCommunicator.Services.Rpc;
+
+using ChuckDeviceController.Protos;
+
+public class GrpcWebhookEndpointsClient : IGrpcClient<WebhookEndpoint.WebhookEndpointClient, WebhookEndpointRequest, WebhookEndpointResponse>
 {
-    using ChuckDeviceController.Protos;
+    private readonly ILogger<GrpcWebhookEndpointsClient> _logger;
+    private readonly WebhookEndpoint.WebhookEndpointClient _client;
 
-    public class GrpcWebhookEndpointsClient : IGrpcClient<WebhookEndpoint.WebhookEndpointClient, WebhookEndpointRequest, WebhookEndpointResponse>
+    public GrpcWebhookEndpointsClient(
+        ILogger<GrpcWebhookEndpointsClient> logger,
+        WebhookEndpoint.WebhookEndpointClient client)
     {
-        private readonly ILogger<GrpcWebhookEndpointsClient> _logger;
-        private readonly WebhookEndpoint.WebhookEndpointClient _client;
+        _logger = logger;
+        _client = client;
+    }
 
-        public GrpcWebhookEndpointsClient(
-            ILogger<GrpcWebhookEndpointsClient> logger,
-            WebhookEndpoint.WebhookEndpointClient client)
+    public async Task<WebhookEndpointResponse?> SendAsync(WebhookEndpointRequest payload)
+    {
+        try
         {
-            _logger = logger;
-            _client = client;
+            var response = await _client.HandleWebhookEndpointAsync(payload);
+            return response;
         }
-
-        public async Task<WebhookEndpointResponse?> SendAsync(WebhookEndpointRequest payload)
+        catch (Exception ex)
         {
-            try
-            {
-                var response = await _client.HandleWebhookEndpointAsync(payload);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error: {ex.Message}");
-            }
-            return null;
+            _logger.LogError($"Error: {ex.Message}");
         }
+        return null;
     }
 }

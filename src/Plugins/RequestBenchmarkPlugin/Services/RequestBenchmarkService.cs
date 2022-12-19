@@ -1,76 +1,75 @@
-﻿namespace RequestBenchmarkPlugin.Services
+﻿namespace RequestBenchmarkPlugin.Services;
+
+using System.Collections.Concurrent;
+
+using Data.Contexts;
+using Data.Entities;
+using Utilities;
+
+public class RequestBenchmarkService : IRequestBenchmarkService
 {
-    using System.Collections.Concurrent;
+    private static readonly ConcurrentDictionary<string, RequestBenchmark> _requestBenchmarks = new();
+    private static readonly object _lock = new();
+    private static readonly SemaphoreSlim _sem = new(1, 1);
+    private readonly ILogger<IRequestBenchmarkService> _logger;
 
-    using Data.Contexts;
-    using Data.Entities;
-    using Utilities;
+    public IReadOnlyDictionary<string, RequestBenchmark> Benchmarks => _requestBenchmarks;
 
-    public class RequestBenchmarkService : IRequestBenchmarkService
+    public RequestBenchmarkService(ILogger<IRequestBenchmarkService> logger)
     {
-        private static readonly ConcurrentDictionary<string, RequestBenchmark> _requestBenchmarks = new();
-        private static readonly object _lock = new();
-        private static readonly SemaphoreSlim _sem = new(1, 1);
-        private readonly ILogger<IRequestBenchmarkService> _logger;
+        _logger = logger;
+    }
 
-        public IReadOnlyDictionary<string, RequestBenchmark> Benchmarks => _requestBenchmarks;
-
-        public RequestBenchmarkService(ILogger<IRequestBenchmarkService> logger)
+    public void ClearBenchmarks()
+    {
+        lock (_lock)
         {
-            _logger = logger;
+            _requestBenchmarks.Clear();
         }
 
-        public void ClearBenchmarks()
-        {
-            lock (_lock)
-            {
-                _requestBenchmarks.Clear();
-            }
+        _logger.LogDebug($"Cleared all request benchmarks");
+    }
 
-            _logger.LogDebug($"Cleared all request benchmarks");
+    public void Delete(string route)
+    {
+        lock (_lock)
+        {
+            if (!_requestBenchmarks.TryRemove(route, out var _))
+            {
+                _logger.LogWarning($"Failed to remove request benchmark for route '{route}' from cache");
+                return;
+            }
+            _logger.LogDebug($"Removed benchmark for route '{route}' from benchmark cache");
+        }
+    }
+
+    public void UpdateRouteBenchmark(string route, RequestBenchmark benchmark)
+    {
+        lock (_lock)
+        {
+            _requestBenchmarks.AddOrUpdate(route, benchmark, (key, oldValue) => benchmark);
+        }
+    }
+
+    public async Task SaveRouteBenchmark(RequestTimesDbContext context, string route, RequestTime timing)
+    {
+        await _sem.WaitAsync();
+
+        if (context.RequestTimes.Any(x => x.Route == route))
+        {
+            context.Update(timing);
+        }
+        else
+        {
+            await context.AddAsync(timing);
         }
 
-        public void Delete(string route)
+        try { await context.SaveChangesAsync(); }
+        catch (Exception ex)
         {
-            lock (_lock)
-            {
-                if (!_requestBenchmarks.TryRemove(route, out var _))
-                {
-                    _logger.LogWarning($"Failed to remove request benchmark for route '{route}' from cache");
-                    return;
-                }
-                _logger.LogDebug($"Removed benchmark for route '{route}' from benchmark cache");
-            }
+            Console.WriteLine($"Error: {ex.InnerException?.Message ?? ex.Message}");
         }
 
-        public void UpdateRouteBenchmark(string route, RequestBenchmark benchmark)
-        {
-            lock (_lock)
-            {
-                _requestBenchmarks.AddOrUpdate(route, benchmark, (key, oldValue) => benchmark);
-            }
-        }
-
-        public async Task SaveRouteBenchmark(RequestTimesDbContext context, string route, RequestTime timing)
-        {
-            await _sem.WaitAsync();
-
-            if (context.RequestTimes.Any(x => x.Route == route))
-            {
-                context.Update(timing);
-            }
-            else
-            {
-                await context.AddAsync(timing);
-            }
-
-            try { await context.SaveChangesAsync(); }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.InnerException?.Message ?? ex.Message}");
-            }
-
-            _sem.Release();
-        }
+        _sem.Release();
     }
 }

@@ -1,39 +1,38 @@
-﻿namespace ChuckDeviceCommunicator.Services.Rpc
+﻿namespace ChuckDeviceCommunicator.Services.Rpc;
+
+using Grpc.Core;
+
+using ChuckDeviceController.Protos;
+
+public class WebhookPayloadReceiverService : WebhookPayload.WebhookPayloadBase
 {
-    using Grpc.Core;
+    private readonly ILogger<WebhookPayloadReceiverService> _logger;
+    private readonly IWebhookRelayService _webhookRelayService;
 
-    using ChuckDeviceController.Protos;
-
-    public class WebhookPayloadReceiverService : WebhookPayload.WebhookPayloadBase
+    public WebhookPayloadReceiverService(
+        ILogger<WebhookPayloadReceiverService> logger,
+        IWebhookRelayService webhookRelayService)
     {
-        private readonly ILogger<WebhookPayloadReceiverService> _logger;
-        private readonly IWebhookRelayService _webhookRelayService;
+        _logger = logger;
+        _webhookRelayService = webhookRelayService;
+    }
 
-        public WebhookPayloadReceiverService(
-            ILogger<WebhookPayloadReceiverService> logger,
-            IWebhookRelayService webhookRelayService)
+    public override async Task<WebhookPayloadResponse> HandleWebhookPayload(WebhookPayloadRequest request, ServerCallContext context)
+    {
+        var json = request.Payload;
+        if (string.IsNullOrEmpty(json))
         {
-            _logger = logger;
-            _webhookRelayService = webhookRelayService;
-        }
-
-        public override async Task<WebhookPayloadResponse> HandleWebhookPayload(WebhookPayloadRequest request, ServerCallContext context)
-        {
-            var json = request.Payload;
-            if (string.IsNullOrEmpty(json))
-            {
-                _logger.LogError($"JSON payload was null, unable to deserialize webhook payload");
-                return new WebhookPayloadResponse
-                {
-                    Status = WebhookPayloadStatus.Error,
-                };
-            }
-
-            await _webhookRelayService.EnqueueAsync(request.PayloadType, request.Payload);
+            _logger.LogError($"JSON payload was null, unable to deserialize webhook payload");
             return new WebhookPayloadResponse
             {
-                Status = WebhookPayloadStatus.Ok,
+                Status = WebhookPayloadStatus.Error,
             };
         }
+
+        await _webhookRelayService.EnqueueAsync(request.PayloadType, request.Payload);
+        return new WebhookPayloadResponse
+        {
+            Status = WebhookPayloadStatus.Ok,
+        };
     }
 }

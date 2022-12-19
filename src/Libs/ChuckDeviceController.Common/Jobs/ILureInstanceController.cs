@@ -1,7 +1,6 @@
-﻿namespace ChuckDeviceController.Common.Jobs
+﻿namespace ChuckDeviceController.Common.Jobs;
+
+public interface ILureInstanceController
 {
-    public interface ILureInstanceController
-    {
-        public bool EnableLureEncounters { get; }
-    }
+    public bool EnableLureEncounters { get; }
 }

@@ -1,13 +1,12 @@
-﻿namespace RobotsPlugin.Configuration
+﻿namespace RobotsPlugin.Configuration;
+
+public class WebCrawlerConfig
 {
-    public class WebCrawlerConfig
-    {
-        public bool UseHoneyPotService { get; set; }
+    public bool UseHoneyPotService { get; set; }
 
-        public string? HoneyPotRoute { get; set; }
+    public string? HoneyPotRoute { get; set; }
 
-        public bool ProcessStaticFiles { get; set; }
+    public bool ProcessStaticFiles { get; set; }
 
-        public List<string> StaticFileExtensions { get; set; } = new();
-    }
+    public List<string> StaticFileExtensions { get; set; } = new();
 }

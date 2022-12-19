@@ -1,18 +1,17 @@
-﻿namespace RazorTestPlugin.Pages.Tester
+﻿namespace RazorTestPlugin.Pages.Tester;
+
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+public class IndexModel : PageModel
 {
-    using Microsoft.AspNetCore.Mvc.RazorPages;
+    private readonly ILogger<IndexModel> _logger;
 
-    public class IndexModel : PageModel
+    public IndexModel(ILogger<IndexModel> logger)
     {
-        private readonly ILogger<IndexModel> _logger;
+        _logger = logger;
+    }
 
-        public IndexModel(ILogger<IndexModel> logger)
-        {
-            _logger = logger;
-        }
-
-        public void OnGet()
-        {
-        }
+    public void OnGet()
+    {
     }
 }

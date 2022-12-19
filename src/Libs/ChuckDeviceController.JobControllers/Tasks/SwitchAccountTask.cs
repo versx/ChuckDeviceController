@@ -1,13 +1,12 @@
-﻿namespace ChuckDeviceController.JobControllers.Tasks
-{
-    using ChuckDeviceController.Common;
-    using ChuckDeviceController.Common.Tasks;
+﻿namespace ChuckDeviceController.JobControllers.Tasks;
 
-    public class SwitchAccountTask : BaseJobTask
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Tasks;
+
+public class SwitchAccountTask : BaseJobTask
+{
+	public SwitchAccountTask()
 	{
-		public SwitchAccountTask()
-        {
-			Action = DeviceActionType.SwitchAccount;
-        }
+		Action = DeviceActionType.SwitchAccount;
 	}
 }

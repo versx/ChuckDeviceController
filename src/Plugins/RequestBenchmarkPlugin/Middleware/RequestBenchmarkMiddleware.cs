@@ -1,47 +1,46 @@
-﻿namespace RequestBenchmarkPlugin.Middleware
+﻿namespace RequestBenchmarkPlugin.Middleware;
+
+using Data.Contexts;
+using Data.Entities;
+using Microsoft.Extensions.Options;
+using Services;
+using Utilities;
+
+public sealed class RequestBenchmarkMiddleware
 {
-    using Data.Contexts;
-    using Data.Entities;
-    using Microsoft.Extensions.Options;
-    using Services;
-    using Utilities;
+    private readonly RequestDelegate _next;
+    private readonly IRequestBenchmarkService _benchmarkService;
+    private readonly RequestBenchmarkConfig _config;
 
-    public sealed class RequestBenchmarkMiddleware
+    public RequestBenchmarkMiddleware(RequestDelegate next, IRequestBenchmarkService benchmarkService, IOptions<RequestBenchmarkConfig> options)
     {
-        private readonly RequestDelegate _next;
-        private readonly IRequestBenchmarkService _benchmarkService;
-        private readonly RequestBenchmarkConfig _config;
+        _next = next ?? throw new ArgumentNullException(nameof(next));
+        _benchmarkService = benchmarkService ?? throw new ArgumentNullException(nameof(benchmarkService));
+        _config = options?.Value ?? new();
+    }
 
-        public RequestBenchmarkMiddleware(RequestDelegate next, IRequestBenchmarkService benchmarkService, IOptions<RequestBenchmarkConfig> options)
+    public async Task InvokeAsync(HttpContext context, RequestTimesDbContext dbContext)
+    {
+        if (context.Request.ContentType == "application/grpc" &&
+            _config.IgnoreGrpcRequests)
         {
-            _next = next ?? throw new ArgumentNullException(nameof(next));
-            _benchmarkService = benchmarkService ?? throw new ArgumentNullException(nameof(benchmarkService));
-            _config = options?.Value ?? new();
+            await _next(context);
+            return;
         }
 
-        public async Task InvokeAsync(HttpContext context, RequestTimesDbContext dbContext)
+        var route = context.Request.Path.ToString();
+        var benchmark = _benchmarkService.Benchmarks.ContainsKey(route)
+            ? _benchmarkService.Benchmarks[route]
+            : new(route);
+
+        using (StopwatchTimer.Initialize(benchmark))
         {
-            if (context.Request.ContentType == "application/grpc" &&
-                _config.IgnoreGrpcRequests)
-            {
-                await _next(context);
-                return;
-            }
-
-            var route = context.Request.Path.ToString();
-            var benchmark = _benchmarkService.Benchmarks.ContainsKey(route)
-                ? _benchmarkService.Benchmarks[route]
-                : new(route);
-
-            using (StopwatchTimer.Initialize(benchmark))
-            {
-                await _next(context);
-            }
-
-            var timing = RequestTime.FromRequestBenchmark(benchmark);
-            await _benchmarkService.SaveRouteBenchmark(dbContext, route, timing);
-
-            _benchmarkService.UpdateRouteBenchmark(route, benchmark);
+            await _next(context);
         }
+
+        var timing = RequestTime.FromRequestBenchmark(benchmark);
+        await _benchmarkService.SaveRouteBenchmark(dbContext, route, timing);
+
+        _benchmarkService.UpdateRouteBenchmark(route, benchmark);
     }
 }

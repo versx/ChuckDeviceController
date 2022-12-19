@@ -1,9 +1,8 @@
-﻿namespace ChuckDeviceController.Pvp.GameMaster
-{
-    public class PokemonTemplate
-    {
-        public string? TemplateId { get; set; }
+﻿namespace ChuckDeviceController.Pvp.GameMaster;
 
-        public PokemonSettings? PokemonSettings { get; set; }
-    }
+public class PokemonTemplate
+{
+    public string? TemplateId { get; set; }
+
+    public PokemonSettings? PokemonSettings { get; set; }
 }
