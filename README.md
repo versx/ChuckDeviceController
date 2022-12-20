@@ -23,7 +23,7 @@ Parses raw proto data received and inserts/upserts data entities into a MySQL ty
 **ChuckDeviceCommunicator:**  
 Relays new and changed data entities to outgoing endpoints that are received from the ChuckDeviceController via gRPC.  
 
-**ChuckProxy:**  
+**ChuckDeviceProxy:**  
 Splits and proxies requests from Atlas devices to separate endpoints.
 
 <hr>
@@ -170,10 +170,10 @@ or
 1. Change directories `cd bin/debug` and fill out `appsettings.json` configuration file  
 1. Run ChuckDeviceCommunicator `dotnet ChuckDeviceCommunicator.dll`  
 
-### ChuckProxy (optional)  
-1. Change directory: `cd src/ChuckProxy/bin/debug`  
+### ChuckDeviceProxy (optional)  
+1. Change directory: `cd src/ChuckDeviceProxy/bin/debug`  
 1. Fill out [`appsettings.json`](./configs/proxy.md) config  
-1. Start ChuckProxy `dotnet ChuckProxy.dll`  
+1. Start ChuckDeviceProxy `dotnet ChuckDeviceProxy.dll`  
 
 
 View all available API routes:  
@@ -716,7 +716,7 @@ View all available API routes:
 
 ```
 
-### ChuckProxy (Atlas Workaround)  
+### ChuckDeviceProxy (Atlas Workaround)  
 ```json
 {
   // Listening endpoint and port to receive proto data from Atlas devices which

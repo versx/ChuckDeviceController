@@ -30,7 +30,7 @@
 1. Start ChuckDeviceCommunicator `dotnet ChuckDeviceCommunicator.dll`  
 
 
-## ChuckProxy  
-1. Change directory: `cd src/ChuckProxy/bin/debug`  
+## ChuckDeviceProxy  
+1. Change directory: `cd src/ChuckDeviceProxy/bin/debug`  
 1. Fill out [`appsettings.json`](./configs/proxy.md) config  
-1. Start ChuckProxy `dotnet ChuckProxy.dll`  
+1. Start ChuckDeviceProxy `dotnet ChuckDeviceProxy.dll`  
