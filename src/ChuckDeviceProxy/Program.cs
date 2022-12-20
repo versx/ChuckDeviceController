@@ -122,7 +122,7 @@ Action<IApplicationBuilder> HandleProxiedEndpoint(string endpoint)
 void PrintHeader()
 {
     logger.LogInformation($"Proxy relay server is listening at {proxyConfig!.Urls}");
-    logger.LogInformation($"All requests to endpoint '/raw' will be proxied to the following:\n\t - {string.Join("\n\t - ", proxyConfig!.RawEndpoints)}");
+    logger.LogInformation($"All requests to endpoint '/raw' will be proxied to the following:\n\t - {proxyConfig!.RawEndpoint}");
     logger.LogInformation($"All requests to endpoint '/controler' and '/controller' will be proxied to the following:\n\t - {proxyConfig!.ControllerEndpoint}");
 }
 
