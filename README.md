@@ -21,10 +21,10 @@ Controls devices that request jobs as well as includes a dashboard interface to 
 Parses raw proto data received and inserts/upserts data entities into a MySQL type database.  
 
 **ChuckDeviceCommunicator:**  
-Relays new and changed data entities to outgoing endpoints that are received from the ChuckDeviceController via gRPC.  
+Relays new and changed data entities to outgoing webhook endpoints that are received from the ChuckDeviceController via gRPC.  
 
 **ChuckDeviceProxy:**  
-Splits and proxies requests from Atlas devices to separate endpoints.
+Splits and proxies requests from Atlas devices to separate endpoints in order to add support for ChuckDeviceController until Atlas is updated.
 
 <hr>
 
