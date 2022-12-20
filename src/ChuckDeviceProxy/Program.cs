@@ -50,11 +50,11 @@ app.MapGet("/", () => ":D");
 #endif
 
 //app.Use(HandleProxiedRequest);
-if (proxyConfig?.RawEndpoints?.Any() ?? false)
+if (!string.IsNullOrEmpty(proxyConfig?.RawEndpoint))
 {
     app.UseWhen(
         context => Strings.RawEndpoint == context.Request.Path.ToString(),
-        HandleProxiedEndpoint(proxyConfig.RawEndpoints.First())
+        HandleProxiedEndpoint(proxyConfig.RawEndpoint)
     );
 }
 if (!string.IsNullOrEmpty(proxyConfig?.ControllerEndpoint))

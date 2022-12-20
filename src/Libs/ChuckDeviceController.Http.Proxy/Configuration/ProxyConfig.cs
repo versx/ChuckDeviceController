@@ -6,5 +6,5 @@ public class ProxyConfig
 
     public string ControllerEndpoint { get; set; } = null!;
 
-    public List<string> RawEndpoints { get; set; } = new List<string>();
+    public string RawEndpoint { get; set; } = null!;
 }
