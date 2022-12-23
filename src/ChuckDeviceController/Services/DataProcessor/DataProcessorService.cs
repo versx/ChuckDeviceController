@@ -42,7 +42,9 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
     private readonly IMemoryCache _diskCache;
     private readonly IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> _grpcProtoClient;
     private readonly IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse> _grpcWebhookClient;
-    private readonly IClearFortsHostedService _clearFortsService;
+    private readonly ClearGymsCache _gymIdsPerCell;
+    private readonly ClearPokestopsCache _stopIdsPerCell;
+
     private readonly IMemoryCacheHostedService _memCache;
     private readonly IWebHostEnvironment _env;
     // TODO: Remove IDataConsumerService declaration and use IDataConsumer Queue instead
@@ -68,7 +70,8 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         IMemoryCache diskCache,
         IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> grpcProtoClient,
         IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse> grpcWebhookClient,
-        IClearFortsHostedService clearFortsService,
+        ClearGymsCache gymIdsPerCell,
+        ClearPokestopsCache stopIdsPerCell,
         IMemoryCacheHostedService memCache,
         IWebHostEnvironment env,
         IConfiguration configuration,
@@ -84,7 +87,9 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         _diskCache = diskCache;
         _grpcProtoClient = grpcProtoClient;
         _grpcWebhookClient = grpcWebhookClient;
-        _clearFortsService = clearFortsService;
+        _gymIdsPerCell = gymIdsPerCell;
+        _stopIdsPerCell = stopIdsPerCell;
+        
         _memCache = memCache;
         _env = env;
         _semParser = new SemaphoreSlim(Options.ParsingConcurrencyLevel, Options.ParsingConcurrencyLevel);
@@ -821,8 +826,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                         var pokestopWebhooks = await pokestop.UpdateAsync(oldPokestop, _memCache, updateQuest: false);
 
                         await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopIgnoreOnMerge, pokestop);
-                        ProtoDataStatistics.Instance.TotalFortsProcessed++;
-                        _clearFortsService.AddPokestop(cellId, data.FortId);
+                        _stopIdsPerCell.AddPokestop(cellId, data.FortId);
 
                         if (pokestopWebhooks.Any())
                         {
@@ -831,9 +835,9 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                         if (Options.ProcessIncidents && (pokestop.Incidents?.Any() ?? false))
                         {
-                            if (incidents.ContainsKey(pokestop))
+                            if (incidents.TryGetValue(pokestop, out var value))
                             {
-                                incidents[pokestop].AddRange(pokestop.Incidents);
+                                value.AddRange(pokestop.Incidents);
                             }
                             else
                             {
@@ -849,8 +853,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                         var gymWebhooks = await gym.UpdateAsync(oldGym, _memCache);
 
                         await _dataConsumerService.AddEntityAsync(SqlQueryType.GymOnMergeUpdate, gym);
-                        ProtoDataStatistics.Instance.TotalFortsProcessed++;
-                        _clearFortsService.AddGym(cellId, data.FortId);
+                        _gymIdsPerCell.AddGym(cellId, data.FortId);
 
                         if (gymWebhooks.Any())
                         {
@@ -864,6 +867,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 _logger.LogError($"UpdateFortsAsync: {ex.InnerException?.Message ?? ex.Message}");
             }
             index++;
+            ProtoDataStatistics.Instance.TotalFortsProcessed++;
         }
 
         if (Options.ShowProcessingTimes)

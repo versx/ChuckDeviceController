@@ -96,6 +96,9 @@ EntityConfiguration.Instance.LoadGymOptions(gymOptions);
 EntityConfiguration.Instance.LoadPokestopOptions(pokestopOptions);
 EntityConfiguration.Instance.LoadPokemonOptions(pokemonOptions);
 
+var grpcConfig = new GrpcEndpointsConfig();
+config.Bind("Grpc", grpcConfig);
+
 #endregion
 
 #region Services
@@ -104,8 +107,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<SafeCollection<ProtoPayloadQueueItem>>();
 builder.Services.AddSingleton<SafeCollection<DataQueueItem>>();
 
-builder.Services.AddSingleton<IClearFortsHostedService, ClearFortsHostedService>();
-builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
+builder.Services.AddSingleton<ClearGymsCache>();
+builder.Services.AddSingleton<ClearPokestopsCache>();
 
 builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
 {
@@ -120,6 +123,7 @@ builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
     return memCache;
 });
 builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
+builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
 builder.Services.AddSingleton<IDataConsumerService, DataConsumerService>();
 
 builder.Services.AddMemoryCache();

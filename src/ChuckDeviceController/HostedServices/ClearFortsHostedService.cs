@@ -8,21 +8,68 @@ using MySqlConnector;
 
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Entities;
-using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Repositories;
 
-// TODO: Remove IClearFortsHostedService contract and register Queue with DI to prevent multiple services
-public class ClearFortsHostedService : TimedHostedService, IClearFortsHostedService
+public class ClearPokestopsCache : ClearFortsCache
 {
-    private const uint TimerIntervalS = 15 * 60; // 15 minutes
+    public void AddPokestop(ulong cellId, string pokestopId)
+    {
+        AddOrUpdate(cellId, new ConcurrentBag<string> { pokestopId }, (key, oldValue) =>
+        {
+            if (!oldValue.Contains(pokestopId))
+            {
+                oldValue.Add(pokestopId);
+            }
+            else
+            {
+                // TODO: Update bag
+            }
+            return oldValue;
+        });
+    }
+}
+
+public class ClearGymsCache : ClearFortsCache
+{
+    public void AddGym(ulong cellId, string gymId)
+    {
+        AddOrUpdate(cellId, new ConcurrentBag<string> { gymId }, (key, oldValue) =>
+        {
+            if (!oldValue.Contains(gymId))
+            {
+                oldValue.Add(gymId);
+            }
+            else
+            {
+                // TODO: Update bag
+            }
+            return oldValue;
+        });
+    }
+}
+
+public class ClearFortsCache : ConcurrentDictionary<ulong, ConcurrentBag<string>>
+{
     private const int DefaultConcurrencyLevel = 25;
     private const ushort DefaultCapacity = ushort.MaxValue;
 
+    public ClearFortsCache(int concurrencyLevel = DefaultConcurrencyLevel, int capacity = DefaultCapacity)
+        : base(concurrencyLevel, capacity)
+    {
+    }
+}
+
+// TODO: Remove IClearFortsHostedService contract and register Queue with DI to prevent multiple services
+public class ClearFortsHostedService : TimedHostedService
+{
+    private const uint TimerIntervalS = 15 * 60; // 15 minutes
+    private const string UpdateFortsQueryFormat = "UPDATE {0} SET deleted=0 WHERE id IN ({1})";
+
     #region Variables
 
-    private static readonly ConcurrentDictionary<ulong, ConcurrentBag<string>> _gymIdsPerCell = new(DefaultConcurrencyLevel, DefaultCapacity);
-    private static readonly ConcurrentDictionary<ulong, ConcurrentBag<string>> _stopIdsPerCell = new(DefaultConcurrencyLevel, DefaultCapacity);
-    private readonly ILogger<IClearFortsHostedService> _logger;
+    private readonly ClearGymsCache _gymIdsPerCell;
+    private readonly ClearPokestopsCache _stopIdsPerCell;
+    private readonly ILogger<ClearFortsHostedService> _logger;
 
     #endregion
 
@@ -35,55 +82,17 @@ public class ClearFortsHostedService : TimedHostedService, IClearFortsHostedServ
     #region Constructor
 
     public ClearFortsHostedService(
-        ILogger<IClearFortsHostedService> logger,
+        ILogger<ClearFortsHostedService> logger,
+        ClearGymsCache gymIdsPerCell,
+        ClearPokestopsCache stopIdsPerCell,
         IOptions<DataProcessorOptionsConfig> options)
         : base(logger, TimerIntervalS)
     {
         _logger = logger;
+        _gymIdsPerCell = gymIdsPerCell;
+        _stopIdsPerCell = stopIdsPerCell;
 
         Options = options.Value;
-    }
-
-    #endregion
-
-    #region Add Cells
-
-    public void AddGym(ulong cellId, string gymId)
-    {
-        if (!Options.ClearOldForts)
-            return;
-
-        _gymIdsPerCell.AddOrUpdate(cellId, new ConcurrentBag<string> { gymId }, (key, oldValue) =>
-        {
-            oldValue.Add(gymId);
-            return oldValue;
-        });
-    }
-
-    public void AddPokestop(ulong cellId, string pokestopId)
-    {
-        if (!Options.ClearOldForts)
-            return;
-
-        _stopIdsPerCell.AddOrUpdate(cellId, new ConcurrentBag<string> { pokestopId }, (key, oldValue) =>
-        {
-            oldValue.Add(pokestopId);
-            return oldValue;
-        });
-    }
-
-    #endregion
-
-    #region Clear Cells
-
-    public void ClearPokestops()
-    {
-        _stopIdsPerCell.Clear();
-    }
-
-    public void ClearGyms()
-    {
-        _gymIdsPerCell.Clear();
     }
 
     #endregion
@@ -98,70 +107,30 @@ public class ClearFortsHostedService : TimedHostedService, IClearFortsHostedServ
     {
         try
         {
-            using var connection = await EntityRepository.CreateConnectionAsync($"{nameof(IClearFortsHostedService)}::ClearOldFortsAsync");
+            using var connection = await EntityRepository.CreateConnectionAsync($"{nameof(ClearFortsHostedService)}::ClearOldFortsAsync");
             if (connection == null)
             {
                 _logger.LogError($"Failed to connect to MySQL database server!");
                 return;
             }
 
-            var stopsToDelete = new List<Pokestop>();
-            var stopCellIds = _stopIdsPerCell.Keys
-                .Where(x => _stopIdsPerCell[x].Any())
-                .ToList();
-            for (var i = 0; i < stopCellIds.Count; i++)
-            {
-                var cellId = stopCellIds[i];
-                var pokestopIds = _stopIdsPerCell[cellId];
-                if (!pokestopIds.Any())
-                    continue;
-
-                //Console.WriteLine($"Checking cell id {cellId} with {pokestopIds.Count:N0} pokestops");
-                var pokestops = await GetDeletableFortsAsync<Pokestop>(connection, cellId, pokestopIds);
-                if (pokestops.Any())
-                {
-                    stopsToDelete.AddRange(pokestops);
-                }
-            }
-
-            var gymsToDelete = new List<Gym>();
-            var gymCellIds = _gymIdsPerCell.Keys
-                .Where(x => _gymIdsPerCell[x].Any())
-                .ToList();
-            for (var i = 0; i < gymCellIds.Count; i++)
-            {
-                var cellId = gymCellIds[i];
-                var gymIds = _gymIdsPerCell[cellId];
-                if (!gymIds.Any())
-                    continue;
-
-                //Console.WriteLine($"Checking cell id {cellId} with {gymIds.Count:N0} gyms");
-                var gyms = await GetDeletableFortsAsync<Gym>(connection, cellId, gymIds);
-                if (gyms.Any())
-                {
-                    gymsToDelete.AddRange(gyms);
-                }
-            }
-
+            var pokestopIds = _stopIdsPerCell.Values.SelectMany(x => x).ToList();
+            var stopsToDelete = await GetDeletableFortsAsync<Pokestop>(connection, pokestopIds);
             if (stopsToDelete.Any())
             {
-                _logger.LogInformation($"Marking {stopsToDelete.Count:N0} Pokestops as deleted since they no longer seem to exist.");
-                var result = await EntityRepository.ExecuteBulkAsync("pokestop", stopsToDelete, new ColumnDataExpression<Pokestop>
-                {
-                    { "id", x => x.Id },
-                    { "deleted", x => x.IsDeleted },
-                });
+                _logger.LogInformation($"Marking {stopsToDelete.Count():N0} Pokestops as deleted since they no longer seem to exist.");
+                var sql = string.Format(UpdateFortsQueryFormat, "pokestop", string.Join(", ", pokestopIds.Select(id => $"'{id}'")));
+                var result = await EntityRepository.ExecuteAsync(connection, sql);
                 _logger.LogInformation($"{result:N0} Pokestops have been marked as deleted.");
             }
 
+            var gymIds = _gymIdsPerCell.Values.SelectMany(x => x).ToList();
+            var gymsToDelete = await GetDeletableFortsAsync<Gym>(connection, gymIds);
             if (gymsToDelete.Any())
             {
-                _logger.LogInformation($"Marking {gymsToDelete.Count:N0} Gyms as deleted since they no longer seem to exist.");
-                var result = await EntityRepository.ExecuteBulkAsync("gym", gymsToDelete, new ColumnDataExpression<Gym>
-                {
-                    { "id", x => x.Id },
-                    { "deleted", x => x.IsDeleted },
-                });
+                _logger.LogInformation($"Marking {gymsToDelete.Count():N0} Gyms as deleted since they no longer seem to exist.");
+                var sql = string.Format(UpdateFortsQueryFormat, "gym", string.Join(", ", gymIds.Select(id => $"'{id}'")));
+                var result = await EntityRepository.ExecuteAsync(connection, sql);
                 _logger.LogInformation($"{result:N0} Gyms have been marked as deleted.");
             }
         }
@@ -169,6 +138,8 @@ public class ClearFortsHostedService : TimedHostedService, IClearFortsHostedServ
         {
             _logger.LogError($"An error occurred while marking old forts as deleted: {ex.Message}");
         }
+
+        // TODO: Clear fort caches
     }
 
     #endregion
@@ -192,25 +163,29 @@ public class ClearFortsHostedService : TimedHostedService, IClearFortsHostedServ
 
     #endregion
 
-    private static async Task<IEnumerable<TEntity>> GetDeletableFortsAsync<TEntity>(MySqlConnection connection, ulong cellId, IEnumerable<string> fortIds)
+    private static async Task<IEnumerable<TEntity>> GetDeletableFortsAsync<TEntity>(MySqlConnection connection, IEnumerable<string> fortIds)
         where TEntity : BaseFort
     {
+        // Get forts within S2 cell and not marked deleted. Filter forts that
+        // have not been seen within S2 cells by devices.
         var fortsToDelete = new List<TEntity>();
-
-        // Get forts within S2 cell and not marked deleted.
-        // Filter forts that have not been seen within S2
-        // cell by devices.
-        var stopIdsArg = string.Join(", ", fortIds.Select(x => $"'{x}'"));
-        var whereClause = $" WHERE cell_id = {cellId} AND id NOT IN ({stopIdsArg}) AND deleted = false";
-        var forts = await EntityRepository.GetEntitiesAsync<string, TEntity>(connection, whereClause);
-
-        if (forts != null)
+        if (!fortIds.Any())
         {
-            foreach (var fort in forts)
-            {
-                fort.IsDeleted = true;
-                fortsToDelete.Add(fort);
-            }
+            return fortsToDelete;
+        }
+
+        var stopIdsArg = string.Join(", ", fortIds.Select(x => $"'{x}'"));
+        var whereClause = $" WHERE id IN ({stopIdsArg}) AND deleted = false";
+        var forts = await EntityRepository.GetEntitiesAsync<string, TEntity>(connection, whereClause);
+        if (forts == null)
+        {
+            return fortsToDelete;
+        }
+
+        foreach (var fort in forts)
+        {
+            fort.IsDeleted = true;
+            fortsToDelete.Add(fort);
         }
         return fortsToDelete;
     }
