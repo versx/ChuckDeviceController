@@ -29,19 +29,4 @@ public class PluginFinderOptions : IPluginFinderOptions
         PluginType = typeof(Type);
         ValidFileTypes = new List<string> { DefaultPluginFileType };
     }
-
-    /*
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="rootPluginsDirectory"></param>
-    /// <param name="pluginType"></param>
-    /// <param name="validFileTypes"></param>
-    public PluginFinderOptions(string rootPluginsDirectory, Type pluginType, IEnumerable<string>? validFileTypes = null)
-    {
-        RootPluginsDirectory = rootPluginsDirectory;
-        PluginType = pluginType;
-        ValidFileTypes = validFileTypes ?? new List<string> { DefaultPluginFileType };
-    }
-    */
 }

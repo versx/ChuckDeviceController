@@ -35,6 +35,7 @@ public class PluginManager : IPluginManager
     private IServiceCollection _services = null!;
     private IWebHostEnvironment _webHostEnv = null!;
     //private IReadOnlyList<IApiKey> _apiKeys;
+    private PluginFinder<IPlugin> _pluginFinder;
 
     #endregion
 
@@ -106,9 +107,16 @@ public class PluginManager : IPluginManager
 
     #region Constructors
 
-    public PluginManager(IPluginManagerOptions options)
+    private PluginManager(IPluginManagerOptions options)
     {
         Options = options;
+
+        _pluginFinder = new PluginFinder<IPlugin>(new PluginFinderOptions
+        {
+            PluginType = typeof(IPlugin),
+            RootPluginsDirectory = Options.RootPluginsDirectory,
+            ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
+        });
     }
 
     #endregion
@@ -137,16 +145,7 @@ public class PluginManager : IPluginManager
         _webHostEnv = env;
         //_apiKeys = apiKeys;
 
-        var rootPluginsDirectory = Options.RootPluginsDirectory;
-        var finderOptions = new PluginFinderOptions
-        {
-            PluginType = typeof(IPlugin),
-            RootPluginsDirectory = rootPluginsDirectory,
-            ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
-        };
-        var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
-        var pluginFinderResults = pluginFinder.FindAssemliesWithPlugins();
-
+        var pluginFinderResults = _pluginFinder.FindAssemliesWithPlugins();
         if (!(pluginFinderResults?.Any() ?? false))
         {
             // Failed to find any eligible plugins to load
@@ -163,7 +162,7 @@ public class PluginManager : IPluginManager
             //.AddSessionStateTempDataProvider();
 
         // Load all valid plugin assemblies found in their own AssemblyLoadContext 
-        var pluginAssemblies = pluginFinder.LoadPluginAssemblies(pluginFinderResults);
+        var pluginAssemblies = _pluginFinder.LoadPluginAssemblies(pluginFinderResults);
         foreach (var result in pluginAssemblies)
         {
             // TODO: Register sharedServiceHosts with new service collection
@@ -174,7 +173,9 @@ public class PluginManager : IPluginManager
                 continue;
             }
 
-            // Load and activate plugins found by plugin finder
+            // TODO: Add file system watcher for root folder of plugin
+
+            // Instantiate new instance of loaded plugin assembly
             var pluginLoader = new PluginLoader<IPlugin>(result, Options.SharedServiceHosts, apiKeys, services);
             var loadedPlugins = pluginLoader.LoadedPlugins;
             if (!(loadedPlugins?.Any() ?? false))
@@ -194,22 +195,19 @@ public class PluginManager : IPluginManager
 
     public async Task LoadPluginAsync(string filePath, IReadOnlyList<IApiKey> apiKeys)
     {
-        var rootPluginsDirectory = Options.RootPluginsDirectory;
-        var finderOptions = new PluginFinderOptions
+        var pluginFinderResults = _pluginFinder.FindPluginInAssembly(filePath);
+        if (!(pluginFinderResults?.Any() ?? false))
         {
-            PluginType = typeof(IPlugin),
-            RootPluginsDirectory = rootPluginsDirectory,
-            ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
-        };
-        var pluginFinder = new PluginFinder<IPlugin>(finderOptions);
-        var pluginFinderResults = pluginFinder.FindPluginInAssembly(filePath);
+            // Failed to find any eligible plugins to load
+            return;
+        }
 
         var mvcBuilder = _services
             .AddControllersWithViews()
             .AddRazorRuntimeCompilation();
 
         // Load all valid plugin assemblies found in their own AssemblyLoadContext 
-        var pluginAssemblies = pluginFinder.LoadPluginAssemblies(pluginFinderResults);
+        var pluginAssemblies = _pluginFinder.LoadPluginAssemblies(pluginFinderResults);
         foreach (var result in pluginAssemblies)
         {
             if (result.Assembly == null)
