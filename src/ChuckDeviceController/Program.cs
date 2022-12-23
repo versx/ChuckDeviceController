@@ -5,7 +5,6 @@ using MicroOrm.Dapper.Repositories.Config;
 using MicroOrm.Dapper.Repositories.SqlGenerator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using MySqlConnector;
 
 using ChuckDeviceController;
@@ -105,22 +104,12 @@ config.Bind("Grpc", grpcConfig);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<SafeCollection<ProtoPayloadQueueItem>>();
 builder.Services.AddSingleton<SafeCollection<DataQueueItem>>();
+builder.Services.AddSingleton<DataConsumerQueue>();
 
 builder.Services.AddSingleton<ClearGymsCache>();
 builder.Services.AddSingleton<ClearPokestopsCache>();
 
-builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
-{
-    using var scope = factory.CreateScope();
-    var serviceProvider = scope.ServiceProvider;
-    var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
-    var memCacheConfig = memCacheOptions?.Value ?? new();
-    var memCache = new GenericMemoryCacheHostedService(
-        GenericLoggerFactory.CreateLogger<IMemoryCacheHostedService>(),
-        Options.Create(memCacheConfig)
-    );
-    return memCache;
-});
+builder.Services.AddSingleton<IMemoryCacheHostedService, GenericMemoryCacheHostedService>();
 builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
 builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
 builder.Services.AddSingleton<IDataConsumerService, DataConsumerService>();
@@ -159,6 +148,7 @@ builder.Services.AddHostedService<ClearFortsHostedService>();
 builder.Services.AddHostedService<DataProcessorService>();
 builder.Services.AddHostedService<GenericMemoryCacheHostedService>();
 builder.Services.AddHostedService<ProtoProcessorService>();
+builder.Services.AddHostedService<DataConsumerService>();
 
 #endregion
 

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -227,18 +226,7 @@ builder.Services.AddSingleton<IAssignmentControllerService, AssignmentController
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();
 
-builder.Services.AddSingleton<IMemoryCacheHostedService>(factory =>
-{
-    using var scope = factory.CreateScope();
-    var serviceProvider = scope.ServiceProvider;
-    var memCacheOptions = serviceProvider.GetService<IOptions<EntityMemoryCacheConfig>>();
-    var memCacheConfig = memCacheOptions?.Value ?? new();
-    var memCache = new GenericMemoryCacheHostedService(
-        GenericLoggerFactory.CreateLogger<IMemoryCacheHostedService>(),
-        Options.Create(memCacheConfig)
-    );
-    return memCache;
-});
+builder.Services.AddSingleton<IMemoryCacheHostedService, GenericMemoryCacheHostedService>();
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();

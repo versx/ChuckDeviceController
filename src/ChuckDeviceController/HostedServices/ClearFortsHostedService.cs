@@ -20,10 +20,6 @@ public class ClearPokestopsCache : ClearFortsCache
             {
                 oldValue.Add(pokestopId);
             }
-            else
-            {
-                // TODO: Update bag
-            }
             return oldValue;
         });
     }
@@ -38,10 +34,6 @@ public class ClearGymsCache : ClearFortsCache
             if (!oldValue.Contains(gymId))
             {
                 oldValue.Add(gymId);
-            }
-            else
-            {
-                // TODO: Update bag
             }
             return oldValue;
         });
@@ -59,7 +51,6 @@ public class ClearFortsCache : ConcurrentDictionary<ulong, ConcurrentBag<string>
     }
 }
 
-// TODO: Remove IClearFortsHostedService contract and register Queue with DI to prevent multiple services
 public class ClearFortsHostedService : TimedHostedService
 {
     private const uint TimerIntervalS = 15 * 60; // 15 minutes

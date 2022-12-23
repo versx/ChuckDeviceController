@@ -47,8 +47,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
     private readonly IMemoryCacheHostedService _memCache;
     private readonly IWebHostEnvironment _env;
-    // TODO: Remove IDataConsumerService declaration and use IDataConsumer Queue instead
-    private readonly IDataConsumerService _dataConsumerService;
+    private readonly DataConsumerQueue _dataConsumerQueue;
     //private readonly ThreadManager _threadManager = new(maxThreadCount: 25);
 
     #endregion
@@ -75,7 +74,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         IMemoryCacheHostedService memCache,
         IWebHostEnvironment env,
         IConfiguration configuration,
-        IDataConsumerService dataConsumerService)
+        DataConsumerQueue dataConsumerQueue)
         : base(logger, options?.Value?.IntervalS ?? DataProcessorOptionsConfig.DefaultIntervalS)
     {
         Options = options?.Value ?? new();
@@ -83,7 +82,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
         _logger = logger;
         _taskQueue = taskQueue;
-        _dataConsumerService = dataConsumerService;
+        _dataConsumerQueue = dataConsumerQueue;
         _diskCache = diskCache;
         _grpcProtoClient = grpcProtoClient;
         _grpcWebhookClient = grpcWebhookClient;
@@ -330,7 +329,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 }
 
                 await account.UpdateAsync(data, _memCache);
-                await _dataConsumerService.AddEntityAsync(SqlQueryType.AccountOnMergeUpdate, account);
+                AddEntity(SqlQueryType.AccountOnMergeUpdate, account);
                 ProtoDataStatistics.Instance.TotalPlayerDataProcessed++;
 
                 if (account.SendWebhook)
@@ -398,7 +397,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
         }
 
-        await _dataConsumerService.AddEntitiesAsync(SqlQueryType.CellOnMergeUpdate, s2cells);
+        AddEntities(SqlQueryType.CellOnMergeUpdate, s2cells);
         ProtoDataStatistics.Instance.TotalS2CellsProcessed += (uint)s2cells.Count;
 
         if (Options.ShowProcessingTimes)
@@ -447,7 +446,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 _memCache.Set(cellId, cached);
             }
 
-            await _dataConsumerService.AddEntityAsync(SqlQueryType.CellOnMergeUpdate, cached);
+            AddEntity(SqlQueryType.CellOnMergeUpdate, cached);
             ProtoDataStatistics.Instance.TotalS2CellsProcessed++;
         }
         catch (Exception ex)
@@ -526,7 +525,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                 if (wcell.HasChanges)
                 {
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.WeatherOnMergeUpdate, wcell);
+                    AddEntity(SqlQueryType.WeatherOnMergeUpdate, wcell);
                     ProtoDataStatistics.Instance.TotalClientWeatherCellsProcessed++;
                 }
 
@@ -587,14 +586,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.TimeTillHiddenMs, timestampMs);
                 if (spawnpoint != null)
                 {
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
+                    AddEntity(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
                     ProtoDataStatistics.Instance.TotalSpawnpointsProcessed++;
                 }
 
                 Pokemon? oldPokemon = null;
                 //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
                 await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
-                await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
+                AddEntity(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                 ProtoDataStatistics.Instance.TotalWildPokemonProcessed++;
 
                 if (pokemon.SendWebhook)
@@ -677,7 +676,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 Pokemon? oldPokemon = null;
                 //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
                 await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
-                await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
+                AddEntity(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                 ProtoDataStatistics.Instance.TotalNearbyPokemonProcessed++;
 
                 //_logger.LogInformation($"[{requestId}] Updated nearby pokemon {index:N0}/{count:N0}");
@@ -757,7 +756,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                 var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
                 await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: true);
-                await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
+                AddEntity(SqlQueryType.PokemonOnMergeUpdate, pokemon);
                 ProtoDataStatistics.Instance.TotalMapPokemonProcessed++;
 
                 if (pokemon.SendWebhook)
@@ -825,7 +824,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                         //var oldPokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestop.Id, _memCache);
                         var pokestopWebhooks = await pokestop.UpdateAsync(oldPokestop, _memCache, updateQuest: false);
 
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopIgnoreOnMerge, pokestop);
+                        AddEntity(SqlQueryType.PokestopIgnoreOnMerge, pokestop);
                         _stopIdsPerCell.AddPokestop(cellId, data.FortId);
 
                         if (pokestopWebhooks.Any())
@@ -852,7 +851,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                         //var oldGym = await EntityRepository.GetEntityAsync<string, Gym>(connection, gym.Id, _memCache);
                         var gymWebhooks = await gym.UpdateAsync(oldGym, _memCache);
 
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.GymOnMergeUpdate, gym);
+                        AddEntity(SqlQueryType.GymOnMergeUpdate, gym);
                         _gymIdsPerCell.AddGym(cellId, data.FortId);
 
                         if (gymWebhooks.Any())
@@ -939,7 +938,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                     if (pokestop.HasChanges)
                     {
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopDetailsOnMergeUpdate, pokestop);
+                        AddEntity(SqlQueryType.PokestopDetailsOnMergeUpdate, pokestop);
                         ProtoDataStatistics.Instance.TotalFortDetailsProcessed++;
                     }
 
@@ -1001,7 +1000,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                     if (gym.HasChanges)
                     {
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDetailsOnMergeUpdate, gym);
+                        AddEntity(SqlQueryType.GymDetailsOnMergeUpdate, gym);
                         ProtoDataStatistics.Instance.TotalFortDetailsProcessed++;
                     }
 
@@ -1065,7 +1064,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                 if (gym.HasChanges)
                 {
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDetailsOnMergeUpdate, gym);
+                    AddEntity(SqlQueryType.GymDetailsOnMergeUpdate, gym);
                     ProtoDataStatistics.Instance.TotalFortDetailsProcessed++;
                 }
 
@@ -1085,7 +1084,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                         if (Options.ProcessGymTrainers && gymDefenderData.TrainerPublicProfile != null)
                         {
                             var gymTrainer = new GymTrainer(gymDefenderData.TrainerPublicProfile);
-                            await _dataConsumerService.AddEntityAsync(SqlQueryType.GymTrainerOnMergeUpdate, gymTrainer);
+                            AddEntity(SqlQueryType.GymTrainerOnMergeUpdate, gymTrainer);
                             ProtoDataStatistics.Instance.TotalGymTrainersProcessed++;
 
                             if (webhooks.ContainsKey(WebhookType.GymTrainers))
@@ -1100,7 +1099,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                         if (Options.ProcessGymDefenders && gymDefenderData.MotivatedPokemon != null)
                         {
                             var gymDefender = new GymDefender(gymDefenderData, fortId);
-                            await _dataConsumerService.AddEntityAsync(SqlQueryType.GymDefenderOnMergeUpdate, gymDefender);
+                            AddEntity(SqlQueryType.GymDefenderOnMergeUpdate, gymDefender);
                             ProtoDataStatistics.Instance.TotalGymDefendersProcessed++;
 
                             if (webhooks.ContainsKey(WebhookType.GymDefenders))
@@ -1170,7 +1169,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                 if (pokestop.HasChanges && (pokestop.HasQuestChanges || pokestop.HasAlternativeQuestChanges))
                 {
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.PokestopOnMergeUpdate, pokestop);
+                    AddEntity(SqlQueryType.PokestopOnMergeUpdate, pokestop);
                     ProtoDataStatistics.Instance.TotalQuestsProcessed++;
                 }
 
@@ -1245,13 +1244,13 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.Pokemon.TimeTillHiddenMs, timestampMs);
                 if (spawnpoint != null)
                 {
-                    await _dataConsumerService.AddEntityAsync(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
+                    AddEntity(SqlQueryType.SpawnpointOnMergeUpdate, spawnpoint);
                     ProtoDataStatistics.Instance.TotalSpawnpointsProcessed++;
                 }
 
                 //var oldPokemon = isNew ? null : await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache);
                 //await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: true);
-                await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
+                AddEntity(SqlQueryType.PokemonOnMergeUpdate, pokemon);
                 ProtoDataStatistics.Instance.TotalPokemonEncountersProcessed++;
 
                 if (pokemon.SendWebhook)
@@ -1325,7 +1324,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                 //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache);
                 //await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: true);
-                await _dataConsumerService.AddEntityAsync(SqlQueryType.PokemonOnMergeUpdate, pokemon);
+                AddEntity(SqlQueryType.PokemonOnMergeUpdate, pokemon);
                 ProtoDataStatistics.Instance.TotalPokemonDiskEncountersProcessed++;
 
                 if (pokemon.SendWebhook)
@@ -1388,7 +1387,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                     if (incident.HasChanges)
                     {
-                        await _dataConsumerService.AddEntityAsync(SqlQueryType.IncidentOnMergeUpdate, incident);
+                        AddEntity(SqlQueryType.IncidentOnMergeUpdate, incident);
                         ProtoDataStatistics.Instance.TotalIncidentsProcessed++;
                     }
 
@@ -1477,6 +1476,28 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             {
                 output.Add(key, new List<T2> { (T2)value });
             }
+        }
+    }
+
+    private void AddEntity(SqlQueryType type, BaseEntity entity)
+    {
+        // Lock for thread safety
+        var partial = _dataConsumerQueue.GetOrAdd(type, _ => new());
+        lock (partial)
+        {
+            partial.Add(entity);
+        }
+    }
+
+    private void AddEntities(SqlQueryType type, IEnumerable<BaseEntity> entities)
+    {
+        // Lock for thread safety
+        var partial = _dataConsumerQueue.GetOrAdd(type, _ => new());
+        lock (partial)
+        {
+            entities
+                .ToList()
+                .ForEach(partial.Add);
         }
     }
 

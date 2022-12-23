@@ -12,15 +12,23 @@ using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.HostedServices;
 
-public class DataConsumerService : IDataConsumerService
+public class DataConsumerQueue : ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>>
+{
+    public DataConsumerQueue(IOptions<DataConsumerOptionsConfig> options)
+        : base(options.Value.QueueConcurrencyLevelMultiplier * Environment.ProcessorCount,
+               (int)options.Value.Queue.MaximumCapacity)
+    {
+    }
+}
+
+public class DataConsumerService : TimedHostedService, IDataConsumerService
 {
     #region Variables
 
     private readonly CancellationTokenSource _tokenSource;
-    // TODO: Register Queue with DI and remove IDataConsumerService declaration in IDataProcessorService
-    private readonly ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> _queue;
-    private readonly System.Timers.Timer _timer = new();
+    private readonly DataConsumerQueue _queue;
     private readonly ILogger<IDataConsumerService> _logger;
     private readonly SqlBulk _bulk = new();
     //private static readonly IReadOnlyDictionary<SqlQueryType, ColumnDataExpression<dynamic>> upsertExpressions = new Dictionary<SqlQueryType, ColumnDataExpression<dynamic>>
@@ -291,51 +299,31 @@ public class DataConsumerService : IDataConsumerService
 
     public DataConsumerService(
         ILogger<IDataConsumerService> logger,
+        DataConsumerQueue queue,
         IOptions<DataConsumerOptionsConfig> options)
+        : base(logger, options.Value.IntervalS)
     {
         Options = options.Value ?? new();
 
         _logger = logger;
-        _queue = new ConcurrentDictionary<SqlQueryType, ConcurrentBag<BaseEntity>>(
-            Environment.ProcessorCount * Options.QueueConcurrencyLevelMultiplier,
-            (int)Options.Queue.MaximumCapacity
-        );
+        _queue = queue;
         _tokenSource = new CancellationTokenSource();
-
-        _timer.Interval = Options.IntervalS * 1000;
-        _timer.Elapsed += async (sender, e) => await ConsumeDataAsync(_tokenSource.Token);
-        _timer.Start();
     }
 
     #endregion
 
     #region Public Methods
 
-    public async Task AddEntityAsync(SqlQueryType type, BaseEntity entity)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Lock for thread safety
-        var partial = _queue.GetOrAdd(type, _ => new());
-        lock (partial)
-        {
-            partial.Add(entity);
-        }
+        _logger.LogInformation(
+            $"{nameof(IDataConsumerService)} is now running in the background.");
 
         await Task.CompletedTask;
     }
 
-    public async Task AddEntitiesAsync(SqlQueryType type, IEnumerable<BaseEntity> entities)
-    {
-        // Lock for thread safety
-        var partial = _queue.GetOrAdd(type, _ => new());
-        lock (partial)
-        {
-            entities
-                .ToList()
-                .ForEach(entity => partial.Add(entity));
-        }
-
-        await Task.CompletedTask;
-    }
+    protected override async Task RunJobAsync(CancellationToken stoppingToken) =>
+        await ConsumeDataAsync(stoppingToken);
 
     #endregion
 
