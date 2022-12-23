@@ -51,7 +51,6 @@ var logger = GenericLoggerFactory.CreateLogger<Program>();
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseConfiguration(config);
-builder.WebHost.UseUrls(config["Urls"]);
 
 #region Logging Filtering
 
@@ -169,9 +168,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 #region gRPC Clients
-
-var grpcConfig = new GrpcEndpointsConfig();
-config.Bind("Grpc", grpcConfig);
 
 builder.Services.AddSingleton<IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse>, GrpcProtoClient>();
 builder.Services.AddSingleton<IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>, GrpcLevelingClient>();

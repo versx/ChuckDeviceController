@@ -13,6 +13,7 @@ public static class DapperExtensions
     private const int MaxParameterSize = 2000;
     private const int MaxCommandTimeoutS = 30;
     private const string InsertBulkQuery = "INSERT INTO {0} ({1}) VALUES ";
+    private const string UpdateBulkQuery = "UPDATE {0} SET {1} WHERE {2}";
 
     public static async Task<int> BulkInsertAsync<TEntity>(
         this MySqlConnection connection,
@@ -51,12 +52,44 @@ public static class DapperExtensions
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.InnerException?.Message ?? ex.Message}");
+                Console.WriteLine($"[DapperExtensions::BulkInsertAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
         return rowsAffected;
     }
+
+    //public static async Task<int> BulkUpdateAsync<TEntity>(
+    //    this MySqlConnection connection,
+    //    string tableName,
+    //    IEnumerable<TEntity> entities,
+    //    ColumnDataExpression<TEntity> dataFunc,
+    //    IDbTransaction trans,
+    //    IEnumerable<string> whereIds)
+    //{
+    //    var batchSize = Math.Min((int)Math.Ceiling((double)MaxParameterSize / dataFunc.Keys.Count), MaxBatchSize);
+    //    var totalCount = entities.Count();
+    //    var batchCount = (int)Math.Ceiling((double)totalCount / batchSize);
+    //    var columnValues = string.Join(", ", dataFunc.Select(x => x.Value(default).ToString()));
+    //    var whereSql = "id IN (" + string.Join(", ", whereIds.Select(x => $"'{x}'")) + ")";
+    //    var updateSql = string.Format(UpdateBulkQuery, tableName, string.Join(", ", columnValues), whereSql);
+    //    var sqlToExecute = new List<Tuple<string, DynamicParameters>>();
+    //    var rowsAffected = 0;
+
+    //    foreach (var (sql, args) in sqlToExecute)
+    //    {
+    //        try
+    //        {
+    //            rowsAffected += await connection.ExecuteAsync(sql, args, transaction: trans, commandTimeout: MaxCommandTimeoutS, commandType: CommandType.Text);
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            Console.WriteLine($"[DapperExtensions::BulkUpdateAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+    //        }
+    //    }
+
+    //    return rowsAffected;
+    //}
 
     private static Tuple<IEnumerable<string>, DynamicParameters> GetQueries<TEntity>(
         IEnumerable<TEntity> dataToInsert,
@@ -89,9 +122,9 @@ public static class DapperExtensions
 
     private static string GenerateOnDuplicateQuery(IEnumerable<string> columnNames)
     {
+        var columns = columnNames.Select(columnName => $"{columnName}=VALUES({columnName})");
         var sb = new StringBuilder();
         sb.AppendLine(" ON DUPLICATE KEY UPDATE ");
-        var columns = columnNames.Select(columnName => $"{columnName}=VALUES({columnName})");
         sb.AppendLine(string.Join(",", columns));
         var sql = sb.ToString();
         return sql;
