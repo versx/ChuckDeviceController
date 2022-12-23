@@ -83,9 +83,9 @@ public class PluginLoader<TPlugin> : IPluginLoader
             pluginInstance.SetPluginServiceFields(sharedServiceHosts);
             pluginInstance.SetPluginServiceProperties(sharedServiceHosts);
 
-            var apiKey = pluginType.GetPluginApiKey();
+            var pluginApiKey = pluginType.GetPluginApiKey();
             // Check that key exists and is enabled
-            var match = apiKeys?.FirstOrDefault(key => key.Key == apiKey && key.IsEnabled);
+            var match = apiKeys.FirstOrDefault(key => key.Key == pluginApiKey && key.IsEnabled);
             if (match == null)
             {
                 _logger.LogError($"Failed to validate plugin's API key or none set, skipping...");

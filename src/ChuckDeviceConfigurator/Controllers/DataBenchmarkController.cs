@@ -13,21 +13,21 @@ using ChuckDeviceController.Net.Utilities;
 public class DataBenchmarkController : Controller
 {
     // TODO: Consider using gRPC to retrieve the proto/data statistics (add controller endpoint to config)
-    private const string StatsEndpoint = "http://localhost:8882/api/Statistics";
+    private const string StatisticsEndpoint = "http://localhost:8882/api/Statistics";
     private const ushort DefaultTimeoutS = 15;
 
     // GET: DataBenchmarkController
     public async Task<ActionResult> Index()
     {
-        var data = await NetUtils.GetAsync(StatsEndpoint, timeoutS: DefaultTimeoutS);
+        var data = await NetUtils.GetAsync(StatisticsEndpoint, timeoutS: DefaultTimeoutS);
         var model = data?.FromJson<ProtoDataStatisticsViewModel>();
         return View(model);
     }
 
-    // GET: DataBenchmarkController/Clear
+    // GET: DataBenchmarkController/Reset
     public async Task<ActionResult> Reset()
     {
-        _ = await NetUtils.GetAsync(StatsEndpoint + "/Reset");
+        _ = await NetUtils.GetAsync(StatisticsEndpoint + "/Reset");
         return RedirectToAction(nameof(Index));
     }
 }

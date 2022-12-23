@@ -325,23 +325,22 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IEventAggregatorHost), eventAggregatorHost },
 };
 
-// TODO: Retrieve and pass/set api keys upon change
-var apiKeys = new List<ApiKey>();
-var controllerContext = serviceProvider.GetService<IDbContextFactory<ControllerDbContext>>();
-if (controllerContext != null)
+var getApiKeysFunc = new Func<List<ApiKey>>(() =>
 {
+    var controllerContext = serviceProvider.GetRequiredService<IDbContextFactory<ControllerDbContext>>();
     using var context = controllerContext.CreateDbContext();
-    apiKeys = context.ApiKeys.ToList();
-}
+    var apiKeys = context.ApiKeys.ToList();
+    return apiKeys;
+});
 
 // Load plugin states from SQLite database
-var pluginStates = new List<Plugin>();
-var pluginContext = serviceProvider.GetService<IDbContextFactory<PluginDbContext>>();
-if (pluginContext != null)
-{
-    using var context = pluginContext.CreateDbContext();
-    pluginStates = context.Plugins.ToList();
-}
+//var getPluginsFunc = new Func<List<Plugin>>(() =>
+//{
+//    var controllerContext = serviceProvider.GetRequiredService<IDbContextFactory<PluginDbContext>>();
+//    using var context = controllerContext.CreateDbContext();
+//    var plugins = context.Plugins.ToList();
+//    return plugins;
+//});
 
 // Instantiate 'IPluginManager' singleton with configurable options
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
@@ -357,7 +356,7 @@ pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
 
 // Find plugins, register plugin services, load plugin assemblies,
 // call OnLoad callback and register with 'IPluginManager' cache
-await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, apiKeys); //pluginStates);
+await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, getApiKeysFunc);
 
 // Start the job controller service after all plugins have loaded. (TODO: Add PluginsLoadedComplete event?)
 // This is so all custom IJobController's provided via plugins have been registered.

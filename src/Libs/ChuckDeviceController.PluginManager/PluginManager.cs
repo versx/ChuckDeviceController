@@ -19,28 +19,31 @@ using ChuckDeviceController.PluginManager.Mvc.Razor;
 using ChuckDeviceController.PluginManager.Services.Finder;
 using ChuckDeviceController.PluginManager.Services.Loader;
 
-// TODO: Add FileSystemWatcher for plugins added manually or changed
-
 public class PluginManager : IPluginManager
 {
+    #region Constants
+
     public const string DefaultPluginsFolder = "./bin/debug/plugins/";
+    public const string DefaultPluginExt = "*.dll";
+
+    #endregion
 
     #region Variables
 
     private static readonly ILogger<IPluginManager> _logger =
         GenericLoggerFactory.CreateLogger<IPluginManager>();
-    private static IPluginManager? _instance;
     private static readonly ConcurrentDictionary<string, IPluginHost> _plugins = new();
-    //private static readonly Dictionary<string, IPluginHost> _plugins = new();
     private IServiceCollection _services = null!;
     private IWebHostEnvironment _webHostEnv = null!;
-    //private IReadOnlyList<IApiKey> _apiKeys;
-    private PluginFinder<IPlugin> _pluginFinder;
+    private readonly PluginFinder<IPlugin> _pluginFinder;
+    private Func<IReadOnlyList<IApiKey>> _getApiKeysFunc;
+    private Func<IReadOnlyList<IPlugin>> _getPluginStatesFunc;
 
     #endregion
 
     #region Singleton
 
+    private static IPluginManager? _instance;
     public static IPluginManager Instance => _instance ??= new PluginManager
     (
         new PluginManagerOptions
@@ -139,11 +142,11 @@ public class PluginManager : IPluginManager
         }
     }
 
-    public async Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env, IReadOnlyList<IApiKey> apiKeys)
+    public async Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env, Func<IReadOnlyList<IApiKey>> apiKeysFunc)
     {
         _services = services;
         _webHostEnv = env;
-        //_apiKeys = apiKeys;
+        _getApiKeysFunc = apiKeysFunc;
 
         var pluginFinderResults = _pluginFinder.FindAssemliesWithPlugins();
         if (!(pluginFinderResults?.Any() ?? false))
@@ -161,7 +164,9 @@ public class PluginManager : IPluginManager
             .AddRazorRuntimeCompilation();
             //.AddSessionStateTempDataProvider();
 
-        // Load all valid plugin assemblies found in their own AssemblyLoadContext 
+        var apiKeys = _getApiKeysFunc();
+
+        // Load all valid plugin assemblies found in their own AssemblyLoadContext
         var pluginAssemblies = _pluginFinder.LoadPluginAssemblies(pluginFinderResults);
         foreach (var result in pluginAssemblies)
         {
@@ -172,8 +177,6 @@ public class PluginManager : IPluginManager
                 _logger.LogError($"Failed to load assembly for plugin '{result.AssemblyPath}', skipping.");
                 continue;
             }
-
-            // TODO: Add file system watcher for root folder of plugin
 
             // Instantiate new instance of loaded plugin assembly
             var pluginLoader = new PluginLoader<IPlugin>(result, Options.SharedServiceHosts, apiKeys, services);
@@ -193,7 +196,7 @@ public class PluginManager : IPluginManager
         return services;
     }
 
-    public async Task LoadPluginAsync(string filePath, IReadOnlyList<IApiKey> apiKeys)
+    public async Task LoadPluginAsync(string filePath, Func<IReadOnlyList<IApiKey>> apiKeysFunc)
     {
         var pluginFinderResults = _pluginFinder.FindPluginInAssembly(filePath);
         if (!(pluginFinderResults?.Any() ?? false))
@@ -205,6 +208,8 @@ public class PluginManager : IPluginManager
         var mvcBuilder = _services
             .AddControllersWithViews()
             .AddRazorRuntimeCompilation();
+
+        var apiKeys = apiKeysFunc();
 
         // Load all valid plugin assemblies found in their own AssemblyLoadContext 
         var pluginAssemblies = _pluginFinder.LoadPluginAssemblies(pluginFinderResults);

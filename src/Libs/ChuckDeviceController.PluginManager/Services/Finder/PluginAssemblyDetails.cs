@@ -6,9 +6,12 @@ public class PluginAssemblyDetails
 
     public Type PluginTypeImplementation { get; }
 
-    public PluginAssemblyDetails(string assemblyFullPath, Type pluginImplementation)
+    public DateTime LoadedAt { get; set; }
+
+    public PluginAssemblyDetails(string assemblyFullPath, Type pluginImplementation, DateTime? loadedAt = null)
     {
         AssemblyFullPath = assemblyFullPath;
         PluginTypeImplementation = pluginImplementation;
+        LoadedAt = loadedAt ?? DateTime.Now;
     }
 }
