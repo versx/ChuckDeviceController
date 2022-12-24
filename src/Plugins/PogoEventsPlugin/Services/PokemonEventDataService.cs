@@ -307,6 +307,8 @@ public class PokemonEventDataService : IPokemonEventDataService
         events.Sort((a, b) => DateTime.Parse(a.End).CompareTo(DateTime.Parse(b.End)));
         foreach (var activeEvent in e.Events)
         {
+            var embed = CreateActiveEventEmbed(activeEvent);
+
             foreach (var (guildId, guildConfig) in _config.Guilds)
             {
                 var guild = await _discordClient.GetGuildAsync(guildId);
@@ -336,10 +338,14 @@ public class PokemonEventDataService : IPokemonEventDataService
                 var content = string.IsNullOrEmpty(guildConfig.Mention)
                     ? $"<{guildConfig.Mention}>"
                     : null;
-                var embed = CreateActiveEventEmbed(activeEvent);
-                await channel.SendMessageAsync("", embed);
+                await channel.SendMessageAsync(content, embed);
 
                 // Send Discord DM 
+                foreach (var userId in guildConfig.UserIds)
+                {
+                    var member = await guild.GetMemberAsync(userId, updateCache: true);
+                    await member.SendMessageAsync(content, embed);
+                }
             }
         }
     }

@@ -4,6 +4,8 @@ public class DiscordGuildConfig
 {
     public string? Mention { get; set; }
 
+    public List<ulong> UserIds { get; set; } = new();
+
     public ulong EventsChannelId { get; set; }
 
     public ulong EventsCategoryChannelId { get; set; }
