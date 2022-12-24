@@ -487,7 +487,6 @@ public class UtilitiesController : Controller
     {
         try
         {
-            // TODO: Use optimize delete
             var now = DateTime.UtcNow.ToTotalSeconds();
             var time = Convert.ToUInt64(timeSpan * Strings.SixtyMinutesS);
             var sw = new System.Diagnostics.Stopwatch();
@@ -495,23 +494,27 @@ public class UtilitiesController : Controller
             {
                 case "Pokemon":
                     sw.Start();
-                    var pokemonToDelete = _mapContext.Pokemon.Where(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time);
-                    var pokemonCount = pokemonToDelete.Count();
-                    _mapContext.Pokemon.RemoveRange(pokemonToDelete);
+                    var pokemonToDelete = _mapContext.Pokemon
+                        .Where(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time)
+                        .Select(pokemon => pokemon.Id)
+                        .ToList();
+                    _mapContext.Pokemon.RemoveRange(pokemonToDelete.Select(id => new Pokemon { Id = id }));
                     await _mapContext.SaveChangesAsync();
                     sw.Stop();
                     var pkmnSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-                    _logger.LogInformation($"Successfully deleted {pokemonCount:N0} old Pokemon from the database in {pkmnSeconds}s");
+                    _logger.LogInformation($"Successfully deleted {pokemonToDelete.Count:N0} old Pokemon from the database in {pkmnSeconds}s");
                     break;
                 case "Incidents":
                     sw.Start();
-                    var incidentsToDelete = _mapContext.Incidents.Where(incident => Math.Abs((decimal)now - incident.Expiration) > time);
-                    var invasionsCount = incidentsToDelete.Count();
-                    _mapContext.Incidents.RemoveRange(incidentsToDelete);
+                    var incidentsToDelete = _mapContext.Incidents
+                        .Where(incident => Math.Abs((decimal)now - incident.Expiration) > time)
+                        .Select(incident => incident.Id)
+                        .ToList();
+                    _mapContext.Incidents.RemoveRange(incidentsToDelete.Select(id => new Incident { Id = id }));
                     await _mapContext.SaveChangesAsync();
                     sw.Stop();
                     var invasionSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-                    _logger.LogInformation($"Successfully deleted {invasionsCount:N0} old Invasions from the database in {invasionSeconds}s");
+                    _logger.LogInformation($"Successfully deleted {incidentsToDelete.Count:N0} old Invasions from the database in {invasionSeconds}s");
                     break;
                 default:
                     _logger.LogWarning($"Unknown data type provided '{dataType}', unable to truncate.");
