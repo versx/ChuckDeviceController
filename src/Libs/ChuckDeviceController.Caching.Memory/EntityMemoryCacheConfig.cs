@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Extensions.Http.Caching;
+﻿namespace ChuckDeviceController.Caching.Memory;
 
 using Microsoft.Extensions.Caching.Memory;
 

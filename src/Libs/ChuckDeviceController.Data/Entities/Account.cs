@@ -8,10 +8,10 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using POGOProtos.Rpc;
 
+using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Extensions;
-using ChuckDeviceController.Extensions.Http.Caching;
 
 [Table("account")]
 public class Account : BaseEntity, IAccount, IWebhookEntity

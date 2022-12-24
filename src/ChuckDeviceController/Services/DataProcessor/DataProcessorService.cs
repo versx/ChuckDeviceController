@@ -14,6 +14,7 @@ using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
 using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
 
+using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data;
@@ -21,7 +22,6 @@ using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
-using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.Geometry.Extensions;
 using ChuckDeviceController.HostedServices;

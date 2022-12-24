@@ -6,10 +6,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 using POGOProtos.Rpc;
 using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
+using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Extensions;
-using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.Geometry.Extensions;
 
 [Table("weather")]

@@ -4,12 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 using POGOProtos.Rpc;
 
+using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Extensions;
-using ChuckDeviceController.Extensions.Http.Caching;
 
 [Table("gym")]
 public class Gym : BaseFort, IGym, IWebhookEntity

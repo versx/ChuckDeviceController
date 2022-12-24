@@ -6,12 +6,12 @@ using POGOProtos.Rpc;
 using ConditionType = POGOProtos.Rpc.QuestConditionProto.Types.ConditionType;
 using RewardType = POGOProtos.Rpc.QuestRewardProto.Types.Type;
 
+using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Extensions;
-using ChuckDeviceController.Extensions.Http.Caching;
 
 [Table("pokestop")]
 public class Pokestop : BaseFort, IPokestop, IWebhookEntity

@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Extensions.Http.Caching;
+﻿namespace ChuckDeviceController.Caching.Memory.HostedService;
 
 using System.Collections.Concurrent;
 
@@ -36,25 +36,26 @@ public class GenericMemoryCacheHostedService : BackgroundService, IMemoryCacheHo
     #region Public Methods
 
     public TEntity? Get<TKey, TEntity>(TKey key)
+        where TKey : notnull
     {
         var value = default(TEntity);
         var name = typeof(TEntity).Name;
 
-        if (_memCache.ContainsKey(name))
+        if (_memCache.TryGetValue(name, out var memCache))
         {
-            var memCache = _memCache[name];
             value = memCache.Get<TEntity>(key);
         }
         return value;
     }
 
     public void Set<TKey, TEntity>(TKey key, TEntity obj, TimeSpan? expiry = null)
+        where TKey : notnull
+        where TEntity : class
     {
         var name = typeof(TEntity).Name;
 
-        if (_memCache.ContainsKey(name))
+        if (_memCache.TryGetValue(name, out var memCache))
         {
-            var memCache = _memCache[name];
             memCache.Set(key, obj, new MemoryCacheEntryOptions
             {
                 Size = 1,
@@ -65,24 +66,24 @@ public class GenericMemoryCacheHostedService : BackgroundService, IMemoryCacheHo
     }
 
     public void Unset<TKey, TEntity>(TKey key)
+        where TKey : notnull
     {
         var name = typeof(TEntity).Name;
 
-        if (_memCache.ContainsKey(name))
+        if (_memCache.TryGetValue(name, out var memCache))
         {
-            var memCache = _memCache[name];
             memCache.Remove(key);
         }
     }
 
     public bool IsSet<TKey, TEntity>(TKey key)
+        where TKey : notnull
     {
         var value = false;
         var name = typeof(TEntity).Name;
 
-        if (_memCache.ContainsKey(name))
+        if (_memCache.TryGetValue(name, out var memCache))
         {
-            var memCache = _memCache[name];
             value = memCache.TryGetValue<TEntity>(key, out var _);
         }
         return value;

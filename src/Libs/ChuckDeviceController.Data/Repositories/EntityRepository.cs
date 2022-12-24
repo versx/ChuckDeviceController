@@ -6,9 +6,9 @@ using Dapper;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 
+using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
-using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.Logging;
 
 public class EntityRepository

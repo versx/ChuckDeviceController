@@ -8,11 +8,11 @@ using System.Text;
 using MySqlConnector;
 using POGOProtos.Rpc;
 
+using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
-using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.Geometry.Extensions;
 
 [Table("pokemon")]

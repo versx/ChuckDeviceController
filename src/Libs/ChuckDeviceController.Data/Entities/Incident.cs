@@ -6,10 +6,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 using MySqlConnector;
 using POGOProtos.Rpc;
 
+using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Extensions;
-using ChuckDeviceController.Extensions.Http.Caching;
 
 [Table("incident")]
 public class Incident : BaseEntity, IIncident, IWebhookEntity

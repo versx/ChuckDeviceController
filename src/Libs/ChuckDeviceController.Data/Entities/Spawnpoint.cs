@@ -5,10 +5,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 using MySqlConnector;
 
+using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
-using ChuckDeviceController.Extensions.Http.Caching;
 
 [Table("spawnpoint")]
 public class Spawnpoint : BaseEntity, ISpawnpoint, ICoordinateEntity
