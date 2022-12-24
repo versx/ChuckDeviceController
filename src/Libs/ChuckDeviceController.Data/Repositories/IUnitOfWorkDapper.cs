@@ -1,10 +1,10 @@
 ﻿namespace ChuckDeviceController.Data.Repositories;
 
-using Microsoft.EntityFrameworkCore.Storage;
+using MySqlConnector;
 
 using ChuckDeviceController.Data.Entities;
 
-public interface IUnitOfWork : IBaseUnitOfWork<IDbContextTransaction> // TODO: Rename to 'IUnitOfWorkEfCore
+public interface IUnitOfWorkDapper : IBaseUnitOfWork<MySqlTransaction>
 {
     #region Properties
 

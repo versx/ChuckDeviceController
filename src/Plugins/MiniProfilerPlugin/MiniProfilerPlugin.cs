@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceControllerPluginMvc;
 
+using StackExchange.Profiling;
+
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
 
@@ -80,11 +82,7 @@ public class MiniProfilerPlugin : IPlugin
     /// </param>
     public void Configure(WebApplication appBuilder)
     {
-        // Use built in logger
-        appBuilder.Logger.LogInformation($"Logging from the plugin '{Name}'");
-
         appBuilder.UseMiniProfiler();
-        appBuilder.UseMvc();
     }
 
     /// <summary>
@@ -109,12 +107,18 @@ public class MiniProfilerPlugin : IPlugin
     {
         _loggingHost.LogInformation($"ConfigureServices called");
 
+        //services.AddMiddlewareAnalysis();
+
         services.AddMiniProfiler(options =>
         {
             options.RouteBasePath = "/api/profiler";
 
+            //(options.Storage as MemoryCacheStorage).CacheDuration = TimeSpan.FromMinutes(60);
+
             options.ResultsAuthorize = _ => true;
             options.ResultsListAuthorize = _ => true;
+
+            options.EnableServerTimingHeader = true;
 
             // (Optional) You can disable "Connection Open()", "Connection Close()" (and async variant) tracking.
             // (defaults to true, and connection opening/closing is tracked)
@@ -122,7 +126,7 @@ public class MiniProfilerPlugin : IPlugin
 
             // (Optional) Use something other than the "light" color scheme.
             // (defaults to "light")
-            options.ColorScheme = StackExchange.Profiling.ColorScheme.Auto;
+            options.ColorScheme = ColorScheme.Auto;
 
             // (Optional) You can disable MVC filter profiling
             // (defaults to true, and filters are profiled)
@@ -133,7 +137,7 @@ public class MiniProfilerPlugin : IPlugin
             options.EnableMvcViewProfiling = true;
 
             // (Optional) listen to any errors that occur within MiniProfiler itself
-            options.OnInternalError = e => Console.WriteLine($"Error: {e}");
+            options.OnInternalError = ex => _loggingHost.LogError($"Error: {ex}");
 
             // (Optional - not recommended) You can enable a heavy debug mode with stacks and tooltips when using memory storage
             // It has a lot of overhead vs. normal profiling and should only be used with that in mind
@@ -148,8 +152,6 @@ public class MiniProfilerPlugin : IPlugin
             options.IgnoredPaths.Add("/swagger");
         });
         //.AddEntityFramework();
-
-        services.AddControllers();
     }
 
     /// <summary>
