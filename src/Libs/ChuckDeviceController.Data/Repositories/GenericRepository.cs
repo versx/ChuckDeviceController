@@ -21,6 +21,12 @@ public class GenericDapperRepository<TEntity> : IGenericRepository<TEntity>, IGe
         return false;
     }
 
+    public TEntity? FirstOrDefault(Expression<Func<TEntity, bool>>? filter = null)
+    {
+        TEntity? entity = null;
+        return entity;
+    }
+
     public IEnumerable<TEntity> Find(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
@@ -116,6 +122,14 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
     public bool Any(Expression<Func<TEntity, bool>> expression)
     {
         return _context.Set<TEntity>().Any(expression);
+    }
+
+    public TEntity? FirstOrDefault(Expression<Func<TEntity, bool>>? filter = null)
+    {
+        TEntity? entity = null;
+        var query = _context.Set<TEntity>();
+        if (filter != null) entity = query.FirstOrDefault(filter);
+        return entity;
     }
 
     public IEnumerable<TEntity> Find(

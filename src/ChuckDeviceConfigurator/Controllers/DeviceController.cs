@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.ViewModels;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
-using ChuckDeviceController.Extensions.Http.Caching;
 
 [Controller]
 [Authorize(Roles = RoleConsts.DevicesRole)]
@@ -18,13 +18,13 @@ public class DeviceController : BaseMvcController
     private readonly ILogger<DeviceController> _logger;
     private readonly IUnitOfWork _uow;
     private readonly IJobControllerService _jobControllerService;
-    private readonly IMemoryCacheHostedService _memCache;
+    private readonly IMemoryCacheService _memCache;
 
     public DeviceController(
         ILogger<DeviceController> logger,
         IUnitOfWork uow,
         IJobControllerService jobControllerService,
-        IMemoryCacheHostedService memCache)
+        IMemoryCacheService memCache)
     {
         _logger = logger;
         _uow = uow;

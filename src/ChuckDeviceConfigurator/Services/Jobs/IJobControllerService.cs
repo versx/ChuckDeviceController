@@ -12,20 +12,6 @@ using ChuckDeviceController.Plugin;
 /// </summary>
 public interface IJobControllerService : IJobControllerServiceHost, IQueueManager
 {
-    #region Properties
-
-    /// <summary>
-    /// Gets a dictionary of active and configured devices.
-    /// </summary>
-    //IReadOnlyDictionary<string, Device> Devices { get; }
-
-    /// <summary>
-    /// Gets a dictionary of all loaded job controller instances.
-    /// </summary>
-    //IReadOnlyDictionary<string, IJobController> Instances { get; }
-
-    #endregion
-
     #region Public
 
     void LoadDevices();

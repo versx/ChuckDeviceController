@@ -6,7 +6,7 @@ using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 
-public class AccountStatusService : IHostedService, IAccountStatusService
+public class AccountStatusHostedService : IHostedService, IAccountStatusHostedService
 {
     #region Constants
 
@@ -15,13 +15,13 @@ public class AccountStatusService : IHostedService, IAccountStatusService
     private const uint CooldownPeriodS = 7200;
     private const string FailedGprRedWarning = "GPR_RED_WARNING";
     private const string FailedSuspended = "suspended";
-    private const uint IntervalS = 10; // 10 seconds
+    private const uint IntervalM = 1; // 10 minutes
 
     #endregion
 
     #region Variables
 
-    private readonly ILogger<AccountStatusService> _logger;
+    private readonly ILogger<IAccountStatusHostedService> _logger;
     private readonly Timer _timer;
 
     #endregion
@@ -34,14 +34,14 @@ public class AccountStatusService : IHostedService, IAccountStatusService
 
     #region Constructor
 
-    public AccountStatusService(
-        ILogger<AccountStatusService> logger,
+    public AccountStatusHostedService(
+        ILogger<IAccountStatusHostedService> logger,
         IServiceProvider services)
     {
         _logger = logger;
         Services = services;
 
-        _timer = new Timer(IntervalS * 60 * 1000);
+        _timer = new Timer(IntervalM * 60 * 1000);
         _timer.Elapsed += async (sender, e) => await CheckAccountStatus();
     }
 

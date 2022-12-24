@@ -1,5 +1,5 @@
 ﻿namespace ChuckDeviceConfigurator.HostedServices;
 
-public interface IAccountStatusService
+public interface IAccountStatusHostedService
 {
 }

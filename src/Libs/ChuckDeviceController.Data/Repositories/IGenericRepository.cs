@@ -7,6 +7,8 @@ public interface IGenericRepository<TEntity>
 {
     bool Any(Expression<Func<TEntity, bool>> expression);
 
+    TEntity? FirstOrDefault(Expression<Func<TEntity, bool>>? filter = null);
+
     IEnumerable<TEntity> FindAll();
 
     TEntity? FindById<TKey>(TKey id);

@@ -73,18 +73,6 @@ public static class DbContextFactory
         return null;
     }
 
-
-    public static DbContextOptionsBuilder BuildOptions<TContext>(string connectionString, string assemblyName)
-        where TContext : DbContext
-    {
-        var serverVersion = ServerVersion.AutoDetect(connectionString);
-        return new DbContextOptionsBuilder()
-            //.EnableSensitiveDataLogging()
-            .UseMySql(connectionString, serverVersion, opt =>
-                opt.MigrationsAssembly(assemblyName)
-            );
-    }
-
     public static ValueConverter<T, string?> CreateJsonValueConverter<T>()
     {
         return new ValueConverter<T, string?>
