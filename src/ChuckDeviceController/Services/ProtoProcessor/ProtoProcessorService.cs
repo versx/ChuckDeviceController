@@ -150,6 +150,8 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
         //var isInvalidGmo = true;
         //var containsGmo = false;
 
+        // TODO: Send gRPC/Rest request to fetch if controller for device IsEvent
+
         var processedProtos = new List<dynamic>();
         var contents = payload?.Payload?.Contents ?? new List<ProtoData>();
         foreach (var rawData in contents)
@@ -526,7 +528,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                         data = wild,
                         timestampMs,
                         username,
-                        isEvent = false, // TODO: IsEvent
+                        isEvent = false,
                     });
                 }
 

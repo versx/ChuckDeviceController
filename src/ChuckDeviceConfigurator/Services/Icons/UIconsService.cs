@@ -10,26 +10,29 @@ using ChuckDeviceController.Net.Utilities;
 /// </summary>
 public class UIconsService : IUIconsService
 {
-    // TODO: Make UIcons settings configurable
     private const string DefaultIconFormat = "png";
     private const string IndexJson = "index.json";
     private const string DefaultIconUrl = "https://raw.githubusercontent.com/WatWowMap/wwm-uicons/main/pokemon/";
 
     #region Variables
 
-    private static IUIconsService? _instance;
     private readonly string _baseIconUrl;
     private HashSet<string> _availableForms = new();
 
     #endregion
 
-    #region Properties
+    #region Singleton
 
+    private static IUIconsService? _instance;
     public static IUIconsService Instance =>
         _instance ??= new UIconsService(
             DefaultIconUrl,
             DefaultIconFormat
         );
+
+    #endregion
+
+    #region Properties
 
     /// <summary>
     /// 

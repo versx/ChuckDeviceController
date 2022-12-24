@@ -130,7 +130,9 @@ public class ClearFortsHostedService : TimedHostedService
             _logger.LogError($"An error occurred while marking old forts as deleted: {ex.Message}");
         }
 
-        // TODO: Clear fort caches
+        // Clear fort caches
+        _stopIdsPerCell.Clear();
+        _gymIdsPerCell.Clear();
     }
 
     #endregion
