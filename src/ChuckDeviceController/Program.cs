@@ -276,7 +276,7 @@ async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
 
     logger.LogInformation($"Total database connections created: {EntityRepository.InstanceCount:N0}");
     logger.LogInformation(
-        $"Requests per second:     {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds):N0}");
+        $"Requests per second:                {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds):N0}");
 
     stopwatch.Stop();
 }

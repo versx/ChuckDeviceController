@@ -7,6 +7,7 @@ using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
 
+using Configuration;
 using Services;
 
 // TODO: Integrate with main application, allow setting active event to adjust IV lists and such
@@ -23,6 +24,8 @@ public class PogoEventsPlugin : IPlugin
 
     private readonly IUiHost _uiHost;
     private readonly IAuthorizeHost _authHost;
+    private readonly IConfigurationHost _configHost;
+    private readonly IConfiguration _configuration;
 
     #endregion
 
@@ -40,10 +43,12 @@ public class PogoEventsPlugin : IPlugin
 
     #region Constructor
 
-    public PogoEventsPlugin(IUiHost uiHost, IAuthorizeHost authHost)
+    public PogoEventsPlugin(IUiHost uiHost, IAuthorizeHost authHost, IConfigurationHost configHost)
     {
         _uiHost = uiHost;
         _authHost = authHost;
+        _configHost = configHost;
+        _configuration = _configHost.GetConfiguration();
     }
 
     #endregion
@@ -56,7 +61,10 @@ public class PogoEventsPlugin : IPlugin
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.Configure<DiscordConfig>(_configuration.GetSection("Discord"));
+
         services.AddSingleton<IPokemonEventDataService, PokemonEventDataService>();
+        services.AddSingleton<IDiscordClientService, DiscordClientService>();
     }
 
     public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)
