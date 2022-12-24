@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -36,7 +35,6 @@ using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.EventBus;
 using ChuckDeviceController.Plugin.EventBus.Observer;
 using ChuckDeviceController.PluginManager;
-using ChuckDeviceController.PluginManager.Mvc.Extensions;
 using ChuckDeviceController.Routing;
 
 
@@ -238,8 +236,8 @@ builder.Services.AddScoped<IApiKeyManagerService, ApiKeyManagerService>();
 
 builder.Services.AddGrpc(options =>
 {
+    options.EnableDetailedErrors = false;
     options.IgnoreUnknownServices = true;
-    //options.EnableDetailedErrors = true;
     options.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
 });
 
@@ -251,7 +249,7 @@ builder.Services.AddDistributedMemoryCache();
 #region Hosted Services
 
 // Register available hosted services
-builder.Services.AddHostedService<AccountStatusService>();
+builder.Services.AddHostedService<AccountStatusHostedService>();
 
 #endregion
 
@@ -264,9 +262,11 @@ var loggingHost = new LoggingHost();
 var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
 var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
 var geofenceServiceHost = new GeofenceServiceHost(connectionString);
+var routeGeneratorHost = new RouteGenerator();
 var eventAggregatorHost = new EventAggregatorHost();
 eventAggregatorHost.Subscribe(new PluginObserver());
 
+// Register plugin host handlers
 builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
 builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
 builder.Services.AddSingleton<IFileStorageHost>(fileStorageHost);
@@ -274,9 +274,10 @@ builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
 builder.Services.AddSingleton<ILoggingHost>(loggingHost);
 builder.Services.AddSingleton<IUiHost>(uiHost);
 builder.Services.AddSingleton<IGeofenceServiceHost>(geofenceServiceHost);
-builder.Services.AddSingleton<IRoutingHost, RouteGenerator>();
+builder.Services.AddSingleton<IRoutingHost>(routeGeneratorHost);
 builder.Services.AddSingleton<IEventAggregatorHost>(eventAggregatorHost);
 builder.Services.AddScoped<IPublisher, PluginPublisher>();
+builder.Services.AddScoped<IAuthorizeHost, AuthorizeHost>();
 
 
 // TODO: Do not build service provider from collection manually, leave it up to DI - https://andrewlock.net/access-services-inside-options-and-startup-using-configureoptions/
@@ -285,12 +286,8 @@ var serviceProvider = builder.Services.BuildServiceProvider();
 // Seed default user and roles
 await SeedDefaultDataAsync(serviceProvider);
 
-var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-var authHost = new AuthorizeHost(roleManager);
-builder.Services.AddSingleton<IAuthorizeHost>(authHost);
-
-var routeHost = serviceProvider.GetService<IRoutingHost>();
-var jobControllerService = serviceProvider.GetService<IJobControllerService>();
+var authHost = serviceProvider.GetRequiredService<IAuthorizeHost>();
+var jobControllerService = serviceProvider.GetRequiredService<IJobControllerService>();
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
 builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
 // Load all devices
@@ -309,7 +306,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IConfigurationHost), configurationProviderHost },
     { typeof(IGeofenceServiceHost), geofenceServiceHost },
     { typeof(IInstanceServiceHost), jobControllerService },
-    { typeof(IRoutingHost), routeHost },
+    { typeof(IRoutingHost), routeGeneratorHost },
     { typeof(IEventAggregatorHost), eventAggregatorHost },
 };
 
@@ -355,6 +352,8 @@ jobControllerService.Start();
 #region App Builder
 
 var app = builder.Build();
+
+//await SeedDefaultDataAsync(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -425,28 +424,27 @@ async void OnPluginHostAdded(object? sender, PluginHostAddedEventArgs e)
 async void OnPluginHostRemoved(object? sender, PluginHostRemovedEventArgs e)
 {
     logger.LogInformation($"Plugin removed successfully: {e.PluginHost.Plugin.Name}");
-    using (var scope = serviceProvider.CreateScope())
+
+    using var scope = serviceProvider.CreateScope();
+    var services = scope.ServiceProvider;
+    var factory = services.GetRequiredService<IDbContextFactory<PluginDbContext>>();
+    using var context = await factory.CreateDbContextAsync();
+
+    // Get cached plugin state from database
+    var dbPlugin = await context.Plugins.FindAsync(e.PluginHost.Plugin.Name);
+    if (dbPlugin == null)
+        return;
+
+    // Plugin host is cached in database, set previous plugin state,
+    // otherwise set state from param
+    if (dbPlugin.State != e.PluginHost.State)
     {
-        var services = scope.ServiceProvider;
-        var factory = services.GetRequiredService<IDbContextFactory<PluginDbContext>>();
-        using var context = await factory.CreateDbContextAsync();
+        //e.PluginHost.SetState(dbPlugin.State);
+        dbPlugin.State = e.PluginHost.State;
+        context.Plugins.Remove(dbPlugin);
 
-        // Get cached plugin state from database
-        var dbPlugin = await context.Plugins.FindAsync(e.PluginHost.Plugin.Name);
-        if (dbPlugin == null)
-            return;
-
-        // Plugin host is cached in database, set previous plugin state,
-        // otherwise set state from param
-        if (dbPlugin.State != e.PluginHost.State)
-        {
-            //e.PluginHost.SetState(dbPlugin.State);
-            dbPlugin.State = e.PluginHost.State;
-            context.Plugins.Remove(dbPlugin);
-
-            // Save plugin host state to database
-            await context.SaveChangesAsync();
-        }
+        // Save plugin host state to database
+        await context.SaveChangesAsync();
     }
 }
 

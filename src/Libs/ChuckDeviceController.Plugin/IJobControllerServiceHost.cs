@@ -9,9 +9,15 @@ using ChuckDeviceController.Data.Abstractions;
 /// </summary>
 public interface IJobControllerServiceHost : IInstanceServiceHost
 {
-    //IReadOnlyDictionary<string, IDevice> Devices { get; }
+    /// <summary>
+    /// Gets a dictionary of active and configured devices.
+    /// </summary>
+    IReadOnlyDictionary<string, IDevice> Devices { get; }
 
-    //IReadOnlyDictionary<string, IJobController> Instances { get; }
+    /// <summary>
+    /// Gets a dictionary of all loaded job controller instances.
+    /// </summary>
+    IReadOnlyDictionary<string, IJobController> Instances { get; }
 
     /// <summary>
     /// Gets a list of all registered custom job controller instance types.

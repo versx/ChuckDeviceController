@@ -2,8 +2,8 @@
 
 using System.Security.Cryptography;
 
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories;
 
 public class ApiKeyManagerService : IApiKeyManagerService
 {
@@ -18,7 +18,7 @@ public class ApiKeyManagerService : IApiKeyManagerService
     #region Variables
 
     private readonly ILogger<IApiKeyManagerService> _logger;
-    private readonly ControllerDbContext _context;
+    private readonly IUnitOfWork _uow;
 
     #endregion
 
@@ -26,10 +26,10 @@ public class ApiKeyManagerService : IApiKeyManagerService
 
     public ApiKeyManagerService(
         ILogger<IApiKeyManagerService> logger,
-        ControllerDbContext context)
+        IUnitOfWork uow)
     {
         _logger = logger;
-        _context = context;
+        _uow = uow;
     }
 
     #endregion
@@ -38,19 +38,19 @@ public class ApiKeyManagerService : IApiKeyManagerService
 
     public async Task<string> GetApiKey(uint id)
     {
-        var apiKey = await _context.ApiKeys.FindAsync(id);
+        var apiKey = await _uow.ApiKeys.FindByIdAsync(id);
         return apiKey?.Key;
     }
 
     public async Task<string> GetApiKey(string name)
     {
-        var apiKey = _context.ApiKeys.FirstOrDefault(key => key.Name == name);
+        var apiKey = _uow.ApiKeys.FirstOrDefault(key => key.Name == name);
         return await Task.FromResult(apiKey?.Key);
     }
 
     public async Task<ApiKey> GetApiKeyByName(string name)
     {
-        var apiKey = _context.ApiKeys.FirstOrDefault(key => key.Name == name);
+        var apiKey = _uow.ApiKeys.FirstOrDefault(key => key.Name == name);
         return await Task.FromResult(apiKey);
     }
 
@@ -69,22 +69,22 @@ public class ApiKeyManagerService : IApiKeyManagerService
             return false;
 
         // Validate key exists in database and enabled
-        var exists = _context.ApiKeys.Any(key => key.Equals(apiKey) && key.IsEnabled);
+        var exists = _uow.ApiKeys.Any(key => key.Equals(apiKey) && key.IsEnabled);
 
         return await Task.FromResult(exists);
     }
 
     public async Task InvalidateKey(string apiKey)
     {
-        var entity = _context.ApiKeys.FirstOrDefault(key => key.Key!.Equals(apiKey));
+        var entity = _uow.ApiKeys.FirstOrDefault(key => key.Key!.Equals(apiKey));
         if (entity == null)
         {
             _logger.LogError($"Unable to validate API key '{apiKey}', it does not exist.");
             return;
         }
 
-        _context.ApiKeys.Remove(entity);
-        await _context.SaveChangesAsync();
+        _uow.ApiKeys.Remove(entity);
+        await _uow.CommitAsync();
     }
 
     public string GenerateApiKey()

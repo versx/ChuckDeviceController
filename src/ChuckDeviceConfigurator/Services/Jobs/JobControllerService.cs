@@ -18,6 +18,7 @@ using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.JobControllers;
@@ -45,7 +46,7 @@ public class JobControllerService : IJobControllerService
     private readonly IRoutingHost _routeGenerator;
     private readonly IRouteCalculator _routeCalculator;
 
-    private static readonly ConcurrentDictionary<string, Device> _devices = new();
+    private static readonly ConcurrentDictionary<string, IDevice> _devices = new();
     private static readonly ConcurrentDictionary<string, IJobController> _instances = new();
     private static readonly ConcurrentDictionary<string, Type> _pluginInstances = new();
 
@@ -56,7 +57,7 @@ public class JobControllerService : IJobControllerService
     /// <summary>
     /// Gets a dictionary of active and configured devices.
     /// </summary>
-    public IReadOnlyDictionary<string, Device> Devices => _devices;
+    public IReadOnlyDictionary<string, IDevice> Devices => _devices;
 
     /// <summary>
     /// Gets a dictionary of all loaded job controller instances.
@@ -67,6 +68,8 @@ public class JobControllerService : IJobControllerService
     /// Gets a list of all registered custom job controller instance types.
     /// </summary>
     public IReadOnlyList<string> CustomInstanceTypes => _pluginInstances.Keys.ToList();
+
+    public IServiceProvider Services { get; internal set; }
 
     #endregion
 
@@ -80,7 +83,8 @@ public class JobControllerService : IJobControllerService
         IIvListControllerService ivListService,
         IRoutingHost routeGenerator,
         IRouteCalculator routeCalculator,
-        IAssignmentControllerService assignmentService)
+        IAssignmentControllerService assignmentService,
+        IServiceProvider services)
     {
         _deviceFactory = deviceFactory;
         _mapFactory = mapFactory;
@@ -95,52 +99,48 @@ public class JobControllerService : IJobControllerService
             _assignmentService.DeviceReloaded += OnAssignmentDeviceReloaded;
             _assignmentService.ReloadInstance += OnReloadInstance;
         }
+
+        Services = services;
     }
 
     #endregion
 
     #region Public Methods
 
-    public void LoadDevices()
+    public async void LoadDevices()
     {
-        using (var context = _deviceFactory.CreateDbContext())
-        {
-            var devices = context.Devices.ToList();
-            devices.ForEach(AddDevice);
-        }
+        using var scope = Services.CreateScope();
+        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var devices = await uow.Devices.FindAllAsync();
+        devices.ToList().ForEach(AddDevice);
     }
 
-    public void Start()
+    public async void Start()
     {
-        using (var context = _deviceFactory.CreateDbContext())
+        using var scope = Services.CreateScope();
+        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        var instances = await uow.Instances.FindAllAsync();
+        var devices = _devices.Values;
+
+        foreach (var instance in instances)
         {
-            var instances = context.Instances.ToList();
-            var devices = _devices.Values; //context.Devices.ToList();
-
-            foreach (var instance in instances)
+            var callback = new WaitCallback(async _ =>
             {
-                var callback = new WaitCallback(async _ =>
-                {
-                    _logger.LogInformation($"Starting instance {instance.Name} ({instance.Type})");
-                    await AddInstanceAsync(instance);
+                _logger.LogInformation($"Starting instance {instance.Name} ({instance.Type})");
+                await AddInstanceAsync(instance);
 
-                    var assignedDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
-                    var deviceCount = assignedDevices.Count();
-                    var suffix = deviceCount > 0
-                        ? $", now loading {deviceCount:N0} assigned devices."
-                        : "";
-                    _logger.LogInformation($"Started instance {instance.Name} ({instance.Type}){suffix}");
+                var assignedDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
+                var deviceCount = assignedDevices.Count();
+                var suffix = deviceCount > 0
+                    ? $", now loading {deviceCount:N0} assigned devices."
+                    : "";
+                _logger.LogInformation($"Started instance {instance.Name} ({instance.Type}){suffix}");
+            });
 
-                    //foreach (var device in assignedDevices)
-                    //{
-                    //    AddDevice(device);
-                    //}
-                });
-
-                if (!ThreadPool.QueueUserWorkItem(callback))
-                {
-                    _logger.LogError($"Failed to start instance {instance.Name} ({instance.Type})");
-                }
+            if (!ThreadPool.QueueUserWorkItem(callback))
+            {
+                _logger.LogError($"Failed to start instance {instance.Name} ({instance.Type})");
             }
         }
         _logger.LogInformation("All instances have been started");
@@ -176,16 +176,17 @@ public class JobControllerService : IJobControllerService
             Data = options.Data,
         };
 
-        using var context = _deviceFactory.CreateDbContext();
-        if (context.Instances.Any(x => x.Name == options.Name))
+        using var scope = Services.CreateScope();
+        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        if (uow.Instances.Any(x => x.Name == options.Name))
         {
-            context.Instances.Update(instance);
+            await uow.Instances.UpdateAsync(instance);
         }
         else
         {
-            await context.Instances.AddAsync(instance);
+            await uow.Instances.AddAsync(instance);
         }
-        await context.SaveChangesAsync();
+        await uow.CommitAsync();
 
         await AddInstanceAsync(instance);
     }
@@ -316,7 +317,7 @@ public class JobControllerService : IJobControllerService
                 }
                 break;
             case InstanceType.Custom:
-                var customInstanceType = Convert.ToString(instance.Data?["custom_instance_type"]);//.CustomInstanceType;
+                var customInstanceType = Convert.ToString(instance.Data?["custom_instance_type"]);
                 if (string.IsNullOrEmpty(customInstanceType))
                 {
                     _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
@@ -345,17 +346,13 @@ public class JobControllerService : IJobControllerService
             return null;
         }
 
-        if (!_devices.ContainsKey(uuid))
+        if (!_devices.TryGetValue(uuid, out IDevice? device))
         {
-            _logger.LogWarning($"[{uuid}] Device is not assigned an instance!");
+            _logger.LogError($"[{uuid}] Failed to get device from cache, device is not assigned an instance!");
             return null;
         }
 
-        if (!_devices.TryGetValue(uuid, out Device? device))
-        {
-            _logger.LogError($"[{uuid}] Failed to get device from cache.");
-        }
-        var instanceName = device?.InstanceName;
+        var instanceName = device.InstanceName;
         if (device == null || string.IsNullOrEmpty(instanceName))
         {
             _logger.LogWarning($"Device or device instance name was null, unable to retrieve job controller instance");
@@ -425,10 +422,10 @@ public class JobControllerService : IJobControllerService
             var devices = _devices.Where(device => string.Compare(device.Value.InstanceName, oldInstance.Name, true) == 0);
             foreach (var (uuid, device) in devices)
             {
-                device.InstanceName = newInstance.Name;
+                ((Device)device).InstanceName = newInstance.Name;
                 _devices[uuid] = device;
             }
-            _instances[oldInstanceName]?.StopAsync().ConfigureAwait(false);
+            await _instances[oldInstanceName].StopAsync();
             if (!_instances.TryRemove(oldInstanceName, out _))
             {
                 // Failed to remove job controller instance
@@ -657,13 +654,14 @@ public class JobControllerService : IJobControllerService
 
         _logger.LogInformation($"[{e.DeviceUuid}] Device finished bootstrapping, switching to chained instance {e.InstanceName}");
 
-        var device = _devices[e.DeviceUuid];
+        var device = (Device)_devices[e.DeviceUuid];
         device.InstanceName = e.InstanceName;
-        using (var context = _deviceFactory.CreateDbContext())
-        {
-            context.Update(device);
-            await context.SaveChangesAsync();
-        }
+
+        using var scope = Services.CreateScope();
+        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        await uow.Devices.UpdateAsync(device);
+        await uow.CommitAsync();
+
         ReloadDevice(device, e.DeviceUuid);
     }
 
@@ -722,12 +720,12 @@ public class JobControllerService : IJobControllerService
 
     private async Task AssignDevice(Device device, string instanceName)
     {
-        using (var context = _deviceFactory.CreateDbContext())
-        {
-            device.InstanceName = instanceName;
-            context.Devices.Update(device);
-            await context.SaveChangesAsync();
-        }
+        device.InstanceName = instanceName;
+
+        using var scope = Services.CreateScope();
+        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        await uow.Devices.UpdateAsync(device);
+        await uow.CommitAsync();
     }
 
     #endregion

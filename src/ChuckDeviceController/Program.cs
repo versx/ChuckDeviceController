@@ -110,9 +110,6 @@ builder.Services.AddSingleton<ClearGymsCache>();
 builder.Services.AddSingleton<ClearPokestopsCache>();
 
 builder.Services.AddSingleton<IMemoryCacheService, GenericMemoryCacheService>();
-//builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
-//builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
-//builder.Services.AddSingleton<IDataConsumerService, DataConsumerService>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
@@ -247,7 +244,7 @@ app.Run();
 
 #endregion
 
-static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
+async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
 {
     var lastInstanceCount = 0UL;
     var lastRequestCount = 0UL;
@@ -267,20 +264,19 @@ static async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
         var currentElapsed = elapsed - lastElapsed;
         var currentRequests = requestCount - lastRequestCount;
 
-        Console.WriteLine(
+        logger.LogInformation(
             $"[{DateTime.Now:HH:mm:ss.fff}] "
-            + $"Database connections/s: {instanceCount - lastInstanceCount} | "
-            + $"Requests/s: {Math.Round(currentRequests / currentElapsed.TotalSeconds)}");
+            + $"Database connections/s: {instanceCount - lastInstanceCount:N0} | "
+            + $"Requests/s: {Math.Round(currentRequests / currentElapsed.TotalSeconds):N0}");
 
         lastInstanceCount = instanceCount;
         lastRequestCount = requestCount;
         lastElapsed = elapsed;
     }
 
-    Console.WriteLine();
-    Console.WriteLine($"Total database connections created: {EntityRepository.InstanceCount}");
-    Console.WriteLine(
-        $"Requests per second:     {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds)}");
+    logger.LogInformation($"Total database connections created: {EntityRepository.InstanceCount:N0}");
+    logger.LogInformation(
+        $"Requests per second:     {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds):N0}");
 
     stopwatch.Stop();
 }
