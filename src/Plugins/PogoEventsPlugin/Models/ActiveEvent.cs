@@ -5,15 +5,15 @@ using System.Text.Json.Serialization;
 
 public class ActiveEvent : IActiveEvent
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
-    public string Type { get; set; }
+    public string Type { get; set; } = null!;
 
     [DisplayName("Starts")]
-    public string Start { get; set; }
+    public string Start { get; set; } = null!;
 
     [DisplayName("Ends")]
-    public string End { get; set; }
+    public string End { get; set; } = null!;
 
     [DisplayName("Wild Pokemon Spawns")]
     public IEnumerable<EventItem> Spawns { get; set; }

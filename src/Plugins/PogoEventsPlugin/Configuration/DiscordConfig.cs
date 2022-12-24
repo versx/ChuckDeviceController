@@ -8,5 +8,5 @@ public class DiscordConfig
 
     public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
-    public Dictionary<ulong, ulong> Guilds { get; set; } = new();
+    public Dictionary<ulong, DiscordGuildConfig> Guilds { get; set; } = new();
 }

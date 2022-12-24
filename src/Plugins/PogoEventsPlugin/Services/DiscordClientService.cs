@@ -4,6 +4,8 @@ using DSharpPlus;
 
 using Microsoft.Extensions.Options;
 
+using Configuration;
+
 public class DiscordClientService : IDiscordClientService
 {
     private readonly ILogger<IDiscordClientService> _logger;

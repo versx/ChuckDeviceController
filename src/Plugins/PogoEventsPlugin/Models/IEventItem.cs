@@ -4,5 +4,5 @@ public interface IEventItem
 {
     uint Id { get; }
 
-    string Template { get; }
+    string? Template { get; }
 }

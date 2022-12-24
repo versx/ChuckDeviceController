@@ -1,8 +1,12 @@
 ﻿namespace PogoEventsPlugin.Models;
 
+using System.Text.Json.Serialization;
+
 public class EventItem : IEventItem
 {
+    [JsonPropertyName("id")]
     public uint Id { get; set; }
 
-    public string Template { get; set; } = null!;
+    [JsonPropertyName("template")]
+    public string? Template { get; set; }
 }
