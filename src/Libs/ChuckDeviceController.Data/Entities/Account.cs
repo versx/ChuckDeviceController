@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using POGOProtos.Rpc;
 
-using ChuckDeviceController.Caching.Memory.HostedService;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Extensions;
@@ -277,7 +277,7 @@ public class Account : BaseEntity, IAccount, IWebhookEntity
 
     #region Public Methods
 
-    public async Task UpdateAsync(GetPlayerOutProto playerData, IMemoryCacheHostedService memCache)
+    public async Task UpdateAsync(GetPlayerOutProto playerData, IMemoryCacheService memCache)
     {
         CreationTimestamp = Convert.ToUInt32(playerData.Player.CreationTimeMs / 1000);
         if (playerData.Warn != HasWarn)

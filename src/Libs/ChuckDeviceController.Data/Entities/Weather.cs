@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using POGOProtos.Rpc;
 using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
-using ChuckDeviceController.Caching.Memory.HostedService;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Extensions;
@@ -107,7 +107,7 @@ public partial class Weather : BaseEntity, IWeather, ICoordinateEntity, IWebhook
 
     #region Public Methods
 
-    public async Task UpdateAsync(Weather? oldWeather, IMemoryCacheHostedService memCache)
+    public async Task UpdateAsync(Weather? oldWeather, IMemoryCacheService memCache)
     {
         Updated = DateTime.UtcNow.ToTotalSeconds();
 

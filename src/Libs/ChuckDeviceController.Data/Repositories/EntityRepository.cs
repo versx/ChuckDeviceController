@@ -6,7 +6,7 @@ using Dapper;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 
-using ChuckDeviceController.Caching.Memory.HostedService;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Logging;
@@ -94,7 +94,7 @@ public class EntityRepository
     public static async Task<bool> EntityExistsAsync<TKey, TEntity>(
         MySqlConnection connection,
         TKey key,
-        IMemoryCacheHostedService memCache,
+        IMemoryCacheService memCache,
         bool skipCache = false)
     {
         if (!skipCache)
@@ -122,7 +122,7 @@ public class EntityRepository
     public static async Task<TEntity?> GetEntityAsync<TKey, TEntity>(
         MySqlConnection connection,
         TKey key,
-        IMemoryCacheHostedService memCache,
+        IMemoryCacheService memCache,
         bool skipCache = false,
         bool setCache = true,
         double expiryLimitM = DefaultExpiryLimitM)

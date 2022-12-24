@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 using MySqlConnector;
 
-using ChuckDeviceController.Caching.Memory.HostedService;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
@@ -54,7 +54,7 @@ public class Spawnpoint : BaseEntity, ISpawnpoint, ICoordinateEntity
 
     #region Public Methods
 
-    public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool update = false, bool skipLookup = false)
+    public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheService memCache, bool update = false, bool skipLookup = false)
     {
         var oldSpawnpoint = skipLookup
             ? null

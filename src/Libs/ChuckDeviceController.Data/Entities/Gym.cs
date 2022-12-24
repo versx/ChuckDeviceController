@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 using POGOProtos.Rpc;
 
-using ChuckDeviceController.Caching.Memory.HostedService;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
@@ -200,7 +200,7 @@ public class Gym : BaseFort, IGym, IWebhookEntity
         }
     }
 
-    public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(Gym? oldGym, IMemoryCacheHostedService memCache)
+    public async Task<Dictionary<WebhookType, Gym>> UpdateAsync(Gym? oldGym, IMemoryCacheService memCache)
     {
         var webhooks = new Dictionary<WebhookType, Gym>();
 

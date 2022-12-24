@@ -14,7 +14,7 @@ using PokemonForm = POGOProtos.Rpc.PokemonDisplayProto.Types.Form;
 using PokemonGender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
 
-using ChuckDeviceController.Caching.Memory.HostedService;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data;
@@ -45,7 +45,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
     private readonly ClearGymsCache _gymIdsPerCell;
     private readonly ClearPokestopsCache _stopIdsPerCell;
 
-    private readonly IMemoryCacheHostedService _memCache;
+    private readonly IMemoryCacheService _memCache;
     private readonly IWebHostEnvironment _env;
     private readonly DataConsumerQueue _dataConsumerQueue;
     //private readonly ThreadManager _threadManager = new(maxThreadCount: 25);
@@ -71,7 +71,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         IGrpcClient<WebhookPayload.WebhookPayloadClient, WebhookPayloadRequest, WebhookPayloadResponse> grpcWebhookClient,
         ClearGymsCache gymIdsPerCell,
         ClearPokestopsCache stopIdsPerCell,
-        IMemoryCacheHostedService memCache,
+        IMemoryCacheService memCache,
         IWebHostEnvironment env,
         IConfiguration configuration,
         DataConsumerQueue dataConsumerQueue)

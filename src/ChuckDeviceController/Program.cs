@@ -9,6 +9,7 @@ using MySqlConnector;
 
 using ChuckDeviceController;
 using ChuckDeviceController.Authorization.Jwt.Extensions;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data;
@@ -16,7 +17,6 @@ using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
-using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Logging;
 using ChuckDeviceController.Protos;
@@ -109,10 +109,10 @@ builder.Services.AddSingleton<DataConsumerQueue>();
 builder.Services.AddSingleton<ClearGymsCache>();
 builder.Services.AddSingleton<ClearPokestopsCache>();
 
-builder.Services.AddSingleton<IMemoryCacheHostedService, GenericMemoryCacheHostedService>();
-builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
-builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
-builder.Services.AddSingleton<IDataConsumerService, DataConsumerService>();
+builder.Services.AddSingleton<IMemoryCacheService, GenericMemoryCacheService>();
+//builder.Services.AddSingleton<IProtoProcessorService, ProtoProcessorService>();
+//builder.Services.AddSingleton<IDataProcessorService, DataProcessorService>();
+//builder.Services.AddSingleton<IDataConsumerService, DataConsumerService>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
@@ -145,9 +145,8 @@ builder.Services.AddScoped(typeof(DapperRepository<>), typeof(BaseEntityReposito
 
 // Register available hosted services
 builder.Services.AddHostedService<ClearFortsHostedService>();
-builder.Services.AddHostedService<DataProcessorService>();
-builder.Services.AddHostedService<GenericMemoryCacheHostedService>();
 builder.Services.AddHostedService<ProtoProcessorService>();
+builder.Services.AddHostedService<DataProcessorService>();
 builder.Services.AddHostedService<DataConsumerService>();
 
 #endregion

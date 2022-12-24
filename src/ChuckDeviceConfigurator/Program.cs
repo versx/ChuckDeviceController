@@ -26,7 +26,6 @@ using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceController.Authorization.Jwt.Middleware;
 using ChuckDeviceController.Caching.Memory;
-using ChuckDeviceController.Caching.Memory.HostedService;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
@@ -227,7 +226,7 @@ builder.Services.AddSingleton<IAssignmentControllerService, AssignmentController
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();
 
-builder.Services.AddSingleton<IMemoryCacheHostedService, GenericMemoryCacheHostedService>();
+builder.Services.AddSingleton<IMemoryCacheService, GenericMemoryCacheService>();
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
@@ -251,8 +250,8 @@ builder.Services.AddDistributedMemoryCache();
 
 #region Hosted Services
 
+// Register available hosted services
 builder.Services.AddHostedService<AccountStatusService>();
-builder.Services.AddHostedService<GenericMemoryCacheHostedService>();
 
 #endregion
 

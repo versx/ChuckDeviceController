@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using POGOProtos.Rpc;
 
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Data;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Http;
-using ChuckDeviceController.Extensions.Http.Caching;
 using ChuckDeviceController.Net.Models.Requests;
 using ChuckDeviceController.Net.Models.Responses;
 using ChuckDeviceController.Services.ProtoProcessor;
@@ -32,7 +32,7 @@ public class ProtoController : ControllerBase
 
     private readonly ILogger<ProtoController> _logger;
     private readonly SafeCollection<ProtoPayloadQueueItem> _taskQueue;
-    private readonly IMemoryCacheHostedService _memCache;
+    private readonly IMemoryCacheService _memCache;
     private readonly MySqlConnection _connection;
     //private readonly DapperRepository<Device> _deviceRepository;
 
@@ -43,7 +43,7 @@ public class ProtoController : ControllerBase
     public ProtoController(
         ILogger<ProtoController> logger,
         SafeCollection<ProtoPayloadQueueItem> taskQueue,
-        IMemoryCacheHostedService memCache,
+        IMemoryCacheService memCache,
         MySqlConnection connection)
         //DapperRepository<Device> deviceRepository)
     {

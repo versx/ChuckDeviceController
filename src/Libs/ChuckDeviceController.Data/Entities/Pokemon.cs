@@ -8,7 +8,7 @@ using System.Text;
 using MySqlConnector;
 using POGOProtos.Rpc;
 
-using ChuckDeviceController.Caching.Memory.HostedService;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Repositories;
@@ -220,7 +220,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         return pokemon;
     }
 
-    public static async Task<Pokemon> ParsePokemonFromNearby(MySqlConnection connection, IMemoryCacheHostedService memCache, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
+    public static async Task<Pokemon> ParsePokemonFromNearby(MySqlConnection connection, IMemoryCacheService memCache, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
     {
         var pokestopId = string.IsNullOrEmpty(nearbyPokemon.FortId)
             ? null
@@ -289,7 +289,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         return pokemon;
     }
 
-    public static async Task<Pokemon> ParsePokemonFromMap(MySqlConnection connection, IMemoryCacheHostedService memCache, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
+    public static async Task<Pokemon> ParsePokemonFromMap(MySqlConnection connection, IMemoryCacheService memCache, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
     {
         var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
         var spawnpointId = mapPokemon.SpawnpointId;
@@ -606,7 +606,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         Changed = Updated;
     }
 
-    public async Task UpdateAsync(Pokemon? oldPokemon, IMemoryCacheHostedService memCache, bool updateIv = false)
+    public async Task UpdateAsync(Pokemon? oldPokemon, IMemoryCacheService memCache, bool updateIv = false)
     {
         var updateIV = updateIv;
         var setIvForWeather = false;
@@ -827,7 +827,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         await Task.CompletedTask;
     }
 
-    public async Task<Spawnpoint?> ParseSpawnpointAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, int timeTillHiddenMs, ulong timestampMs)
+    public async Task<Spawnpoint?> ParseSpawnpointAsync(MySqlConnection connection, IMemoryCacheService memCache, int timeTillHiddenMs, ulong timestampMs)
     {
         var spawnId = SpawnId ?? 0;
         if (spawnId == 0)

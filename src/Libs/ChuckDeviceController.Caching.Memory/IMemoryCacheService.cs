@@ -1,6 +1,6 @@
-﻿namespace ChuckDeviceController.Caching.Memory.HostedService;
+﻿namespace ChuckDeviceController.Caching.Memory;
 
-public interface IMemoryCacheHostedService
+public interface IMemoryCacheService
 {
     TEntity? Get<TKey, TEntity>(TKey key)
         where TKey : notnull;

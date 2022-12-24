@@ -5,7 +5,7 @@
     using Microsoft.AspNetCore.Mvc;
 
     using ChuckDeviceConfigurator.Services.Jobs;
-    using ChuckDeviceController.Caching.Memory.HostedService;
+    using ChuckDeviceController.Caching.Memory;
     using ChuckDeviceController.Common;
     using ChuckDeviceController.Common.Tasks;
     using ChuckDeviceController.Data.Abstractions;
@@ -28,7 +28,7 @@
         private readonly ILogger<DeviceControlController> _logger;
         private readonly IUnitOfWork _uow;
         private readonly IJobControllerService _jobControllerService;
-        private readonly IMemoryCacheHostedService _memCache;
+        private readonly IMemoryCacheService _memCache;
 
         #endregion
 
@@ -38,7 +38,7 @@
             ILogger<DeviceControlController> logger,
             IUnitOfWork uow,
             IJobControllerService jobControllerService,
-            IMemoryCacheHostedService memCache)
+            IMemoryCacheService memCache)
         {
             _logger = logger;
             _uow = uow;

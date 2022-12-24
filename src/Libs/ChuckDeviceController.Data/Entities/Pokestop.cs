@@ -6,7 +6,7 @@ using POGOProtos.Rpc;
 using ConditionType = POGOProtos.Rpc.QuestConditionProto.Types.ConditionType;
 using RewardType = POGOProtos.Rpc.QuestRewardProto.Types.Type;
 
-using ChuckDeviceController.Caching.Memory.HostedService;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
@@ -527,7 +527,7 @@ public class Pokestop : BaseFort, IPokestop, IWebhookEntity
         }
     }
 
-    public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(Pokestop? oldPokestop, IMemoryCacheHostedService memCache, bool updateQuest = false)
+    public async Task<Dictionary<WebhookType, Pokestop>> UpdateAsync(Pokestop? oldPokestop, IMemoryCacheService memCache, bool updateQuest = false)
     {
         var webhooks = new Dictionary<WebhookType, Pokestop>();
         var now = DateTime.UtcNow.ToTotalSeconds();

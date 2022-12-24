@@ -1,17 +1,16 @@
-﻿namespace ChuckDeviceController.Caching.Memory.HostedService;
+﻿namespace ChuckDeviceController.Caching.Memory;
 
 using System.Collections.Concurrent;
 
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-public class GenericMemoryCacheHostedService : BackgroundService, IMemoryCacheHostedService
+public class GenericMemoryCacheService : IMemoryCacheService
 {
     #region Variables
 
-    private readonly ILogger<IMemoryCacheHostedService> _logger;
+    private readonly ILogger<IMemoryCacheService> _logger;
     private readonly ConcurrentDictionary<string, IMemoryCache> _memCache = new();
     private readonly EntityMemoryCacheConfig _options;
     private readonly TimeSpan _defaultEntityExpiry;
@@ -20,8 +19,8 @@ public class GenericMemoryCacheHostedService : BackgroundService, IMemoryCacheHo
 
     #region Constructor
 
-    public GenericMemoryCacheHostedService(
-        ILogger<IMemoryCacheHostedService> logger,
+    public GenericMemoryCacheService(
+        ILogger<IMemoryCacheService> logger,
         IOptions<EntityMemoryCacheConfig>? options)
     {
         _logger = logger;
@@ -106,11 +105,6 @@ public class GenericMemoryCacheHostedService : BackgroundService, IMemoryCacheHo
     }
 
     #endregion
-
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        await Task.CompletedTask;
-    }
 
     #region Private Methods
 

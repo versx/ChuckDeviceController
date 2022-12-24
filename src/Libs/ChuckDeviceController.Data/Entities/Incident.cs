@@ -3,10 +3,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-using MySqlConnector;
 using POGOProtos.Rpc;
 
-using ChuckDeviceController.Caching.Memory.HostedService;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Extensions;
@@ -85,7 +84,7 @@ public class Incident : BaseEntity, IIncident, IWebhookEntity
     #region Public Methods
 
     //public async Task UpdateAsync(MySqlConnection connection, IMemoryCacheHostedService memCache, bool skipLookup = false)
-    public async Task UpdateAsync(Incident? oldIncident, IMemoryCacheHostedService memCache)
+    public async Task UpdateAsync(Incident? oldIncident, IMemoryCacheService memCache)
     {
         //var oldIncident = skipLookup
         //    ? null
