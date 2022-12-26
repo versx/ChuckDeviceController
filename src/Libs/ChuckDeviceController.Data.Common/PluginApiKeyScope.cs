@@ -39,4 +39,9 @@ public enum PluginApiKeyScope
     /// Add new instances
     /// </summary>
     AddInstances,
+
+    /// <summary>
+    /// Add new geofences
+    /// </summary>
+    AddGeofences,
 }

@@ -17,7 +17,7 @@ public class Geofence : BaseEntity, IGeofence
         Column("name"),
         Key,
     ]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [
         DisplayName("Type"),
@@ -38,9 +38,6 @@ public class Geofence : BaseEntity, IGeofence
         NotMapped,
     ]
     public uint AreasCount { get; set; }
-
-    [NotMapped]
-    IGeofenceData IGeofence.Data => Data;
 
     #endregion
 

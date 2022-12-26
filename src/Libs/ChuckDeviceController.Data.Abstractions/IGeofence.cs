@@ -8,10 +8,5 @@ public interface IGeofence : IBaseEntity
 
     GeofenceType Type { get; }
 
-    IGeofenceData Data { get; }
-}
-
-public interface IGeofenceData
-{
-    dynamic? Area { get; }
+    GeofenceData? Data { get; }
 }

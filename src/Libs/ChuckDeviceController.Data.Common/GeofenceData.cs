@@ -1,12 +1,10 @@
-﻿namespace ChuckDeviceController.Data.Entities;
+﻿namespace ChuckDeviceController.Data.Common;
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-using ChuckDeviceController.Data.Abstractions;
-
-public class GeofenceData : IGeofenceData
+public class GeofenceData : Dictionary<string, object>
 {
     [
         DisplayName("Area"),
