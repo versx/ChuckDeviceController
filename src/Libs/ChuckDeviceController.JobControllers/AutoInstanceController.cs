@@ -96,7 +96,7 @@ public class AutoInstanceController : IJobController
         IDbContextFactory<MapDbContext> mapFactory,
         IDbContextFactory<ControllerDbContext> deviceFactory,
         Instance instance,
-        List<IMultiPolygon> multiPolygons,
+        IReadOnlyList<IMultiPolygon> multiPolygons,
         short timeZoneOffset = Strings.DefaultTimeZoneOffset)
     {
         Name = instance.Name;

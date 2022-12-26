@@ -79,7 +79,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
     public IvInstanceController(
         IDbContextFactory<MapDbContext> mapFactory,
         Instance instance,
-        List<IMultiPolygon> multiPolygons,
+        IReadOnlyList<IMultiPolygon> multiPolygons,
         List<string> pokemonIds)
     {
         Name = instance.Name;

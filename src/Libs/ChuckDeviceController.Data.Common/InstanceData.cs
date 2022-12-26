@@ -8,10 +8,8 @@ using System.Text.Json.Serialization;
  * existing instance the UI will display the previous value instead of using the default,
  * which is fine. :)
 */
-public class InstanceData : Dictionary<string, object>
+public class InstanceData : Dictionary<string, object?>
 {
-    //public object this[string key] => this[key];
-
     #region Pokemon Circle Instance
     [
         DisplayName("Circle Route Type"),

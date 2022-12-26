@@ -8,7 +8,7 @@ public enum CircleInstanceRouteType : byte
     /// <summary>
     /// Default leap frog routing logic.
     /// </summary>
-    Default = 0,
+    Default,
 
     /// <summary>
     /// Evenly split and spaced routing logic

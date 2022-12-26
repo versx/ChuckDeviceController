@@ -100,7 +100,7 @@ public static class PropertyInfoExtensions
             // Ignore any properties that are not mapped to a database table via an attribute
             // or if the property is explicitly set to not be mapped.
             if (prop.GetCustomAttribute<ColumnAttribute>() == null)// ||
-                                                                   //prop.GetCustomAttribute<NotMappedAttribute>() != null)
+                //prop.GetCustomAttribute<NotMappedAttribute>() != null)
                 continue;
 
             // Ignore any virtual/database generated properties marked via attribute
@@ -191,7 +191,6 @@ public static class PropertyInfoExtensions
     /// </summary>
     /// <param name="property"></param>
     /// <param name="value"></param>
-    /// <param name="enumsToConvert"></param>
     /// <returns></returns>
     public static string SqlifyPropertyValueToString(this PropertyInfo property, object? value)
     {

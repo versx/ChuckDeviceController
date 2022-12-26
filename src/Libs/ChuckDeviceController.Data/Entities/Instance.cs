@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
@@ -16,6 +17,7 @@ public class Instance : BaseEntity, IInstance
         DisplayName("Name"),
         Column("name"),
         Key,
+        JsonPropertyName("name"),
     ]
     public string Name { get; set; } = null!;
 
@@ -23,6 +25,7 @@ public class Instance : BaseEntity, IInstance
         DisplayName("Instance Type"),
         Column("type"),
         Required,
+        JsonPropertyName("type"),
     ]
     public InstanceType Type { get; set; }
 
@@ -30,6 +33,7 @@ public class Instance : BaseEntity, IInstance
         DisplayName("Minimum Level"),
         Column("min_level"),
         Required,
+        JsonPropertyName("min_level"),
     ]
     public ushort MinimumLevel { get; set; }
 
@@ -37,6 +41,7 @@ public class Instance : BaseEntity, IInstance
         DisplayName("Maximum Level"),
         Column("max_level"),
         Required,
+        JsonPropertyName("max_level"),
     ]
     public ushort MaximumLevel { get; set; }
 
@@ -44,26 +49,31 @@ public class Instance : BaseEntity, IInstance
         DisplayName("Geofences"),
         Column("geofences"),
         Required,
+        JsonPropertyName("geofences"),
     ]
     public List<string> Geofences { get; set; }
 
     [
         DisplayName("Data"),
         Column("data"),
+        JsonPropertyName("data"),
+        //JsonExtensionData,
     ]
     public InstanceData? Data { get; set; }
 
     [
         DisplayName("No. Devices"),
         NotMapped,
+        JsonIgnore,
     ]
     public string? DeviceCount { get; set; }
 
     [
         DisplayName("Status"),
         NotMapped,
+        JsonIgnore,
     ]
-    public string? Status { get; set; } 
+    public string? Status { get; set; }
 
     #endregion
 

@@ -20,7 +20,7 @@ public class Webhook : BaseEntity, IWebhook
         Key,
         JsonPropertyName("name"),
     ]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [
         DisplayName("Types"),

@@ -8,10 +8,13 @@ public static class LinqExtensions
 {
     public static IQueryable<TEntity> FilterBy<TEntity>(
         this IQueryable<TEntity> query,
-        Expression<Func<TEntity, bool>>? predicate)
+        Expression<Func<TEntity, bool>>? predicate = null)
     {
-        var filtered = query.Where(predicate);
-        return filtered;
+        if (predicate != null)
+        {
+            return query.Where(predicate);
+        }
+        return query;
     }
 
     public static IOrderedQueryable<TEntity> Order<TEntity, TKey>(

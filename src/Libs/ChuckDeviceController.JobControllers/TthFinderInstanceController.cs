@@ -74,7 +74,7 @@ public class TthFinderInstanceController : IJobController
     public TthFinderInstanceController(
         IDbContextFactory<MapDbContext> factory,
         Instance instance,
-        List<IMultiPolygon> multiPolygons,
+        IReadOnlyList<IMultiPolygon> multiPolygons,
         IRouteCalculator routeCalculator)
     {
         Name = instance.Name;

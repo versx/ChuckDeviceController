@@ -2,6 +2,13 @@
 
 using System.Collections.Generic;
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Extensions.Http;
@@ -11,13 +18,6 @@ using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.EventBus;
 using ChuckDeviceController.Plugin.EventBus.Events;
 using ChuckDeviceController.Plugin.Services;
-
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 using JobControllers;
 
@@ -531,6 +531,9 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
             // Retrieve database entities 
             var device = await _databaseHost.FindAsync<IDevice, string>("SGV7SE");
             _loggingHost.LogInformation($"Device: {device?.Uuid}");
+
+            var instance = await _databaseHost.FindAsync<IInstance, string>("TestInstance");
+            _loggingHost.LogInformation($"Instance: {instance?.Name}");
             //var devices = await _databaseHost.GetListAsync<IDevice>();
             //_loggingHost.LogMessage($"Devices: {devices.Count}");
 
@@ -632,12 +635,13 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
             Data = new GeofenceData
             {
                 Area = new List<Coordinate>
-                    {
-                        new Coordinate(34.01, -117.01),
-                        new Coordinate(34.02, -117.02),
-                        new Coordinate(34.03, -117.03),
-                        new Coordinate(34.04, -117.04),
-                    },
+                {
+                    new Coordinate(34.01, -117.01),
+                    new Coordinate(34.02, -117.02),
+                    new Coordinate(34.03, -117.03),
+                    new Coordinate(34.04, -117.04),
+                },
+                ["test"] = "123", // <- Add custom properties
             },
         };
         return geofence;
@@ -713,10 +717,5 @@ public class Geofence : IGeofence
 
     public GeofenceType Type { get; set; }
 
-    public IGeofenceData Data { get; set; } = new GeofenceData();
-}
-
-public class GeofenceData : IGeofenceData
-{
-    public dynamic? Area { get; set; }
+    public GeofenceData? Data { get; set; } = new();
 }

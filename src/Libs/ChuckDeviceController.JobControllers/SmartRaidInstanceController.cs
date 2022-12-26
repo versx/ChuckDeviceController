@@ -73,7 +73,7 @@ public class SmartRaidInstanceController : IJobController
     public SmartRaidInstanceController(
         IDbContextFactory<MapDbContext> factory,
         Instance instance,
-        List<IMultiPolygon> multiPolygons)
+        IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         Name = instance.Name;
         MultiPolygons = multiPolygons;

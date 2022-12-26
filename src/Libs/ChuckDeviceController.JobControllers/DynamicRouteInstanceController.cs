@@ -30,10 +30,10 @@ public class DynamicRouteInstanceController : CircleInstanceController
 
     public DynamicRouteInstanceController(
         Instance instance,
-        List<IMultiPolygon> multiPolygons,
+        IReadOnlyList<IMultiPolygon> multiPolygons,
         IRoutingHost routeGenerator,
         IRouteCalculator routeCalculator)
-        : base(instance, new(), CircleInstanceType.Pokemon)
+        : base(instance, new List<ICoordinate>(), CircleInstanceType.Pokemon)
     {
         _logger = new Logger<DynamicRouteInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
         _routeGenerator = routeGenerator;

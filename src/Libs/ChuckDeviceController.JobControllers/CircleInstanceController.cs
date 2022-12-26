@@ -30,7 +30,7 @@ public class CircleInstanceController : BaseSmartInstanceController, IScanNextIn
 
     public CircleInstanceController(
         Instance instance,
-        List<ICoordinate> coords,
+        IReadOnlyList<ICoordinate> coords,
         CircleInstanceType circleType = CircleInstanceType.Pokemon)
         : base(instance, coords, circleType, instance.Data?.CircleRouteType ?? Strings.DefaultCircleRouteType)
     {

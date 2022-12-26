@@ -134,7 +134,7 @@ public class LevelingInstanceController : IJobController
     public LevelingInstanceController(
         IDbContextFactory<ControllerDbContext> deviceFactory,
         Instance instance,
-        List<IMultiPolygon> multiPolygons)
+        IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         Name = instance.Name;
         MultiPolygons = multiPolygons;

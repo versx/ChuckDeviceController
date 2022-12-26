@@ -1,7 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
 /// <summary>
-/// 
+/// User identity authorization host handler.
 /// </summary>
 public interface IAuthorizeHost
 {

@@ -59,10 +59,10 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
 
     public BootstrapInstanceController(
         Instance instance,
-        List<IMultiPolygon> multiPolygons,
+        IReadOnlyList<IMultiPolygon> multiPolygons,
         IRoutingHost routeGenerator,
         IRouteCalculator routeCalculator)
-        : base(instance, new(), CircleInstanceType.Pokemon, CircleInstanceRouteType.Smart)
+        : base(instance, new List<ICoordinate>(), CircleInstanceType.Pokemon, CircleInstanceRouteType.Smart)
     {
         FastBootstrapMode = instance.Data?.FastBootstrapMode ?? Strings.DefaultFastBootstrapMode;
         CircleSize = instance.Data?.CircleSize ?? Strings.DefaultCircleSize;
@@ -70,7 +70,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
         OnCompleteInstanceName = instance.Data?.BootstrapCompleteInstanceName ?? Strings.DefaultBootstrapCompleteInstanceName;
 
         _logger = new Logger<BootstrapInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-        _multiPolygons = multiPolygons;
+        _multiPolygons = multiPolygons.ToList();
         _routeGenerator = routeGenerator;
         _routeCalculator = routeCalculator;
 

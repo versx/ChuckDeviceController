@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
@@ -16,6 +17,7 @@ public class Geofence : BaseEntity, IGeofence
         DisplayName("Name"),
         Column("name"),
         Key,
+        JsonPropertyName("name"),
     ]
     public string Name { get; set; } = null!;
 
@@ -23,19 +25,23 @@ public class Geofence : BaseEntity, IGeofence
         DisplayName("Type"),
         Column("type"),
         Required,
+        JsonPropertyName("type"),
     ]
     public GeofenceType Type { get; set; }
 
     [
         DisplayName("Data"),
         Column("data"),
-        Required,
+        //Required,
+        JsonPropertyName("data"),
+        //JsonExtensionData,
     ]
     public GeofenceData? Data { get; set; }
 
     [
         DisplayName("Count"),
         NotMapped,
+        JsonIgnore,
     ]
     public uint AreasCount { get; set; }
 

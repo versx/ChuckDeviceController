@@ -3,7 +3,7 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-public class WebhookData : Dictionary<string, object>
+public class WebhookData : Dictionary<string, object?>
 {
     [
         DisplayName("Pokemon IDs"),

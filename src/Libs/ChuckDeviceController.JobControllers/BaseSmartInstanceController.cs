@@ -59,7 +59,7 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
 
     public BaseSmartInstanceController(
         Instance instance,
-        List<ICoordinate> coords,
+        IReadOnlyList<ICoordinate> coords,
         CircleInstanceType circleType = CircleInstanceType.Pokemon,
         CircleInstanceRouteType? routeType = CircleInstanceRouteType.Smart)
     {

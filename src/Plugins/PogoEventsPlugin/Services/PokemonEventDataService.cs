@@ -409,11 +409,17 @@ public class PokemonEventDataService : IPokemonEventDataService
 
     #region Discord Client Events
 
-    private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
+    private Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
     {
         _logger.LogInformation($"Logged in as {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator} ({sender.CurrentUser.Id})");
 
-        await CreateChannelsAsync();
+        //await CreateChannelsAsync();
+        if (!ThreadPool.QueueUserWorkItem(async _ => await CreateChannelsAsync()))
+        {
+            _logger.LogError($"Failed to queue CreateChannelsAsync with thread pool");
+        }
+
+        return Task.CompletedTask;
     }
 
     #endregion
