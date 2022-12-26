@@ -1,14 +1,25 @@
 ﻿namespace ChuckDeviceController.Data.Factories;
 
+using System.Text.Json.Serialization;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Extensions.Json;
+using ChuckDeviceController.Extensions.Json.Converters;
 
 public static class DbContextFactory
 {
+    public static readonly IEnumerable<JsonConverter> JsonDictionaryConverters = new List<JsonConverter>
+    {
+        new ObjectDataConverter<GeofenceData>(),
+        new ObjectDataConverter<InstanceData>(),
+        new ObjectDataConverter<WebhookData>(),
+    };
+
     public static T CreateDbContext<T>(string connectionString, string? assemblyName = null, bool autoDetectChanges = false)
         where T : DbContext
     {
@@ -78,7 +89,7 @@ public static class DbContextFactory
         return new ValueConverter<T, string?>
         (
             v => v.ToJson(true),
-            v => v!.FromJson<T>()!
+            v => v!.FromJson<T>(JsonDictionaryConverters)!
         );
     }
 

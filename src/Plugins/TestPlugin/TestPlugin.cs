@@ -533,7 +533,13 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
             _loggingHost.LogInformation($"Device: {device?.Uuid}");
 
             var instance = await _databaseHost.FindAsync<IInstance, string>("TestInstance");
+            var circleRouteType = instance?.Data?.CircleRouteType;
             _loggingHost.LogInformation($"Instance: {instance?.Name}");
+
+            var geofence = await _databaseHost.FindAsync<IGeofence, string>("Upland");
+            _loggingHost.LogInformation($"Geofence: {geofence?.Name}");
+            _loggingHost.LogInformation($"Area: {geofence?.Data?.Area}");
+
             //var devices = await _databaseHost.GetListAsync<IDevice>();
             //_loggingHost.LogMessage($"Devices: {devices.Count}");
 

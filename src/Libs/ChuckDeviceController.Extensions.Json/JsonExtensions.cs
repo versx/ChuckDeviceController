@@ -2,6 +2,7 @@
 
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 public static class JsonExtensions
 {
@@ -11,6 +12,7 @@ public static class JsonExtensions
         AllowTrailingCommas = true,
         WriteIndented = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
+        //ReferenceHandler = ReferenceHandler.Preserve,
         //PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         //IgnoreReadOnlyProperties = true,
         //DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -18,6 +20,30 @@ public static class JsonExtensions
 
     public static T? FromJson<T>(this string json) =>
         JsonSerializer.Deserialize<T>(json, _jsonOptions);
+
+    public static T? FromJson<T>(this string json, IEnumerable<JsonConverter>? converters = null)
+    {
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            AllowTrailingCommas = true,
+            WriteIndented = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            //ReferenceHandler = ReferenceHandler.Preserve,
+            //PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            //IgnoreReadOnlyProperties = true,
+            //DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+        if (converters != null)
+        {
+            foreach (var converter in converters)
+            {
+                jsonOptions.Converters.Add(converter);
+            }
+        }
+        var obj = JsonSerializer.Deserialize<T>(json, jsonOptions);
+        return obj;
+    }
 
     public static string ToJson<T>(this T obj, bool pretty = false)
     {
@@ -27,6 +53,7 @@ public static class JsonExtensions
             AllowTrailingCommas = true,
             WriteIndented = pretty,
             ReadCommentHandling = JsonCommentHandling.Skip,
+            //ReferenceHandler = ReferenceHandler.Preserve,
         };
         var json = JsonSerializer.Serialize(obj, options);
         return json;

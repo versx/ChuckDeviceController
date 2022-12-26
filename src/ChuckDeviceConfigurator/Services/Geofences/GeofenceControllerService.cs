@@ -20,7 +20,7 @@ public class GeofenceControllerService : IGeofenceControllerService
     #region Constructor
 
     public GeofenceControllerService(
-            ILogger<IGeofenceControllerService> logger,
+        ILogger<IGeofenceControllerService> logger,
         IDbContextFactory<ControllerDbContext> factory)
     {
         _logger = logger;
@@ -76,7 +76,7 @@ public class GeofenceControllerService : IGeofenceControllerService
     public IReadOnlyList<Geofence> GetByNames(IReadOnlyList<string> names)
     {
         var geofences = names
-            .Select(name => GetByName(name))
+            .Select(GetByName)
             .ToList();
         return geofences;
     }

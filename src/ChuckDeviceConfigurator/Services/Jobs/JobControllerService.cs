@@ -732,7 +732,7 @@ public class JobControllerService : IJobControllerService
 
     #region Job Controller Methods
 
-    private static IJobController CreateCircleJobController(Instance instance, CircleInstanceType circleInstanceType, List<ICoordinate> coords)
+    private static IJobController CreateCircleJobController(Instance instance, CircleInstanceType circleInstanceType, IReadOnlyList<ICoordinate> coords)
     {
         var jobController = new CircleInstanceController(
             instance,
@@ -742,7 +742,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateSmartRaidJobController(IDbContextFactory<MapDbContext> factory, Instance instance, List<IMultiPolygon> multiPolygons)
+    private static IJobController CreateSmartRaidJobController(IDbContextFactory<MapDbContext> factory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         var jobController = new SmartRaidInstanceController(
             factory,
@@ -752,7 +752,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateAutoQuestJobController(IDbContextFactory<MapDbContext> mapFactory, IDbContextFactory<ControllerDbContext> deviceFactory, Instance instance, List<IMultiPolygon> multiPolygons, short timeZoneOffset)
+    private static IJobController CreateAutoQuestJobController(IDbContextFactory<MapDbContext> mapFactory, IDbContextFactory<ControllerDbContext> deviceFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, short timeZoneOffset)
     {
         var jobController = new AutoInstanceController(
             mapFactory,
@@ -764,7 +764,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateBootstrapJobController(Instance instance, List<IMultiPolygon> multiPolygons, IRoutingHost routeGenerator, IRouteCalculator routeCalculator)
+    private static IJobController CreateBootstrapJobController(Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IRoutingHost routeGenerator, IRouteCalculator routeCalculator)
     {
         var jobController = new BootstrapInstanceController(
             instance,
@@ -775,7 +775,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateDynamicJobController(Instance instance, List<IMultiPolygon> multiPolygons, IRoutingHost routeGenerator, IRouteCalculator routeCalculator)
+    private static IJobController CreateDynamicJobController(Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IRoutingHost routeGenerator, IRouteCalculator routeCalculator)
     {
         var jobController = new DynamicRouteInstanceController(
             instance,
@@ -786,7 +786,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateIvJobController(IDbContextFactory<MapDbContext> mapFactory, Instance instance, List<IMultiPolygon> multiPolygons, IvList ivList)
+    private static IJobController CreateIvJobController(IDbContextFactory<MapDbContext> mapFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IvList ivList)
     {
         var jobController = new IvInstanceController(
             mapFactory,
@@ -797,7 +797,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateLevelingJobController(IDbContextFactory<ControllerDbContext> deviceFactory, Instance instance, List<IMultiPolygon> multiPolygons)
+    private static IJobController CreateLevelingJobController(IDbContextFactory<ControllerDbContext> deviceFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         var jobController = new LevelingInstanceController(
             deviceFactory,
@@ -807,7 +807,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateSpawnpointJobController(IDbContextFactory<MapDbContext> mapFactory, Instance instance, List<IMultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
+    private static IJobController CreateSpawnpointJobController(IDbContextFactory<MapDbContext> mapFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
     {
         var jobController = new TthFinderInstanceController(
             mapFactory,

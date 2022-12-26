@@ -98,7 +98,9 @@ public class WebhookControllerService : IWebhookControllerService
 				.Select(g => g.ConvertToMultiPolygons())
 				.SelectMany(g => g.Item2)
 				.ToList();
-			webhook.GeofenceMultiPolygons = coordinates;
+			webhook.GeofenceMultiPolygons = coordinates
+				.Select(x => x.ToList())
+				.ToList();
 		}
 
 		return webhooks;

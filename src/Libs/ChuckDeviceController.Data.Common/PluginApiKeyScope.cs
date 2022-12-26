@@ -44,4 +44,14 @@ public enum PluginApiKeyScope
     /// Add new geofences
     /// </summary>
     AddGeofences,
+
+    /// <summary>
+    /// Read file system storage
+    /// </summary>
+    ReadFileSystem,
+
+    /// <summary>
+    /// Write file system storage
+    /// </summary>
+    WriteFileSystem,
 }
